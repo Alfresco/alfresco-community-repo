@@ -24,7 +24,7 @@ import junit.framework.TestSuite;
 /**
  * See {@link Repository01TestSuite}
  *
- * @Author Alan Davis
+ * @author Alan Davis
  */
 public class Repository27TestSuite extends TestSuite
 {

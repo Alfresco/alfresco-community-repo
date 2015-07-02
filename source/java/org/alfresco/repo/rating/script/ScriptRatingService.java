@@ -57,7 +57,7 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
     
     /**
      * Gets the names for rating schemes currently in the system.
-     * @return
+     * @return String[]
      */
     public String[] getRatingSchemeNames()
     {
@@ -70,8 +70,8 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
     /**
      * Gets the minimum allowed rating for the specified rating scheme.
      * 
-     * @param ratingSchemeName
-     * @return
+     * @param ratingSchemeName String
+     * @return float
      */
     public float getMin(String ratingSchemeName)
     {
@@ -81,8 +81,8 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
     /**
      * Gets the maximum allowed rating for the specified rating scheme.
      * 
-     * @param ratingSchemeName
-     * @return
+     * @param ratingSchemeName String
+     * @return float
      */
     public float getMax(String ratingSchemeName)
     {
@@ -109,9 +109,9 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
      * <p/>Furthermore, only one rating scheme per user per target node is supported. Any attempt
      * by one user to apply a second rating in a different scheme will result in a {@link RatingServiceException}.
      * 
-     * @param node
-     * @param rating
-     * @param ratingSchemeName
+     * @param node ScriptNode
+     * @param rating float
+     * @param ratingSchemeName String
      * @throws RatingServiceException
      * @see ScriptRatingService#getMin(String)
      * @see ScriptRatingService#getMax(String)
@@ -124,8 +124,8 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
     /**
      * Removes any rating by the current user in the specified scheme from the specified
      * noderef.
-     * @param node
-     * @param ratingSchemeName
+     * @param node ScriptNode
+     * @param ratingSchemeName String
      */
     public void removeRating(ScriptNode node, String ratingSchemeName)
     {
@@ -135,8 +135,8 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
     /**
      * Gets the rating applied to the specified node in the specified scheme by
      * the currently authenticated user.
-     * @param node
-     * @param ratingSchemeName
+     * @param node ScriptNode
+     * @param ratingSchemeName String
      * @return rating if there is one, else -1.
      * TODO -1 could be a valid rating.
      */
@@ -149,8 +149,8 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
     /**
      * Gets the rating applied date for the specified node in the specified scheme by
      * the currently authenticated user.
-     * @param node
-     * @param ratingSchemeName
+     * @param node ScriptNode
+     * @param ratingSchemeName String
      * @return rating applied date if there is one, else <code>null</code>
      */
     public Date getRatingAppliedAt(ScriptNode node, String ratingSchemeName)
@@ -162,9 +162,9 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
     /**
      * Gets the number of ratings applied to the specified node by all users in the specified
      * scheme.
-     * @param node
-     * @param ratingSchemeName
-     * @return
+     * @param node ScriptNode
+     * @param ratingSchemeName String
+     * @return int
      */
     public int getRatingsCount(ScriptNode node, String ratingSchemeName)
     {
@@ -173,9 +173,9 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
 
     /**
      * Gets the total (sum) rating by all users on the specified node in the specified scheme.
-     * @param node
-     * @param ratingSchemeName
-     * @return
+     * @param node ScriptNode
+     * @param ratingSchemeName String
+     * @return float
      */
     public float getTotalRating(ScriptNode node, String ratingSchemeName)
     {
@@ -184,9 +184,10 @@ public class ScriptRatingService extends BaseScopableProcessorExtension
 
     /**
      * Gets the average (mean) rating by all users on the specified node in the specified scheme.
-     * @param node
-     * @param ratingSchemeName
-     * @return
+     * @param node ScriptNode
+     * @param ratingSchemeName      * @param ratingSchemeName String
+
+     * @return float
      */
     public float getAverageRating(ScriptNode node, String ratingSchemeName)
     {

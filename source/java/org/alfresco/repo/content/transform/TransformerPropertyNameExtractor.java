@@ -57,7 +57,7 @@ public abstract class TransformerPropertyNameExtractor
      *        the normal defaults. Such properties have a suffix of ".use.<use>" where <use> 
      *        is a value such as "index", "webpreview", "doclib", "syncRule", "aysncRule".
      * @param transformerProperties that provides the properties
-     * @param mimetypeService
+     * @param mimetypeService MimetypeService
      */
     protected Collection<TransformerSourceTargetSuffixValue> getTransformerSourceTargetValues(Collection<String> suffixes,
             boolean includeSummary, boolean includeUse, TransformerProperties transformerProperties, MimetypeService mimetypeService)
@@ -83,7 +83,7 @@ public abstract class TransformerPropertyNameExtractor
      *        the normal defaults. Such properties have a suffix of ".use.<use>" where <use> 
      *        is a value such as "index", "webpreview", "doclib", "syncRule", "aysncRule".
      * @param transformerProperties that provides the properties
-     * @param mimetypeService
+     * @param mimetypeService MimetypeService
      */
     protected Map<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue> getTransformerSourceTargetValuesMap(Collection<String> suffixes,
             boolean includeSummary, boolean includeExtensions, boolean includeUse, TransformerProperties transformerProperties, MimetypeService mimetypeService)
@@ -253,7 +253,7 @@ public abstract class TransformerPropertyNameExtractor
      * Gets the extensions of the mimetypes that match the given expression.
      * However if the expression is "*", only the ANY ("*") extension is returned.
      * @param expression which may contain '*' to represent zero or more characters.
-     * @param mimetypeService
+     * @param mimetypeService MimetypeService
      * @return the list of extensions of mimetypes that match
      */
     List<String> getMatchingExtensionsFromMimetypes(
@@ -281,7 +281,7 @@ public abstract class TransformerPropertyNameExtractor
      * of each mimetype is checked.
      * However if the expression is "*", only the ANY ("*") extension is returned.
      * @param expression which may contain '*' to represent zero or more characters.
-     * @param mimetypeService
+     * @param mimetypeService MimetypeService
      * @return the list of extensions that match
      */
     List<String> getMatchingExtensionsFromExtensions(
@@ -308,9 +308,9 @@ public abstract class TransformerPropertyNameExtractor
      * Returns a transformer property value if it exists from the supplied map.
      * @param transformerName of the transformer
      * @param sourceExt {@code null} indicates this is a transformer wide property.
-     * @param targetExt
-     * @param suffix
-     * @param use
+     * @param targetExt String
+     * @param suffix String
+     * @param use String
      * @param transformerSourceTargetSuffixValues map of values
      * @return the value or {@code null} if not set.
      */

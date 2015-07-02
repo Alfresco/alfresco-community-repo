@@ -68,7 +68,7 @@ public class SolrStatsResult implements JSONResult, StatsResultSet
     
     /**
      * Parses the json
-     * @param json
+     * @param json JSONObject
      * @throws JSONException
      */
     protected void processJson(JSONObject json) throws JSONException
@@ -128,8 +128,8 @@ public class SolrStatsResult implements JSONResult, StatsResultSet
     
     /**
      * Proccesses an individual stat entry
-     * @param name
-     * @param facetVal
+     * @param name String
+     * @param facetVal JSONObject
      * @return Stat
      * @throws JSONException
      */

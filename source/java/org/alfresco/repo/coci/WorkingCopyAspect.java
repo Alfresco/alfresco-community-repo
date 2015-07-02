@@ -86,7 +86,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
     }
 
     /**
-     * @param policyBehaviourFilter
+     * @param policyBehaviourFilter BehaviourFilter
      */
     public void setPolicyBehaviourFilter(BehaviourFilter policyBehaviourFilter)
     {
@@ -156,7 +156,7 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
     }
 
     /**
-     * @return              Returns {@link WorkingCopyAspectCopyBehaviourCallback}
+     * @return              Returns CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

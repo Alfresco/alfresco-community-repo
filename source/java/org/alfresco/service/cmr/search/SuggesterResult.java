@@ -35,7 +35,7 @@ public interface SuggesterResult
     /**
      * Get the number of suggestions
      * 
-     * @return
+     * @return long
      */
     long getNumberFound();
 

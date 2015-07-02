@@ -62,10 +62,11 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
     /**
      * Apply the filter
      * 
-     * @param id
-     * @param reader
-     * @param deletions
-     * @param deleteNodesOnly
+     * @param id String
+     * @param reader IndexReader
+     * @param deletions Set<String>
+     * @param containerDeletions Set<String>
+     * @param deleteNodesOnly boolean
      */
     public FilterIndexReaderByStringId(String id, IndexReader reader, Set<String> deletions, Set<String> containerDeletions, boolean deleteNodesOnly)
     {
@@ -196,8 +197,8 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
         String id;
 
         /**
-         * @param id
-         * @param in
+         * @param id String
+         * @param in TermDocs
          */
         public FilterTermDocs(String id, TermDocs in)
         {
@@ -332,15 +333,15 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
         }
     }
 
-    /** Base class for filtering {@link TermPositions} implementations. */
+    /** Base class for filtering {@code TermPositions} implementations. */
     public class FilterTermPositions extends FilterTermDocs implements TermPositions
     {
 
         TermPositions tp;
         
         /**
-         * @param id
-         * @param in
+         * @param id String
+         * @param in TermPositions
          */
         public FilterTermPositions(String id, TermPositions in)
         {

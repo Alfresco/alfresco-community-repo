@@ -79,7 +79,7 @@ public class SplitPersonCleanupBootstrapBean extends AbstractLifecycleBean
     /**
      * Can have uid+GUID or uid + "(" + GUID + ")"
      * 
-     * @return
+     * @return int
      */
     protected int removePeopleWithGUIDBasedIds()
     {

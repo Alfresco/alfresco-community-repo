@@ -98,8 +98,8 @@ public class TaskUpdater
     }
 
     /**
-     * @param isAdd
-     * @return
+     * @param isAdd boolean
+     * @return Map
      */
     private Map<QName, List<NodeRef>> getAssociationMap(boolean isAdd)
     {

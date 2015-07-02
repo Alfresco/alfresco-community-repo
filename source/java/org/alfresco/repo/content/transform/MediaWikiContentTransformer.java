@@ -38,7 +38,7 @@ import org.htmlcleaner.ContentToken;
 /**
  * MediaWiki content transformer.  Converts mediawiki markup into HTML.
  * 
- * @see http://matheclipse.org/en/Java_Wikipedia_API
+ * <br>@see <a href="http://matheclipse.org/en/Java_Wikipedia_API">Java_Wikipedia_API</a>
  * 
  * Tika Note - Tika doesn't currently support mediawiki markup, so this
  *  transformer cannot currently be converted to use Tika.

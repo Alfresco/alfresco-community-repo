@@ -252,7 +252,7 @@ public class Site implements Serializable
     /**
      * Gets a map of role name mapping to associated group name.
      * 
-     * @return  ScriptableMap<String, String>   map of role to group name
+     * @return  map of role to group name
      */
     public ScriptableHashMap<String, String> getSitePermissionGroups()
     {
@@ -358,7 +358,7 @@ public class Site implements Serializable
      * @param nameFilter               user name filter
      * @param roleFilter               user role filter
      * 
-     * @return ScriptableHashMap<String, String>    list of members of site with their roles
+     * @return list of members of site with their roles
      * @deprecated Use {@link #listMembers(String, String, int, boolean)} instead
      */
     public ScriptableHashMap<String, String> listMembers(String nameFilter, String roleFilter)
@@ -378,7 +378,7 @@ public class Site implements Serializable
      * @param roleFilter               user role filter
      * @param size                     max results size crop if >0
      * 
-     * @return ScriptableHashMap<String, String>    list of members of site with their roles
+     * @return list of members of site with their roles
      * @deprecated Use {@link #listMembers(String, String, int, boolean)} instead
      */
     public ScriptableHashMap<String, String> listMembers(String nameFilter, String roleFilter, int size)
@@ -400,7 +400,7 @@ public class Site implements Serializable
      * @param size                     max results size crop if >0
      * @param collapseGroups           true if collapse member groups into user list, false otherwise
      * 
-     * @return ScriptableHashMap<String, String>    list of members of site with their roles
+     * @return list of members of site with their roles
      */
     public ScriptableHashMap<String, String> listMembers(String nameFilter, String roleFilter, int size, boolean collapseGroups)
     {
@@ -498,7 +498,7 @@ public class Site implements Serializable
     /**
      * Gets (or creates) the "container" folder for the specified component id
      * 
-     * @param componentId
+     * @param componentId String
      * @return node representing the "container" folder (or null, if for some reason 
      *         the container can not be created - probably due to permissions)
      */
@@ -733,7 +733,7 @@ public class Site implements Serializable
     /**
      * Determine if the "container" folder for the specified component exists
      * 
-     * @param componentId
+     * @param componentId String
      * @return  true => "container" folder exists
      */
     public boolean hasContainer(String componentId)
@@ -856,7 +856,7 @@ public class Site implements Serializable
     /**
      * Get a map of the sites custom properties
      * 
-     * @return ScriptableQNameMap<String, Serializable>     map of names and values
+     * @return map of names and values
      */
     public ScriptableQNameMap<String, CustomProperty> getCustomProperties()
     {

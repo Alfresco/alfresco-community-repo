@@ -113,9 +113,9 @@ public class ActivitiTypeConverter
      * including all instances for default domain
      * and excluding shared instances (THOR-206) for tenants 
      * 
-     * @param values
-     * @param processKeyGetter
-     * @return
+     * @param values List<F>
+     * @param processKeyGetter Function<F, String>
+     * @return List
      */
     public <F, T> List<T> doSpecialTenantFilterAndSafeConvert(List<F> values, Function<F, String> processKeyGetter)
     {
@@ -134,8 +134,8 @@ public class ActivitiTypeConverter
 
     /**
      * Convert a {@link Deployment} into a {@link WorkflowDeployment}.
-     * @param deployment
-     * @return
+     * @param deployment Deployment
+     * @return WorkflowDeployment
      */
     public WorkflowDeployment convert(Deployment deployment)
     {
@@ -149,8 +149,8 @@ public class ActivitiTypeConverter
 
     /**
      * Convert a {@link ProcessDefinition} into a {@link WorkflowDefinition}.
-     * @param definition
-     * @return
+     * @param definition ProcessDefinition
+     * @return WorkflowDefinition
      */
     public WorkflowDefinition convert(ProcessDefinition definition)
     {
@@ -209,9 +209,9 @@ public class ActivitiTypeConverter
 
     /**
      * Get the taskDefinition key based on the Activiti task definition id,
-     * @param taskDefinitionKey
-     * @param processDefinitionId
-     * @return
+     * @param taskDefinitionKey String
+     * @param processDefinitionId String
+     * @return WorkflowTaskDefinition
      */
     public WorkflowTaskDefinition getTaskDefinition(String taskDefinitionKey, String processDefinitionId)
     {
@@ -314,10 +314,10 @@ public class ActivitiTypeConverter
     }
 
     /**
-     * @param activity
-     * @param key
-     * @param forceIsTaskNode
-     * @return
+     * @param activity PvmActivity
+     * @param key String
+     * @param forceIsTaskNode boolean
+     * @return WorkflowNode
      */
     private WorkflowNode getNode(PvmActivity activity, String key, boolean forceIsTaskNode)
     {
@@ -439,7 +439,7 @@ public class ActivitiTypeConverter
     
     /**
      * Converts the given task into a {@link WorkflowTask}, allows ignoring domain mismatch (ALF-12264)
-     * @param task 
+     * @param task Task
      * @param ignoreDomainMismatch whether or not to ignore domain mismatch exception
      * @return the converter task. Returns null when the domain mismatched and ignoreDomainMismatch was true.
      */

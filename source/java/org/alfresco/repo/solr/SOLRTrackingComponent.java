@@ -136,34 +136,34 @@ public interface SOLRTrackingComponent
     }
 
     /**
-     * @return
+     * @return boolean
      */
     boolean isEnabled();
 
     /**
-     * @param enabled
+     * @param enabled boolean
      */
     void setEnabled(boolean enabled);
     
     /**
      * Get the last transaction timestamp from the repo
-     * @return
+     * @return Long
      */
     public Long getMaxTxnCommitTime();
     
     /**
      * Get the last transaction id from the repo
-     * @return
+     * @return Long
      */
     public Long getMaxTxnId();
 
     /**
-     * @return
+     * @return Long
      */
     public Long getMaxChangeSetCommitTime();
 
     /**
-     * @return
+     * @return Long
      */
     public Long getMaxChangeSetId();
 }

@@ -65,7 +65,7 @@ public class ChainingAuthenticationComponentImpl extends AbstractChainingAuthent
     /**
      * Set a list of authentication components
      * 
-     * @param authenticationComponents
+     * @param authenticationComponents List<AuthenticationComponent>
      */
     public void setAuthenticationComponents(List<AuthenticationComponent> authenticationComponents)
     {
@@ -75,7 +75,7 @@ public class ChainingAuthenticationComponentImpl extends AbstractChainingAuthent
     /**
      * Get the authentication service thta must be at the top of the list (this may be null)
      * 
-     * @return
+     * @return AuthenticationComponent
      */
     public AuthenticationComponent getMutableAuthenticationComponent()
     {
@@ -85,7 +85,7 @@ public class ChainingAuthenticationComponentImpl extends AbstractChainingAuthent
     /**
      * Set the authentication component at the top of the list.
      * 
-     * @param mutableAuthenticationComponent
+     * @param mutableAuthenticationComponent AuthenticationComponent
      */
     public void setMutableAuthenticationComponent(AuthenticationComponent mutableAuthenticationComponent)
     {
@@ -286,7 +286,7 @@ public class ChainingAuthenticationComponentImpl extends AbstractChainingAuthent
     /**
      * Helper to get authentication components
      * 
-     * @return
+     * @return Collection<AuthenticationComponent>
      */
     protected Collection<AuthenticationComponent> getUsableAuthenticationComponents()
     {

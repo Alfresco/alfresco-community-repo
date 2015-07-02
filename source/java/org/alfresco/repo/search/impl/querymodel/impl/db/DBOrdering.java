@@ -49,8 +49,8 @@ public class DBOrdering extends BaseOrdering implements DBQueryBuilderComponent
     DBQueryBuilderComponent builderSupport;
 
     /**
-     * @param column
-     * @param order
+     * @param column Column
+     * @param order Order
      */
     public DBOrdering(Column column, Order order)
     {

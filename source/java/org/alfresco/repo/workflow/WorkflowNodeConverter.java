@@ -33,8 +33,8 @@ public interface WorkflowNodeConverter
 {
     /**
      * Converts a {@link NodeRef} into the appropriate Node type.
-     * @param node
-     * @return
+     * @param node NodeRef
+     * @return Object
      */
     Object convertNode(NodeRef node);
     
@@ -44,16 +44,16 @@ public interface WorkflowNodeConverter
      * a {@link List} of the appropriate Node type is returned. Otherwise a
      * single instance of the appropriate Node type is returned.
      * 
-     * @param value
-     * @param isMany
-     * @return
+     * @param value NodeRef
+     * @param isMany boolean
+     * @return Object
      */
     Object convertNode(NodeRef value, boolean isMany);
 
     /**
      * Converts a {@link Collection} of {@link NodeRef}s into a {@link List} of the appropriate Node type.
-     * @param values
-     * @return
+     * @param values Collection<NodeRef>
+     * @return List
      */
     List<? extends Object> convertNodes(Collection<NodeRef> values);
 
@@ -63,9 +63,9 @@ public interface WorkflowNodeConverter
      * a {@link List} of the appropriate Node type is returned. Otherwise a
      * single instance of the appropriate Node type is returned.
      * 
-     * @param values
-     * @param isMany
-     * @return
+     * @param values Collection<NodeRef>
+     * @param isMany boolean
+     * @return Object
      */
     Object convertNodes(Collection<NodeRef> values, boolean isMany);
     
@@ -75,16 +75,16 @@ public interface WorkflowNodeConverter
      * a {@link List} of the appropriate Node type is returned. Otherwise a
      * single instance of the appropriate Node type is returned.
      
-     * @param value
-     * @param isMany
-     * @return
+     * @param value Object
+     * @param isMany boolean
+     * @return Object
      */
     Object convertNodes(Object value, boolean isMany);
     
     /**
      * 
-     * @param toConvert
-     * @return
+     * @param toConvert Object
+     * @return NodeRef
      */
     NodeRef convertToNode(Object toConvert);
 
@@ -101,8 +101,8 @@ public interface WorkflowNodeConverter
      * {@link List} of {@link NodeRef}s is returned. Otherwise a single
      * {@link NodeRef} is returned.
      * 
-     * @param object
-     * @return
+     * @param object NodeRef
+     * @return Serializable
      */
     Serializable convert(Object object);
 }

@@ -70,7 +70,7 @@ public class Transfer
     }
 
     /**
-     * @param target
+     * @param target TransferTarget
      */
     public void setTransferTarget(TransferTarget target)
     {

@@ -50,8 +50,8 @@ public class LoggerModuleComponent extends AbstractModuleComponent
 
     /**
      * Set the level at which the bean must log the message.
-     * @param logLevel      One of the {@link LogLevel values}.
-     *                      The default is {@link LogLevel#INFO}.
+     * @param logLevel      One of the {@code LogLevel} values.
+     *                      The default is {@code LogLevel#INFO}.
      */
     public void setLogLevel(String logLevel)
     {

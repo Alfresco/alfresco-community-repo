@@ -45,11 +45,12 @@ public class GetArchivedNodesCannedQueryFactory extends AbstractQNameAwareCanned
     }
 
     /**
-     * @param archiveStoreRootNodeRef
-     * @param filter
-     * @param filterIgnoreCase
-     * @param pagingRequest
-     * @param sortOrderAscending
+     * @param archiveStoreRootNodeRef NodeRef
+     * @param assocTypeQName QName
+     * @param filter String
+     * @param filterIgnoreCase boolean
+     * @param pagingRequest PagingRequest
+     * @param sortOrderAscending boolean
      * @return an implementation that will execute the query
      */
     public CannedQuery<ArchivedNodeEntity> getCannedQuery(NodeRef archiveStoreRootNodeRef, QName assocTypeQName,

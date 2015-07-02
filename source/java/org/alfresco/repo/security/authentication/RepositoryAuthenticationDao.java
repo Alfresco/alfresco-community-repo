@@ -796,7 +796,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     
     /**
      * Remove from the cache and lock the value for the transaction
-     * @param key
+     * @param key String
      */
     private void removeAuthenticationFromCache(String key)
     {

@@ -47,7 +47,7 @@ public class NodePublishStatusPublished extends BaseNodePublishStatus
     
     /**
      * Retrieve the most recent publishing event that affected (created or updated) the node relevant to this status.
-     * @return
+     * @return PublishingEvent
      */
     public PublishingEvent getLatestPublishingEvent()
     {

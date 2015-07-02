@@ -47,8 +47,8 @@ public class PermissionReferenceImpl extends AbstractPermissionReference
 
     /**
      * Factory method to create permission references
-     * @param qName
-     * @param name
+     * @param qName QName
+     * @param name String
      * @return the permissions reference
      */
     public static PermissionReferenceImpl getPermissionReference(QName qName, String name)

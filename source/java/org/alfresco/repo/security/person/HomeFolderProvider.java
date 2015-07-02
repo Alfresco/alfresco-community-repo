@@ -33,7 +33,7 @@ public interface HomeFolderProvider extends NodeServicePolicies.OnCreateNodePoli
     /**
      * Get the name of the provider.
      * 
-     * @return
+     * @return String
      */
     public String getName();
 }

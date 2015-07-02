@@ -81,7 +81,7 @@ public class CommandExecutorImpl implements CommandExecutor
                  * Perform a set of commands as a unit of transactional work.
                  *
                  * @return              Return the result of the unit of work
-                 * @throws Throwable    This can be anything and will guarantee either a retry or a rollback
+                 * @throws IOException
                  */
                 public Object execute() throws IOException
                 {
@@ -159,11 +159,11 @@ public class CommandExecutorImpl implements CommandExecutor
     }
     
     /**
-     * @param sess
-     * @param tree
-     * @param command
-     * @param result
-     * @return
+     * @param sess SrvSession
+     * @param tree TreeConnection
+     * @param command Command
+     * @param result Object
+     * @return Object
      * @throws IOException
      */
     private Object executeInternal(SrvSession sess, TreeConnection tree, Command command, Object result) throws IOException
@@ -377,7 +377,7 @@ public class CommandExecutorImpl implements CommandExecutor
         private static final long serialVersionUID = 1L;
 
         /**
-         * @param cause
+         * @param cause Throwable
          */
         public PropagatingException(Throwable cause)
         {

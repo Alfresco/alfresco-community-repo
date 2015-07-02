@@ -102,7 +102,7 @@ public interface ActionTrackingService
      * If the specified action is not a cancellable
      *  action, nothing will happen.
      * 
-     * @param executionSummary
+     * @param executionSummary ExecutionSummary
      */
     void requestActionCancellation(ExecutionSummary executionSummary);
     

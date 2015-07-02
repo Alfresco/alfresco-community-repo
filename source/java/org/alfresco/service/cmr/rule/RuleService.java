@@ -107,7 +107,7 @@ public interface RuleService
     /**
      * Disables a rule, preventing it from being fired.
      * 
-     * @See enableRule
+     * @see #enableRule(Rule)
      * 
      * @param rule  the rule to disable
      */
@@ -117,7 +117,7 @@ public interface RuleService
     /**
      * Enables a rule previously disabled.
      * 
-     * @See diableRule
+     * @see #disableRule(Rule)
      * 
      * @param rule  the rule to enable
      */
@@ -223,35 +223,35 @@ public interface RuleService
      * If the rule is already associated with the node, the details are updated
      * with those specified.
      * 
-     * @param nodeRef
-     * @param rule
+     * @param nodeRef NodeRef
+     * @param rule Rule
      */
     @Auditable(parameters = {"nodeRef", "rule"})
     public void saveRule(NodeRef nodeRef, Rule rule);
     
     /**
      * 
-     * @param nodeRef
-     * @param rule
-     * @param index
+     * @param nodeRef NodeRef
+     * @param rule Rule
+     * @param index int
      */
     @Auditable(parameters = {"nodeRef", "rule", "index"})
     public void saveRule(NodeRef nodeRef, Rule rule, int index);
     
     /**
      * 
-     * @param nodeRef
-     * @param ruleNodeRef
-     * @param index
+     * @param nodeRef NodeRef
+     * @param ruleNodeRef NodeRef
+     * @param index int
      */
     @Auditable(parameters = {"nodeRef", "ruleNodeRef", "index"})
     public void setRulePosition(NodeRef nodeRef, NodeRef ruleNodeRef, int index);
     
     /**
      * 
-     * @param nodeRef
-     * @param rule
-     * @param index
+     * @param nodeRef NodeRef
+     * @param rule Rule
+     * @param index int
      */
     @Auditable(parameters = {"nodeRef", "rule", "index"})
     public void setRulePosition(NodeRef nodeRef, Rule rule, int index);

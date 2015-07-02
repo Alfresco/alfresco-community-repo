@@ -52,8 +52,9 @@ public class ChildAssociation implements Scopeable, Serializable
 	/**
 	 * Constructor
 	 * 
-	 * @param services
-	 * @param childAssocRef
+	 * @param services ServiceRegistry
+	 * @param childAssocRef ChildAssociationRef
+	 * @param scope Scriptable
 	 */
 	public ChildAssociation(ServiceRegistry services, ChildAssociationRef childAssocRef, Scriptable scope)
 	{

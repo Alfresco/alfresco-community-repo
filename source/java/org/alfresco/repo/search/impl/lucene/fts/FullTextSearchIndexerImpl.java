@@ -415,7 +415,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     }
 
     /**
-     * @param indexerAndSearcherFactory
+     * @param indexerAndSearcherFactory IndexerAndSearcher
      */
     public void setIndexerAndSearcherFactory(IndexerAndSearcher indexerAndSearcherFactory)
     {
@@ -423,7 +423,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     }
     
     /**
-     * @param transactionService
+     * @param transactionService TransactionService
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -431,7 +431,7 @@ public class FullTextSearchIndexerImpl implements FTSIndexerAware, FullTextSearc
     }
 
     /**
-     * @param args
+     * @param args String[]
      * @throws InterruptedException
      */
     public static void main(String[] args) throws InterruptedException

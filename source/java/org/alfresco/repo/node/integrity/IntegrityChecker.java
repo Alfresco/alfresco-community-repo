@@ -55,7 +55,7 @@ import org.apache.commons.logging.LogFactory;
  * In order to fulfill the contract of the interface, this class registers to receive notifications
  * pertinent to changes in the node structure.  These are then store away in the persistent
  * store until the request to
- * {@link org.alfresco.repo.integrity.IntegrityService#checkIntegrity(String) check integrity} is
+ * check integrity is
  * made.
  * <p>
  * In order to ensure registration of these events, the {@link #init()} method must be called.
@@ -73,10 +73,8 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @see #setPolicyComponent(PolicyComponent)
  * @see #setDictionaryService(DictionaryService)
- * @see #setIntegrityDaoService(IntegrityDaoService)
  * @see #setMaxErrorsPerTransaction(int)
- * @see #setFlushSize(int)
- * 
+ *
  * @author Derek Hulley
  */
 public class IntegrityChecker
@@ -276,7 +274,7 @@ public class IntegrityChecker
     /**
      * Ensures that this service is registered with the transaction and saves the event
      * 
-     * @param event
+     * @param event IntegrityEvent
      */
     @SuppressWarnings("unchecked")
     private void save(IntegrityEvent event)

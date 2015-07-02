@@ -162,7 +162,7 @@ public interface RenditionService extends RenditionDefinitionPersister
      * rendition node, else <code>false</code>. A nodeRef is a rendition node
      * if it has the rn:rendition aspect (or sub-aspect) applied.
      * 
-     * @param node
+     * @param node NodeRef
      * @return <code>true</code> if a rendition, else <code>false</code>
      */
     @NotAuditable

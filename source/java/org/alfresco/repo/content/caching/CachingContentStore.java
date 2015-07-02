@@ -45,8 +45,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
  * CachingContentStore should only be used to wrap content stores that are significantly
  * slower that FileContentStore - otherwise performance may actually degrade from its use.
  * <p>
- * It is important that cacheOnInbound is set to true for exceptionally slow backing stores,
- * e.g. {@link org.alfresco.enterprise.repo.content.xam.XAMContentStore}
+ * It is important that cacheOnInbound is set to true for exceptionally slow backing stores.
  * 
  * @author Matt Ward
  */
@@ -358,8 +357,8 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
      * Get a ReentrantReadWriteLock for a given URL. The lock is from a pool rather than
      * per URL, so some contention is expected.
      *  
-     * @param url
-     * @return
+     * @param url String
+     * @return ReentrantReadWriteLock
      */
     public ReentrantReadWriteLock readWriteLock(String url)
     {
@@ -421,7 +420,7 @@ public class CachingContentStore implements ContentStore, ApplicationEventPublis
     /**
      * Sets the QuotaManagerStrategy that will be used.
      * 
-     * @param quota
+     * @param quota QuotaManagerStrategy
      */
     @Required
     public void setQuota(QuotaManagerStrategy quota)

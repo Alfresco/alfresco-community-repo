@@ -34,7 +34,7 @@ public interface ActionServiceHelper
     /**
      * Implementations should trigger the CreateDownloadArchiveAction on the provided downloadNode
      * 
-     * @param downloadNode
+     * @param downloadNode NodeRef
      */
     void executeAction(NodeRef downloadNode);
 

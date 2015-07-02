@@ -172,7 +172,7 @@ public interface ScriptService
     /**
      * Registers a script processor with the script service
      * 
-     * @param scriptProcessor
+     * @param scriptProcessor ScriptProcessor
      */
     @Auditable(parameters = {"scriptProcessor"})
     public void registerScriptProcessor(ScriptProcessor scriptProcessor);
@@ -188,7 +188,6 @@ public interface ScriptService
      * Add core data-model to provided Map
      * 
      * @param inputMap initial Map of global scope scriptable Node objects
-     * @return A Map of global scope scriptable Node objects
      */
     @Auditable(parameters = {"inputMap"})
     public void buildCoreModel(Map<String, Object> inputMap);

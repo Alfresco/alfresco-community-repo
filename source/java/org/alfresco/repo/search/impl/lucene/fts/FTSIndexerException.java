@@ -41,7 +41,7 @@ public class FTSIndexerException extends RuntimeException
     }
 
     /**
-     * @param message
+     * @param message String
      */
     public FTSIndexerException(String message)
     {
@@ -49,8 +49,8 @@ public class FTSIndexerException extends RuntimeException
     }
 
     /**
-     * @param message
-     * @param cause
+     * @param message String
+     * @param cause Throwable
      */
     public FTSIndexerException(String message, Throwable cause)
     {
@@ -58,7 +58,7 @@ public class FTSIndexerException extends RuntimeException
     }
 
     /**
-     * @param cause
+     * @param cause Throwable
      */
     public FTSIndexerException(Throwable cause)
     {

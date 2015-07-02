@@ -102,7 +102,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the permission service
-     * @param permissionService 
+     * @param permissionService PermissionService
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -129,7 +129,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the name space prefix resolver
-     * @param nspr
+     * @param nspr NamespacePrefixResolver
      */
     public void setNamespacePrefixResolver(NamespacePrefixResolver nspr)
     {
@@ -156,7 +156,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the node service
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -165,7 +165,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the ownable service
-     * @param ownableService
+     * @param ownableService OwnableService
      */
     public void setOwnableService(OwnableService ownableService)
     {
@@ -174,7 +174,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the authentication service
-     * @param authenticationService
+     * @param authenticationService AuthenticationService
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
@@ -183,7 +183,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
 
     /**
      * Set the authority service
-     * @param authorityService
+     * @param authorityService AuthorityService
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -193,7 +193,7 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     
     /**
      * Types and aspects for which we will abstain on voting if they are present.
-     * @param abstainFor
+     * @param abstainFor Set<String>
      */
     public void setAbstainFor(Set<String> abstainFor)
     {

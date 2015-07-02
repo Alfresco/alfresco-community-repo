@@ -164,9 +164,6 @@ public class PublishingEventImpl implements PublishingEvent
         return statusUpdate;
     }
 
-    /**
-    * {@inheritDoc}
-    */
     public MutablePublishingEvent edit()
     {
         return new MutablePublishingEventImpl(this);

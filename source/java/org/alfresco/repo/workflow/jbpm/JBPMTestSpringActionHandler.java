@@ -38,7 +38,7 @@ public class JBPMTestSpringActionHandler extends JBPMSpringActionHandler
 
     /**
      * Setter accessible from jBPM jPDL
-     * @param value
+     * @param value String
      */
     public void setValue(String value)
     {

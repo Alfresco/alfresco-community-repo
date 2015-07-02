@@ -53,7 +53,7 @@ public abstract class AbstractCacheFactory<K extends Serializable, V> implements
      * For example, for a cache named cache.ticketsCache the property cache.ticketsCache.maxItems
      * will determine the capacity of the cache.
      * 
-     * @param properties
+     * @param properties Properties
      */
     public void setProperties(Properties properties)
     {

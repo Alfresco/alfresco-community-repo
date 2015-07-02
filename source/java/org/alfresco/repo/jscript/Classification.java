@@ -66,8 +66,8 @@ public final class Classification extends BaseScopableProcessorExtension
     /**
      * Find all the category nodes in a given classification.
      * 
-     * @param aspect
-     * @return
+     * @param aspect String
+     * @return Scriptable
      */
     public Scriptable getAllCategoryNodes(String aspect)
     {
@@ -79,7 +79,7 @@ public final class Classification extends BaseScopableProcessorExtension
     /**
      * Get all the aspects that define a classification.
      * 
-     * @return
+     * @return String[]
      */
     public String[] getAllClassificationAspects()
     {
@@ -96,8 +96,8 @@ public final class Classification extends BaseScopableProcessorExtension
     /**
      * Create a root category in a classification.
      * 
-     * @param aspect
-     * @param name
+     * @param aspect String
+     * @param name String
      */
     public CategoryNode createRootCategory(String aspect, String name)
     {
@@ -128,8 +128,8 @@ public final class Classification extends BaseScopableProcessorExtension
     /**
      * Get the root categories in a classification.
      * 
-     * @param aspect
-     * @return
+     * @param aspect String
+     * @return Scriptable
      */
     public Scriptable getRootCategories(String aspect)
     {
@@ -141,9 +141,9 @@ public final class Classification extends BaseScopableProcessorExtension
     /**
      * Get the category usage count.
      * 
-     * @param aspect
-     * @param maxCount
-     * @return
+     * @param aspect String
+     * @param maxCount int
+     * @return Scriptable
      */
     public Scriptable getCategoryUsage(String aspect, int maxCount)
     {

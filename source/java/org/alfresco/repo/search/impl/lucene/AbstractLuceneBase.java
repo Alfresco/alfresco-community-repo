@@ -86,9 +86,9 @@ public abstract class AbstractLuceneBase
     /**
      * Initialise the configuration elements of the lucene store indexers and searchers.
      * 
-     * @param store
-     * @param deltaId
-     * @throws IOException
+     * @param store StoreRef
+     * @param deltaId String
+     * @throws LuceneIndexException
      */
     protected void initialise(StoreRef store, String deltaId)
             throws LuceneIndexException
@@ -142,7 +142,7 @@ public abstract class AbstractLuceneBase
      * Get a searcher for the main index TODO: Split out support for the main index. We really only need this if we want to search over the changing index before it is committed
      * 
      * @return - the searcher
-     * @throws IOException
+     * @throws LuceneIndexException
      */
 
     protected IndexSearcher getSearcher() throws LuceneIndexException
@@ -280,7 +280,7 @@ public abstract class AbstractLuceneBase
 
     /**
      * Set the dictionary service
-     * @param dictionaryService
+     * @param dictionaryService DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -300,7 +300,7 @@ public abstract class AbstractLuceneBase
     /**
      * Set the lucene configuration options
      * 
-     * @param config
+     * @param config LuceneConfig
      */
     public void setLuceneConfig(LuceneConfig config)
     {
@@ -330,9 +330,9 @@ public abstract class AbstractLuceneBase
 
     /**
      * Execute actions against a read only index (all write ops will block)
-     * 
-     * @param <R>
-     * @param lockWork
+     *
+     * @param lockWork LockWork<R>
+     * @param <R> R
      * @return - the result returned by the action.
      */
     public <R> R doReadOnly(LockWork<R> lockWork)

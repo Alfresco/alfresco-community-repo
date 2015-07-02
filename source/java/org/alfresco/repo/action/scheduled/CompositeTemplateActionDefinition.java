@@ -49,7 +49,7 @@ public class CompositeTemplateActionDefinition extends AbstractTemplateActionDef
     /**
      * Set the action templates - IOC.
      * 
-     * @param templateActionDefinitions
+     * @param templateActionDefinitions List<TemplateActionDefinition>
      */
     public void setTemplateActionDefinitions(List<TemplateActionDefinition> templateActionDefinitions)
     {
@@ -69,7 +69,7 @@ public class CompositeTemplateActionDefinition extends AbstractTemplateActionDef
 
     /**
      * Build the composite action in the context of the given node.
-     * @param nodeRef 
+     * @param nodeRef  NodeRef
      * @return - the contextualised action.
      * 
      */

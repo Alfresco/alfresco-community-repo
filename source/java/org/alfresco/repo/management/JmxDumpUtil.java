@@ -164,7 +164,7 @@ public class JmxDumpUtil
      * Adds a Linux version
      * 
      * @param osName os.name attribute
-     * @return
+     * @return String
      */
     public static String updateOSNameAttributeForLinux(String osName)
     {

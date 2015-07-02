@@ -43,7 +43,7 @@ public class Session extends BaseTemplateProcessorExtension
     /**
      * Get the current authentication ticket.
      * 
-     * @return
+     * @return String
      */
     public String getTicket()
     {

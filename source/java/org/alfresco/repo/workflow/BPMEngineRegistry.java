@@ -238,9 +238,9 @@ public class BPMEngineRegistry
      * Returns <code>true</code> if the globalId parameter is a valid global Id
      * for the given engineId.
      * 
-     * @param globalId
-     * @param engineId
-     * @return
+     * @param globalId String
+     * @param engineId String
+     * @return boolean
      */
     public static boolean isGlobalId(String globalId, String engineId)
     {

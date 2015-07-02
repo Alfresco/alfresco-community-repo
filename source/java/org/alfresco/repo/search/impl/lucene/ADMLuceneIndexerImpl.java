@@ -180,7 +180,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     /**
      * IOC setting of the node service
      * 
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -190,7 +190,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     /**
      * IOC setting of the tenant service
      * 
-     * @param tenantService
+     * @param tenantService TenantService
      */
     public void setTenantService(TenantService tenantService)
     {
@@ -200,7 +200,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     /**
      * IOC setting of the content service
      * 
-     * @param contentService
+     * @param contentService ContentService
      */
     public void setContentService(ContentService contentService)
     {
@@ -209,7 +209,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
 
     /**
      * Setter of the transformer debug. 
-     * @param transformerDebug
+     * @param transformerDebug TransformerDebug
      */
     public void setTransformerDebug(TransformerDebug transformerDebug)
     {
@@ -475,9 +475,9 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     /**
      * Generate an indexer
      * 
-     * @param storeRef
-     * @param deltaId
-     * @param config
+     * @param storeRef StoreRef
+     * @param deltaId String
+     * @param config LuceneConfig
      * @return - the indexer instance
      * @throws LuceneIndexException
      */
@@ -613,8 +613,8 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
         /**
          * Helper class to hold two related objects
          * 
-         * @param first
-         * @param second
+         * @param first F
+         * @param second S
          */
         public Pair(F first, S second)
         {
@@ -1970,7 +1970,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
     /**
      * Does the node type or any applied aspect allow this node to have child associations?
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @return true if the node may have children
      */
     private boolean mayHaveChildren(NodeRef nodeRef)

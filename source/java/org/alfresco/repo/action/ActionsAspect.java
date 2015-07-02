@@ -114,8 +114,8 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
     /**
      * On add aspect policy behaviour
      * 
-     * @param nodeRef
-     * @param aspectTypeQName
+     * @param nodeRef NodeRef
+     * @param aspectTypeQName QName
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
@@ -135,7 +135,7 @@ public class ActionsAspect implements CopyServicePolicies.OnCopyNodePolicy, Copy
     }
     
     /**
-     * @return              Returns {@link ActionsAspectCopyBehaviourCallback}
+     * @return              Returns {@code ActionsAspectCopyBehaviourCallback}
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

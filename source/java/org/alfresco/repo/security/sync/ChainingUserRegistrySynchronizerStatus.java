@@ -61,14 +61,14 @@ public interface ChainingUserRegistrySynchronizerStatus
   
     /**
      * Get the date/time that the last user/person update completed
-     * @param zoneId
+     * @param zoneId String
      * @return date or null if sync has never completed
      */
     public Date getSynchronizationLastUserUpdateTime(String zoneId);
     
     /**
      * Get the date/time that the last group update completed
-     * @param zoneId
+     * @param zoneId String
      * @return date or null if sync has never completed
      */
     public Date getSynchronizationLastGroupUpdateTime(String zoneId);
@@ -89,7 +89,7 @@ public interface ChainingUserRegistrySynchronizerStatus
 
     /**
      * 
-     * @return
+     * @return String
      */
     public String getSynchronizationStatus();
 

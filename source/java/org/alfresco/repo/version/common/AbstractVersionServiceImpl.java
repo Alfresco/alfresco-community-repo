@@ -195,8 +195,8 @@ public abstract class AbstractVersionServiceImpl
 		
 	/**
 	 * How should revert deal with this aspect?
-	 * @param aspectName
-	 * @param revertDetails
+	 * @param aspectName QName
+	 * @param revertDetails VersionRevertDetails
 	 * @return the action to be taken
 	 */
 	protected RevertAspectAction getRevertAspectAction(QName aspectName,  VersionRevertDetails revertDetails)
@@ -221,9 +221,9 @@ public abstract class AbstractVersionServiceImpl
 	
 	/**
 	 * How should revert deal with this association
-	 * @param className
-	 * @param assocName
-	 * @param revertDetails
+	 * @param className QName
+	 * @param assocName QName
+	 * @param revertDetails VersionRevertDetails
 	 * @return the action to be taken
 	 */
 	protected RevertAssocAction getRevertAssocAction(QName className, QName assocName,  VersionRevertDetails revertDetails)
@@ -249,10 +249,10 @@ public abstract class AbstractVersionServiceImpl
 	/**
 	 * Invokes the on create version policy behaviour for a given type 
 	 * 
-	 * @param classRef
-	 * @param nodeDetails
-	 * @param nodeRef
-	 * @param versionProperties
+	 * @param classRef QName
+	 * @param nodeDetails NodeRef
+	 * @param nodeRef Map<String, Serializable>
+	 * @param versionProperties PolicyScope
 	 */
 	private void invokeOnCreateVersion(
 			QName classRef,
@@ -283,9 +283,10 @@ public abstract class AbstractVersionServiceImpl
 	 * Default implementation of the on create version policy.
 	 * Override if you wish to supply your own policy.
 	 * 
-	 * @param nodeRef
-	 * @param versionProperties
-	 * @param nodeDetails
+	 * @param classRef QName
+	 * @param nodeRef NodeRef
+	 * @param versionProperties Map<String, Serializable>
+	 * @param nodeDetails PolicyScope
 	 */
 	abstract protected void defaultOnCreateVersion(
 			QName classRef,
@@ -296,11 +297,11 @@ public abstract class AbstractVersionServiceImpl
 	/**
 	 * Invoke the calculate version label policy behaviour
 	 * 
-	 * @param classRef
-	 * @param preceedingVersion
-	 * @param versionNumber
-	 * @param versionProperties
-	 * @return
+	 * @param classRef QName
+	 * @param preceedingVersion Version
+	 * @param versionNumber int
+	 * @param versionProperties Map<String, Serializable>
+	 * @return String
 	 */
 	protected String invokeCalculateVersionLabel(
 			QName classRef,

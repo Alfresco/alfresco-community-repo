@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
 /**
- * Makes use of the {@link http://sourceforge.net/projects/joott/JOOConverter} library to perform 
+ * Makes use of the <a href="http://sourceforge.net/projects/joott/JOOConverter">JOOConverter</a> library to perform
  *  OpenOffice-driven conversions.
  * This requires that OpenOffice be running, but delivers a wider range of transformations
  *  than Tika is able to (Tika just translates into Text, HTML and XML)

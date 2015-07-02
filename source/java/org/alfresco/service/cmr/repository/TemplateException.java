@@ -28,7 +28,7 @@ public class TemplateException extends AlfrescoRuntimeException
     private static final long serialVersionUID = 2863142603098852564L;
 
     /**
-     * @param msgId
+     * @param msgId String
      */
     public TemplateException(String msgId)
     {
@@ -36,8 +36,8 @@ public class TemplateException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId
-     * @param cause
+     * @param msgId String
+     * @param cause Throwable
      */
     public TemplateException(String msgId, Throwable cause)
     {
@@ -45,8 +45,8 @@ public class TemplateException extends AlfrescoRuntimeException
     }
     
     /**
-     * @param msgId
-     * @param params
+     * @param msgId String
+     * @param params Object[]
      */
     public TemplateException(String msgId, Object[] params)
     {
@@ -54,9 +54,9 @@ public class TemplateException extends AlfrescoRuntimeException
     }
     
     /**
-     * @param msgId
-     * @param msgParams
-     * @param cause
+     * @param msgId String
+     * @param msgParams Object[]
+     * @param cause Throwable
      */
     public TemplateException(String msgId, Object[] msgParams, Throwable cause)
     {

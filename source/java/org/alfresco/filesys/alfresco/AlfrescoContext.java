@@ -380,7 +380,7 @@ public abstract class AlfrescoContext extends DiskDeviceContext
     /**
      * Set the debug flags, also requires the logger to be enabled for debug output
      * 
-     * @param flagsStr
+     * @param flagsStr String
      */
     public final void setDebug(String flagsStr)
     {
@@ -452,22 +452,22 @@ public abstract class AlfrescoContext extends DiskDeviceContext
         super.startFilesystem(share);
     }
 
-    /**
-     * Return the lock manager, if enabled
-     * 
-     * @return LockManager
-     */
     LockManager lockManager;
-    
-    public void setLockManager(LockManager lockManager) 
+
+    public void setLockManager(LockManager lockManager)
     {
         this.lockManager = lockManager;
     }
-    
+
+    /**
+     * Return the lock manager, if enabled
+     *
+     * @return LockManager
+     */
     public LockManager getLockManager() {
         return lockManager;
     }
-    
+
     OpLockManager opLockManager;
     
     /**

@@ -16,8 +16,8 @@ public class EmailDelivery implements Serializable
     /**
      * New Email Delivery Instructions.  Who gets the message and who sent it.
      * Which may be different from the contents of the message.
-     * @param recipient
-     * @param from
+     * @param recipient String
+     * @param from String
      * @param auth - may be null if the email is not authenticated
      */
     public EmailDelivery(String recipient, String from, String auth)

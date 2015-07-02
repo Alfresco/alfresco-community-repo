@@ -51,7 +51,7 @@ public final class JSONtoFmModel
     /**
      * Convert JSON Object string to Freemarker-compatible data model
      * 
-     * @param jsonString
+     * @param jsonString String
      * @return model
      * @throws JSONException
      */
@@ -104,7 +104,7 @@ public final class JSONtoFmModel
     /**
      * Convert JSON Array string to Freemarker-compatible data model
      * 
-     * @param jsonString
+     * @param jsonString String
      * @return model
      * @throws JSONException
      */

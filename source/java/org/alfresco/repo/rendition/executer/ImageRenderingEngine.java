@@ -226,7 +226,7 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
      * This method checks that if the specified parameter is non-null, that it has a
      * positive numerical value. That is it is non-zero and positive.
      * 
-     * @param action
+     * @param action Action
      * @param numericalParamName must be an instance of java.lang.Number or null.
      */
     private void checkNumericalParameterIsPositive(Action action, String numericalParamName)
@@ -243,7 +243,7 @@ public class ImageRenderingEngine extends AbstractTransformationRenderingEngine
     
     /**
      * Check mimeType of target.
-     * @param context
+     * @param context RenderingContext
      */
     private void checkTargetMimeType(RenderingContext context)
     {

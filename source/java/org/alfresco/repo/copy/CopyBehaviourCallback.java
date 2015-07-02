@@ -52,7 +52,7 @@ public interface CopyBehaviourCallback
          * Always copy the association.
          * <br/>
          * Note that this can cause duplicate associations when copying over
-         * {@link CopyAssociationDetails#isTargetNodeIsNew() existing target nodes}.
+         * {@link CopyAssociationDetails#copyTargetIsNew existing target nodes}.
          */
         COPY,
         /**

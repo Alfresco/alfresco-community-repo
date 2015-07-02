@@ -145,9 +145,9 @@ public class ActivitiPooledActorsPropertyHandler extends ActivitiTaskPropertyHan
     /**
      * Returns a DTO containing the users and groups to add and the links to remove.
      * 
-     * @param value
-     * @param links
-     * @return
+     * @param value Serializable
+     * @param links Collection<? extends IdentityLink>
+     * @return UserAndGroupUpdates
      */
     private UserAndGroupUpdates getUserAndGroupUpdates(Serializable value, Collection<? extends IdentityLink> links)
     {

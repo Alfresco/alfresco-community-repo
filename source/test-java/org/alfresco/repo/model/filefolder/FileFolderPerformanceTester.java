@@ -171,9 +171,13 @@ public class FileFolderPerformanceTester extends TestCase
      * Each creation (file or folder) uses the <b>PROPAGATION REQUIRED</b> transaction declaration.
      * 
      * @param parentNodeRef         the level zero parent
+     * @param threadCount
      * @param randomOrder           true if each thread must put the children into the folders in a random order
      * @param realFile              <tt>true</tt> if a real binary must be streamed into the node
-     * @return                      Returns the average time (ms) to create the <b>files only</b>
+     * @return Returns the average time (ms) to create the <b>files only</b>
+     * @param batchCount
+     * @param filesPerBatch
+     * @param dumpPoints
      */
     private void buildStructure(
             final NodeRef parentNodeRef,

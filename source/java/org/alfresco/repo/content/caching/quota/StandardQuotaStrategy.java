@@ -250,7 +250,7 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
     /**
      * Run a non-aggressive clean up job in a new thread.
      * 
-     * @param reason
+     * @param reason String
      */
     private void signalCleanerStart(final String reason)
     {
@@ -260,7 +260,7 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
     /**
      * Run an aggressive clean up job in a new thread.
      * 
-     * @param reason
+     * @param reason String
      */
     private void signalAggressiveCleanerStart(final String reason)
     {
@@ -272,8 +272,8 @@ public class StandardQuotaStrategy implements QuotaManagerStrategy, UsageTracker
      * Will an increase in disk usage of <code>contentSize</code> bytes result in the specified
      * <code>threshold</code> (percentage of maximum allowed usage) being reached or exceeded?
      * 
-     * @param threshold
-     * @param contentSize
+     * @param threshold int
+     * @param contentSize long
      * @return true if additional content will reach <code>threshold</code>.
      */
     private boolean usageWillReach(int threshold, long contentSize)

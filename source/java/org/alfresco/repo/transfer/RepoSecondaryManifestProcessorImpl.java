@@ -58,8 +58,8 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
     private static final Log log = LogFactory.getLog(RepoSecondaryManifestProcessorImpl.class);
 
     /**
-     * @param receiver 
-     * @param transferId
+     * @param receiver TransferReceiver
+     * @param transferId String
      */
     public RepoSecondaryManifestProcessorImpl(TransferReceiver receiver, String transferId)
     {
@@ -117,10 +117,10 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
     /**
      * Process the peer associations
      * 
-     * @param requiredAssocs
-     * @param currentAssocs
-     * @param nodeRef
-     * @param isSource
+     * @param requiredAssocs List<AssociationRef>
+     * @param currentAssocs List<AssociationRef>
+     * @param nodeRef NodeRef
+     * @param isSource boolean
      */
     private void processPeerAssociations(List<AssociationRef> requiredAssocs,
             List<AssociationRef> currentAssocs, 
@@ -316,9 +316,9 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
         
         /**
          * 
-         * @param sourceRef
-         * @param targetRef
-         * @param assocTypeQName
+         * @param sourceRef NodeRef
+         * @param targetRef NodeRef
+         * @param assocTypeQName QName
          */
         public AssociationRefKey(NodeRef sourceRef, NodeRef targetRef, QName assocTypeQName)
         {
@@ -329,7 +329,7 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
         
         /**
          * 
-         * @param ref
+         * @param ref AssociationRef
          */
         public AssociationRefKey(AssociationRef ref)
         {
@@ -341,7 +341,6 @@ public class RepoSecondaryManifestProcessorImpl extends AbstractManifestProcesso
         /**
          * Compares:
          * <ul>
-         * <li>{@link #id}</li>
          * <li>{@link #sourceRef}</li>
          * <li>{@link #targetRef}</li>
          * <li>{@link #assocTypeQName}</li>

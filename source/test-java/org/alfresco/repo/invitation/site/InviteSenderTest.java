@@ -291,7 +291,7 @@ public class InviteSenderTest extends TestCase
     /**
      * Mocks up a Repository that will return the inviter as the current user.
      * 
-     * @return
+     * @return Repository
      */
     private Repository mockRepository()
     {
@@ -301,7 +301,7 @@ public class InviteSenderTest extends TestCase
     }
 
     /**
-     * @return
+     * @return ServiceRegistry
      */
     private ServiceRegistry mockServices()
     {
@@ -360,7 +360,7 @@ public class InviteSenderTest extends TestCase
     /**
      * Mocks up a SiteService that returns appropriate SiteInfo.
      * 
-     * @return
+     * @return SiteService
      */
     private SiteService mockSiteService()
     {
@@ -374,7 +374,7 @@ public class InviteSenderTest extends TestCase
      * Mocks up a SearchService that will return the template NodeRef when
      * queried.
      * 
-     * @return
+     * @return SearchService
      */
     private SearchService mockSearchService()
     {
@@ -393,7 +393,7 @@ public class InviteSenderTest extends TestCase
      * Mocks up a PersonService that returns the correct NodeRef when given a
      * user name.
      * 
-     * @return
+     * @return PersonService
      */
     private PersonService mockPersonService()
     {
@@ -408,7 +408,7 @@ public class InviteSenderTest extends TestCase
     /**
      * Mocks up NodeService to return email adresses for inviter and invitee.
      * 
-     * @return
+     * @return NodeService
      */
     private NodeService mockNodeService()
     {

@@ -418,9 +418,9 @@ public abstract class AbstractMailActionExecuterTest
     /**
      * Creates a test user with the specified username and optionally custom email.
      * 
-     * @param userName
+     * @param userName String
      * @param email Optional, if not specified assigned to <code>userName + "@email.com"</code>
-     * @return
+     * @return NodeRef
      */
     private NodeRef createUser(String userName, String email)
     {
@@ -482,7 +482,8 @@ public abstract class AbstractMailActionExecuterTest
     
     /**
      * Test for MNT-11488
-     * @throws Exception 
+     * @throws IOException
+     * @throws MessagingException
      */
     @Test
     public void testSendingToMultipleUsers() throws IOException, MessagingException

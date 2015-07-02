@@ -221,7 +221,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     
     /**
      * 
-     * @return
+     * @return NodeRef
      */
     private NodeRef checkout()
     {

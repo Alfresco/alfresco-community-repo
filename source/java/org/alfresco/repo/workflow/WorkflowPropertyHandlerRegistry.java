@@ -39,8 +39,8 @@ public class WorkflowPropertyHandlerRegistry
     private final WorkflowQNameConverter qNameConverter;
     
     /**
-     * @param defaultHandler
-     * @param qNameConverter
+     * @param defaultHandler WorkflowPropertyHandler
+     * @param qNameConverter WorkflowQNameConverter
      */
     public WorkflowPropertyHandlerRegistry(WorkflowPropertyHandler defaultHandler, WorkflowQNameConverter qNameConverter)
     {

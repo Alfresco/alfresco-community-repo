@@ -34,8 +34,8 @@ public interface DynamicAuthority
     /**
      * Is this authority granted to the given user for this node ref?
      * 
-     * @param nodeRef
-     * @param userName
+     * @param nodeRef NodeRef
+     * @param userName String
      * @return true if the current user has the authority
      */
     public boolean hasAuthority(NodeRef nodeRef, String userName);

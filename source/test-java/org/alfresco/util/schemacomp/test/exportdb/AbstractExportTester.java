@@ -85,8 +85,8 @@ public abstract class AbstractExportTester
      * Check that all top level database objects are prefixed as expected
      * (no other objects should have been retrieved)
      * 
-     * @param schema
-     * @param prefix
+     * @param schema Schema
+     * @param prefix String
      */
     protected void checkResultsFiltered(Schema schema, String prefix)
     {

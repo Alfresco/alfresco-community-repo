@@ -93,7 +93,7 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
     /** 
      * Set the template model factory IOC.
      * 
-     * @param templateActionModelFactory
+     * @param templateActionModelFactory TemplateActionModelFactory
      */
     public void setTemplateActionModelFactory(TemplateActionModelFactory templateActionModelFactory)
     {
@@ -113,7 +113,7 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
     /**
      * Set the dictionary service - IOC.
      * 
-     * @param dictionaryService
+     * @param dictionaryService DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -123,7 +123,7 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
     /**
      * Set the name of the action.
      * 
-     * @param actionName
+     * @param actionName String
      */
     public void setActionName(String actionName)
     {
@@ -144,7 +144,7 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
      * Set the map of parameters used by the template.
      * These are processed via the template service to produce the actual poarameters.
      * 
-     * @param parameterTemplates
+     * @param parameterTemplates Map<String, String>
      */
     public void setParameterTemplates(Map<String, String> parameterTemplates)
     {

@@ -104,8 +104,8 @@ public class XSLTFunctions
     }
 
     /**
-     * @param repoPath
-     * @return
+     * @param repoPath String
+     * @return String[]
      */
     private String[] breakDownPath(String repoPath)
     {
@@ -121,7 +121,7 @@ public class XSLTFunctions
      * Encodes invalid HTML characters. (Fix for ETWOTWO-504 issue) This code was adopted from WebDAVHelper.encodeHTML()
      * method with some restrictions.
      * 
-     * @see press-release.xsl for pattern.
+     * @see "press-release.xsl" for pattern
      * 
      * @param text
      *            to encode

@@ -183,11 +183,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * 
      * @param inviteeUserName Alfresco user name of the invitee
      * @param resourceType resourceType
-     * @param resourceName
-     * @param inviteeRole
-     * @param serverPath
-     * @param acceptUrl
-     * @param rejectUrl
+     * @param resourceName String
+     * @param inviteeRole String
+     * @param serverPath String
+     * @param acceptUrl String
+     * @param rejectUrl String
      * @return the nominated invitation which will contain the invitationId and
      *         ticket which will uniqely identify this invitation for the rest
      *         of the workflow.
@@ -216,10 +216,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * 
      * @param inviteeUserName Alfresco user name of the invitee
      * @param resourceType resourceType
-     * @param resourceName
-     * @param inviteeRole
-     * @param acceptUrl
-     * @param rejectUrl
+     * @param resourceName String
+     * @param inviteeRole String
+     * @param acceptUrl String
+     * @param rejectUrl String
      * @return the nominated invitation which will contain the invitationId and
      *         ticket which will uniqely identify this invitation for the rest
      *         of the workflow.
@@ -247,15 +247,14 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Start the invitation process for a NominatedInvitation
      * 
-     * @param inviteeFirstName
-     * @param inviteeLastName
-     * @param inviteeEmail
-     * @param inviteeEmail
+     * @param inviteeFirstName String
+     * @param inviteeLastName String
+     * @param inviteeEmail String
      * @param resourceType Invitation.ResourceType
-     * @param resourceName
-     * @param inviteeRole
-     * @param acceptUrl
-     * @param rejectUrl
+     * @param resourceName String
+     * @param inviteeRole String
+     * @param acceptUrl String
+     * @param rejectUrl String
      * @return the nominated invitation which will contain the invitationId and
      *         ticket which will uniqely identify this invitation for the rest
      *         of the workflow.
@@ -274,15 +273,15 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Start the invitation process for a NominatedInvitation
      * 
-     * @param inviteeFirstName
-     * @param inviteeLastName
-     * @param inviteeEmail
-     * @param resourceType
-     * @param resourceName
-     * @param inviteeRole
-     * @param serverPath
-     * @param acceptUrl
-     * @param rejectUrl
+     * @param inviteeFirstName String
+     * @param inviteeLastName String
+     * @param inviteeEmail String
+     * @param resourceType Invitation.ResourceTyp
+     * @param resourceName String
+     * @param inviteeRole String
+     * @param serverPath String
+     * @param acceptUrl String
+     * @param rejectUrl String
      * @return the nominated invitation which will contain the invitationId and
      *         ticket which will uniqely identify this invitation for the rest
      *         of the workflow.
@@ -427,7 +426,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * User or moderator rejects this request
      * 
-     * @param invitationId
+     * @param invitationId String
      * @param reason , optional reason for rejection
      */
     public Invitation reject(String invitationId, String reason)
@@ -718,8 +717,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * list Invitations for a specific resource
      * 
-     * @param resourceType
-     * @param resourceName
+     * @param resourceType Invitation.ResourceType
+     * @param resourceName String
      */
     public List<Invitation> listPendingInvitationsForResource(Invitation.ResourceType resourceType, String resourceName)
     {
@@ -729,8 +728,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     /**
      * Returns search criteria to find pending invitations
-     * @param resourceType
-     * @param resourceName
+     * @param resourceType Invitation.ResourceType
+     * @param resourceName String
      * @return search criteria
      */
     private InvitationSearchCriteriaImpl getPendingInvitationCriteriaForResource(
@@ -746,7 +745,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * This is the general search invitation method returning {@link Invitation}s
      * 
-     * @param criteria
+     * @param criteria InvitationSearchCriteria
      * @return the list of start tasks for invitations
      */
     public List<Invitation> searchInvitation(final InvitationSearchCriteria criteria)
@@ -777,7 +776,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * This is a general search invitation method returning IDs
      * 
-     * @param criteria
+     * @param criteria InvitationSearchCriteria
      * @param limit maximum number of IDs to return. If less than 1, there is no limit. 
      * @return the list of invitation IDs (the IDs of the invitations not the IDs of the invitation start tasks)
      */
@@ -819,9 +818,9 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     /**
      * Fix for ALF-2598
-     * @param invitation
-     * @param criteria
-     * @return
+     * @param invitation Invitation
+     * @param criteria InvitationSearchCriteria
+     * @return boolean
      */
     private boolean invitationMatches(Invitation invitation, InvitationSearchCriteria criteria)
     {
@@ -984,7 +983,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Set the workflow service
      * 
-     * @param workflowService
+     * @param workflowService WorkflowService
      */
     public void setWorkflowService(WorkflowService workflowService)
     {
@@ -1164,7 +1163,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
      * Creates a disabled user account for the given invitee user name with a
      * generated password
      * 
-     * @param inviteeUserName
+     * @param inviteeUserName String
      * @return password generated for invitee user account
      */
     private String createInviteeDisabledAccount(String inviteeUserName)
@@ -1491,7 +1490,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Return Activiti workflow definition unless Activiti engine is disabled.
      * @param isNominated TODO
-     * @return
+     * @return WorkflowDefinition
      */
     private WorkflowDefinition getWorkflowDefinition(boolean isNominated)
     {
@@ -1553,7 +1552,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     /**
      * Validator for invitationId
      * 
-     * @param invitationId
+     * @param invitationId String
      */
     private void validateInvitationId(String invitationId)
     {

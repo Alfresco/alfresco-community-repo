@@ -30,9 +30,9 @@ public interface FTSIndexerAware
     /**
      * Call back used by the background indexer 
      * 
-     * @param storeRef
-     * @param remaining
-     * @param t
+     * @param storeRef StoreRef
+     * @param remaining int
+     * @param t Throwable
      */
     public void indexCompleted(StoreRef storeRef, int remaining, Throwable t);   
 }

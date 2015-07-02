@@ -116,7 +116,6 @@ public class DownloadStatus implements Serializable
 	
     /**
      * @return the number of files added to the download archive
-     * @return
      */
     public long getFilesAdded()
     {

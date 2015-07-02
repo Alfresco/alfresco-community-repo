@@ -41,7 +41,7 @@ public class RuleTransactionListener extends TransactionListenerAdapter
 	/**
 	 * Constructor
 	 * 
-	 * @param 
+	 * @param ruleService RuntimeRuleService
 	 */
 	public RuleTransactionListener(RuntimeRuleService ruleService)
 	{

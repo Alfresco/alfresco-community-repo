@@ -32,8 +32,8 @@ public class DBResultSetRow extends AbstractResultSetRow
 {
 
     /**
-     * @param resultSet
-     * @param index
+     * @param resultSet ResultSet
+     * @param index int
      */
     public DBResultSetRow(ResultSet resultSet, int index)
     {

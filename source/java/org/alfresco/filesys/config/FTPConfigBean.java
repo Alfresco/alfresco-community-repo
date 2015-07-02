@@ -157,7 +157,7 @@ public class FTPConfigBean
 
     /**
      * Gets the sesion timeout
-     * @return
+     * @return Integer
      */
     public Integer getSessionTimeout()
     {

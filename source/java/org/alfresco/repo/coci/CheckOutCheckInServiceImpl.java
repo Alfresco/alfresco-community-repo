@@ -271,9 +271,9 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
      * Invoke before check in policy
      * 
      * @param workingCopyNodeRef            the current working copy to check in
-     * @param versionProperties             
-     * @param contentUrl
-     * @param keepCheckedOut
+     * @param versionProperties Map<String,Serializable>
+     * @param contentUrl String
+     * @param keepCheckedOut boolean
      */
     private void invokeBeforeCheckIn(
             NodeRef workingCopyNodeRef,
@@ -795,9 +795,9 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
      * <p>
      * Example: "" becomes "wc".
      * 
-     * @param name
-     * @param workingCopyLabel
-     * @return
+     * @param name String
+     * @param workingCopyLabel String
+     * @return String
      */
     public static String createWorkingCopyName(String name, final String workingCopyLabel)
     {
@@ -834,7 +834,8 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
      * Get original name from the working copy name and the cm:workingCopyLabel
      * that was used to create it.
      * 
-     * @param workingCopyLabel
+     * @param workingCopyName String
+     * @param workingCopyLabel String
      * @return  original name
      */
     private String getNameFromWorkingCopyName(String workingCopyName, String workingCopyLabel)

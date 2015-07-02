@@ -39,7 +39,7 @@ public class MimetypeParameterConstraint extends BaseParameterConstraint
     /**
      * Sets the mimetype map
      * 
-     * @param mimetypeMap
+     * @param mimetypeMap MimetypeMap
      */
     public void setMimetypeMap(MimetypeMap mimetypeMap)
     {

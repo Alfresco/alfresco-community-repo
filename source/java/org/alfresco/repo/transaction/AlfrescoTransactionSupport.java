@@ -142,7 +142,7 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * 
      * @return true => changes are pending
      * 
-     * @deprecated  To be replaced by {@link DirtySessionMethodInterceptor}
+     * @deprecated  To be replaced by {@code DirtySessionMethodInterceptor}
      */
     public static boolean isDirty() 
     {
@@ -182,7 +182,7 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * This method can be called repeatedly as long as the service being bound
      * implements <tt>equals</tt> and <tt>hashCode</tt>.
      * 
-     * @param daoService
+     * @param daoService TransactionalDao
      */
     public static void bindDaoService(TransactionalDao daoService)
     {
@@ -206,7 +206,7 @@ public abstract class AlfrescoTransactionSupport extends TransactionSupportUtil
      * This method can be called repeatedly as long as the service being bound
      * implements <tt>equals</tt> and <tt>hashCode</tt>.
      * 
-     * @param integrityChecker
+     * @param integrityChecker IntegrityChecker
      */
     public static void bindIntegrityChecker(IntegrityChecker integrityChecker)
     {

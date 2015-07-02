@@ -21,15 +21,15 @@ public interface WarHelper
     /**
      * Gets the module details or an available alias
      * @param war   a valid war file or exploded directory from a war
-     * @param installingModuleDetails
+     * @param installingModuleDetails ModuleDetails
      * @return ModuleDetails
      */
     public ModuleDetails getModuleDetailsOrAlias(TFile war, ModuleDetails installingModuleDetails);
     
     /**
      * Checks the dependencies of this module
-     * @param war
-     * @param installingModuleDetails
+     * @param war TFile
+     * @param installingModuleDetails ModuleDetails
      */
     public void checkModuleDependencies(TFile war, ModuleDetails installingModuleDetails);
      
@@ -45,7 +45,7 @@ public interface WarHelper
      * If not module edition is specfied then it will just return.  However, if an edition is specified and it doesn't match
      * then an error is thrown.
      * @param war   a valid war file or exploded directory from a war
-     * @param installingModuleDetails
+     * @param installingModuleDetails ModuleDetails
      */
     public void checkCompatibleEdition(TFile war, ModuleDetails installingModuleDetails);
 
@@ -54,7 +54,7 @@ public interface WarHelper
      * Returns true if the Share war manifest states its a share war.
      * @since 3.4.11,4.1.1,Community 4.2
      * 
-     * @param war
+     * @param war TFile
      * @return boolean - true if it is a share war
      */
 	public boolean isShareWar(TFile war);

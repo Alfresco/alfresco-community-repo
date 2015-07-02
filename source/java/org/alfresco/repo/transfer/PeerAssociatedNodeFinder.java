@@ -112,8 +112,8 @@ public class PeerAssociatedNodeFinder extends AbstractNodeFinder
     }
 
     /**
-     * @param thisNode
-     * @return
+     * @param thisNode NodeRef
+     * @return Set<NodeRef>
      */
     private Set<NodeRef> processExcludedSet(NodeRef thisNode)
     {

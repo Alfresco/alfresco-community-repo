@@ -55,30 +55,30 @@ public interface BlogIntegrationImplementation
     /**
      * Update an exisiting blog post
      * 
-     * @param blogDetails
-     * @param postId
-     * @param title
-     * @param body
-     * @param publish
-     * @return
+     * @param blogDetails BlogDetails
+     * @param postId String
+     * @param title String
+     * @param body String
+     * @param publish boolean
+     * @return boolean
      */
     boolean updatePost(BlogDetails blogDetails, String postId, String title, String body, boolean publish);
     
     /**
      * Get the details of an existing blog post
      * 
-     * @param blogDetails
-     * @param postId
-     * @return
+     * @param blogDetails BlogDetails
+     * @param postId String
+     * @return Map
      */
     Map<String, Object> getPost(BlogDetails blogDetails, String postId);
     
     /**
      * Delete an existing blog post
      * 
-     * @param blogDetails
-     * @param postId
-     * @return
+     * @param blogDetails BlogDetails
+     * @param postId String
+     * @return boolean
      */
     boolean deletePost(BlogDetails blogDetails, String postId);
 }

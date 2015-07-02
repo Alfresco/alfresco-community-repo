@@ -49,10 +49,9 @@ public class ParentContext extends ElementContext
     /**
      * Construct
      * 
-     * @param elementName
-     * @param dictionary
-     * @param elementName
-     * @param importer
+     * @param elementName QName
+     * @param dictionary DictionaryService
+     * @param importer Importer
      */
     public ParentContext(QName elementName, DictionaryService dictionary, Importer importer)
     {
@@ -64,8 +63,8 @@ public class ParentContext extends ElementContext
     /**
      * Construct (with unknown child association) 
      * 
-     * @param elementName
-     * @param parent
+     * @param elementName QName
+     * @param parent NodeContext
      */
     public ParentContext(QName elementName, NodeContext parent)
     {
@@ -76,9 +75,9 @@ public class ParentContext extends ElementContext
     /**
      * Construct 
      * 
-     * @param elementName
-     * @param parent
-     * @param assocDef
+     * @param elementName QName
+     * @param parent NodeContext
+     * @param assocDef AssociationDefinition
      */
     public ParentContext(QName elementName, NodeContext parent, AssociationDefinition assocDef)
     {

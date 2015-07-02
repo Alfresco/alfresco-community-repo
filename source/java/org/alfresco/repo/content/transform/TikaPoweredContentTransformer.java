@@ -175,7 +175,7 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
     /**
      * Sets the document selector, used for determining whether to parse embedded resources.
      * 
-     * @param documentSelector
+     * @param documentSelector DocumentSelector
      */
     public void setDocumentSelector(DocumentSelector documentSelector)
     {
@@ -185,9 +185,9 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
      * Gets the document selector, used for determining whether to parse embedded resources, 
      * null by default so parse all.
      * 
-     * @param metadata
-     * @param targetMimeType
-     * @param options
+     * @param metadata Metadata
+     * @param targetMimeType String
+     * @param options TransformationOptions
      * @return the document selector
      */
     protected DocumentSelector getDocumentSelector(Metadata metadata, String targetMimeType, TransformationOptions options)

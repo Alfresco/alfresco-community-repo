@@ -560,8 +560,9 @@ public class IndexInfo implements IndexMonitor
     /**
      * Get the IndexInfo object based in the given directory. There is only one object per directory per JVM.
      * 
-     * @param file
-     * @return
+     * @param file File
+     * @param config LuceneConfig
+     * @return IndexInfo
      * @throws IndexerException
      */
     public static synchronized IndexInfo getIndexInfo(File file, LuceneConfig config) throws IndexerException
@@ -597,7 +598,8 @@ public class IndexInfo implements IndexMonitor
     /**
      * Construct an index in the given directory.
      * 
-     * @param indexDirectory
+     * @param indexDirectory File
+     * @param config LuceneConfig
      */
     private IndexInfo(File indexDirectory, LuceneConfig config)
     {
@@ -963,8 +965,8 @@ public class IndexInfo implements IndexMonitor
     /**
      * This method should only be called from one thread as it is bound to a transaction.
      * 
-     * @param id
-     * @return
+     * @param id String
+     * @return IndexReader
      * @throws IOException
      */
     public IndexReader getDeltaIndexReader(String id) throws IOException
@@ -1016,8 +1018,8 @@ public class IndexInfo implements IndexMonitor
     /**
      * The delta information does not need to be saved to disk.
      * 
-     * @param id
-     * @return
+     * @param id String
+     * @return File
      * @throws IOException
      */
     private File ensureDeltaIsRegistered(String id) throws IOException
@@ -1066,9 +1068,9 @@ public class IndexInfo implements IndexMonitor
     /**
      * Make a lucene index writer
      * 
-     * @param location
-     * @param analyzer
-     * @return
+     * @param location File
+     * @param analyzer Analyzer
+     * @return IndexWriter
      * @throws IOException
      */
     private IndexWriter makeDeltaIndexWriter(File location, Analyzer analyzer) throws IOException
@@ -1100,9 +1102,9 @@ public class IndexInfo implements IndexMonitor
      * Manage getting a lucene index writer for transactional data - looks after registration and checking there is no
      * active reader.
      * 
-     * @param id
-     * @param analyzer
-     * @return
+     * @param id String
+     * @param analyzer Analyzer
+     * @return IndexWriter
      * @throws IOException
      */
     public IndexWriter getDeltaIndexWriter(String id, Analyzer analyzer) throws IOException
@@ -1128,7 +1130,7 @@ public class IndexInfo implements IndexMonitor
     /**
      * Manage closing and unregistering an index reader.
      * 
-     * @param id
+     * @param id String
      * @throws IOException
      */
     public void closeDeltaIndexReader(String id) throws IOException
@@ -1150,7 +1152,7 @@ public class IndexInfo implements IndexMonitor
     /**
      * Manage closing and unregistering an index writer .
      * 
-     * @param id
+     * @param id String
      * @throws IOException
      */
     public void closeDeltaIndexWriter(String id) throws IOException
@@ -1172,7 +1174,7 @@ public class IndexInfo implements IndexMonitor
     /**
      * Make sure the writer and reader for TX data are closed.
      * 
-     * @param id
+     * @param id String
      * @throws IOException
      */
     public void closeDelta(String id) throws IOException
@@ -1188,8 +1190,8 @@ public class IndexInfo implements IndexMonitor
     /**
      * Get the deletions for a given index (there is no check if they should be applied that is up to the calling layer)
      * 
-     * @param id
-     * @return
+     * @param id String
+     * @return Set<String>
      * @throws IOException
      */
     public Set<String> getDeletions(String id) throws IOException
@@ -1200,8 +1202,9 @@ public class IndexInfo implements IndexMonitor
     /**
      * Get the deletions for a given index (there is no check if they should be applied that is up to the calling layer)
      * 
-     * @param id
-     * @return
+     * @param id String
+     * @param fileName String
+     * @return Set<String>
      * @throws IOException
      */
     private Set<String> getDeletions(String id, String fileName) throws IOException
@@ -1291,8 +1294,9 @@ public class IndexInfo implements IndexMonitor
     }
 
     /**
-     * @param id
-     * @param toDelete
+     * @param id String
+     * @param toDelete Set<String>
+     * @param fileName String
      * @throws IOException
      * @throws FileNotFoundException
      */
@@ -1350,7 +1354,7 @@ public class IndexInfo implements IndexMonitor
     /**
      * Get the main reader for committed index data
      * 
-     * @return
+     * @return IndexReader
      * @throws IOException
      */
     public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader() throws IOException
@@ -1441,10 +1445,11 @@ public class IndexInfo implements IndexMonitor
     /**
      * Get the main index reader augmented with the specified TX data As above but we add the TX data
      * 
-     * @param id
-     * @param deletions
-     * @param deleteOnlyNodes
-     * @return
+     * @param id String
+     * @param deletions Set<String>
+     * @param containerDeletions Set<String>
+     * @param deleteOnlyNodes boolean
+     * @return IndexReader
      * @throws IOException
      */
     public IndexReader getMainIndexReferenceCountingReadOnlyIndexReader(String id, Set<String> deletions, Set<String> containerDeletions, boolean deleteOnlyNodes) throws IOException
@@ -2875,7 +2880,7 @@ public class IndexInfo implements IndexMonitor
     /**
      * Helper to print out index information
      * 
-     * @param args
+     * @param args String[]
      * @throws Throwable
      */
     public static void main(String[] args) throws Throwable

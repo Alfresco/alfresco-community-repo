@@ -56,7 +56,7 @@ public class ImportTimerProgress implements ImporterProgress
     /**
      * Construct
      * 
-     * @param logger
+     * @param logger Log
      */
     public ImportTimerProgress(Log logger)
     {
@@ -168,7 +168,7 @@ public class ImportTimerProgress implements ImporterProgress
     /**
      * Dump statistics 
      * 
-     * @param end
+     * @param end Date
      */
     private void dumpStats(Date end)
     {

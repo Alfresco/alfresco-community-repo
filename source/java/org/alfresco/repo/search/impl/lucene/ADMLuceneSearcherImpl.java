@@ -89,9 +89,9 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
      * Get an initialised searcher for the store and transaction Normally we do not search against a a store and delta.
      * Currently only gets the searcher against the main index.
      * 
-     * @param storeRef
-     * @param indexer
-     * @param config
+     * @param storeRef StoreRef
+     * @param indexer LuceneIndexer
+     * @param config LuceneConfig
      * @return - the searcher implementation
      */
     public static ADMLuceneSearcherImpl getSearcher(StoreRef storeRef, LuceneIndexer indexer, LuceneConfig config)
@@ -113,8 +113,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     /**
      * Get an intialised searcher for the store. No transactional ammendsmends are searched.
      * 
-     * @param storeRef
-     * @param config
+     * @param storeRef StoreRef
+     * @param config LuceneConfig
      * @return the searcher
      */
     public static ADMLuceneSearcherImpl getSearcher(StoreRef storeRef, LuceneConfig config)
@@ -125,7 +125,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     /**
      * Get a select-node-based searcher
      * 
-     * @return
+     * @return ADMLuceneSearcherImpl
      */
     public static ADMLuceneSearcherImpl getNodeSearcher()
     {
@@ -176,7 +176,7 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     /**
      * Set the query register
      * 
-     * @param queryRegister
+     * @param queryRegister QueryRegisterComponent
      */
     public void setQueryRegister(QueryRegisterComponent queryRegister)
     {
@@ -325,8 +325,8 @@ public class ADMLuceneSearcherImpl extends AbstractLuceneBase implements LuceneS
     /**
      * The definitions must provide a default value, or of not there must be a parameter to provide the value
      * 
-     * @param definition
-     * @param queryParameters
+     * @param definition CannedQueryDef
+     * @param queryParameters QueryParameter[]
      * @throws QueryParameterisationException
      */
     private void checkParameters(CannedQueryDef definition, QueryParameter[] queryParameters) throws QueryParameterisationException

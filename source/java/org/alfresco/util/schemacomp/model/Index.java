@@ -45,7 +45,7 @@ public class Index extends AbstractDbObject
     
     /**
      * @param table the parent table
-     * @param columnNames
+     * @param columnNames List<String>
      */
     public Index(Table table, String name, List<String> columnNames)
     {
@@ -82,7 +82,7 @@ public class Index extends AbstractDbObject
 
     /**
      * @see #isUnique()
-     * @param unique
+     * @param unique boolean
      */
     public void setUnique(boolean unique)
     {

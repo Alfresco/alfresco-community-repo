@@ -207,8 +207,8 @@ public class ViewParser implements Parser
     /**
      * Process start of xml element
      * 
-     * @param xpp
-     * @param parserContext
+     * @param xpp XmlPullParser
+     * @param parserContext ParserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -343,8 +343,8 @@ public class ViewParser implements Parser
     /**
      * Process Root
      * 
-     * @param xpp
-     * @param parserContext
+     * @param xpp XmlPullParser
+     * @param parserContext ParserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -361,9 +361,9 @@ public class ViewParser implements Parser
     /**
      * Process meta-data
      * 
-     * @param xpp
-     * @param metaDataName
-     * @param parserContext
+     * @param xpp XmlPullParser
+     * @param metaDataName QName
+     * @param parserContext ParserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -392,9 +392,9 @@ public class ViewParser implements Parser
     /**
      * Process start of a node definition
      * 
-     * @param xpp
-     * @param typeDef
-     * @param parserContext
+     * @param xpp XmlPullParser
+     * @param typeDef TypeDefinition
+     * @param parserContext ParserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -427,9 +427,9 @@ public class ViewParser implements Parser
     /**
      * Process start reference
      * 
-     * @param xpp
-     * @param refName
-     * @param parserContext
+     * @param xpp XmlPullParser
+     * @param refName QName
+     * @param parserContext ParserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -506,9 +506,9 @@ public class ViewParser implements Parser
     /**
      * Process aspect definition
      * 
-     * @param xpp
-     * @param aspectDef
-     * @param parserContext
+     * @param xpp XmlPullParser
+     * @param aspectDef AspectDefinition
+     * @param parserContext ParserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -531,8 +531,8 @@ public class ViewParser implements Parser
     /**
      * Process ACL definition
      * 
-     * @param xpp
-     * @param parserContext
+     * @param xpp XmlPullParser
+     * @param parserContext ParserContext
      */
     private void processACL(XmlPullParser xpp, ParserContext parserContext)
     {
@@ -552,8 +552,8 @@ public class ViewParser implements Parser
     /**
      * Process ACE definition
      * 
-     * @param xpp
-     * @param parserContext
+     * @param xpp XmlPullParser
+     * @param parserContext ParserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -647,9 +647,9 @@ public class ViewParser implements Parser
     /**
      * Process property definition
      * 
-     * @param xpp
-     * @param propertyName
-     * @param parserContext
+     * @param xpp XmlPullParser
+     * @param propertyName QName
+     * @param parserContext ParserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -819,9 +819,9 @@ public class ViewParser implements Parser
     /**
      * Process start of association definition
      * 
-     * @param xpp
-     * @param assocDef
-     * @param parserContext
+     * @param xpp XmlPullParser
+     * @param assocDef AssociationDefinition
+     * @param parserContext ParserContext
      * @throws XmlPullParserException
      * @throws IOException
      */
@@ -842,8 +842,8 @@ public class ViewParser implements Parser
     /**
      * Process end of xml element
      * 
-     * @param xpp
-     * @param parserContext
+     * @param xpp XmlPullParser
+     * @param parserContext ParserContext
      */
     private void processEndElement(XmlPullParser xpp, ParserContext parserContext)
     {
@@ -874,7 +874,7 @@ public class ViewParser implements Parser
     /**
      * Process end of the type definition
      * 
-     * @param node
+     * @param node NodeContext
      */
     private void processEndType(ParserContext parserContext, NodeContext node)
     {
@@ -886,8 +886,8 @@ public class ViewParser implements Parser
     /**
      * Process end of the child association
      * 
-     * @param parserContext
-     * @param parent
+     * @param parserContext ParserContext
+     * @param parent ParserContext
      */
     private void processEndAssoc(ParserContext parserContext, ParentContext parent)
     {
@@ -896,7 +896,7 @@ public class ViewParser implements Parser
     /**
      * Process end of meta data
      * 
-     * @param context
+     * @param context ParserContext
      */
     private void processEndMetaData(ParserContext parserContext, MetaDataContext context)
     {
@@ -976,8 +976,8 @@ public class ViewParser implements Parser
     /**
      * Helper to create Qualified name from current xml element
      * 
-     * @param xpp
-     * @return
+     * @param xpp XmlPullParser
+     * @return QName
      */
     private QName getName(XmlPullParser xpp)
     {
@@ -995,10 +995,10 @@ public class ViewParser implements Parser
 
     /**
      * Helper to indent debug output
-     * 
-     * @param msg
-     * @param depth
-     * @return
+     *
+     * @param msg String
+     * @param depth int
+     * @return String
      */
     private String indentLog(String msg, int depth)
     {

@@ -54,7 +54,7 @@ public interface AuditComponent
     public void setAuditEnabled(boolean enable);
 
     /**
-     * @param userAuditFilter
+     * @param userAuditFilter UserAuditFilter
      * 
      * @since 4.2
      */
@@ -134,7 +134,7 @@ public interface AuditComponent
     
     /**
      * Enable auditing (if it is not already enabled) for all paths that contain the given path.
-     * The path is the path as originally logged (see {@link #audit(String, String, Map)}) and
+     * The path is the path as originally logged and
      * not the path that the generated data may contain - although this would be similarly
      * enabled.
      * <p>
@@ -150,7 +150,7 @@ public interface AuditComponent
 
     /**
      * Disable auditing (if it is not already disabled) for all paths that contain the given path.
-     * The path is the path as originally logged (see {@link #audit(String, String, Map)}) and
+     * The path is the path as originally logged and
      * not the path that the generated data may contain - although this would be similarly
      * disabled.
      * <p>

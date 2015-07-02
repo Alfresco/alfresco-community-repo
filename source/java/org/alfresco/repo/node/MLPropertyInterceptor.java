@@ -53,13 +53,12 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * transform to multilingual text for setter methods.
  * <p>
  * This interceptor ensures that all multilingual (ML) text is transformed to the
- * locale chosen {@link org.alfresco.service.cmr.repository.MLText#getContextLocale() for the request}
+ * locale chosen for the request
  * for getters and transformed to the default locale type for setters.
  * <p>
  * Where {@link org.alfresco.service.cmr.repository.MLText ML text} has been passed in, this
  * will be allowed to pass.
  * 
- * @see org.alfresco.service.cmr.repository.MLText#getContextLocale()
  * @see org.alfresco.service.cmr.repository.NodeService#getProperty(NodeRef, QName)
  * @see org.alfresco.service.cmr.repository.NodeService#getProperties(NodeRef)
  * @see org.alfresco.service.cmr.repository.NodeService#setProperty(NodeRef, QName, Serializable)
@@ -478,8 +477,8 @@ public class MLPropertyInterceptor implements MethodInterceptor
     }
     
     /**
-     * @param outboundValue
-     * @return
+     * @param outboundValue Serializable
+     * @return boolean
      */
     private boolean isCollectionOfMLText(Serializable outboundValue)
     {
@@ -684,9 +683,9 @@ public class MLPropertyInterceptor implements MethodInterceptor
      * with updatedText keyed by the language of contentLocale. This ensures that the mlText
      * will have no more than one entry for the particular language.
      * 
-     * @param contentLocale
-     * @param updatedText
-     * @param mlText
+     * @param contentLocale Locale
+     * @param updatedText String
+     * @param mlText MLText
      */
     private void replaceTextForLanguage(Locale contentLocale, String updatedText, MLText mlText)
     {

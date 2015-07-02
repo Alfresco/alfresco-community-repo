@@ -36,8 +36,8 @@ public interface Parser
     /**
      * Parse nodes from specified input stream and import via the provided importer
      * 
-     * @param viewReader
-     * @param importer
+     * @param viewReader Reader
+     * @param importer Importer
      */
     public void parse(Reader viewReader, Importer importer);
 

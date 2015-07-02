@@ -33,7 +33,7 @@ public interface CacheFactory<K extends Serializable, V>
      * Creates a cache. The type of cache (e.g. localised, clustered etc.) produced is
      * dependant on the factory implementation, and will vary at runtime.
      * 
-     * @param cacheName
+     * @param cacheName String
      * @return SimpleCache
      */
     SimpleCache<K, V> createCache(String cacheName);

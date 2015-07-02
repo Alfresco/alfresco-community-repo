@@ -482,8 +482,8 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
      * This method is thread-safe.  The time spent in this method is negligible
      * so the impact will be minor.
      * 
-     * @param sourceMimetype
-     * @param targetMimetype
+     * @param sourceMimetype String
+     * @param targetMimetype String
      * @param transformationTime the time it took to perform the transformation.
      */
     protected final synchronized void recordTime(String sourceMimetype, String targetMimetype,
@@ -596,8 +596,8 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
     /**
      * Records an error and updates the average time as if the transformation took a
      * long time, so that it is less likely to be called again.
-     * @param sourceMimetype
-     * @param targetMimetype
+     * @param sourceMimetype String
+     * @param targetMimetype String
      * @param transformationTime the time it took to perform the transformation.
      */
     protected final synchronized void recordError(String sourceMimetype, String targetMimetype,

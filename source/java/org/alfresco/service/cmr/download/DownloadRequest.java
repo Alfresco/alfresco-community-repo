@@ -47,7 +47,7 @@ public class DownloadRequest
     }
 
     /**
-     * @return
+     * @return String
      */
     public String getOwner()
     {

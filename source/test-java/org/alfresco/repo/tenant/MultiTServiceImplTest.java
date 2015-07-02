@@ -603,9 +603,9 @@ public class MultiTServiceImplTest
     /**
      * Runs {@link TenantService#getDomain(String)} as a specified tenant.
      * @param user The input parameter to the {@link TenantService#getDomain(String)}
-     * @param domain
-     * @param runAsUsername
-     * @param checkCurrentDomain
+     * @param domain String
+     * @param runAsUsername String
+     * @param checkCurrentDomain boolean
      * @return domain
      * @throws Exception
      */
@@ -625,8 +625,8 @@ public class MultiTServiceImplTest
     /**
      * Runs {@link TenantService#checkDomain(String)} as a specified tenant.
      * @param string The input parameter to the {@link TenantService#checkDomain(String)}
-     * @param domain
-     * @param runAsUsername
+     * @param domain String
+     * @param runAsUsername String
      * @throws Exception
      */
     private void checkDomainWork(final String string, String domain, String runAsUsername) throws Exception
@@ -646,8 +646,8 @@ public class MultiTServiceImplTest
     /**
      * Runs {@link TenantService#checkDomainUser(String)} as a specified tenant.
      * @param username The input parameter to the {@link TenantService#checkDomainUser(String)}
-     * @param domain
-     * @param runAsUsername
+     * @param domain String
+     * @param runAsUsername String
      * @throws Exception
      */
     private void checkDomainUserWork(final String username, String domain, String runAsUsername) throws Exception
@@ -667,7 +667,7 @@ public class MultiTServiceImplTest
     /**
      * Create a tenant domain, if not already created
      * 
-     * @param tenantDomain
+     * @param tenantDomain String
      */
     private void createTenant(final String tenantDomain)
     {
@@ -688,10 +688,10 @@ public class MultiTServiceImplTest
     /**
      * Crate a user and authentication
      * 
-     * @param baseUserName
-     * @param tenantDomain
-     * @param password
-     * @return the new user NideRef
+     * @param baseUserName String
+     * @param tenantDomain String
+     * @param password String
+     * @return the new user NodeRef
      */
     private NodeRef createUser(String baseUserName, String tenantDomain, String password)
     {
@@ -723,8 +723,8 @@ public class MultiTServiceImplTest
     
     /**
      * Utility method to add a domain to an string id
-     * @param id
-     * @param domain
+     * @param id String
+     * @param domain String
      * @return a string in format "@domain@id"
      */
     private static String addDomainToId(String id, String domain)

@@ -111,7 +111,7 @@ public class ModelValidatorImpl implements ModelValidator
 	/**
      * validate against repository contents / workflows (e.g. when deleting an existing model)
      * 
-     * @param modelName
+     * @param modelName QName
      */
     public void validateModelDelete(final QName modelName)
     {
@@ -303,7 +303,7 @@ public class ModelValidatorImpl implements ModelValidator
      *   - no deletion of types, aspects or properties or associations
      *   - no addition, update or deletion of default/mandatory aspects
      * 
-     * @param compiledModel
+     * @param compiledModel CompiledModel
      */
     @Override
     public void validateModel(CompiledModel compiledModel)

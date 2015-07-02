@@ -45,7 +45,7 @@ public class CachingCorrespondingNodeResolverImpl implements CorrespondingNodeRe
     }
 
     /**
-     * @param delegateResolver
+     * @param delegateResolver CorrespondingNodeResolver
      */
     public CachingCorrespondingNodeResolverImpl(CorrespondingNodeResolver delegateResolver)
     {

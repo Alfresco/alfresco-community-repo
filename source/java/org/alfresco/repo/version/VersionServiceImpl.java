@@ -162,8 +162,8 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
     /**
      * Register version label policy for the specified type
      * 
-     * @param typeQName
-     * @param policy 
+     * @param typeQName QName
+     * @param policy CalculateVersionLabelPolicy
      */
     public void registerVersionLabelPolicy(QName typeQName, CalculateVersionLabelPolicy policy)
     {
@@ -1006,7 +1006,7 @@ public abstract class VersionServiceImpl extends AbstractVersionServiceImpl impl
     }
 
     /**
-     * @see org.alfresco.cms.version.VersionService#revert(NodeRef)
+     * @see org.alfresco.service.cmr.version.VersionService#revert(NodeRef)
      */
     public void revert(NodeRef nodeRef)
     {

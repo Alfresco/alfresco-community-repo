@@ -86,7 +86,7 @@ public class LockOwnerDynamicAuthorityTest extends TestCase
     }
 
     /**
-     * @param arg0
+     * @param arg0 String
      */
     public LockOwnerDynamicAuthorityTest(String arg0)
     {

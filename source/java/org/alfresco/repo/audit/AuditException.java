@@ -36,7 +36,7 @@ public class AuditException extends AlfrescoRuntimeException
     /**
      * Simple message
      * 
-     * @param msgId
+     * @param msgId String
      */
     public AuditException(String msgId)
     {
@@ -46,8 +46,8 @@ public class AuditException extends AlfrescoRuntimeException
     /**
      * I18n message
      * 
-     * @param msgId
-     * @param msgParams
+     * @param msgId String
+     * @param msgParams Object[]
      */
     public AuditException(String msgId, Object[] msgParams)
     {
@@ -57,8 +57,8 @@ public class AuditException extends AlfrescoRuntimeException
     /**
      * Simple message ad nested exception
      * 
-     * @param msgId
-     * @param cause
+     * @param msgId String
+     * @param cause Throwable
      */
     public AuditException(String msgId, Throwable cause)
     {
@@ -68,9 +68,9 @@ public class AuditException extends AlfrescoRuntimeException
     /**
      * I18n message and exception.
      * 
-     * @param msgId
-     * @param msgParams
-     * @param cause
+     * @param msgId String
+     * @param msgParams Object[]
+     * @param cause Throwable
      */
     public AuditException(String msgId, Object[] msgParams, Throwable cause)
     {

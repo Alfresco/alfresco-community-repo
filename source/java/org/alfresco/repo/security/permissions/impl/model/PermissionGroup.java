@@ -79,7 +79,7 @@ public final class PermissionGroup extends AbstractPermissionReference implement
 
     /**
      * Permission group for the given type or aspect.
-     * @param container
+     * @param container QName
      */
     public PermissionGroup(QName container)
     {

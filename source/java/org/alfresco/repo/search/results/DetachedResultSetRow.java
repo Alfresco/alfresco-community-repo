@@ -38,8 +38,8 @@ public class DetachedResultSetRow extends AbstractResultSetRow
     
     /**
      * Detached result set row
-     * @param resultSet
-     * @param row
+     * @param resultSet ResultSet
+     * @param row ResultSetRow
      */
     public DetachedResultSetRow(ResultSet resultSet, ResultSetRow row)
     {

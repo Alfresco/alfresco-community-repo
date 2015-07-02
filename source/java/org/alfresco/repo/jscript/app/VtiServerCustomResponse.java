@@ -31,7 +31,7 @@ import java.util.Map;
 /**
  * Return current state of VTI (SharePoint) Server module
  *
- * @author: mikeh
+ * @author mikeh
  */
 public class VtiServerCustomResponse implements CustomResponse
 {
@@ -59,7 +59,7 @@ public class VtiServerCustomResponse implements CustomResponse
     /**
      * Setter for sysAdminParams
      *
-     * @param sysAdminParams
+     * @param sysAdminParams SysAdminParams
      */
     public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
@@ -69,7 +69,7 @@ public class VtiServerCustomResponse implements CustomResponse
     /**
      * Setter for vtiServer Port
      *
-     * @param vtiServerPort
+     * @param vtiServerPort int
      */
     public void setPort(int vtiServerPort)
     {
@@ -79,7 +79,7 @@ public class VtiServerCustomResponse implements CustomResponse
     /**
      * Setter for vtiServer Host
      *
-     * @param vtiServerHost
+     * @param vtiServerHost String
      */
     public void setHost(String vtiServerHost)
     {
@@ -89,7 +89,7 @@ public class VtiServerCustomResponse implements CustomResponse
     /**
      * Setter for vtiServer Protocol
      *
-     * @param vtiServerProtocol
+     * @param vtiServerProtocol String
      */
     public void setProtocol(String vtiServerProtocol)
     {
@@ -99,7 +99,7 @@ public class VtiServerCustomResponse implements CustomResponse
     /**
      * Setter for the vtiServer (external) context path.
      * 
-     * @param contextPath
+     * @param contextPath String
      */
     public void setContextPath(String contextPath)
     {

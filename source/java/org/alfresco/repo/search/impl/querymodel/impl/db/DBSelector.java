@@ -47,8 +47,8 @@ public class DBSelector extends BaseSelector implements DBQueryBuilderComponent
     DBQueryBuilderComponent builderSupport;
 
     /**
-     * @param type
-     * @param alias
+     * @param type QName
+     * @param alias String
      */
     public DBSelector(QName type, String alias)
     {

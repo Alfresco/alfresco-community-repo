@@ -35,8 +35,8 @@ public interface IndexerAndSearcher
     /**
      * Get an indexer for a store
      * 
-     * @param storeRef
-     * @return
+     * @param storeRef StoreRef
+     * @return Indexer
      * @throws IndexerException
      */
     public abstract Indexer getIndexer(StoreRef storeRef) throws IndexerException;
@@ -44,11 +44,11 @@ public interface IndexerAndSearcher
     /**
      * Get a searcher for a store
      * 
-     * @param storeRef
+     * @param storeRef StoreRef
      * @param searchDelta -
      *            serach the in progress transaction as well as the main index
      *            (this is ignored for searches that do full text)
-     * @return
+     * @return SearchService
      * @throws SearcherException
      */
     public abstract SearchService getSearcher(StoreRef storeRef, boolean searchDelta) throws SearcherException;
@@ -61,12 +61,12 @@ public interface IndexerAndSearcher
     public abstract void flush();
 
     /**
-     * @param luceneQueryLanguageSPI
+     * @param luceneQueryLanguageSPI LuceneQueryLanguageSPI
      */
     public abstract void registerQueryLanguage(LuceneQueryLanguageSPI luceneQueryLanguageSPI);
 
     /**
-     * @return
+     * @return Map
      */
     public abstract Map<String, LuceneQueryLanguageSPI> getQueryLanguages();
 }

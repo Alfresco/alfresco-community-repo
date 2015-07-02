@@ -231,7 +231,7 @@ public class AlfrescoJavaMailSender extends JavaMailSenderImpl
     }
     
     /**
-     * @return A new {@link PooledTransportWrapper} which borrows a pooled {@link Transport} on connect, and returns it to
+     * @return A new {@code PooledTransportWrapper} which borrows a pooled {@link Transport} on connect, and returns it to
      *             the pool on close.  
      */
     @Override

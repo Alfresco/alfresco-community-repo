@@ -84,7 +84,7 @@ public class TransferCommons
     /**
      * Mapping between contentUrl and part name.
      *
-     * @param contentUrl
+     * @param contentUrl String
      * @return the part name
      */
     public final static String URLToPartName(String contentUrl)

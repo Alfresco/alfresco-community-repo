@@ -37,16 +37,16 @@ public interface IOControlHandler
     /**
      * ProcessIOControl
      * 
-     * @param sess
-     * @param tree
-     * @param ctrlCode
-     * @param fid
-     * @param dataBuf
-     * @param isFSCtrl
-     * @param filter
-     * @param contentDriver
-     * @param contentContext
-     * @return
+     * @param sess SrvSession
+     * @param tree TreeConnection
+     * @param ctrlCode int
+     * @param fid int
+     * @param dataBuf DataBuffer
+     * @param isFSCtrl boolean
+     * @param filter int
+     * @param contentDriver Object
+     * @param contentContext ContentContext
+     * @return DataBuffer
      */
     public org.alfresco.jlan.util.DataBuffer processIOControl(SrvSession sess, TreeConnection tree, int ctrlCode, int fid, DataBuffer dataBuf,
             boolean isFSCtrl, int filter, Object contentDriver, ContentContext contentContext)

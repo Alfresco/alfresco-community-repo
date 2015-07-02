@@ -394,7 +394,7 @@ public class ExportDb
     /**
      * Convert a boolean string as used in the database, to a boolean value.
      * 
-     * @param nullableString
+     * @param nullableString String
      * @return true if "YES", false if "NO"
      */
     private boolean parseBoolean(String nullableString)

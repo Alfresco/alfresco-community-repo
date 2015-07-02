@@ -118,12 +118,12 @@ public interface AclCrudDAO
     public void renameAuthority(String authorityNameBefore, String authorityAfter);
     public void deleteAuthority(long authorityEntityId);
     /**
-     * @return
+     * @return Long
      */
     public Long getMaxChangeSetCommitTime();
     /**
-     * @param maxCommitTime
-     * @return
+     * @param maxCommitTime long
+     * @return Long
      */
     public Long getMaxChangeSetIdByCommitTime(long maxCommitTime);
     

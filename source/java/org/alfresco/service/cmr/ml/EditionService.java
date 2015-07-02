@@ -72,12 +72,6 @@ public interface EditionService
      * Get the the versioned metadata of a specific <b>cm:mlDocument</b> transalation version or a specific
      * <b>cm:mlContainer</b> version
      *
-     * @see org.alfresco.repo.model.ml.MultilingualDocumentAspect.PROPERTIES_TO_VERSION the versioned metadata
-     * of a <b>cm:mlDocument</b> transalation added to the usual metadata versioned for a normal node.
-     *
-     * @see org.alfresco.repo.model.ml.MLContainerType.PROPERTIES_TO_VERSION the versioned metadata
-     * of a <b>cm:mlContainer</b> added to the usual metadata versioned for a normal node.
-     *
      * @param version                       An existing version of a <b>cm:mlDocument</b> translation version or
      *                                      an existing version of a <b>cm:mlContainer</b> version.
      * @return                              The versioned metadata

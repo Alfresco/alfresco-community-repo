@@ -140,7 +140,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
     }
 
     /**
-     * @see org.alfresco.repo.bulkimport.DirectoryAnalyser#analyseDirectory(java.io.File)
+     * @see org.alfresco.repo.bulkimport.DirectoryAnalyser#analyseDirectory(ImportableItem, FileFilter)
      */
     public AnalysedDirectory analyseDirectory(ImportableItem directory, FileFilter filter)
     {

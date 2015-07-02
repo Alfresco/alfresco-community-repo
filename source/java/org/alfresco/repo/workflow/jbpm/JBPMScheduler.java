@@ -38,7 +38,7 @@ public class JBPMScheduler extends AbstractLifecycleBean
     private boolean JbpmEngineEnabled = false;
     
     /**
-     * @param jbpmTemplate
+     * @param jbpmTemplate JbpmTemplate
      */
     public void setJBPMTemplate(JbpmTemplate jbpmTemplate)
     {

@@ -255,7 +255,7 @@ public class DebugXPathHandler implements XPathHandler
     }
 
     /**
-     * @param args
+     * @param args String[]
      * @throws SAXPathException
      */
     public static void main(String[] args) throws SAXPathException

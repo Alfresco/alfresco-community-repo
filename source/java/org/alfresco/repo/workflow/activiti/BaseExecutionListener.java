@@ -57,7 +57,7 @@ public abstract class BaseExecutionListener implements ExecutionListener
     
     /**
      * Defaults to the full {@link Class} Name.
-     * @return
+     * @return String
      */
     protected String getName()
     {

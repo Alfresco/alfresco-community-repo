@@ -47,7 +47,7 @@ public class DatabaseMetaDataHelper {
 	/**
 	 * Trys to determine the schema name from the DatabaseMetaData obtained from the Connection.
 	 * @param connection A database connection
-	 * @return
+	 * @return String
 	 */
 	private String getSchemaFromConnection(Connection connection) 
 	{

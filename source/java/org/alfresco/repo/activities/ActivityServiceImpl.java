@@ -304,9 +304,9 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
      * the user is taken from the activity summary rather than from the poster (e.g. when a user role is changed).
      * A cache should be passed in from which to retrieve previously fetched {@link NodeRef}s for efficiency.
      * 
-     * @param activityFeed
-     * @param userIdToAvatarNodeRefCache
-     * @return
+     * @param activityFeed ActivityFeedEntity
+     * @param userIdToAvatarNodeRefCache Map<String, NodeRef>
+     * @return NodeRef
      */
     protected NodeRef getUserAvatarNodeRef(ActivityFeedEntity activityFeed, Map<String, NodeRef> userIdToAvatarNodeRefCache) 
     {

@@ -52,8 +52,8 @@ public class ChildAssocRefResultSet extends AbstractResultSet
     
     /**
      * Normal constructor
-     * @param nodeService
-     * @param cars
+     * @param nodeService NodeService
+     * @param cars List<ChildAssociationRef>
      */
     public ChildAssocRefResultSet(NodeService nodeService, List<ChildAssociationRef> cars)
     {
@@ -64,9 +64,9 @@ public class ChildAssocRefResultSet extends AbstractResultSet
     
     /**
      * Constructor that may expand all child assoc parents provided
-     * @param nodeService
-     * @param nodeRefs
-     * @param resolveAllParents
+     * @param nodeService NodeService
+     * @param nodeRefs List<NodeRef> nodeRefs
+     * @param resolveAllParents boolean
      */
     public ChildAssocRefResultSet(NodeService nodeService, List<NodeRef> nodeRefs, boolean resolveAllParents)
     {

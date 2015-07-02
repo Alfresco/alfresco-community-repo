@@ -23,8 +23,8 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.microsoft.OfficeParser;
 
 /**
- * Uses {@link http://tika.apache.org/ Apache Tika} and
- *  {@link http://poi.apache.org/ Apache POI} to transform
+ * Uses <a href="http://tika.apache.org/">Apache Tika</a> and
+ *  <a href="@link http://poi.apache.org/">Apache POI</a> to transform
  *  Outlook email msg files.
  * 
  * @author Nick Burch

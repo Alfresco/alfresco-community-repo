@@ -499,7 +499,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
 
     /**
-     * @return
+     * @return NodeRef
      */
     private NodeRef createTransferRecord()
     {
@@ -558,7 +558,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
      *
      * This is the last chance to clean up.
      *
-     * @param transferId
+     * @param transferId String
      */
     private void timeout(final String transferId)
     {
@@ -722,7 +722,7 @@ public class RepoTransferReceiverImpl implements TransferReceiver,
     }
 
     /**
-     * @param file
+     * @param file File
      */
     private void deleteFile(File file)
     {

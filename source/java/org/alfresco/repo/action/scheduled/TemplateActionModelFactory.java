@@ -47,7 +47,7 @@ public interface TemplateActionModelFactory
     /**
      * Build a model with a default node context.
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @return - the model (with nodeRef as its context).
      */
     public Map<String, Object> getModel(NodeRef nodeRef);

@@ -73,9 +73,9 @@ public class NodeContext extends ElementContext
     /**
      * Construct
      * 
-     * @param elementName
-     * @param parentContext
-     * @param typeDef
+     * @param elementName QName
+     * @param parentContext ParentContext
+     * @param typeDef TypeDefinition
      */
     public NodeContext(QName elementName, ParentContext parentContext, TypeDefinition typeDef)
     {
@@ -121,7 +121,7 @@ public class NodeContext extends ElementContext
     /**
      * Set Type Definition
      * 
-     * @param typeDef
+     * @param typeDef TypeDefinition
      */
     public void setTypeDefinition(TypeDefinition typeDef)
     {
@@ -213,7 +213,7 @@ public class NodeContext extends ElementContext
     /**
      * Adds a collection property to the node
      * 
-     * @param property
+     * @param property QName
      */
     public void addPropertyCollection(QName property)
     {
@@ -356,9 +356,9 @@ public class NodeContext extends ElementContext
     /**
      * Adds an Access Control Entry
      * 
-     * @param accessStatus
-     * @param authority
-     * @param permission
+     * @param accessStatus AccessStatus
+     * @param authority String
+     * @param permission String
      */
     public void addAccessControlEntry(AccessStatus accessStatus, String authority, String permission)
     {
@@ -387,7 +387,7 @@ public class NodeContext extends ElementContext
      * Determine the type of definition (aspect, property, association) from the
      * specified name
      * 
-     * @param defName
+     * @param defName QName
      * @return the dictionary definition
      */
     public Object determineDefinition(QName defName)
@@ -407,8 +407,8 @@ public class NodeContext extends ElementContext
     /**
      * Determine if name referes to an aspect
      * 
-     * @param defName
-     * @return
+     * @param defName QName
+     * @return AspectDefinition
      */
     public AspectDefinition determineAspect(QName defName)
     {
@@ -423,8 +423,8 @@ public class NodeContext extends ElementContext
     /**
      * Determine if name refers to a property
      * 
-     * @param defName
-     * @return
+     * @param defName QName
+     * @return PropertyDefinition
      */
     public PropertyDefinition determineProperty(QName defName)
     {
@@ -456,8 +456,8 @@ public class NodeContext extends ElementContext
     /**
      * Determine if name referes to an association
      * 
-     * @param defName
-     * @return
+     * @param defName QName
+     * @return AssociationDefinition
      */
     public AssociationDefinition determineAssociation(QName defName)
     {

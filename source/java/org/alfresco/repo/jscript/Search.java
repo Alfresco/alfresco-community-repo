@@ -539,7 +539,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
      * 
      * Note that only some query languages support custom query templates, such as 'fts-alfresco'. 
      * See the following documentation for more details:
-     * {@link http://wiki.alfresco.com/wiki/Full_Text_Search_Query_Syntax#Templates}
+     * <a href="http://wiki.alfresco.com/wiki/Full_Text_Search_Query_Syntax#Templates">Templates</a>
      * </pre>
      * 
      * @param search    Search definition object as above

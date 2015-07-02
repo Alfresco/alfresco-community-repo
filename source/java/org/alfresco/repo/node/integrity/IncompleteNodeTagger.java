@@ -187,7 +187,7 @@ public class IncompleteNodeTagger
      * Ensures that this service is registered with the transaction and saves the node
      * reference for use (property check) later.
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     private Set<QName> save(NodeRef nodeRef)
     {
@@ -226,8 +226,8 @@ public class IncompleteNodeTagger
      * Ensures that this service is registered with the transaction and saves the node
      * reference for use (association check) later.
      * 
-     * @param nodeRef
-     * @param assocType
+     * @param nodeRef NodeRef
+     * @param assocType QName
      */
     private void saveAssoc(NodeRef nodeRef, QName assocType)
     {
@@ -536,9 +536,9 @@ public class IncompleteNodeTagger
     }
 
     /**
-     * @param nodeRef
-     * @param assocDef
-     * @return
+     * @param nodeRef NodeRef
+     * @param assocDef AssociationDefinition
+     * @return boolean
      */
     private boolean checkAssociation(NodeRef nodeRef, AssociationDefinition assocDef)
     {

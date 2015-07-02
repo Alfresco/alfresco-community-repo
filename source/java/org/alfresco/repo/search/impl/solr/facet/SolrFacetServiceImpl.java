@@ -792,7 +792,7 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
     /**
      * Gets a map containing the facet's custom properties
      * 
-     * @return Map<QName, Serializable> map containing the custom properties of the facet
+     * @return map containing the custom properties of the facet
      */
     private Map<QName, Serializable> getFacetCustomProperties(Map<QName, Serializable> properties)
     {

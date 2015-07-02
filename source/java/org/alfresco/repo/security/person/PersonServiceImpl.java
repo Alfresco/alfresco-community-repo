@@ -1484,8 +1484,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      * Get paged list of people optionally filtered and/or sorted using FTS
      * 
      * @param pattern - String to search
-     * @param pagingRequest
-     * @return
+     * @param pagingRequest PagingRequest
+     * @return PagingResults<PersonInfo>
      */
     private PagingResults<PersonInfo> getPeopleFts(String pattern, PagingRequest pagingRequest)
     {
@@ -2015,9 +2015,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
      * Determine if the updated properties constitute a valid user update.
      * Currently we only check for updates to the user firstname, lastname
      * 
-     * @param before
-     * @param after
-     * @return
+     * @param before Map<QName, Serializable>
+     * @param after Map<QName, Serializable>
+     * @return boolean
      */
     private boolean validUserUpdateEvent(Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
@@ -2035,8 +2035,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     /**
      * Publish new user event
      * 
-     * @param eventType
-     * @param properties
+     * @param eventType String
+     * @param properties Map<QName, Serializable>
      */
     private void publishEvent(String eventType,  Map<QName, Serializable> properties)
     {

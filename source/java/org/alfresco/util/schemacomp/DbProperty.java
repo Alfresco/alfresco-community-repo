@@ -40,9 +40,11 @@ public class DbProperty
      * <p>
      * The public constructors provide a more usable API with select sets of arguments.
      * 
-     * @param dbObject
-     * @param propertyName
-     * @param propertyValue
+     * @param dbObject DbObject
+     * @param propertyName String
+     * @param index int
+     * @param useSuppliedValue boolean
+     * @param propertyValue Object
      */
     protected DbProperty(DbObject dbObject, String propertyName, int index, boolean useSuppliedValue, Object propertyValue)
     {
@@ -94,7 +96,7 @@ public class DbProperty
     /**
      * Construct a pointer to a database object only (no property within).
      * 
-     * @param dbObject
+     * @param dbObject DbObject
      */
     public DbProperty(DbObject dbObject)
     {
@@ -105,8 +107,8 @@ public class DbProperty
      * Create a DbProperty by supplying the DbObject and the property name. The
      * value at time of creation will be populate automatically.
      * 
-     * @param dbObject
-     * @param propertyName
+     * @param dbObject DbObject
+     * @param propertyName String
      */
     public DbProperty(DbObject dbObject, String propertyName)
     {
@@ -119,9 +121,9 @@ public class DbProperty
      * index 4, the propertyName will be converted to "myCollection[4]" and the propertValue
      * will be populated with the value at index 4 of myCollection.
      * 
-     * @param dbObject
-     * @param propertyName
-     * @param index
+     * @param dbObject DbObject
+     * @param propertyName String
+     * @param index int
      */
     public DbProperty(DbObject dbObject, String propertyName, int index)
     {

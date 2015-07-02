@@ -38,7 +38,7 @@ public interface ReferenceCounting
 
     /**
      * Get the number of references
-     * @return
+     * @return int
      */
     public int getReferenceCount();
 
@@ -50,13 +50,13 @@ public interface ReferenceCounting
     
     /**
      * Determine if valid for reuse
-     * @return
+     * @return boolean
      */
     public boolean isInvalidForReuse();
     
     /**
      * Get the id for this reader.
-     * @return
+     * @return String
      */
     public String getId();
 }

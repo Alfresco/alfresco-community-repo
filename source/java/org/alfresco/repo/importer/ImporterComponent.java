@@ -362,8 +362,8 @@ public class ImporterComponent implements ImporterService
      *      ../../cm:people_x0020_folder
      *      sys:people/cm:admin_x0040_test
      *      
-     * @param path
-     * @return
+     * @param path String
+     * @return String
      */
     private String createValidPath(String path)
     {
@@ -488,10 +488,11 @@ public class ImporterComponent implements ImporterService
         /**
          * Construct
          * 
-         * @param rootRef
-         * @param location
-         * @param binding
-         * @param progress
+         * @param rootRef NodeRef
+         * @param location Location
+         * @param binding ImporterBinding
+         * @param streamHandler ImportPackageHandler
+         * @param progress ImporterProgress
          */
         private NodeImporter(NodeRef rootRef, Location location, ImporterBinding binding, ImportPackageHandler streamHandler, ImporterProgress progress)
         {
@@ -1086,8 +1087,8 @@ public class ImporterComponent implements ImporterService
         /**
          * Bind properties
          * 
-         * @param context
-         * @return
+         * @param context ImportNode
+         * @return Map
          */
         @SuppressWarnings("unchecked")
         private Map<QName, Serializable> bindProperties(ImportNode context)
@@ -1144,8 +1145,8 @@ public class ImporterComponent implements ImporterService
         /**
          * Bind permissions - binds authorities
          * 
-         * @param permissions
-         * @return
+         * @param permissions List<AccessPermission>
+         * @return List<AccessPermission>
          */
         private List<AccessPermission> bindPermissions(List<AccessPermission> permissions)
         {
@@ -1196,7 +1197,7 @@ public class ImporterComponent implements ImporterService
          *  
          * @param sourceNodeRef  context to resolve within
          * @param importedRef  reference to resolve
-         * @return
+         * @return NodeRef
          */
         private NodeRef resolveImportedNodeRef(NodeRef sourceNodeRef, String importedRef)
         {
@@ -1275,7 +1276,7 @@ public class ImporterComponent implements ImporterService
         /**
          * Helper to report error
          * 
-         * @param e
+         * @param e Throwable
          */
         private void reportError(Throwable e)
         {
@@ -1288,7 +1289,7 @@ public class ImporterComponent implements ImporterService
         /**
          * Helper to report node created progress
          * 
-         * @param childAssocRef
+         * @param childAssocRef ChildAssociationRef
          */
         private void reportNodeCreated(ChildAssociationRef childAssocRef)
         {
@@ -1301,10 +1302,10 @@ public class ImporterComponent implements ImporterService
         /**
          * Helper to report node linked progress
          * 
-         * @param childRef
-         * @param parentRef
-         * @param assocType
-         * @param childName
+         * @param childRef NodeRef
+         * @param parentRef NodeRef
+         * @param assocType QName
+         * @param childName QName
          */
         private void reportNodeLinked(NodeRef childRef, NodeRef parentRef, QName assocType, QName childName)
         {
@@ -1317,8 +1318,8 @@ public class ImporterComponent implements ImporterService
         /**
          * Helper to report content created progress
          * 
-         * @param nodeRef
-         * @param sourceUrl
+         * @param nodeRef NodeRef
+         * @param sourceUrl String
          */
         private void reportContentCreated(NodeRef nodeRef, String sourceUrl)
         {
@@ -1331,8 +1332,8 @@ public class ImporterComponent implements ImporterService
         /**
          * Helper to report aspect added progress
          *  
-         * @param nodeRef
-         * @param aspect
+         * @param nodeRef NodeRef
+         * @param aspect QName
          */
         private void reportAspectAdded(NodeRef nodeRef, QName aspect)
         {
@@ -1345,8 +1346,8 @@ public class ImporterComponent implements ImporterService
         /**
          * Helper to report property set progress
          * 
-         * @param nodeRef
-         * @param properties
+         * @param nodeRef NodeRef
+         * @param properties Map<QName, Serializable>
          */
         private void reportPropertySet(NodeRef nodeRef, Map<QName, Serializable> properties)
         {
@@ -1362,8 +1363,8 @@ public class ImporterComponent implements ImporterService
         /**
          * Helper to report permission set progress
          * 
-         * @param nodeRef
-         * @param permissions
+         * @param nodeRef NodeRef
+         * @param permissions List<AccessPermission>
          */
         private void reportPermissionSet(NodeRef nodeRef, List<AccessPermission> permissions)
         {
@@ -1686,9 +1687,9 @@ public class ImporterComponent implements ImporterService
         /**
          * Construct
          * 
-         * @param context
-         * @param property
-         * @param value
+         * @param context ImportNode
+         * @param property QName
+         * @param value Serializable
          */
         private ImportedNodeRef(ImportNode context, QName property, Serializable value)
         {
@@ -1768,7 +1769,7 @@ public class ImporterComponent implements ImporterService
         /**
          * Construct
          * 
-         * @param handler
+         * @param handler ImportContentHandler
          */
         private ContentHandlerStreamHandler(ImportContentHandler handler)
         {

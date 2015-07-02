@@ -162,8 +162,8 @@ public class CategoryNode extends ScriptNode
     /**
      * Build category nodes from collection of association references.
      * 
-     * @param cars
-     * @return
+     * @param cars Collection<ChildAssociationRef>
+     * @return CategoryNode[]
      */
     private CategoryNode[] buildCategoryNodes(Collection<ChildAssociationRef> cars)
     {
@@ -179,8 +179,8 @@ public class CategoryNode extends ScriptNode
     /**
      * Build script nodes from a collection of association references.
      * 
-     * @param cars
-     * @return
+     * @param cars Collection<ChildAssociationRef>
+     * @return ScriptNode[]
      */
     private ScriptNode[] buildNodes(Collection<ChildAssociationRef> cars)
     {
@@ -196,8 +196,8 @@ public class CategoryNode extends ScriptNode
     /**
      * Build script nodes and category nodes from a mixed collection of association references.
      * 
-     * @param cars
-     * @return
+     * @param cars Collection<ChildAssociationRef>
+     * @return ScriptNode[]
      */
     private ScriptNode[] buildMixedNodes(Collection<ChildAssociationRef> cars)
     {

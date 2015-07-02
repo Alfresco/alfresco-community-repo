@@ -32,7 +32,7 @@ public class ChildAssocRefResultSetRowIterator extends AbstractResultSetRowItera
 
     /**
      * Source result set
-     * @param resultSet
+     * @param resultSet ResultSet
      */
     public ChildAssocRefResultSetRowIterator(ResultSet resultSet)
     {

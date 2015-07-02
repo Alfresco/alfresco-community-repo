@@ -237,7 +237,8 @@ public class AlfrescoAssignment extends JBPMSpringAssignmentHandler
     /**
      * Convert Alfresco authority to actor id
      *  
-     * @param authority
+     * @param authority ScriptNode
+     * @param allowGroup boolean
      * @return  actor id
      */
     private String mapAuthorityToName(ScriptNode authority, boolean allowGroup)

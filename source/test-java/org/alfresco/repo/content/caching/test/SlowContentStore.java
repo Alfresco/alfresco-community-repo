@@ -255,7 +255,7 @@ class SlowContentStore extends AbstractContentStore
      * Length of time in milliseconds that ReadableByteChannel and WriteableByteChannel objects returned
      * by SlowContentStore will pause for during read and write operations respectively.
      *  
-     * @param pauseMillis
+     * @param pauseMillis int
      */
     public void setPauseMillis(int pauseMillis)
     {

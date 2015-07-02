@@ -85,7 +85,7 @@ public abstract class AbstractContentTransformer implements ContentTransformer, 
     /**
      * Helper setter of the mimetype service.  This is not always required.
      * 
-     * @param mimetypeService
+     * @param mimetypeService MimetypeService
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
@@ -111,7 +111,7 @@ public abstract class AbstractContentTransformer implements ContentTransformer, 
 
     /**
      * Set the transformations that this transformer can do regardless of what it returns
-     * via the {@link org.alfresco.repo.content.transform.ContentTransformerContentTransformer#getReliability(String, String) reliability check}.
+     * via the reliability check.
      * 
      * @param explicitTransformations explicit key mappings
      */
@@ -185,8 +185,8 @@ public abstract class AbstractContentTransformer implements ContentTransformer, 
     /**
      * Convenience method to check the reliability of a transformation
      * 
-     * @param reader
-     * @param writer
+     * @param reader ContentReader
+     * @param writer ContentWriter
      * @throws AlfrescoRuntimeException if the reliability isn't > 0
      */
     protected void checkReliability(ContentReader reader, ContentWriter writer)

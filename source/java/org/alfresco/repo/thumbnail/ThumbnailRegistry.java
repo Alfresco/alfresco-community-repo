@@ -134,7 +134,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     
     /**
      * This method is used to inject the thumbnail definitions.
-     * @param thumbnailDefinitions
+     * @param thumbnailDefinitions List<ThumbnailDefinition>
      */
     public void setThumbnailDefinitions(final List<ThumbnailDefinition> thumbnailDefinitions)
     {
@@ -298,8 +298,8 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     
     /**
      * 
-     * @param mimetype
-     * @return
+     * @param mimetype String
+     * @return List<ThumbnailDefinition>
      * @deprecated Use {@link #getThumbnailDefinitions(String)} instead.
      */
     @Deprecated
@@ -373,8 +373,8 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     /**
      * Returns the maximum source size of any content that may transformed between the supplied
      * sourceMimetype and thumbnailDefinition's targetMimetype using its transformation options.
-     * @param sourceMimetype
-     * @param thumbnailDefinition
+     * @param sourceMimetype String
+     * @param thumbnailDefinition ThumbnailDefinition
      * @return 0 if there are no transformers, -1 if there is no limit or if positive the size in bytes.
      */
     public long getMaxSourceSizeBytes(String sourceMimetype, ThumbnailDefinition thumbnailDefinition)

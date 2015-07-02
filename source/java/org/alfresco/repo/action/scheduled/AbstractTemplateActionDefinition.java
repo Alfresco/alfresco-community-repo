@@ -64,7 +64,7 @@ public abstract class AbstractTemplateActionDefinition implements TemplateAction
     /**
      * Set the action service - IOC.
      * 
-     * @param actionService
+     * @param actionService ActionService
      */
     public void setActionService(ActionService actionService)
     {
@@ -83,8 +83,8 @@ public abstract class AbstractTemplateActionDefinition implements TemplateAction
 
     /**
      * Set the template service - IOC.
-     * 
-     * @param templateService
+     *
+     * @param templateService TemplateService
      */
     public void setTemplateService(TemplateService templateService)
     {
@@ -94,7 +94,7 @@ public abstract class AbstractTemplateActionDefinition implements TemplateAction
     /**
      * Set the template to define the compensating action.
      * 
-     * @param compensatingTemplateActionDefinition
+     * @param compensatingTemplateActionDefinition TemplateActionDefinition
      */
     public void setCompensatingTemplateCompositeActionDefinition(
             TemplateActionDefinition compensatingTemplateActionDefinition)

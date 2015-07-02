@@ -53,11 +53,11 @@ public class MultiFileDumper
     /**
      * Constructor with all available arguments.
      * 
-     * @param dbPrefixes
-     * @param directory
-     * @param fileNameTemplate
-     * @param dbToXMLFactory
-     * @param defaultSchemaName
+     * @param dbPrefixes String[]
+     * @param directory File
+     * @param fileNameTemplate String
+     * @param dbToXMLFactory DbToXMLFactory
+     * @param defaultSchemaName String
      */
     public MultiFileDumper(String[] dbPrefixes, File directory, String fileNameTemplate, DbToXMLFactory dbToXMLFactory, String defaultSchemaName)
     {
@@ -82,9 +82,9 @@ public class MultiFileDumper
     /**
      * Construct a MultiFileDumper with the {@link MultiFileDumper#DEFAULT_PREFIXES}.
      * 
-     * @param directory
-     * @param fileNameTemplate
-     * @param dbToXMLFactory
+     * @param directory File
+     * @param fileNameTemplate String
+     * @param dbToXMLFactory DbToXMLFactory
      * @param defaultSchemaName can be null
      */
     public MultiFileDumper(File directory, String fileNameTemplate, DbToXMLFactory dbToXMLFactory, String defaultSchemaName)

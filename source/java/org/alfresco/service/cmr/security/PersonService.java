@@ -86,7 +86,7 @@ public interface PersonService
      * Retrieve the person NodeRef for a {@code username}, optionally creating
      * the home folder if it does not exist and optionally creating the person
      * if they don't exist AND the PersonService is configured to allow the
-     * creation of missing persons {@see #setCreateMissingPeople(boolean)}.
+     * creation of missing persons {@link #setCreateMissingPeople(boolean)}.
      * 
      * If not allowed to create missing persons and the person does not exist
      * a {@code NoSuchPersonException} exception will be thrown.
@@ -194,8 +194,8 @@ public interface PersonService
      * Create a new person with the given properties. The userName is one of the
      * properties. Users with duplicate userNames are not allowed.
      * 
-     * @param properties
-     * @return
+     * @param properties Map<QName, Serializable>
+     * @return NodeRef
      */
     @Auditable(parameters = {"properties"})
     public NodeRef createPerson(Map<QName, Serializable> properties);
@@ -232,7 +232,7 @@ public interface PersonService
     /**
      * Delete the person identified by the given user name.
      * 
-     * @param userName
+     * @param userName String
      */
     @Auditable(parameters = {"userName"})
     public void deletePerson(String userName);
@@ -240,7 +240,7 @@ public interface PersonService
     /**
      * Delete the person identified by the given ref.
      * 
-     * @param personRef
+     * @param personRef NodeRef
      */
     @Auditable(parameters = {"personRef"})
     public void deletePerson(NodeRef personRef);
@@ -249,8 +249,8 @@ public interface PersonService
      * Delete the person identified by the given ref, and optionally delete
      * the associated authentication, if one.
      * 
-     * @param personRef
-     * @param deleteAuthentication
+     * @param personRef NodeRef
+     * @param deleteAuthentication boolean
      */
     @Auditable(parameters = {"personRef", "deleteAuthentication"})
     public void deletePerson(NodeRef personRef, boolean deleteAuthentication);
@@ -318,9 +318,9 @@ public interface PersonService
      * @param filterProps     list of filter properties (these are OR'ed)
      * @param sortProps       sort property, eg. cm:username ascending
      * @param pagingRequest   skip, max + optional query execution id
-     * @return
+     * @return PagingResults<PersonInfo>
      * 
-     * @author janv
+     * <br/><br/>author janv
      * @since 4.1.2
      */
     @Auditable(parameters = {"pattern", "filterProps", "sortProps", "pagingRequest"})
@@ -335,7 +335,7 @@ public interface PersonService
      * @param sortProps         sort property, eg. cm:username ascending
      * @param pagingRequest     skip, max + optional query execution id
      * 
-     * @author janv
+     * <br/><br/>author janv
      * @since 4.0
      * @deprecated see getPeople(String pattern, List<QName> filterProps, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
      */
@@ -345,7 +345,7 @@ public interface PersonService
     /**
      * Get paged list of people optionally filtered and/or sorted
      *
-     * @param pattern
+     * @param pattern String
      * @param filterStringProps            list of filter properties (with "startsWith" values), eg. cm:username "al" might match "alex", "alice", ...
      * @param inclusiveAspects       if set, filter out any people that don't have one of these aspects
      * @param exclusiveAspects       if set, filter out any people that do have one of these aspects
@@ -353,7 +353,7 @@ public interface PersonService
      * @param sortProps              sort property, eg. cm:username ascending
      * @param pagingRequest          skip, max + optional query execution id
      * 
-     * @author Alex Miller
+     * @code Alex Miller
      * @since 4.0
      */
     @Auditable(parameters = {"stringPropFilters", "filterIgnoreCase", "inclusiveAspect", "exclusiveAspects", "sortProps", "pagingRequest"})
@@ -376,7 +376,7 @@ public interface PersonService
     /**
      * Return the container that stores people.
      * 
-     * @return
+     * @return NodeRef
      */
     @Auditable
     public NodeRef getPeopleContainer();
@@ -384,7 +384,7 @@ public interface PersonService
     /**
      * Are user names case sensitive?
      * 
-     * @return
+     * @return boolean
      */
     @Auditable
     public boolean getUserNamesAreCaseSensitive();
@@ -395,8 +395,8 @@ public interface PersonService
      * If case insentive it will return the common object.
      * If the user does not exist it will return null;
      * 
-     * @param caseSensitiveUserName
-     * @return
+     * @param caseSensitiveUserName String
+     * @return String
      */
     @NotAuditable
     public String getUserIdentifier(String caseSensitiveUserName);
@@ -404,7 +404,7 @@ public interface PersonService
     /**
      * Counts the number of persons registered with the system.
      * 
-     * @return
+     * @return int
      */
     @NotAuditable
     public int countPeople();

@@ -90,7 +90,6 @@ public interface CannedQueryDAO
      * @param offset                the number of results to skip
      * @param limit                 the maximum number of results to retrieve or <code>Integer.MAX_VALUE</code>
      *                              for no limit
-     * @return                      the list of results
      */
     <R> void executeQuery(
             String sqlNamespace,

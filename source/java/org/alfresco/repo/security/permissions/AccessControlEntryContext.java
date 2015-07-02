@@ -38,7 +38,7 @@ public interface AccessControlEntryContext extends Serializable
      * 
      * Supports () for grouping
      * 
-     * @return
+     * @return String
      */
     public String getClassContext();
     
@@ -47,7 +47,7 @@ public interface AccessControlEntryContext extends Serializable
      * 
      * QName QName Qname => property types to which it applies
      * 
-     * @return
+     * @return String
      */
     public String getPropertyContext(); 
     
@@ -56,6 +56,6 @@ public interface AccessControlEntryContext extends Serializable
      * 
      * Serialized Map
      * 
-     * @return
+     * @return String
      */
     public String getKVPContext();}

@@ -24,7 +24,7 @@ import java.io.Serializable;
 /**
  * Interface for returning custom properties
  *
- * @author: mikeh
+ * @author mikeh
  */
 public interface CustomResponse
 {

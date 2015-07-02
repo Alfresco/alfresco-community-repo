@@ -289,9 +289,6 @@ public class AbstractActivitiComponentTest
         when(unprotectedSearchService.selectNodes(rootNode, "spaces.company_home.childname", null, namespaceService, false)).thenReturn(Arrays.asList(companyHomeNode));
     }
 
-    /**
-     * @return
-     */
     private void mockDictionaryService()
     {
         Mockito.reset(dictionaryService);

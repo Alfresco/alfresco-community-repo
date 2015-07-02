@@ -104,7 +104,10 @@ public class BasicCorrespondingNodeResolverImpl implements CorrespondingNodeReso
     }
 
     /**
-     * @param parentPath
+     *
+     * @param store StoreRef
+     * @param parentPath Path
+     * @return NodeRef
      */
     private NodeRef resolveParentPath(StoreRef store, Path parentPath)
     {

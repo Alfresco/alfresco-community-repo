@@ -51,7 +51,7 @@ public class ScriptTransferService extends BaseScopableProcessorExtension
     private List<QName> excludedAspects = new ArrayList<QName>();
 
     /**
-     * @param transferService
+     * @param transferService TransferService
      */
     public void setTransferService(TransferService transferService)
     {
@@ -60,7 +60,7 @@ public class ScriptTransferService extends BaseScopableProcessorExtension
 
     /**
      * 
-     * @return
+     * @return TransferService
      */
     public TransferService getTransferService()
     {

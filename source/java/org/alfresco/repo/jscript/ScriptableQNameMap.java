@@ -30,7 +30,7 @@ import org.mozilla.javascript.Scriptable;
 public class ScriptableQNameMap<K,V> extends QNameMap<K,V> implements Scriptable
 {
     /**
-     * @param resolver
+     * @param resolver NamespacePrefixResolverProvider
      */
     public ScriptableQNameMap(NamespacePrefixResolverProvider resolver)
     {

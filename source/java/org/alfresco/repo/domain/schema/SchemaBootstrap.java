@@ -234,7 +234,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * Defines the DatabaseMetaDataHelper to be used
      * 
-     * @param databaseMetaDataHelper
+     * @param databaseMetaDataHelper DatabaseMetaDataHelper
      */
     public void setDatabaseMetaDataHelper(DatabaseMetaDataHelper databaseMetaDataHelper)
     {
@@ -1839,7 +1839,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * Collate differences and validation problems with the schema with respect to an appropriate
      * reference schema.
      * 
-     * @param outputFileNameTemplate
+     * @param outputFileNameTemplate String
+     * @param out PrintWriter
      * @return the number of potential problems found.
      */
     public synchronized int validateSchema(String outputFileNameTemplate, PrintWriter out)
@@ -2038,7 +2039,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * If dbPrefixes is null, then the default list is used (see {@link MultiFileDumper#DEFAULT_PREFIXES})
      * The dump files' paths are logged at info level.
      * 
-     * @param whenDumped
+     * @param whenDumped String
      * @param dbPrefixes Array of database object prefixes to filter by, e.g. "alf_"
      * @return List of output files.
      */
@@ -2066,8 +2067,8 @@ public class SchemaBootstrap extends AbstractLifecycleBean
      * of database object prefixes is used for filtering.
      * 
      * @see #dumpSchema(String, String[])
-     * @param whenDumped
-     * @return
+     * @param whenDumped String
+     * @return List<File>
      */
     private List<File> dumpSchema(String whenDumped)
     {

@@ -30,7 +30,7 @@ public class SolrJSONResultSetRowIterator extends AbstractResultSetRowIterator
 {
 
     /**
-     * @param resultSet
+     * @param resultSet ResultSet
      */
     public SolrJSONResultSetRowIterator(ResultSet resultSet)
     {

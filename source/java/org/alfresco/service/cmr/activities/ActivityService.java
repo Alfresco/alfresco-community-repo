@@ -106,7 +106,6 @@ public interface ActivityService extends ActivityPostService
      * @param siteId     - optional, if set then will filter by given siteId else return all sites
      * @param excludeThisUser    - if TRUE then will exclude activities for this user   (hence returning other users only)
      * @param excludeOtherUsers - if TRUE then will exclude activities for other users (hence returning this user only)
-     * @param excludeOtherUsers      - if TRUE then will only return activities of users this user follows
      * @param minFeedId - inclusive from min feed DB id, if -1 then return all available
      * @return list of JSON feed entries
      */
@@ -152,7 +151,7 @@ public interface ActivityService extends ActivityPostService
     /**
      * Return maximum configured item entries (per feed)
      * 
-     * @return
+     * @return int
      */
     @NotAuditable
     public int getMaxFeedItems();

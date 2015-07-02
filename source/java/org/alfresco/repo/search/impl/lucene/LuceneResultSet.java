@@ -77,11 +77,11 @@ public class LuceneResultSet extends AbstractResultSet
     /**
      * Wrap a lucene seach result with node support
      * 
-     * @param hits
-     * @param searcher
+     * @param hits Hits
+     * @param searcher Searcher
      * @param nodeService nodeService
      * @param tenantService tenant service
-     * @param searchParameters
+     * @param searchParameters SearchParameters
      * @param config - lucene config
      */
     public LuceneResultSet(Hits hits, Searcher searcher, NodeService nodeService, TenantService tenantService, SearchParameters searchParameters,
@@ -275,7 +275,7 @@ public class LuceneResultSet extends AbstractResultSet
     /**
      * Bulk fetch results in the cache
      * 
-     * @param bulkFetch
+     * @param bulkFetch boolean
      */
     @Override
     public boolean setBulkFetch(boolean bulkFetch)
@@ -299,7 +299,7 @@ public class LuceneResultSet extends AbstractResultSet
     /**
      * Set the bulk fetch size
      * 
-     * @param bulkFetchSize
+     * @param bulkFetchSize int
      */
     @Override
     public int setBulkFetchSize(int bulkFetchSize)
@@ -321,8 +321,8 @@ public class LuceneResultSet extends AbstractResultSet
     }
 
     /**
-     * @param index
-     * @return
+     * @param index int
+     * @return int
      */
     public int doc(int index)
     {

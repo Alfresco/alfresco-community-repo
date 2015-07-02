@@ -30,13 +30,13 @@ public interface SynchronizeDiagnostic
     
     /**
      * 
-     * @return
+     * @return Date
      */
     public Date getPersonLastSynced();
  
     /**
      * 
-     * @return
+     * @return Date
      */
     public Date getGroupLastSynced();
 

@@ -89,7 +89,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
     /**
      * Set the node service
      * 
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -99,7 +99,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
     /**
      * Set the public node service
      * 
-     * @param publicNodeService
+     * @param publicNodeService NodeService
      */
     public void setPublicNodeService(NodeService publicNodeService)
     {
@@ -109,7 +109,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
     /**
      * Set the tenant service
      * 
-     * @param tenantService
+     * @param tenantService TenantService
      */
     public void setTenantService(TenantService tenantService)
     {
@@ -119,7 +119,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
     /**
      * Set the service to map prefixes to uris
      * 
-     * @param namespacePrefixResolver
+     * @param namespacePrefixResolver NamespacePrefixResolver
      */
     public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver)
     {
@@ -129,7 +129,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
     /**
      * Set the dictionary service
      * 
-     * @param dictionaryService
+     * @param dictionaryService DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -139,7 +139,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
     /**
      * Set the indexer and searcher
      * 
-     * @param indexerAndSearcher
+     * @param indexerAndSearcher IndexerAndSearcher
      */
     public void setIndexerAndSearcher(IndexerAndSearcher indexerAndSearcher)
     {

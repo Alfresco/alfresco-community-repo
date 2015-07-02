@@ -40,7 +40,7 @@ public class Location
     /**
      * Construct
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     public Location(NodeRef nodeRef)
     {
@@ -52,7 +52,7 @@ public class Location
     /**
      * Construct
      * 
-     * @param nodeRefs
+     * @param nodeRefs NodeRef[]
      */
     public Location(NodeRef[] nodeRefs)
     {
@@ -65,7 +65,7 @@ public class Location
     /**
      * Construct
      * 
-     * @param storeRef
+     * @param storeRef StoreRef
      */
     public Location(StoreRef storeRef)
     {

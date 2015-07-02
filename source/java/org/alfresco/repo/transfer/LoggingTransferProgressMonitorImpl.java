@@ -45,8 +45,8 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     }
 
     /**
-     * @param transferId
-     * @return
+     * @param transferId String
+     * @return TransferProgress
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#getProgress(java.lang.String)
      */
@@ -56,9 +56,9 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     }
 
     /**
-     * @param transferId
-     * @param obj
-     * @param ex
+     * @param transferId String
+     * @param obj Object
+     * @param ex Throwable
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#logException(java.lang.String, java.lang.Object, java.lang.Throwable)
      */
@@ -69,8 +69,8 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     }
 
     /**
-     * @param transferId
-     * @param obj
+     * @param transferId String
+     * @param obj Object
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#logComment(java.lang.String, java.lang.Object)
      */
@@ -110,9 +110,9 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     }
 
     /**
-     * @param transferId
-     * @param currPos
-     * @param endPos
+     * @param transferId String
+     * @param currPos int
+     * @param endPos int
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateProgress(java.lang.String, int, int)
      */
@@ -126,8 +126,8 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     }
 
     /**
-     * @param transferId
-     * @param currPos
+     * @param transferId String
+     * @param currPos int
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateProgress(java.lang.String, int)
      */
@@ -141,8 +141,8 @@ public class LoggingTransferProgressMonitorImpl implements TransferProgressMonit
     }
 
     /**
-     * @param transferId
-     * @param status
+     * @param transferId String
+     * @param status Status
      * @throws TransferException
      * @see org.alfresco.repo.transfer.TransferProgressMonitor#updateStatus(java.lang.String, org.alfresco.service.cmr.transfer.TransferProgress.Status)
      */

@@ -87,7 +87,7 @@ public abstract class BaseWebScriptTest extends TestCase
         /**
          * Construct
          * 
-         * @param writer
+         * @param writer PrintStream
          */
         public BaseWebScriptTestListener(PrintStream writer)
         {
@@ -137,8 +137,8 @@ public abstract class BaseWebScriptTest extends TestCase
         /**
          * Add an arbitrary log statement
          * 
-         * @param  test
-         * @param  log
+         * @param  test Test
+         * @param  log String
          */
         public void addLog(Test test, String log)
         {
@@ -149,7 +149,7 @@ public abstract class BaseWebScriptTest extends TestCase
     
     /**
      * Sets custom context for Test Web Script Server (in-process only)
-     * @param customContext
+     * @param customContext String
      */
     public void setCustomContext(String customContext)
     {
@@ -169,7 +169,7 @@ public abstract class BaseWebScriptTest extends TestCase
     /**
      * Sets whether to trace request / response bodies
      * 
-     * @param traceReqRes
+     * @param traceReqRes boolean
      */
     public void setTraceReqRes(boolean traceReqRes)
     {
@@ -189,7 +189,7 @@ public abstract class BaseWebScriptTest extends TestCase
     /**
      * Gets Remote Server
      * 
-     * @return
+     * @return RemoteServer
      */
     public RemoteServer getRemoteServer()
     {
@@ -199,7 +199,7 @@ public abstract class BaseWebScriptTest extends TestCase
     /**
      * Set Default Local Run As User
      * 
-     * @param localRunAs
+     * @param localRunAs String
      */
     public void setDefaultRunAs(String localRunAs)
     {
@@ -287,7 +287,7 @@ public abstract class BaseWebScriptTest extends TestCase
     /**
      * Log Message to Test Listener
      * 
-     * @param log
+     * @param log String
      */
     protected void log(String log)
     {
@@ -300,8 +300,8 @@ public abstract class BaseWebScriptTest extends TestCase
     /**
      * Send Request to Test Web Script Server (as admin)
      * 
-     * @param req
-     * @param expectedStatus
+     * @param req Request
+     * @param expectedStatus int
      * @return response
      * @throws IOException
      */
@@ -314,9 +314,9 @@ public abstract class BaseWebScriptTest extends TestCase
     /**
      * Send Request
      * 
-     * @param req
-     * @param expectedStatus
-     * @param asUser
+     * @param req Request
+     * @param expectedStatus int
+     * @param asUser String
      * @return response
      * @throws IOException
      */
@@ -401,9 +401,9 @@ public abstract class BaseWebScriptTest extends TestCase
     /**
      * Send Local Request to Test Web Script Server
      * 
-     * @param req
-     * @param expectedStatus
-     * @param asUser
+     * @param req Request
+     * @param expectedStatus int
+     * @param asUser String
      * @return response
      * @throws IOException
      */
@@ -445,8 +445,8 @@ public abstract class BaseWebScriptTest extends TestCase
     /**
      * Send Remote Request to stand-alone Web Script Server
      * 
-     * @param req
-     * @param expectedStatus
+     * @param req Request
+     * @param expectedStatus int
      * @return response
      * @throws IOException
      */

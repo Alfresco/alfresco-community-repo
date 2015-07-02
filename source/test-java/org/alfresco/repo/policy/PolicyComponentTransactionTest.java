@@ -471,11 +471,11 @@ public class PolicyComponentTransactionTest extends TestCase
         /**
          * Construct
          * 
-         * @param behaviour
-         * @param key1
-         * @param key2
-         * @param arg1
-         * @param arg2
+         * @param behaviour String
+         * @param key1 String
+         * @param key2 String
+         * @param arg1 String
+         * @param arg2 String
          */
         public TestResult(String behaviour, String key1, String key2, String arg1, String arg2)
         {

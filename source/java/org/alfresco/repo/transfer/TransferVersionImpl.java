@@ -30,10 +30,10 @@ public class TransferVersionImpl implements TransferVersion
 
     /**
      *
-     * @param versionMajor
-     * @param versionMinor
-     * @param versionRevision
-     * @param edition
+     * @param versionMajor String
+     * @param versionMinor String
+     * @param versionRevision String
+     * @param edition String
      */
     public TransferVersionImpl(String versionMajor, String versionMinor, String versionRevision, String edition)
     {

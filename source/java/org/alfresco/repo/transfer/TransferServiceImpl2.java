@@ -310,8 +310,8 @@ public class TransferServiceImpl2 implements TransferService2
     
     /**
      * Given the noderef of a group of transfer targets, return all the contained transfer targets.
-     * @param groupNode
-     * @return
+     * @param groupNode NodeRef
+     * @return Set<TransferTarget>
      */
     private Set<TransferTarget> getTransferTargets(NodeRef groupNode)
     {
@@ -419,9 +419,9 @@ public class TransferServiceImpl2 implements TransferService2
     /**
      * Transfer async.
      * 
-     * @param targetName
-     * @param definition
-     * @param callbacks
+     * @param targetName String
+     * @param definition TransferDefinition
+     * @param callbacks TransferCallback...
      * 
      */
     public void transferAsync(String targetName, TransferDefinition definition, TransferCallback... callbacks)
@@ -432,9 +432,9 @@ public class TransferServiceImpl2 implements TransferService2
     /**
      * Transfer async.
      * 
-     * @param targetName
-     * @param definition
-     * @param callbacks
+     * @param targetName String
+     * @param definition TransferDefinition
+     * @param callbacks Collection<TransferCallback>
      * 
      */
     public void transferAsync(String targetName, TransferDefinition definition, Collection<TransferCallback> callbacks)
@@ -504,9 +504,9 @@ public class TransferServiceImpl2 implements TransferService2
     /**
      * Transfer Synchronous
      * 
-     * @param targetName
-     * @param definition
-     * @param callbacks
+     * @param targetName String
+     * @param definition TransferDefinition
+     * @param callbacks TransferCallback...
      */
     public TransferEndEvent transfer(String targetName, TransferDefinition definition, TransferCallback... callbacks)
         throws TransferFailureException
@@ -517,9 +517,9 @@ public class TransferServiceImpl2 implements TransferService2
     /**
      * Transfer Synchronous
      * 
-     * @param targetName
-     * @param definition
-     * @param callbacks
+     * @param targetName String
+     * @param definition TransferDefinition
+     * @param callbacks Collection<TransferCallback>
      */
     public TransferEndEvent transfer(String targetName, TransferDefinition definition, Collection<TransferCallback> callbacks)
         throws TransferFailureException
@@ -1125,7 +1125,7 @@ public class TransferServiceImpl2 implements TransferService2
     
     /**
      * Check whether the specified transfer should be cancelled.
-     * @param transferHandle
+     * @param transferHandle String
      * @throws TransferException -  the transfer has been cancelled.
      */
     private void checkCancel(String transferHandle) throws TransferException
@@ -1230,8 +1230,8 @@ public class TransferServiceImpl2 implements TransferService2
     
     /**
      * 
-     * @param name
-     * @return
+     * @param name String
+     * @return NodeRef
      */
     private NodeRef lookupTransferTarget(String name)
     {
@@ -1308,7 +1308,7 @@ public class TransferServiceImpl2 implements TransferService2
     
     /**
      * Utility to dump the contents of a file to the console
-     * @param file
+     * @param file File
      */
     private static void outputFile(File file) throws IOException
     {

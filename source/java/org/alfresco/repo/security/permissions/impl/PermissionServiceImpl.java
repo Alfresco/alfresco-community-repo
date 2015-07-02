@@ -158,7 +158,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     
     /**
      * Set the dictionary service
-     * @param dictionaryService 
+     * @param dictionaryService DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -184,7 +184,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Set the permissions model dao
      * 
-     * @param modelDAO
+     * @param modelDAO ModelDAO
      */
     public void setModelDAO(ModelDAO modelDAO)
     {
@@ -194,7 +194,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Set the node service.
      * 
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -204,7 +204,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Set the ownable service.
      * 
-     * @param ownableService
+     * @param ownableService OwnableService
      */
     public void setOwnableService(OwnableService ownableService)
     {
@@ -213,7 +213,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     
     /**
      * Set the tenant service.
-     * @param tenantService
+     * @param tenantService TenantService
      */
     public void setTenantService(TenantService tenantService)
     {
@@ -223,7 +223,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Set the permissions dao component
      * 
-     * @param permissionsDaoComponent
+     * @param permissionsDaoComponent PermissionsDaoComponent
      */
     public void setPermissionsDaoComponent(PermissionsDaoComponent permissionsDaoComponent)
     {
@@ -233,7 +233,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Set the authority service.
      * 
-     * @param authorityService
+     * @param authorityService AuthorityService
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -243,7 +243,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Set the dynamic authorities
      * 
-     * @param dynamicAuthorities
+     * @param dynamicAuthorities List<DynamicAuthority>
      */
     public void setDynamicAuthorities(List<DynamicAuthority> dynamicAuthorities)
     {
@@ -253,7 +253,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Set the ACL DAO component.
      * 
-     * @param aclDaoComponent
+     * @param aclDaoComponent AclDAO
      */
     public void setAclDAO(AclDAO aclDaoComponent)
     {
@@ -291,7 +291,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Set the policy component
      * 
-     * @param policyComponent
+     * @param policyComponent PolicyComponent
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -301,8 +301,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Cache clear on move node
      * 
-     * @param oldChildAssocRef
-     * @param newChildAssocRef
+     * @param oldChildAssocRef ChildAssociationRef
+     * @param newChildAssocRef ChildAssociationRef
      */
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
@@ -312,7 +312,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Cache clear on create of a child association from an authority container.
      * 
-     * @param childAssocRef
+     * @param childAssocRef ChildAssociationRef
      */
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef)
     {
@@ -322,7 +322,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Cache clear on delete of a child association from an authority container.
      * 
-     * @param childAssocRef
+     * @param childAssocRef ChildAssociationRef
      */
     public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
@@ -789,7 +789,9 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Get the authorisations for the currently authenticated user
      * 
-     * @param auth
+     * @param auth Authentication
+     * @param nodeRef NodeRef
+     * @param required PermissionReference
      * @return the set of authorisations
      */
     protected Set<String> getAuthorisations(Authentication auth, NodeRef nodeRef, PermissionReference required)
@@ -1191,7 +1193,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     }
     
     /**
-     * @param aclId
+     * @param aclId Long
      * @return set of authorities denied permission on the ACL
      */
     @Override
@@ -1836,9 +1838,9 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Internal hook point for recursion
          * 
-         * @param authorisations
-         * @param aclId
-         * @param context
+         * @param authorisations Set<String>
+         * @param aclId Long
+         * @param context PermissionContext
          * @return true if granted
          */
         boolean evaluate(Set<String> authorisations, Long aclId, PermissionContext context)
@@ -1891,7 +1893,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Check if we have a global permission
          * 
-         * @param authorisations
+         * @param authorisations Set<String>
          * @return true if granted
          */
         private boolean checkGlobalPermissions(Set<String> authorisations)
@@ -1909,9 +1911,9 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Check that a given authentication is available on a node
          * 
-         * @param authorisations
-         * @param aclId
-         * @param context
+         * @param authorisations Set<String>
+         * @param aclId Long
+         * @param context PermissionContext
          * @return true if a check is required
          */
         boolean checkRequired(Set<String> authorisations, Long aclId, PermissionContext context)
@@ -1955,12 +1957,12 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Is a permission granted
          * 
-         * @param context
+         * @param ace AccessControlEntry
          * @param authorisations -
          *            the set of authorities
          * @param denied -
          *            the set of denied permissions/authority pais
-         * @param context
+         * @param context PermissionContext
          * @return true if granted
          */
         private boolean isGranted(AccessControlEntry ace, Set<String> authorisations, Set<Pair<String, PermissionReference>> denied, PermissionContext context)
@@ -2026,12 +2028,12 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Is a permission granted
          * 
-         * @param ace
+         * @param ace AccessControlEntry
          * @param authorisations -
          *            the set of authorities
          * @param allowed -
          *            the set of denied permissions/authority pais
-         * @param context
+         * @param context PermissionContext
          * @return true if granted
          */
         private boolean isDenied(AccessControlEntry ace, Set<String> authorisations, Set<Pair<String, PermissionReference>> allowed, PermissionContext context)
@@ -2179,8 +2181,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Internal hook point for recursion
          * 
-         * @param authority
-         * @param aclId
+         * @param authority String
+         * @param aclId Long
          * @return true if granted
          */
         boolean evaluate(String authority, Long aclId)
@@ -2240,7 +2242,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Check if we have a global permission
          * 
-         * @param authority
+         * @param authority String
          * @return true if granted
          */
         private boolean checkGlobalPermissions(String authority)
@@ -2258,8 +2260,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Check that a given authentication is available on a node
          * 
-         * @param authority
-         * @param aclId
+         * @param authority String
+         * @param aclId Long
          * @return true if a check is required
          */
         boolean checkRequired(String authority, Long aclId)
@@ -2288,8 +2290,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Is a permission granted
          * 
-         * @param ace
-         * @param authority
+         * @param ace AccessControlEntry
+         * @param authority String
          * @param denied -
          *            the set of denied permissions/authority pais
          * @return true if granted
@@ -2436,8 +2438,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Internal hook point for recursion
          * 
-         * @param authority
-         * @param aclId
+         * @param authority String
+         * @param aclId Long
          * @return true if granted
          */
         boolean evaluate(String authority, Long aclId)
@@ -2497,7 +2499,7 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Check if we have a global permission
          * 
-         * @param authority
+         * @param authority String
          * @return true if granted
          */
         private boolean checkGlobalPermissions(String authority)
@@ -2515,8 +2517,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Check that a given authentication is available on a node
          * 
-         * @param authority
-         * @param aclId
+         * @param authority String
+         * @param aclId Long
          * @return true if a check is required
          */
         boolean checkRequired(String authority, Long aclId)
@@ -2545,8 +2547,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         /**
          * Is a permission granted
          * 
-         * @param ace
-         * @param authority
+         * @param ace AccessControlEntry
+         * @param authority String
          * @param allowed -
          *            the set of allowed permissions/authority pais
          * @return true if granted

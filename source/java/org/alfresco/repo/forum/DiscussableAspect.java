@@ -123,7 +123,7 @@ public class DiscussableAspect implements
     }
     
     /**
-     * @return              Returns {@link DiscussableAspectCopyBehaviourCallback}
+     * @return              Returns CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

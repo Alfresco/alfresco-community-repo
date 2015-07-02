@@ -78,7 +78,7 @@ public class WorkflowTaskQuery
     
     
     /**
-     * @param orderBy
+     * @param orderBy OrderBy[]
      */
     public void setOrderBy(OrderBy[] orderBy)
     {
@@ -86,7 +86,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @return
+     * @return OrderBy[]
      */
     public OrderBy[] getOrderBy()
     {
@@ -94,7 +94,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @return
+     * @return String
      */
     public String getTaskId()
     {
@@ -102,7 +102,7 @@ public class WorkflowTaskQuery
     }
     
     /** 
-     * @param taskId
+     * @param taskId String
      */
     public void setTaskId(String taskId)
     {
@@ -110,7 +110,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @return
+     * @return Map
      */
     public Map<QName, Object> getTaskCustomProps()
     {
@@ -118,7 +118,7 @@ public class WorkflowTaskQuery
     }
 
     /**
-     * @param taskCustomProps
+     * @param taskCustomProps Map<QName, Object>
      */
     public void setTaskCustomProps(Map<QName, Object> taskCustomProps)
     {
@@ -126,7 +126,7 @@ public class WorkflowTaskQuery
     }
 
     /**
-     * @return
+     * @return WorkflowTaskState
      */
     public WorkflowTaskState getTaskState()
     {
@@ -134,7 +134,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @param taskState
+     * @param taskState WorkflowTaskState
      */
     public void setTaskState(WorkflowTaskState taskState)
     {
@@ -142,7 +142,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @return
+     * @return QName
      */
     public QName getTaskName()
     {
@@ -150,7 +150,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @param taskName
+     * @param taskName QName
      */
     public void setTaskName(QName taskName)
     {
@@ -158,7 +158,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @return
+     * @return String
      */
     public String getActorId()
     {
@@ -166,7 +166,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @param actorId
+     * @param actorId String
      */
     public void setActorId(String actorId)
     {
@@ -174,7 +174,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @return
+     * @return String
      */
     public String getProcessId()
     {
@@ -183,7 +183,7 @@ public class WorkflowTaskQuery
 
     /**
      * Filters ont he {@link WorkflowInstance} Id.
-     * @param processId
+     * @param processId String
      */
     public void setProcessId(String processId)
     {
@@ -191,7 +191,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @return
+     * @return QName
      */
     public QName getProcessName()
     {
@@ -204,7 +204,7 @@ public class WorkflowTaskQuery
      * the method {@link #setWorkflowDefinitionName(String)} should be used
      * instead of this method.
      * 
-     * @param processName
+     * @param processName QName
      */
     @Deprecated
     public void setProcessName(QName processName)
@@ -213,7 +213,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @return 
+     * @return String
      */
     public String getWorkflowDefinitionName()
     {
@@ -222,7 +222,7 @@ public class WorkflowTaskQuery
     
     /**
      * Filters on the {@link WorkflowDefinition} name.
-     * @param workflowDefinitionName
+     * @param workflowDefinitionName String
      */
     public void setWorkflowDefinitionName(String workflowDefinitionName)
     {
@@ -230,7 +230,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @return
+     * @return Boolean
      */
     public Boolean isActive()
     {
@@ -238,7 +238,7 @@ public class WorkflowTaskQuery
     }
     
     /**
-     * @param active
+     * @param active Boolean
      */
     public void setActive(Boolean active)
     {
@@ -246,7 +246,7 @@ public class WorkflowTaskQuery
     }
 
     /**
-     * @return
+     * @return Map
      */
     public Map<QName, Object> getProcessCustomProps()
     {
@@ -254,7 +254,7 @@ public class WorkflowTaskQuery
     }
 
     /**
-     * @param processCustomProps
+     * @param processCustomProps Map<QName, Object>
      */
     public void setProcessCustomProps(Map<QName, Object> processCustomProps)
     {

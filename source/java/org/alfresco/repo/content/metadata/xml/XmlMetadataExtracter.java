@@ -43,7 +43,7 @@ import org.alfresco.util.PropertyCheck;
  * The {@linkplain #setSelectors(List) selectors} are used to find an extracter
  * most appropriate of a given XML document. The chosen extracter is then asked
  * to extract the values, passing through the
- * {@linkplain MetadataExtracter.OverwritePolicy overwrite policy} as
+ * {@code MetadataExtracter.OverwritePolicy} as
  * {@linkplain #setOverwritePolicy(String)} on this instance. The overwrite
  * policy of the embedded extracters is not relevant unless they are used
  * separately in another context.

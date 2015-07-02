@@ -37,8 +37,8 @@ public class DescriptionProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry
-     * @param connector
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
      */
     public DescriptionProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

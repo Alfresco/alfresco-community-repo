@@ -130,7 +130,7 @@ public class VersionHistoryImpl implements VersionHistory
     /**
      * Sorts Versions into descending create date order (most recent first).
      * @param versions <b>Must be in order addVersion was called</b>.
-     * @return
+     * @return Collection<Version>
      */
     private Collection<Version> sortDescending(Collection<Version> versions)
     {

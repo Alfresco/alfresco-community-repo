@@ -84,9 +84,10 @@ public class RenditionNodeManager
      * @param sourceNode the source node which is being rendered.
      * @param tempRenditionNode the temporary rendition
      * @param location the proposed location of the rendition node.
-     * @param renditionDefinition
-     * @param nodeService
-     * @param renditionService
+     * @param renditionDefinition RenditionDefinition
+     * @param nodeService NodeService
+     * @param renditionService RenditionService
+     * @param behaviourFilter BehaviourFilter
      */
     public RenditionNodeManager(NodeRef sourceNode, NodeRef tempRenditionNode, RenditionLocation location,
                 RenditionDefinition renditionDefinition, NodeService nodeService, RenditionService renditionService,
@@ -381,8 +382,8 @@ public class RenditionNodeManager
      * the primary parent of the newly created rendition node, the rendition node is added as
      * a child of the source node.
      * 
-     * @param renditionName
-     * @param nodeTypeQName
+     * @param renditionName QName
+     * @param nodeTypeQName QName
      * @return the primary parent association of the newly created rendition node.
      */
     private ChildAssociationRef createNewRendition(QName renditionName, QName nodeTypeQName)
@@ -449,9 +450,9 @@ public class RenditionNodeManager
     }
 
     /**
-     * @param parentIsSource
-     * @param renditionName
-     * @return
+     * @param parentIsSource boolean
+     * @param renditionName QName
+     * @return QName
      */
     private QName getAssociationName(boolean parentIsSource, QName renditionName)
     {
@@ -495,7 +496,7 @@ public class RenditionNodeManager
     /**
      * This method copies properties from the temporary rendition node onto the targetNode. It also sets the node type.
      * {@link #unchangedProperties Some properties} are not copied.
-     * @param finalRenditionAssoc 
+     * @param finalRenditionAssoc ChildAssociationRef
      */
     private void transferNodeProperties(ChildAssociationRef finalRenditionAssoc)
     {

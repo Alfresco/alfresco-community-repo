@@ -81,7 +81,7 @@ public abstract class AbstractImapFolder implements MailFolder
      * @param message - message.
      * @param flags - message flags.
      * @param internalDate - not used. Current date used instead.
-     * @return
+     * @return long
      */
     public long appendMessage(final MimeMessage message, final Flags flags, final Date internalDate) throws FolderException
     {
@@ -127,7 +127,7 @@ public abstract class AbstractImapFolder implements MailFolder
     }
 
     /**
-     * Marks all messages in the folder as deleted using {@link Flags.Flag#DELETED} flag.
+     * Marks all messages in the folder as deleted using {@link javax.mail.Flags.Flag#DELETED} flag.
      */
     public void deleteAllMessages() throws FolderException
     {
@@ -145,7 +145,7 @@ public abstract class AbstractImapFolder implements MailFolder
     
 
     /**
-     * Deletes messages marked with {@link Flags.Flag#DELETED}. Note that this message deletes all messages with this flag.
+     * Deletes messages marked with {@link javax.mail.Flags.Flag#DELETED}. Note that this message deletes all messages with this flag.
      */
     public void expunge() throws FolderException
     {
@@ -165,7 +165,7 @@ public abstract class AbstractImapFolder implements MailFolder
     }
 
     /**
-     * Deletes messages marked with {@link Flags.Flag#DELETED}. Note that this message deletes the messages with current uid
+     * Deletes messages marked with {@link javax.mail.Flags.Flag#DELETED}. Note that this message deletes the messages with current uid
      */
     public void expunge(final long uid) throws FolderException
     {
@@ -238,7 +238,7 @@ public abstract class AbstractImapFolder implements MailFolder
     }
 
     /**
-     * Returns the list of messages that have no {@link Flags.Flag#DELETED} flag set for current user.
+     * Returns the list of messages that have no {@link javax.mail.Flags.Flag#DELETED} flag set for current user.
      * 
      * @return the list of non-deleted messages.
      */

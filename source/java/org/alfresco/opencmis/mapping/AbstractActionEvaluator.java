@@ -36,8 +36,8 @@ public abstract class AbstractActionEvaluator implements CMISActionEvaluator
     /**
      * Construct
      * 
-     * @param serviceRegistry
-     * @param action
+     * @param serviceRegistry ServiceRegistry
+     * @param action Action
      */
     protected AbstractActionEvaluator(ServiceRegistry serviceRegistry, Action action)
     {

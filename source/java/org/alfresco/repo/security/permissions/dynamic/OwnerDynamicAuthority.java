@@ -49,7 +49,7 @@ public class OwnerDynamicAuthority implements DynamicAuthority, InitializingBean
 
     /**
      * Set the ownable service
-     * @param ownableService
+     * @param ownableService OwnableService
      */
     public void setOwnableService(OwnableService ownableService)
     {

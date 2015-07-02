@@ -32,9 +32,9 @@ public class DBColumn extends BaseColumn
 {
 
     /**
-     * @param function
-     * @param functionArguments
-     * @param alias
+     * @param function Function
+     * @param functionArguments Map<String, Argument>
+     * @param alias String
      */
     public DBColumn(Function function, Map<String, Argument> functionArguments, String alias)
     {

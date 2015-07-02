@@ -48,10 +48,10 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
      * Add or Update OAuth2 Credentials for the current user to the OAuth2
      * Credential Store
      * 
-     * @param remoteSystemId
-     * @param accessToken
+     * @param remoteSystemId String
+     * @param accessToken String
      * @param refreshToken String
-     * @param expiresAt
+     * @param expiresAt Date
      * @param issuedAt if null, the current Datetime will be used
      * @return OAuth2CredentialsInfo
      */
@@ -79,11 +79,11 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     /**
      * Add Shared OAuth2 Credentials to the OAuth2 Credential Store
      * 
-     * @param remoteSystemId
-     * @param accessToken
-     * @param refreshToken
-     * @param expiresAt
-     * @param issuedAt
+     * @param remoteSystemId String
+     * @param accessToken String
+     * @param refreshToken String
+     * @param expiresAt Date
+     * @param issuedAt Date
      * @return OAuth2CredentialsInfo
      */
     @Override
@@ -99,12 +99,12 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     }
 
     /**
-     * @param exisitingCredentials
-     * @param remoteSystemId
-     * @param accessToken
-     * @param refreshToken
-     * @param expiresAt
-     * @param issuedAt
+     * @param exisitingCredentials OAuth2CredentialsInfo
+     * @param remoteSystemId String
+     * @param accessToken String
+     * @param refreshToken String
+     * @param expiresAt Date
+     * @param issuedAt Date
      * @return OAuth2CredentialsInfo
      */
     @Override
@@ -147,11 +147,11 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     }
 
     /**
-     * @param remoteSystemId
-     * @param accessToken
-     * @param refreshToken
-     * @param expiresAt
-     * @param issuedAt
+     * @param remoteSystemId String
+     * @param accessToken String
+     * @param refreshToken String
+     * @param expiresAt Date
+     * @param issuedAt Date
      * @return OAuth2CredentialsInfo
      */
     private OAuth2CredentialsInfo buildPersonalOAuth2CredentialsInfo(String remoteSystemId,
@@ -181,11 +181,11 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     }
 
     /**
-     * @param remoteSystemId
-     * @param accessToken
-     * @param refreshToken
-     * @param expiresAt
-     * @param issuedAt
+     * @param remoteSystemId String
+     * @param accessToken String
+     * @param refreshToken String
+     * @param expiresAt Date
+     * @param issuedAt Date
      * @return OAuth2CredentialsInfo
      */
     private OAuth2CredentialsInfo buildSharedOAuth2CredentialsInfo(String remoteSystemId,
@@ -211,7 +211,7 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     /**
      * Get the current users OAuth2Credentials for the remote systems
      * 
-     * @param remoteSystemId
+     * @param remoteSystemId String
      * @return OAuth2CredentialsInfo
      */
     @Override
@@ -223,7 +223,7 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     }
 
     /**
-     * @param remoteSystemId
+     * @param remoteSystemId String
      * @return List<OAuth2CredentialInfo>
      */
     @Override
@@ -241,7 +241,7 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     /**
      * Delete the current users OAuth2 Credentials for the remote system
      * 
-     * @param remoteSystemId
+     * @param remoteSystemId String
      * @return boolean
      */
     @Override
@@ -281,9 +281,9 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
     }
 
     /**
-     * @param succeeded
-     * @param credentials
-     * @return
+     * @param succeeded boolean
+     * @param credentials OAuth2CredentialsInfo
+     * @return OAuth2CredentialsInfo
      */
     @Override
     public OAuth2CredentialsInfo updateCredentialsAuthenticationSucceeded(boolean succeeded,

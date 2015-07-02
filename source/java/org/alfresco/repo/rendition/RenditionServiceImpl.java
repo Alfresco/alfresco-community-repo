@@ -93,7 +93,7 @@ public class RenditionServiceImpl implements
     
     /**
      * Injects the RenditionDefinitionPersister bean.
-     * @param renditionDefinitionPersister
+     * @param renditionDefinitionPersister RenditionDefinitionPersister
      */
     public void setRenditionDefinitionPersister(RenditionDefinitionPersister renditionDefinitionPersister)
     {
@@ -110,7 +110,7 @@ public class RenditionServiceImpl implements
     
     /**
      * Injects the ServiceRegistry bean.
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
@@ -120,7 +120,7 @@ public class RenditionServiceImpl implements
 
     /**
      * Injects the ActionService bean.
-     * @param actionService
+     * @param actionService ActionService
      */
     public void setActionService(ActionService actionService)
     {
@@ -129,7 +129,7 @@ public class RenditionServiceImpl implements
 
     /**
      * Injects the ActionTrackingService bean.
-     * @param actionTrackingService
+     * @param actionTrackingService ActionTrackingService
      */
     public void setActionTrackingService(ActionTrackingService actionTrackingService)
     {
@@ -138,7 +138,7 @@ public class RenditionServiceImpl implements
 
     /**
      * Injects the DictionaryService bean.
-     * @param dictionaryService
+     * @param dictionaryService DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -147,7 +147,7 @@ public class RenditionServiceImpl implements
 
     /**
      * Injects the PolicyComponent bean.
-     * @param policyComponent
+     * @param policyComponent PolicyComponent
      */
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -156,7 +156,7 @@ public class RenditionServiceImpl implements
     
     /**
      * Sets the list of known cancellable actions used by {@link #cancelRenditions(NodeRef)}.
-     * @param knownCancellableActionTypes
+     * @param knownCancellableActionTypes List<String>
      * @since 4.1.6
      */
     public void setKnownCancellableActionTypes(List<String> knownCancellableActionTypes)

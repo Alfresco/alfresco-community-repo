@@ -64,7 +64,7 @@ public class FreeMarkerWithLuceneExtensionsModelFactory implements TemplateActio
     
     /**
      * Set the service registry
-     * @param serviceRegistry 
+     * @param serviceRegistry ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {

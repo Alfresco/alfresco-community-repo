@@ -59,7 +59,7 @@ public abstract class AbstractCopyBehaviourCallback implements CopyBehaviourCall
     }
 
     /**
-     * @return      Returns {@link ChildAssocRecurseAction#RESPECT_RECURSE_FLAG}
+     * @return      Returns ChildAssocRecurseAction.RESPECT_RECURSE_FLAG
      */
     public ChildAssocRecurseAction getChildAssociationRecurseAction(
             QName classQName,

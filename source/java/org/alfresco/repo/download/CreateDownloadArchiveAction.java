@@ -83,8 +83,8 @@ public class CreateDownloadArchiveAction extends ActionExecuterAbstractBase
     private static class SizeEstimator extends BaseExporter 
     {
         /**
-         * @param checkOutCheckInService
-         * @param nodeService
+         * @param checkOutCheckInService CheckOutCheckInService
+         * @param nodeService NodeService
          */
         SizeEstimator(CheckOutCheckInService checkOutCheckInService, NodeService nodeService)
         {

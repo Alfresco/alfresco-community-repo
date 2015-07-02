@@ -178,7 +178,7 @@ public enum DBQueryBuilderPredicatePartCommandType
     
 
     /**
-     * @return
+     * @return DBQueryBuilderPredicatePartCommandType
      */
     public  DBQueryBuilderPredicatePartCommandType propertyNotFound()
     {

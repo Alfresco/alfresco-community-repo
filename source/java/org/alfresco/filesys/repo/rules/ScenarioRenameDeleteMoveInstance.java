@@ -91,7 +91,7 @@ public class ScenarioRenameDeleteMoveInstance implements ScenarioInstance
     /**
      * Evaluate the next operation
      * 
-     * @param operation
+     * @param operation Operation
      */
     public Command evaluate(Operation operation)
     {

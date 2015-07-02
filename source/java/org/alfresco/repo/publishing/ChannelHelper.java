@@ -114,9 +114,9 @@ public class ChannelHelper
 
     /**
      * Given a noderef from the editorial space (e.g. the doclib), this returns the corresponding noderef published to the specified channel.
-     * @param source
-     * @param channelNode
-     * @return
+     * @param source NodeRef
+     * @param channelNode NodeRef
+     * @return NodeRef
      */
     public NodeRef mapSourceToEnvironment(NodeRef source, final NodeRef channelNode)
     {
@@ -125,10 +125,10 @@ public class ChannelHelper
     
     /**
      * Given a noderef from the editorial space (e.g. the doclib), this returns the corresponding noderef published to the specified channel.
-     * @param source
-     * @param channelNode
-     * @param nodeService
-     * @return
+     * @param source NodeRef
+     * @param channelNode NodeRef
+     * @param nodeService NodeService
+     * @return NodeRef
      */
     public static NodeRef mapSourceToEnvironment(NodeRef source, final NodeRef channelNode, final NodeService nodeService)
     {
@@ -152,8 +152,8 @@ public class ChannelHelper
     
     /**
      * Given a published noderef, this returns the corresponding source noderef in the editorial space (doclib).
-     * @param publishedNode
-     * @return
+     * @param publishedNode NodeRef
+     * @return NodeRef
      */
     public NodeRef mapEnvironmentToSource(NodeRef publishedNode)
     {
@@ -162,8 +162,9 @@ public class ChannelHelper
     
     /**
      * Given a published noderef, this returns the corresponding source noderef in the editorial space (doclib).
-     * @param publishedNode
-     * @return
+     * @param publishedNode NodeRef
+     * @param nodeService NodeService
+     * @return NodeRef
      */
     public static NodeRef mapEnvironmentToSource(NodeRef publishedNode, NodeService nodeService)
     {
@@ -173,7 +174,7 @@ public class ChannelHelper
 
     /**
      * Finds the {@link Channel} NodeRef and {@link ChannelType} id for a given node, if such a Channel exists.
-     * @param node
+     * @param node NodeRef
      * @return a {@link Pair} containing the Channel {@link NodeRef} and ChannelType Id.
      */
     public Pair<NodeRef, String> findChannelAndType(NodeRef node)

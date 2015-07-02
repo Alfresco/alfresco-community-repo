@@ -38,13 +38,13 @@ public interface InvitationSearchCriteria
 	
 	/**
 	 * Search by inviter (who started the invitation)
-	 * @return
+	 * @return String
 	 */
 	String getInviter();
 	
 	/**
 	 * Search by invitee  (who is being invited, alfresco userid)
-	 * @return
+	 * @return String
 	 */
 	String getInvitee();
 	

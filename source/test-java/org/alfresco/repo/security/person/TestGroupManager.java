@@ -50,7 +50,7 @@ public class TestGroupManager
 
     /**
      * Creates a group with the given name if one does not already exist.
-     * @param groupShortName
+     * @param groupShortName String
      * @return The group's full name.
      */
     public String createGroupIfNotExist(String groupShortName)
@@ -73,8 +73,8 @@ public class TestGroupManager
      * Adds the child group as a sub-authority of the parent group. Creates the
      * child group and parent group if they do not exist.
      * 
-     * @param parentGroupShortName
-     * @param childGroupShortName
+     * @param parentGroupShortName String
+     * @param childGroupShortName String
      * @return The full name of the child group.
      */
     public String addGroupToParent(String parentGroupShortName, String childGroupShortName)
@@ -89,8 +89,8 @@ public class TestGroupManager
      * Adds the user as a sub-authroity of the specified group.
      * Creates the group if it doesn't exist.
      * 
-     * @param groupShortName
-     * @param userName
+     * @param groupShortName String
+     * @param userName String
      */
     public void addUserToGroup(String groupShortName, String userName)
     {

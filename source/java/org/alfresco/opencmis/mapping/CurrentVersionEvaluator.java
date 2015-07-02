@@ -31,8 +31,11 @@ public class CurrentVersionEvaluator extends AbstractActionEvaluator
 
     /**
      * Construct
-     * 
-     * @param serviceRegistry
+     *
+     * @param serviceRegistry ServiceRegistry
+     * @param action Action
+     * @param currentVersionValue boolean
+     * @param nonCurrentVersionValue boolean
      */
     protected CurrentVersionEvaluator(ServiceRegistry serviceRegistry, Action action, boolean currentVersionValue,
             boolean nonCurrentVersionValue)

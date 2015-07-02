@@ -58,7 +58,7 @@ public class NTLMPassthruToken extends NTLMLocalToken
     /**
      * Class constructor
      * 
-     * @params domain String
+     * @param domain String
      */
     public NTLMPassthruToken( String domain)
     {

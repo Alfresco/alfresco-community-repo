@@ -146,8 +146,8 @@ public abstract class DefaultBlogIntegrationImplementation extends BaseBlogInteg
     /**
      * Helper method to get the XML RPC client
      * 
-     * @param url
-     * @return
+     * @param url String
+     * @return XmlRpcClient
      */
     private XmlRpcClient getClient(String url)
     {    
@@ -172,10 +172,10 @@ public abstract class DefaultBlogIntegrationImplementation extends BaseBlogInteg
     /**
      * Executes an XML RPC method
      * 
-     * @param url
-     * @param method
-     * @param params
-     * @return
+     * @param url String
+     * @param method String
+     * @param params List<Object>
+     * @return Object
      */
     protected Object execute(String url, String method, List<Object> params)
     {

@@ -52,8 +52,6 @@ public class CheckedOutAspect
 
     /**
      * Callback behaviour retrieval for the 'onCreateVersion' aspect.
-     * 
-     * @return              Returns {@link DoNothingCopyBehaviourCallback} always
      */
     public void onCreateVersion(QName classRef, NodeRef versionableNode, Map<String, Serializable> versionProperties, PolicyScope nodeDetails)
     {

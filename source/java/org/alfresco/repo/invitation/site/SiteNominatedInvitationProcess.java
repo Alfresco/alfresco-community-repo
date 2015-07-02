@@ -37,7 +37,7 @@ public class SiteNominatedInvitationProcess implements NominatedInvitationProces
     
     /**
      * invitee accepts this request
-     * @param request
+     * @param request Invitation
      */
     public void accept(Invitation request)
     {
@@ -45,7 +45,7 @@ public class SiteNominatedInvitationProcess implements NominatedInvitationProces
     
     /**
      * invitee rejects this request
-     * @param request
+     * @param request Invitation
      */
     public void reject(Invitation request)
     {

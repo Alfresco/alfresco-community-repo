@@ -86,7 +86,7 @@ public abstract class AbstractTransformationSourceOptions implements Transformat
      * one, merging any non-null overriding fields in the given
      * <code>overridingOptions</code>
      * 
-     * @param overridingOptions
+     * @param overridingOptions TransformationSourceOptions
      * @return a merged <code>TransformationSourceOptions</code> object
      */
     public TransformationSourceOptions mergedOptions(TransformationSourceOptions overridingOptions)
@@ -108,9 +108,9 @@ public abstract class AbstractTransformationSourceOptions implements Transformat
     /**
      * Adds the given paramValue to the given params if it's not null.
      * 
-     * @param paramName
-     * @param paramValue
-     * @param params
+     * @param paramName String
+     * @param paramValue Serializable
+     * @param params Map<String, Serializable>
      */
     protected void putParameterIfNotNull(String paramName, Serializable paramValue, Map<String, Serializable> params)
     {

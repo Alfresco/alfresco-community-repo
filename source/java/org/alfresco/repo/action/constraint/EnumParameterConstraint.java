@@ -73,7 +73,7 @@ public class EnumParameterConstraint extends BaseParameterConstraint
     /**
      * Get the enum class
      * 
-     * @return
+     * @return Class
      */
     private Class<?> getEnumClass()
     {

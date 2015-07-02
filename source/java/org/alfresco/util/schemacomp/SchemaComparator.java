@@ -40,8 +40,9 @@ public class SchemaComparator
      * Construct a comparator to compare a target schema against a reference schema. Validators supplied
      * by the reference schema will be used to validate the target schema.
      * 
-     * @param referenceSchema
-     * @param targetSchema
+     * @param referenceSchema Schema
+     * @param targetSchema Schema
+     * @param dialect Dialect
      */
     public SchemaComparator(Schema referenceSchema, Schema targetSchema, Dialect dialect)
     {

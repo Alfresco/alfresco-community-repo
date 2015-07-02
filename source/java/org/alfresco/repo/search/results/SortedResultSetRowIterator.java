@@ -30,7 +30,7 @@ public class SortedResultSetRowIterator extends AbstractResultSetRowIterator
 {
 
     /**
-     * @param resultSet
+     * @param resultSet ResultSet
      */
     public SortedResultSetRowIterator(ResultSet resultSet)
     {

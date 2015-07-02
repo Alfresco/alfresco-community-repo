@@ -66,7 +66,7 @@ public abstract class AlfrescoNetworkFile extends NetworkFile implements Network
   
   /**
    * Tell JLAN it needs to call disk.closeFile rather than short cutting.
-   * @return
+   * @return boolean
    */
   public boolean allowsOpenCloseViaNetworkFile() {
       return false;

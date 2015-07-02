@@ -44,7 +44,7 @@ import org.springframework.context.ApplicationContext;
  * this property is editable at runtime via JMX. If a new &lt;id> is included in the list then a new
  * {@link ChildApplicationContextFactory} will be brought into existence. Similarly, if one is removed from the list,
  * then the corresponding instance will be destroyed. For Alfresco community edition, the chain is best configured
- * through the {@link #setChain(String)} method via Spring configuration.
+ * through the method via Spring configuration.
  * 
  * @author dward
  */

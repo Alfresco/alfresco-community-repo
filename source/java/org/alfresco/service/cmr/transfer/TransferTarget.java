@@ -29,61 +29,61 @@ public interface TransferTarget
 {
     /**
      * read only - get the node reference of the underlying transfer target node.
-     * @return
+     * @return NodeRef
      */
     public NodeRef getNodeRef();
     
     /**
      * Get the name of this transfer target
-     * @return
+     * @return String
      */
     public String getName();
         
     /**
      * Get the description for this transfer target
-     * @return
+     * @return String
      */
     public String getDescription();
     
     /**
      * Set the decription for this transfer target
-     * @param description
+     * @param description String
      */
     public void setDescription(String description);
     
     /**
      * Get the title of this transfer target 
-     * @return
+     * @return String
      */
     String getTitle();
     
     /**
      * Set the title for this transfer target
-     * @param title
+     * @param title String
      */
     public void setTitle(String title);
     
     /**
      * Get the endpoint host
-     * @return
+     * @return String
      */
     public String getEndpointHost();
     
     /**
      * Set the endpoint host
-     * @param endpointHost
+     * @param endpointHost String
      */
     public void setEndpointHost(String endpointHost);
     
     /**
      * Get the endpoint port
-     * @return
+     * @return int
      */
     int getEndpointPort();
     
     /**
      * Set the endpoint port
-     * @param endpointPort
+     * @param endpointPort int
      */
     public void setEndpointPort(int endpointPort);
     
@@ -94,7 +94,7 @@ public interface TransferTarget
     
     /**
      * Set the endpoint protocol.
-     * @param endpointProtocol
+     * @param endpointProtocol String
      */
     public void setEndpointProtocol(String endpointProtocol);
     
@@ -106,26 +106,26 @@ public interface TransferTarget
 
     /**
      * The username used to authenticate with the transfer target
-     * @return
+     * @return String
      */
     String getUsername();
     
     /**
      * The username used to authenticate with the transfer target
-     * @param userName
+     * @param userName String
      */
     void setUsername(String userName);
     
     /**
      * Get the cleartext password
-     * @return
+     * @return char[]
      */
     char[] getPassword();
     
     /**
      * The location of the transfer service on the target endpoint host
      * Defaults to "/alfresco/service/api/transfer", and this shouldn't typically need to change
-     * @return
+     * @return String
      */
     String getEndpointPath();
     

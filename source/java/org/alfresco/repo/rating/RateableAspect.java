@@ -74,7 +74,7 @@ public class RateableAspect implements CopyServicePolicies.OnCopyNodePolicy
     /**
      * Set the rating naming conventions service.
      * 
-     * @param
+     * @param ratingNamingConventions RatingNamingConventionsUtil
      */
     public void setRatingNamingConventions(RatingNamingConventionsUtil ratingNamingConventions)
     {
@@ -107,7 +107,7 @@ public class RateableAspect implements CopyServicePolicies.OnCopyNodePolicy
     }
 
     /**
-     * @return Returns {@link RateableAspectCopyBehaviourCallback}
+     * @return Returns CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

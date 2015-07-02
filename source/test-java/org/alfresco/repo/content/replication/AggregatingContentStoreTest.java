@@ -128,7 +128,7 @@ public class AggregatingContentStoreTest extends AbstractWritableContentStoreTes
     /**
      * Checks that the url is present in each of the stores
      * 
-     * @param contentUrl
+     * @param contentUrl String
      * @param mustExist true if the content must exist, false if it must <b>not</b> exist
      */
     private void checkForUrl(String contentUrl, boolean mustExist)

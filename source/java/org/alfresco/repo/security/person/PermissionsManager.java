@@ -38,8 +38,9 @@ public interface PermissionsManager
     /**
      * Validate that permissions are set on a node as defined.
      * 
-     * @param nodeRef
-     * @param owner
+     * @param nodeRef NodeRef
+     * @param owner String
+     * @param user String
      * @return - true if correct, false if they are not set as defined.
      */
     public boolean validatePermissions(NodeRef nodeRef, String owner, String user);

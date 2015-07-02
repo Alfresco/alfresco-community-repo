@@ -90,9 +90,9 @@ public class TransferEventProcessor
 
     /**
      * 
-     * @param data
-     * @param range
-     * @param position
+     * @param data ContentData
+     * @param range long
+     * @param position long
      */
     public void sendContent(ContentData data, long range, long position)
     {
@@ -110,8 +110,8 @@ public class TransferEventProcessor
     
     /**
      * 
-     * @param range
-     * @param position
+     * @param range long
+     * @param position long
      */
     public void sendSnapshot(long range, long position)
     {
@@ -153,8 +153,8 @@ public class TransferEventProcessor
     
     /**
      * 
-     * @param range
-     * @param position
+     * @param range long
+     * @param position long
      */
     public void committing(long range, long position)
     {

@@ -494,8 +494,8 @@ public class ActivitiPropertyConverter
     }
 
     /**
-     * @param historicProcessInstance
-     * @return
+     * @param historicProcessInstance HistoricProcessInstance
+     * @return Map
      */
     public Map<String, Object> getStartVariables(HistoricProcessInstance historicProcessInstance)
     {
@@ -517,8 +517,8 @@ public class ActivitiPropertyConverter
     /**
      * Get all variable updates for process instance, latest updates on top
      * 
-     * @param processId
-     * @return
+     * @param processId String
+     * @return Map
      */
     public Map<String, Object> getHistoricProcessVariables(String processId)
     {
@@ -532,8 +532,8 @@ public class ActivitiPropertyConverter
     /**
      * Get all variable updates for task instance, latest updates on top
      * 
-     * @param taskId
-     * @return
+     * @param taskId String
+     * @return Map
      */
     public Map<String, Object> getHistoricTaskVariables(String taskId)
     {
@@ -546,8 +546,8 @@ public class ActivitiPropertyConverter
     /**
      * Get all variable updates for activity, latest updates on top
      * 
-     * @param activityId
-     * @return
+     * @param activityId String
+     * @return Map
      */
     public Map<String, Object> getHistoricActivityVariables(String activityId)
     {
@@ -652,10 +652,10 @@ public class ActivitiPropertyConverter
 
     /**
      * Converts a {@link Serializable} value to the type of the specified property. 
-     * @param task
-     * @param value
-     * @param propertyName
-     * @return
+     * @param task Task
+     * @param value Serializable
+     * @param propertyName QName
+     * @return Serializable
      */
     public Serializable convertValueToPropertyType(Task task, Serializable value, QName propertyName)
     {
@@ -801,8 +801,8 @@ public class ActivitiPropertyConverter
     }
 
     /**
-     * @param task
-     * @param properties
+     * @param task Task
+     * @param properties Map<QName, Serializable>
      */
     private void setTaskOwner(Task task, Map<QName, Serializable> properties)
     {
@@ -834,7 +834,7 @@ public class ActivitiPropertyConverter
     /**
      * Filter out all internal task-properties.
      * 
-     * @param properties
+     * @param properties Map<QName, Serializable>
      * @return filtered properties.
      */
     private Map<QName, Serializable> filterTaskProperties(
@@ -1029,8 +1029,8 @@ public class ActivitiPropertyConverter
     }
 
     /**
-     * @param value
-     * @return
+     * @param value Object
+     * @return boolean
      */
     private boolean isEmptyString(Object value)
     {

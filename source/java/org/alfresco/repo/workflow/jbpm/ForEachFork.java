@@ -60,7 +60,7 @@ public class ForEachFork extends JBPMSpringActionHandler
     /**
      * Create a new child token for each item in list.
      * 
-     * @param executionContext
+     * @param executionContext ExecutionContext
      * @throws Exception
      */
     public void execute(final ExecutionContext executionContext)
@@ -194,9 +194,10 @@ public class ForEachFork extends JBPMSpringActionHandler
     /**
      * Create a token name
      * 
-     * @param parent
-     * @param transitionName
-     * @return
+     * @param parent Token
+     * @param transitionName String
+     * @param loopIndex int
+     * @return String
      */
     protected String getTokenName(Token parent, String transitionName, int loopIndex)
     {

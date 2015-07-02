@@ -70,7 +70,7 @@ import freemarker.ext.dom.NodeModel;
  * Various helper methods are provided to access common and useful node variables such
  * as the content url and type information. 
  * <p>
- * See {@link http://wiki.alfresco.com/wiki/Template_Guide}
+ * See <a href="http://wiki.alfresco.com/wiki/Template_Guide">Template_Guide</a>
  * 
  * @author Kevin Roast
  */

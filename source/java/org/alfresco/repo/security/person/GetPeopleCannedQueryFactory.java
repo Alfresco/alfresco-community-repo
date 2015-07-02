@@ -102,7 +102,6 @@ public class GetPeopleCannedQueryFactory extends AbstractCannedQueryFactory<Node
      * @param filterProps           filter props
      * @param inclusiveAspects      If not null, only child nodes with any aspect in this collection will be included in the results.
      * @param exclusiveAspects      If not null, any child nodes with any aspect in this collection will be excluded in the results.
-     * @param filterProps           filter properties
      * @param includeAdministrators include administrators in the returned results
      * @param sortProps             sort property pairs (QName and Boolean - true if ascending)
      * @param pagingRequest         skipCount, maxItems - optionally queryExecutionId and requestTotalCountMax

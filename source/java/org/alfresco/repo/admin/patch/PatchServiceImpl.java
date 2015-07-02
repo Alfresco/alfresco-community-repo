@@ -260,8 +260,6 @@ public class PatchServiceImpl implements PatchService
      * Reentrant method that ensures that a patch and all its dependencies get applied.
      * The process terminates on the first failure.
      * 
-     * @param patch all the executed patch data.  If there was a failure, then this
-     *      is the list of successful executions only.
      * @param patch the patch (containing dependencies) to apply
      * @param appliedPatchesById already applied patches keyed by their ID
      * @return Returns true if the patch and all its dependencies were successfully applied.
@@ -471,8 +469,6 @@ public class PatchServiceImpl implements PatchService
         
         /**
          * Perform some setup before applying the patch e.g. check whether the patch needs to be applied.
-         * 
-         * @return true: continue, false: do not apply patch
          */
     	private void setup()
     	{

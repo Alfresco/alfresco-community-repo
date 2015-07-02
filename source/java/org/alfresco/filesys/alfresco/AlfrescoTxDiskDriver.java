@@ -86,7 +86,7 @@ public abstract class AlfrescoTxDiskDriver extends AlfrescoDiskDriver implements
      * @param callback
      *            callback for the retryable operation
      * @return the result of the operation
-     * @throws Exception
+     * @throws IOException
      */
     public <T> T doInWriteTransaction(SrvSession sess, final CallableIO<T> callback)
             throws IOException
@@ -330,7 +330,7 @@ public abstract class AlfrescoTxDiskDriver extends AlfrescoDiskDriver implements
         private static final long serialVersionUID = 1L;
 
         /**
-         * @param cause
+         * @param cause Throwable
          */
         public PropagatingException(Throwable cause)
         {

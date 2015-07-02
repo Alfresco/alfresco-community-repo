@@ -72,7 +72,7 @@ public class PropertyPolicyDelegate<P extends PropertyPolicy>
     /**
      * Ensures the validity of the given property type
      * 
-     * @param propertyQName
+     * @param propertyQName QName
      * @throws IllegalArgumentException
      */
     private void checkPropertyType(QName propertyQName) throws IllegalArgumentException

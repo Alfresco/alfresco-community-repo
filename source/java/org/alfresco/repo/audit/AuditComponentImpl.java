@@ -695,7 +695,6 @@ public class AuditComponentImpl implements AuditComponent
     }
     
     /**
-     * {@inheritDoc}
      * @since 3.2
      */
     public Map<String, Serializable> recordAuditValuesImpl(Map<String, Serializable> mappedValues)

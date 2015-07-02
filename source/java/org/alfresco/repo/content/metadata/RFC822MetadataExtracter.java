@@ -196,7 +196,7 @@ public class RFC822MetadataExtracter extends AbstractMappingMetadataExtracter
     
    /**
      * Back door for RM
-     * @return
+     * @return Map
      */
     public final Map<String, Set<QName>> getCurrentMapping()
     {

@@ -85,7 +85,7 @@ public class SimpleAccessControlEntry implements AccessControlEntry
 
     /**
      * Set the status
-     * @param accessStatus
+     * @param accessStatus AccessStatus
      */
     public void setAccessStatus(AccessStatus accessStatus)
     {
@@ -95,7 +95,7 @@ public class SimpleAccessControlEntry implements AccessControlEntry
     
     /**
      * Set the type
-     * @param aceType
+     * @param aceType ACEType
      */
     public void setAceType(ACEType aceType)
     {
@@ -104,7 +104,7 @@ public class SimpleAccessControlEntry implements AccessControlEntry
 
     /**
      * Set the authority
-     * @param authority
+     * @param authority String
      */
     public void setAuthority(String authority)
     {
@@ -114,7 +114,7 @@ public class SimpleAccessControlEntry implements AccessControlEntry
 
     /**
      * Set the context
-     * @param context
+     * @param context AccessControlEntryContext
      */
     public void setContext(AccessControlEntryContext context)
     {
@@ -123,7 +123,7 @@ public class SimpleAccessControlEntry implements AccessControlEntry
 
     /**
      * Set the permission
-     * @param permission
+     * @param permission PermissionReference
      */
     public void setPermission(PermissionReference permission)
     {
@@ -132,7 +132,7 @@ public class SimpleAccessControlEntry implements AccessControlEntry
 
     /** 
      * Set the position
-     * @param position
+     * @param position Integer
      */
     public void setPosition(Integer position)
     {

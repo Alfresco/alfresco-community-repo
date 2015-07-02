@@ -55,7 +55,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     /**
      * Sets the Service Registry
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
@@ -73,7 +73,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     }
     
     /**
-     * @see {@link #createSite(String, String, String, String, String)}
+     * @see #createSite(String, String, String, String, String)
      * 
      * @param sitePreset    site preset
      * @param shortName     site short name
@@ -284,7 +284,7 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
      * Converts the given List of SiteInfo objects to a JavaScript friendly array
      * of Site objects.
      * 
-     * @param siteInfos
+     * @param siteInfos List<SiteInfo>
      * @return Array of Site objects
      */
     protected Site[] makeSitesArray(List<SiteInfo> siteInfos)

@@ -35,8 +35,8 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
- * Uses {@link http://tika.apache.org/ Apache Tika} and
- *  {@link http://poi.apache.org/ Apache POI} to perform
+ * Uses <a href="http://tika.apache.org/">Apache Tika</a> and
+ *  <a href="@link http://poi.apache.org/">Apache POI</a> to perform
  *  conversions from Excel spreadsheets.
  * <p>Will transform from Excel spreadsheets into Html,
  *  Xml or Text (space or comma separated)

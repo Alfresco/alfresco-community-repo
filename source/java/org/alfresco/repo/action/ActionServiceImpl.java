@@ -231,8 +231,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     
     /**
      * This method registers an {@link AsynchronousActionExecutionQueue} with the {@link ActionService}.
-     * @param key
-     * @param asyncExecQueue
+     * @param key String
+     * @param asyncExecQueue AsynchronousActionExecutionQueue
      * @since Thor Phase 2 Sprint 2
      */
     public void registerAsynchronousActionExecutionQueue(String key, AsynchronousActionExecutionQueue asyncExecQueue)
@@ -1234,8 +1234,8 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     /**
      * Save the condition properties
      * 
-     * @param conditionNodeRef
-     * @param condition
+     * @param conditionNodeRef NodeRef
+     * @param condition ActionCondition
      */
     private void saveConditionProperties(NodeRef conditionNodeRef, ActionCondition condition)
     {

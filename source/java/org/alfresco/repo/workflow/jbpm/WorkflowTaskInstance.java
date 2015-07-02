@@ -62,8 +62,8 @@ public class WorkflowTaskInstance extends TaskInstance
     /**
      * Construct
      * 
-     * @param taskName
-     * @param actorId
+     * @param taskName String
+     * @param actorId String
      */
     public WorkflowTaskInstance(String taskName, String actorId)
     {

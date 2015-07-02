@@ -1402,7 +1402,7 @@ public class CopyServiceImpl extends AbstractBaseCopyService implements CopyServ
     /**
      * Callback behaviour retrieval for {@link ContentModel#TYPE_FOLDER} aspect.
      * 
-     * @return              Returns {@link FolderTypeCopyBehaviourCallback}
+     * @return              Returns FolderTypeCopyBehaviourCallback.INSTANCE
      */
     public CopyBehaviourCallback getCallbackForFolderType(QName classRef, CopyDetails copyDetails)
     {

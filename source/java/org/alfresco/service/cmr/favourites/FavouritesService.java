@@ -62,9 +62,9 @@ public interface FavouritesService
      * If the nodeRef is already favourited, the favourite entity is returned. No
      * information regarding the favourite e.g. createdAt is updated.
      * 
-     * @param userName
-     * @param nodeRef
-     * @return
+     * @param userName String
+     * @param nodeRef NodeRef
+     * @return PersonFavourite
      */
     @Auditable(parameters = {"userName", "nodeRef"})
     PersonFavourite addFavourite(String userName, NodeRef nodeRef);
@@ -72,9 +72,9 @@ public interface FavouritesService
     /**
      * Is the entity identified by nodeRef a favourite document of user "userName".
      * 
-     * @param userName
-     * @param nodeRef
-     * @return
+     * @param userName String
+     * @param nodeRef NodeRef
+     * @return boolean
      */
     @Auditable(parameters = {"userName", "nodeRef"})
     boolean isFavourite(String userName, NodeRef nodeRef);
@@ -82,9 +82,9 @@ public interface FavouritesService
     /**
      * Remove the document identified by nodeRef as a favourite for user "userName".
      * 
-     * @param userName
-     * @param nodeRef
-     * @return
+     * @param userName String
+     * @param nodeRef NodeRef
+     * @return boolean
      */
     @Auditable(parameters = {"userName", "nodeRef"})
     boolean removeFavourite(String userName, NodeRef nodeRef);
@@ -92,11 +92,11 @@ public interface FavouritesService
     /**
      * A paged list of favourites for user "userName".
      * 
-     * @param userName
-     * @param types
-     * @param sortProps
-     * @param pagingRequest
-     * @return
+     * @param userName String
+     * @param types Set<Type>
+     * @param sortProps List<Pair<FavouritesService.SortFields, Boolean>>
+     * @param pagingRequest PagingRequest
+     * @return PagingResults<PersonFavourite>
      */
     @Auditable(parameters = {"userName", "types", "pagingRequest"})
     PagingResults<PersonFavourite> getPagedFavourites(String userName, Set<Type> types,
@@ -105,9 +105,9 @@ public interface FavouritesService
     /**
      * Get a specific favourite for user "userName".
      * 
-     * @param userName
-     * @param nodeRef
-     * @return
+     * @param userName String
+     * @param nodeRef NodeRef
+     * @return PersonFavourite
      */
     @Auditable(parameters = {"userName", "nodeRef"})
     PersonFavourite getFavourite(String userName, NodeRef nodeRef);

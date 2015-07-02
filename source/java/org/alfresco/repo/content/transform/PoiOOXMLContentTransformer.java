@@ -25,8 +25,8 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.microsoft.ooxml.OOXMLParser;
 
 /**
- * Uses {@link http://tika.apache.org/ Apache Tika} and
- *  {@link http://poi.apache.org/ Apache POI} to perform
+ * Uses <a href="http://tika.apache.org/">Apache Tika</a> and
+ *  <a href="@link http://poi.apache.org/">Apache POI</a> to perform
  *  conversions from the newer OOXML Office documents.
  *
  * @author Nick Burch

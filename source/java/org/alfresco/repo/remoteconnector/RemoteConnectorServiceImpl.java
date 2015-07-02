@@ -405,9 +405,9 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
      * Create proxy host for the given system host and port properties.
      * If the properties are not set, no proxy will be created.
      * 
-     * @param hostProperty
-     * @param portProperty
-     * @param defaultPort
+     * @param hostProperty String
+     * @param portProperty String
+     * @param defaultPort int
      * 
      * @return ProxyHost if appropriate properties have been set, null otherwise
      */
@@ -435,8 +435,8 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
     /**
      * Create the proxy credentials for the given proxy user and password properties.
      * If the properties are not set, not credentials will be created.
-     * @param proxyUserProperty
-     * @param proxyPasswordProperty
+     * @param proxyUserProperty String
+     * @param proxyPasswordProperty String
      * @return Credentials if appropriate properties have been set, null otherwise
      */
     private static Credentials createProxyCredentials(final String proxyUserProperty, final String proxyPasswordProperty) 
@@ -454,7 +454,7 @@ public class RemoteConnectorServiceImpl implements RemoteConnectorService
     /**
      * Create suitable AuthScope for ProxyHost.
      * If the ProxyHost is null, no AuthsScope will be created.
-     * @param proxyHost
+     * @param proxyHost ProxyHost
      * @return Authscope for provided ProxyHost, null otherwise.
      */
     private static AuthScope createProxyAuthScope(final ProxyHost proxyHost)

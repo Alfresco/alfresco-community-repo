@@ -43,7 +43,7 @@ import org.alfresco.util.BaseSpringTest;
 import org.springframework.context.ApplicationContext;
 
 /**
- * @see org.alfresco.repo.node.db.DbNodeServiceImpl#propagateTimeStamp
+ * @see org.alfresco.repo.node.db.DbNodeServiceImpl#propagateTimeStamps(ChildAssociationRef)
  * 
  * @author sergey.shcherbovich
  */

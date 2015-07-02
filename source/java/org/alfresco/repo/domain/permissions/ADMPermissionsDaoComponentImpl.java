@@ -152,8 +152,8 @@ public class ADMPermissionsDaoComponentImpl extends AbstractPermissionsDaoCompon
 
 
     /**
-     * @param nodeRef
-     * @param acl
+     * @param nodeRef NodeRef
+     * @param acl Acl
      */
     private void replaceWithCleanDefiningAcl(NodeRef nodeRef, Acl acl)
     {

@@ -108,12 +108,12 @@ public class ParameterDefinitionImpl implements ParameterDefinition, Serializabl
     /**
      * Constructor
      * 
-     * @param name
-     * @param type
-     * @param isMandatory
-     * @param displayLabel
-     * @param isMultiValued
-     * @param parameterConstraintName
+     * @param name String
+     * @param type QName
+     * @param isMandatory boolean
+     * @param displayLabel String
+     * @param isMultiValued boolean
+     * @param parameterConstraintName String
      */
     public ParameterDefinitionImpl(
             String name, 

@@ -89,14 +89,14 @@ public class WorkflowNotificationUtils
     
     /**
      *
-     * @param taskId
-     * @param taskTitle
-     * @param description
-     * @param dueDate
-     * @param priority
-     * @param workflowPackage
-     * @param assignedAuthorites
-     * @param pooled
+     * @param taskId String
+     * @param taskTitle String
+     * @param description String
+     * @param dueDate Date
+     * @param priority Integer
+     * @param workflowPackage NodeRef
+     * @param assignedAuthorites String[]
+     * @param pooled boolean
      */
     public void sendWorkflowAssignedNotificationEMail(
             String taskId,

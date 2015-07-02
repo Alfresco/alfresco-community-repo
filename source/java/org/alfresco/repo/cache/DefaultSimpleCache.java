@@ -92,8 +92,8 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
     /**
      * Create a size limited, named cache with no other features enabled.
      * 
-     * @param maxItems
-     * @param cacheName
+     * @param maxItems int
+     * @param cacheName String
      */
     public DefaultSimpleCache(int maxItems, String cacheName)
     {
@@ -223,7 +223,7 @@ public final class DefaultSimpleCache<K extends Serializable, V extends Object>
      * a name with each one.
      * 
      * @see #setBeanName(String)
-     * @param cacheName
+     * @param cacheName String
      */
     public void setCacheName(String cacheName)
     {

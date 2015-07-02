@@ -89,7 +89,7 @@ public abstract class TransferEventImpl implements TransferEvent
     
     /**
      * The position in the range
-     * @return
+     * @return long
      */
     public long getPosition()
     {
@@ -98,7 +98,7 @@ public abstract class TransferEventImpl implements TransferEvent
     
     /**
      * The maximum range
-     * @return
+     * @return long
      */
     public long getRange()
     {

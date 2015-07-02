@@ -577,9 +577,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      * Note - Changes here likely need to be replicated to the {@link #updateSite(SiteInfo)}
      *  method too, as that also has to deal with Site Permissions.
      * 
-     * @param siteNodeRef
-     * @param shortName
-     * @param visibility
+     * @param siteNodeRef NodeRef
+     * @param shortName String
+     * @param visibility SiteVisibility
+     * @param memberships Map<String, Set<String>>
      */
     private void setupSitePermissions(
             final NodeRef siteNodeRef, final String shortName, final SiteVisibility visibility, final Map<String, Set<String>> memberships)
@@ -704,7 +705,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     /**
      * Gets a map containing the site's custom properties
      * 
-     * @return  Map<QName, Serializable>    map containing the custom properties of the site
+     * @return  map containing the custom properties of the site
      */
     private Map<QName, Serializable> getSiteCustomProperties(Map<QName, Serializable> properties)
     {
@@ -724,7 +725,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     /**
      * Gets a map containing the site's custom properties
      * 
-     * @return  Map<QName, Serializable>    map containing the custom properties of the site
+     * @return  map containing the custom properties of the site
      */
     private Map<QName, Serializable> getSiteCustomProperties(NodeRef siteNodeRef)
     {
@@ -1326,8 +1327,8 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     /**
      * Get the site implementation given a short name
      * 
-     * @param shortName
-     * @return
+     * @param shortName String
+     * @return SiteInfo
      */
     private SiteInfo getSiteImpl(String shortName)
     {
@@ -2102,9 +2103,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      * One of the user's firstname or lastname must match at least
      *  one of the filters given.
      * 
-     * @param nameFilters
-     * @param username
-     * @return
+     * @param nameFilters String[]
+     * @param username String
+     * @return boolean
      */
     private boolean matchPerson(final String[] nameFilters, final String username)
     {
@@ -2631,7 +2632,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      * </ul>
      * If the containingSite is <code>null</code> then the targetNode's current containing site is used.
      * 
-     * @param targetNode
+     * @param targetNode NodeRef
      * @param containingSite the site which the site is a member of. If <code>null</code>, it will be calculated.
      */
     @Override
@@ -2907,7 +2908,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
      * 
      * @param userName      user name
      * @param role          role
-     * @return
+     * @return String
      */
     private String getActivityUserData(String userName, String role)
     {
@@ -2979,9 +2980,9 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     /**
      * Helper to check that we are not removing the last Site Manager from a site
      * 
-     * @param shortName
-     * @param authorityName
-     * @param role
+     * @param shortName String
+     * @param authorityName String
+     * @param role String
      */
     private void checkLastManagerRemoval(final String shortName, final String authorityName, final String role)
     {

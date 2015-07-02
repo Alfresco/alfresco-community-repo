@@ -299,7 +299,7 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
     /**
      * Bulk fetch results in the cache - not supported here
      * 
-     * @param bulkFetch
+     * @param bulkFetch boolean
      */
     public boolean setBulkFetch(boolean bulkFetch)
     {
@@ -319,7 +319,7 @@ public class CMISResultSet implements ResultSetSPI<CMISResultSetRow, CMISResultS
     /**
      * Set the bulk fetch size
      * 
-     * @param bulkFetchSize
+     * @param bulkFetchSize int
      */
     public int setBulkFetchSize(int bulkFetchSize)
     {

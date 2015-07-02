@@ -1262,7 +1262,7 @@ public class ActionTrackingServiceImplTest extends TestCase
     
     /**
      * 
-     * @param id
+     * @param id String
      * @param isFatal <tt>true</tt> means the sleep action will fail with a RuntimeException,
      *                <tt>false</tt> means it will fail with a {@link ActionServiceTransientException}.
      */

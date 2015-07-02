@@ -39,7 +39,7 @@ public class ScriptThumbnailService extends BaseScopableProcessorExtension
     /**
      * Sets the Service Registry
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {

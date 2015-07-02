@@ -51,7 +51,7 @@ public class SolrFacetHelper
     /**
      * Constructor
      * 
-     * @param facetQueryProviders
+     * @param facetQueryProviders List<FacetQueryProvider>
      */
     public SolrFacetHelper(List<FacetQueryProvider> facetQueryProviders)
     {
@@ -93,7 +93,7 @@ public class SolrFacetHelper
     /**
      * Whether the specified field is defined as a <i>facet.query</i> or not
      * 
-     * @param facetField
+     * @param facetField String
      * @return true if the facet is <i>facet.query</i>, false otherwise
      */
     public boolean hasFacetQueries(String facetField)

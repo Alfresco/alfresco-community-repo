@@ -195,9 +195,6 @@ public class AsynchronousActionExecutionQueueImpl implements AsynchronousActionE
         executeAction(actionService, action, actionedUponNodeRef, checkConditions, actionChain, null);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     @SuppressWarnings("unchecked")
 	public void executeAction(RuntimeActionService actionService, Action action, NodeRef actionedUponNodeRef,
             boolean checkConditions, Set<String> actionChain, NodeRef actionExecutionHistoryNodeRef)

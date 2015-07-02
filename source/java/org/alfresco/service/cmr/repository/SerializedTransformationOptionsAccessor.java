@@ -48,10 +48,10 @@ public interface SerializedTransformationOptionsAccessor
      * throws a {@link RenditionServiceException} if it isn't. Returns
      * <code>defaultValue</code> if the parameter value is <code>null</code>
      * 
-     * @param <T>
-     * @param paramName
-     * @param defaultValue
-     * @return
+     * @param <T> <T>
+     * @param paramName String
+     * @param defaultValue <T>
+     * @return <T>
      */
     public <T> T getParamWithDefault(String paramName, T defaultValue);
     
@@ -59,9 +59,9 @@ public interface SerializedTransformationOptionsAccessor
      * Gets the int value for the named parameter.  Returns
      * <code>defaultValue</code> if the parameter value is <code>null</code>.
      * 
-     * @param key
-     * @param defaultValue
-     * @return
+     * @param key String
+     * @param defaultValue int
+     * @return int
      */
     public int getIntegerParam(String key, int defaultValue);
 

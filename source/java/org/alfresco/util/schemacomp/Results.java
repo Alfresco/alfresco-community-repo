@@ -71,7 +71,7 @@ public class Results implements Iterable<Result>
     /**
      * Get the ith result.
      * 
-     * @param i
+     * @param i int
      * @return Result
      */
     public Result get(int i)

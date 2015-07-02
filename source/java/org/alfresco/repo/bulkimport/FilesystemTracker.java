@@ -37,7 +37,7 @@ public interface FilesystemTracker
 	/**
 	 * An estimate of the number of directories and files in the filesystem.
 	 * 
-	 * @return
+	 * @return int
 	 */
 	int count();
 	
@@ -51,9 +51,9 @@ public interface FilesystemTracker
 	
 	/**
 	 * A callback to indicate that the item has been imported into the repository.
-	 * 
-	 * @param nodeRef
-	 * @param importableItem
+	 *
+	 * @param nodeRef NodeRef
+	 * @param importableItem ImportableItem
 	 */
 	void itemImported(NodeRef nodeRef, ImportableItem importableItem);
 

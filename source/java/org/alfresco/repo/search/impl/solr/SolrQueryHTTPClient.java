@@ -207,7 +207,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
      * When set, a single DENIED ACL entry for any authority will result in
      * access being denied as a whole. See system property {@code security.anyDenyDenies}
      * 
-     * @param anyDenyDenies
+     * @param anyDenyDenies boolean
      */
     public void setAnyDenyDenies(boolean anyDenyDenies)
     {
@@ -217,7 +217,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     /**
      * Executes a solr query for statistics
      * 
-     * @param searchParameters
+     * @param searchParameters StatsParameters
      * @return SolrStatsResult
      */
     public SolrStatsResult executeStatsQuery(final StatsParameters searchParameters)

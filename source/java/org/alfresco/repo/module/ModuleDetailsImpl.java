@@ -77,7 +77,6 @@ public class ModuleDetailsImpl implements ModuleDetails
      * whitespace strings are not supported.
      * 
      * @param properties        the set of properties
-     * @Throws AlfrescoRuntimeException if unable to parse values
      */
     public ModuleDetailsImpl(Properties properties)
     {
@@ -444,11 +443,11 @@ public class ModuleDetailsImpl implements ModuleDetails
     /**
 	 * Grateful received from Apache Commons StringUtils class
 	 * 
-	 * @param array
-	 * @param separator
-	 * @param startIndex
-	 * @param endIndex
-	 * @return
+	 * @param array Object[]
+	 * @param separator char
+	 * @param startIndex int
+	 * @param endIndex int
+	 * @return String
 	 */
     private static String join(Object[] array, char separator, int startIndex, int endIndex) {
 		if (array == null) {

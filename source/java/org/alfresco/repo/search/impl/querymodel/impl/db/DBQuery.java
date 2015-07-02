@@ -68,10 +68,10 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     Set<String> selectorGroup;
 
     /**
-     * @param columns
-     * @param source
-     * @param constraint
-     * @param orderings
+     * @param columns List<Column>
+     * @param source Source
+     * @param constraint Constraint
+     * @param orderings List<Ordering>
      */
     public DBQuery(List<Column> columns, Source source, Constraint constraint, List<Ordering> orderings)
     {
@@ -715,8 +715,8 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     }
 
     /**
-     * @param propertyQName
-     * @return
+     * @param propertyQName QName
+     * @return DBQueryBuilderJoinCommandType
      */
     public static DBQueryBuilderJoinCommandType getJoinCommandType(QName propertyQName)
     {
@@ -740,9 +740,9 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     }
 
     /**
-     * @param dictionaryService
-     * @param propertyQName
-     * @return
+     * @param dictionaryService DictionaryService
+     * @param propertyQName QName
+     * @return String
      */
     public static String getFieldName(DictionaryService dictionaryService, QName propertyQName)
     {
@@ -840,9 +840,10 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     }
     
     /**
-     * @param stringValues
-     * @param nodeDAO
-     * @return
+     * @param stringValues String[]
+     * @param nodeDAO NodeDAO
+     * @param tenantService TenantService
+     * @return Long[]
      */
     public static Long[] getDbids(String[] stringValues, NodeDAO nodeDAO, TenantService tenantService)
     {

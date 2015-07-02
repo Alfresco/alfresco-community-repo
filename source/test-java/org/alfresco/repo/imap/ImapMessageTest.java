@@ -614,7 +614,7 @@ public class ImapMessageTest extends TestCase
     /**
      * Finds node by its path
      * 
-     * @param path
+     * @param path String
      * @return NodeRef
      */
     private NodeRef findNode(String path)

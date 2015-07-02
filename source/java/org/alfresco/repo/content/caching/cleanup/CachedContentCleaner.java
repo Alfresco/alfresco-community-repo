@@ -265,8 +265,8 @@ public class CachedContentCleaner extends Thread implements FileHandler, Applica
      * 0 would result in immediate deletion the first time the cleaner sees it as a candidate
      * for deletion (not recommended).
      * 
-     * @param file
-     * @param props
+     * @param file File
+     * @param props CacheFileProps
      * @return true if the content file was deleted, false otherwise.
      */
     private boolean markOrDelete(File file, CacheFileProps props)
@@ -349,7 +349,7 @@ public class CachedContentCleaner extends Thread implements FileHandler, Applica
     /**
      * Sets the minimum age of a cache file before it will be considered for deletion.
      * @see #oldEnoughForCleanup(File)
-     * @param minFileAgeMillis
+     * @param minFileAgeMillis long
      */
     public void setMinFileAgeMillis(long minFileAgeMillis)
     {
@@ -361,7 +361,7 @@ public class CachedContentCleaner extends Thread implements FileHandler, Applica
      * Sets the maxDeleteWatchCount value.
      * 
      * @see #markOrDelete(File, CacheFileProps)
-     * @param maxDeleteWatchCount
+     * @param maxDeleteWatchCount Integer
      */
     public void setMaxDeleteWatchCount(Integer maxDeleteWatchCount)
     {

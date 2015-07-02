@@ -44,7 +44,7 @@ public class CMISResultSetRowIterator implements ListIterator<CMISResultSetRow>
      * Create an iterator over the result set. Follows stadard ListIterator
      * conventions
      * 
-     * @param resultSet
+     * @param resultSet CMISResultSet
      */
     public CMISResultSetRowIterator(CMISResultSet resultSet)
     {

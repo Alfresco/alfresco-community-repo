@@ -66,7 +66,7 @@ public interface PolicyDefinition<P extends Policy>
 
     /**
      * Gets Policy Argument definitions for all arguments in order of arguments
-     * @return
+     * @return Arg[]
      */
     public Arg[] getArguments();
     

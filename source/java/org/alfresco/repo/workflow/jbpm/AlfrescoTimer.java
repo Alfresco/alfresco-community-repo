@@ -48,7 +48,7 @@ public class AlfrescoTimer extends Timer
     /**
      * Construct
      * 
-     * @param token
+     * @param token Token
      */
     public AlfrescoTimer(Token token)
     {

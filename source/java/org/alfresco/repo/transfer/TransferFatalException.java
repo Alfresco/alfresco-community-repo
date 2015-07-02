@@ -30,9 +30,9 @@ public class TransferFatalException extends TransferException
     private static final long serialVersionUID = 1022985703059592513L;
 
     /**
-     * @param msgId
-     * @param msgParams
-     * @param cause
+     * @param msgId String
+     * @param msgParams Object[]
+     * @param cause Throwable
      */
     public TransferFatalException(String msgId, Object[] msgParams, Throwable cause)
     {
@@ -40,8 +40,8 @@ public class TransferFatalException extends TransferException
     }
 
     /**
-     * @param msgId
-     * @param msgParams
+     * @param msgId String
+     * @param msgParams Object[]
      */
     public TransferFatalException(String msgId, Object[] msgParams)
     {
@@ -49,8 +49,8 @@ public class TransferFatalException extends TransferException
     }
 
     /**
-     * @param msgId
-     * @param cause
+     * @param msgId String
+     * @param cause Throwable
      */
     public TransferFatalException(String msgId, Throwable cause)
     {
@@ -58,7 +58,7 @@ public class TransferFatalException extends TransferException
     }
 
     /**
-     * @param msgId
+     * @param msgId String
      */
     public TransferFatalException(String msgId)
     {

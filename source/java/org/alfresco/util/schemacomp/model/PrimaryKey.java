@@ -44,8 +44,9 @@ public class PrimaryKey extends AbstractDbObject
     /**
      * Constructor
      * @param table the parent table
-     * @param name
-     * @param columnNames
+     * @param name String
+     * @param columnNames List<String>
+     * @param columnOrders List<Integer>
      */
     public PrimaryKey(Table table, String name, List<String> columnNames, List<Integer> columnOrders)
     {

@@ -57,7 +57,7 @@ public abstract class BaseJavaDelegate implements JavaDelegate
     
     /**
      * Defaults to the full {@link Class} Name.
-     * @return
+     * @return String
      */
     protected String getName()
     {

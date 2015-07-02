@@ -241,7 +241,7 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
 
     /**
      * Is the script specified as text only, or as explicit expression, variable elements
-     * @return
+     * @return boolean
      */
     @SuppressWarnings("unchecked")
     private boolean isScriptOnlyText() 
@@ -282,9 +282,9 @@ public class AlfrescoJavaScript extends JBPMSpringActionHandler
     /**
      * Convert values for JBPM Context
      * 
-     * @param value
-     * @param services
-     * @return
+     * @param value Object
+     * @param services ServiceRegistry
+     * @return Object
      */
     @SuppressWarnings("unchecked")
     private static Object convertForJBPM(Object value, ServiceRegistry services)

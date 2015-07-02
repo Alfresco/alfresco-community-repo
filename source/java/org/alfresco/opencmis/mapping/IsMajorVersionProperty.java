@@ -35,7 +35,8 @@ public class IsMajorVersionProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
      */
     public IsMajorVersionProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

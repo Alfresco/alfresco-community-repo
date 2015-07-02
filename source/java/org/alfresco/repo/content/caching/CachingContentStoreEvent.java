@@ -42,8 +42,8 @@ public abstract class CachingContentStoreEvent extends ApplicationEvent
     /**
      * Is the event an instance of the specified type (or subclass)?
      * 
-     * @param type
-     * @return
+     * @param type {@code Class<?>}
+     * @return boolean
      */
     public boolean isType(Class<?> type)
     {

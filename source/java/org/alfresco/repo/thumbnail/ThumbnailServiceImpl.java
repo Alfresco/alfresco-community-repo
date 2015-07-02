@@ -114,7 +114,7 @@ public class ThumbnailServiceImpl implements ThumbnailService,
     /**
      * Set the behaviour filter.
      * 
-     * @param behaviourFilter
+     * @param behaviourFilter BehaviourFilter
      */
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
@@ -124,7 +124,7 @@ public class ThumbnailServiceImpl implements ThumbnailService,
     /**
      * Set the rendition service.
      * 
-     * @param renditionService
+     * @param renditionService RenditionService
      */
     public void setRenditionService(RenditionService renditionService)
     {
@@ -611,9 +611,9 @@ public class ThumbnailServiceImpl implements ThumbnailService,
 
     /**
      * Creates a {@link RenditionDefinition} with no parameters set.
-     * @param thumbnailQName
-     * @param transformationOptions
-     * @return
+     * @param thumbnailQName QName
+     * @param transformationOptions TransformationOptions
+     * @return RenditionDefinition
      */
     private RenditionDefinition createRawRenditionDefinition(QName thumbnailQName,
                 final TransformationOptions transformationOptions)
@@ -628,12 +628,12 @@ public class ThumbnailServiceImpl implements ThumbnailService,
 
     /**
      * Creates a fully parameterized {@link RenditionDefinition}.
-     * @param contentProperty
-     * @param mimetype
-     * @param transformationOptions
-     * @param thumbnailQName
-     * @param assocDetails
-     * @return
+     * @param contentProperty QName
+     * @param mimetype String
+     * @param transformationOptions TransformationOptions
+     * @param thumbnailQName QName
+     * @param assocDetails ThumbnailParentAssociationDetails
+     * @return RenditionDefinition
      */
     private RenditionDefinition createRenditionDefinition(final QName contentProperty, final String mimetype,
                 final TransformationOptions transformationOptions, final QName thumbnailQName,
@@ -675,8 +675,8 @@ public class ThumbnailServiceImpl implements ThumbnailService,
 
     /**
      * Sets the thumbnail name if the rendition is of type cm:thumbnail.
-     * @param thumbnail
-     * @param thumbnailName
+     * @param thumbnail NodeRef
+     * @param thumbnailName String
      */
     private void setThumbnailNameProperty(NodeRef thumbnail, String thumbnailName)
     {

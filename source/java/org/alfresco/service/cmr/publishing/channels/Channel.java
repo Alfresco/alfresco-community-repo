@@ -45,19 +45,19 @@ public interface Channel
     
     /**
      * Retrieve the node ref of the node that represents this channel object in the repository
-     * @return
+     * @return NodeRef
      */
     NodeRef getNodeRef();
     
     /**
      * Retrieve the name of this channel
-     * @return
+     * @return String
      */
     String getName();
     
     /**
      * Retrieve the properties defined on this channel.
-     * @return
+     * @return Map
      */
     Map<QName, Serializable> getProperties();
     
@@ -96,7 +96,7 @@ public interface Channel
      * If the {@link ChannelType} does not support publishing, if the {@link Channel} is not authorised or if the 
      * currently authenticated user does not have permission to publish to this {@link Channel} then this 
      * method will return <code>false</code>.
-     * @return 
+     * @return boolean
      */
     boolean canPublish();
 
@@ -105,7 +105,7 @@ public interface Channel
      * If the {@link ChannelType} does not support unpublishing, if the {@link Channel} is not authorised or if the 
      * currently authenticated user does not have permission to publish to this {@link Channel} then this method 
      * will return <code>false</code>.
-     * @return 
+     * @return boolean
      */
     boolean canUnpublish();
 
@@ -114,7 +114,7 @@ public interface Channel
      * If the {@link ChannelType} does not support publishing of status updates, if the {@link Channel} is not authorised 
      * or if the currently authenticated user does not have permission to publish to this {@link Channel} then this method 
      * will return <code>false</code>.
-     * @return 
+     * @return boolean
      */
     boolean canPublishStatusUpdates();
 

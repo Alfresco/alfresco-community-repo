@@ -155,8 +155,8 @@ public abstract class AbstractFormProcessor implements FormProcessor
      * Gets the Item from the <code>form</code> parameter and sets its type
      * field to <code>type</code>.
      * 
-     * @param form
-     * @param type
+     * @param form Form
+     * @param type String
      */
     protected void setFormItemType(Form form, String type)
     {
@@ -167,8 +167,8 @@ public abstract class AbstractFormProcessor implements FormProcessor
      * Gets the Item from the <code>form</code> parameter and sets its URL field
      * to <code>url</code>.
      * 
-     * @param form
-     * @param url
+     * @param form Form
+     * @param url String
      */
     protected void setFormItemUrl(Form form, String url)
     {

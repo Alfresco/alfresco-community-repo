@@ -44,8 +44,8 @@ public interface ContentFilterLanguagesService
     /**
      * Get the order of the specified language code
      * 
-     * @param code
-     * @return
+     * @param code String
+     * @return int
      * @throws AlfrescoRuntimeException if the code doesn't exist
      */
     @NotAuditable
@@ -54,8 +54,8 @@ public interface ContentFilterLanguagesService
     /**
      * Get the language of the specified language code
      * 
-     * @param code
-     * @return
+     * @param code String
+     * @return String
      * @throws AlfrescoRuntimeException if the code doesn't exist
      */
     @NotAuditable
@@ -73,7 +73,7 @@ public interface ContentFilterLanguagesService
      * Get the the odered filter which results form an extract of availableLanguages on the filterLanguages 
      * 
      * @param availableLanguages the languages list whose will be removed from the filterLanguages
-     * @return
+     * @return List<String>
      */
     @Auditable
     public List<String> getMissingLanguages(List<String> availableLanguages);

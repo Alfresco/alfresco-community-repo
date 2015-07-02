@@ -31,7 +31,7 @@ public interface NodeFilter
 
     /**
      * Examines the supplied node and indicates whether it has been accepted by the filter.
-     * @param thisNode
+     * @param thisNode NodeRef
      * @return true if the supplied node matches the criteria specified on this filter, and false
      * otherwise.
      */

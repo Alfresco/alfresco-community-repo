@@ -130,7 +130,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     /**
      * Set the authentication component
      * 
-     * @param authenticationContext
+     * @param authenticationContext AuthenticationContext
      */
     public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
@@ -140,7 +140,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     /**
      * Sets the Dictionary DAO
      * 
-     * @param dictionaryDAO
+     * @param dictionaryDAO DictionaryDAO
      */
     public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
     {
@@ -170,7 +170,7 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     /**
      * Sets the Workflow Definitions
      * 
-     * @param workflowDefinitions
+     * @param workflowDefinitions List<Properties>
      */
     public void setWorkflowDefinitions(List<Properties> workflowDefinitions)
     {

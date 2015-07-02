@@ -27,7 +27,7 @@
  * <p>
  * The NodeCrawler provides the ability to find a set of nodes to give to the transfer service.
  *
- * @see org.alfresco.service.cmr.transferTransferService
+ * @see org.alfresco.service.cmr.transfer.TransferService
  * @since 3.3
  */
 @PackageMarker

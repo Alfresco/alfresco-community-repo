@@ -33,7 +33,7 @@ public interface PermissionEntry
      * 
      * This may be null. Null implies that the settings apply to all permissions
      * 
-     * @return
+     * @return PermissionReference
      */
     public PermissionReference getPermissionReference();
 
@@ -44,7 +44,7 @@ public interface PermissionEntry
      * 
      * If null then this applies to all.
      * 
-     * @return
+     * @return String
      */
     public String getAuthority();
 
@@ -53,7 +53,7 @@ public interface PermissionEntry
      * 
      * This can only be null for a global permission 
      * 
-     * @return
+     * @return NodeRef
      */
     public NodeRef getNodeRef();
 
@@ -72,19 +72,19 @@ public interface PermissionEntry
     /**
      * Get the Access enum value
      * 
-     * @return
+     * @return AccessStatus
      */
     public AccessStatus getAccessStatus();
     
     /**
      * Is this permission inherited?
-     * @return
+     * @return boolean
      */
     public boolean isInherited();
     
     /**
      * Return the position in the inhertance chain (0 is not inherited and set on the object)
-     * @return
+     * @return int
      */
     public int getPosition();
 }

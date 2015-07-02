@@ -127,7 +127,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     /**
      * Set the search service.
      * 
-     * @param searchService
+     * @param searchService SearchService
      */
     public void setSearchService(SearchService searchService)
     {
@@ -147,7 +147,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     /**
      * Set the template service.
      * 
-     * @param templateService
+     * @param templateService TemplateService
      */
     public void setTemplateService(TemplateService templateService)
     {
@@ -165,7 +165,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the scheduler.
-     * @param scheduler
+     * @param scheduler Scheduler
      */
     public void setScheduler(Scheduler scheduler)
     {
@@ -183,7 +183,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the template action model factory.
-     * @param templateActionModelFactory
+     * @param templateActionModelFactory TemplateActionModelFactory
      */
     public void setTemplateActionModelFactory(TemplateActionModelFactory templateActionModelFactory)
     {
@@ -281,7 +281,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the query language
-     * @param queryLanguage 
+     * @param queryLanguage String
      */
     public void setQueryLanguage(String queryLanguage)
     {
@@ -319,7 +319,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
     /**
      * Set the template for the query.
      * 
-     * @param queryTemplate
+     * @param queryTemplate String
      */
     public void setQueryTemplate(String queryTemplate)
     {
@@ -337,7 +337,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the cron expression - see the wiki for examples.
-     * @param cronExpression
+     * @param cronExpression String
      */
     public void setCronExpression(String cronExpression)
     {
@@ -356,7 +356,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the job name.
-     * @param jobName 
+     * @param jobName String
      */
     public void setJobName(String jobName)
     {
@@ -375,7 +375,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the job group.
-     * @param jobGroup 
+     * @param jobGroup String
      */
     public void setJobGroup(String jobGroup)
     {
@@ -393,7 +393,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /** 
      * Set the trigger name.
-     * @param triggerName 
+     * @param triggerName String
      */
     public void setTriggerName(String triggerName)
     {
@@ -411,7 +411,7 @@ public class CronScheduledQueryBasedTemplateActionDefinition extends AbstractSch
 
     /**
      * Set the trigger group.
-     * @param triggerGroup 
+     * @param triggerGroup String
      */
     public void setTriggerGroup(String triggerGroup)
     {

@@ -36,7 +36,8 @@ public class TargetIdProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
      */
     public TargetIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

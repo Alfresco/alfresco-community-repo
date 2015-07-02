@@ -84,7 +84,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     /**
      * Set if guest login is supported.
      * 
-     * @param allowGuestLogin
+     * @param allowGuestLogin Boolean
      */
     public void setAllowGuestLogin(Boolean allowGuestLogin)
     {
@@ -183,8 +183,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
      * authentication component as it will support guest login - prior to this direct over ride for authenticate(String ,
      * char[]) was used. This will still work.
      * 
-     * @param userName
-     * @param password
+     * @param userName String
+     * @param password char[]
      */
     protected void authenticateImpl(String userName, char[] password)
     {
@@ -292,8 +292,8 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     /**
      * Default implementation that makes an ACEGI object on the fly
      * 
-     * @param userName
-     * @return
+     * @param userName String
+     * @return UserDetails
      */
     protected UserDetails getUserDetails(String userName)
     {
@@ -303,9 +303,6 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         return ud;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public Authentication setCurrentAuthentication(Authentication authentication)
     {
         return this.authenticationContext.setCurrentAuthentication(authentication);
@@ -593,7 +590,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     /**
      * Convenience method to allow the administrator user names to be specified as a comma separated list
      * 
-     * @param defaultAdministratorUserNames
+     * @param defaultAdministratorUserNames String
      */
     public void setDefaultAdministratorUserNameList(String defaultAdministratorUserNames)
     {
@@ -605,9 +602,6 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
         setDefaultAdministratorUserNames(nameSet);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public Set<String> getDefaultGuestUserNames()
     {
         return this.defaultGuestUserNames;
@@ -627,7 +621,7 @@ public abstract class AbstractAuthenticationComponent implements AuthenticationC
     /**
      * Convenience method to allow the administrator user names to be specified as a comma separated list
      * 
-     * @param defaultGuestUserNames
+     * @param defaultGuestUserNames String
      */
     public void setDefaultGuestUserNameList(String defaultGuestUserNames)
     {

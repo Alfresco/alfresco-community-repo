@@ -98,7 +98,7 @@ public class PolicyComponentImpl implements PolicyComponent
     /**
      * Sets the behaviour filter
      * 
-     * @param filter
+     * @param filter BehaviourFilter
      */
     public void setBehaviourFilter(BehaviourFilter filter)
     {
@@ -108,7 +108,7 @@ public class PolicyComponentImpl implements PolicyComponent
     /**
      * Sets the tenant service
      * 
-     * @param tenantService
+     * @param tenantService TenantService
      */
     public void setTenantService(TenantService tenantService)
     {
@@ -119,7 +119,7 @@ public class PolicyComponentImpl implements PolicyComponent
     /**
      * Sets the transaction-based policy invocation handler
      * 
-     * @param factory
+     * @param factory TransactionInvocationHandlerFactory
      */
     public void setTransactionInvocationHandlerFactory(TransactionInvocationHandlerFactory factory)
     {

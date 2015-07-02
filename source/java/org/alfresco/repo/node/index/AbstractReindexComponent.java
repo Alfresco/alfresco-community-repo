@@ -749,7 +749,6 @@ public abstract class AbstractReindexComponent implements IndexRecovery
     /**
      * Callback to notify caller whenever a node has been indexed
      * 
-     * @see 
      * @author Derek Hulley
      * @since 2.1.4
      */

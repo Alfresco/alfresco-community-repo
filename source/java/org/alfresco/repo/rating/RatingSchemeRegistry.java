@@ -53,7 +53,7 @@ public class RatingSchemeRegistry
 
     /**
      * This method returns an unmodifiable map of the registered rating schemes.
-     * @return
+     * @return Map
      */
     public Map<String, RatingScheme> getRatingSchemes()
     {

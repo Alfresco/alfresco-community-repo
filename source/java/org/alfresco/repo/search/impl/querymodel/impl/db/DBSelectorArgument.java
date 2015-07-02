@@ -28,8 +28,8 @@ public class DBSelectorArgument extends BaseSelectorArgument
 {
 
     /**
-     * @param name
-     * @param selector
+     * @param name String
+     * @param selector String
      */
     public DBSelectorArgument(String name, String selector)
     {

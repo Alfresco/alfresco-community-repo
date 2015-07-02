@@ -157,7 +157,7 @@ public class BlogIntegrationServiceImpl implements BlogIntegrationService, BlogI
     }
     
     /**
-     * @see org.alfresco.repo.blog.BlogIntegrationService#newPost(org.alfresco.module.blogIntegration.BlogDetails, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName, boolean)
+     * @see org.alfresco.repo.blog.BlogIntegrationService#newPost(BlogDetails, NodeRef, QName, boolean)
      */
     public void newPost(BlogDetails blogDetails, NodeRef nodeRef, QName contentProperty, boolean publish)
     {

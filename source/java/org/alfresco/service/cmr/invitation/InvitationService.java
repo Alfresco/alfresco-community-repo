@@ -48,10 +48,10 @@ public interface InvitationService
     * The server path is calculated based on the sysAdmin parameters
     * @param inviteeUserName Alfresco user name of who should be invited
     * @param resourceType resourceType
-    * @param resourceName
-    * @param inviteeRole
-    * @param acceptUrl
-    * @param rejectUrl
+    * @param resourceName String
+    * @param inviteeRole String
+    * @param acceptUrl String
+    * @param rejectUrl String
     * 
     * @return the nominated invitation which will contain the invitationId and
     *         ticket which will uniqely identify this invitation for the rest
@@ -81,14 +81,14 @@ public interface InvitationService
     * Alfresco User NameA new user name will be generated as part of the invitation process.
     * The server path is calculated based on the sysAdmin parameters
     * 
-    * @param inviteeFirstName
-    * @param inviteeLastName
-    * @param inviteeEmail
+    * @param inviteeFirstName String
+    * @param inviteeLastName String
+    * @param inviteeEmail String
     * @param resourceType Invitation.ResourceType
-    * @param resourceName
-    * @param inviteeRole 
-    * @param acceptUrl 
-    * @param rejectUrl
+    * @param resourceName String
+    * @param inviteeRole String
+    * @param acceptUrl String
+    * @param rejectUrl String
     * 
     * @return the nominated invitation which will contain the invitationId and ticket which 
     * will uniquely identify this invitation.
@@ -120,11 +120,11 @@ public interface InvitationService
 	 * 
 	 * @param inviteeUserName Alfresco user name of who should be invited
 	 * @param resourceType resourceType
-	 * @param resourceName
-	 * @param inviteeRole
-	 * @param serverPath
-	 * @param acceptUrl
-	 * @param rejectUrl
+	 * @param resourceName String
+	 * @param inviteeRole String
+	 * @param serverPath String
+	 * @param acceptUrl String
+	 * @param rejectUrl String
 	 * 
 	 * @return the nominated invitation which will contain the invitationId and
 	 *         ticket which will uniqely identify this invitation for the rest
@@ -155,15 +155,15 @@ public interface InvitationService
 	 * Start the invitation process for a NominatedInvitation for a user who does not yet have an 
 	 * Alfresco User NameA new user name will be generated as part of the invitation process.
 	 * 
-	 * @param inviteeFirstName
-	 * @param inviteeLastName
-     * @param inviteeEmail
+	 * @param inviteeFirstName String
+	 * @param inviteeLastName String
+     * @param inviteeEmail String
      * @param resourceType Invitation.ResourceType
-     * @param resourceName
-     * @param inviteeRole 
-     * @param serverPath 
-     * @param acceptUrl 
-     * @param rejectUrl
+     * @param resourceName String
+     * @param inviteeRole String
+     * @param serverPath String
+     * @param acceptUrl String
+     * @param rejectUrl String
 	 * 
 	 * @return the nominated invitation which will contain the invitationId and ticket which 
 	 * will uniquely identify this invitation.
@@ -215,9 +215,9 @@ public interface InvitationService
 	/**
 	 * Update the invitee comments for an existing moderated invitation
 	 * 
-	 * @param inviteeId
-	 * @param siteShortName
-	 * @param inviteeComments
+	 * @param inviteeId String
+	 * @param siteShortName String
+	 * @param inviteeComments String
 	 * @return the invitation
 	 */
     @Auditable(parameters = {"inviteeId", "siteShortName", "inviteeComments"})    
@@ -226,8 +226,8 @@ public interface InvitationService
 	/**
 	 * For a Nominated Invitation invitee accepts this invitation
 	 * 
-	 * @param invitationId
-	 * @param ticket
+	 * @param invitationId String
+	 * @param ticket String
 	 * @return the invitation
 	 */
     @Auditable(parameters = {"invitationId", "reason"})    
@@ -245,8 +245,8 @@ public interface InvitationService
 
 	/**
 	 * User or moderator rejects this request
-	 * @param invitationId
-	 * @param reason
+	 * @param invitationId String
+	 * @param reason String
 	 */        
    @Auditable(parameters = {"invitationId", "reason"})
 	public Invitation reject(String invitationId, String reason);
@@ -261,7 +261,7 @@ public interface InvitationService
 	/**
 	 * get an invitation from its invitation id 
 	 * 
-	 * @param invitationId;
+	 * @param invitationId String
 	 */
    @NotAuditable
 	public Invitation getInvitation(String invitationId) ;
@@ -277,8 +277,8 @@ public interface InvitationService
    
 	/**
 	 * list Invitations for a specific resource
-	 * @param resourceType
-	 * @param resourceName
+	 * @param resourceType Invitation.ResourceType
+	 * @param resourceName String
 	 */
    @NotAuditable
 	public List<Invitation> listPendingInvitationsForResource(Invitation.ResourceType resourceType, String resourceName);
@@ -286,7 +286,7 @@ public interface InvitationService
     /**
      * search invitation
      * 
-     * @param criteria
+     * @param criteria InvitationSearchCriteria
      * @return the list of invitations
      */
    @NotAuditable

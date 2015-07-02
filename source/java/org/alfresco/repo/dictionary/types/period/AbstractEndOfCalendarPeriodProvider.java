@@ -42,7 +42,7 @@ public abstract class AbstractEndOfCalendarPeriodProvider extends AbstractCalend
 
     /**
      * Set the start day of the month (as defined by Calendar)
-     * @param startDayOfMonth
+     * @param startDayOfMonth int
      */
     public void setStartDayOfMonth(int startDayOfMonth)
     {
@@ -60,7 +60,7 @@ public abstract class AbstractEndOfCalendarPeriodProvider extends AbstractCalend
 
     /**
      * Set the start month (as defined by Calendar)
-     * @param startMonth
+     * @param startMonth int
      */
     public void setStartMonth(int startMonth)
     {

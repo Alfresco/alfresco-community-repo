@@ -528,7 +528,7 @@ public class LockServiceImpl implements LockService,
     }
 
     /**
-     * @see org.alfresco.service.cmr.lock.LockService#unlock(Collection<NodeRef>)
+     * @see org.alfresco.service.cmr.lock.LockService#unlock(Collection)
      */
     public void unlock(Collection<NodeRef> nodeRefs) throws UnableToReleaseLockException
     {

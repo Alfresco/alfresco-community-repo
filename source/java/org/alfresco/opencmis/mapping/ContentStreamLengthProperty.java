@@ -38,7 +38,8 @@ public class ContentStreamLengthProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
      */
     public ContentStreamLengthProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

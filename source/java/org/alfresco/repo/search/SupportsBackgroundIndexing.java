@@ -31,7 +31,7 @@ public interface SupportsBackgroundIndexing
     /**
      * Set the back ground indexer manager
      * 
-     * @param fullTextSearchIndexer
+     * @param fullTextSearchIndexer FullTextSearchIndexer
      */
     public void setFullTextSearchIndexer(FullTextSearchIndexer fullTextSearchIndexer);
 }

@@ -32,25 +32,25 @@ public interface Acl extends AccessControlListProperties
 {
     /**
      * Get the long key
-     * @return
+     * @return Long
      */
     public Long getId();
     
     /**
      * Get the ACL ID
-     * @return
+     * @return String
      */
     public String getAclId();
     
     /**
      * Get the ACL version
-     * @return
+     * @return Long
      */
     public Long getAclVersion();
     
     /**
      * Is this the latest version of the acl identified by the acl id string? 
-     * @return
+     * @return Boolean
      */
     public Boolean isLatest();
     
@@ -63,21 +63,21 @@ public interface Acl extends AccessControlListProperties
     /**
      * Get the ACL from which this one inherits
      * 
-     * @return
+     * @return Long
      */
     public Long getInheritsFrom();
     
     /**
      * Get the type for this ACL
      * 
-     * @return
+     * @return ACLType
      */
     public ACLType getAclType();
     
     /**
      * Get the ACL inherited from nodes which have this ACL
      * 
-     * @return
+     * @return Long
      */
     public Long getInheritedAcl();
     
@@ -87,7 +87,7 @@ public interface Acl extends AccessControlListProperties
      * 
      * If an acl is versioned it can not be updated - a new copy has to be created,
      *  
-     * @return
+     * @return Boolean
      */
     public Boolean isVersioned();
     

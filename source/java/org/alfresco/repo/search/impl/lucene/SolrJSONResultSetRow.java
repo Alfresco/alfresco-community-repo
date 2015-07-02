@@ -33,8 +33,8 @@ public class SolrJSONResultSetRow extends AbstractResultSetRow
 {
 
     /**
-     * @param resultSet
-     * @param index
+     * @param resultSet ResultSet
+     * @param index int
      */
     public SolrJSONResultSetRow(ResultSet resultSet, int index)
     {

@@ -123,8 +123,8 @@ public class StandardRenditionLocationResolverImpl implements RenditionLocationR
      * This method creates a {@link RenditionLocation} object from the specified destination node.
      * This is formed from the specified destination NodeRef, its cm:name and its primary parent.
      * 
-     * @param destination
-     * @return
+     * @param destination NodeRef
+     * @return RenditionLocationImpl
      * @throws RenditionServiceException if the destination node does not exist.
      */
     private RenditionLocationImpl createNodeLocation(NodeRef destination)

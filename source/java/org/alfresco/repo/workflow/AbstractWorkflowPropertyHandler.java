@@ -46,8 +46,8 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
     protected MessageService messageService;
     
     /**
-     * @param value
-     * @param assocDef
+     * @param value Serializable
+     * @param assocDef AssociationDefinition
      */
     protected Object handleAssociation(Serializable value, AssociationDefinition assocDef)
     {
@@ -60,9 +60,9 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
     }
 
     /**
-     * @param value
-     * @param propDef
-     * @return
+     * @param value Serializable
+     * @param propDef PropertyDefinition
+     * @return Object
      */
     protected Object handleProperty(Serializable value, PropertyDefinition propDef)
     {
@@ -112,7 +112,7 @@ public abstract class AbstractWorkflowPropertyHandler implements WorkflowPropert
 
     /**
      * Register this WorkflowPropertyHandler with the provided registry.
-     * @param registry
+     * @param registry WorkflowPropertyHandlerRegistry
      */
     public void setRegistry(WorkflowPropertyHandlerRegistry registry)
     {

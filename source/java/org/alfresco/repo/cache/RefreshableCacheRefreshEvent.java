@@ -27,7 +27,9 @@ package org.alfresco.repo.cache;
 public class RefreshableCacheRefreshEvent extends AbstractRefreshableCacheEvent
 {
     /**
-     * @param cacheId
+     *
+     * @param cacheId String
+     * @param tenantId String
      */
     RefreshableCacheRefreshEvent(String cacheId, String tenantId)
     {

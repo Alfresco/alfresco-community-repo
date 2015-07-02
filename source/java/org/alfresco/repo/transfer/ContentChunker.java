@@ -49,19 +49,19 @@ public interface ContentChunker
 
     /**
      * 
-     * @param chunkSize
+     * @param chunkSize long
      */
     public void setChunkSize(long chunkSize);
 
     /**
      * 
-     * @return
+     * @return long
      */
     public long getChunkSize();
 
     /**
      * 
-     * @param handler
+     * @param handler ContentChunkProcessor
      */
     public void setHandler(ContentChunkProcessor handler);
 

@@ -36,7 +36,8 @@ public class BaseTypeIdProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
      */
     public BaseTypeIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

@@ -135,7 +135,7 @@ public interface MessageService extends TenantDeployer, MessageLookup
     /**
      * Register message deployer with message service
      * 
-     * @param messageDeployer
+     * @param messageDeployer MessageDeployer
      */
     public void register(MessageDeployer messageDeployer);
     

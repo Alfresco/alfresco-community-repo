@@ -73,7 +73,7 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
      * Sets the offset time code from which to start the transformation 
      * with a format of hh:mm:ss[.xxx]
      * 
-     * @param offset
+     * @param offset String
      */
     public void setOffset(String offset)
     {
@@ -85,7 +85,7 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
      * Gets the duration of the source to read 
      * with a format of hh:mm:ss[.xxx]
      * 
-     * @return
+     * @return String
      */
     public String getDuration()
     {
@@ -96,7 +96,7 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
      * Sets the duration of the source to read 
      * with a format of hh:mm:ss[.xxx]
      * 
-     * @param duration
+     * @param duration String
      */
     public void setDuration(String duration)
     {
@@ -107,7 +107,7 @@ public class TemporalSourceOptions extends AbstractTransformationSourceOptions
     /**
      * Validates that the given value is of the form hh:mm:ss[.xxx]
      * 
-     * @param value
+     * @param value String
      */
     public static void validateTimeString(String value)
     {

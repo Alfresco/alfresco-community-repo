@@ -32,8 +32,8 @@ public interface ModeratedInvitationProcess extends InvitationProcess
 {
     /**
      * Invitee kicks off process
-     * @param request
-     * @param reason
+     * @param request Invitation
+     * @param reason String
      */
     public Invitation invite(Invitation request, String reason);
 

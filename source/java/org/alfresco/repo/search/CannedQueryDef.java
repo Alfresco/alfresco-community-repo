@@ -36,28 +36,28 @@ public interface CannedQueryDef
     /**
      * Get the unique name for the query
      * 
-     * @return
+     * @return QName
      */
     public QName getQname();
 
     /**
      * Get the language in which the query is defined.
      * 
-     * @return
+     * @return String
      */
     public String getLanguage();
 
     /**
      * Get the definitions for any query parameters.
      * 
-     * @return
+     * @return Collection<QueryParameterDefinition>
      */
     public Collection<QueryParameterDefinition> getQueryParameterDefs();
 
     /**
      * Get the query string.
      * 
-     * @return
+     * @return String
      */
     public String getQuery();
 
@@ -66,14 +66,14 @@ public interface CannedQueryDef
      * prefixes to URIs. A query may use a predefined set of prefixes for known
      * URIs. I would be unwise to rely on the defaults.
      * 
-     * @return
+     * @return NamespacePrefixResolver
      */
     public NamespacePrefixResolver getNamespacePrefixResolver();
 
     /**
      * Get a map to look up definitions by Qname
      * 
-     * @return
+     * @return Map
      */
     public Map<QName, QueryParameterDefinition> getQueryParameterMap();
 }

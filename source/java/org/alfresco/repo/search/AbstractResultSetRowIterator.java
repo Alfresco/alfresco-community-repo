@@ -49,7 +49,7 @@ public abstract class AbstractResultSetRowIterator implements ResultSetRowIterat
      * Create an iterator over the result set. Follows stadard ListIterator
      * conventions
      * 
-     * @param resultSet
+     * @param resultSet ResultSet
      */
     public AbstractResultSetRowIterator(ResultSet resultSet)
     {

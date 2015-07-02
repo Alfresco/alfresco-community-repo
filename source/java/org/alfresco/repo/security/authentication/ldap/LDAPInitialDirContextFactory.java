@@ -36,7 +36,7 @@ public interface LDAPInitialDirContextFactory
     /**
      * Set the LDAP environment Hashtable properties used ot initialise the LDAP connection.
      * 
-     * @param environment
+     * @param environment Map<String, String>
      */
     public void setInitialDirContextEnvironment(Map<String, String> environment);
     
@@ -47,7 +47,7 @@ public interface LDAPInitialDirContextFactory
      * @param pageSize
      *            if a positive value, indicates that a LDAP v3 RFC 2696 paged results control should be used. The
      *            results of a search operation should be returned by the LDAP server in batches of the specified size.
-     * @param diagnostic           
+     * @param diagnostic AuthenticationDiagnostic
      * @return the default intial dir context
      * @throws AuthenticationException
      *             the authentication exception
@@ -71,7 +71,7 @@ public interface LDAPInitialDirContextFactory
      * Use the environment properties and connect to the LDAP server.
      * Used to obtain read only access to the LDAP server.
      * 
-     * @return
+     * @return InitialDirContext
      * @throws AuthenticationException
      */
     public InitialDirContext getDefaultIntialDirContext() throws AuthenticationException;
@@ -80,7 +80,7 @@ public interface LDAPInitialDirContextFactory
      * Use the environment properties and connect to the LDAP server.
      * Used to obtain read only access to the LDAP server.
      * 
-     * @return
+     * @return InitialDirContext
      * @throws AuthenticationException
      */
     public InitialDirContext getDefaultIntialDirContext(AuthenticationDiagnostic diagnostic) throws AuthenticationException;
@@ -102,9 +102,9 @@ public interface LDAPInitialDirContextFactory
      * Augment the connection environment with the identity and credentials and bind to the ldap server.
      * Mainly used to validate a user's credentials during authentication. 
      * 
-     * @param principal
-     * @param credentials
-     * @return
+     * @param principal String
+     * @param credentials String
+     * @return InitialDirContext
      * @throws AuthenticationException
      */
     public InitialDirContext getInitialDirContext(String principal, String credentials)  throws AuthenticationException;
@@ -113,10 +113,10 @@ public interface LDAPInitialDirContextFactory
      * Augment the connection environment with the identity and credentials and bind to the ldap server.
      * Mainly used to validate a user's credentials during authentication. 
      * 
-     * @param principal
-     * @param credentials
-     * @param diagnostic
-     * @return
+     * @param principal String
+     * @param credentials String
+     * @param diagnostic AuthenticationDiagnostic
+     * @return InitialDirContext
      * @throws AuthenticationException
      */
     public InitialDirContext getInitialDirContext(String principal, String credentials, AuthenticationDiagnostic diagnostic)  throws AuthenticationException;

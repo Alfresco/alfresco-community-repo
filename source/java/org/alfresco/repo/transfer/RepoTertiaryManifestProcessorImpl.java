@@ -60,8 +60,8 @@ public class RepoTertiaryManifestProcessorImpl extends AbstractManifestProcessor
     String manifestRepositoryId;
 
     /**
-     * @param receiver 
-     * @param transferId
+     * @param receiver TransferReceiver
+     * @param transferId String
      */
     public RepoTertiaryManifestProcessorImpl(TransferReceiver receiver, String transferId)
     {

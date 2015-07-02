@@ -317,7 +317,7 @@ public class ExporterComponentTest extends BaseSpringTest
 
     /**
      * @param nodeRef nodeRef
-     * @return
+     * @return File
      * @throws FileNotFoundException
      * @throws IOException
      */
@@ -342,9 +342,9 @@ public class ExporterComponentTest extends BaseSpringTest
     }
 
     /**
-     * @param storeRef
-     * @param rootNode
-     * @return
+     * @param storeRef StoreRef
+     * @param rootNode NodeRef
+     * @return ChildAssociationRef
      */
     private ChildAssociationRef createContentWithCategories(StoreRef storeRef, NodeRef rootNode)
     {   
@@ -387,9 +387,9 @@ public class ExporterComponentTest extends BaseSpringTest
     }
     
     /**
-     * @param acpFile
-     * @param destRootNode
-     * @return
+     * @param acpFile File
+     * @param destRootNode NodeRef
+     * @return FileInfo
      */
     private FileInfo importContent(File acpFile, NodeRef destRootNode)
     {

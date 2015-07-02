@@ -57,7 +57,7 @@ public interface LockInfo
     /**
      * Setter for lock scope.
      * 
-     * @param scope
+     * @param scope String
      */
     void setScope(String scope);
 
@@ -92,7 +92,7 @@ public interface LockInfo
     /**
      * Setter for sharedLockTokens list.
      * 
-     * @param sharedLockTokens
+     * @param sharedLockTokens Set<String>
      */
     void setSharedLockTokens(Set<String> sharedLockTokens);
 
@@ -171,7 +171,7 @@ public interface LockInfo
      * Sets the expiry date/time to lockTimeout seconds into the future. Provide
      * a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
      * 
-     * @param lockTimeoutSecs
+     * @param lockTimeoutSecs int
      */
     void setTimeoutSeconds(int lockTimeoutSecs);
     
@@ -179,7 +179,7 @@ public interface LockInfo
      * Sets the expiry date/time to lockTimeout minutes into the future. Provide
      * a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
      * 
-     * @param lockTimeoutMins
+     * @param lockTimeoutMins int
      */
     void setTimeoutMinutes(int lockTimeoutMins);
 }

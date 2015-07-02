@@ -53,11 +53,11 @@ public class TransactionInvocationHandlerFactory
 
     /**
      * Create Invocation Handler
-     * 
-     * @param <P>
-     * @param behaviour
-     * @param definition
-     * @param policyInterface
+     *
+     * @param <P> P extends Policy
+     * @param behaviour Behaviour
+     * @param definition PolicyDefinition<P>
+     * @param policyInterface P
      * @return  invocation handler
      */
     public <P extends Policy> InvocationHandler createHandler(Behaviour behaviour, PolicyDefinition<P> definition, P policyInterface)

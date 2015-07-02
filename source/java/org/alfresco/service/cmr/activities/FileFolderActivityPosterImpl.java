@@ -55,11 +55,11 @@ public class FileFolderActivityPosterImpl implements ActivityPoster
     /**
      * Create JSON suitable for create, modify or delete activity posts.
      * 
-     * @param tenantDomain
-     * @param path
-     * @param parentNodeRef
-     * @param nodeRef
-     * @param fileName
+     * @param tenantDomain String
+     * @param path String
+     * @param parentNodeRef NodeRef
+     * @param nodeRef NodeRef
+     * @param fileName String
      * @throws JSONException
      * @return JSONObject
      */

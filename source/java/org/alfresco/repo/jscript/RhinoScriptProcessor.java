@@ -542,7 +542,7 @@ public class RhinoScriptProcessor extends BaseProcessor implements ScriptProcess
      * 
      * @param model     the model
      * 
-     * @return Map<String, Object> the converted model
+     * @return Map the converted model
      */
     private Map<String, Object> convertToRhinoModel(Map<String, Object> model)
     {

@@ -90,7 +90,7 @@ public class PackageManager
      * Takes a comma-separated list of {@link NodeRef} ids and adds the
      * specified NodeRefs to the package.
      * 
-     * @param items
+     * @param items String
      */
     public void addItems(String items)
     {
@@ -125,7 +125,7 @@ public class PackageManager
      * Takes a comma-separated list of {@link NodeRef} ids and adds the
      * specified NodeRefs to the package.
      * 
-     * @param items
+     * @param items String
      */
     public void removeItems(String items)
     {
@@ -155,7 +155,7 @@ public class PackageManager
      * Creates a new Workflow package using the specified <code>container</code>.
      * If the <code>container</code> is null then a new container node is created.
      * Applies the specified updates to the package after it is created.
-     * @param container
+     * @param container NodeRef
      * @return the package {@link NodeRef}.
      * @throws WorkflowException if the specified container is already package.
      */
@@ -168,7 +168,7 @@ public class PackageManager
     
     /**
      * Applies the specified modifications to the package.
-     * @param packageRef
+     * @param packageRef NodeRef
      */
     public void update(final NodeRef packageRef)
     {

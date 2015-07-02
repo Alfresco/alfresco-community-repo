@@ -74,7 +74,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
 
     /**
      * Helper setter of the transformer debug. 
-     * @param transformerDebug
+     * @param transformerDebug TransformerDebug
      */
     public void setTransformerDebug(TransformerDebug transformerDebug)
     {
@@ -163,7 +163,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)#getTimeoutMs()}
+     * @deprecated use {@link #getLimits(String, String, TransformationOptions) getTimeoutMs()}
      *             which allows the limits to be selected based on mimetype and use.
      */
     protected long getTimeoutMs()
@@ -180,7 +180,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
     
     /**
-     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)#getReadLimitTimeMs()}
+     * @deprecated use {@link #getLimits(String, String, TransformationOptions) getReadLimitTimeMs()}
      *             which allows the limits to be selected based on mimetype and use.
      */
     protected long getReadLimitTimeMs()
@@ -197,7 +197,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)#getMaxSourceSizeKBytes()}
+     * @deprecated use {@link #getLimits(String, String, TransformationOptions) getMaxSourceSizeKBytes()}
      *             which allows the limits to be selected based on mimetype and use.
      */
     protected long getMaxSourceSizeKBytes()
@@ -214,7 +214,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)#getReadLimitKBytes()}
+     * @deprecated use {@link #getLimits(String, String, TransformationOptions) getReadLimitKBytes()}
      *             which allows the limits to be selected based on mimetype and use.
      */
     protected long getReadLimitKBytes()
@@ -231,7 +231,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)#getMaxPages()}
+     * @deprecated use {@link #getLimits(String, String, TransformationOptions) getMaxPages()}
      *             which allows the limits to be selected based on mimetype and use.
      */
     protected int getMaxPages()
@@ -248,7 +248,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)#getPageLimit()}
+     * @deprecated use {@link #getLimits(String, String, TransformationOptions) getPageLimit()}
      *             which allows the limits to be selected based on mimetype and use.
      */
     protected int getPageLimit()
@@ -265,7 +265,7 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     }
 
     /**
-     * @deprecated use @link {@link #getLimits(String, String, TransformationOptions)} which allows the
+     * @deprecated use {@link #getLimits(String, String, TransformationOptions)} which allows the
      *             limits to be selected based on mimetype and use.
      */
     protected TransformationOptionLimits getLimits()
@@ -349,9 +349,9 @@ public abstract class AbstractContentTransformerLimits extends ContentTransforme
     /**
      * Pass on any limits to the reader. Will only do so if the reader is an
      * {@link AbstractContentReader}.
-     * @param reader passed to {@link #transform(ContentReader, ContentWriter, TransformationOptions).
-     * @param writer passed to {@link #transform(ContentReader, ContentWriter, TransformationOptions).
-     * @param options passed to {@link #transform(ContentReader, ContentWriter, TransformationOptions).
+     * @param reader passed to {@link #transform(ContentReader, ContentWriter, TransformationOptions)}.
+     * @param writer passed to {@link #transform(ContentReader, ContentWriter, TransformationOptions)}.
+     * @param options passed to {@link #transform(ContentReader, ContentWriter, TransformationOptions)}.
      */
     protected void setReaderLimits(ContentReader reader, ContentWriter writer,
             TransformationOptions options)

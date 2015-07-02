@@ -242,9 +242,8 @@ public class XSLTRenderingEngine extends BaseTemplateRenderingEngine
     }
 
     /**
-     * @param nodeRef
-     * @return
-     * @throws FileNotFoundException
+     * @param nodeRef NodeRef
+     * @return String
      */
     private String getPath(NodeRef nodeRef)
     {

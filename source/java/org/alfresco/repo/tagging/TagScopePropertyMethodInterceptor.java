@@ -157,10 +157,10 @@ public class TagScopePropertyMethodInterceptor implements MethodInterceptor
     /**
      * Given a NodeRef and, optionally, the property map of that node, this operation establishes whether
      * the node is a TagScope node, and returns the appropriate value of the cm:tagScopeSummary property. 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @param allNodeProperties Optional. If the caller has a current property map for the node being queried
      * then supplying it here saves a little time. This argument is allowed to be null.
-     * @return
+     * @return List<String>
      */
     protected List<String> getTagSummary(NodeRef nodeRef, Map<QName, Serializable> allNodeProperties)
     {
@@ -207,7 +207,7 @@ public class TagScopePropertyMethodInterceptor implements MethodInterceptor
      * Allows the functionality of this interceptor to be enabled and disabled on a thread-by-thread basis.
      * The caller should ensure that the value is reset to its prior setting once it has finished using the
      * thread of execution.
-     * @param enable
+     * @param enable Boolean
      * @return The setting prior to invoking this operation.
      */
     public static final Boolean setEnabled(Boolean enable)

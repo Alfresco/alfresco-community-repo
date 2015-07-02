@@ -182,8 +182,8 @@ public class SolrSearchService implements SearchService
     /**
      * The definitions must provide a default value, or of not there must be a parameter to provide the value
      * 
-     * @param definition
-     * @param queryParameters
+     * @param definition CannedQueryDef
+     * @param queryParameters QueryParameter[]
      * @throws QueryParameterisationException
      */
     private void checkParameters(CannedQueryDef definition, QueryParameter[] queryParameters) throws QueryParameterisationException

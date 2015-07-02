@@ -244,14 +244,14 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
     /**
      * Create model node 
      * 
-     * @param uri
-     * @param prefix
-     * @param modelLocalName
-     * @param importStatement
-     * @param description
-     * @param typeName
-     * @param propertyName
-     * @return
+     * @param uri String
+     * @param prefix String
+     * @param modelLocalName String
+     * @param importStatement String
+     * @param description String
+     * @param typeName String
+     * @param propertyName String
+     * @return NodeRef
      */
     private NodeRef createModelNode(
             String uri, 
@@ -291,14 +291,14 @@ public class DictionaryRepositoryBootstrapTest extends BaseSpringTest
      * 
      * Gets the model string 
      * 
-     * @param uri
-     * @param prefix
-     * @param modelLocalName
-     * @param importStatement
-     * @param description
-     * @param typeName
-     * @param propertyName
-     * @return
+     * @param uri String
+     * @param prefix String
+     * @param modelLocalName String
+     * @param importStatement String
+     * @param description String
+     * @param typeName String
+     * @param propertyName String
+     * @return String
      */
     private String getModelString(
             String uri, 

@@ -168,8 +168,8 @@ public class ScriptPreferenceService extends BaseScopableProcessorExtension
     /**
      * Clear the preference values
      * 
-     * @param userName
-     * @param preferenceFilter
+     * @param userName String
+     * @param preferenceFilter String
      */
     public void clearPreferences(String userName, String preferenceFilter)
     {

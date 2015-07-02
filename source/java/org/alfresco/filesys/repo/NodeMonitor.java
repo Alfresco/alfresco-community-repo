@@ -424,7 +424,7 @@ public class NodeMonitor extends TransactionListenerAdapter
 	 * 
 	 * @param parentNodeRef the old parent of the node
 	 * @param nodeName		the old name of the childs
-	 * @return
+	 * @return String
 	 */
 	private String buildRelativePathString(NodeRef parentNodeRef, String nodeName) {
 		Path nodePath = m_nodeService.getPath(parentNodeRef);

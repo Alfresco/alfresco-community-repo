@@ -113,7 +113,7 @@ public interface SiteInfo extends PermissionCheckValue
     /**
      * Get the custom property values
      * 
-     * @return  Map<QName, Serializable>    map of custom property names and values
+     * @return  map of custom property names and values
      */
     public abstract Map<QName, Serializable> getCustomProperties();
 

@@ -45,7 +45,7 @@ import org.apache.pdfbox.pdmodel.edit.PDPageContentStream;
 import org.apache.pdfbox.pdmodel.font.PDTrueTypeFont;
 import org.apache.pdfbox.pdmodel.font.PDType1Font;
 /**
- * Makes use of the {@link http://www.pdfbox.org/ PDFBox} library's <code>TextToPDF</code> utility.
+ * Makes use of the <a href="http://www.pdfbox.org/">PDFBox</a> library's <code>TextToPDF</code> utility.
  * 
  * @author Derek Hulley
  * @since 2.1.0

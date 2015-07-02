@@ -69,8 +69,8 @@ public class WarHelperImpl implements WarHelper
     /**
      * Checks if the module is compatible using the entry in the manifest. This is more accurate and works for both alfresco.war and share.war, however
      * valid manifest entries weren't added until 3.4.11, 4.1.1 and Community 4.2 
-     * @param war
-     * @param installingModuleDetails
+     * @param war TFile
+     * @param installingModuleDetails ModuleDetails
      */
     protected void checkCompatibleVersionUsingManifest(TFile war, ModuleDetails installingModuleDetails)
     {
@@ -149,9 +149,9 @@ public class WarHelperImpl implements WarHelper
 
 	/**
 	 * Compares the version information with the module details to see if their valid.  If they are invalid then it throws an exception.
-	 * @param warVersion
-	 * @param installingModuleDetails
-	 * @throws ModuleManagementToolException/home/gethin/development/projects/updatetool/code/update-tool
+	 * @param warVersion VersionNumber
+	 * @param installingModuleDetails ModuleDetails
+	 * @throws ModuleManagementToolException
 	 */
 	private void checkVersions(VersionNumber warVersion, ModuleDetails installingModuleDetails) throws ModuleManagementToolException
 	{
@@ -198,8 +198,8 @@ public class WarHelperImpl implements WarHelper
      * Checks to see if the module that is being installed is compatible with the war, (using the entry in the manifest).
      * This is more accurate and works for both alfresco.war and share.war, however
      * valid manifest entries weren't added until 3.4.11, 4.1.1 and Community 4.2 
-     * @param war
-     * @param installingModuleDetails
+     * @param war TFile
+     * @param installingModuleDetails ModuleDetails
      */
     public void checkCompatibleEditionUsingManifest(TFile war, ModuleDetails installingModuleDetails)
     {
@@ -381,8 +381,8 @@ public class WarHelperImpl implements WarHelper
     /**
      * Gets the module details for the specified module from the war.
      * @param war   a valid war file or exploded directory from a war
-     * @param moduleId
-     * @return
+     * @param moduleId String
+     * @return ModuleDetails
      */
     protected ModuleDetails getModuleDetails(TFile war, String moduleId)
     {

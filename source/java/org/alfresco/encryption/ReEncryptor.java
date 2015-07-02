@@ -160,8 +160,6 @@ public class ReEncryptor implements ApplicationContextAware
 
     /**
      * Attempts to get the lock. If it fails, the current transaction is marked for rollback.
-     * 
-     * @return Returns the lock token
      */
     private void refreshLock(String lockToken, long time)
     {

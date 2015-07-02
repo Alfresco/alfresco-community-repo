@@ -344,7 +344,7 @@ public class PropertySupport implements DBQueryBuilderComponent
  
 
     /**
-     * @param luceneFunction
+     * @param luceneFunction LuceneFunction
      */
     public void setLuceneFunction(LuceneFunction luceneFunction)
     {
@@ -352,7 +352,7 @@ public class PropertySupport implements DBQueryBuilderComponent
     }
     
     /**
-     * @param leftOuter
+     * @param leftOuter boolean
      */
     public void setLeftOuter(boolean leftOuter)
     {

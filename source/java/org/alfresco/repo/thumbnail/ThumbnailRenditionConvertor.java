@@ -69,9 +69,9 @@ public class ThumbnailRenditionConvertor
      * {@link ThumbnailParentAssociationDetails assocDetails},
      * create and return an equivalent {@link RenditionDefinition} object.
      * 
-     * @param thumbnailDefinition
-     * @param assocDetails
-     * @return
+     * @param thumbnailDefinition ThumbnailDefinition
+     * @param assocDetails ThumbnailParentAssociationDetails
+     * @return RenditionDefinitions
      */
     public RenditionDefinition convert(ThumbnailDefinition thumbnailDefinition, ThumbnailParentAssociationDetails assocDetails)
     {
@@ -110,7 +110,7 @@ public class ThumbnailRenditionConvertor
     /**
      * This method examines the various data values on the thumbnail definition and
      * works out if it is an 'image' rendition or a 'reformat' rendition
-     * @param thumbnailDefinition
+     * @param thumbnailDefinition ThumbnailDefinition
      * @return <code>true</code> for an image-based RenditionDefinition, else <code>false</code>
      */
     private boolean isImageBasedRendition(ThumbnailDefinition thumbnailDefinition)
@@ -125,9 +125,9 @@ public class ThumbnailRenditionConvertor
      * create and return a parameter Map which contains the equivalent {@link RenditionDefinition}
      * configuration.
      * 
-     * @param transformationOptions
-     * @param assocDetails
-     * @return
+     * @param transformationOptions TransformationOptions
+     * @param assocDetails ThumbnailParentAssociationDetails
+     * @return Map
      */
     public Map<String, Serializable> convert(TransformationOptions transformationOptions, ThumbnailParentAssociationDetails assocDetails)
     {

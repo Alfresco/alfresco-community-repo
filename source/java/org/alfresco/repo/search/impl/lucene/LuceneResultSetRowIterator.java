@@ -33,7 +33,7 @@ public class LuceneResultSetRowIterator extends AbstractResultSetRowIterator
      * Create an iterator over the result set. Follows standard ListIterator
      * conventions
      * 
-     * @param resultSet
+     * @param resultSet LuceneResultSet
      */
     public LuceneResultSetRowIterator(LuceneResultSet resultSet)
     {

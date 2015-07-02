@@ -36,7 +36,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * This class is responsible for the persistence of {@link DownloadDefinition} objects using lower-level
+ * This class is responsible for the persistence of objects using lower-level
  * repo services such as the {@link NodeService}. The higher-level business logic around these CRUD calls
  * is contained within the {@link DownloadServiceImpl}.
  * 
@@ -250,7 +250,7 @@ public class DownloadStorage
 
     /**
      * Delete the download node identified by nodeRef
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     public void delete(NodeRef nodeRef)
     {

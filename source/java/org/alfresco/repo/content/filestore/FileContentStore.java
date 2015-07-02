@@ -304,7 +304,6 @@ public class FileContentStore
      * 
      * @param file the file from which to create the URL
      * @return Returns the equivalent content URL
-     * @throws Exception
      */
     /*package*/ String makeContentUrl(File file)
     {
@@ -533,7 +532,6 @@ public class FileContentStore
      *            the created before dat6e
      * @param handler
      *            the handler
-     * @return the urls
      */
     @SuppressWarnings("deprecation")
     public void getUrls(Date createdAfter, Date createdBefore, ContentUrlHandler handler)
@@ -554,7 +552,6 @@ public class FileContentStore
      * @param handler the callback to use for each URL
      * @param createdAfter only get URLs for content create after this date
      * @param createdBefore only get URLs for content created before this date
-     * @return a list of all files within the given directory and all subdirectories
      */
     @SuppressWarnings("deprecation")
     private void getUrls(File directory, ContentUrlHandler handler, Date createdAfter, Date createdBefore)

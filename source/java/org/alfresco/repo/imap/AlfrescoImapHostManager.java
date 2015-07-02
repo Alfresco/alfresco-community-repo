@@ -53,7 +53,7 @@ public class AlfrescoImapHostManager implements ImapHostManager
     private static Log logger = LogFactory.getLog(AlfrescoImapHostManager.class);
     
     /**
-     * @param imapService
+     * @param imapService ImapService
      */
     public AlfrescoImapHostManager(ImapService imapService)
     {

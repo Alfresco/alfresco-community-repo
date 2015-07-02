@@ -184,8 +184,8 @@ public class RulesAspect implements
     }
 
     /**
+     * <br>author Neil McErlean
      * @since 3.4.11
-     * @author Neil McErlean
      */
     @Override
     public void beforeDeleteNode(NodeRef nodeRef)
@@ -196,7 +196,7 @@ public class RulesAspect implements
     }
     
     /**
-     * @return              Returns {@link RulesAspectCopyBehaviourCallback}
+     * @return              Returns CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

@@ -38,19 +38,19 @@ public interface TransferManifestProcessor
     
     /**
      * Gives the header to be proceessed
-     * @param header, the header
+     * @param header the header
      */
     public void processTransferManifiestHeader(TransferManifestHeader header);
         
     /**
      * Gives a manifest node to be processed
-     * @param node, the node
+     * @param node the node
      */
     public void processTransferManifestNode(TransferManifestNormalNode node); 
     
     /**
      * Gives a deleted manifest node to be processed
-     * @param node, the node
+     * @param node the node
      */
     public void processTransferManifestNode(TransferManifestDeletedNode node); 
     

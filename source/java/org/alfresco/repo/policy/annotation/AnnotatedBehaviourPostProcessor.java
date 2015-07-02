@@ -222,9 +222,9 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
 
     /**
      *
-     * @param behaviourBean
-     * @param behaviour
-     * @return
+     * @param behaviourBean BehaviourBean
+     * @param behaviour Behaviour
+     * @return QName
      */
     private QName resolveType(BehaviourBean behaviourBean, Behaviour behaviour)
     {
@@ -247,8 +247,8 @@ public class AnnotatedBehaviourPostProcessor implements BeanPostProcessor
 
     /**
      *
-     * @param name
-     * @return
+     * @param name String
+     * @return QName
      */
     private QName toQName(String name)
     {

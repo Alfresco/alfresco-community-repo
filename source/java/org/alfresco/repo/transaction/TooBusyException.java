@@ -33,7 +33,7 @@ public class TooBusyException extends AlfrescoRuntimeException
     private static final long serialVersionUID = 1L;
 
     /**
-     * @param msgId
+     * @param msgId String
      */
     public TooBusyException(String msgId)
     {
@@ -41,8 +41,8 @@ public class TooBusyException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId
-     * @param msgParams
+     * @param msgId String
+     * @param msgParams Object[]
      */
     public TooBusyException(String msgId, Object[] msgParams)
     {
@@ -50,8 +50,8 @@ public class TooBusyException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId
-     * @param cause
+     * @param msgId String
+     * @param cause Throwable
      */
     public TooBusyException(String msgId, Throwable cause)
     {
@@ -59,9 +59,9 @@ public class TooBusyException extends AlfrescoRuntimeException
     }
 
     /**
-     * @param msgId
-     * @param msgParams
-     * @param cause
+     * @param msgId String
+     * @param msgParams Object[]
+     * @param cause Throwable
      */
     public TooBusyException(String msgId, Object[] msgParams, Throwable cause)
     {

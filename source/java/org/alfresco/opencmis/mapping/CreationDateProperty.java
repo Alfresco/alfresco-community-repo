@@ -35,7 +35,8 @@ public class CreationDateProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
      */
     public CreationDateProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

@@ -176,7 +176,7 @@ public interface TemplateService
      * @param userHome      the user home node reference
      * @param template      the node ref for the template (optional)
      * @param imageResolver the image resolver (optional)
-     * @return
+     * @return Map
      */
     @Auditable(parameters = {"person", "companyHome", "userHome", "template", "imageResolver"})
     public Map<String, Object> buildDefaultModel(

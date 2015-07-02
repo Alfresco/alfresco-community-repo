@@ -35,8 +35,8 @@ public class ChildAssocRefResultSetRow extends AbstractResultSetRow
 {
     /**
      * Row in child assoc ref result set
-     * @param resultSet
-     * @param index
+     * @param resultSet ChildAssocRefResultSet
+     * @param index int
      */
     public ChildAssocRefResultSetRow(ChildAssocRefResultSet resultSet, int index)
     {

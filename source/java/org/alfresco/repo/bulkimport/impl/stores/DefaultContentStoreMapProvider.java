@@ -30,7 +30,7 @@ import java.util.HashMap;
 import org.alfresco.repo.content.ContentStore;
 
 /**
- * Provides a default {@link java.util.Map<String, ContentStore>()} of registered content stores.
+ * Provides a default {@link java.util.Map} of registered content stores.
  * Use when the Content Store Selector is not available (e.g on community releases).
  * 
  * @since 4.0

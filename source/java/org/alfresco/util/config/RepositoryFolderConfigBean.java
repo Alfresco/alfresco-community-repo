@@ -37,7 +37,7 @@ import org.alfresco.util.PropertyCheck;
 /**
  * Composite property bean to identify a folder in the repository.  This uses the
  * {@link #getFolderPath() path} to identify a root and then a
- * {@link #getFolderNames() folder-name path} to identify a folder.
+ * folder-name path to identify a folder.
  * 
  * @author Derek Hulley
  * @since 3.2 
@@ -99,7 +99,7 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
     
     /**
      * Helper method to find the folder path referenced by this bean.
-     * The {@link #getFolderPath() path} to the start of the {@link #getFolderNames() folder path}
+     * The {@link #getFolderPath() path} to the start of the folder path
      * must exist.
      * <p>
      * Authentication and transactions are the client's responsibility.
@@ -118,7 +118,7 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
     
     /**
      * Helper method to find the folder path referenced by this bean.
-     * The {@link #getFolderPath() path} to the start of the {@link #getFolderNames() folder path}
+     * The {@link #getFolderPath() path} to the start of the folder path
      * must exist.
      * <p>
      * Authentication and transactions are the client's responsibility.
@@ -185,7 +185,7 @@ public class RepositoryFolderConfigBean extends RepositoryPathConfigBean
     
     /**
      * Helper method to find or create the folder path referenced by this bean.
-     * The {@link #getFolderPath() path} to the start of the {@link #getFolderNames() folder path}
+     * The {@link #getFolderPath() path} to the start of the folder path
      * must exist.  The folder path will be created, if required.
      * <p>
      * Authentication and transactions are the client's responsibility.

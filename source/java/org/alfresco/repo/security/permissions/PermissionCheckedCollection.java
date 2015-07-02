@@ -36,8 +36,7 @@ public interface PermissionCheckedCollection<T>
 {
     /**
      * Check if the results have been truncated by permission check limits.
-     * This can only be called when {@link #isFiltered()} is <tt>true</tt>.
-     * 
+     *
      * @return              <tt>true</tt> - if the results (usually a collection) have been
      *                      cut off by permission check limits
      */

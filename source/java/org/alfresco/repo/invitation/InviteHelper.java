@@ -230,11 +230,11 @@ public class InviteHelper implements InitializingBean
     
     /**
      * Add Invitee to Site with the site role that the inviter "started" the invite process with
-     * @param invitee
-     * @param siteName
-     * @param role
-     * @param runAsUser
-     * @param overrideExisting
+     * @param invitee String
+     * @param siteName String
+     * @param role String
+     * @param runAsUser String
+     * @param overrideExisting boolean
      */
     public void addSiteMembership(final String invitee, final String siteName, final String role, final String runAsUser, final boolean overrideExisting)
     {
@@ -257,8 +257,8 @@ public class InviteHelper implements InitializingBean
      * They are deemed to no longer be in use when the invitee user account
      * is still disabled and there are no outstanding pending invites for that invitee.
      * 
-     * @param inviteeUserName
-     * @param currentInviteId TODO
+     * @param inviteeUserName String
+     * @param currentInviteId String
      */
     public void deleteAuthenticationIfUnused(final String inviteeUserName, final String currentInviteId)
     {
@@ -302,9 +302,11 @@ public class InviteHelper implements InitializingBean
             }
         }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
-     * @param executionVariables
+     *
+     * @param executionVariables Map<String, Object>
+     * @param currentInviteId String
      */
     public void cancelInvitation(Map<String, Object> executionVariables, String currentInviteId)
     {
@@ -366,7 +368,7 @@ public class InviteHelper implements InitializingBean
     }
 
     /**
-     * @param vars
+     * @param vars Map<String, Object>
      */
     public void rejectModeratedInvitation(Map<String, Object> vars)
     {

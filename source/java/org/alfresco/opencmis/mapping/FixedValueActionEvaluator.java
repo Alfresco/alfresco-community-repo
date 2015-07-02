@@ -35,8 +35,9 @@ public class FixedValueActionEvaluator extends AbstractActionEvaluator
     /**
      * Construct
      * 
-     * @param serviceRegistry
-     * @param action
+     * @param serviceRegistry ServiceRegistry
+     * @param action Action
+     * @param allowed boolean
      */
     protected FixedValueActionEvaluator(ServiceRegistry serviceRegistry, Action action, boolean allowed)
     {

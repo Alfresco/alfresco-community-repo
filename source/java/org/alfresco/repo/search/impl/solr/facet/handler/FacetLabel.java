@@ -32,9 +32,9 @@ public class FacetLabel
     private final int labelIndex;
 
     /**
-     * @param value
-     * @param label
-     * @param labelIndex
+     * @param value String
+     * @param label String
+     * @param labelIndex int
      */
     public FacetLabel(String value, String label, int labelIndex)
     {

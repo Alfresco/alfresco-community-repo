@@ -47,9 +47,9 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
      * Add or Update OAuth1 Credentials for the current user to the OAuth1
      * Credential Store
      * 
-     * @param remoteSystemId
-     * @param token
-     * @param secret
+     * @param remoteSystemId String
+     * @param token String
+     * @param secret String
 
      * @return OAuth1CredentialsInfo
      */
@@ -77,9 +77,9 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
     /**
      * Add Shared OAuth1 Credentials to the OAuth1 Credential Store
      * 
-     * @param remoteSystemId
-     * @param token
-     * @param secret
+     * @param remoteSystemId String
+     * @param token String
+     * @param secret String
      * @return OAuth1CredentialsInfo
      */
     @Override
@@ -95,10 +95,10 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
     }
 
     /**
-     * @param exisitingCredentials
-     * @param remoteSystemId
-     * @param token
-     * @param secret
+     * @param exisitingCredentials OAuth1CredentialsInfo
+     * @param remoteSystemId String
+     * @param token String
+     * @param secret String
      * @return OAuth1CredentialsInfo
      */
     @Override
@@ -132,9 +132,9 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
     }
 
     /**
-     * @param remoteSystemId
-     * @param token
-     * @param secret
+     * @param remoteSystemId String
+     * @param token String
+     * @param secret String
      * @return OAuth1CredentialsInfo
      */
     private OAuth1CredentialsInfo buildPersonalOAuth1CredentialsInfo(String remoteSystemId,
@@ -155,9 +155,9 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
     }
 
     /**
-     * @param remoteSystemId
-     * @param token
-     * @param secret
+     * @param remoteSystemId String
+     * @param token String
+     * @param secret String
      * @return OAuth1CredentialsInfo
      */
     private OAuth1CredentialsInfo buildSharedOAuth1CredentialsInfo(String remoteSystemId,
@@ -174,7 +174,7 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
     /**
      * Get the current users OAuth1Credentials for the remote systems
      * 
-     * @param remoteSystemId
+     * @param remoteSystemId String
      * @return OAuth1CredentialsInfo
      */
     @Override
@@ -186,7 +186,7 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
     }
 
     /**
-     * @param remoteSystemId
+     * @param remoteSystemId String
      * @return List<OAuth1CredentialInfo>
      */
     @Override
@@ -204,7 +204,7 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
     /**
      * Delete the current users OAuth1 Credentials for the remote system
      * 
-     * @param remoteSystemId
+     * @param remoteSystemId String
      * @return boolean
      */
     @Override
@@ -244,9 +244,9 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
     }
 
     /**
-     * @param succeeded
-     * @param credentials
-     * @return
+     * @param succeeded boolean
+     * @param credentials OAuth1CredentialsInfo
+     * @return OAuth1CredentialsInfo
      */
     @Override
     public OAuth1CredentialsInfo updateCredentialsAuthenticationSucceeded(boolean succeeded,

@@ -45,7 +45,7 @@ public class PagingLuceneResultSetRowIteratorImpl implements ListIterator<Result
     /**
      * Create an iterator over the result set. Follows stadard ListIterator conventions
      * 
-     * @param resultSet
+     * @param resultSet PagingLuceneResultSet
      */
     public PagingLuceneResultSetRowIteratorImpl(PagingLuceneResultSet resultSet)
     {

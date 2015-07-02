@@ -157,7 +157,7 @@ public class TransformationOptions implements Cloneable
     
     /**
      * Sets options from the supplied map.
-     * @param optionsMap
+     * @param optionsMap Map<String, Object>
      */
     public void set(Map<String, Object> optionsMap)
     {
@@ -505,7 +505,7 @@ public class TransformationOptions implements Cloneable
      * Note that if source options of the same class already exists a new
      * merged source options object is added.
      * 
-     * @param sourceOptions
+     * @param sourceOptions TransformationSourceOptions
      */
     public void addSourceOptions(TransformationSourceOptions sourceOptions)
     {
@@ -525,7 +525,7 @@ public class TransformationOptions implements Cloneable
     /**
      * Gets the appropriate source options for the given mimetype if available.
      * 
-     * @param clazz
+     * @param clazz Class<T>
      * @return the source options for the mimetype
      */
     @SuppressWarnings("unchecked")

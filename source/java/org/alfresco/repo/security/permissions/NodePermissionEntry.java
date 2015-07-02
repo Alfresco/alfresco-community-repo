@@ -34,14 +34,14 @@ public interface NodePermissionEntry
     /**
      * Get the node ref.
      * 
-     * @return
+     * @return NodeRef
      */
     public NodeRef getNodeRef();
     
     /**
      * Does the node inherit permissions from its primary parent?
      * 
-     * @return
+     * @return boolean
      */
     public boolean inheritPermissions();
     
@@ -49,7 +49,7 @@ public interface NodePermissionEntry
     /**
      * Get the permission entries set for this node.
      * 
-     * @return
+     * @return List
      */
     public List<? extends PermissionEntry> getPermissionEntries();
 }

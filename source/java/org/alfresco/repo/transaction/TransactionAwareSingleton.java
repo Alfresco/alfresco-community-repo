@@ -35,7 +35,7 @@ import org.alfresco.util.GUID;
  *    private static final TransactionAwareSingleton<Integer> MY_SINGLETON = new TransactionAwareSingleton<Integer>();
  * </code>
  * <p>
- * All modifications to the singleton via {@link #get()} and {@link #put(T)} are made in a 
+ * All modifications to the singleton via {@link #get()} and {@link #put(Object)} are made in a
  * transaction-local manner and promoted to the shared value in a thread-safe manner upon
  * transacton completion.  Transaction-local changes take precedence over the shared value.
  * 

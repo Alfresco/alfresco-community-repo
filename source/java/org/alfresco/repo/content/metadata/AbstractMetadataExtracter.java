@@ -81,7 +81,7 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter, Be
     /**
      * Helper setter of the mimetype service.  This is not always required.
      * 
-     * @param mimetypeService
+     * @param mimetypeService MimetypeService
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
@@ -205,7 +205,7 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter, Be
     /**
      * {@inheritDoc}
      * <p>
-     * A {@linkplain OverwritePolicy#PRAGMATIC pragmatic} overwrite policy will be applied.
+     * A {@code OverwritePolicy.PRAGMATIC} will be applied.
      */
     public Map<QName, Serializable> extract(ContentReader reader, Map<QName, Serializable> destination)
     {

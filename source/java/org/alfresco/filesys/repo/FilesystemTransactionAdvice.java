@@ -37,8 +37,8 @@ import org.aopalliance.intercept.MethodInvocation;
  * In particular must avoid wrapping JLAN's checked exceptions with an AlfrescoRuntimeException 
  * (so must throw IOException etc)
  * <p>
- * @See DiskInterface
- * @See IOControlHandler
+ * @see org.alfresco.jlan.server.filesys.DiskInterface
+ * @see org.alfresco.filesys.alfresco.IOControlHandler
  * 
  */
 public class FilesystemTransactionAdvice implements MethodInterceptor

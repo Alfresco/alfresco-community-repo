@@ -100,7 +100,7 @@ public class ExporterActionExecuter extends ActionExecuterAbstractBase
     /**
      * Sets the MimetypeService to use
      * 
-     * @param mimetypeService
+     * @param mimetypeService MimetypeService
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {

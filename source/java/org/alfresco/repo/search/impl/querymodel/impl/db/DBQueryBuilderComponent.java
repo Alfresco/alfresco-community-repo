@@ -42,14 +42,21 @@ public interface DBQueryBuilderComponent
 {
     /**
      * Is this component supported in a DB query?
-     * @return
+     * @return boolean
      */
     public boolean isSupported();
     
     /**
      * Use the dictionary to expand any terms, deal with multi-valued properties, etc
      * Use the QNameDAO to look up any ids
-     * @param functionArgs 
+     * @param namespaceService NamespaceService
+     * @param dictionaryService DictionaryService
+     * @param qnameDAO QNameDAO
+     * @param nodeDAO NodeDAO
+     * @param tenantService TenantService
+     * @param selectors Set<String>
+     * @param functionArgs Map<String, Argument>
+     * @param functionContext FunctionEvaluationContext
      */
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors, Map<String, Argument> functionArgs,  FunctionEvaluationContext functionContext);
     

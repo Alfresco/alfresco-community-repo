@@ -36,7 +36,8 @@ public class VersionSeriesCheckedOutByProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
      */
     public VersionSeriesCheckedOutByProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

@@ -30,7 +30,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  *  used with Scripts and WebScripts, and feeds into the
  *  Repository level paging support.
  * This class is typically used with {@link ModelUtil}.
- * Note that {@link org.alfresco.repo.web.paging.Paging}
+ * Note that {@link org.alfresco.repo.web.util.paging.Paging}
  *  provides an alternate solution for other paging
  *  use cases.
  * 

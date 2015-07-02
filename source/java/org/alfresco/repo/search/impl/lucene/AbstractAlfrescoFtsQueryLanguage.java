@@ -58,7 +58,7 @@ public abstract class AbstractAlfrescoFtsQueryLanguage extends AbstractLuceneQue
     /**
      * Set the query engine
      * 
-     * @param queryEngine
+     * @param queryEngine QueryEngine
      */
     public void setQueryEngine(QueryEngine queryEngine)
     {

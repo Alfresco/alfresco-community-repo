@@ -38,8 +38,8 @@ public interface ContentServiceHelper
     /**
      * Implementations should update the content of downlaodNode with contents of archiveFile.
      * 
-     * @param downloadNode
-     * @param archiveFile
+     * @param downloadNode  NodeRef
+     * @param archiveFile File
      * @throws ContentIOException
      * @throws FileNotFoundException
      * @throws IOException

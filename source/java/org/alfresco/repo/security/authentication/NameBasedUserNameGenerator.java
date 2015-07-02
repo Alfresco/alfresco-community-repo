@@ -49,7 +49,7 @@ public class NameBasedUserNameGenerator implements UserNameGenerator
      *  	%emailAddress% email address
      *      %i% lower case first name inital
      * 
-     * @param userNamePattern
+     * @param userNamePattern String
      */
 	public void setNamePattern(String userNamePattern) 
 	{

@@ -43,15 +43,15 @@ public interface Indexer
      * created with a name in a given parent and so a relationship ref is
      * required.
      * 
-     * @param relationshipRef
+     * @param relationshipRef ChildAssociationRef
      */
     public void createNode(ChildAssociationRef relationshipRef);
 
     /**
      * Update an index entry due to property changes on a node. There are no
      * strucural impications from such a change.
-     * 
-     * @param nodeRef
+     *
+     * @param nodeRef NodeRef
      */
     public void updateNode(NodeRef nodeRef);
 
@@ -61,7 +61,7 @@ public interface Indexer
      * refernces to the node from the index. The index has no idea of the
      * primary link.
      * 
-     * @param relationshipRef
+     * @param relationshipRef ChildAssociationRef
      */
     public void deleteNode(ChildAssociationRef relationshipRef);
 
@@ -69,7 +69,7 @@ public interface Indexer
      * Create a refernce link between a parent and child. Implies only
      * (potential) structural changes
      * 
-     * @param relationshipRef
+     * @param relationshipRef ChildAssociationRef
      */
     public void createChildRelationship(ChildAssociationRef relationshipRef);
 
@@ -87,8 +87,8 @@ public interface Indexer
      * This could be implemented as a delete and add but some implementations
      * may be able to optimise this operation.
      * 
-     * @param relationshipBeforeRef
-     * @param relationshipAfterRef
+     * @param relationshipBeforeRef ChildAssociationRef
+     * @param relationshipAfterRef ChildAssociationRef
      */
     public void updateChildRelationship(ChildAssociationRef relationshipBeforeRef, ChildAssociationRef relationshipAfterRef);
 
@@ -103,7 +103,7 @@ public interface Indexer
      * sure you are doing an unlink (remove a hard link in the unix file system
      * world).
      * 
-     * @param relationshipRef
+     * @param relationshipRef ChildAssociationRef
      */
     public void deleteChildRelationship(ChildAssociationRef relationshipRef);
 
@@ -130,7 +130,7 @@ public interface Indexer
 
     /**
      * Delete the index for a store
-     * @param storeRef
+     * @param storeRef StoreRef
      */
     public void deleteIndex(StoreRef storeRef);
 
@@ -142,7 +142,7 @@ public interface Indexer
      * (potentially old) transaction, it will use a discrete read only transaction for each node it indexes. This avoids
      * 'stale' nodes building up in the caches during long reindex runs.
      * 
-     * @param isReadThrough
+     * @param isReadThrough boolean
      */
     public void setReadThrough(boolean isReadThrough);
 }

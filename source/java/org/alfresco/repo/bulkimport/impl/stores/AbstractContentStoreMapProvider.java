@@ -38,7 +38,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * Common elements of the role of a {@link ContentStoreMapProvider}.
- * Extending classes should implement {@link #setUpStoreMap()} to initialize the {@link Map<String,ContentStore>}.
+ * Extending classes should implement {@link #setUpStoreMap()} to initialize the {@link Map}.
  * 
  * @since 4.0
  *

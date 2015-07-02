@@ -121,7 +121,7 @@ public class TypeSupport implements DBQueryBuilderComponent
     }
 
     /**
-     * @param leftOuter
+     * @param leftOuter boolean
      */
     public void setLeftOuter(boolean leftOuter)
     {

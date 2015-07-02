@@ -67,24 +67,24 @@ public interface BlogIntegrationService
     /**
      * Posts the content of a node to the blog specified
      * 
-     * @param blogDetails
-     * @param nodeRef
-     * @param contentProperty
-     * @param publish
+     * @param blogDetails BlogDetails
+     * @param nodeRef NodeRef
+     * @param contentProperty QName
+     * @param publish boolean
      */
     void newPost(BlogDetails blogDetails, NodeRef nodeRef, QName contentProperty, boolean publish);
     
     /**
      * 
-     * @param nodeRef
-     * @param contentProperty
-     * @param publish
+     * @param nodeRef NodeRef
+     * @param contentProperty QName
+     * @param publish boolean
      */
     void updatePost(NodeRef nodeRef, QName contentProperty, boolean publish);
     
     /**
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     void deletePost(NodeRef nodeRef);
 }

@@ -65,7 +65,7 @@ public class MessageDigestPasswordEncoder extends BaseDigestPasswordEncoder
      * "http://java.sun.com/j2se/1.4.2/docs/guide/security/CryptoSpec.html#AppA"
      * > Message Digest Algorithms</a> in the Java environment.
      * 
-     * @param algorithm
+     * @param algorithm String
      */
     public MessageDigestPasswordEncoder(String algorithm)
     {
@@ -75,9 +75,9 @@ public class MessageDigestPasswordEncoder extends BaseDigestPasswordEncoder
     /**
      * Convenience constructor for specifying the algorithm and whether or not
      * to enable base64 encoding
-     * 
-     * @param algorithm
-     * @param encodeHashAsBase64
+     *
+     * @param algorithm String
+     * @param encodeHashAsBase64 boolean
      * @throws IllegalArgumentException
      *             if an unknown
      */

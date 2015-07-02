@@ -47,10 +47,10 @@ import org.apache.commons.logging.LogFactory;
  * 
  * Clean-up happens at two levels.<p/>
  * <u><b>Eager cleanup:</b></u> (since 3.2)<p/>
- * If {@link #setEagerOrphanCleanup(boolean) eager cleanup} is activated, then this
+ * If  eager cleanup is activated, then this
  * component listens to all content property change events and recorded for post-transaction
  * processing.  All orphaned content is deleted from the registered store(s).  Note that
- * any {@link #setListeners(List) listeners} are called as normal; backup or scrubbing
+ * any listeners are called as normal; backup or scrubbing
  * procedures should be plugged in as listeners if this is required.
  * <p/>
  * <u><b>Lazy cleanup:</b></u><p/>
@@ -197,7 +197,7 @@ public class ContentStoreCleaner
     }
 
     /**
-     * Initializes the cleaner based on the {@link #setEagerOrphanCleanup(boolean) eagerCleanup} flag.
+     * Initializes the cleaner.
      */
     public void init()
     {

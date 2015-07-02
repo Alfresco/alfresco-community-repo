@@ -85,7 +85,7 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
  *   implementation.  This can be overwritten with configurations.
  *   </li>
  *   <li>
- *   Implement the {@link extractInternal} method.  This now returns a raw map of extracted
+ *   Implement the {@link #extract} method.  This now returns a raw map of extracted
  *   values keyed by document-specific property names.  The <b>trimPut</b> method has
  *   been replaced with an equivalent {@link #putRawValue(String, Serializable, Map)}.
  *   </li>
@@ -225,7 +225,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * Set the mimetypes that are supported by the extracter.
      * 
-     * @param supportedMimetypes
+     * @param supportedMimetypes Collection<String>
      */
     public void setSupportedMimetypes(Collection<String> supportedMimetypes)
     {
@@ -236,7 +236,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * Set the mimetypes that are supported for embedding.
      *
-     * @param supportedEmbedMimetypes
+     * @param supportedEmbedMimetypes Collection<String>
      */
     public void setSupportedEmbedMimetypes(Collection<String> supportedEmbedMimetypes)
     {
@@ -342,7 +342,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * Set the date formats, over and above the {@link ISO8601DateFormat ISO8601 format}, that will
      * be supported for string to date conversions.  The supported syntax is described by the
-     * {@link http://java.sun.com/j2se/1.5.0/docs/api/java/text/SimpleDateFormat.html SimpleDateFormat Javadocs}.
+     * <a href="http://java.sun.com/j2se/1.5.0/docs/api/java/text/SimpleDateFormat.html">SimpleDateFormat Javadocs</a>.
      * 
      * @param supportedDateFormats      a list of supported date formats.
      */
@@ -446,7 +446,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * Sets the map of source mimetypes to metadata extracter limits.
      * 
-     * @param mimetypeLimits
+     * @param mimetypeLimits Map<String, MetadataExtracterLimits>
      */
     public void setMimetypeLimits(Map<String, MetadataExtracterLimits> mimetypeLimits)
     {
@@ -1970,7 +1970,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * A specific match for the given mimetype is tried first and
      * if none is found a wildcard of "*" is tried.
      * 
-     * @param mimetype
+     * @param mimetype String
      * @return the found limits or null
      */
     protected MetadataExtracterLimits getLimits(String mimetype)
@@ -2044,7 +2044,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      *                      the reader must be closed if accessed directly.
      * @param limits        the limits to impose on the extraction
      * @return              Returns a map of document property values keyed by property name.
-     * @throws              All exception conditions can be handled.
+     * @throws Throwable    All exception conditions can be handled.
      */
     private Map<String, Serializable> extractRaw(
             ContentReader reader, MetadataExtracterLimits limits) throws Throwable
@@ -2100,7 +2100,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * strings are 
      * <ul>
      *    <li><b>Null:</b>              Removed</li>
-     *    <li><b>Empty String:</b>      Passed to the {@link OverwritePolicy}</li>
+     *    <li><b>Empty String:</b>      Passed to the OverwritePolicy</li>
      *    <li><b>Non Serializable:</b>  Converted to String or fails if that is not possible</li>
      * </ul>
      * <p>
@@ -2118,7 +2118,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * @param reader        the document to extract the values from.  This stream provided by
      *                      the reader must be closed if accessed directly.
      * @return              Returns a map of document property values keyed by property name.
-     * @throws              All exception conditions can be handled.
+     * @throws Throwable    All exception conditions can be handled.
      * 
      * @see #getDefaultMapping()
      */
@@ -2136,7 +2136,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      *                      the reader must be closed if accessed directly.
      * @param writer        the writer for the document to embed the values in.  This stream provided by
      *                      the writer must be closed if accessed directly.
-     * @throws              All exception conditions can be handled.
+     * @throws Throwable    All exception conditions can be handled.
      *
      * @see #getDefaultEmbedMapping()
      */

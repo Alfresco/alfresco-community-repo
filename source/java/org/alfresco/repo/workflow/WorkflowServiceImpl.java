@@ -98,7 +98,7 @@ public class WorkflowServiceImpl implements WorkflowService
     /**
      * Sets the Authority Service
      * 
-     * @param authorityService
+     * @param authorityService AuthorityService
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -136,7 +136,7 @@ public class WorkflowServiceImpl implements WorkflowService
     /**
      * Sets the Node Service
      * 
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -146,7 +146,7 @@ public class WorkflowServiceImpl implements WorkflowService
     /**
      * Sets the Content Service
      * 
-     * @param contentService
+     * @param contentService ContentService
      */
     public void setContentService(ContentService contentService)
     {
@@ -156,7 +156,7 @@ public class WorkflowServiceImpl implements WorkflowService
     /**
      * Set the dictionary service
      * 
-     * @param dictionaryService
+     * @param dictionaryService DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -166,7 +166,7 @@ public class WorkflowServiceImpl implements WorkflowService
     /**
      * Set the node service which applies permissions
      * 
-     * @param protectedNodeService
+     * @param protectedNodeService NodeService
      */
     public void setProtectedNodeService(NodeService protectedNodeService)
     {
@@ -1346,7 +1346,7 @@ public class WorkflowServiceImpl implements WorkflowService
      * package is associated with the specified task then this method returns
      * null.
      * 
-     * @param taskId
+     * @param taskId String
      * @return The workflow package NodeRef or null.
      */
     private NodeRef getWorkflowPackageIfExists(String taskId)
@@ -1357,7 +1357,7 @@ public class WorkflowServiceImpl implements WorkflowService
     }
 
     /**
-     * @param workflowPackage
+     * @param workflowPackage NodeRef
      */
     private List<NodeRef> getRepositoryPackageContents(NodeRef workflowPackage)
     {
@@ -1395,7 +1395,7 @@ public class WorkflowServiceImpl implements WorkflowService
      * dcitionary. If the type is not in the data dictionary then the method
      * logs a warning and returns false. Otherwise it returns true.
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @return True if the nodeRef type is in the data dictionary, otherwise
      *         false.
      */

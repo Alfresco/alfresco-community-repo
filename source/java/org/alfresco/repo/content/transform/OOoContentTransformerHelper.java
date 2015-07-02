@@ -86,7 +86,7 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
     
     /**
      * Helper setter of the transformer debug. 
-     * @param transformerDebug
+     * @param transformerDebug TransformerDebug
      */
     public void setTransformerDebug(TransformerDebug transformerDebug)
     {
@@ -123,8 +123,8 @@ public abstract class OOoContentTransformerHelper extends ContentTransformerHelp
      * This method can be used by subclasses to check if a targetMimetype or source/target
      * Mimetype pair are blocked.
      * 
-     * @param sourceMimetype
-     * @param targetMimetype
+     * @param sourceMimetype String
+     * @param targetMimetype String
      * @return <code>true</code> if the mimetypes are blocked, else <code>false</code>
      */
     protected boolean isTransformationBlocked(String sourceMimetype, String targetMimetype)

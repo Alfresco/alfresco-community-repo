@@ -50,8 +50,8 @@ public interface MutableAuthenticationService extends AuthenticationService
     /**
      * Create an authentication for the given user.
      * 
-     * @param userName
-     * @param password
+     * @param userName String
+     * @param password char[]
      * @throws AuthenticationException
      */
     @Auditable(parameters = {"userName", "password"}, recordable = {true, false})
@@ -60,9 +60,9 @@ public interface MutableAuthenticationService extends AuthenticationService
     /**
      * Update the login information for the user (typically called by the user)
      * 
-     * @param userName
-     * @param oldPassword
-     * @param newPassword
+     * @param userName String
+     * @param oldPassword char[]
+     * @param newPassword char[]
      * @throws AuthenticationException
      */
     @Auditable(parameters = {"userName", "oldPassword", "newPassword"}, recordable = {true, false, false})
@@ -71,8 +71,8 @@ public interface MutableAuthenticationService extends AuthenticationService
     /**
      * Set the login information for a user (typically called by an admin user) 
      * 
-     * @param userName
-     * @param newPassword
+     * @param userName String
+     * @param newPassword char[]
      * @throws AuthenticationException
      */
     @Auditable(parameters = {"userName", "newPassword"}, recordable = {true, false})
@@ -82,7 +82,7 @@ public interface MutableAuthenticationService extends AuthenticationService
     /**
      * Delete an authentication entry
      * 
-     * @param userName
+     * @param userName String
      * @throws AuthenticationException
      */
     @Auditable(parameters = {"userName"})
@@ -91,8 +91,8 @@ public interface MutableAuthenticationService extends AuthenticationService
     /**
      * Enable or disable an authentication entry
      * 
-     * @param userName
-     * @param enabled
+     * @param userName String
+     * @param enabled boolean
      */
     @Auditable(parameters = {"userName", "enabled"})
     public void setAuthenticationEnabled(String userName, boolean enabled) throws AuthenticationException;

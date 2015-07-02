@@ -67,13 +67,13 @@ public class FileFolderUtil
     /**
      * Same as above, with option to disable parent behaviour(s) when creating sub-folder
      * 
-     * @param service
-     * @param parentNodeRef
-     * @param pathElements
-     * @param folderTypeQName
-     * @param behaviourFilter
-     * @param parentBehavioursToDisable
-     * @return
+     * @param service FileFolderService
+     * @param parentNodeRef NodeRef
+     * @param pathElements List<String>
+     * @param folderTypeQName QName
+     * @param behaviourFilter BehaviourFilter
+     * @param parentBehavioursToDisable Set<QName>
+     * @return FileInfo
      */
     public static FileInfo makeFolders(FileFolderService service, NodeRef parentNodeRef, List<String> pathElements,
                 QName folderTypeQName, BehaviourFilter behaviourFilter, Set<QName> parentBehavioursToDisable)

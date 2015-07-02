@@ -26,8 +26,8 @@ import org.apache.tika.parser.Parser;
 import org.apache.tika.parser.microsoft.OfficeParser;
 
 /**
- * Uses {@link http://tika.apache.org/ Apache Tika} and
- *  {@link http://poi.apache.org/ Apache POI} to perform
+ * Uses <a href="http://tika.apache.org/">Apache Tika</a> and
+ *  <a href="@link http://poi.apache.org/">Apache POI</a> to perform
  *  conversions from Office documents.
  *
  * {@link PoiHssfContentTransformer} handles the Excel

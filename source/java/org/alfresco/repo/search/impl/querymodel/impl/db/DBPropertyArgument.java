@@ -28,11 +28,11 @@ public class DBPropertyArgument extends BasePropertyArgument
 {
 
     /**
-     * @param name
-     * @param queryable
-     * @param orderable
-     * @param selector
-     * @param propertyName
+     * @param name String
+     * @param queryable boolean
+     * @param orderable boolean
+     * @param selector String
+     * @param propertyName String
      */
     public DBPropertyArgument(String name, boolean queryable, boolean orderable, String selector, String propertyName)
     {

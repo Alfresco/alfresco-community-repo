@@ -828,7 +828,7 @@ abstract class AbstractAssocCommand
      * This method should use the specified nodeService reference to effect the
      * update to the supplied associations.
      * 
-     * @param nodeService
+     * @param nodeService NodeService
      */
     protected abstract void updateAssociations(NodeService nodeService);
 }

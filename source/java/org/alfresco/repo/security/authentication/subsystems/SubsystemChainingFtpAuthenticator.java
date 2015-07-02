@@ -29,7 +29,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * This class wires up all the active {@link #FTPAuthenticatorBase} beans in a chain.
+ * This class wires up all the active {@link org.alfresco.filesys.auth.ftp.FTPAuthenticatorBase} beans in a chain.
  *
  * @author alex.mukha
  * @since 4.2.1

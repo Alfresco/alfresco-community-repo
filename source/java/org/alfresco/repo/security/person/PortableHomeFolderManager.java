@@ -116,7 +116,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
     /**
      * Register a home folder provider.
      * 
-     * @param provider
+     * @param provider HomeFolderProvider
      */
     @SuppressWarnings("deprecation")
     public void addProvider(HomeFolderProvider provider)
@@ -127,7 +127,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
     /**
      * Register a home folder provider.
      * 
-     * @param provider
+     * @param provider HomeFolderProvider2
      */
     public void addProvider(HomeFolderProvider2 provider)
     {
@@ -153,7 +153,7 @@ public class PortableHomeFolderManager implements HomeFolderManager
 
     /**
      * Set the default home folder provider (user which none is specified or when one is not found)
-     * @param defaultProvider
+     * @param defaultProvider HomeFolderProvider2
      */
     public void setDefaultProvider(HomeFolderProvider2 defaultProvider)
     {

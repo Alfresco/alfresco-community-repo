@@ -90,7 +90,7 @@ public abstract class AbstractHomeFolderProvider2 implements
 
     /**
      * Set the home folder manager.
-     * @param homeFolderManager
+     * @param homeFolderManager PortableHomeFolderManager
      */
     public void setHomeFolderManager(PortableHomeFolderManager homeFolderManager)
     {

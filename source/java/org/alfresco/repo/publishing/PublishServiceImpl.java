@@ -101,9 +101,6 @@ public class PublishServiceImpl implements PublishingService
         return rootObject.getPublishingQueue();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public Map<NodeRef, NodePublishStatus> checkPublishStatus(String channelId, Collection<NodeRef> nodes)
     {
 //        Map<NodeRef, NodePublishStatus> results = new HashMap<NodeRef, NodePublishStatus>();
@@ -119,9 +116,6 @@ public class PublishServiceImpl implements PublishingService
         return null;
     }
     
-    /**
-     * {@inheritDoc}
-     */
     public Map<NodeRef, NodePublishStatus> checkPublishStatus(String channelId, NodeRef... nodes)
     {
 //        return checkPublishStatus(channelId, Arrays.asList(nodes));

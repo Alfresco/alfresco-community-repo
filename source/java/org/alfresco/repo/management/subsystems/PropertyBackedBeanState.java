@@ -49,8 +49,7 @@ public interface PropertyBackedBeanState
     public String getProperty(String name);
 
     /**
-     * Sets the value of a property. This may only be called after {@link #stop()} and should only be called for
-     * property names for which the {@link #isUpdateable(String)} method returns <code>true</code>.
+     * Sets the value of a property. This may only be called after {@link #stop()}.
      * 
      * @param name
      *            the property name
@@ -60,8 +59,7 @@ public interface PropertyBackedBeanState
     public void setProperty(String name, String value);
 
     /**
-     * Removes a property. This may only be called after {@link #stop()} and should only be called for
-     * property names for which the {@link #isUpdateable(String)} method returns <code>true</code>.
+     * Removes a property. This may only be called after {@link #stop()}.
      * 
      * @param name
      *            the property name

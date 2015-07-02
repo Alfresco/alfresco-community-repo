@@ -424,7 +424,7 @@ public class CachedContentCleanupJobTest
      * Mimick functionality of ContentCacheImpl.createNewCacheFilePath()
      * but allowing a specific date (rather than 'now') to be used.
      * 
-     * @param calendar
+     * @param calendar Calendar
      * @return Path to use for cache file.
      */
     private String createNewCacheFilePath(Calendar calendar)

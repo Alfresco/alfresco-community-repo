@@ -37,9 +37,8 @@ public interface LockDAO
      * 
      * @param lockQName             the unique name of the lock to acquire
      * @param lockToken             the potential lock token (max 36 chars)
-     * @param timeToLive            the time (in milliseconds) that the lock must remain 
-     * @return                      Returns <tt>true</tt> if the lock was taken, 
-     *                              otherwise <tt>false</tt>
+     * @param timeToLive            the time (in milliseconds) that the lock must remain
+     *
      * @throws LockAcquisitionException     on failure
      */
     void getLock(QName lockQName, String lockToken, long timeToLive);
@@ -52,8 +51,7 @@ public interface LockDAO
      * @param lockQName             the unique name of the lock to update
      * @param lockToken             the lock token for the lock held
      * @param timeToLive            the new time to live (in milliseconds)
-     * @return                      Returns <tt>true</tt> if the lock was updated,
-     *                              otherwise <tt>false</tt>
+     *
      * @throws LockAcquisitionException     on failure
      */
     void refreshLock(QName lockQName, String lockToken, long timeToLive);

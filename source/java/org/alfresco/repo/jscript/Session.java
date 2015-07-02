@@ -46,7 +46,7 @@ public class Session extends BaseProcessorExtension
     /**
      * Get the user's authentication ticket.
      * 
-     * @return
+     * @return String
      */
     public String getTicket()
     {

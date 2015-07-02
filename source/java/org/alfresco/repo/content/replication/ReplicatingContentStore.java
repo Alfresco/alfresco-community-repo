@@ -86,7 +86,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  * @see CachingContentStore
- * @depecated use AggregatingContentStore
+ * @deprecated use AggregatingContentStore
  */
 public class ReplicatingContentStore extends AbstractContentStore
 {

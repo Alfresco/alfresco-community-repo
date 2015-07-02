@@ -198,7 +198,7 @@ public class ScriptNodeTest
 
     /**
      * Create test content, can be versionable.
-     * @param versionable 
+     * @param versionable boolean
      */
     private void createTestContent(boolean versionable)
     {

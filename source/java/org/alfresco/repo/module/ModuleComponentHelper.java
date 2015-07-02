@@ -193,9 +193,6 @@ public class ModuleComponentHelper
         }
     }
     
-    /**
-     * {@inheritDoc}
-     */
     public synchronized void startModules()
     {
         // Check properties
@@ -327,9 +324,6 @@ public class ModuleComponentHelper
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public synchronized void shutdownModules()
     {
         // Check properties
@@ -364,7 +358,7 @@ public class ModuleComponentHelper
 
     /**
      * Checks that all components have been executed or considered for execution.
-     * @param executedComponents
+     * @param executedComponents Set<ModuleComponent>
      */
     private void checkForOrphanComponents(Set<ModuleComponent> executedComponents)
     {
@@ -420,8 +414,8 @@ public class ModuleComponentHelper
     /**
      * Returns the version number of a module from the Registry.
      * 
-     * @param moduleId
-     * @return
+     * @param moduleId String
+     * @return ModuleVersionNumber
      */
     ModuleVersionNumber getVersion(String moduleId)
     {

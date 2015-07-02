@@ -181,7 +181,7 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
     }
 
     /**
-     * Uses the {@link ChildAssocCopyAction} ordering to drive priority i.e. a vote
+     * Uses the ChildAssocCopyAction ordering to drive priority i.e. a vote
      * to copy will override a vote NOT to copy.
      * 
      * @return          Returns the most lively choice of action 
@@ -217,7 +217,7 @@ public class CompoundCopyBehaviourCallback extends AbstractCopyBehaviourCallback
     }
 
     /**
-     * Uses the {@link ChildAssocRecurseAction} ordering to drive recursive copy behaviour.
+     * Uses the  ChildAssocRecurseAction ordering to drive recursive copy behaviour.
      * 
      * @return          Returns the most lively choice of action 
      */

@@ -45,10 +45,10 @@ public interface FileImporter
     /**
      * Load all files or directories that match the file filter in the given directory
      * 
-     * @param container
-     * @param file
-     * @param filter
-     * @param recurse
+     * @param container NodeRef
+     * @param file File
+     * @param filter FileFilter
+     * @param recurse boolean
      * @return Returns the number of successfully imported files and directories
      * @throws FileImporterException
      */
@@ -58,8 +58,8 @@ public interface FileImporter
     /**
      * Load a single file or directory without any recursion
      * 
-     * @param container
-     * @param file
+     * @param container NodeRef
+     * @param file File
      * @return Returns the number of successfully imported files and directories
      * @throws FileImporterException
      */

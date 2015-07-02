@@ -32,7 +32,7 @@ public class AliasableAspectCopyBehaviourCallback extends DefaultCopyBehaviourCa
     static final CopyBehaviourCallback INSTANCE = new AliasableAspectCopyBehaviourCallback();
     
     /**
-     * Disallows copying of the {@link EmailServerModel#ASPECT_ALIASABLE aspect.
+     * Disallows copying of the {@link EmailServerModel#ASPECT_ALIASABLE} aspect.
      */
     @Override
     public boolean getMustCopy(QName classQName, CopyDetails copyDetails)

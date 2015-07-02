@@ -1049,7 +1049,7 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
 
 
     /**
-     * @return
+     * @return Long
      */
     protected abstract Long selectMaxChangeSetCommitTime();
  
@@ -1065,8 +1065,8 @@ public abstract class AbstractAclCrudDAOImpl implements AclCrudDAO
     }
 
     /**
-     * @param maxCommitTime
-     * @return
+     * @param maxCommitTime long
+     * @return Long
      */
     protected abstract Long selectMaxChangeSetIdBeforeCommitTime(long maxCommitTime);
 }

@@ -80,7 +80,7 @@ public abstract class AbstractResultSet implements ResultSet
     /**
      * Bulk fetch results in the cache
      * 
-     * @param bulkFetch
+     * @param bulkFetch boolean
      */
     public boolean setBulkFetch(boolean bulkFetch)
     {
@@ -100,7 +100,7 @@ public abstract class AbstractResultSet implements ResultSet
     /**
      * Set the bulk fetch size
      * 
-     * @param bulkFetchSize
+     * @param bulkFetchSize int
      */
     public int setBulkFetchSize(int bulkFetchSize)
     {

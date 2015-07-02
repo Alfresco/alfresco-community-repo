@@ -27,35 +27,35 @@ public interface QueryCollection
     /**
      * The name of the query collection
      * 
-     * @return
+     * @return String
      */
     public String getName();
     
     /**
      * Does this collection contain a query for the given QName?
-     * @param qName
-     * @return
+     * @param qName QName
+     * @return boolean
      */
     public boolean containsQueryDefinition(QName qName);
     
     /**
      * Get a query definition by QName.
-     * @param qName
-     * @return
+     * @param qName QName
+     * @return CannedQueryDef
      */
     public CannedQueryDef getQueryDefinition(QName qName);
     
     /**
      * Does this collection contain a query for the given QName?
-     * @param qName
-     * @return
+     * @param qName QName
+     * @return boolean
      */
     public boolean containsParameterDefinition(QName qName);
     
     /**
      * Get a query definition by QName.
-     * @param qName
-     * @return
+     * @param qName QName
+     * @return QueryParameterDefinition
      */
     public QueryParameterDefinition getParameterDefinition(QName qName);
     
@@ -64,7 +64,7 @@ public interface QueryCollection
      * A query may use a predefined set of prefixes for known URIs.
      * I would be unwise to rely on the defaults.
      *  
-     * @return
+     * @return NamespacePrefixResolver
      */
     public NamespacePrefixResolver getNamespacePrefixResolver();
     

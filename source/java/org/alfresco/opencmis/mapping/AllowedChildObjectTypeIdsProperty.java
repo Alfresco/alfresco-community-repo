@@ -40,8 +40,10 @@ public class AllowedChildObjectTypeIdsProperty extends AbstractProperty
 
     /**
      * Construct
-     * 
-     * @param serviceRegistry
+     *
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
+     * @param cmisMapping CMISMapping
      */
     public AllowedChildObjectTypeIdsProperty(ServiceRegistry serviceRegistry, CMISConnector connector,
             CMISMapping cmisMapping)

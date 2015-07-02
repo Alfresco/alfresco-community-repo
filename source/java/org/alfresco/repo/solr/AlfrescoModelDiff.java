@@ -23,10 +23,10 @@ public class AlfrescoModelDiff
 
     /**
      * use full model name or it will be converted to the prefix form - as we are requesting the model it may not be on the other side - so the namespace is unknown.
-     * @param modelName
-     * @param type
-     * @param oldChecksum
-     * @param newChecksum
+     * @param modelName String
+     * @param type TYPE
+     * @param oldChecksum Long
+     * @param newChecksum Long
      */
     public AlfrescoModelDiff(String modelName, TYPE type, Long oldChecksum, Long newChecksum)
     {

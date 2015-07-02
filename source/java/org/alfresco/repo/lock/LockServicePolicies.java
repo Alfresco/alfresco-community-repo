@@ -42,8 +42,8 @@ public interface LockServicePolicies
         /**
          * Called before an attempt to lock the given node is made.
          * 
-         * @param nodeRef
-         * @param lockType
+         * @param nodeRef NodeRef
+         * @param lockType LockType
          */
         void beforeLock(
                 NodeRef nodeRef, 

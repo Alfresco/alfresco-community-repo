@@ -37,7 +37,7 @@ public interface TransferTransmitter
 {
     /**
      * Verify that the target is available
-     * @param target
+     * @param target TransferTarget
      * @throws TransferException
      */
     void verifyTarget(TransferTarget target) throws TransferException;
@@ -55,11 +55,10 @@ public interface TransferTransmitter
     Transfer begin(TransferTarget target, String fromRepositoryId, TransferVersion fromVersion) throws TransferException;
     
     /**
-     * @param manifest, the transfer manifest file
+     * @param manifest the transfer manifest file
      * @param transfer the transfer object returned by an earlier call to begin
      * @param results - where to write the results, probably a temporary file the output steam should be 
      * open and will be closed before the method returns.
-     * @return the transfer requisite.   
      * @throws TransferException
      */
     void sendManifest(Transfer transfer, File manifest, OutputStream results) throws TransferException;

@@ -249,8 +249,8 @@ public class AbstractRenderingEngineTest extends TestCase
     
     /**
      * Set up the rendition definition.
-     * @param renditionAssoc
-     * @return
+     * @param renditionAssoc ChildAssociationRef
+     * @return RenditionDefinition
      */
     private RenditionDefinition makeRenditionDefinition(ChildAssociationRef renditionAssoc)
     {

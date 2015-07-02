@@ -22,6 +22,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.icegreen.greenmail.imap.ImapRequestLineReader;
+import com.icegreen.greenmail.imap.ImapResponse;
+import com.icegreen.greenmail.imap.ImapSession;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -102,7 +105,6 @@ public class AlfrescoImapUserManager extends UserManager
     /**
      * The login method.
      * 
-     * @see com.icegreen.greenmail.imap.commands.LoginCommand#doProcess(com.icegreen.greenmail.imap.ImapRequestLineReader, com.icegreen.greenmail.imap.ImapResponse, com.icegreen.greenmail.imap.ImapSession)
      */
     public boolean test(String userid, String password)
     {

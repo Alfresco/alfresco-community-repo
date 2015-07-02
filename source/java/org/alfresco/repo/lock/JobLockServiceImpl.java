@@ -38,8 +38,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * {@inheritDoc JobLockService}
- * 
+ *
  * @author Derek Hulley
  * @since 3.2
  */

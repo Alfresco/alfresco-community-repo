@@ -46,9 +46,9 @@ public class ScriptThumbnail extends ScriptNode
     /**
      * Constructor
      * 
-     * @param nodeRef
-     * @param services
-     * @param scope
+     * @param nodeRef NodeRef
+     * @param services ServiceRegistry
+     * @param scope Scriptable
      */
     public ScriptThumbnail(NodeRef nodeRef, ServiceRegistry services, Scriptable scope)
     {

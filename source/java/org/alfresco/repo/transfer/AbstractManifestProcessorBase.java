@@ -156,9 +156,9 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
     /**
      * Given the node ref, this method constructs the appropriate ChildAssociationRef that would place this node in the
      * transfer's temporary folder. Useful when handling orphans.
-     * 
-     * @param nodeRef
-     * @return
+     *
+     * @param nodeRef NodeRef
+     * @return ChildAssociationRef
      */
     protected ChildAssociationRef getTemporaryLocation(NodeRef nodeRef)
     {
@@ -248,8 +248,8 @@ public abstract class AbstractManifestProcessorBase implements TransferManifestP
      * This method is invoked if an exception or error occurs while processing the manifest.
      * By default it does nothing, but classes that extend this class can override this to provide
      * custom clean-up. 
-     * @param node
-     * @param ex
+     * @param node TransferManifestNode
+     * @param ex Throwable
      */
     protected void localHandleException(TransferManifestNode node, Throwable ex)
     {

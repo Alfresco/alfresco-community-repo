@@ -624,7 +624,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      *         
      * @deprecated API for review (subject to change prior to release)
      *
-     * @author janv
+     * <br>author janv
      * @since 4.0
      */
     public ScriptPagingNodes childFileFolders(boolean files, boolean folders, Object ignoreTypes, int maxItems)
@@ -652,7 +652,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      *         system folder types from the results.
      *         This is equivalent to @see FileFolderService.listFiles() and @see FileFolderService.listFolders()
      *         
-     * @author janv
+     * <br/><br/>author janv
      * @since 4.0
      */
     public ScriptPagingNodes childFileFolders(boolean files, boolean folders, Object ignoreTypes, int skipOffset, int maxItems, int requestTotalCountMax, String sortProp, Boolean sortAsc, String queryExecutionId)
@@ -944,7 +944,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     
     /**
      * Checks whether the {@link ScriptNode} exists in the repository.
-     * @return
+     * @return boolean
      */
     public boolean exists()
     {
@@ -1672,7 +1672,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     /**
      * Get the owner of the node.
      * 
-     * @return
+     * @return String
      */
     public String getOwner()
     {
@@ -2422,7 +2422,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     /**
      * Performs a check-out of this document for the purposes of an upload
      * 
-     * @return
+     * @return ScriptNode
      */
     public ScriptNode checkoutForUpload()
     {
@@ -3456,7 +3456,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
      * Given a long-form QName, this method uses the namespace service to create a
      * short-form QName string.
      * 
-     * @param longQName
+     * @param longQName QName
      * @return the short form of the QName string, e.g. "cm:content"
      */
     protected String getShortQName(QName longQName)
@@ -3814,7 +3814,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         /**
          * Set the content stream from another input stream.
          *  
-         * @param inputStream
+         * @param inputStream InputStream
          */
         public void write(InputStream inputStream)
         {

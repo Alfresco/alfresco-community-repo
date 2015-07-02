@@ -108,7 +108,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
      * Ensure the property is carrying a list as its payload. A List is required
      * rather than a Collection as the latter may not be ordered.
      * 
-     * @param prop
+     * @param prop DbProperty
      */
     private void checkPropertyContainsList(DbProperty prop)
     {
@@ -321,7 +321,7 @@ public class DefaultComparisonUtils implements ComparisonUtils
 
 
     /**
-     * @param obj
+     * @param obj Object
      */
     private void checkNotDbObject(Object obj)
     {

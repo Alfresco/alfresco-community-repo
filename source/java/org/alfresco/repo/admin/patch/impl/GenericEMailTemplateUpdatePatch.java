@@ -66,7 +66,7 @@ public abstract class GenericEMailTemplateUpdatePatch extends AbstractPatch
     }
     
     /**
-     * @param createSiblingIfMissing
+     * @param createSiblingIfMissing boolean
      */
     public void setCreateSiblingIfMissing(boolean createSiblingIfMissing)
     {
@@ -74,7 +74,7 @@ public abstract class GenericEMailTemplateUpdatePatch extends AbstractPatch
     }
     
     /**
-     * @param updateBaseFile
+     * @param updateBaseFile boolean
      */
     public void setUpdateBaseFile(boolean updateBaseFile)
     {

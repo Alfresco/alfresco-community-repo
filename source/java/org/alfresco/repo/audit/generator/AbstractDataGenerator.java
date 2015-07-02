@@ -52,7 +52,7 @@ public abstract class AbstractDataGenerator implements DataGenerator, Initializi
 
     /**
      * Set the registry with which to register
-     * @param registry
+     * @param registry NamedObjectRegistry<DataGenerator>
      */
     public void setRegistry(NamedObjectRegistry<DataGenerator> registry)
     {

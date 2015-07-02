@@ -38,7 +38,7 @@ public class ImporterBootstrapViews implements InitializingBean
     /**
      * Sets the importer
      * 
-     * @param importer
+     * @param importer ImporterBootstrap
      */
     public void setImporter(ImporterBootstrap importer)
     {
@@ -48,7 +48,7 @@ public class ImporterBootstrapViews implements InitializingBean
     /**
      * Sets the bootstrap views
      * 
-     * @param bootstrapViews
+     * @param bootstrapViews List<Properties>
      */
     public void setBootstrapViews(List<Properties> bootstrapViews)
     {

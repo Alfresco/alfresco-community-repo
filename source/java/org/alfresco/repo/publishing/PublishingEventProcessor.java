@@ -114,9 +114,9 @@ public class PublishingEventProcessor
     }
 
     /**
-     * @param publishChannel
-     * @param update
-     * @return
+     * @param publishChannel Channel
+     * @param update StatusUpdate
+     * @return String
      */
     private String getNodeUrl(Channel publishChannel, StatusUpdate update)
     {

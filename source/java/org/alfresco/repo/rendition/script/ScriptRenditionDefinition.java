@@ -56,7 +56,7 @@ public final class ScriptRenditionDefinition extends ScriptAction
     
     /**
      * Returns the name of the Rendering Engine used by this definition.
-     * @return
+     * @return String
      */
     public String getRenderingEngineName()
     {

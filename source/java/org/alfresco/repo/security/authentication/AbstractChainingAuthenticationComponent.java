@@ -45,7 +45,7 @@ public abstract class AbstractChainingAuthenticationComponent extends AbstractAu
     
     /**
      * Get the authentication component with the specified name
-     * @param name
+     * @param name String
      * @return the authentication component or null if it does not exist
      */
     protected abstract AuthenticationComponent getAuthenticationComponent(String name);

@@ -60,9 +60,9 @@ public interface TaggingService
     /**
      * Get a paged list of all the tags currently available 
      * 
-     * @param storeRef
-     * @param pagingRequest
-     * @return
+     * @param storeRef StoreRef
+     * @param pagingRequest PagingRequest
+     * @return PagingResults
      */
     @NotAuditable
     PagingResults<Pair<NodeRef, String>> getTags(StoreRef storeRef, PagingRequest pagingRequest);
@@ -284,7 +284,7 @@ public interface TaggingService
      * @param  storeRef                       node reference
      * @param  fromTag                        offset
      * @param  pageSize                       page size
-     * @return Pair<List<String>, Integer>    pair of tag names and total count
+     * @return pair of tag names and total count
      */
     @NotAuditable
     Pair<List<String>, Integer> getPagedTags(StoreRef storeRef, int fromTag, int pageSize);
@@ -295,7 +295,7 @@ public interface TaggingService
      * @param  filter                         tag filter
      * @param  fromTag                        page offset
      * @param  pageSize                       page size
-     * @return Pair<List<String>, Integer>    pair of tag names and total count
+     * @return pair of tag names and total count
      */
     @NotAuditable
     Pair<List<String>, Integer> getPagedTags(StoreRef storeRef, String filter, int fromTag, int pageSize);

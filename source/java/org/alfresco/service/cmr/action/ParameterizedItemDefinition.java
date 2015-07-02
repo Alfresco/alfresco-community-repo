@@ -58,7 +58,7 @@ public interface ParameterizedItemDefinition
     /**
      * Indicates whether the parameterized item has any parameter definitions
      * 
-     * @return` true if the parameterized item has any parameter definitions, false otherwise
+     * @return true if the parameterized item has any parameter definitions, false otherwise
      */
     public boolean hasParameterDefinitions();
 	

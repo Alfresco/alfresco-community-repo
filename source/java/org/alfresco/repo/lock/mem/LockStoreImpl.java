@@ -45,7 +45,7 @@ public class LockStoreImpl extends AbstractLockStore<ConcurrentMap<NodeRef, Lock
     /**
      * Constructor allowing specification of TTLs.
      * 
-     * @param ephemeralTTLSeconds
+     * @param ephemeralTTLSeconds int
      */
     public LockStoreImpl(int ephemeralTTLSeconds)
     {

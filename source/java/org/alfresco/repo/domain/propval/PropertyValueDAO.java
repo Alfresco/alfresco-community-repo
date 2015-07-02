@@ -198,8 +198,7 @@ public interface PropertyValueDAO
      * dedicated methods if you want recursion; otherwise maps and collections will
      * be serialized and probably stored as BLOB values.
      * <p/>
-     * All collections and maps will be opened up to any depth.  To limit this behaviour,
-     * use {@link #getOrCreatePropertyValue(Serializable)}.
+     * All collections and maps will be opened up to any depth.
      * 
      * @param value             the value to find the ID for (may be <tt>null</tt>)
      */

@@ -104,7 +104,7 @@ public class OptionalPatchApplicationCheckBootstrapBean extends AbstractLifecycl
     /**
      * Was the patch applied - or was it not applied
      * 
-     * @return
+     * @return boolean
      */
     public boolean getPatchApplied()
     {

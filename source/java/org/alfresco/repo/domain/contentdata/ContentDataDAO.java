@@ -58,7 +58,7 @@ public interface ContentDataDAO
      * Creates an immediately-orphaned content URL, if possible
      * 
      * @param contentUrl    the URL to create if it doesn't exist
-     * @parma orphanTime    the recorded orphan time or <tt>null</tt> to apply the current time
+     * @param orphanTime    the recorded orphan time or <tt>null</tt> to apply the current time
      * @return              Returns the ID-URL pair
      * @throws DataIntegrityViolationException      if the URL already exists
      */
@@ -136,6 +136,8 @@ public interface ContentDataDAO
      * @return                          <tt>null</tt> if the url does not exist
      * 
      * @since 5.0
+     * @param contentUrl
+     * @return
      */
     ContentUrlEntity getContentUrl(String contentUrl);
 
@@ -145,6 +147,8 @@ public interface ContentDataDAO
      * @return                          <tt>null</tt> if the url does not exist
      * 
      * @since 5.0
+     * @param contentUrlId
+     * @return
      */
     ContentUrlEntity getContentUrl(Long contentUrlId);
 
@@ -152,6 +156,7 @@ public interface ContentDataDAO
      * Get a content URL or create one if it does not exist
      * 
      * @since 5.1
+     * @param contentUrlEntity
      */
     ContentUrlEntity getOrCreateContentUrl(String contentUrl);
 
@@ -159,6 +164,8 @@ public interface ContentDataDAO
      * Updates the content key for the given content url
      * 
      * @since 5.0
+     * @param contentUrl
+     * @param contentUrlKeyEntity
      */
     boolean updateContentUrlKey(String contentUrl, ContentUrlKeyEntity contentUrlKeyEntity);
 
@@ -166,6 +173,7 @@ public interface ContentDataDAO
      * Updates the content key for the given content url
      * 
      * @since 5.0
+     * @param contentUrlId
      */
     boolean updateContentUrlKey(long contentUrlId, ContentUrlKeyEntity contentUrlKey);
 
@@ -177,6 +185,7 @@ public interface ContentDataDAO
      * @param masterKeyAlias master key alias
      * @param fromId id
      * @param maxResults max results
+     * @return
      */
     List<ContentUrlKeyEntity> getSymmetricKeysByMasterKeyAlias(String masterKeyAlias, long fromId, int maxResults);
 
@@ -184,6 +193,7 @@ public interface ContentDataDAO
      * Count symmetric keys entities for symmetric keys for all master keys
      * 
      * @since 5.0
+     * @return
      */
     Map<String, Integer> countSymmetricKeysForMasterKeys();
 
@@ -192,6 +202,8 @@ public interface ContentDataDAO
      * master key
      * 
      * @since 5.0
+     * @param masterKeyAlias
+     * @return
      */
     int countSymmetricKeysForMasterKeyAlias(String masterKeyAlias);
 }

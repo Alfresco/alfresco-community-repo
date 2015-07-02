@@ -85,7 +85,7 @@ import java.util.Map;
     /**
      * Remove behavior from map
      * 
-     * @param behaviourDefinition
+     * @param behaviourDefinition BehaviourDefinition<B>
      */
     public void remove(BehaviourDefinition<B> behaviourDefinition)
     {

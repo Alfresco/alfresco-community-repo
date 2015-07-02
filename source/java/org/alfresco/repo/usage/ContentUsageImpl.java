@@ -502,7 +502,7 @@ public class ContentUsageImpl implements ContentUsageService,
      * Set user's usage. Should only be called by background (collapse) job !
      * 
      * @param personNodeRef person nodeRef
-     * @param currentUsage
+     * @param currentUsage long
      */
     public void setUserStoredUsage(NodeRef personNodeRef, long currentUsage)
     {

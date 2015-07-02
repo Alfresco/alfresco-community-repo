@@ -264,9 +264,9 @@ public class PublishContentActionExecuter extends ActionExecuterAbstractBase
     /**
      * This method sets the node(s) to publish or unpublish on the supplied publishing details.
      * If the actionedUponNode is a folder then it will include all content nodes within that folder. 
-     * @param actionedUponNodeRef
-     * @param unpublish
-     * @param details
+     * @param actionedUponNodeRef NodeRef
+     * @param unpublish boolean
+     * @param details PublishingDetails
      */
     private List<NodeRef> setNodes(NodeRef actionedUponNodeRef, boolean unpublish, PublishingDetails details)
     {

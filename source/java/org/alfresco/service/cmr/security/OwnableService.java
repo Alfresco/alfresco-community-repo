@@ -34,7 +34,7 @@ public interface OwnableService
     /**
      * Get the username of the owner of the given object.
      *  
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @return the username or null if the object has no owner
      */
     @Auditable(parameters = {"nodeRef"})
@@ -43,8 +43,8 @@ public interface OwnableService
     /**
      * Set the owner of the object.
      * 
-     * @param nodeRef
-     * @param userName
+     * @param nodeRef NodeRef
+     * @param userName String
      */
     @Auditable(parameters = {"nodeRef", "userName"})
     public void setOwner(NodeRef nodeRef, String userName);
@@ -52,7 +52,7 @@ public interface OwnableService
     /**
      * Set the owner of the object to be the current user.
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     @Auditable(parameters = {"nodeRef"})
     public void takeOwnership(NodeRef nodeRef);
@@ -60,8 +60,8 @@ public interface OwnableService
     /**
      * Does the given node have an owner?
      * 
-     * @param nodeRef
-     * @return
+     * @param nodeRef NodeRef
+     * @return boolean
      */
     @Auditable(parameters = {"nodeRef"})
     public boolean hasOwner(NodeRef nodeRef);

@@ -50,10 +50,11 @@ public abstract class ActivitiTaskPropertyHandler extends AbstractWorkflowProper
     }
 
     /**
-     * @param type
-     * @param key
-     * @param value
-     * @return
+     * @param process Object
+     * @param type TypeDefinition
+     * @param key QName
+     * @param value Serializable
+     * @return Object
      */
     private Object handleProcessPropert(Object process, TypeDefinition type, QName key, Serializable value)
     {
@@ -62,21 +63,21 @@ public abstract class ActivitiTaskPropertyHandler extends AbstractWorkflowProper
 
     /**
      * Handles the property for a {@link Task}.
-     * @param task
-     * @param type
-     * @param key
-     * @param value
-     * @return
+     * @param task Task
+     * @param type TypeDefinition
+     * @param key QName
+     * @param value Serializable
+     * @return Object
      */
     protected abstract Object handleTaskProperty(Task task, TypeDefinition type, QName key, Serializable value);
 
     /**
      * Handles the property for a {@link DelegateTask}.
-     * @param task
-     * @param value 
-     * @param key 
-     * @param type 
-     * @return
+     * @param task DelegateTask
+     * @param value TypeDefinition
+     * @param key QName
+     * @param type Serializable
+     * @return Object
      */
     protected abstract Object handleDelegateTaskProperty(DelegateTask task, TypeDefinition type, QName key, Serializable value);
 }

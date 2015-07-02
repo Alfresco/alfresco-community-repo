@@ -90,7 +90,7 @@ public abstract class AlfrescoDiskDriver implements IOCtlInterface, ExtendedDisk
     /**
      * Set the service registry
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {

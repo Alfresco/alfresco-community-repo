@@ -1363,7 +1363,7 @@ public class TaggingServiceImpl implements TaggingService,
      *  This should avoid contention problems and race conditions.
      * 
      * @param nodeRef       node reference
-     * @param updates
+     * @param updates Map<String, Boolean>
      */
     private void updateTagScope(NodeRef nodeRef, Map<String, Boolean> updates)
     {

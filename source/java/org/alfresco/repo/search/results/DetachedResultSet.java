@@ -46,7 +46,7 @@ public class DetachedResultSet extends AbstractResultSet
     
     /**
      * Detached result set based on that provided
-     * @param resultSet
+     * @param resultSet ResultSet
      */
     public DetachedResultSet(ResultSet resultSet)
     {

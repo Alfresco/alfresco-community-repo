@@ -240,9 +240,6 @@ public class ChannelServiceImpl implements ChannelService
         return Collections.emptyList();
     }    
 
-    /**
-     * {@inheritDoc}
-     */
     public List<Channel> getAuthorisedStatusUpdateChannels()
     {
         return channelHelper.filterAuthorisedChannels(getStatusUpdateChannels(false));

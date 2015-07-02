@@ -129,7 +129,7 @@ public class AclDAOImpl implements AclDAO
     /**
      * Set the ACL cache
      * 
-     * @param aclCache
+     * @param aclCache SimpleCache<Serializable, AccessControlList>
      */
     public void setAclCache(SimpleCache<Serializable, AccessControlList> aclCache)
     {
@@ -1802,7 +1802,7 @@ public class AclDAOImpl implements AclDAO
         }
 
         /**
-         * @param after
+         * @param after Long
          */
         public void setAfter(Long after)
         {
@@ -1810,7 +1810,7 @@ public class AclDAOImpl implements AclDAO
         }
 
         /**
-         * @param before
+         * @param before Long
          */
         public void setBefore(Long before)
         {
@@ -1823,7 +1823,7 @@ public class AclDAOImpl implements AclDAO
         }
 
         /**
-         * @param typeAfter
+         * @param typeAfter ACLType
          */
         public void setTypeAfter(ACLType typeAfter)
         {
@@ -1836,7 +1836,7 @@ public class AclDAOImpl implements AclDAO
         }
 
         /**
-         * @param typeBefore
+         * @param typeBefore ACLType
          */
         public void setTypeBefore(ACLType typeBefore)
         {

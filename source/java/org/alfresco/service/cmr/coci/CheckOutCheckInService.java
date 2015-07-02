@@ -119,8 +119,7 @@ public interface CheckOutCheckInService
 	/**
 	 * By default the checked in node is not keep checked in.
 	 * 
-	 * @see VersionOperationsService#checkin(NodeRef, HashMap<String,Serializable>, String, boolean)
-	 * 
+	 *
 	 * @param workingCopyNodeRef	the working copy node reference
 	 * @param versionProperties		the version properties.  If null is passed then the original node
 	 * 								is NOT versioned during the checkin operation.
@@ -140,8 +139,7 @@ public interface CheckOutCheckInService
 	 * If no content url is specified then current content set on the working
 	 * copy is understood to be current.
 	 * 
-	 * @see VersionOperationsService#checkin(NodeRef, HashMap<String,Serializable>, String)
-	 *  
+	 *
 	 * @param workingCopyNodeRef	the working copy node reference
 	 * @param versionProperties		the version properties.  If null is passed then the original node
 	 * 								is NOT versioned during the checkin operation.

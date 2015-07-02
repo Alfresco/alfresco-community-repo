@@ -70,14 +70,14 @@ public interface TransformerConfigMBean
     /**
      * Adds or replaces new transformer properties.
      * @param propertyNamesAndValues
-     * @returns a confirmation or failure message
+     * @return a confirmation or failure message
      */
     public String setProperties(String propertyNamesAndValues);
     
     /**
      * Removes transformer properties.
      * @param propertyNames to be removed. Any values after the property name are ignored.
-     * @returns a confirmation or failure message
+     * @return a confirmation or failure message
      */
     String removeProperties(String propertyNames);
     

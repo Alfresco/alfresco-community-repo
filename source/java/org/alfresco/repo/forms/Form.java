@@ -176,7 +176,7 @@ public class Form
      * specified <code>dataKey</code>.
      * 
      * @param dataKey The dataKey for the field.
-     * @return
+     * @return boolean
      */
     public boolean dataExists(String dataKey)
     {
@@ -205,7 +205,7 @@ public class Form
      * Adds a {@link Field} to the form by adding the {@link FieldDefinition}
      * and the value if any.
      * 
-     * @param field
+     * @param field Field
      */
     public void addField(Field field)
     {

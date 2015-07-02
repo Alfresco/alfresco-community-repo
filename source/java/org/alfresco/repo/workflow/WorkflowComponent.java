@@ -189,7 +189,7 @@ public interface WorkflowComponent
     /**
      * Gets all "in-flight" workflow instances according to the specified workflowInstanceQuery parameter
      * 
-     * @param workflowInstanceQuery
+     * @param workflowInstanceQuery WorkflowInstanceQuery
      * @return the list of "in-flight" workflow instances
      */
     public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery);
@@ -197,9 +197,9 @@ public interface WorkflowComponent
     /**
      * Gets maxItems "in-flight" workflow instances according to the specified workflowInstanceQuery parameter
      * 
-     * @param workflowInstanceQuery
-     * @param maxItems
-     * @param skipCount
+     * @param workflowInstanceQuery WorkflowInstanceQuery
+     * @param maxItems int
+     * @param skipCount int
      * @return maxItems workflow instances
      */
     public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery, int maxItems, int skipCount);
@@ -207,7 +207,7 @@ public interface WorkflowComponent
     /**
      * Get count of workflow instances
      * 
-     * @param workflowInstanceQuery
+     * @param workflowInstanceQuery WorkflowInstanceQuery
      * @return count of workflow instances
      */
     public long countWorkflows(WorkflowInstanceQuery workflowInstanceQuery);

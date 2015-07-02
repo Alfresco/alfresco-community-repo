@@ -77,7 +77,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
     /**
      * Sets the Transaction Invocation Handler
      * 
-     * @param factory
+     * @param factory TransactionInvocationHandlerFactory
      */
     protected static void setTransactionInvocationHandlerFactory(TransactionInvocationHandlerFactory factory)
     {
@@ -87,7 +87,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
     /**
      * Sets the Tenant Service
      * 
-     * @param service
+     * @param service TenantService
      */
     protected static void setTenantService(TenantService service)
     {

@@ -41,7 +41,7 @@ public abstract class AbstractAsynchronousActionFilter implements Comparator<Ong
 
     /**
      * Gets the name of this comparator.
-     * @return
+     * @return String
      */
 	public String getName()
 	{
@@ -50,7 +50,7 @@ public abstract class AbstractAsynchronousActionFilter implements Comparator<Ong
 
 	/**
 	 * Sets the name of this comparator.
-	 * @param name
+	 * @param name String
 	 */
 	public void setName(String name)
 	{
@@ -59,7 +59,7 @@ public abstract class AbstractAsynchronousActionFilter implements Comparator<Ong
 
 	/**
 	 * Gets the action definition name against which this comparator is registered.
-	 * @return
+	 * @return String
 	 */
 	public String getActionDefinitionName()
 	{

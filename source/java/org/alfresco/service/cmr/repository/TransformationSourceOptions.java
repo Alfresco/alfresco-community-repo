@@ -69,7 +69,7 @@ public interface TransformationSourceOptions
      * one, merging any non-null overriding fields in the given
      * <code>overridingOptions</code>
      * 
-     * @param overridingOptions
+     * @param overridingOptions TransformationSourceOptions
      * @return a merged <code>TransformationSourceOptions</code> object
      */
     public TransformationSourceOptions mergedOptions(TransformationSourceOptions overridingOptions);
@@ -96,15 +96,15 @@ public interface TransformationSourceOptions
         /**
          * Serializes the given transformation source options into the given parameter map.
          * 
-         * @param transformationSourceOptions
-         * @param parameters
+         * @param transformationSourceOptions TransformationSourceOptions
+         * @param parameters Map<String, Serializable>
          */
         public void serialize(TransformationSourceOptions transformationSourceOptions, Map<String, Serializable> parameters);
         
         /**
          * Gets the parameters from the serialized options accessor and builds a source options object.
          * 
-         * @param serializedOptions
+         * @param serializedOptions SerializedTransformationOptionsAccessor
          * @return the deserialized source options
          */
         public TransformationSourceOptions deserialize(SerializedTransformationOptionsAccessor serializedOptions);

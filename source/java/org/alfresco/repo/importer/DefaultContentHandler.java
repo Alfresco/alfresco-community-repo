@@ -43,7 +43,7 @@ public class DefaultContentHandler
     /**
      * Construct
      * 
-     * @param targetHandler
+     * @param targetHandler ImportContentHandler
      */
     public DefaultContentHandler(ImportContentHandler targetHandler)
     {

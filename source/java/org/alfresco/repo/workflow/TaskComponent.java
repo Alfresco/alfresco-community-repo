@@ -114,7 +114,7 @@ public interface TaskComponent
     /**
      * Suspend the specified Task
      * 
-     * @param taskId
+     * @param taskId String
      * @return  the update task
      */
     public WorkflowTask suspendTask(String taskId);

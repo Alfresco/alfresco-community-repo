@@ -208,7 +208,7 @@ public class CifsHelper
              * Perform a set of commands as a unit of transactional work.
              *
              * @return              Return the result of the unit of work
-             * @throws Throwable    This can be anything and will guarantee either a retry or a rollback
+             * @throws IOException
              */
             public ContentFileInfo execute() throws IOException
             {
@@ -244,7 +244,7 @@ public class CifsHelper
              * Perform a set of commands as a unit of transactional work.
              *
              * @return              Return the result of the unit of work
-             * @throws Throwable    This can be anything and will guarantee either a retry or a rollback
+             * @throws IOException
              */
             public ContentFileInfo execute() throws IOException
             {
@@ -837,7 +837,7 @@ public class CifsHelper
              * Perform a set of commands as a unit of transactional work.
              *
              * @return              Return the result of the unit of work
-             * @throws Throwable    This can be anything and will guarantee either a retry or a rollback
+             * @throws IOException
              */
             public String execute() throws IOException
             {
@@ -853,7 +853,6 @@ public class CifsHelper
      * 
      * @param node NodeRef
      * @return String
-     * @throws FileNotFoundException
      */
     public String getFileNameImpl(NodeRef node)
     {

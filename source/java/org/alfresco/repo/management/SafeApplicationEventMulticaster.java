@@ -94,8 +94,6 @@ public class SafeApplicationEventMulticaster implements ApplicationEventMulticas
      * context (class loader, transaction association) unless the TaskExecutor
      * explicitly supports this.
      * 
-     * @see org.springframework.core.task.SyncTaskExecutor
-     * @see org.springframework.core.task.SimpleAsyncTaskExecutor
      */
     public void setTaskExecutor(Executor taskExecutor)
     {

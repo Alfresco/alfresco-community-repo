@@ -100,7 +100,6 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
      * @param spaceNodeRef          Addressed node
      * @param message            Mail message
      * @throws IOException          Exception can be thrown while saving a content into Alfresco repository.
-     * @throws MessagingException   Exception can be thrown while parsing e-mail message.
      */
     public void addAlfrescoContent(NodeRef spaceNodeRef, EmailMessage message) throws IOException
     {
@@ -197,7 +196,7 @@ public class FolderEmailMessageHandler extends AbstractEmailMessageHandler
 
     /**
      * Set the behaviour to be done on detecting a new message with the same subject.
-     * @param overwriteDuplicates
+     * @param overwriteDuplicates boolean
      */
     public void setOverwriteDuplicates(boolean overwriteDuplicates)
     {

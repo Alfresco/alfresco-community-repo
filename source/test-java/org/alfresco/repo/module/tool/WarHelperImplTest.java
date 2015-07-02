@@ -353,7 +353,6 @@ public class WarHelperImplTest extends WarHelperImpl
     
     /**
      * Tests to see if the war is a share war.
-     * @throws Exception
      */
     @Test
     public void testIsShareWar()

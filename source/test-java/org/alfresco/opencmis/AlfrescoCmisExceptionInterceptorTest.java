@@ -49,7 +49,7 @@ public class AlfrescoCmisExceptionInterceptorTest
     
     /**
      * Does the mock call ensuring that the exception is thrown
-     * @throws throws the exception provided
+     * @throws Throwable the exception provided
      */
     private void doMockCall(Exception toThrow, Class<?> toCatch) throws Throwable
     {

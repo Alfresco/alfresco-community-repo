@@ -31,16 +31,16 @@ public interface FullTextSearchIndexer extends BeanFactoryAware
     /**
      * Mark a store as dirty, requiring a background index update to fix it up.
      * 
-     * @param storeRef
+     * @param storeRef StoreRef
      */
     public abstract void requiresIndex(StoreRef storeRef);
 
     /**
      * Call back to report state back to the indexer
      * 
-     * @param storeRef
-     * @param remaining
-     * @param t
+     * @param storeRef StoreRef
+     * @param remaining int
+     * @param t Throwable
      */
     public abstract void indexCompleted(StoreRef storeRef, int remaining, Throwable t);
 

@@ -79,7 +79,8 @@ public interface CategoryService
      * Get a list of all the categories appropriate for a given property.
      * The full list of categories that may be assigned for this aspect.
      * 
-     * @param aspectQName
+     * @param storeRef StoreRef
+     * @param aspectQName QName
      * @param depth - the enumeration depth for what level to recover
      * @return a collection of all the nodes found identified by their ChildAssocRef's
      */
@@ -89,7 +90,7 @@ public interface CategoryService
     /**
      * Get all the classification entries
      * 
-     * @return
+     * @return Collection<ChildAssociationRef>
      */
     @Auditable(parameters = {"storeRef"})
     public Collection<ChildAssociationRef> getClassifications(StoreRef storeRef);
@@ -97,9 +98,9 @@ public interface CategoryService
     /**
      * Get the root categories for an aspect/classification
      * 
-     * @param storeRef
-     * @param aspectName
-     * @return
+     * @param storeRef StoreRef
+     * @param aspectName QName
+     * @return Collection<ChildAssociationRef>
      */
     @Auditable(parameters = {"storeRef", "aspectName"})
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName);
@@ -107,9 +108,11 @@ public interface CategoryService
     /**
      * Get a paged list of the root categories for an aspect/classification
      * 
-     * @param storeRef
-     * @param aspectName
-     * @return
+     * @param storeRef StoreRef
+     * @param aspectName QName
+     * @param pagingRequest PagingRequest
+     * @param sortByName boolean
+     * @return PagingResults<ChildAssociationRef>
      */
     @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName"})
     PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName);
@@ -117,10 +120,10 @@ public interface CategoryService
     /**
      * Get the root categories for an aspect/classification with names that start with filter
      * 
-     * @param storeRef
-     * @param aspectName
-     * @param filter
-     * @return
+     * @param storeRef StoreRef
+     * @param aspectName QName
+     * @param filter String
+     * @return Collection<ChildAssociationRef>
      */
     @Auditable(parameters = {"storeRef", "aspectName"})
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, String filter);
@@ -161,7 +164,7 @@ public interface CategoryService
     /**
      * Get all the types that represent categories
      * 
-     * @return
+     * @return Collection<QName>
      */
     @Auditable
     public Collection<QName> getClassificationAspects();
@@ -172,8 +175,9 @@ public interface CategoryService
      * This will extend the category types in the data dictionary
      * All it needs is the type name and the attribute in which to store noderefs to categories.
      * 
-     * @param aspectName
-     * @param attributeName
+     * @param storeRef StoreRef
+     * @param aspectName QName
+     * @param attributeName String
      */
     @Auditable(parameters = {"storeRef", "aspectName", "attributeName"})
     public NodeRef createClassification(StoreRef storeRef, QName aspectName, String attributeName);
@@ -181,10 +185,10 @@ public interface CategoryService
     /**
      * Create a new root category in the given classification
      * 
-     * @param storeRef
-     * @param aspectName
-     * @param name
-     * @return
+     * @param storeRef StoreRef
+     * @param aspectName QName
+     * @param name String
+     * @return NodeRef
      */
     @Auditable(parameters = {"storeRef", "aspectName", "name"})
     public NodeRef createRootCategory(StoreRef storeRef, QName aspectName, String name);
@@ -192,9 +196,9 @@ public interface CategoryService
     /**
      *  Create a new category.
      * 
-     * @param parent
-     * @param name
-     * @return
+     * @param parent NodeRef
+     * @param name String
+     * @return NodeRef
      */
     @Auditable(parameters = {"parent", "name"})
     public NodeRef createCategory(NodeRef parent, String name);
@@ -202,8 +206,8 @@ public interface CategoryService
     /**
      * Delete a classification
      * 
-     * @param storeRef
-     * @param aspectName
+     * @param storeRef StoreRef
+     * @param aspectName QName
      */
     @Auditable(parameters = {"storeRef", "aspectName"})
     public void deleteClassification(StoreRef storeRef, QName aspectName);
@@ -211,7 +215,7 @@ public interface CategoryService
     /**
      * Delete a category
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     @Auditable(parameters = {"nodeRef"})
     public void deleteCategory(NodeRef nodeRef);
@@ -219,10 +223,10 @@ public interface CategoryService
    /** 
     * Get the most polular categories 
     * 
-    * @param storeRef
-    * @param aspectName
-    * @param count
-    * @return
+    * @param storeRef StoreRef
+    * @param aspectName QName
+    * @param count int
+    * @return List
     */
     @Auditable(parameters = {"storeRef", "aspectName", "count"})
     public List<Pair<NodeRef, Integer>> getTopCategories(StoreRef storeRef, QName aspectName, int count);

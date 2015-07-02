@@ -140,11 +140,11 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
     }
     
     /**
-     * This method is called from the {@#validate(String)} method. If this method returns null then
+     * This method is called from the {@link #validate(String)} method. If this method returns null then
      * the user's tenant will be obtained from the username. This is generally correct in the case where the user can be
      * associated with just one tenant.
      * Override this method in order to force the selection of a different tenant (for whatever reason).
-     * @return
+     * @return String
      */
     protected String getPrevalidationTenantDomain()
     {

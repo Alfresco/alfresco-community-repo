@@ -27,8 +27,8 @@ import org.apache.tika.parser.pdf.PDFParser;
 import org.apache.tika.parser.pdf.PDFParserConfig;
 
 /**
- * Uses {@link http://tika.apache.org/ Apache Tika} and
- *  {@link http://pdfbox.apache.org/ Apache PDFBox} to perform
+ * Uses <a href="http://tika.apache.org/">Apache Tika</a> and
+ *  <a href="@link http://pdfbox.apache.org/">Apache PDFBox</a> to perform
  *  conversions from PDF documents.
  * 
  * @author Nick Burch

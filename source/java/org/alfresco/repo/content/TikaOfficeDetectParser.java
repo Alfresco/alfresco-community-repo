@@ -37,7 +37,7 @@ import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 /**
- * {@link http://tika.apache.org/ Apache Tika} assumes that
+ * <a href="http://tika.apache.org/Apache Tika">Apache Tika</a> assumes that
  *  you either know exactly what your content is, or that
  *  you'll leave it to auto-detection.
  * Within Alfresco, we usually do know. However, from time

@@ -251,7 +251,7 @@ import org.alfresco.util.LockHelper;
     /**
      * Remove class behaviour
      * 
-     * @param behaviour
+     * @param behaviour BehaviourDefinition<B>
      */
     public void removeClassBehaviour(BehaviourDefinition<B> behaviour)
     {

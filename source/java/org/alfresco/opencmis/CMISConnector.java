@@ -952,7 +952,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Asynchronously generates thumbnails for the given node.
      *  
-     * @param nodeRef
+     * @param nodeRef NodeRef
+     * @param thumbnailNames Set<String>
      */
     public void createThumbnails(NodeRef nodeRef, Set<String> thumbnailNames)
     {
@@ -1007,7 +1008,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Extracts metadata for the node.
      *  
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     public void extractMetadata(NodeRef nodeRef)
     {
@@ -1775,12 +1776,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Notifies listeners that a read has taken place.
      * 
-     * @param nodeRef
-     * @param name
-     * @param mimeType
-     * @param contentSize
-     * @param encoding
-     * @param range
+     * @param nodeRef NodeRef
+     * @param name String
+     * @param mimeType String
+     * @param contentSize long
+     * @param encoding String
+     * @param range String
      */
     protected void publishReadEvent(final NodeRef nodeRef, final String name, final String mimeType, final long contentSize, final String encoding, final String range)
     {
@@ -2828,8 +2829,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Converts Acl to map and ignore the indirect ACEs
      * 
-     * @param acl
-     * @return
+     * @param acl Acl
+     * @return Map
      */
     private Map<String, Set<String>> convertAclToMap(Acl acl)
     {
@@ -2875,9 +2876,9 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Filter acl to ignore inherited ACEs
      * 
-     * @param nodeRef
-     * @param acl
-     * @return
+     * @param nodeRef NodeRef
+     * @param acl Acl
+     * @return Acl
      */
     protected Acl excludeInheritedAces(NodeRef nodeRef, Acl acl)
     {

@@ -51,7 +51,7 @@ public class BulkImport extends BaseProcessorExtension
 
 	/**
 	 * Get a list of the currently registered content stores, from the configured {@link ContentStoreMapProvider}.
-	 * @return the {@link List<String>} of store names
+	 * @return the {@link List} of store names
 	 */
 	public List<String> getStoreNames()
 	{

@@ -39,27 +39,27 @@ public interface LuceneSearcher extends SearchService
    public boolean indexExists();
    /**
     * Ste the node service
-    * @param nodeService
+    * @param nodeService NodeService
     */
    public void setNodeService(NodeService nodeService);
    /**
     * Set the name space service
-    * @param namespacePrefixResolver
+    * @param namespacePrefixResolver NamespacePrefixResolver
     */
    public void setNamespacePrefixResolver(NamespacePrefixResolver namespacePrefixResolver);
    
    /**
     * Get top terms
     * 
-    * @param field
-    * @param count
-    * @return
+    * @param field String
+    * @param count int
+    * @return List
     */
    public List<Pair<String, Integer>> getTopTerms(String field, int count);
    
    /**
     * Get a lucene searcher 
-    * @return
+    * @return ClosingIndexSearcher
     */
    public ClosingIndexSearcher getClosingIndexSearcher();
 }

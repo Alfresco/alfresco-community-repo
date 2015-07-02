@@ -201,8 +201,8 @@ public class ChannelImpl implements Channel
      * aspects and properties of the node are determined by the supplied
      * snapshot.
      * 
-     * @param channel
-     * @param snapshot
+     * @param channel NodeRef
+     * @param snapshot NodeSnapshot
      * @return the newly published node.
      */
     private NodeRef publishNewNode(NodeRef channel, NodeSnapshot snapshot)
@@ -242,8 +242,8 @@ public class ChannelImpl implements Channel
     }
 
     /**
-     * @param publishedNode
-     * @param snapshotProps
+     * @param publishedNode NodeRef
+     * @param snapshotProps Map<QName, Serializable>
      */
     private void removeUnwantedProperties(NodeRef publishedNode, Map<QName, Serializable> snapshotProps)
     {
@@ -264,8 +264,8 @@ public class ChannelImpl implements Channel
     }
 
     /**
-     * @param publishedNode
-     * @param newAspects
+     * @param publishedNode NodeRef
+     * @param newAspects Set<QName>
      */
     private void removeUnwantedAspects(NodeRef publishedNode, Set<QName> newAspects)
     {

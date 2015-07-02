@@ -59,7 +59,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
      
      /**
       * Gets the {@link ContentModel#PROP_NAME cm:name} of the blog post.
-      * @return
+      * @return String
       */
      @Override
      public String getSystemName()

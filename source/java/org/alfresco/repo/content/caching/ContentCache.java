@@ -47,7 +47,7 @@ public interface ContentCache
      * into the cache, it does not mean that the disk item is guaranteed to be there. The temp file
      * clean-up process, for example, may have removed it.
      * <p>
-     * @param contentUrl
+     * @param contentUrl String
      * @return true if the URL exists in the in-memory cache. It <em>may</em> therefore be cached on disk.
      */
     boolean contains(String contentUrl);
@@ -55,7 +55,7 @@ public interface ContentCache
     /**
      * Retrieve a ContentReader for the cached content specified by URL.
      * 
-     * @param contentUrl
+     * @param contentUrl String
      * @return ContentReader
      * @throws org.alfresco.repo.content.caching.CacheMissException
      *         If the cache does not contain the specified content.
@@ -68,8 +68,8 @@ public interface ContentCache
      * 
      * Empty content will NOT be cached - in which case false is returned.
      * 
-     * @param contentUrl
-     * @param reader
+     * @param contentUrl String
+     * @param reader ContentReader
      * @return true if the content was cached, false otherwise.
      */
     boolean put(String contentUrl, ContentReader reader);
@@ -79,7 +79,7 @@ public interface ContentCache
      * the actual cached content (file) - this should be left to the clean-up process or can
      * be deleted with {@link #deleteFile(String)}.
      * 
-     * @param contentUrl
+     * @param contentUrl String
      */
     void remove(String contentUrl);
 
@@ -87,7 +87,7 @@ public interface ContentCache
      * Deletes the cached content file for the specified URL. To remove the item from the
      * lookup table also, use {@link #remove(String)} after calling this method.
      * 
-     * @param url
+     * @param url String
      */
     void deleteFile(String url);
 

@@ -72,8 +72,8 @@ public abstract class AbstractCalendarPeriodProvider extends AbstractPeriodProvi
     
     /**
      * Implementation add
-     * @param calendar
-     * @param value
+     * @param calendar Calendar
+     * @param value int
      */
     public abstract void add(Calendar calendar, int value);
 

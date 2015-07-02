@@ -134,7 +134,7 @@ public class ADMLuceneCategoryTest extends TestCase
 
     /**
      * Named test constructor
-     * @param arg0
+     * @param arg0 String
      */
     public ADMLuceneCategoryTest(String arg0)
     {

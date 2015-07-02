@@ -16,8 +16,6 @@ public interface ShuffleCache
     /**
      * Add a new temporary file to the "shuffle cache".   Content is not persisted 
      * in the alfresco repo until either a rename occurs or after a time delay.
-     * 
-     * @return content writer?
      */
     public void createTemporaryFile(String path);
     
@@ -42,8 +40,8 @@ public interface ShuffleCache
     
     /**
      * Does the specified directory contain a shuffled temporary file
-     * @param dir
-     * @return
+     * @param dir String
+     * @return boolean
      */
     boolean isShuffleDirectory(String dir);
     
@@ -54,8 +52,8 @@ public interface ShuffleCache
     
     /**
      * Has the path been "soft created"
-     * @param path
-     * @return
+     * @param path String
+     * @return boolean
      */
     boolean isCreated(String path);
 }

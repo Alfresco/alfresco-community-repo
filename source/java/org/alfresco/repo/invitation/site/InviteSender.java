@@ -136,7 +136,7 @@ public class InviteSender
     }
 
     /**
-     * @param properties
+     * @param properties Map<String, String>
      */
     private void checkProperties(Map<String, String> properties)
     {

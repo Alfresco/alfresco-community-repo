@@ -248,7 +248,7 @@ public class LockableAspectInterceptor implements MethodInterceptor
     /**
      * Given a set of properties, removes those where <code>isLockProperty(propQName) == true</code>.
      * 
-     * @param properties
+     * @param properties Map<QName, Serializable>
      * @return filtered properties.
      */
     private Map<QName, Serializable> filterLockProperties(Map<QName, Serializable> properties)

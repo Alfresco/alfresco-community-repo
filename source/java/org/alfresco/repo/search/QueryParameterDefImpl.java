@@ -55,10 +55,10 @@ public class QueryParameterDefImpl implements QueryParameterDefinition
     /**
      * QueryParameterDefImpl
      * 
-     * @param qName
-     * @param propertyDefinition
-     * @param hasDefaultValue
-     * @param defaultValue
+     * @param qName QName
+     * @param propertyDefinition PropertyDefinition
+     * @param hasDefaultValue boolean
+     * @param defaultValue String
      */
     public QueryParameterDefImpl(QName qName, PropertyDefinition propertyDefinition, boolean hasDefaultValue, String defaultValue)
     {
@@ -69,9 +69,9 @@ public class QueryParameterDefImpl implements QueryParameterDefinition
 
     /**
      * 
-     * @param qName
-     * @param hasDefaultValue
-     * @param defaultValue
+     * @param qName QName
+     * @param hasDefaultValue boolean
+     * @param defaultValue String
      */
     private QueryParameterDefImpl(QName qName, boolean hasDefaultValue, String defaultValue)
     {
@@ -83,10 +83,10 @@ public class QueryParameterDefImpl implements QueryParameterDefinition
     
     /**
      * 
-     * @param qName
-     * @param dataTypeDefintion
-     * @param hasDefaultValue
-     * @param defaultValue
+     * @param qName QName
+     * @param dataTypeDefintion DataTypeDefinition
+     * @param hasDefaultValue boolean
+     * @param defaultValue String
      */
     public QueryParameterDefImpl(QName qName, DataTypeDefinition dataTypeDefintion, boolean hasDefaultValue, String defaultValue)
     {

@@ -53,7 +53,7 @@ public class SolrQueryLanguage extends AbstractLuceneQueryLanguage
     
     /**
      * Executes a stats query using solr.
-     * @param searchParameters
+     * @param searchParameters StatsParameters
      * @return StatsResultSet
      */
     public StatsResultSet executeStatsQuery(StatsParameters searchParameters)

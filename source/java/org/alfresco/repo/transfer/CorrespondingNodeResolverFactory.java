@@ -27,7 +27,7 @@ public interface CorrespondingNodeResolverFactory
 {
 
     /**
-     * @return
+     * @return CorrespondingNodeResolver
      */
     CorrespondingNodeResolver getResolver();
 

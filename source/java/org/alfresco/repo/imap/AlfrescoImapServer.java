@@ -67,7 +67,6 @@ public class AlfrescoImapServer extends AbstractLifecycleBean implements Applica
         }
 
         /**
-         * @override
          * Use Java's default SSL Server SocketFactory
          * controlled via System Properties 
          * -Djavax.net.ssl.keyStore=mySrvKeystore 

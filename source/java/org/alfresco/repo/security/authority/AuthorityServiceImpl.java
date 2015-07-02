@@ -198,7 +198,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
     /**
      * Checks if the {@code authority} (normally a username) is the same as or is contained
      * within the {@code parentAuthority}.
-     * @param authority
+     * @param authority String
      * @param parentAuthority a normalized, case sensitive authority name
      * @return {@code true} if does, {@code false} otherwise.
      */
@@ -736,7 +736,7 @@ public class AuthorityServiceImpl implements AuthorityService, InitializingBean
         private boolean allAuthoritiesLoaded;
 
         /**
-         * @param username
+         * @param username String
          */
         public UserAuthoritySet(String username)
         {

@@ -89,7 +89,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
     }
     
     /**
-     * @param authenticationService
+     * @param authenticationService AuthenticationService
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {

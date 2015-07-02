@@ -203,7 +203,7 @@ public class LDAPAuthenticationComponentImpl extends AbstractAuthenticationCompo
     /**
      * Set the unique name of this ldap authentication component e.g. "managed,ldap1"
      * 
-     * @param id
+     * @param id String
      */
     public void setId(String id)
     {

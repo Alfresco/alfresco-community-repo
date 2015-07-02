@@ -28,19 +28,19 @@ public interface RenditionLocation
 {
     /**
      * Gets the parent node of the rendition.
-     * @return
+     * @return NodeRef
      */
     NodeRef getParentRef();
 
     /**
      * Gets the rendition node itself.
-     * @return
+     * @return NodeRef
      */
     NodeRef getChildRef();
 
     /**
      * Gets the name of the rendition.
-     * @return
+     * @return String
      */
     String getChildName();
 }

@@ -36,8 +36,10 @@ public class ObjectTypeIdProperty extends AbstractProperty
 {
     /**
      * Construct
-     * 
-     * @param serviceRegistry
+     *
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
+     * @param dictionaryService CMISDictionaryService
      */
     public ObjectTypeIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector,
             CMISDictionaryService dictionaryService)

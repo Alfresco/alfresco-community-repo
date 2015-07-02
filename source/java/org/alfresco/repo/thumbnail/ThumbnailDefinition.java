@@ -69,8 +69,8 @@ public class ThumbnailDefinition
     /**
      * Constructor
      * 
-     * @param destinationMimetype
-     * @param options
+     * @param destinationMimetype String
+     * @param options TransformationOptions
      */
     public ThumbnailDefinition(String destinationMimetype, TransformationOptions options)
     {       
@@ -93,10 +93,10 @@ public class ThumbnailDefinition
     /**
      * Constructor.  Specify the place holder thumbnail path.
      * 
-     * @param mimetype          
-     * @param options
-     * @param thumbnailName
-     * @param placeHolderResourcePath
+     * @param mimetype String
+     * @param options TransformationOptions
+     * @param thumbnailName String
+     * @param placeHolderResourcePath String
      */
     public ThumbnailDefinition(String mimetype, TransformationOptions options, String thumbnailName, String placeHolderResourcePath)
     {
@@ -200,7 +200,7 @@ public class ThumbnailDefinition
     /**
      * This method sets the placeholder resource path.
      * 
-     * @param placeHolderResourcePath
+     * @param placeHolderResourcePath String
      */
     public void setPlaceHolderResourcePath(String placeHolderResourcePath)
     {
@@ -209,7 +209,7 @@ public class ThumbnailDefinition
     
     /**
      * 
-     * @return
+     * @return String
      */
     public String getPlaceHolderResourcePath()
     {   
@@ -219,7 +219,7 @@ public class ThumbnailDefinition
     /**
      * This method sets the mime-aware placeholder resource path template.
      * 
-     * @param mimeAwarePlaceHolderResourcePath
+     * @param mimeAwarePlaceHolderResourcePath String
      * @since 3.4.1 (Team)
      */
     public void setMimeAwarePlaceHolderResourcePath(String mimeAwarePlaceHolderResourcePath)
@@ -229,7 +229,7 @@ public class ThumbnailDefinition
     
     /**
      * 
-     * @return
+     * @return String
      * @since 3.4.1 (Team)
      */
     public String getMimeAwarePlaceHolderResourcePath()
@@ -250,7 +250,7 @@ public class ThumbnailDefinition
     /**
      * Sets the thumbnail registry
      * 
-     * @param thumbnailRegistry
+     * @param thumbnailRegistry ThumbnailRegistry
      */
     public void setThumbnailRegistry(ThumbnailRegistry thumbnailRegistry)
     {

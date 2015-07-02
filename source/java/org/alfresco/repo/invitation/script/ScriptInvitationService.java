@@ -101,10 +101,7 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
      * List the open invitations.
      * props specifies optional properties to constrain the search.
      * 
-     * @param props inviteeUserName
-     * @param props resourceName
-     * @param props resourceType
-     * @param props invitationType
+     * @param props props
      *
      * @return the invitations
      */

@@ -682,7 +682,7 @@ public class MultiTServiceImpl implements TenantService
     }
 
     /**
-     * @return
+     * @return String
      */
     public static String getMultiTenantDomainName(String name)
     {

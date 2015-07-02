@@ -47,7 +47,7 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
    
    /**
     * Injects the ReplicationDefinitionPersister bean.
-    * @param replicationDefinitionPersister
+    * @param replicationDefinitionPersister ReplicationDefinitionPersisterImpl
     */
    public void setReplicationDefinitionPersister(ReplicationDefinitionPersisterImpl replicationDefinitionPersister)
    {
@@ -56,7 +56,7 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
    
    /**
     * Injects the ActionService bean.
-    * @param actionService
+    * @param actionService ActionService
     */
    public void setActionService(ActionService actionService)
    {
@@ -65,7 +65,7 @@ public class ReplicationServiceImpl implements ReplicationService, ReplicationDe
 
    /**
     * Injects the Scheduled Persisted Action Service bean
-    * @param scheduledPersistedActionService
+    * @param scheduledPersistedActionService ScheduledPersistedActionService
     */
    public void setScheduledPersistedActionService(ScheduledPersistedActionService scheduledPersistedActionService) 
    {

@@ -65,8 +65,8 @@ public class DefaultCopyBehaviourCallback extends AbstractCopyBehaviourCallback
 
     /**
      * Default behaviour:<br/>
-     * * {@link AssocCopySourceAction#COPY_REMOVE_EXISTING}<br/>
-     * * {@link AssocCopyTargetAction#USE_COPIED_OTHERWISE_ORIGINAL_TARGET}
+     * * AssocCopySourceAction.COPY_REMOVE_EXISTING<br/>
+     * * AssocCopyTargetAction.USE_COPIED_OTHERWISE_ORIGINAL_TARGET
      */
     @Override
     public Pair<AssocCopySourceAction, AssocCopyTargetAction> getAssociationCopyAction(

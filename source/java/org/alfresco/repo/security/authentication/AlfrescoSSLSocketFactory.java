@@ -51,7 +51,7 @@ public class AlfrescoSSLSocketFactory extends SSLSocketFactory
 
     /**
      * Initialize the factory with custom trustStore
-     * @param trustStore
+     * @param trustStore KeyStore
      */
     public static synchronized void initTrustedSSLSocketFactory(final KeyStore trustStore)
     {

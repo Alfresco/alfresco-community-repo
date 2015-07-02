@@ -23,7 +23,7 @@ import java.io.Serializable;
 import org.alfresco.util.EqualsHelper;
 
 /**
- * Compound key for persistence of {@link org.alfresco.repo.domain.Node}
+ * Compound key for persistence of {@link org.alfresco.repo.domain.node.Node}
  * 
  * @author Derek Hulley
  * @since 3.4

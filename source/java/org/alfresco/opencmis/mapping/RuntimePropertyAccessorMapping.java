@@ -62,7 +62,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     private Map<BaseTypeId, Map<Action, CMISActionEvaluator>> actionEvaluators = new HashMap<BaseTypeId, Map<Action, CMISActionEvaluator>>();
 
     /**
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
@@ -70,7 +70,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * @param cmisConnector
+     * @param cmisConnector CMISConnector
      */
     public void setCmisConnector(CMISConnector cmisConnector)
     {
@@ -78,7 +78,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * @param cmisMapping
+     * @param cmisMapping CMISMapping
      */
     public void setCmisMapping(CMISMapping cmisMapping)
     {
@@ -86,7 +86,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     }
 
     /**
-     * @param cmisDictionaryService
+     * @param cmisDictionaryService CMISDictionaryService
      */
     public void setCmisDictionaryService(CMISDictionaryService cmisDictionaryService)
     {
@@ -330,7 +330,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     /**
      * Register pre-defined Property Accessor
      * 
-     * @param propertyAccessor
+     * @param propertyAccessor AbstractProperty
      */
     private void registerPropertyAccessor(AbstractProperty propertyAccessor)
     {
@@ -340,7 +340,7 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     /**
      * Gets the Action Evaluators applicable for the given CMIS Scope
      * 
-     * @param scope
+     * @param scope BaseTypeId
      */
     public Map<Action, CMISActionEvaluator> getActionEvaluators(BaseTypeId scope)
     {
@@ -355,8 +355,8 @@ public class RuntimePropertyAccessorMapping implements PropertyAccessorMapping, 
     /**
      * Register an Action Evaluator
      * 
-     * @param scope
-     * @param evaluator
+     * @param scope BaseTypeId
+     * @param evaluator CMISActionEvaluator
      */
     private void registerEvaluator(BaseTypeId scope, CMISActionEvaluator evaluator)
     {

@@ -1031,8 +1031,8 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
 
     /**
-     * @param path
-     * @param instance
+     * @param path WorkflowPath
+     * @param instance ProcessInstance
      */
     private void endStartTaskAutomatically(WorkflowPath path, ProcessInstance instance)
     {
@@ -1127,7 +1127,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
      * Converts the given list of {@link ProcessDefinition}s to a list of {@link WorkflowDefinition}s
      * that have a valid domain.
-     * @param definitions
+     * @param definitions List<ProcessDefinition>
      */
     private List<WorkflowDefinition> getValidWorkflowDefinitions(List<ProcessDefinition> definitions)
     {
@@ -1143,7 +1143,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
      * Converts the given list of {@link Task}s to a list of {@link WorkflowTask}s
      * that have a valid domain.
-     * @param tasks
+     * @param tasks List<Task>
      */
     private List<WorkflowTask> getValidWorkflowTasks(List<Task> tasks)
     {
@@ -1163,7 +1163,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
      * Converts the given list of {@link Task}s to a list of {@link WorkflowTask}s
      * that have a valid domain.
-     * @param tasks
+     * @param tasks List<HistoricTaskInstance>
      */
     private List<WorkflowTask> getValidHistoricTasks(List<HistoricTaskInstance> tasks)
     {
@@ -1218,7 +1218,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     
     /**
      * Sets the Dictionary Service
-     * @param dictionaryService
+     * @param dictionaryService DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -1228,7 +1228,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
      * Sets the Node Service
      * 
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -1246,7 +1246,7 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     /**
      * Sets the Person Service
      * 
-     * @param personService
+     * @param personService PersonService
      */
     public void setPersonService(PersonService personService)
     {

@@ -167,7 +167,7 @@ public interface AuthorityService
      * 
      * @throws org.alfresco.repo.security.authority.UnknownAuthorityException - if zoneName is not null and does not exist
      * 
-     * @author janv
+     * <br/><br/>author janv
      * @since 4.0
      */
     @Auditable(parameters = {"type", "zoneName", "displayNameFilter", "sortByDisplayName", "sortAscending", "pagingRequest"})
@@ -186,7 +186,7 @@ public interface AuthorityService
      * 
      * @throws org.alfresco.repo.security.authority.UnknownAuthorityException - if zoneName is not null and does not exist
      * 
-     * @author janv
+     * <br/><br/>author janv
      * @since 4.0
      */
     @Auditable(parameters = {"type", "zoneName", "displayNameFilter", "sortByDisplayName", "sortAscending", "pagingRequest"})
@@ -276,7 +276,7 @@ public interface AuthorityService
     /**
      * Delete an authority and all its relationships. Note child authorities are not deleted.
      * 
-     * @param name
+     * @param name String
      */
     @Auditable(parameters = {"name"})
     public void deleteAuthority(String name);
@@ -306,7 +306,7 @@ public interface AuthorityService
      * @param immediate -
      *            if true, limit the depth to just immediate child, if false
      *            find authorities at any depth
-     * @return
+     * @return Set<String>
      */
     @Auditable(parameters = {"type", "name", "immediate"})
     public Set<String> getContainedAuthorities(AuthorityType type, String name, boolean immediate);
@@ -315,7 +315,7 @@ public interface AuthorityService
      * Get the authorities that contain the given authority,
      * <b>but use {@code getAuthoritiesForUser(userName).contains(authority)}</b> rather than
      * {@code getContainingAuthorities(type, userName, false).contains(authority)} or
-     * use {@link #getContainingAuthoritiesInZone(AuthorityType, String, AuthorityService#ZONE_APP_DEFAULT, AuthorityFilter, int)}
+     * use {@link #getContainingAuthoritiesInZone(AuthorityType, String, String, AuthorityFilter, int)}
      * <b>as they will be much faster</b>.
      * 
      * For example, this method can be used find out all the authorities that contain a
@@ -328,7 +328,7 @@ public interface AuthorityService
      *            are required.
      * @param immediate -
      *            limit to immediate parents or any ancestor.
-     * @return
+     * @return Set<String>
      */
     @Auditable(parameters = {"type", "name", "immediate"})
     public Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate);
@@ -361,8 +361,8 @@ public interface AuthorityService
     /**
      * Extract the short name of an authority from its full identifier.
      * 
-     * @param name
-     * @return
+     * @param name String
+     * @return String
      */
     @Auditable(parameters = {"name"})
     public String getShortName(String name);
@@ -371,9 +371,9 @@ public interface AuthorityService
      * Create the full identifier for an authority given its short name and
      * type.
      * 
-     * @param type
-     * @param shortName
-     * @return
+     * @param type AuthorityType
+     * @param shortName String
+     * @return String
      */
     @Auditable(parameters = {"type", "shortName"})
     public String getName(AuthorityType type, String shortName);
@@ -400,8 +400,8 @@ public interface AuthorityService
      * Set the display name for the given authority.
      * Setting the display name is only supported for authorities of type group
      * 
-     * @param authorityName
-     * @param authorityDisplayName
+     * @param authorityName String
+     * @param authorityDisplayName String
      */
     @Auditable(parameters = {"authorityName", "authorityDisplayName"})
     public void setAuthorityDisplayName(String authorityName, String authorityDisplayName);
@@ -475,16 +475,16 @@ public interface AuthorityService
     
     /**
      * Add a zone to an authority.
-     * @param authorityName
-     * @param zones
+     * @param authorityName String
+     * @param zones Set<String>
      */
     @Auditable(parameters = {"authorityName", "zones"})
     public void addAuthorityToZones(String authorityName, Set<String> zones);
     
     /**
      * Remove a zone from an authority
-     * @param authorityName
-     * @param zones
+     * @param authorityName String
+     * @param zones Set<String>
      */
     @Auditable(parameters = {"authorityName", "zones"})
     public void removeAuthorityFromZones(String authorityName, Set<String> zones);
@@ -500,12 +500,12 @@ public interface AuthorityService
      * Search for authorities by pattern matching (* and ?) against the authority name.
      * Note: This will use a search index to find the results (eg. via Lucene / SOLR).
      * 
-     * @param type
+     * @param type AuthorityType
      * @param parentAuthority if non-null, will look only for authorities who are a child of the named parent
      * @param immediate if <code>true</code> then only search root groups if parentAuthority is null, or immediate children of parentAuthority if it is non-null.
-     * @param displayNamePattern
+     * @param displayNamePattern String
      * @param zoneName - may be null to indicate all zones
-     * @return
+     * @return Set<String>
      */
     @Auditable(parameters = {"type"})
     public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate, String displayNamePattern, String zoneName);

@@ -37,7 +37,8 @@ public class ParentProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
      */
     public ParentProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

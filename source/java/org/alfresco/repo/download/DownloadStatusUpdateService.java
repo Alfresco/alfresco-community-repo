@@ -37,7 +37,7 @@ public interface DownloadStatusUpdateService
      * 
      * @param nodeRef The download node, whose status is to be updated.
      * @param status The new status
-     * @param sequenceNumber
+     * @param sequenceNumber int
      */
     void update(NodeRef nodeRef, DownloadStatus status, int sequenceNumber);
 }

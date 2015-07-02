@@ -231,7 +231,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
     /**
      * Set the UserRegistrySynchronizer
      * 
-     * @param userRegistrySynchronizer
+     * @param userRegistrySynchronizer UserRegistrySynchronizer
      */
     public void setUserRegistrySynchronizer(UserRegistrySynchronizer userRegistrySynchronizer)
     {
@@ -512,7 +512,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
      * @param filter filter query string by which to filter the collection of people.
      *          If <pre>null</pre> then all people stored in the repository are returned
      *          
-     * @deprecate see getPeople(filter, maxResults)
+     * @deprecated recated see getPeople(filter, maxResults)
      *          
      * @return people collection as a JavaScript array
      */
@@ -1236,8 +1236,8 @@ public class People extends BaseScopableProcessorExtension implements Initializi
      * This enables a script to interogate which properties are dealt with by an external
      * system such as LDAP and should not be mutable in any client UI.
      * 
-     * @param username
-     * 
+     * @param username String
+     *
      * @return ScriptableHashMap
      */
     public ScriptableHashMap getImmutableProperties(String username)

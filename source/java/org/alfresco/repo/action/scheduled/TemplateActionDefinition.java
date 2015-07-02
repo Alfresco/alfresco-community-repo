@@ -32,7 +32,7 @@ public interface TemplateActionDefinition
     /**
      * Generate an action definition for the action defined by this template.
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @return - the action.
      */
     public Action getAction(NodeRef nodeRef);

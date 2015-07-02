@@ -37,13 +37,13 @@ public interface NominatedInvitationProcess  extends InvitationProcess
 
     /**
      * invitee accepts this request
-     * @param request
+     * @param request Invitation
      */
     public void accept(Invitation request);
 
     /**
      * invitee rejects this request
-     * @param request
+     * @param request Invitation
      */
     public void reject(Invitation request);
 

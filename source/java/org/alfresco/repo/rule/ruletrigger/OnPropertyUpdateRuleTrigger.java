@@ -79,7 +79,7 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
     /**
      * If set to true, then we consider zero byte content to be equivalent to no content.
      * 
-     * @param ignoreEmptyContent
+     * @param ignoreEmptyContent boolean
      */
     public void setIgnoreEmptyContent(boolean ignoreEmptyContent)
     {
@@ -302,7 +302,7 @@ public class OnPropertyUpdateRuleTrigger extends RuleTriggerAbstractBase
     }
 
     /**
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     private void triggerRules(NodeRef nodeRef)
     {

@@ -303,7 +303,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
      * This method tests https://issues.alfresco.com/jira/browse/ALF-3785 which allows 'public' sites
      * to be only visible to members of a configured group, by default EVERYONE.
      * 
-     * @author Neil McErlean
+     * <br><br/>author Neil McErlean
      * @since 3.4
      */
     @SuppressWarnings("deprecation")

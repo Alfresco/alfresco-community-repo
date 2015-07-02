@@ -66,7 +66,7 @@ public abstract class AlfrescoBpmEngine extends BPMEngine
         /**
      * Sets the Tenant Service
      * 
-     * @param tenantService
+     * @param tenantService TenantService
      */
     public void setTenantService(TenantService tenantService)
     {
@@ -76,7 +76,7 @@ public abstract class AlfrescoBpmEngine extends BPMEngine
     /**
      * Sets the Message Service
      * 
-     * @param messageService
+     * @param messageService MessageService
      */
     public void setMessageService(MessageService messageService)
     {
@@ -86,7 +86,7 @@ public abstract class AlfrescoBpmEngine extends BPMEngine
     /**
      * Sets the Namespace Service
      * 
-     * @param namespaceService
+     * @param namespaceService NamespaceService
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {

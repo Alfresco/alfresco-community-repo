@@ -104,7 +104,7 @@ public interface PatchDAO
      * @param aspectQNameId - the id of the aspect qname
      * @param minNodeId - min node id in the result set - inclusive
      * @param maxNodeId - max node id in the result set - exclusive
-     * @return
+     * @return List
      */
     public List<Long> getNodesByTypeQNameAndAspectQNameId(long typeQNameId, long aspectQNameId, long minNodeId, long maxNodeId);
     

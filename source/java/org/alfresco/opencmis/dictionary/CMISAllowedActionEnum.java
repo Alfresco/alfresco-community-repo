@@ -84,7 +84,8 @@ public enum CMISAllowedActionEnum
     /**
      * Construct
      * 
-     * @param label
+     * @param label String
+     * @param keysAndPermissions String ...
      */
     CMISAllowedActionEnum(String label, String ... keysAndPermissions)
     {

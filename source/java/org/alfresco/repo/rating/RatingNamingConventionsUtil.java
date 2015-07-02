@@ -44,7 +44,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  * the rollup name as defined in the algorithm class e.g. {@link RatingCountRollupAlgorithm#ROLLUP_NAME}.
  * <p/>
  * Since Alfresco 4.1.5, the "cm:" prefix is no longer required and any namespace can be used. These are provided
- * via injection with {@link RatingSchemeImpl#setModelPrefix(String))}
+ * via injection with {@link RatingSchemeImpl#setModelPrefix(String)}
  * 
  * @author Neil McErlean
  * @since 3.5
@@ -79,7 +79,7 @@ public class RatingNamingConventionsUtil
      * 
      * @param username the username to match against or <code>null</code> for all usernames.
      * @param ratingSchemeName the ratingSchemeName to match against or <code>null</code> for all ratingSchemes.
-     * @return
+     * @return QNamePattern
      */
     public QNamePattern getRatingAssocPatternForUser(String username, String ratingSchemeName)
     {

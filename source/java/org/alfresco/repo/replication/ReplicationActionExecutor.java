@@ -155,7 +155,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
 
    /**
     * Injects the ReplicationDefinitionPersister bean.
-    * @param replicationDefinitionPersister
+    * @param replicationDefinitionPersister ReplicationDefinitionPersisterImpl
     */
    public void setReplicationDefinitionPersister(ReplicationDefinitionPersisterImpl replicationDefinitionPersister)
    {
@@ -542,7 +542,7 @@ public class ReplicationActionExecutor extends ActionExecuterAbstractBase {
 
       /**
        * Job Lock Refresh
-       * @return
+       * @return boolean
        */
       @Override
       public boolean isActive()

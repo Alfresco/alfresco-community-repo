@@ -50,12 +50,12 @@ public class TransactionBehaviourQueue implements TransactionListener
     /**
      * Queue a behaviour for end-of-transaction execution
      *  
-     * @param <P>
-     * @param behaviour
-     * @param definition
-     * @param policyInterface
-     * @param method
-     * @param args
+     * @param <P> P extends Policy
+     * @param behaviour Behaviour
+     * @param definition PolicyDefinition<P>
+     * @param policyInterface P
+     * @param method Method
+     * @param args Object[]
      */
     @SuppressWarnings("unchecked")
     public <P extends Policy> void queue(Behaviour behaviour, PolicyDefinition<P> definition, P policyInterface, Method method, Object[] args)
@@ -234,7 +234,7 @@ public class TransactionBehaviourQueue implements TransactionListener
     /**
      * Execute behaviour as described in execution context
      * 
-     * @param context
+     * @param context ExecutionContext
      */
     private void execute(ExecutionContext context)
     {

@@ -32,7 +32,7 @@ public class NodePublishStatusPublishedAndOnQueue extends BaseNodePublishStatus
     private final PublishingEvent latestPublishingEvent;
 
     /**
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @param channelName TODO
      * @param queuedPublishingEvent The next scheduled {@link PublishingEvent} on the {@link PublishingQueue}
      * @param latestPublishingEvent The last {@link PublishingEvent} to successfully publish the node.
@@ -61,7 +61,7 @@ public class NodePublishStatusPublishedAndOnQueue extends BaseNodePublishStatus
 
     /**
      * Retrieve the most recent publishing event that affected (created or updated) the node relevant to this status.
-     * @return
+     * @return PublishingEvent
      */
     public PublishingEvent getLatestPublishingEvent()
     {

@@ -1105,8 +1105,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     
     /**
      * 
-     * @param ruleAction
-     * @return
+     * @param ruleAction Action
+     * @return Pair
      */
     private Pair<InternetAddress, Locale> getFrom(Action ruleAction)
     {
@@ -1467,8 +1467,8 @@ public class MailActionExecuter extends ActionExecuterAbstractBase
     
     /**
      * Return true if address has valid format
-     * @param address
-     * @return
+     * @param address String
+     * @return boolean
      */
     private boolean validateAddress(String address)
     {

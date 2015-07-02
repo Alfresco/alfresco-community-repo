@@ -36,21 +36,21 @@ public interface ScenarioInstance
     
     /**
      * Get the Ranking
-     * @return
+     * @return Ranking
      */
     public Ranking getRanking();
     
     /**
      * evaluate the scenario against the current operation
      * 
-     * @param operation
+     * @param operation Operation
      */
     public Command evaluate(Operation operation);
     
     /**
      * Is the scenario complete?
      *
-     * @return
+     * @return boolean
      */
     public boolean isComplete();     
     

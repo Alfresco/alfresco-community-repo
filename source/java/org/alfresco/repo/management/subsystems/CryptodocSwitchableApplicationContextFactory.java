@@ -89,7 +89,7 @@ public class CryptodocSwitchableApplicationContextFactory extends SwitchableAppl
     /**
      * The bean name of the unencrypted ContentStore subsystem.
      * 
-     * @param unencryptedContentStoreBeanName
+     * @param unencryptedContentStoreBeanName String
      */
     public void setUnencryptedContentStoreBeanName(String unencryptedContentStoreBeanName)
     {

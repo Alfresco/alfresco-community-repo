@@ -240,7 +240,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Set the directory that contains the indexes
      * 
-     * @param indexRootLocation
+     * @param indexRootLocation String
      */
 
     public void setIndexRootLocation(String indexRootLocation)
@@ -251,7 +251,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Set the tenant service
      * 
-     * @param tenantService
+     * @param tenantService TenantService
      */
     public void setTenantService(TenantService tenantService)
     {
@@ -261,7 +261,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Set the query register
      * 
-     * @param queryRegister
+     * @param queryRegister QueryRegisterComponent
      */
     public void setQueryRegister(QueryRegisterComponent queryRegister)
     {
@@ -431,7 +431,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Get the transaction identifier used to store it in the transaction map.
      * 
-     * @param tx
+     * @param tx Transaction
+     * @param storeRef StoreRef
      * @return - the transaction id
      */
     @SuppressWarnings("unchecked")
@@ -460,8 +461,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Encapsulate creating an indexer
      * 
-     * @param storeRef
-     * @param deltaId
+     * @param storeRef StoreRef
+     * @param deltaId String
      * @return - the indexer made by the concrete implemntation
      */
     protected abstract LuceneIndexer createIndexer(StoreRef storeRef, String deltaId);
@@ -495,8 +496,8 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Get a searcher over the index and the current delta
      * 
-     * @param storeRef
-     * @param indexer
+     * @param storeRef StoreRef
+     * @param indexer LuceneIndexer
      * @return - the searcher made by the concrete implementation.
      * @throws SearcherException
      */
@@ -901,7 +902,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Set the batch six to use for background indexing
      * 
-     * @param indexerBatchSize
+     * @param indexerBatchSize int
      */
     @Override
     public void setIndexerBatchSize(int indexerBatchSize)
@@ -959,7 +960,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Set the max number of queries in a llucen boolean query
      * 
-     * @param queryMaxClauses
+     * @param queryMaxClauses int
      */
     @Override
     public void setQueryMaxClauses(int queryMaxClauses)
@@ -971,7 +972,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Set the lucene write lock timeout
      * 
-     * @param timeout
+     * @param timeout long
      */
     @Override
     public void setWriteLockTimeout(long timeout)
@@ -982,7 +983,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Set the lucene commit lock timeout (no longer used with lucene 2.1)
      * 
-     * @param timeout
+     * @param timeout long
      */
     @Override
     public void setCommitLockTimeout(long timeout)
@@ -1015,7 +1016,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Set the lock poll interval in ms
      * 
-     * @param time
+     * @param time long
      */
     @Override
     public void setLockPollInterval(long time)
@@ -1037,7 +1038,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Set the max field length.
      * 
-     * @param indexerMaxFieldLength
+     * @param indexerMaxFieldLength int
      */
     @Override
     public void setIndexerMaxFieldLength(int indexerMaxFieldLength)
@@ -1123,7 +1124,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
         /**
          * If false do not check the index configuration.
          * 
-         * @param checkConfiguration
+         * @param checkConfiguration boolean
          */
         public void setCheckConfiguration(boolean checkConfiguration)
         {
@@ -1133,7 +1134,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
         /**
          * Provides transactions in which to perform the work
          * 
-         * @param transactionService
+         * @param transactionService TransactionService
          */
         public void setTransactionService(TransactionService transactionService)
         {
@@ -1339,9 +1340,9 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
             /**
              * Note files can alter due to background processes so file not found is Ok
              * 
-             * @param srcDir
-             * @param destDir
-             * @param preserveFileDate
+             * @param srcDir File
+             * @param destDir File
+             * @param preserveFileDate boolean
              * @throws IOException
              */
             private void copyDirectory(File srcDir, File destDir, boolean preserveFileDate) throws IOException
@@ -1636,7 +1637,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Set the ML analysis mode at index time.
      * 
-     * @param mode
+     * @param mode MLAnalysisMode
      */
     @Override
     public void setDefaultMLIndexAnalysisMode(MLAnalysisMode mode)
@@ -1654,7 +1655,7 @@ public abstract class AbstractLuceneIndexerAndSearcherFactory extends AbstractIn
     /**
      * Set the ML analysis mode at search time
      * 
-     * @param mode
+     * @param mode MLAnalysisMode
      */
     @Override
     public void setDefaultMLSearchAnalysisMode(MLAnalysisMode mode)

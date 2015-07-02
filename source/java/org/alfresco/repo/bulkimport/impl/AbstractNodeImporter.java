@@ -141,7 +141,7 @@ public abstract class AbstractNodeImporter implements NodeImporter
      * after metadata renames are taken into account.
      * 
      * @param importableItem The importableItem with which to 
-     * @param metadata
+     * @param metadata MetadataLoader.Metadata
      * @return the name of the given importable item
      */
     protected final String getImportableItemName(ImportableItem importableItem, MetadataLoader.Metadata metadata)

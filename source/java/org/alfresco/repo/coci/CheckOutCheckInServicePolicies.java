@@ -39,10 +39,13 @@ public interface CheckOutCheckInServicePolicies
     public interface BeforeCheckOut extends ClassPolicy
     {
         static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "beforeCheckOut");
-          
+
         /**
-         * 
-         * @param nodeRef
+         *
+         * @param nodeRef NodeRef
+         * @param destinationParentNodeRef NodeRef
+         * @param destinationAssocTypeQName QName
+         * @param destinationAssocQName QName
          */
         void beforeCheckOut(
                 NodeRef nodeRef,
@@ -74,10 +77,10 @@ public interface CheckOutCheckInServicePolicies
         
         /**
          * 
-         * @param workingCopyNodeRef
-         * @param versionProperties
-         * @param contentUrl
-         * @param keepCheckedOut
+         * @param workingCopyNodeRef NodeRef
+         * @param versionProperties Map<String,Serializable>
+         * @param contentUrl String
+         * @param keepCheckedOut boolean
          */
         void beforeCheckIn(
                 NodeRef workingCopyNodeRef,
@@ -95,7 +98,7 @@ public interface CheckOutCheckInServicePolicies
        
        /**
         * 
-        * @param nodeRef
+        * @param nodeRef NodeRef
         */
        void onCheckIn(NodeRef nodeRef);
    }
@@ -123,7 +126,7 @@ public interface CheckOutCheckInServicePolicies
          
        /**
         * 
-        * @param nodeRef
+        * @param nodeRef NodeRef
         */
        void onCancelCheckOut(NodeRef nodeRef);
    }

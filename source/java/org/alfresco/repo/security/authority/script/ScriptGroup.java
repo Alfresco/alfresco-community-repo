@@ -63,8 +63,10 @@ public class ScriptGroup implements Authority, Serializable
     
     /**
      * New script group
-     * @param fullName
-     * @param serviceRegistry
+     * @param fullName String
+     * @param displayName String
+     * @param serviceRegistry ServiceRegistry
+     * @param scope Scriptable
      */
     public ScriptGroup(String fullName, String displayName, ServiceRegistry serviceRegistry, Scriptable scope)
     {
@@ -73,8 +75,9 @@ public class ScriptGroup implements Authority, Serializable
     
     /**
      * New script group
-     * @param fullName
-     * @param serviceRegistry
+     * @param fullName String
+     * @param serviceRegistry ServiceRegistry
+     * @param scope Scriptable
      */
     public ScriptGroup(String fullName, ServiceRegistry serviceRegistry, Scriptable scope)
     {
@@ -83,9 +86,9 @@ public class ScriptGroup implements Authority, Serializable
     
     /**
      * New script group
-     * @param fullName
-     * @param authorityService
-     * @deprecated Use {@link #ScriptGroup(String, ServiceRegistry)} instead
+     * @param fullName String
+     * @param authorityService AuthorityService
+     * @deprecated Use {@link #ScriptGroup(String, ServiceRegistry, Scriptable)} instead
      */
     public ScriptGroup(String fullName, AuthorityService authorityService)
     {
@@ -94,9 +97,11 @@ public class ScriptGroup implements Authority, Serializable
     
     /**
      * New script group
-     * @param fullName
-     * @param displayName
-     * @param authorityService
+     * @param fullName String
+     * @param displayName String
+     * @param serviceRegistry ServiceRegistry
+     * @param authorityService AuthorityService
+     * @param scope Scriptable
      */
     private ScriptGroup(String fullName, String displayName, ServiceRegistry serviceRegistry, AuthorityService authorityService, Scriptable scope)
     {
@@ -155,7 +160,7 @@ public class ScriptGroup implements Authority, Serializable
 
     /**
      * Change the display name for this group.    Need administrator permission to call this method to change a display name.
-     * @param displayName
+     * @param displayName String
      */
     public void setDisplayName(String displayName) 
     {
@@ -178,7 +183,7 @@ public class ScriptGroup implements Authority, Serializable
 	
     /**
      * Get all users contained in this group
-     * @return
+     * @return ScriptUser[]
      */
     public ScriptUser[] getAllUsers()
     {
@@ -635,8 +640,8 @@ public class ScriptGroup implements Authority, Serializable
      * @param paging Object representing the paging details
      * @param sortBy field for sorting
      * @param sortAsc sort ascending or not
-     * @param serviceRegistry
-     * @param scope
+     * @param serviceRegistry ServiceRegistry
+     * @param scope Scriptable
      * @return Array of ScriptGroup objects
      * 
      * @since 4.1.4
@@ -668,8 +673,8 @@ public class ScriptGroup implements Authority, Serializable
      * 
      * @param pagedGroups sorted paged results (the page of results get sorted again taking I18n into account)
      * @param paging Object representing the paging details
-     * @param serviceRegistry
-     * @param scope
+     * @param serviceRegistry ServiceRegistry
+     * @param scope Scriptable
      * @return Array of ScriptGroup objects
      * 
      * @since 4.1.4

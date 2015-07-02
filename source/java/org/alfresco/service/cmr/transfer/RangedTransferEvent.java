@@ -30,13 +30,13 @@ public interface RangedTransferEvent extends TransferEvent
 {
     /**
      * The position in the range
-     * @return
+     * @return long
      */
     long getPosition();
     
     /**
      * The maximum range
-     * @return
+     * @return long
      */
     long getRange();
 

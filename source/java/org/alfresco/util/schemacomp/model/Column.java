@@ -43,10 +43,10 @@ public class Column extends AbstractDbObject
     /**
      * Construct a Column.
      * 
-     * @table the parent table
-     * @param name
-     * @param type
-     * @param nullable
+     * @param table the parent table
+     * @param name String
+     * @param type String
+     * @param nullable boolean
      */
     public Column(Table table, String name, String type, boolean nullable)
     {

@@ -233,7 +233,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     /**
      * Defers to the typed service
-     * @see StoreDaoService#createWorkspace(String)
      */
     public StoreRef createStore(String protocol, String identifier)
     {
@@ -798,9 +797,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         }
     }
 
-    /**
-     * @see Node#countChildAssocs()
-     */
     public int countChildAssocs(NodeRef nodeRef, boolean isPrimary) throws InvalidNodeRefException
     {    
     	final Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
@@ -1582,7 +1578,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * Gets the properties map, sets the value (null is allowed) and checks that the new set
      * of properties is valid.
      * 
-     * @see DbNodeServiceImpl#NullPropertyValue
      */
     public void setProperty(NodeRef nodeRef, QName qname, Serializable value) throws InvalidNodeRefException
     {
@@ -1631,7 +1626,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * If any of the values are null, a marker object is put in to mimic nulls.  They will be turned back into
      * a real nulls when the properties are requested again.
      * 
-     * @see Node#getProperties(boolean)
      */
     public void setProperties(NodeRef nodeRef, Map<QName, Serializable> properties) throws InvalidNodeRefException
     {
@@ -2272,7 +2266,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     
     /**
      * @see #getPaths(NodeRef, boolean)
-     * @see #prependPaths(Node, Path, Collection, Stack, boolean)
      */
     public Path getPath(NodeRef nodeRef) throws InvalidNodeRefException
     {
@@ -2287,7 +2280,6 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
     /**
      * When searching for <code>primaryOnly == true</code>, checks that there is exactly
      * one path.
-     * @see #prependPaths(Node, Path, Collection, Stack, boolean)
      */
     public List<Path> getPaths(NodeRef nodeRef, boolean primaryOnly) throws InvalidNodeRefException
     {
@@ -2317,7 +2309,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
      * Archive (direct copy) a node hierarchy
      * 
      * @param walker                the node hierarchy to archive
-     * @param archiveStoreRef
+     * @param archiveStoreRef StoreRef
      */
     private void archiveHierarchyImpl(NodeHierarchyWalker walker, StoreRef archiveStoreRef)
     {

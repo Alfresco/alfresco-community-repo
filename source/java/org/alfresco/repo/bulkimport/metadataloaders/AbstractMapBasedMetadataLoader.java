@@ -100,9 +100,6 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
     abstract protected Map<String,Serializable> loadMetadataFromFile(final File metadataFile);
 
 
-    /**
-     * @see org.alfresco.repo.bulkimport.MetadataLoader#loadMetadata(ContentAndMetadata, Metadata)
-     */
     @Override
     public final void loadMetadata(final ContentAndMetadata contentAndMetadata, Metadata metadata)
     {

@@ -231,7 +231,7 @@ public class CalendarTimezoneHelper
    /**
     * Splits an iCal line into key and value by the first
     * unquoted colon.
-    * @param icalLine
+    * @param icalLine String
     */
    protected static String[] icalLineKeyValue(String icalLine){
 	   int delim = indexOfFirstUnquotedColon(icalLine);
@@ -244,7 +244,7 @@ public class CalendarTimezoneHelper
    }
    
    /**
-    * @param icalLine
+    * @param icalLine String
     * @return location of first non quote enclosed colon
     */
    private static int indexOfFirstUnquotedColon(String icalLine){

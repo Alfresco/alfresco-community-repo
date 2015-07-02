@@ -570,7 +570,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     
     /**
      * Workaround for MNT-12259
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     @SuppressWarnings("deprecation")
     private void hideAndDelete(final NodeRef nodeRef)
@@ -1183,7 +1183,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
     /**
      * Recursively search the given root to get a list of folders
      * 
-     * @return
+     * @return List<AlfrescoImapFolder>
      */
     private List<AlfrescoImapFolder> expandFolder(
             NodeRef root,
@@ -1477,7 +1477,7 @@ public class ImapServiceImpl implements ImapService, OnRestoreNodePolicy, OnCrea
 
     /**
      * Checks for the existence of the flaggable aspect and adds it if it is not already present on the folder. 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     private void checkForFlaggableAspect(NodeRef nodeRef)
     {

@@ -81,7 +81,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     /**
      * Set the ACL DAO component
-     * @param aclDaoComponent
+     * @param aclDaoComponent AclDAO
      */
     public void setAclDAO(AclDAO aclDaoComponent)
     {
@@ -115,7 +115,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     /**
      * Set the mapping of protocol to DAO
-     * @param map
+     * @param map Map<String, AccessControlListDAO>
      */
     public void setProtocolToACLDAO(Map<String, AccessControlListDAO> map)
     {
@@ -124,7 +124,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     /**
      * Set the default DAO
-     * @param defaultACLDAO
+     * @param defaultACLDAO AccessControlListDAO
      */
     public void setDefaultACLDAO(AccessControlListDAO defaultACLDAO)
     {
@@ -650,7 +650,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
         /**
          * Set the change list
          * 
-         * @param changes
+         * @param changes List<AclChange>
          */
         public void setChanges(List<AclChange> changes)
         {
@@ -659,7 +659,7 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
         /**
          * Set the ACL that was created
-         * @param created
+         * @param created Acl
          */
         public void setCreated(Acl created)
         {

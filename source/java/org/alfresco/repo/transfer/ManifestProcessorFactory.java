@@ -34,16 +34,17 @@ public interface ManifestProcessorFactory
 {
     /**
      * The requisite processor
-     * @param receiver
-     * @param transferId
+     * @param receiver TransferReceiver
+     * @param transferId String
+     * @param out TransferRequsiteWriter
      * @return the requisite processor
      */
     TransferManifestProcessor getRequsiteProcessor(TransferReceiver receiver, String transferId, TransferRequsiteWriter out);
     
     /**
      * The commit processors
-     * @param receiver
-     * @param transferId
+     * @param receiver TransferReceiver
+     * @param transferId String
      * @return the requsite processor
      */
     List<TransferManifestProcessor> getCommitProcessors(TransferReceiver receiver, String transferId);

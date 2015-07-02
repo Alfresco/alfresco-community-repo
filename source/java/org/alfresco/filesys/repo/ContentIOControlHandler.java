@@ -91,11 +91,6 @@ public class ContentIOControlHandler implements IOControlHandler
         PropertyCheck.mandatory(this, "transactionService", getTransactionService());
     }
         
-    /**
-     * Return the node service
-     * 
-     * @return NodeService
-     */
     public final void setNodeService( NodeService nodeService)
     {
         this.nodeService = nodeService;

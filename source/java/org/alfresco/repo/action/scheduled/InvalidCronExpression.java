@@ -35,7 +35,7 @@ public class InvalidCronExpression extends ScheduledActionException
     /**
      * Invalid cron expression
      * 
-     * @param msgId
+     * @param msgId String
      */
     public InvalidCronExpression(String msgId)
     {
@@ -45,8 +45,8 @@ public class InvalidCronExpression extends ScheduledActionException
     /**
      * Invalid cron expression
      * 
-     * @param msgId
-     * @param msgParams
+     * @param msgId String
+     * @param msgParams Object[]
      */
     public InvalidCronExpression(String msgId, Object[] msgParams)
     {
@@ -56,8 +56,8 @@ public class InvalidCronExpression extends ScheduledActionException
     /**
      * Invalid cron expression
      * 
-     * @param msgId
-     * @param cause
+     * @param msgId String
+     * @param cause Throwable
      */
     public InvalidCronExpression(String msgId, Throwable cause)
     {
@@ -66,9 +66,9 @@ public class InvalidCronExpression extends ScheduledActionException
 
     /**
      * Invalid cron expression
-     * @param msgId
-     * @param msgParams
-     * @param cause
+     * @param msgId String
+     * @param msgParams Object[]
+     * @param cause Throwable
      */
     public InvalidCronExpression(String msgId, Object[] msgParams, Throwable cause)
     {

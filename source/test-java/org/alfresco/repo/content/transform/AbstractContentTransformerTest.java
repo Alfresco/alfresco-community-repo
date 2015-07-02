@@ -404,9 +404,9 @@ public abstract class AbstractContentTransformerTest extends TestCase
      * This method is an extension point for excluding certain transformations in a subclass.
      * The default implementation returns <code>false</code> for all mime type pairs.
      * 
-     * @param sourceExtension
-     * @param targetExtension
-     * @return
+     * @param sourceExtension String
+     * @param targetExtension String
+     * @return boolean
      */
     protected boolean isTransformationExcluded(String sourceExtension, String targetExtension)
     {

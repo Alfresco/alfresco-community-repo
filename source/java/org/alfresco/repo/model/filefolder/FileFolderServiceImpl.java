@@ -478,6 +478,16 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     
     // note: similar to getChildAssocs(contextNodeRef, searchTypeQNames) but enables paging features, including max items, sorting etc (with permissions per-applied)
 
+    /**
+     *
+     * @param contextNodeRef
+     * @param pattern
+     * @param searchTypeQNames
+     * @param ignoreAspectQNames
+     * @param sortProps
+     * @param pagingRequest
+     * @return
+     */
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern,  Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
@@ -978,7 +988,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     }
 
     /**
-     * @see #moveOrCopy(NodeRef, NodeRef, String, boolean)
+     * @see #moveOrCopy(NodeRef, NodeRef, NodeRef, String, boolean)
      */
     @Override
     public FileInfo copy(NodeRef sourceNodeRef, NodeRef targetParentRef, String newName) throws FileExistsException, FileNotFoundException

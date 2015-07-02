@@ -44,8 +44,8 @@ public abstract class AbstractDbObject implements DbObject
     /**
      * Instantiate, giving the object a parent and a name.
      * 
-     * @param parent
-     * @param name
+     * @param parent DbObject
+     * @param name String
      */
     public AbstractDbObject(DbObject parent, String name)
     {
@@ -196,8 +196,8 @@ public abstract class AbstractDbObject implements DbObject
     /**
      * Override this method to provide subclass specific diffing logic.
      * 
-     * @param right
-     * @param ctx
+     * @param right DbObject
+     * @param ctx DiffContext
      */
     protected void doDiff(DbObject right, DiffContext ctx)
     {

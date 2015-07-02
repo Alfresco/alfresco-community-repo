@@ -8,7 +8,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 /**
  * Interface to determine which sub-folders to search during deep listing.
  * 
- * @See FileFolderService
+ * @see FileFolderService
  */
 @AlfrescoPublicApi
 public interface SubFolderFilter

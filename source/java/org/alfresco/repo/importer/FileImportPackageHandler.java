@@ -48,9 +48,9 @@ public class FileImportPackageHandler
     /**
      * Construct
      * 
-     * @param sourceDir
-     * @param dataFile
-     * @param dataFileEncoding
+     * @param sourceDir File
+     * @param dataFile File
+     * @param dataFileEncoding String
      */
     public FileImportPackageHandler(File sourceDir, File dataFile, String dataFileEncoding)
     {

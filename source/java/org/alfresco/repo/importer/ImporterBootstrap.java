@@ -194,7 +194,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Set the authentication component
      * 
-     * @param authenticationContext
+     * @param authenticationContext AuthenticationContext
      */
     public void setAuthenticationContext(AuthenticationContext authenticationContext)
     {
@@ -204,7 +204,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Sets the bootstrap views
      * 
-     * @param bootstrapViews
+     * @param bootstrapViews List<Properties>
      */
     public void setBootstrapViews(List<Properties> bootstrapViews)
     {
@@ -214,7 +214,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Sets the bootstrap views
      * 
-     * @param bootstrapViews
+     * @param bootstrapViews List<Properties>
      */
     public void addBootstrapViews(List<Properties> bootstrapViews)
     {
@@ -228,7 +228,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Sets the Store Ref to bootstrap into
      * 
-     * @param storeUrl
+     * @param storeUrl String
      */
     public void setStoreUrl(String storeUrl)
     {
@@ -258,7 +258,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Sets the Configuration values for binding place holders
      * 
-     * @param configuration
+     * @param configuration Properties
      */
     public void setConfiguration(Properties configuration)
     {
@@ -585,7 +585,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         /**
          * Set Import Configuration
          * 
-         * @param configuration
+         * @param configuration Properties
          */
         public void setConfiguration(Properties configuration)
         {
@@ -605,7 +605,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         /**
          * Set Resource Bundle
          * 
-         * @param resourceBundle
+         * @param resourceBundle ResourceBundle
          */
         public void setResourceBundle(ResourceBundle resourceBundle)
         {
@@ -615,7 +615,7 @@ public class ImporterBootstrap extends AbstractLifecycleBean
         /**
          * Set Location
          * 
-         * @param location
+         * @param location Location
          */
         public void setLocation(Location location)
         {

@@ -27,22 +27,22 @@ public interface ExporterContext
 {
     /**
      * Gets who initiated the export
-     * 
-     * @return
+     *
+     * @return String
      */
     public String getExportedBy();
     
     /**
      * Gets date at which export occured
      * 
-     * @return
+     * @return Date
      */
     public Date getExportedDate();
     
     /**
      * Gets version number of exporter
      * 
-     * @return
+     * @return String
      */
     public String getExporterVersion();
     
@@ -77,14 +77,14 @@ public interface ExporterContext
     /**
      * Return true if there is active node for export
      * 
-     * @return
+     * @return boolean
      */
     public boolean canRetrieve();
     
     /**
      * Set next active node from list
      * 
-     * @return
+     * @return int
      */
     public int setNextValue();
     

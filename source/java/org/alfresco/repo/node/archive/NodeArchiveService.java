@@ -192,7 +192,7 @@ public interface NodeArchiveService
     /**
      * Check if the current user has authority to access the archived node.
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @return true if the currently authenticated user has authority to access
      *         the archived node, otherwise false.
      */

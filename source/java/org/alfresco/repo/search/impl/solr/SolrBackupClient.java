@@ -136,7 +136,7 @@ public class SolrBackupClient implements InitializingBean
     }
 
     /**
-     * @param running
+     * @param running AtomicBoolean
      */
     private void executeImpl(AtomicBoolean running)
     {

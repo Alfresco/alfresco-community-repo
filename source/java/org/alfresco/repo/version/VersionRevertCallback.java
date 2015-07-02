@@ -51,8 +51,8 @@ public interface VersionRevertCallback
 	/**
 	 * How should the specified aspect be reverted?
 	 * 
-	 * @param aspectName,  the name of the aspect to revert
-	 * @param details, details of the aspect to revert
+	 * @param aspectName  the name of the aspect to revert
+	 * @param details details of the aspect to revert
 	 * 
 	 */
 	public RevertAspectAction getRevertAspectAction(QName aspectName, VersionRevertDetails details);
@@ -76,8 +76,8 @@ public interface VersionRevertCallback
 	/**
 	 * How should the specified assoc be reverted?
 	 * 
-	 * @param assocName,  the name of the assoc to revert
-	 * @param details, details of the node to revert
+	 * @param assocName  the name of the assoc to revert
+	 * @param details details of the node to revert
 	 * 
 	 */
 	public RevertAssocAction getRevertAssocAction(QName assocName, VersionRevertDetails details);

@@ -57,7 +57,7 @@ public class ExporterCrawlerParameters
     /**
      * Sets whether to crawl child nodes
      * 
-     * @param crawlChildNodes
+     * @param crawlChildNodes boolean
      */
     public void setCrawlChildNodes(boolean crawlChildNodes)
     {
@@ -77,7 +77,7 @@ public class ExporterCrawlerParameters
     /**
      * Sets whether to crawl associations
      * 
-     * @param crawlAssociations
+     * @param crawlAssociations boolean
      */
     public void setCrawlAssociations(boolean crawlAssociations)
     {
@@ -97,7 +97,7 @@ public class ExporterCrawlerParameters
     /**
      * Sets whether to crawl content
      * 
-     * @param crawlContent
+     * @param crawlContent boolean
      */
     public void setCrawlContent(boolean crawlContent)
     {
@@ -117,7 +117,7 @@ public class ExporterCrawlerParameters
     /**
      * Sets whether to crawl and export node at export path
      * 
-     * @param crawlSelf
+     * @param crawlSelf boolean
      */
     public void setCrawlSelf(boolean crawlSelf)
     {
@@ -137,7 +137,7 @@ public class ExporterCrawlerParameters
     /**
      * Sets whether to crawl null properties
      * 
-     * @param crawlNullProperties
+     * @param crawlNullProperties boolean
      */
     public void setCrawlNullProperties(boolean crawlNullProperties)
     {
@@ -157,7 +157,7 @@ public class ExporterCrawlerParameters
     /**
      * Sets the list of namespace URIs to exclude from the Export
      * 
-     * @param excludeNamespaceURIs
+     * @param excludeNamespaceURIs String[]
      */
     public void setExcludeNamespaceURIs(String[] excludeNamespaceURIs)
     {
@@ -177,7 +177,7 @@ public class ExporterCrawlerParameters
     /**
      * Sets the list of Aspects to exclude from the Export
      * 
-     * @param excludeAspects
+     * @param excludeAspects QName[]
      */
     public void setExcludeAspects(QName[] excludeAspects)
     {
@@ -197,7 +197,7 @@ public class ExporterCrawlerParameters
     /**
      * Sets the list of Child Associations to exclude from the Export
      * 
-     * @param excludeChildAssocs
+     * @param excludeChildAssocs QName[]
      */
     public void setExcludeChildAssocs(QName[] excludeChildAssocs)
     {
@@ -216,8 +216,8 @@ public class ExporterCrawlerParameters
 
     /**
      * Sets the list of included paths to explicitly include in the Export
-     * 
-     * @param includedPaths
+     *
+     * @param includedPaths String[]
      */
     public void setIncludedPaths(String[] includedPaths)
     {
@@ -237,7 +237,7 @@ public class ExporterCrawlerParameters
     /**
      * Sets the path to export from
      * 
-     * @param exportFrom
+     * @param exportFrom Location
      */
     public void setExportFrom(Location exportFrom)
     {

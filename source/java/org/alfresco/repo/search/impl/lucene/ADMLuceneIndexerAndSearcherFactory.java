@@ -90,7 +90,7 @@ public class ADMLuceneIndexerAndSearcherFactory extends AbstractLuceneIndexerAnd
 
     /**
      * Sets the transformer debug. 
-     * @param transformerDebug
+     * @param transformerDebug TransformerDebug
      */
     public void setTransformerDebug(TransformerDebug transformerDebug)
     {

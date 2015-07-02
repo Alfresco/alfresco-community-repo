@@ -101,7 +101,6 @@ public interface ImapService
      * 
      * @param user User making the request.
      * @param mailboxName String name of the target,
-     * @throws com.icegreen.greenmail.store.FolderException if mailbox has a non-selectable store with children
      */
     public void deleteMailbox(AlfrescoImapUser user, String mailboxName);
 
@@ -191,7 +190,7 @@ public interface ImapService
     /**
      * Search for emails in specified folder depend on view mode.
      * 
-     * @param contextNodeRef context folder for search
+     * @param userName user name
      * @param contextNodeRef context NodeRef
      * @param viewMode (ARCHIVE, MIXED or VIRTUAL)
      * @return list of emails that context folder contains.
@@ -280,7 +279,7 @@ public interface ImapService
      * returns a default template on the classpath.
      * 
      * @param type one of the possible body types text/html and text/plain
-     * @return
+     * @return String
      */
     public String getDefaultEmailBodyTemplate(EmailBodyFormat type);
     
@@ -345,7 +344,7 @@ public interface ImapService
     }
 
     /**
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @return path for node relatively to site root
      */
     public String getPathFromSites(NodeRef nodeRef);

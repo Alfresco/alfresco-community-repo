@@ -48,7 +48,7 @@ public class ContentDataPart extends PartBase
     /**
      * ContentDataPart 
      * @param contentService content service
-     * @param partName
+     * @param partName String
      * @param data data
      */
     public ContentDataPart(ContentService contentService, String partName, ContentData data) {

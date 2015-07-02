@@ -190,7 +190,7 @@ public interface NodeDAO extends NodeBulkLoader
      * @param storeRef          the store to which the node must belong
      * @param uuid              the node store-unique identifier, or <tt>null</tt> to assign a GUID
      * @param nodeTypeQName     the type of the node
-     * @parma nodeLocale        the locale of the node
+     * @param nodeLocale        the locale of the node
      * @param childNodeName     the <b>cm:name</b> of the child node or <tt>null</tt> to use the node's UUID
      * @param auditableProperties   a map containing any <b>cm:auditable</b> properties for the node
      * @return                  Returns the details of the child association created
@@ -615,7 +615,6 @@ public interface NodeDAO extends NodeBulkLoader
      * @param maxResults            the maximum number of results to return. The query will be terminated efficiently
      *                              after that number of results                             
      * @param resultsCallback       the callback that will be called with the results
-     * @return a list of child associations
      */
     public void getChildAssocs(
             Long parentNodeId,
@@ -808,7 +807,7 @@ public interface NodeDAO extends NodeBulkLoader
      * @param fromCommitTime	delete unused transactions from commit time
      * @param toCommitTime		delete unused transactions to commit time
      * 
-     * @return
+     * @return int
      */
     public int deleteTxnsUnused(long fromCommitTime, long toCommitTime);
     

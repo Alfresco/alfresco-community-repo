@@ -51,7 +51,7 @@ public interface TransferEvent
         
     /** 
      * Get a human readable message for this event
-     * @return
+     * @return String
      */
     String getMessage();
     

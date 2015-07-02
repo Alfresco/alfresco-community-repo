@@ -357,7 +357,7 @@ public interface ServiceRegistry
 
     /**
      * Get the ownable service (or null if one is not provided)
-     * @return
+     * @return OwnableService
      */
     @NotAuditable
     OwnableService getOwnableService();

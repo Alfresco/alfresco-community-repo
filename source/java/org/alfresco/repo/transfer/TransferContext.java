@@ -30,7 +30,7 @@ public class TransferContext
     private Map<NodeRef, ManifestCategory> categoriesCache = new HashMap<NodeRef, ManifestCategory>();
     /**
       * 
-      * @return
+      * @return Map
       */
     public Map<NodeRef, ManifestCategory> getManifestCategoriesCache()
     {

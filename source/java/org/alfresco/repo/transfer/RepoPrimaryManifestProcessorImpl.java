@@ -123,7 +123,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     private Map<NodeRef, NodeRef> categoryMap = new HashMap<NodeRef, NodeRef>();
 
     /**
-     * @param transferId
+     * @param receiver TransferReceiver
+     * @param transferId String
      */
     public RepoPrimaryManifestProcessorImpl(TransferReceiver receiver, String transferId)
     {
@@ -276,9 +277,9 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     /**
      * Create new node.
      * 
-     * @param node
-     * @param resolvedNodes
-     * @param primaryParentAssoc
+     * @param node TransferManifestNormalNode
+     * @param resolvedNodes ResolvedParentChildPair
+     * @param primaryParentAssoc ChildAssociationRef
      */
     private void create(TransferManifestNormalNode node, ResolvedParentChildPair resolvedNodes,
             ChildAssociationRef primaryParentAssoc)
@@ -399,8 +400,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     
     /**
      * Delete this node
-     * @param node
-     * @param nodeToDelete
+     * @param node TransferManifestDeletedNode
+     * @param nodeToDelete NodeRef
      */
     protected void delete(TransferManifestDeletedNode node, NodeRef nodeToDelete)
     {
@@ -473,9 +474,9 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
 
     /**
      * 
-     * @param node
-     * @param resolvedNodes
-     * @param primaryParentAssoc
+     * @param node TransferManifestNormalNode
+     * @param resolvedNodes ResolvedParentChildPair
+     * @param primaryParentAssoc ChildAssociationRef
      */
     private void update(TransferManifestNormalNode node, ResolvedParentChildPair resolvedNodes,
             ChildAssociationRef primaryParentAssoc)
@@ -856,8 +857,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     /**
-     * @param nodeToUpdate
-     * @param contentProps
+     * @param nodeToUpdate NodeRef
+     * @param contentProps Map<QName, Serializable>
      * @return true if any content property has been updated for the needToUpdate node
      */
     private boolean writeContent(NodeRef nodeToUpdate, Map<QName, Serializable> contentProps)
@@ -921,7 +922,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     /**
-     * @return
+     * @return Set<QName>
      */
     protected Set<QName> getLocalProperties()
     {
@@ -929,7 +930,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     /**
-     * @param primaryParentAssoc
+     * @param primaryParentAssoc ChildAssociationRef
      */
     private void storeOrphanNode(ChildAssociationRef primaryParentAssoc)
     {
@@ -943,8 +944,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     /**
-     * @param node
-     * @param msgId
+     * @param node TransferManifestNode
+     * @param msgId String
      */
     private void error(TransferManifestNode node, String msgId)
     {
@@ -954,7 +955,7 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     /**
-     * @param msgId
+     * @param msgId String
      */
     private void error(String msgId)
     {
@@ -1030,8 +1031,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
      * CRUD of Categories and Tags - also maps noderefs of type d:content from source to target
      * 
      * 
-     * @param properties
-     * @param manifestCategories
+     * @param properties Map<QName, Serializable>
+     * @param manifestCategories Map<NodeRef, ManifestCategory>
      */
     private void processCategories(Map<QName, Serializable> properties, Map<NodeRef, ManifestCategory> manifestCategories)
     {   
@@ -1094,8 +1095,8 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
      * 
      * It will lazily create any missing categories and tags as it executes.
      * 
-     * @param sourceCategoryNodeRef
-     * @param manifestCategories
+     * @param sourceCategoryNodeRef NodeRef
+     * @param manifestCategories Map<NodeRef, ManifestCategory>
      * @return targetNodeRef
      */
     private NodeRef processCategory(final NodeRef sourceCategoryNodeRef, final Map<NodeRef, ManifestCategory> manifestCategories)

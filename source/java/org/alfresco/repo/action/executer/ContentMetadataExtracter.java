@@ -50,10 +50,10 @@ import org.apache.commons.logging.LogFactory;
 /**
  * Extract metadata from any added content.
  * <p>
- * Currently, the default {@linkplain MetadataExtracter.OverwritePolicy overwrite policy}
+ * Currently, the default {@linkplain org.alfresco.repo.content.metadata.MetadataExtracter.OverwritePolicy overwrite policy}
  * for each extracter is used. (TODO: Add overwrite policy as a parameter.)
  * 
- * @see MetadataExtracter.OverwritePolicy
+ * @see org.alfresco.repo.content.metadata.MetadataExtracter.OverwritePolicy
  * 
  * @author Jesper Steen Møller
  */

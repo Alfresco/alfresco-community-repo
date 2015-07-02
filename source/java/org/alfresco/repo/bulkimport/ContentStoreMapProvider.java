@@ -38,7 +38,7 @@ public interface ContentStoreMapProvider
 {
 	/**
 	 * Get a map of the currently registered {@link ContentStore}, keyed by store name
-	 * @return a {@link Map<String, ContentStore>}
+	 * @return a {@link Map}
 	 */
 	public Map<String, ContentStore> getStoreMap();
 	

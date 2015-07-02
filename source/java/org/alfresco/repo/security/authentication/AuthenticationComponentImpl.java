@@ -52,7 +52,7 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
     /**
      * IOC
      * 
-     * @param authenticationManager
+     * @param authenticationManager AuthenticationManager
      */
     public void setAuthenticationManager(AuthenticationManager authenticationManager)
     {
@@ -62,7 +62,7 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
     /**
      * IOC
      * 
-     * @param authenticationDao
+     * @param authenticationDao MutableAuthenticationDao
      */
     public void setAuthenticationDao(MutableAuthenticationDao authenticationDao)
     {

@@ -37,7 +37,7 @@ public interface PreferenceService
      * Get all preferences for a particular user
      * 
      * @param  userName                     the user name
-     * @return Map<String, Serializable>    a map containing the preference values, empty if none
+     * @return a map containing the preference values, empty if none
      */
     @Auditable(parameters = {"userName"})
     Map<String, Serializable> getPreferences(String userName);
@@ -55,7 +55,7 @@ public interface PreferenceService
      * 
      * @param userName                      the user name
      * @param preferenceFilter              the preference filter
-     * @return Map<String, Serializable>    a map containing the preference values, empty if none
+     * @return a map containing the preference values, empty if none
      */
     @Auditable(parameters = {"userName", "preferenceFilter"})
     Map<String, Serializable> getPreferences(String userName, String preferenceFilter);

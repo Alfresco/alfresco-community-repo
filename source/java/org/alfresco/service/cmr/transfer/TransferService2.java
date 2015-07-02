@@ -111,15 +111,15 @@ public interface TransferService2
     /**
      * Create and save a new transfer target.  Creates and saves a new transfer target with a single, but long, method call.
      *  
-     * @param name, the name of this transfer target, which must be unique
-     * @param title, the display name of this transfer target
-     * @param description,
-     * @param endpointProtocol, either http or https 
-     * @param endpointHost, 
-     * @param endpointPort,
-     * @param endpointPath, 
-     * @param username, 
-     * @param password,
+     * @param name the name of this transfer target, which must be unique
+     * @param title the display name of this transfer target
+     * @param description String
+     * @param endpointProtocol either http or https
+     * @param endpointHost String
+     * @param endpointPort int
+     * @param endpointPath String
+     * @param username String
+     * @param password char[]
      * @return the newly created transfer target.
      */
     @Auditable
@@ -152,7 +152,7 @@ public interface TransferService2
 
     /**
       * Get All the transfer targets for a particular transfer target group.
-      * @param groupName, the name of the transfer group
+      * @param groupName the name of the transfer group
       */
     @NotAuditable
     public Set<TransferTarget>getTransferTargets(String groupName) throws TransferException;
@@ -166,7 +166,7 @@ public interface TransferService2
     
     /**
      * Test to see if the target with the specified name exists
-     * @param name
+     * @param name String
      * @return true if the specified target exists, and false otherwise
      */
     @NotAuditable
@@ -175,7 +175,7 @@ public interface TransferService2
     /**
      * Delete a transfer target.  After calling this method the transfer target will no longer exist.
      * @throws TransferException - target does not exist
-     * @param name, the name of this transfer target,
+     * @param name the name of this transfer target,
      */
     @Auditable(parameters={"name"})
     public void deleteTransferTarget(String name) throws TransferException;
@@ -197,7 +197,7 @@ public interface TransferService2
      *    name, must be specified.
      *    nodeRef, if specified will be ignored.
      *    
-     *    @param update
+     *    @param update TransferTarget
      */
     @Auditable
     public TransferTarget saveTransferTarget(TransferTarget update) throws TransferException;
@@ -226,7 +226,7 @@ public interface TransferService2
      * 
      * @param transferId the unique identifier of the transfer to cancel.
      * 
-     * @see TransferEventBegin;
+     * @see TransferEventBegin
      */
     @Auditable(parameters={"transferId"})
     public void cancelAsync(String transferId);

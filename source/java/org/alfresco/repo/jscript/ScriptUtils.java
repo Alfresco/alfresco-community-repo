@@ -217,8 +217,8 @@ public class ScriptUtils extends BaseScopableProcessorExtension
     /**
      * Format timeInMillis to ISO 8601 formatted string
      * 
-     * @param timeInMillis
-     * @return
+     * @param timeInMillis long
+     * @return String
      */
     public String toISO8601(long timeInMillis)
     {
@@ -228,8 +228,8 @@ public class ScriptUtils extends BaseScopableProcessorExtension
     /**
      * Format date to ISO 8601 formatted string
      * 
-     * @param date
-     * @return
+     * @param date Date
+     * @return String
      */
     public String toISO8601(Date date)
     {
@@ -239,8 +239,8 @@ public class ScriptUtils extends BaseScopableProcessorExtension
     /**
      * Parse date from ISO formatted string
      * 
-     * @param isoDateString
-     * @return
+     * @param isoDateString String
+     * @return Date
      */
     public Date fromISO8601(String isoDateString)
     {

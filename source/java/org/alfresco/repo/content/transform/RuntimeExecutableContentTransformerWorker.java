@@ -121,7 +121,7 @@ public class RuntimeExecutableContentTransformerWorker extends ContentTransforme
      * A comma or space separated list of values that, if returned by the executed command,
      * indicate an error value.  This defaults to <b>"1, 2"</b>.
      * 
-     * @param errCodesStr
+     * @param errCodesStr String
      */
     public void setErrorCodes(String errCodesStr)
     {
@@ -163,7 +163,7 @@ public class RuntimeExecutableContentTransformerWorker extends ContentTransforme
     }
 
     /**
-     * If the {@link #init() initialization} failed, then it returns 0.0.
+     * If the initialization failed, then it returns 0.0.
      * Otherwise the explicit transformations are checked for the reliability.
      * 
      * @return Returns 1.0 if initialization succeeded, otherwise 0.0.
@@ -205,7 +205,6 @@ public class RuntimeExecutableContentTransformerWorker extends ContentTransforme
      * Converts the source and target content to temporary files with the
      * correct extensions for the mimetype that they map to.
      * 
-     * @see #transformInternal(File, File)
      */
     public final void transform(
             ContentReader reader,

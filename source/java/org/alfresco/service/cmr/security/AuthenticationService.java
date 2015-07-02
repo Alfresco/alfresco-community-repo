@@ -78,7 +78,7 @@ public interface AuthenticationService
     /**
      * Get the name of the currently authenticated user.
      * 
-     * @return
+     * @return String
      * @throws AuthenticationException
      */
     @Auditable
@@ -93,7 +93,7 @@ public interface AuthenticationService
    /**
     * Invalidate a single ticket by ID
     * 
-    * @param ticket
+    * @param ticket String
     * @throws AuthenticationException
     */
     @Auditable(parameters = {"ticket"}, recordable = {false})
@@ -102,7 +102,7 @@ public interface AuthenticationService
    /**
     * Validate a ticket. Set the current user name accordingly. 
     * 
-    * @param ticket
+    * @param ticket String
     * @throws AuthenticationException
     */
     @Auditable(parameters = {"ticket"}, recordable = {false})
@@ -110,14 +110,14 @@ public interface AuthenticationService
     
     /**
      * Get the current ticket as a string
-     * @return
+     * @return String
      */
     @Auditable
     public String getCurrentTicket();
     
     /**
      * Get a new ticket as a string
-     * @return
+     * @return String
      */
     @Auditable
     public String getNewTicket();

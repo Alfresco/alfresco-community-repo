@@ -61,7 +61,7 @@ public class GenericWorkflowPatch extends AbstractPatch implements ApplicationCo
     /**
      * Sets the Workflow Definitions
      * 
-     * @param workflowDefinitions
+     * @param workflowDefinitions List<Properties>
      */
     public void setWorkflowDefinitions(List<Properties> workflowDefinitions)
     {

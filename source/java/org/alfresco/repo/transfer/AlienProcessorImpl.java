@@ -832,8 +832,8 @@ public class AlienProcessorImpl implements AlienProcessor
     
     /**
      * Is this node invaded ?
-     * @param nodeRef
-     * @param invader
+     * @param nodeRef NodeRef
+     * @param invader String
      * @return true, this node has been invaded by the invader
      */
     private boolean isInvaded(NodeRef nodeRef, String invader)

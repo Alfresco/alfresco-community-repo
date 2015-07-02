@@ -35,7 +35,7 @@ public interface RepositoryDiskInterface
     /**
      * Copy the content from one node to another.
      * 
-     * @param rootNode
+     * @param rootNode NodeRef
      * @param fromPath - the source node
      * @param toPath - the target node
      * @throws FileNotFoundException 
@@ -46,10 +46,10 @@ public interface RepositoryDiskInterface
     /**
      * CreateFile.
      * 
-     * @param rootNode
+     * @param rootNode NodeRef
      * @param Path - path
      * @param allocationSize size to allocate for new file
-     * @param isHidden
+     * @param isHidden boolean
      * @throws FileNotFoundException 
      */
     public NetworkFile createFile(NodeRef rootNode, String Path, long allocationSize, boolean isHidden) throws IOException;
@@ -59,12 +59,12 @@ public interface RepositoryDiskInterface
      * 
      * Either restores the file or creates a new one.
      * 
-     * @param sess
-     * @param tree
-     * @param rootNode
+     * @param sess SrvSession
+     * @param tree TreeConnection
+     * @param rootNode NodeRef
      * @param path - path
      * @param allocationSize size to allocate for new file
-     * @param originalNodeRef
+     * @param originalNodeRef NodeRef
      * @throws FileNotFoundException 
      */
     public NetworkFile restoreFile(SrvSession sess,
@@ -79,10 +79,10 @@ public interface RepositoryDiskInterface
      * 
      * @param session // temp until refactor
      * @param tree // temp until refactor
-     * @param rootNode
-     * @param path
-     * @param mode
-     * @param truncate
+     * @param rootNode NodeRef
+     * @param path String
+     * @param mode OpenFileMode
+     * @param truncate boolean
      * @return NetworkFile
      */
     public NetworkFile openFile(SrvSession session, TreeConnection tree, NodeRef rootNode, String path, OpenFileMode mode, boolean truncate) throws IOException;
@@ -90,8 +90,8 @@ public interface RepositoryDiskInterface
     /**
      * CloseFile.
      * 
-     * @param tree
-     * @param rootNode
+     * @param tree TreeConnection
+     * @param rootNode NodeRef
      * @param Path - path
      * @param file - file
      * @throws FileNotFoundException
@@ -102,10 +102,10 @@ public interface RepositoryDiskInterface
     
     /**
      * Delete file
-     * @param session
-     * @param tree
-     * @param rootNode
-     * @param path
+     * @param session SrvSession
+     * @param tree TreeConnection
+     * @param rootNode NodeRef
+     * @param path String
      * @return NodeRef of file deleted or null if no file deleted
      * @throws IOException
      */
@@ -113,16 +113,16 @@ public interface RepositoryDiskInterface
     
     /**
      * 
-     * @param session
-     * @param tree
-     * @param file
+     * @param session SrvSession
+     * @param tree TreeConnection
+     * @param file NetworkFile
      */
     public void reduceQuota(SrvSession session, TreeConnection tree, NetworkFile file);
     
     /**
      * 
-     * @param rootNode
-     * @param path
+     * @param rootNode NodeRef
+     * @param path String
      */
     public void deleteEmptyFile(NodeRef rootNode, String path);
     
@@ -132,7 +132,7 @@ public interface RepositoryDiskInterface
      * @param rootNode            root node
      * @param oldName     java.lang.String
      * @param newName     java.lang.String
-     * @param soft
+     * @param soft boolean
      * @param moveAsSystem        move as system
      * @exception java.io.IOException The exception description.
      */

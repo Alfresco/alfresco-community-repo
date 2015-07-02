@@ -45,7 +45,7 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
     /**
      * Construct a schema with the given name and no database prefix.
      * 
-     * @param name
+     * @param name String
      */
     public Schema(String name)
     {
@@ -59,8 +59,10 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
      * whose names begin with "alf_" will be represented by this schema. Therefore any comparisons
      * should be performed against another similarly filtered Schema object.
      * 
-     * @param name
-     * @param dbPrefix
+     * @param name String
+     * @param dbPrefix String
+     * @param schemaVersion int
+     * @param checkTableColumnOrder boolean
      */
     public Schema(String name, String dbPrefix, int schemaVersion, boolean checkTableColumnOrder)
     {
@@ -92,7 +94,7 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
      * Add an object to this schema - this method will set this schema
      * as the object's parent.
      * 
-     * @param dbObject
+     * @param dbObject DbObject
      */
     public void add(DbObject dbObject)
     {
@@ -107,8 +109,8 @@ public class Schema extends AbstractDbObject implements Iterable<DbObject>
     }
 
     /**
-     * @param object
-     * @return
+     * @param object DbObject
+     * @return boolean
      */
     public boolean contains(DbObject object)
     {

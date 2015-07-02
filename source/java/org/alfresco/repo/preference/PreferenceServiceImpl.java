@@ -188,9 +188,6 @@ public class PreferenceServiceImpl implements PreferenceService
         return preferenceValue;
     }
 
-    /**
-     * @see org.alfresco.repo.person.PersonService#getPreferences(java.lang.String, java.lang.String)
-     */
     @SuppressWarnings({ "unchecked" })
     public Map<String, Serializable> getPreferences(String userName, String preferenceFilter)
     {
@@ -357,10 +354,6 @@ public class PreferenceServiceImpl implements PreferenceService
         return result;
     }
 
-    /**
-     * @see org.alfresco.repo.person.PersonService#setPreferences(java.lang.String,
-     *      java.util.HashMap)
-     */
     public void setPreferences(final String userName, final Map<String, Serializable> preferences)
     {
         // Get the user node reference
@@ -469,10 +462,6 @@ public class PreferenceServiceImpl implements PreferenceService
         clearPreferences(userName, null);
     }
     
-    /**
-     * @see org.alfresco.repo.person.PersonService#clearPreferences(java.lang.String,
-     *      java.lang.String)
-     */
     public void clearPreferences(final String userName, final String preferenceFilter)
     {
         // Get the user node reference

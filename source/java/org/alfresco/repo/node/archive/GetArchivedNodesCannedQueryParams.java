@@ -31,12 +31,13 @@ public class GetArchivedNodesCannedQueryParams extends ArchivedNodeEntity
     private int limit;
 
     /**
-     * @param parentNodeId
-     * @param assocTypeQNameId
-     * @param filter
-     * @param filterIgnoreCase
-     * @param nameQNameId
-     * @param sortOrderAscending
+     *
+     * @param parentNodeId Long
+     * @param assocTypeQNameId Long
+     * @param filter String
+     * @param filterIgnoreCase Boolean
+     * @param nameQNameId Long
+     * @param sortOrderAscending Boolean
      */
     public GetArchivedNodesCannedQueryParams(Long parentNodeId, Long assocTypeQNameId,
                 String filter, Boolean filterIgnoreCase, Long nameQNameId,

@@ -45,24 +45,24 @@ public interface QuickShareService
     /**
      * Get QuickShare related metadata for the given node.
      *  
-     * @param nodeRef
-     * @return
+     * @param nodeRef NodeRef
+     * @return Map
      */
     public Map<String, Object> getMetaData(NodeRef nodeRef) throws QuickShareDisabledException, InvalidNodeRefException;
 
     /**
      * Get QuickShare related metadata for the given shareId.
-     *  
-     * @param shareId
-     * @return
+     *
+     * @param shareId String
+     * @return Map
      */
     public Map<String, Object> getMetaData(String shareId) throws QuickShareDisabledException, InvalidSharedIdException;
 
     /**
      * Get the tenant domain and node reference for the the given share id.
      * 
-     * @param sharedId
-     * @return
+     * @param sharedId String
+     * @return Pair
      */
     public Pair<String, NodeRef> getTenantNodeRefFromSharedId(String sharedId) throws QuickShareDisabledException, InvalidSharedIdException;
 

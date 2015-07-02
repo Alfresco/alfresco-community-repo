@@ -281,14 +281,14 @@ public interface ContentService
     public long getMaxSourceSizeBytes(String sourceMimetype, String targetMimetype, TransformationOptions options);
 
     /**
-     * @deprecated use {@link #getTransformers(String, String, long, String, TransformationOptions).
+     * @deprecated use {@link #getTransformers(String, String, long, String, TransformationOptions)}.
      * @since 3.5
      */
     @Auditable(parameters = {"sourceMimetype", "sourceSize", "targetMimetype", "options"})
     public List<ContentTransformer> getActiveTransformers(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options);
     
     /**
-     * @deprecated use {@link #getTransformers(String, String, long, String, TransformationOptions).
+     * @deprecated use {@link #getTransformers(String, String, long, String, TransformationOptions)}.
      */
     public List<ContentTransformer> getActiveTransformers(String sourceMimetype, String targetMimetype, TransformationOptions options);
 
@@ -301,7 +301,7 @@ public interface ContentService
     public ContentTransformer getImageTransformer();
     
     /**
-     * @deprecated use {@link #isTransformable(ContentReader, ContentWriter, TransformationOptions).
+     * @deprecated use {@link #isTransformable(ContentReader, ContentWriter, TransformationOptions)}.
      */
     @Auditable(parameters = {"reader", "writer"})
     public boolean isTransformable(ContentReader reader, ContentWriter writer);

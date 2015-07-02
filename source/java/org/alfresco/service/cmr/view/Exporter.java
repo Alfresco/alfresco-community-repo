@@ -86,7 +86,7 @@ public interface Exporter
     /**
      * Start export of aspects
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     public void startAspects(NodeRef nodeRef);
     
@@ -109,7 +109,7 @@ public interface Exporter
     /**
      * End export of aspects
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     public void endAspects(NodeRef nodeRef);
 
@@ -177,14 +177,15 @@ public interface Exporter
      * Start export MLText
      * 
      * @param nodeRef the node reference
-     * @param locale
+     * @param locale Locale
+     * @param isNull boolean
      */
     public void startValueMLText(NodeRef nodeRef, Locale locale, boolean isNull);
 
     /**
      * End export MLText
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     public void endValueMLText(NodeRef nodeRef);
 
@@ -220,7 +221,7 @@ public interface Exporter
     /**
      * Start export of associations
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     public void startAssocs(NodeRef nodeRef);
     
@@ -243,7 +244,7 @@ public interface Exporter
     /**
      * End export of associations
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     public void endAssocs(NodeRef nodeRef);
     

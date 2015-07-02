@@ -122,8 +122,6 @@ public class VersionHistoryImplTest extends TestCase
 
     /**
      * Test getRootVersion
-     *
-     *@return root version
      */
     public void testGetRootVersion()
     {
@@ -184,8 +182,6 @@ public class VersionHistoryImplTest extends TestCase
     
     /**
      * Test addVersion
-     * 
-     * @return version history
      */
     public void testAddVersion()
     {

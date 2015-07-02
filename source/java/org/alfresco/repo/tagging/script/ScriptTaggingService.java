@@ -41,7 +41,7 @@ public class ScriptTaggingService extends BaseScopableProcessorExtension
     /**
      * Sets the Service Registry
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
@@ -64,10 +64,10 @@ public class ScriptTaggingService extends BaseScopableProcessorExtension
     /**
      * Get page of tags with totalRecords info
      * 
-     * @param store
-     * @param fromTag
-     * @param pageSize
-     * @return
+     * @param store String
+     * @param fromTag int
+     * @param pageSize int
+     * @return PagedTagsWrapper
      */
     public PagedTagsWrapper getPagedTags(String store, int fromTag, int pageSize)
     {

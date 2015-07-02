@@ -40,9 +40,9 @@ public class TempNetworkFile extends JavaNetworkFile
     
     /**
      * A new temporary network file with some existing content.
-     * @param file
-     * @param netPath
-     * @param existingContent
+     * @param file File
+     * @param netPath String
+     * @param existingContent Reader
      */
     public TempNetworkFile(File file, String netPath, Reader existingContent)
     {
@@ -149,7 +149,7 @@ public class TempNetworkFile extends JavaNetworkFile
     
     /**
      * Tell JLAN it needs to call disk.closeFile rather than short cutting.
-     * @return
+     * @return boolean
      */
     public boolean allowsOpenCloseViaNetworkFile() {
         return false;

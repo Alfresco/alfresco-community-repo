@@ -193,7 +193,7 @@ public class ActivitiUtil
     }
 
     /**
-     * @return
+     * @return ManagementService
      */
     public ManagementService getManagementService()
     {
@@ -201,8 +201,8 @@ public class ActivitiUtil
     }
 
     /**
-     * @param localId
-     * @return
+     * @param localId String
+     * @return HistoricTaskInstance
      */
     public HistoricTaskInstance getHistoricTaskInstance(String localId)
     {

@@ -67,7 +67,6 @@ public class VersionUtil
      * with the reserved properties.
      *
      * @param names  the property names
-     * @return                   true is the names are considered valid, false otherwise
      * @throws                   ReservedVersionNameException
      */
     public static void checkVersionPropertyNames(Collection<String> names)

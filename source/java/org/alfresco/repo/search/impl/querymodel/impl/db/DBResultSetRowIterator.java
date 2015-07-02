@@ -30,7 +30,7 @@ public class DBResultSetRowIterator extends AbstractResultSetRowIterator
 {
 
     /**
-     * @param resultSet
+     * @param resultSet ResultSet
      */
     public DBResultSetRowIterator(ResultSet resultSet)
     {

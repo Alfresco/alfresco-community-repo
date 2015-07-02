@@ -43,9 +43,9 @@ public class SimpleResultSetMetaData implements ResultSetMetaData
     /**
      * Default properties.
      * 
-     * @param limitedBy
-     * @param permissoinEvaluationMode
-     * @param searchParameters
+     * @param limitedBy LimitBy
+     * @param permissoinEvaluationMode PermissionEvaluationMode
+     * @param searchParameters SearchParameters
      */
     public SimpleResultSetMetaData(LimitBy limitedBy, PermissionEvaluationMode permissoinEvaluationMode, SearchParameters searchParameters)
     {

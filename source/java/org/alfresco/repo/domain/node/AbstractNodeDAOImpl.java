@@ -486,7 +486,6 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * Get the ID of the current server, or <tt>null</tt> if there is no ID for the current
      * server and one can't be created.
      * 
-     * @see ServerIdCallback
      */
     protected Long getServerId()
     {
@@ -1067,7 +1066,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
     /**
      * Trigger a post transaction prune of any associations that point to this deleted one.
-     * @param nodeId
+     * @param nodeId Long
      */
     private void pruneDanglingAssocs(Long nodeId)
     {
@@ -1699,7 +1698,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * @param invalidateNodePropertiesCache <tt>true</tt> if the node's cached properties are unreliable
      * @param invalidateParentAssocsCache   <tt>true</tt> if the node's cached parent assocs are unreliable
      * 
-     * @see #updateNodeImpl(Node, NodeUpdateEntity, Set<QName>)
+     * @see #updateNodeImpl(Node, NodeUpdateEntity, Set)
      */
     private boolean touchNode(
             Long nodeId, AuditablePropertiesEntity auditableProps, Set<QName> nodeAspects,
@@ -2547,7 +2546,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
     
     /**
-     * Callback to cache node properties.  The DAO callback only does the simple {@link #findByKey(Long)}.
+     * Callback to cache node properties.  The DAO callback only does the simple {@link #findByKey(Serializable)}.
      * 
      * @author Derek Hulley
      * @since 3.4
@@ -2804,7 +2803,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
     
     /**
-     * Callback to cache node aspects.  The DAO callback only does the simple {@link #findByKey(Long)}.
+     * Callback to cache node aspects.  The DAO callback only does the simple {@link #findByKey(Serializable)}.
      * 
      * @author Derek Hulley
      * @since 3.4
@@ -4103,8 +4102,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         private int parentCount;
         
         /**
-         * @param size
-         * @param limitFactor
+         * @param size int
+         * @param limitFactor int
          */
         public ParentAssocsCache(int size, int limitFactor)
         {

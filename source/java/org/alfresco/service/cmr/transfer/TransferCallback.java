@@ -29,7 +29,7 @@ public interface TransferCallback
 {
    /**
      * processEvent
-     * @param event
+     * @param event TransferEvent
      */
     public void processEvent(TransferEvent event);    
     

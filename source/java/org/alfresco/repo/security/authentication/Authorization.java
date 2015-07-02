@@ -42,7 +42,7 @@ public class Authorization
     /**
      * Construct
      * 
-     * @param authorization
+     * @param authorization String
      */
     public Authorization(String authorization)
     {
@@ -67,8 +67,8 @@ public class Authorization
     /**
      * Construct
      * 
-     * @param username
-     * @param password
+     * @param username String
+     * @param password String
      */
     public Authorization(String username, String password)
     {

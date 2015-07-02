@@ -56,7 +56,7 @@ public interface DownloadService
     /**
      * Delete downloads created before before.
      * 
-     * @param before
+     * @param before Date
      */
     public void deleteDownloads(Date before);
     

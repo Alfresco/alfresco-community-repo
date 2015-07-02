@@ -141,7 +141,7 @@ public class AclMemberEntity implements AclMember
     /**
      * Set the position for the ACL-ACE relationship
      * 
-     * @param pos
+     * @param pos Integer
      */
     public void setPos(Integer pos)
     {

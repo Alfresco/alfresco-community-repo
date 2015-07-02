@@ -45,10 +45,10 @@ public class ForeignKey extends AbstractDbObject
      * Constructor.
      * 
      * @param table the parent table
-     * @param fkName
-     * @param localColumn
-     * @param targetTable
-     * @param targetColumn
+     * @param fkName String
+     * @param localColumn String
+     * @param targetTable String
+     * @param targetColumn String
      */
     public ForeignKey(Table table, String fkName, String localColumn, String targetTable, String targetColumn)
     {

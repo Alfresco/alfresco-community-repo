@@ -37,7 +37,7 @@ public class NameProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
      */
     public NameProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

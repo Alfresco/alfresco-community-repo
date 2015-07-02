@@ -342,8 +342,8 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase im
 
     /**
      * Set the max time allowed to transform content atomically
-     * 
-     * @param maxAtomicTransformationTime
+     *
+     * @param maxAtomicTransformationTime long
      */
     public void setMaxAtomicTransformationTime(long maxAtomicTransformationTime)
     {
@@ -353,7 +353,8 @@ public abstract class AbstractLuceneIndexerImpl<T> extends AbstractLuceneBase im
     /**
      * Utility method to check we are in the correct state to do work Also keeps track of the dirty flag.
      * 
-     * @throws IOException
+     * @throws IndexerException
+     * @throws LuceneIndexException
      */
 
     protected void checkAbleToDoWork(IndexUpdateStatus indexUpdateStatus)

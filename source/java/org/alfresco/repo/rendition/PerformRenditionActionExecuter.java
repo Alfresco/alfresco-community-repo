@@ -116,8 +116,8 @@ public class PerformRenditionActionExecuter extends ActionExecuterAbstractBase
 
     /**
      * This method delegates to the action service for the execution of the rendition.
-     * @param sourceNode
-     * @param definition
+     * @param sourceNode NodeRef
+     * @param definition RenditionDefinition
      * @return the ChildAssociationRef result.
      */
     private ChildAssociationRef executeRendition(NodeRef sourceNode, RenditionDefinition definition)

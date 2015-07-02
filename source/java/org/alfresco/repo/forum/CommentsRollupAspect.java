@@ -64,7 +64,7 @@ public class CommentsRollupAspect implements CopyServicePolicies.OnCopyNodePolic
     }
     
     /**
-     * @return              Returns {@link CommentsRollupAspectCopyBehaviourCallback}
+     * @return              Returns CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

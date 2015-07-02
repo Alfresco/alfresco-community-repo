@@ -625,7 +625,7 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
 
     /**
      * Get the driver state from the session.
-     * @param sess
+     * @param sess SrvSession
      * @return the driver state.
      */
     private DriverState getDriverState(SrvSession sess)
@@ -651,9 +651,9 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
 
     /**
      * Get the evaluator context from the state and the folder.
-     * @param driverState
-     * @param folder
-     * @return
+     * @param driverState DriverState
+     * @param folder String
+     * @return EvaluatorContext
      */
     private EvaluatorContext getEvaluatorContext(DriverState driverState, String folder)
     {
@@ -675,9 +675,9 @@ public class NonTransactionalRuleContentDiskDriver implements ExtendedDiskInterf
     
     /**
      * Release the  evaluator context if there are no active scenarios.
-     * @param driverState
-     * @param ctx
-     * @param folder
+     * @param driverState DriverState
+     * @param ctx EvaluatorContext
+     * @param folder String
      */
     private void releaseEvaluatorContextIfEmpty(DriverState driverState, EvaluatorContext ctx, String folder)
     {

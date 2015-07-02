@@ -35,9 +35,9 @@ public interface DbValidator
      * Validate the target database object (against the reference object if necessary). Store
      * the validation results on the DiffContext.
      * 
-     * @param reference
-     * @param target
-     * @param ctx
+     * @param reference DbObject
+     * @param target DbObject
+     * @param ctx DiffContext
      */
     void validate(DbObject reference, DbObject target, DiffContext ctx);
     
@@ -45,23 +45,23 @@ public interface DbValidator
      * Set a property used by this validator. Validator properties provided in the schema reference
      * XML files will be set on the validator using this method.
      * 
-     * @param name
-     * @param value
+     * @param name String
+     * @param value String
      */
     void setProperty(String name, String value);
     
     /**
      * Get the current value of a validator property, as set using {@link #setProperty(String, String)}.
      * 
-     * @param name
-     * @return
+     * @param name String
+     * @return String
      */
     String getProperty(String name);
     
     /**
      * Get the complete set of validator properties in use.
      * 
-     * @return
+     * @return Set<String>
      */
     Set<String> getPropertyNames();
 
@@ -70,8 +70,8 @@ public interface DbValidator
      * the specified field name. This only applies to simple properties - not DbObject instances
      * which should provide their own validators.
      *  
-     * @param fieldName
-     * @return
+     * @param fieldName String
+     * @return boolean
      */
     boolean validates(String fieldName);
 

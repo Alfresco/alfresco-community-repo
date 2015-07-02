@@ -41,9 +41,9 @@ public interface ComparisonUtils
      * is significant - if an element E appears in both collections but at different indexes
      * then it is not considered to be the same item.
      * 
-     * @param leftProperty
-     * @param rightProperty
-     * @param ctx
+     * @param leftProperty DbProperty
+     * @param rightProperty DbProperty
+     * @param ctx DiffContext
      */
     void compareSimpleOrderedLists(DbProperty leftProperty, DbProperty rightProperty, DiffContext ctx);
 
@@ -53,8 +53,8 @@ public interface ComparisonUtils
      * an element E from the reference collection appears one or more times at any position in the target collection
      * then that element is said to be {@link org.alfresco.util.schemacomp.Difference.Where#IN_BOTH_NO_DIFFERENCE in both with no difference}.
      * 
-     * @param leftProperty
-     * @param rightProperty
+     * @param leftProperty DbProperty
+     * @param rightProperty DbProperty
      * @param ctx - context
      */
     void compareSimpleCollections(DbProperty leftProperty, DbProperty rightProperty, DiffContext ctx);
@@ -62,8 +62,8 @@ public interface ComparisonUtils
     /**
      * Compare collections of {@link DbObject}s using their {@link DbObject#diff(DbObject, DiffContext)} method.
      * 
-     * @param leftCollection
-     * @param rightCollection
+     * @param leftCollection Collection<? extends DbObject>
+     * @param rightCollection Collection<? extends DbObject>
      * @param ctx - context
      */
     void compareCollections(Collection<? extends DbObject> leftCollection,
@@ -74,8 +74,8 @@ public interface ComparisonUtils
      * Compare two 'simple' (i.e. non-{@link DbObject}) objects using their {@link Object#equals(Object)} method
      * to decide if there is a difference.
      * 
-     * @param left
-     * @param right
+     * @param left DbProperty
+     * @param right DbProperty
      * @param ctx - context
      */
     void compareSimple(DbProperty left, DbProperty right, DiffContext ctx);

@@ -31,7 +31,7 @@ public interface RefreshableCache <T>
      * If there is no cache value this call will block.
      * If the underlying cache is being refreshed, the old cache value will be returned until the refresh is complete.
      * 
-     * @return
+     * @return T
      */
     public T get();
     

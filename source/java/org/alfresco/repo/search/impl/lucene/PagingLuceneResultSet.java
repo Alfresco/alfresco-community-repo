@@ -201,7 +201,7 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     /**
      * Bulk fetch results in the cache
      * 
-     * @param bulkFetch
+     * @param bulkFetch boolean
      */
     public boolean setBulkFetch(boolean bulkFetch)
     {
@@ -221,7 +221,7 @@ public class PagingLuceneResultSet implements ResultSet, Serializable
     /**
      * Set the bulk fetch size
      * 
-     * @param bulkFetchSize
+     * @param bulkFetchSize int
      */
     public int setBulkFetchSize(int bulkFetchSize)
     {

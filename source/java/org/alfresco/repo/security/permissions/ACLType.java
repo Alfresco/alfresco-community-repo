@@ -97,14 +97,14 @@ public enum ACLType
     /**
      * Get the id for the ACLType stored in the DB
      * 
-     * @return
+     * @return int
      */
     public abstract int getId();
     
     /**
      * Get the ACLType from the value stored in the DB
-     * @param id
-     * @return
+     * @param id int
+     * @return ACLType
      */
     public static ACLType getACLTypeFromId(int id)
     {

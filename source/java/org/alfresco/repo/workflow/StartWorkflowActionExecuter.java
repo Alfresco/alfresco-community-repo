@@ -57,7 +57,7 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
 
     
     /**
-     * @param namespaceService
+     * @param namespaceService NamespaceService
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -65,7 +65,7 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
     }
     
     /**
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -73,7 +73,7 @@ public class StartWorkflowActionExecuter extends ActionExecuterAbstractBase
     }
 
     /**
-     * @param workflowService
+     * @param workflowService WorkflowService
      */
     public void setWorkflowService(WorkflowService workflowService) 
     {

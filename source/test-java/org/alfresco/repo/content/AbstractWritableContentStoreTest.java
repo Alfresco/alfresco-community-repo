@@ -525,7 +525,7 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
     
     /**
      * The simplest test.  Write a string and read it again, checking that we receive the same values.
-     * If the resource accessed by {@link #getReader()} and {@link #getWriter()} is not the same, then
+     * If the resource accessed by {@link #getReader(String)} and {@link #getWriter()} is not the same, then
      * values written and read won't be the same.
      */
     @Test

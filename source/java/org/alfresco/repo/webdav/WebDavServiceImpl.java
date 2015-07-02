@@ -38,7 +38,7 @@ import org.springframework.extensions.surf.util.URLEncoder;
  * <p>
  * This is a bog standard spring bean for the repo side of WebDav.
  * 
- * @See org.alfresco.repo.webdav.WebDavServlet the server side of webdav.
+ * @link org.alfresco.repo.webdav.WebDavServlet the server side of webdav.
  *
  * @author mrogers
  */

@@ -133,7 +133,7 @@ public class EmptyTranslationAspect implements
     }
     
     /**
-     * @return              Returns {@link EmptyTranslationAspectCopyBehaviourCallback}
+     * @return              Returns CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

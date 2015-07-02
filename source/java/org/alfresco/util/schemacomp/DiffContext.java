@@ -38,10 +38,10 @@ public class DiffContext
     /**
      * Constructor.
      * 
-     * @param dialect
-     * @param results
-     * @param referenceSchema
-     * @param targetSchema
+     * @param dialect Dialect
+     * @param results Results
+     * @param referenceSchema Schema
+     * @param targetSchema Schema
      */
     public DiffContext(Dialect dialect, Results results, Schema referenceSchema, Schema targetSchema)
     {
@@ -54,9 +54,9 @@ public class DiffContext
     /**
      * Constructor.
      * 
-     * @param dialect
-     * @param referenceSchema
-     * @param targetSchema
+     * @param dialect Dialect
+     * @param referenceSchema Schema
+     * @param targetSchema Schema
      */
     public DiffContext(Dialect dialect, Schema referenceSchema, Schema targetSchema)
     {

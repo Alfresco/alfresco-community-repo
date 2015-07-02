@@ -56,8 +56,9 @@ public class RepoRequisiteManifestProcessorImpl extends AbstractManifestProcesso
     private static final Log log = LogFactory.getLog(RepoRequisiteManifestProcessorImpl.class);
 
     /**
-     * @param receiver 
-     * @param transferId
+     * @param receiver TransferReceiver
+     * @param transferId String
+     * @param out TransferRequsiteWriter
      */
     public RepoRequisiteManifestProcessorImpl(TransferReceiver receiver, String transferId, TransferRequsiteWriter out)
     {

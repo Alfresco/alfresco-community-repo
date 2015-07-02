@@ -72,7 +72,7 @@ public class Permission extends AbstractPermission implements XMLModelInitialisa
     /**
      * A permission for the given type
      * 
-     * @param typeQName
+     * @param typeQName QName
      */
     public Permission(QName typeQName)
     {

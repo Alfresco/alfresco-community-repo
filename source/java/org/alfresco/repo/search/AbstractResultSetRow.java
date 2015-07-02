@@ -56,8 +56,8 @@ public abstract class AbstractResultSetRow implements ResultSetRow
     /**
      * The row needs the result set and the index for lookup.
      * 
-     * @param resultSet
-     * @param index
+     * @param resultSet ResultSet
+     * @param index int
      */
     public AbstractResultSetRow(ResultSet resultSet, int index)
     {

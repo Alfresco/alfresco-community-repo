@@ -272,7 +272,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     }
     
     /**
-     * @return          Returns the {@link VersionableAspectCopyBehaviourCallback}
+     * @return          Returns the CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {
@@ -327,8 +327,8 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     /**
      * Before add aspect policy behaviour
      *
-     * @param nodeRef
-     * @param aspectTypeQName
+     * @param nodeRef NodeRef
+     * @param aspectTypeQName QName
      */
     public void beforeAddAspect(final NodeRef nodeRef, QName aspectTypeQName)
     {
@@ -352,8 +352,8 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     /**
      * On add aspect policy behaviour
      * 
-     * @param nodeRef
-     * @param aspectTypeQName
+     * @param nodeRef NodeRef
+     * @param aspectTypeQName QName
      */
     public void onAddAspect(NodeRef nodeRef, QName aspectTypeQName)
     {
@@ -519,8 +519,8 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     /**
      * On create version implementation method
      * 
-     * @param nodeRef
-     * @param versionProperties
+     * @param nodeRef NodeRef
+     * @param versionProperties Map<String, Serializable>
      */
     private void createVersionImpl(NodeRef nodeRef, Map<String, Serializable> versionProperties)
     {

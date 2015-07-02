@@ -323,9 +323,9 @@ public class RatingServiceImpl implements RatingService
     /**
      * This method converts a NodeRef (which must be an instance of a cm:rating node)
      * into a {@link Rating} object.
-     * @param user
-     * @param ratingNode
-     * @return
+     * @param user String
+     * @param ratingNode NodeRef
+     * @return Rating
      */
     private Rating convertNodeRefToRating(String user, NodeRef ratingNode)
     {
@@ -449,7 +449,7 @@ public class RatingServiceImpl implements RatingService
      * @param user the user name of the user whose ratings are sought, <code>null</code>
      *             for all users.
      * @param ratingSchemeName the name of the rating scheme, <code>null</code> for all schemes.
-     * @return
+     * @return List<ChildAssociationRef>
      */
     List<ChildAssociationRef> getRatingNodeChildren(NodeRef targetNode,
             String ratingSchemeName, String user)
@@ -462,8 +462,8 @@ public class RatingServiceImpl implements RatingService
     
     /**
      * This method returns a {@link Rating} object for the specified cm:rating node.
-     * @param ratingNode
-     * @return
+     * @param ratingNode NodeRef
+     * @return Rating
      */
     Rating getRatingFrom(NodeRef ratingNode)
     {

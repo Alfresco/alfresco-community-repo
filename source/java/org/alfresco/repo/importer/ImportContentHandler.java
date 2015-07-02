@@ -34,7 +34,7 @@ public interface ImportContentHandler extends ContentHandler, ErrorHandler
     /**
      * Sets the Importer
      * 
-     * @param importer
+     * @param importer Importer
      */
     public void setImporter(Importer importer);
 

@@ -68,9 +68,9 @@ public class NodeStoreInspector
     /**
      * Dumps the contents of a node 
      * 
-     * @param nodeService
-     * @param nodeRef
-     * @return
+     * @param nodeService NodeService
+     * @param nodeRef NodeRef
+     * @return String
      */
     public static String dumpNode(NodeService nodeService, NodeRef nodeRef)
     {
@@ -94,10 +94,10 @@ public class NodeStoreInspector
     /**
      * Output the node 
      * 
-     * @param iIndent
-     * @param nodeService
-     * @param nodeRef
-     * @return
+     * @param iIndent int
+     * @param nodeService NodeService
+     * @param nodeRef NodeRef
+     * @return String
      */
     private static String outputNode(int iIndent, NodeService nodeService, NodeRef nodeRef)
     {

@@ -50,7 +50,7 @@ import org.alfresco.service.namespace.QName;
  * }
  * </code></pre>
  * 
- * @See org.alfresco.repo.policy.PolicyComponent
+ * @see org.alfresco.repo.policy.PolicyComponent
  * 
  * @author Derek Hulley
  */

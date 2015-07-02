@@ -86,7 +86,7 @@ import org.apache.commons.logging.LogFactory;
  * too may be escaped with a {@code '\'}.<p>
  * 
  * A property value may be a reference to another property, which saves having
- * multiple copies. This is indicated by a {@code '$' as the first character of the 
+ * multiple copies. This is indicated by a {@code '$'} as the first character of the
  * property value. If the first character of an expression needs to be a
  * {@code '$'} it too may be escaped with a {@code '\'}. For example:
  * <pre>
@@ -135,10 +135,9 @@ public class PropertyAuditFilter implements AuditFilter
     }
 
     /**
-     * @inheritDoc
-     * @param @inheritDoc
-     * @param @inheritDoc
-     * @return @inheritDoc
+     * @param rootPath String
+     * @param auditMap Map<String, Serializable>
+     * @return boolean
      */
     @Override
     public boolean accept(String rootPath, Map<String, Serializable> auditMap)

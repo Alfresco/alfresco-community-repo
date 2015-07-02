@@ -45,7 +45,7 @@ public class LuceneAlfrescoSqlQueryLanguage extends AbstractLuceneQueryLanguage
     /**
      * Set the search service
      * 
-     * @param cmisQueryService
+     * @param cmisQueryService CMISQueryService
      */
     public void setCmisQueryService(CMISQueryService cmisQueryService)
     {

@@ -31,7 +31,7 @@ public interface ContentChunkProcessor
 {
     /**
      * process this chunk of content data
-     * @param data
+     * @param data Set<ContentData>
      */
     public void processChunk(Set<ContentData> data) throws TransferException;
 

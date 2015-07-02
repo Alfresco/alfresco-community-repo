@@ -124,7 +124,7 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
 	/**
 	 * Setter for Spring injection of adhocPropertiesAllowed property
 	 * 
-	 * @param allowed
+	 * @param allowed boolean
 	 */
 	public void setAdhocPropertiesAllowed(boolean allowed)
 	{

@@ -1037,7 +1037,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
 
         /**
          * 
-         * @param throwError
+         * @param throwError boolean
          */
         public void setThrowError(boolean throwError)
         {

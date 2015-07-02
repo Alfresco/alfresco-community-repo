@@ -203,7 +203,7 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
      * This method can be overridden to cause the author/creator property check to be skipped.
      * The default behaviour is for the check not to be skipped for all MIME types.
      * 
-     * @param mimetype
+     * @param mimetype String
      * @return <code>true</code> to skip the checks, else <code>false</code>
      */
     protected boolean skipAuthorCheck(String mimetype)
@@ -215,7 +215,7 @@ public abstract class AbstractMetadataExtracterTest extends TestCase
      * This method can be overridden to cause the description property check to be skipped.
      * The default behaviour is for the check not to be skipped for all MIME types.
      * 
-     * @param mimetype
+     * @param mimetype String
      * @return <code>true</code> to skip the checks, else <code>false</code>
      */
     protected boolean skipDescriptionCheck(String mimetype)

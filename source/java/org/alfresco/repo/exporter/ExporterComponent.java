@@ -589,12 +589,12 @@ public class ExporterComponent
         /**
          * Export Property
          * 
-         * @param nodeRef  
-         * @param property
-         * @param value
-         * @param index
-         * @param parameters
-         * @param exporter
+         * @param nodeRef NodeRef
+         * @param property QName
+         * @param value Object
+         * @param index int
+         * @param parameters ExporterCrawlerParameters
+         * @param exporter Exporter
          */
         private void walkProperty(NodeRef nodeRef, QName property, Object value, int index, ExporterCrawlerParameters parameters, Exporter exporter)
         {
@@ -673,9 +673,9 @@ public class ExporterComponent
         /**
          * Export Secondary Links
          * 
-         * @param nodeRef
-         * @param parameters
-         * @param exporter
+         * @param nodeRef NodeRef
+         * @param parameters ExporterCrawlerParameters
+         * @param exporter Exporter
          */
         private void walkNodeSecondaryLinks(NodeRef nodeRef, ExporterCrawlerParameters parameters, Exporter exporter)
         {
@@ -743,9 +743,9 @@ public class ExporterComponent
         /**
          * Export Node Associations
          * 
-         * @param nodeRef
-         * @param parameters
-         * @param exporter
+         * @param nodeRef NodeRef
+         * @param parameters ExporterCrawlerParameters
+         * @param exporter Exporter
          */
         private void walkNodeAssociations(NodeRef nodeRef, ExporterCrawlerParameters parameters, Exporter exporter)
         {
@@ -1101,7 +1101,7 @@ public class ExporterComponent
         /**
          * Record that associations exist for node
          * 
-         * @param nodeRef
+         * @param nodeRef NodeRef
          */
         public void recordAssociation(NodeRef nodeRef)
         {
@@ -1117,7 +1117,7 @@ public class ExporterComponent
         /**
          * Gets nodes that have been recorded with associations
          * 
-         * @return
+         * @return Set<NodeRef>
          */
         public Set<NodeRef> getNodesWithAssociations()
         {
@@ -1132,7 +1132,7 @@ public class ExporterComponent
         /**
          * Record that secondary links exist for node
          * 
-         * @param nodeRef
+         * @param nodeRef NodeRef
          */
         public void recordSecondaryLink(NodeRef nodeRef)
         {
@@ -1203,9 +1203,9 @@ public class ExporterComponent
         /**
          * Gets the parent node of the items to be exported
          * 
-         * @param exportOf
-         * @param exportSelf
-         * @return
+         * @param exportOf NodeRef
+         * @param exportSelf boolean
+         * @return NodeRef
          */
         private NodeRef getParent(NodeRef exportOf, boolean exportSelf)
         {

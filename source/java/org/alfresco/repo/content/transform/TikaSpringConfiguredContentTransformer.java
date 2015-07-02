@@ -43,7 +43,7 @@ public class TikaSpringConfiguredContentTransformer extends TikaPoweredContentTr
    
     /**
      * Injects the name of the Tika parser to use
-     * @param className
+     * @param className String
      */
     @SuppressWarnings("unchecked")
     public void setTikaParserName(String className)
@@ -61,7 +61,7 @@ public class TikaSpringConfiguredContentTransformer extends TikaPoweredContentTr
     
     /**
      * Injects the Tika parser to use
-     * @param tikaParser
+     * @param tikaParser Parser
      */
     public void setTikaParser(Parser tikaParser)
     {

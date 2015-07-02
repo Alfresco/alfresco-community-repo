@@ -92,7 +92,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set the acl id
      * 
-     * @param aclId
+     * @param aclId String
      */
     public void setAclId(String aclId)
     {
@@ -102,7 +102,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set the acl type
      * 
-     * @param aclType
+     * @param aclType ACLType
      */
     public void setAclType(ACLType aclType)
     {
@@ -112,7 +112,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set the acl version
      * 
-     * @param aclVersion
+     * @param aclVersion Long
      */
     public void setAclVersion(Long aclVersion)
     {
@@ -122,7 +122,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set inheritance
      * 
-     * @param inherits
+     * @param inherits boolean
      */
     public void setInherits(boolean inherits)
     {
@@ -132,7 +132,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set latest
      * 
-     * @param latest
+     * @param latest boolean
      */
     public void setLatest(boolean latest)
     {
@@ -142,7 +142,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set versioned
      * 
-     * @param versioned
+     * @param versioned boolean
      */
     public void setVersioned(boolean versioned)
     {
@@ -157,7 +157,7 @@ public class SimpleAccessControlListProperties implements AccessControlListPrope
     /**
      * Set the id
      * 
-     * @param id
+     * @param id Long
      */
     public void setId(Long id)
     {

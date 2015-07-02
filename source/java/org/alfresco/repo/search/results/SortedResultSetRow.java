@@ -32,8 +32,8 @@ public class SortedResultSetRow extends AbstractResultSetRow implements ResultSe
 {
 
     /**
-     * @param resultSet
-     * @param index
+     * @param resultSet SortedResultSet
+     * @param index int
      */
     public SortedResultSetRow(SortedResultSet resultSet, int index)
     {

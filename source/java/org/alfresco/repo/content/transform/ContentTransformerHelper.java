@@ -55,7 +55,7 @@ public class ContentTransformerHelper implements BeanNameAware
     /**
      * Helper setter of the mimetype service. This is not always required.
      * 
-     * @param mimetypeService
+     * @param mimetypeService MimetypeService
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
@@ -298,11 +298,11 @@ public class ContentTransformerHelper implements BeanNameAware
     }
 
     /**
-     * Helper method for {@link #getComments(boolean) to
+     * Helper method for {@link #getComments(boolean)} to
      * create a line that indicates which source and target mimetypes
      * it supports.
-     * @param sourceMimetypes
-     * @param targetMimetypes
+     * @param sourceMimetypes List<String>
+     * @param targetMimetypes List<String>
      * @param available TODO
      * @return a String of the form "# only supports xxx, yyy or zzz to aaa or bb\n".
      */
@@ -354,11 +354,11 @@ public class ContentTransformerHelper implements BeanNameAware
     }
 
     /**
-     * Helper method for {@link #getComments(boolean) to
+     * Helper method for {@link #getComments(boolean)} to
      * create a line that indicates which source and target mimetypes
      * it supports.
-     * @param sourceMimetype
-     * @param targetMimetype
+     * @param sourceMimetype String
+     * @param targetMimetype String
      * @param available TODO
      * @return a String of the form "# only supports xxx to aaa\n".
      */

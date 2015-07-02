@@ -194,7 +194,7 @@ public class ContentServiceImpl implements ContentService, ApplicationContextAwa
 
     /**
      * Helper setter of the transformer debug. 
-     * @param transformerDebug
+     * @param transformerDebug TransformerDebug
      */
     public void setTransformerDebug(TransformerDebug transformerDebug)
     {

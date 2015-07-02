@@ -68,7 +68,7 @@ public class FailedThumbnailInfo
 
     /**
      * Get the total number of failed attempts which have been made to produce a thumbnail.
-     * @return
+     * @return int
      */
     public int getFailureCount()
     {

@@ -681,8 +681,8 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     /**
      * Support to report patch completion and estimated completion time.
      * 
-     * @param estimatedTotal
-     * @param currentInteration
+     * @param estimatedTotal long
+     * @param currentInteration long
      */
     protected void reportProgress(long estimatedTotal, long currentInteration)
     {
@@ -735,16 +735,13 @@ public abstract class AbstractPatch implements Patch,  ApplicationEventPublisher
     
     /**
      * Should the patch be deferred? And not run at bootstrap.
-     * @param deferred
+     * @param deferred boolean
      */
     public void setDeferred(boolean deferred)
     {
         this.deferred = deferred;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public boolean isDeferred()
     {
         return this.deferred;

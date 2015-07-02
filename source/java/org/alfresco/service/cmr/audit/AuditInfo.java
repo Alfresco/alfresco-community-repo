@@ -64,28 +64,28 @@ public interface AuditInfo
     /**
      * The timestamp for the audit entry.
      * 
-     * @return
+     * @return Date
      */
     public Date getDate();
 
     /**
      * Is this entry recording an error?
      * 
-     * @return
+     * @return boolean
      */
     public boolean isFail();
 
     /**
      * Was this audit entry subject to filtering (which must have been met if an entry is found). Filters are not applied in version 1.4.
      * 
-     * @return
+     * @return boolean
      */
     public boolean isFiltered();
 
     /**
      * Get the host address of the server machine.
      * 
-     * @return
+     * @return String
      */
     public String getHostAddress();
 
@@ -100,14 +100,14 @@ public interface AuditInfo
      * The serialized properties on the key node, if one exists, after the method invocation. Note these values are serialized before the method is called so they are unaffected by
      * the method invocation. In V1.4 these are not stored.
      * 
-     * @return
+     * @return Map
      */
     public Map<QName, Serializable> getKeyPropertiesAfter();
 
     /**
      * The serialized properties on the key node, if one exists, before the method invocation. In V1.4 these are not stored.
      * 
-     * @return
+     * @return Map
      */
     public Map<QName, Serializable> getKeyPropertiesBefore();
 
@@ -130,14 +130,14 @@ public interface AuditInfo
      * 
      * These are not stored in V1.4.
      * 
-     * @return
+     * @return Serializable[]
      */
     public Serializable[] getMethodArguments();
 
     /**
      * Get the method arguments as strings.
      * 
-     * @return
+     * @return String[]
      */
     public String[] getMethodArgumentsAsStrings();
 
@@ -153,7 +153,7 @@ public interface AuditInfo
      * 
      * This is not available in V1.4.
      * 
-     * @return
+     * @return Serializable
      */
     public Serializable getReturnObject();
 
@@ -169,7 +169,7 @@ public interface AuditInfo
      * 
      * This is not stored in V1.4. 
      * 
-     * @return
+     * @return String
      */
     public String getSessionId();
 

@@ -34,15 +34,15 @@ public interface TransferReceiver
 {
     /**
      *
-     * @param transferId
-     * @return
+     * @param transferId String
+     * @return File
      */
     File getStagingFolder(String transferId);
 
     /**
      *
-     * @param transferId
-     * @return
+     * @param transferId String
+     * @return NodeRef
      */
     NodeRef getTempFolder(String transferId);
 
@@ -76,9 +76,9 @@ public interface TransferReceiver
 
     /**
      * Save a content item
-     * @param transferId
-     * @param contentId
-     * @param contentStream
+     * @param transferId String
+     * @param contentId String
+     * @param contentStream InputStream
      * @throws TransferException
      */
     void saveContent(String transferId, String contentId, InputStream contentStream) throws TransferException;
@@ -92,35 +92,35 @@ public interface TransferReceiver
 
     /**
      * Prepare
-     * @param transferId
+     * @param transferId String
      * @throws TransferException
      */
     void prepare(String transferId) throws TransferException;
 
     /**
      * Abort
-     * @param transferId
+     * @param transferId String
      * @throws TransferException
      */
     void cancel(String transferId) throws TransferException;
 
     /**
      * Commit asynchronously
-     * @param transferId
+     * @param transferId String
      * @throws TransferException
      */
     void commitAsync(String transferId) throws TransferException;
 
     /**
      * Commit
-     * @param transferId
+     * @param transferId String
      * @throws TransferException
      */
     void commit(String transferId) throws TransferException;
 
     /**
      *
-     * @param transferId
+     * @param transferId String
      * @return the trabsfer progress
      * @throws TransferException
      */
@@ -133,19 +133,19 @@ public interface TransferReceiver
 
     /**
      *
-     * @return
+     * @return TransferProgressMonitor
      */
     TransferProgressMonitor getProgressMonitor();
 
     /**
      * get the transfer report for the specified transfer
-     * @param transferId
+     * @param transferId String
      */
     InputStream getTransferReport(String transferId);
 
     /**
      * set the root node for the file system receiver
-     * @param rootFileSystem
+     * @param rootFileSystem String
      */
     void setTransferRootNode(String rootFileSystem);
 }

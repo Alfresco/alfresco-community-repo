@@ -65,7 +65,7 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
 
     /**
      * Make the transformer available
-     * @param available
+     * @param available boolean
      */
     protected void setAvailable(boolean available)
     {

@@ -125,7 +125,7 @@ public abstract class AbstractOAuth1ChannelType<A> extends AbstractChannelType
      * Override this method to add additonal parameters onto the URL that the user is redirected to 
      * to authorise access to their account. By default, no parameters are added, but this may be useful to
      * specify things such as the permissions being sought, and so on.
-     * @param callbackUrl
+     * @param callbackUrl String
      * @return Do not return null. If no parameters are to be added, return {@link OAuth1Parameters#NONE}
      */
     protected OAuth1Parameters getOAuth1Parameters(String callbackUrl)

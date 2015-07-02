@@ -258,8 +258,9 @@ public class PermissionModel implements ModelDAO
         /**
          * Support to add permissions for types
          * 
-         * @param type
-         * @param permissions
+         * @param type QName
+         * @param permissions Set<PermissionReference>
+         * @param exposedOnly boolean
          */
         private void addTypePermissions(QName type, Set<PermissionReference> permissions, boolean exposedOnly)
         {
@@ -287,8 +288,9 @@ public class PermissionModel implements ModelDAO
         /**
          * Support to add permissions for aspects.
          * 
-         * @param type
-         * @param permissions
+         * @param type QName
+         * @param permissions Set<PermissionReference>
+         * @param exposedOnly boolean
          */
         private void addAspectPermissions(QName type, Set<PermissionReference> permissions, boolean exposedOnly)
         {
@@ -311,9 +313,11 @@ public class PermissionModel implements ModelDAO
 
         /**
          * Support to merge permissions together. Respects extended permissions.
-         * 
-         * @param target
-         * @param type
+         *
+         * @param target Set<PermissionReference>
+         * @param type QName
+         * @param exposedOnly boolean
+         * @param typeRequired boolean
          */
         private void mergePermissions(Set<PermissionReference> target, QName type, boolean exposedOnly, boolean typeRequired)
         {
@@ -365,7 +369,7 @@ public class PermissionModel implements ModelDAO
         /**
          * Support to find permission groups
          * 
-         * @param target
+         * @param target PermissionReference
          * @return the permission group
          */
         private PermissionGroup getPermissionGroupOrNull(PermissionReference target)
@@ -377,7 +381,7 @@ public class PermissionModel implements ModelDAO
         /**
          * Support to get a permission group
          * 
-         * @param target
+         * @param target PermissionReference
          * @return the permission group
          */
         private PermissionGroup getPermissionGroup(PermissionReference target)
@@ -393,7 +397,7 @@ public class PermissionModel implements ModelDAO
         /**
          * Get the base permission group for a given permission group.
          * 
-         * @param pg
+         * @param pg PermissionGroup
          * @return the permission group
          */
         private PermissionGroup getBasePermissionGroupOrNull(PermissionGroup pg)
@@ -429,7 +433,7 @@ public class PermissionModel implements ModelDAO
         /**
          * Query the model for a base permission group Uses the Data Dictionary to reolve inheritance
          * 
-         * @param pg
+         * @param pg PermissionGroup
          * @return the permission group
          */
         private PermissionGroup getBasePermissionGroupOrNullImpl(PermissionGroup pg)
@@ -842,8 +846,8 @@ public class PermissionModel implements ModelDAO
         /**
          * Get the requirements for a permission
          * 
-         * @param required
-         * @param on
+         * @param required PermissionReference
+         * @param on RequiredPermission.On
          * @return the set of permission references
          */
         private Set<PermissionReference> getRequirementsForPermission(PermissionReference required, RequiredPermission.On on)
@@ -866,10 +870,10 @@ public class PermissionModel implements ModelDAO
         /**
          * Get the requirements for a permission set
          * 
-         * @param target
-         * @param on
-         * @param qName
-         * @param aspectQNames
+         * @param target PermissionGroup
+         * @param on RequiredPermission.On
+         * @param qName QName
+         * @param aspectQNames Set<QName>
          * @return the set of permission references
          */
         private Set<PermissionReference> getRequirementsForPermissionGroup(PermissionGroup target, RequiredPermission.On on, QName qName, Set<QName> aspectQNames)
@@ -953,7 +957,7 @@ public class PermissionModel implements ModelDAO
         /**
          * Utility method to find a permission
          * 
-         * @param perm
+         * @param perm PermissionReference
          * @return the permission
          */
         private Permission getPermissionOrNull(PermissionReference perm)
@@ -965,9 +969,9 @@ public class PermissionModel implements ModelDAO
         /**
          * Check type specifc extension of permission sets.
          * 
-         * @param pr
-         * @param typeQname
-         * @param aspects
+         * @param pr PermissionReference
+         * @param typeQname QName
+         * @param aspects Set<QName>
          * @return true if dynamic
          */
         private boolean isPartOfDynamicPermissionGroup(PermissionReference pr, QName typeQname, Set<QName> aspects)
@@ -1146,7 +1150,7 @@ public class PermissionModel implements ModelDAO
     /**
      * Set the model
      * 
-     * @param model
+     * @param model String
      */
     public void setModel(String model)
     {
@@ -1156,7 +1160,7 @@ public class PermissionModel implements ModelDAO
     /**
      * Set the dtd schema that is used to validate permission model
      * 
-     * @param dtdSchema
+     * @param dtdSchema String
      */
     public void setDtdSchema(String dtdSchema)
     {
@@ -1166,7 +1170,7 @@ public class PermissionModel implements ModelDAO
     /**
      * Indicates whether model should be validated on initialization against specified dtd
      * 
-     * @param validate
+     * @param validate boolean
      */
     public void setValidate(boolean validate)
     {
@@ -1176,7 +1180,7 @@ public class PermissionModel implements ModelDAO
     /**
      * Set the dictionary service
      * 
-     * @param dictionaryService
+     * @param dictionaryService DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -1186,7 +1190,7 @@ public class PermissionModel implements ModelDAO
     /**
      * Set the node service
      * 
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -1469,7 +1473,7 @@ public class PermissionModel implements ModelDAO
     /**
      * Get the default acces status for the givne permission
      * 
-     * @param pr
+     * @param pr PermissionReference
      * @return the access status
      */
     public AccessStatus getDefaultPermission(PermissionReference pr)
@@ -1649,10 +1653,10 @@ public class PermissionModel implements ModelDAO
         /**
          * factory for the key
          * 
-         * @param required
-         * @param qName
-         * @param aspectQNames
-         * @param on
+         * @param required PermissionReference
+         * @param qName QName
+         * @param aspectQNames Set<QName>
+         * @param on RequiredPermission.On
          * @return the key
          */
         public static RequiredKey getRequiredKey(PermissionReference required, QName qName, Set<QName> aspectQNames, RequiredPermission.On on)

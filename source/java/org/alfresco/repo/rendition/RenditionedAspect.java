@@ -309,7 +309,7 @@ public class RenditionedAspect implements NodeServicePolicies.OnUpdateProperties
     }
 
     /**
-     * @return              Returns {@link RenditionedAspectCopyBehaviourCallback}
+     * @return              Returns CopyBehaviourCallback
      */
     public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

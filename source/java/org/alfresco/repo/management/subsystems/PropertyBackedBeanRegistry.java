@@ -51,7 +51,7 @@ public interface PropertyBackedBeanRegistry
     public void register(PropertyBackedBean bean);
 
     /**
-     * Signals that {@link PropertyBackedBean#destroy(boolean)} has been called on a bean.
+     * Signals the {@link PropertyBackedBeanUnregisteredEvent} event.
      * 
      * @param bean
      *            the bean

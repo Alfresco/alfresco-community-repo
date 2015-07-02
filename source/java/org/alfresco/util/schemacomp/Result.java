@@ -30,7 +30,7 @@ public abstract class Result
      * delegates to toString() but this should generally be overridden as toString()
      * is used in a multitude of contexts.
      * 
-     * @return 
+     * @return String
      */
     public String describe()
     {

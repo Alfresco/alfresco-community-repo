@@ -46,25 +46,16 @@ public class MockChannelType extends AbstractChannelType
         return ID;
     }
 
-    /**
-    * {@inheritDoc}
-    */
     public Map<String, String> getCapabilities()
     {
         return null;
     }
 
-    /**
-    * {@inheritDoc}
-    */
     public QName getChannelNodeType()
     {
         return PublishingModel.TYPE_DELIVERY_CHANNEL;
     }
 
-    /**
-    * {@inheritDoc}
-    */
     public QName getContentRootNodeType()
     {
         return ContentModel.TYPE_FOLDER;

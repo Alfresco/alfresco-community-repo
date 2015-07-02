@@ -13,7 +13,7 @@ public class CanDeleteDocumentEvaluator extends AbstractActionEvaluator
     /**
      * Construct
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
      */
     protected CanDeleteDocumentEvaluator(ServiceRegistry serviceRegistry)
     {

@@ -32,7 +32,7 @@ public class BlogIntegrationRuntimeException extends AlfrescoRuntimeException
     /**
      * Constructor 
      * 
-     * @param msgId
+     * @param msgId String
      */
     public BlogIntegrationRuntimeException(String msgId)
     {
@@ -42,8 +42,8 @@ public class BlogIntegrationRuntimeException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId
-     * @param msgParams
+     * @param msgId String
+     * @param msgParams Object[]
      */
     public BlogIntegrationRuntimeException(String msgId, Object[] msgParams)
     {
@@ -53,8 +53,8 @@ public class BlogIntegrationRuntimeException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId
-     * @param cause
+     * @param msgId String
+     * @param cause Throwable
      */
     public BlogIntegrationRuntimeException(String msgId, Throwable cause)
     {
@@ -64,9 +64,9 @@ public class BlogIntegrationRuntimeException extends AlfrescoRuntimeException
     /**
      * Constructor
      * 
-     * @param msgId
-     * @param msgParams
-     * @param cause
+     * @param msgId String
+     * @param msgParams Object[]
+     * @param cause Throwable
      */
     public BlogIntegrationRuntimeException(String msgId, Object[] msgParams, Throwable cause)
     {

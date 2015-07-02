@@ -93,7 +93,7 @@ public class DbObjectXMLTransformer
     
     
     /**
-     * @param validators
+     * @param validators List<DbValidator>
      * @throws SAXException 
      */
     private void transformValidators(List<DbValidator> validators) throws SAXException
@@ -132,8 +132,8 @@ public class DbObjectXMLTransformer
     /**
      * Add class-specific attributes.
      * 
-     * @param dbObject
-     * @param attribs
+     * @param dbObject DbObject
+     * @param attribs AttributesImpl
      */
     private void addAttributes(DbObject dbObject, AttributesImpl attribs)
     {
@@ -260,8 +260,8 @@ public class DbObjectXMLTransformer
      *    &lt;tag&gt;content&lt;/tag&gt;
      * </pre>
      * 
-     * @param tag
-     * @param content
+     * @param tag String
+     * @param content String
      * @throws SAXException
      */
     private void simpleElement(String tag, String content) throws SAXException
@@ -289,8 +289,8 @@ public class DbObjectXMLTransformer
      * provided in each columnname element's order attribute. This parameter may be null
      * in which case order attributes will be ommitted.
      *  
-     * @param columnNames
-     * @param columnOrders
+     * @param columnNames List<String>
+     * @param columnOrders List<Integer>
      * @throws SAXException
      */
     private void columnNameList(List<String> columnNames,

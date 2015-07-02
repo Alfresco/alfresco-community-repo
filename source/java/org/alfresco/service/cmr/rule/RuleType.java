@@ -56,7 +56,7 @@ public interface RuleType
 	 * 
 	 * @param nodeRef			   	    the node ref whos rule of rule type are to be triggered
 	 * @param actionedUponNodeRef	    the node ref that the triggered rule will action upon
-     * @prarm executeRuleImmediately    indicates whether the rule should be executed immediately or not
+     * @param executeRuleImmediately    indicates whether the rule should be executed immediately or not
 	 */
 	public void triggerRuleType(NodeRef nodeRef, NodeRef actionedUponNodeRef, boolean executeRuleImmediately);
 }

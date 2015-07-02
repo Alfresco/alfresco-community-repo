@@ -70,10 +70,12 @@ public class ACPExportPackageHandler
     /**
      * Construct
      * 
-     * @param destDir
-     * @param zipFile
-     * @param dataFile
-     * @param contentDir
+     * @param destDir File
+     * @param zipFile File
+     * @param dataFile File
+     * @param contentDir File
+     * @param overwrite boolean
+     * @param mimetypeService MimetypeService
      */
     public ACPExportPackageHandler(File destDir, File zipFile, File dataFile, File contentDir, boolean overwrite, MimetypeService mimetypeService)
     {
@@ -112,9 +114,10 @@ public class ACPExportPackageHandler
     /**
      * Construct
      * 
-     * @param outputStream
-     * @param dataFile
-     * @param contentDir
+     * @param outputStream OutputStream
+     * @param dataFile File
+     * @param contentDir File
+     * @param mimetypeService MimetypeService
      */
     public ACPExportPackageHandler(OutputStream outputStream, File dataFile, File contentDir, MimetypeService mimetypeService)
     {
@@ -125,7 +128,7 @@ public class ACPExportPackageHandler
     }
     
     /**
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -135,7 +138,7 @@ public class ACPExportPackageHandler
     /**
      * Export content into folder structure of nodes
      * 
-     * @param exportAsFolders
+     * @param exportAsFolders boolean
      */
     public void setExportAsFolders(boolean exportAsFolders)
     {
@@ -310,7 +313,7 @@ public class ACPExportPackageHandler
     }
     
     /**
-     * @param path
+     * @param path Path
      * @return  display path
      */
     private String toDisplayPath(Path path)

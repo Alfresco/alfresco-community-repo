@@ -239,7 +239,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         super();
     }
     /**
-     * @param arg0
+     * @param arg0 String
      */
     public ADMLuceneTest(String arg0)
     {
@@ -7878,7 +7878,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
     }
 
     /**
-     * @param args
+     * @param args String[]
      * @throws Exception
      */
     public static void main(String[] args) throws Exception

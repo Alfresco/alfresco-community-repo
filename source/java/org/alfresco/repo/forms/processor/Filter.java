@@ -52,7 +52,7 @@ public interface Filter<ItemType, PersistType>
      * @param fields Restricted list of fields to include
      * @param forcedFields List of fields to forcibly include
      * @param form The Form object
-     * @param @param context Map representing optional context that
+     * @param context Map representing optional context that
      *                can be used during retrieval of the form
      */
     public void beforeGenerate(ItemType item, List<String> fields, List<String> forcedFields, 

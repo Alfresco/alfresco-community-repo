@@ -32,7 +32,7 @@ import org.springframework.beans.factory.InitializingBean;
  * This class provides the basic implementation of a rating property rollup.
  * By providing an implementation of this class (or reusing an existing one),
  * injecting the object into the {@link org.alfresco.service.cmr.rating.RatingScheme} and following the content
- * model naming conventions described in {@link RatingRollupNamingConventionsUtil}, it
+ * model naming conventions, it
  * should be possible to have new rating property rollups automatically calculated
  * and persisted into the Alfresco content model, thereby enabling indexing, searching
  * and sorting of rating-related properties.
@@ -88,8 +88,8 @@ public abstract class AbstractRatingRollupAlgorithm implements InitializingBean
     /**
      * This method returns the rollup name, for example "Total" or "Count".
      * This rollup name is used as part of the convention-based naming of content model
-     * property names see {@link RatingRollupNamingConventionsUtil}.
-     * @return
+     * property names.
+     * @return String
      */
     public String getRollupName()
     {

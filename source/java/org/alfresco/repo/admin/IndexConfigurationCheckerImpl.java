@@ -52,7 +52,7 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
     
     /**
      * Set the index recovert mode
-     * @param indexRecoveryMode
+     * @param indexRecoveryMode RecoveryMode
      */
     public void setIndexRecoveryMode(RecoveryMode indexRecoveryMode)
     {
@@ -63,7 +63,7 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
 
     /** 
      * Set the node service
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -73,7 +73,7 @@ public class IndexConfigurationCheckerImpl implements IndexConfigurationChecker
 
     /**
      * Set the search service
-     * @param searchService
+     * @param searchService SearchService
      */
     public void setSearchService(SearchService searchService)
     {

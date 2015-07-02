@@ -147,7 +147,6 @@ public class MTNodesCache2
     
     /**
      * @return Returns the name of the store
-     * @throws ServletException if the store name was not set
      */
     public String getStoreName()
     {
@@ -161,7 +160,6 @@ public class MTNodesCache2
     
     /**
      * @return Returns the WebDAV root path within the store
-     * @throws ServletException if the root path was not set
      */
     public String getRootPath()
     {

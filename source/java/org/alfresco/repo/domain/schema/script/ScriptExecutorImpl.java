@@ -244,9 +244,9 @@ public class ScriptExecutorImpl implements ScriptExecutor
      *   classpath:alfresco/db/org.hibernate.dialect.MySQLInnoDBDialect/myfile.xml
      * </pre>
      * 
-     * @param dialectClass
-     * @param resourceUrl
-     * @return
+     * @param dialectClass Class
+     * @param resourceUrl String
+     * @return String
      */
     private String resolveDialectUrl(Class dialectClass, String resourceUrl)
     {

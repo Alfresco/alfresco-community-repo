@@ -56,41 +56,26 @@ public class PublishingQueueImpl implements PublishingQueue
         return publishingEventHelper.createPublishingDetails();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, String... channelNames)
     {
         return createStatusUpdate(message, nodeToLinkTo, Arrays.asList(channelNames));
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public StatusUpdate createStatusUpdate(String message, NodeRef nodeToLinkTo, Collection<String> channelNames)
     {
         return new StatusUpdateImpl(message, nodeToLinkTo, channelNames);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public List<PublishingEvent> getPublishingEvents(PublishingEventFilter filter)
     {
         return publishingEventHelper.findPublishingEvents(nodeRef, filter);
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public PublishingEventFilter createPublishingEventFilter()
     {
         return new PublishingEventFilterImpl();
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public String scheduleNewEvent(PublishingDetails publishingDetails)
     {
         try

@@ -41,7 +41,8 @@ public class ContentStreamMimetypeProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
      */
     public ContentStreamMimetypeProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

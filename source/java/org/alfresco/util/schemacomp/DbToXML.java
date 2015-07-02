@@ -66,7 +66,7 @@ public class DbToXML
     /**
      * Set an optional default schema name
      *
-     * @param dbSchemaName
+     * @param dbSchemaName String
      */
     public void setDbSchemaName(String dbSchemaName)
     {

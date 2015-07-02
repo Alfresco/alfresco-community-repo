@@ -95,7 +95,7 @@ public class ContentUrlEntity implements Serializable
     }
     
     /**
-     * @param 
+     * @param internalContentUrl String
      * @return              Returns a pair of the short (12 chars lowercase) URL and the CRC value
      */
     private static Pair<String, Long> getContentUrlCrcPair(String internalContentUrl)

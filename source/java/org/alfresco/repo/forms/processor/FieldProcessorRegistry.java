@@ -42,8 +42,8 @@ public class FieldProcessorRegistry
     
     /**
      * Registers a {@link FieldProcessor} with this registry using the specified key.
-     * @param key
-     * @param processor
+     * @param key String
+     * @param processor FieldProcessor
      */
     public void register(String key, FieldProcessor processor)
     {
@@ -52,8 +52,8 @@ public class FieldProcessorRegistry
     
     /**
      * Returns the {@link FieldProcessor} that was registered witht he specified key.
-     * @param key
-     * @return
+     * @param key String
+     * @return FieldProcessor
      */
     public FieldProcessor get(String key)
     {
@@ -80,7 +80,7 @@ public class FieldProcessorRegistry
     /**
      * Returns a FieldProcessor for the given field name.
      * 
-     * @param fieldName
+     * @param fieldName String
      * @return The FieldProcessor implementation for the field or null if there isn't one regsitered.
      */
     protected FieldProcessor getFieldProcessor(String fieldName)
@@ -95,7 +95,7 @@ public class FieldProcessorRegistry
 
     /**
      * Determines if the defaultProcessor should be used.
-     * @param fieldName
+     * @param fieldName String
      * @return <code>true</code> if the defaultProcessor should be used, otherwise <code>false</code>.
      */
     protected boolean useDefaultProcessor(String fieldName)
@@ -105,7 +105,7 @@ public class FieldProcessorRegistry
 
     /**
      * Derives the key used to look up the {@link FieldProcessor} from the fieldName.
-     * @param fieldName
+     * @param fieldName String
      * @return the key used to look up the {@link FieldProcessor}.
      */
     protected String getKey(String fieldName)

@@ -39,8 +39,8 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param key
-     * @return
+     * @param key Object
+     * @return boolean
      * @see java.util.Map#containsKey(java.lang.Object)
      */
     public boolean containsKey(Object key)
@@ -49,8 +49,8 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param value
-     * @return
+     * @param value Object
+     * @return boolean
      * @see java.util.Map#containsValue(java.lang.Object)
      */
     public boolean containsValue(Object value)
@@ -59,7 +59,7 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @return
+     * @return Set
      * @see java.util.Map#entrySet()
      */
     public Set<Entry<QName, Object>> entrySet()
@@ -68,8 +68,8 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param o
-     * @return
+     * @param o Object
+     * @return boolean
      * @see java.util.Map#equals(java.lang.Object)
      */
     public boolean equals(Object o)
@@ -78,8 +78,8 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param key
-     * @return
+     * @param key Object
+     * @return Object
      * @see java.util.Map#get(java.lang.Object)
      */
     public Object get(Object key)
@@ -88,7 +88,7 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @return
+     * @return int
      * @see java.util.Map#hashCode()
      */
     public int hashCode()
@@ -97,7 +97,7 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @return
+     * @return boolean
      * @see java.util.Map#isEmpty()
      */
     public boolean isEmpty()
@@ -106,7 +106,7 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @return
+     * @return Set<QName>
      * @see java.util.Map#keySet()
      */
     public Set<QName> keySet()
@@ -115,9 +115,9 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param key
-     * @param value
-     * @return
+     * @param key Object
+     * @param value Object
+     * @return Object
      * @see java.util.Map#put(java.lang.Object, java.lang.Object)
      */
     public Object put(QName key, Object value)
@@ -126,7 +126,7 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param m
+     * @param m Map<? extends QName, ? extends Object>
      * @see java.util.Map#putAll(java.util.Map)
      */
     public void putAll(Map<? extends QName, ? extends Object> m)
@@ -135,8 +135,8 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param key
-     * @return
+     * @param key Object
+     * @return Object
      * @see java.util.Map#remove(java.lang.Object)
      */
     public Object remove(Object key)
@@ -145,7 +145,7 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @return
+     * @return int
      * @see java.util.Map#size()
      */
     public int size()
@@ -154,7 +154,7 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @return
+     * @return Collection<Object>
      * @see java.util.Map#values()
      */
     public Collection<Object> values()

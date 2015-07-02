@@ -487,7 +487,7 @@ public abstract class DesktopAction {
 	 * 
 	 * @param params DesktopParams
 	 * @return DesktopResponse
-	 * @exception 
+	 * @exception DesktopActionException
 	 */
 	public abstract DesktopResponse runAction(DesktopParams params)
 		throws DesktopActionException;

@@ -95,8 +95,8 @@ public class StringExtractingContentTransformerTest extends AbstractContentTrans
     /**
      * Writes some content using the mimetype and encoding specified.
      * 
-     * @param mimetype
-     * @param encoding
+     * @param mimetype String
+     * @param encoding String
      * @return Returns a reader onto the newly written content
      */
     private ContentReader writeContent(String mimetype, String encoding)

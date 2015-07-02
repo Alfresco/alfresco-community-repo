@@ -44,7 +44,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     private final TransferManifestNormalNode transferNode; 
     
     /**
-     * @param transferNode
+     * @param transferNode TransferManifestNormalNode
      */
     public NodeSnapshotTransferImpl(TransferManifestNormalNode transferNode)
     {
@@ -85,7 +85,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     }
 
     /**
-     * @return
+     * @return List<AssociationRef>
      */
     public List<AssociationRef> getOutboundPeerAssociations()
     {
@@ -97,7 +97,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     }
 
     /**
-     * @return
+     * @return ChildAssociationRef
      */
     public ChildAssociationRef getPrimaryParentAssoc()
     {
@@ -109,7 +109,7 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     }
 
     /**
-     * @return
+     * @return Path
      */
     public Path getPrimaryPath()
     {

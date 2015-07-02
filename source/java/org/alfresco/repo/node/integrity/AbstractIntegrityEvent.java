@@ -127,7 +127,7 @@ public abstract class AbstractIntegrityEvent implements IntegrityEvent
     /**
      * Gets the node type if the node exists
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @return Returns the node's type or null if the node no longer exists
      */
     protected QName getNodeType(NodeRef nodeRef)

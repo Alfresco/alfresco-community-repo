@@ -60,8 +60,8 @@ public class JoinEndForkedTokens implements ActionHandler
     /**
      * Cancel token
      * 
-     * @param executionContext
-     * @param token
+     * @param executionContext ExecutionContext
+     * @param token Token
      */
     protected void cancelToken(ExecutionContext executionContext, Token token)
     {
@@ -85,8 +85,8 @@ public class JoinEndForkedTokens implements ActionHandler
     /**
      * Cancel tasks associated with a token
      * 
-     * @param executionContext
-     * @param token
+     * @param executionContext ExecutionContext
+     * @param token Token
      */
     protected void cancelTokenTasks(ExecutionContext executionContext, Token token)
     {

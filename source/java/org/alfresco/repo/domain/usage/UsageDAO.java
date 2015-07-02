@@ -56,16 +56,16 @@ public interface UsageDAO
     /**
      * Delete usage deltas for given nodeRef
      * 
-     * @param nodeRef
-     * @return
+     * @param nodeRef NodeRef
+     * @return int
      */
     public int deleteDeltas(NodeRef nodeRef);
     
     /**
      * Delete usage deltas for given node entity id
      * 
-     * @param nodeId
-     * @return
+     * @param nodeId long
+     * @return int
      */
     public int deleteDeltas(long nodeId);
     
@@ -74,7 +74,6 @@ public interface UsageDAO
      * 
      * @param storeRef                          the store to search in
      * @param resultsCallback                           the callback to use while iterating over the content sizes (one row per user)
-     * @return Returns the values for the given owner, creator and content size (summed)
      */
     public void getUserContentSizesForStore(
             StoreRef storeRef, 
@@ -85,7 +84,6 @@ public interface UsageDAO
      * 
      * @param storeRef                          the store to search in
      * @param resultsCallback                           the callback to use while iterating over the people
-     * @return Returns the values for username and person node uuid (excluding System)
      */
     public void getUsersWithoutUsage(
             StoreRef storeRef,
@@ -96,7 +94,6 @@ public interface UsageDAO
      * 
      * @param storeRef                          the store to search in
      * @param resultsCallback                           the callback to use while iterating over the people
-     * @return Returns the values for the username and person node uuid (excluding System)
      */
     public void getUsersWithUsage(
             StoreRef storeRef,

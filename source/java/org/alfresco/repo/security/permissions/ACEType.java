@@ -58,15 +58,15 @@ public enum ACEType
     
     /**
      * Get the id for the ACEType stored in the DB.
-     * @return
+     * @return int
      */
     public abstract int getId();
     
     
     /**
      * Get the ACEType from the value stored in the DB.
-     * @param id
-     * @return
+     * @param id int
+     * @return ACEType
      */
     public static ACEType getACETypeFromId(int id)
     {

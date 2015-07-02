@@ -44,11 +44,12 @@ public final class LockState implements Serializable
     /**
      * Constructor.
      * 
-     * @param nodeRef
-     * @param lockType
-     * @param owner
-     * @param expires
-     * @param additionalInfo
+     * @param nodeRef NodeRef
+     * @param lockType LockType
+     * @param owner String
+     * @param expires Date
+     * @param lifetime Lifetime
+     * @param additionalInfo String
      */
     private LockState(NodeRef nodeRef, LockType lockType, String owner, Date expires,
                 Lifetime lifetime, String additionalInfo)

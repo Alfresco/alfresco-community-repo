@@ -106,7 +106,7 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
     /**
      * Sets the Dictionary DAO
      * 
-     * @param dictionaryDAO
+     * @param dictionaryDAO DictionaryDAO
      */
     public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
     {

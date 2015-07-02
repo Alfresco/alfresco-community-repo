@@ -111,7 +111,7 @@ public interface Patch
 
     /**
      * Is this patch just ignored - never considered for application
-     * @return
+     * @return boolean
      */
     public boolean isIgnored();
     

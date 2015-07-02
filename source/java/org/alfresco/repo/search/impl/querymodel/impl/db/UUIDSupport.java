@@ -134,7 +134,7 @@ public class UUIDSupport implements DBQueryBuilderComponent
     }
     
     /**
-     * @param leftOuter
+     * @param leftOuter boolean
      */
     public void setLeftOuter(boolean leftOuter)
     {

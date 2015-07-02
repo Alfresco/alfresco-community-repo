@@ -280,9 +280,9 @@ public class NodeRefPropertyMethodInterceptor implements MethodInterceptor
      * Remove unknown node ref values Remove unknowen categories - the node will be removed if it does exist and it is
      * not a category
      * 
-     * @param propertyQName
-     * @param inboundValue
-     * @return
+     * @param propertyQName QName
+     * @param inboundValue Serializable
+     * @return Serializable
      */
     private Serializable getValue(QName propertyQName, Serializable inboundValue)
     {

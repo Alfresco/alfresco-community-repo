@@ -79,7 +79,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * The home folders for internal users (such as {@code admin} and {@code
  * guest}) that use {@code guestHomeFolderProvider} or {@code
  * bootstrapHomeFolderProvider} are not moved, nor are any users that use
- * {@link HomeFolderProviders} create shared home folders (all user are
+ * HomeFolderProviders create shared home folders (all user are
  * given the same home folder).
  * 
  * It is also possible change the HomeFolderProvider used by all other

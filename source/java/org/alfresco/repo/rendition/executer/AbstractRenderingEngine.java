@@ -223,7 +223,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /**
      * Injects the renditionService bean.
      * 
-     * @param renditionService
+     * @param renditionService RenditionService
      */
     public void setRenditionService(RenditionService renditionService)
     {
@@ -262,7 +262,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /**
      * Sets the default rendition-node type.
      * 
-     * @param type
+     * @param type String
      */
     public void setDefaultRenditionNodeType(String type)
     {
@@ -311,7 +311,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /**
      * Sets the default rendition content property.
      * 
-     * @param prop
+     * @param prop String
      */
     public void setDefaultRenditionContentProp(String prop)
     {
@@ -491,8 +491,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
      *  the main part of a composite rendition.
      * This only returns true if we're currently processing a
      *  component of a composite rendition.
-     * @param action
-     * @return
+     * @param action Action
+     * @return boolean
      */
     private boolean isComponentRendition(Action action) {
         Serializable s = action.getParameterValue(PARAM_IS_COMPONENT_RENDITION);
@@ -538,8 +538,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * @param renditionDefinition
-     * @return
+     * @param renditionDefinition RenditionDefinition
+     * @return QName
      */
     protected QName getRenditionContentProperty(RenditionDefinition renditionDefinition)
     {
@@ -549,7 +549,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     protected abstract void render(RenderingContext context);
 
     /**
-     * @param actionedUponNodeRef
+     * @param actionedUponNodeRef NodeRef
      */
     protected void checkSourceNodeExists(NodeRef actionedUponNodeRef)
     {
@@ -562,7 +562,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     }
 
     /**
-     * @param action
+     * @param action Action
      */
     protected RenditionDefinition checkActionIsRenditionDefinition(Action action)
     {
@@ -579,8 +579,8 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /**
      * If no rendition node type is specified, then the default is used
      * 
-     * @param renditionDefinition
-     * @return
+     * @param renditionDefinition RenditionDefinition
+     * @return QName
      */
     private QName getRenditionNodeType(RenditionDefinition renditionDefinition)
     {
@@ -620,7 +620,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /**
      * Supplies the list of parameters required by this rendering engine.
      * 
-     * @return
+     * @return Collection<ParameterDefinition>
      */
     protected Collection<ParameterDefinition> getParameterDefinitions()
     {
@@ -735,12 +735,12 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
      * is the same as the type of <code>defaultValue</code> and throws a
      * {@link RenditionServiceException} if it isn't. Returns
      * <code>defaultValue</code> if the parameter value is <code>null</code>
-     * 
-     * @param <T>
-     * @param paramName
-     * @param defaultValue
-     * @param definition
-     * @return
+     *
+     * @param paramName String
+     * @param defaultValue T
+     * @param definition RenditionDefinition
+     * @param <T> T
+     * @return T
      */
     @SuppressWarnings("unchecked")
     public static <T> T getParamWithDefault(String paramName, T defaultValue, RenditionDefinition definition)
@@ -763,9 +763,9 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         private ChildAssociationRef caNodeRef;
 
         /**
-         * @param sourceNode
-         * @param definition
-         * @param renditionContentProperty
+         * @param sourceNode NodeRef
+         * @param definition RenditionDefinition
+         * @param renditionContentProperty QName
          */
         public RenderingContext(NodeRef sourceNode,//
                     RenditionDefinition definition,//
@@ -934,7 +934,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
      * This method sets the temporary rendition parent node and the rendition assocType on the
      * rendition definition.
      * 
-     * @param sourceNode
+     * @param sourceNode NodeRef
      * @param definition the rendition definition.
      */
     private void setTemporaryRenditionProperties(NodeRef sourceNode, RenditionDefinition definition)
@@ -961,7 +961,7 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
      * @param renditionDefinition The definition of the rendition that has just been performed.
      *                            In the case of a composite rendition, this parameter refers
      *                            to that CompositeRendition and not to any of its component renditions.
-     * @return
+     * @return ChildAssociationRef
      */
     private ChildAssociationRef createOrUpdateRendition(NodeRef sourceNode, ChildAssociationRef tempRendition,
                 RenditionDefinition renditionDefinition)

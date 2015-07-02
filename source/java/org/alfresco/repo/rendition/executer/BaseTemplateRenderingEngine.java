@@ -204,7 +204,7 @@ public abstract class BaseTemplateRenderingEngine extends AbstractRenderingEngin
     /**
      * Get the type of template that is to be used. This identifies the name of the template
      * processor that should be used, such as "freemarker" or "xslt".
-     * @return
+     * @return String
      */
     protected abstract String getTemplateType();
 

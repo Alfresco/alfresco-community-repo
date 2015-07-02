@@ -37,8 +37,9 @@ public class PermissionActionEvaluator extends AbstractActionEvaluator
     /**
      * Construct
      * 
-     * @param serviceRegistry
-     * @param permission
+     * @param serviceRegistry ServiceRegistry
+     * @param action Action
+     * @param permission String...
      */
     protected PermissionActionEvaluator(ServiceRegistry serviceRegistry, Action action, String... permission)
     {

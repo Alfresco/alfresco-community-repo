@@ -913,9 +913,9 @@ import org.xml.sax.helpers.AttributesImpl;
     /**
      * Helper to convert a path into an indexed path which uniquely identifies a node
      * 
-     * @param nodeRef
-     * @param path
-     * @return
+     * @param nodeRef NodeRef
+     * @param path Path
+     * @return Path
      */
     private Path createIndexedPath(NodeRef nodeRef, Path path)
     {

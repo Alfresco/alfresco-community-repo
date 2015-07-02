@@ -227,7 +227,7 @@ public class HiddenAspect
      * 
      * If the node is already hidden will do nothing.
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
 
      */
     public void hideNodeExplicit(NodeRef nodeRef)
@@ -245,7 +245,7 @@ public class HiddenAspect
      * Remove the explicit hiding of a node.  Following this call the node may or may not remain hidden based upon the other 
      * properties of the node.
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      */
     public void unhideExplicit(NodeRef nodeRef)
     {
@@ -571,8 +571,8 @@ public class HiddenAspect
     /**
      * getClientVisibilityMap
      * 
-     * @param client
-     * @param visibility
+     * @param client Client
+     * @param visibility Visibility
      * @return the client visibilityMask
      */
     public int getClientVisibilityMask(Client client, Visibility visibility)
@@ -583,7 +583,7 @@ public class HiddenAspect
     /**
      * Checks whether the node is on a hidden path
      *
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @return the matching filter, or null if no match
      */
     public HiddenFileInfo onHiddenPath(NodeRef nodeRef)
@@ -615,10 +615,9 @@ public class HiddenAspect
      * Hides the node by applying the hidden and not indexed aspects. The node will be hidden from all clients.
      * 
      * @param nodeRef nodeRef
-     * @param cascadeHiddenAspect
-     * @param cascadeIndexControlAspect
-     * @param clientControlled
-     * @return
+     * @param cascadeHiddenAspect boolean
+     * @param cascadeIndexControlAspect boolean
+     * @param clientControlled boolean
      */
     public void hideNode(NodeRef nodeRef, boolean cascadeHiddenAspect, boolean cascadeIndexControlAspect, boolean clientControlled)
     {
@@ -651,7 +650,10 @@ public class HiddenAspect
      * according to the visibility mask.
      * 
      * @param nodeRef the node to hide
-     * @param clientVisibilityMask
+     * @param clientVisibilityMask int
+     * @param cascadeHiddenAspect boolean
+     * @param cascadeIndexControlAspect boolean
+     * @param clientControlled boolean
      */
     public void hideNode(NodeRef nodeRef, int clientVisibilityMask, boolean cascadeHiddenAspect, boolean cascadeIndexControlAspect, boolean clientControlled)
     {
@@ -663,7 +665,7 @@ public class HiddenAspect
      * Searches for nodes in the given store that should be hidden (i.e. match the hidden pattern)
      * and hides them if they are not already hidden.
      * 
-     * @param storeRef
+     * @param storeRef StoreRef
      */
     public void checkHidden(StoreRef storeRef)
     {
@@ -685,10 +687,11 @@ public class HiddenAspect
     /**
      * Checks whether the file should be hidden and applies the hidden and not indexed aspects if so.
      * 
-     * @param fileInfo
+     * @param fileInfo FileInfo
      * @param both     if true, will check if the node should not be hidden and remove hidden and index control
      *                 aspects if they are present
-     * @return
+     * @param  checkChildren boolean
+     * @return boolean
      */
     public boolean checkHidden(FileInfo fileInfo, boolean both, boolean checkChildren)
     {
@@ -701,9 +704,11 @@ public class HiddenAspect
      * Hides the node by applying the hidden and not indexed aspects. The node will be hidden from clients
      * according to the visibility mask.
      * 
-     * @see getClientVisibilityMask()
-     * @param fileInfo, file to make hidden
-     * @param visibilityMask
+     * @param fileInfo file to make hidden
+     * @param visibilityMask int
+     * @param cascadeHiddenAspect boolean
+     * @param cascadeIndexControlAspect boolean
+     * @param clientControlled boolean
      */
     public void hideNode(FileInfoImpl fileInfo, int visibilityMask, boolean cascadeHiddenAspect, boolean cascadeIndexControlAspect, boolean clientControlled)
     {
@@ -790,10 +795,11 @@ public class HiddenAspect
      * <p>
      * Can optionally remove the hidden and index control aspects if the name of a node no longer matches the filter.
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @param both     if true, will check both if the node should not be hidden and remove hidden and index control
      * 				   aspects if they are present, and if the node should be hidden and add hidden and index control
      * 				   aspects if they are not present.
+     * @param checkChildren boolean
      * @return true if the node is hidden, irrespective of the clientVisibility property value.
      */
     public boolean checkHidden(NodeRef nodeRef, boolean both, boolean checkChildren)
@@ -883,8 +889,8 @@ public class HiddenAspect
     /**
      * Gets the visibility constraint for the given client on the given node.
      * 
-     * @param client
-     * @param nodeRef
+     * @param client Client
+     * @param nodeRef NodeRef
      * 
      * @return the visibility constraint for the given client and node
      */

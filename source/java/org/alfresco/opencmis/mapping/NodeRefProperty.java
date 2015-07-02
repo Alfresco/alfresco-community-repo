@@ -34,7 +34,7 @@ public class NodeRefProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
      */
     public NodeRefProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

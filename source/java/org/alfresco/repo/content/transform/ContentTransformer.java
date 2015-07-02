@@ -54,7 +54,7 @@ public interface ContentTransformer extends ContentWorker
     public boolean isTransformable(String sourceMimetype, long sourceSize, String targetMimetype, TransformationOptions options);
     
     /**
-     * Sub component of {@link #isTransformable(String, long, String, TransformationOptions)
+     * Sub component of {@link #isTransformable(String, long, String, TransformationOptions)}
      * that checks just the mimetypes.
      * @param  sourceMimetype           the source mimetype
      * @param  targetMimetype           the target mimetype
@@ -64,7 +64,7 @@ public interface ContentTransformer extends ContentWorker
     public boolean isTransformableMimetype(String sourceMimetype, String targetMimetype, TransformationOptions options);
 
     /**
-     * Sub component of {@link #isTransformable(String, long, String, TransformationOptions)
+     * Sub component of {@link #isTransformable(String, long, String, TransformationOptions)}
      * that checks just the size limits.
      * @param  sourceMimetype           the source mimetype
      * @param  sourceSize               the size (bytes) of the source. If negative it is unknown.
@@ -82,7 +82,6 @@ public interface ContentTransformer extends ContentWorker
      * {link {@link AbstractContentTransformerLimits#isTransformableMimetype(String, String, TransformationOptions)}
      * or {@link ContentTransformerWorker#isTransformable(String, String, TransformationOptions)}
      * have been overridden.
-     * See {@link #getCommentsOnlySupports(List, List, boolean)} which may be used to help construct a comment.
      * @param available indicates if the transformer has been registered and is available to be selected.
      *                  {@code false} indicates that the transformer is only available as a component of a
      *                  complex transformer.
@@ -139,9 +138,6 @@ public interface ContentTransformer extends ContentWorker
     /**
      * Transforms the content provided by the reader and source mimetype
      * to the writer and target mimetype.
-     * <p>
-     * The transformation viability can be determined by an up front call
-     * to {@link #getReliability(String, String)}.
      * <p>
      * The source and target mimetypes <b>must</b> be available on the
      * {@link org.alfresco.service.cmr.repository.ContentAccessor#getMimetype()} methods of

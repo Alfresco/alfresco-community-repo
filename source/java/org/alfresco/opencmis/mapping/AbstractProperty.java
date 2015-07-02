@@ -48,8 +48,9 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
     /**
      * Construct
      * 
-     * @param serviceRegistry
-     * @param propertyName
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
+     * @param propertyName String
      */
     protected AbstractProperty(ServiceRegistry serviceRegistry, CMISConnector connector, String propertyName)
     {

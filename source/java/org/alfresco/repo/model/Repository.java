@@ -75,7 +75,7 @@ public class Repository implements ApplicationContextAware
     /**
      * Sets the Company Home Store
      * 
-     * @param companyHomeStore
+     * @param companyHomeStore String
      */
     public void setCompanyHomeStore(String companyHomeStore)
     {
@@ -85,7 +85,7 @@ public class Repository implements ApplicationContextAware
     /**
      * Sets the Company Home Path
      * 
-     * @param companyHomePath
+     * @param companyHomePath String
      */
     public void setCompanyHomePath(String companyHomePath)
     {
@@ -95,7 +95,7 @@ public class Repository implements ApplicationContextAware
     /**
      * Sets the Shared Home Path
      * 
-     * @param sharedHomePath
+     * @param sharedHomePath String
      */
     public void setSharedHomePath(String sharedHomePath)
     {

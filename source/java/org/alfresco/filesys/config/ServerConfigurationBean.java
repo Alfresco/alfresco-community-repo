@@ -1906,8 +1906,8 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
      * the disk interface is a {@link BufferedContentDiskDriver} and its disk
      * interface is a ContentDiskDriver2 (wrapped by several other DiskInterface objects).
      * 
-     * @param diskInterface
-     * @return
+     * @param diskInterface ExtendedDiskInterface
+     * @return boolean
      */
     private boolean isContentDiskDriver2(ExtendedDiskInterface diskInterface)
     {
@@ -2258,7 +2258,8 @@ public class ServerConfigurationBean extends AbstractServerConfigurationBean imp
      * 
      * TODO - what about desktop actions etc?
      * 
-     * @param diskCtx
+     * @param uniqueName String
+     * @param diskCtx AlfrescoContext
      */
     public void initialiseRuntimeContext(String uniqueName, AlfrescoContext diskCtx)
     {

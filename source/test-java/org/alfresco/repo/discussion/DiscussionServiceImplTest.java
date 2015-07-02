@@ -1909,7 +1909,7 @@ public class DiscussionServiceImplTest
 
     /**
      * Deletes the specified NodeRefs, if they exist.
-     * @param nodesToDelete
+     * @param nodesToDelete List<NodeRef>
      */
     private static void performDeletionOfNodes(final List<NodeRef> nodesToDelete)
     {

@@ -36,7 +36,8 @@ public class ContentStreamIdProperty extends AbstractProperty
     /**
      * Construct
      * 
-     * @param serviceRegistry
+     * @param serviceRegistry ServiceRegistry
+     * @param connector CMISConnector
      */
     public ContentStreamIdProperty(ServiceRegistry serviceRegistry, CMISConnector connector)
     {

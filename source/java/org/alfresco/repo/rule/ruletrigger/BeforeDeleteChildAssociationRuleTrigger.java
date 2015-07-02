@@ -35,7 +35,7 @@ import org.apache.commons.logging.LogFactory;
  * <p>
  * Policy names supported are:
  * <ul>
- *   <li>{@linkplain NodeServicePolicies.BeforeDeleteChildAssociationPolicy}</li>
+ *   <li>{@link org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteChildAssociationPolicy}</li>
  * </ul>
  * 
  * @author Roy Wetherall

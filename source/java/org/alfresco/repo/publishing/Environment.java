@@ -39,9 +39,6 @@ public class Environment
         this.channelsContainer = channelsContainer;
     }
 
-    /**
-     * {@inheritDoc}
-     */
     public PublishingQueueImpl getPublishingQueue()
     {
         return queue;

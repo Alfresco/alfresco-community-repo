@@ -64,8 +64,8 @@ public class Monitor
     /**
      * test authenticate
      * 
-     * @param userName
-     * @param credentials
+     * @param userName String
+     * @param credentials String
      * @throws AuthenticationException
      */
     public CompositeData testAuthenticate(String userName, String credentials)

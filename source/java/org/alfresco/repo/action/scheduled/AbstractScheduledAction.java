@@ -79,7 +79,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
         /**
          * Generate a mode from a string.
          * 
-         * @param transactionModeString
+         * @param transactionModeString String
          * @return - the transaction mode.
          */
         public static TransactionMode getTransactionMode(String transactionModeString)
@@ -125,7 +125,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
         /**
          * Parse a string to a compensating action mode - used in reading the config.
          * 
-         * @param compensatingActionModeString
+         * @param compensatingActionModeString String
          * @return - the compensating action mode.
          */
         public static CompensatingActionMode getCompensatingActionMode(String compensatingActionModeString)
@@ -204,7 +204,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Set the user in whose name to run the action.
      * 
-     * @param runAsUser
+     * @param runAsUser String
      */
     public void setRunAsUser(String runAsUser)
     {
@@ -223,7 +223,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Set the action service - IOC.
      * 
-     * @param actionService
+     * @param actionService ActionService
      */
     public void setActionService(ActionService actionService)
     {
@@ -243,7 +243,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Set the behaviour for compensating actiions.
      * 
-     * @param compensatingActionModeString
+     * @param compensatingActionModeString String
      */
     public void setCompensatingActionMode(String compensatingActionModeString)
     {
@@ -253,7 +253,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Set transactional behaviour.
      * 
-     * @param transactionModeString
+     * @param transactionModeString String
      */
     public void setTransactionMode(String transactionModeString)
     {
@@ -273,7 +273,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Set the transactions service - IOC.
      * 
-     * @param transactionService
+     * @param transactionService TransactionService
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -282,7 +282,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
 
     /**
      * Set the template action that is used to generate the real action for each node.
-     * @param templateActionDefinition 
+     * @param templateActionDefinition TemplateActionDefinition
      */
     public void setTemplateActionDefinition(TemplateActionDefinition templateActionDefinition)
     {
@@ -312,7 +312,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Register with teh scheduler.
      * 
-     * @param scheduler 
+     * @param scheduler Scheduler
      * @throws SchedulerException 
      */
     public void register(Scheduler scheduler) throws SchedulerException
@@ -345,7 +345,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Generate the actual action for the given node from the action template.
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @return - the action to execute.
      */
     public abstract Action getAction(NodeRef nodeRef);
@@ -379,7 +379,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
         /**
          * Execute the job
          * 
-         * @param ctx 
+         * @param ctx JobExecutionContext
          * @throws JobExecutionException 
          * 
          */
@@ -447,7 +447,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                 /**
                  * Apply the action to all nodes in one overall transaction
                  * 
-                 * @param nodes
+                 * @param nodes List<NodeRef>
                  */
                 public void runTransactionalActions(final List<NodeRef> nodes)
                 {
@@ -511,9 +511,9 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                  * 
                  * These are always in their own transaction. We try to run all compensating actions.
                  * 
-                 * @param runCompensatingActions
-                 * @param rethrow
-                 * @param t
+                 * @param runCompensatingActions boolean
+                 * @param rethrow boolean
+                 * @param t Throwable
                  */
                 private void doCompensation(boolean runCompensatingActions, boolean rethrow, Throwable t)
                 {
@@ -545,7 +545,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                 /**
                  * Run a single transaction in its own tx
                  * 
-                 * @param nodeRef
+                 * @param nodeRef NodeRef
                  */
                 public void runTransactionalAction(final NodeRef nodeRef)
                 {
@@ -596,7 +596,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
                 /**
                  * Manage running a compensating action and chaining all its compensating actions until done
                  * 
-                 * @param pair
+                 * @param pair Pair<Action, NodeRef>
                  */
                 public void runTransactionalCompensatingAction(final Pair<Action, NodeRef> pair)
                 {
@@ -676,7 +676,7 @@ public abstract class AbstractScheduledAction implements ScheduledActionDefiniti
     /**
      * Support method to translate exceptions to runtime exceptions.
      * 
-     * @param t
+     * @param t Throwable
      * @return - the exception as a wrapped RuntimeException.
      */
     private static Object throwRuntimeException(Throwable t)

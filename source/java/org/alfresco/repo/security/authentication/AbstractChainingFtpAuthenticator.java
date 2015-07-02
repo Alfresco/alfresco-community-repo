@@ -27,7 +27,7 @@ import java.util.List;
 
 /**
  * Base chaining FTP Authenticator class. Where appropriate, methods will 'chain' across multiple
- * {@link #FTPAuthenticatorBase} instances, as returned by {@link #getUsableFtpAuthenticators()}.
+ * {@link FTPAuthenticatorBase} instances, as returned by {@link #getUsableFtpAuthenticators()}.
  *
  * @author alex.mukha
  * @since 4.2.1

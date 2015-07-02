@@ -27,7 +27,7 @@ public interface AccessControlList extends Serializable
 {
     /**
      * Get the properties
-     * @return
+     * @return AccessControlListProperties
      */
     public AccessControlListProperties getProperties();
     
@@ -41,7 +41,7 @@ public interface AccessControlList extends Serializable
      * 
      * To make permission evaluation faster for the common cases
      * 
-     * @return
+     * @return List<AccessControlEntry>
      */
     public List<AccessControlEntry> getEntries();
     

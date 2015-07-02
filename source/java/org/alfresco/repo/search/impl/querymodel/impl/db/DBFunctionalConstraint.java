@@ -41,8 +41,8 @@ public class DBFunctionalConstraint extends BaseFunctionalConstraint implements 
 {
 
     /**
-     * @param function
-     * @param arguments
+     * @param function Function
+     * @param arguments Map<String, Argument>
      */
     public DBFunctionalConstraint(Function function, Map<String, Argument> arguments)
     {

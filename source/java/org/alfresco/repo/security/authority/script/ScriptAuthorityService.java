@@ -334,7 +334,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
     
     /**
 	 * Get a group given its short name
-	 * @param shortName, the shortName of the group
+	 * @param shortName the shortName of the group
 	 * @return the authority or null if it can't be found
 	 */
 	public ScriptGroup getGroup(String shortName)
@@ -352,7 +352,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
 	
 	/**
 	 * Get a group given it full authority name (Which must begin with 'GROUP_'
-	 * @param fullAuthorityName, the shortName of the group
+	 * @param fullAuthorityName the shortName of the group
 	 * @return the authority or null if it can't be found
 	 */
 	public ScriptGroup getGroupForFullAuthorityName(String fullAuthorityName)
@@ -462,7 +462,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
     
     /**
      * Get a user given their username
-     * @param username, the username of the user
+     * @param username the username of the user
      * @return the user or null if they can't be found
      */
     public ScriptUser getUser(String username)
@@ -555,7 +555,7 @@ public class ScriptAuthorityService extends BaseScopableProcessorExtension
      * <p/>
      * "C-3PO" becomes null.
      * 
-     * @param nameFilter
+     * @param nameFilter String
      * @return A Pair<firstName, lastName> if the String is valid, else <tt>null</tt>.
      */
     private Pair<String, String> tokeniseName(String nameFilter)

@@ -42,8 +42,8 @@ public interface DbObject
      * <code>a.sameAs(b) == true</code> it makes it easier to show the differences as related, i.e. a and b are
      * different rather than, a is only in the 'left' tree and b is only in the 'right' tree. 
      *  
-     * @param other
-     * @return
+     * @param other DbObject
+     * @return boolean
      */
     boolean sameAs(DbObject other);
     
@@ -69,7 +69,7 @@ public interface DbObject
      * Allows a visitor to be invoked against this DbObject. Implementations should ensure that child
      * objects are visited first (by calling accept on them) before invoking the visitor on itself.
      * 
-     * @param visitor
+     * @param visitor DbObjectVisitor
      */
     void accept(DbObjectVisitor visitor);
     
@@ -85,7 +85,7 @@ public interface DbObject
      * Sets the parent object.
      * 
      * @see #getParent()
-     * @param parent
+     * @param parent DbObject
      */
     void setParent(DbObject parent);
     
@@ -101,7 +101,7 @@ public interface DbObject
     /**
      * Set/override the validators associated with this database object.
      * 
-     * @param validators
+     * @param validators List<DbValidator>
      */
     void setValidators(List<DbValidator> validators);
     
@@ -116,7 +116,7 @@ public interface DbObject
      * Is there at least one validator that assumes object-level validation
      * that removes the requirement for reporting of differences for this object?
      * 
-     * @return
+     * @return boolean
      */
     boolean hasObjectLevelValidator();
     

@@ -60,7 +60,7 @@ public interface FileFolderService
      * Lists page of immediate child files and/or folders of the given context node
      * with optional filtering (exclusion of certain child file/folder subtypes) and sorting
      * 
-     * @author janv
+     * <br/><br/>author janv
      * @since 4.0
      */
     @Auditable(parameters = {"contextNodeRef", "files", "folders", "ignoreTypeQNames", "sortProps", "pagingRequest"})
@@ -284,7 +284,6 @@ public interface FileFolderService
      * @return Returns the new node's file information
      * @throws FileExistsException
      * 
-     * @see {@link #create(NodeRef, String, QName, QName)}
      */
     @Auditable(parameters = {"parentNodeRef", "name", "typeQName"})
     public FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) throws FileExistsException;
@@ -433,11 +432,11 @@ public interface FileFolderService
     /**
      * Lists page of immediate child objects of the given context node
      * with specification of which types to list and optional filtering (exclusion of certain child file/folder subtypes) and sorting
-     * @param rootNodeRef
+     * @param rootNodeRef NodeRef
      * @param searchTypeQNames   QNames of types to list
-     * @param ignoreAspectQNames
-     * @param sortProps
-     * @param pagingRequest
+     * @param ignoreAspectQNames Set<QName>
+     * @param sortProps List<Pair<QName, Boolean>>
+     * @param pagingRequest PagingRequest
      * @return list of node refs, never null
      */
     @Auditable(parameters = {"rootNodeRef"})
@@ -447,7 +446,7 @@ public interface FileFolderService
     /**
      * Helper method to transform a list of {@link NodeRef} to a list of {@link FileInfo}
      * 
-     * @param nodeRefs
+     * @param nodeRefs List<NodeRef>
      * @return list of {@link FileInfo}
      */
     @Auditable(parameters = {"nodeRefs"})

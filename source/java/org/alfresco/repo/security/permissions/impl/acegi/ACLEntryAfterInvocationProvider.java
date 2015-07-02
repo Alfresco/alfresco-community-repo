@@ -108,7 +108,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     /**
      * Set the permission service.
      * 
-     * @param permissionService
+     * @param permissionService PermissionService
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -138,7 +138,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     /**
      * Set the namespace prefix resolver
      * 
-     * @param nspr
+     * @param nspr NamespacePrefixResolver
      */
     public void setNamespacePrefixResolver(NamespacePrefixResolver nspr)
     {
@@ -158,7 +158,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     /**
      * Set the node service
      * 
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -168,7 +168,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     /**
      * Set the authentication service
      * 
-     * @param authenticationService
+     * @param authenticationService AuthenticationService
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
@@ -178,7 +178,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     /**
      * Set the max number of permission checks
      * 
-     * @param maxPermissionChecks
+     * @param maxPermissionChecks int
      */
     public void setMaxPermissionChecks(int maxPermissionChecks)
     {
@@ -188,7 +188,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
     /**
      * Set the max time for permission checks
      * 
-     * @param maxPermissionCheckTimeMillis
+     * @param maxPermissionCheckTimeMillis long
      */
     public void setMaxPermissionCheckTimeMillis(long maxPermissionCheckTimeMillis)
     {
@@ -197,7 +197,7 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
 
     /**
      * Types and aspects for which we will abstain on voting if they are present.
-     * @param unfilteredFor
+     * @param unfilteredFor Set<String>
      */
     public void setUnfilteredFor(Set<String> unfilteredFor)
     {

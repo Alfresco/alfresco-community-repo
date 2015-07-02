@@ -48,8 +48,8 @@ public class LuceneResultSetRow extends AbstractResultSetRow
     /**
      * Wrap a position in a lucene Hits class with node support
      * 
-     * @param resultSet
-     * @param index
+     * @param resultSet LuceneResultSet
+     * @param index int
      */
     public LuceneResultSetRow(LuceneResultSet resultSet, int index)
     {
@@ -61,7 +61,7 @@ public class LuceneResultSetRow extends AbstractResultSetRow
     /**
      * Support to cache the document for this row
      * 
-     * @return
+     * @return Document
      */
     public Document getDocument()
     {

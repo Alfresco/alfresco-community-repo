@@ -40,9 +40,9 @@ public class CategoryTemplateNode extends TemplateNode
     /**
      * Constructor
      * 
-     * @param nodeRef
-     * @param services
-     * @param resolver
+     * @param nodeRef NodeRef
+     * @param services ServiceRegistry
+     * @param resolver TemplateImageResolver
      */
     public CategoryTemplateNode(NodeRef nodeRef, ServiceRegistry services, TemplateImageResolver resolver)
     {
@@ -155,7 +155,7 @@ public class CategoryTemplateNode extends TemplateNode
     /**
      * Support to build node lists from category service API calls.
      * 
-     * @param childRefs
+     * @param childRefs Collection<ChildAssociationRef>
      * 
      * @return List of TemplateNode
      */

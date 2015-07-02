@@ -72,7 +72,7 @@ public class AssociationPolicyDelegate<P extends AssociationPolicy>
     /**
      * Ensures the validity of the given assoc type
      * 
-     * @param assocTypeQName
+     * @param assocTypeQName QName
      * @throws IllegalArgumentException
      */
     private void checkAssocType(QName assocTypeQName) throws IllegalArgumentException

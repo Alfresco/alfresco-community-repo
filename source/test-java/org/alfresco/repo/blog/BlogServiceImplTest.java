@@ -181,7 +181,7 @@ public class BlogServiceImplTest
 
     /**
      * Deletes the specified NodeRefs, if they exist.
-     * @param nodesToDelete
+     * @param nodesToDelete List<NodeRef>
      */
     private static void performDeletionOfNodes(final List<NodeRef> nodesToDelete)
     {
@@ -283,7 +283,7 @@ public class BlogServiceImplTest
     /**
      * This method asserts that the given List<BlogPostInfo> has NodeRefs in order of the specified date property.
      * 
-     * @param blogPosts
+     * @param blogPosts List<BlogPostInfo>
      * @param property a Date property
      * @param ascendingOrder <tt>true</tt> if ascending order, <tt>false</tt> for descending.
      */

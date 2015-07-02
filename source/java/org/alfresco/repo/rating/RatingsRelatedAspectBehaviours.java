@@ -70,7 +70,7 @@ public class RatingsRelatedAspectBehaviours implements CopyServicePolicies.OnCop
     }
     
     /**
-     * @return Returns {@link RatingRelatedAspectsCopyBehaviourCallback}
+     * @return Returns CopyBehaviourCallback
      */
     @Override public CopyBehaviourCallback getCopyCallback(QName classRef, CopyDetails copyDetails)
     {

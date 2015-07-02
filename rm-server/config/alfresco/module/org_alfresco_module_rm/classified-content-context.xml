@@ -44,14 +44,6 @@
 
    <bean id="preMethodInvocationProcessor"
       class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PreMethodInvocationProcessor">
-      <!--
-      <property name="transactionService" ref="transactionService" />
-      <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap" />
-      <property name="alfrescoTransactionSupport" ref="rm.alfrescoTransactionSupport" />
-      <property name="nodeService" ref="dbNodeService" />
-      <property name="dictionaryService" ref="dictionaryService" />
-      <property name="contentClassificationService" ref="contentClassificationService" />
-      -->
    </bean>
 
    <bean id="postMethodInvocationProcessor"

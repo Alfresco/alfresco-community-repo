@@ -69,8 +69,6 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     private ExemptionCategoryFieldsValidator exemptionCategoryFieldsValidator = new ExemptionCategoryFieldsValidator();
     private ClassificationSchemeEntityValidator<ExemptionCategory> exemptionCategoryValidator = new ClassificationSchemeEntityValidator<>(exemptionCategoryFieldsValidator);
 
-    private boolean isInitialised = false;
-
     public ClassificationServiceBootstrap(AuthenticationUtil authUtil,
                                           TransactionService txService,
                                           AttributeService attributeService,
@@ -95,11 +93,6 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     public ExemptionCategoryManager getExemptionCategoryManager() { return exemptionCategoryManager; }
     public ClearanceLevelManager getClearanceLevelManager() { return clearanceLevelManager; }
 
-    public boolean isInitialised()
-    {
-        return isInitialised;
-    }
-
     @Override public void onBootstrap(ApplicationEvent event)
     {
         authenticationUtil.runAsSystem(new org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork<Void>()
@@ -123,7 +116,6 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
                         exemptionCategoryManager.setExemptionCategories(exemptionCategories);
 
                         initConfiguredClearanceLevels(classificationLevelManager.getClassificationLevels());
-                        isInitialised = true;
                         return null;
                     }
                 };

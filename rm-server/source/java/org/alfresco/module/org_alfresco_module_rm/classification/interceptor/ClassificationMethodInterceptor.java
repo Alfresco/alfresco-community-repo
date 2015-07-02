@@ -83,28 +83,21 @@ public class ClassificationMethodInterceptor implements MethodInterceptor
     {
         mandatory("invocation", invocation);
 
-        Object result = null;
-
-        boolean canProceed = true;
         boolean isUserValid = isUserValid();
 
+        // Pre method invocation processing
         if (isUserValid)
         {
-            //FIXME!!!
-            // Pre method invocation processing
-            //canProceed = getPreMethodInvocationProcessor().process(invocation);
+            getPreMethodInvocationProcessor().process(invocation);
         }
 
-        if (canProceed)
-        {
-            // Method invocation
-            result = invocation.proceed();
+        // Method invocation
+        Object result = invocation.proceed();
 
-            // Post method invocation processing
-            if (isUserValid && result != null)
-            {
-                result = getPostMethodInvocationProcessor().process(result);
-            }
+        // Post method invocation processing
+        if (isUserValid && result != null)
+        {
+            result = getPostMethodInvocationProcessor().process(result);
         }
 
         return result;

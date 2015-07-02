@@ -128,7 +128,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
      * @param wikiPage the wiki page generating the activity.
      * @param site     the site in which the wiki page was created.
      * @param req      the {@link WebScriptRequest}.
-     * @param json
+     * @param json JSONObject
      * @param additionalData any additional data required for the activity.
      */
     protected void addActivityEntry(String event,

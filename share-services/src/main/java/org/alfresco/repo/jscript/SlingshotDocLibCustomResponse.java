@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Populates DocLib webscript response with custom metadata output
  *
- * @author: mikeh
+ * @author mikeh
  */
 public final class SlingshotDocLibCustomResponse extends BaseScopableProcessorExtension
 {

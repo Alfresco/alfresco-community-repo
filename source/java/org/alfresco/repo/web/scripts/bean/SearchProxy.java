@@ -77,7 +77,7 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
     protected String proxyPath;
     
     /**
-     * @param formatRegistry
+     * @param formatRegistry FormatRegistry
      */
     public void setFormatRegistry(FormatRegistry formatRegistry)
     {
@@ -85,7 +85,7 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
     }
 
     /**
-     * @param configService
+     * @param configService ConfigService
      */
     public void setConfigService(ConfigService configService)
     {
@@ -192,10 +192,10 @@ public class SearchProxy extends AbstractWebScript implements InitializingBean
         /**
          * Construct
          * 
-         * @param rootPath
-         * @param engine
-         * @param engineUrl
-         * @param response
+         * @param rootPath String
+         * @param engine String
+         * @param engineUrl String
+         * @param response HttpServletResponse
          * @param headers request headers
          * @throws MalformedURLException
          */

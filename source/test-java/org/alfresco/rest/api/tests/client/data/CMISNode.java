@@ -27,7 +27,7 @@ public class CMISNode implements Serializable, ExpectedComparison
 
 	/**
 	 * For POSTs
-	 * @param guid
+	 * @param guid String
 	 */
 	public CMISNode(String guid)
 	{

@@ -86,7 +86,7 @@ public class ResourceWebScriptHelper
      * filter param is set then a default BeanFilter is returned that will never
      * filter properties (ie. Returns all bean properties).
      * 
-     * @param filterParams
+     * @param filterParams String
      * @return BeanPropertyFilter - if no parameter then returns a new
      *         ReturnAllBeanProperties class
      */
@@ -114,7 +114,7 @@ public class ResourceWebScriptHelper
      * filter param is set then a default BeanFilter is returned that will never
      * filter properties (ie. Returns all bean properties).
      * 
-     * @param filterParams
+     * @param filterParams String
      * @return BeanPropertiesFilter - if no parameter then returns a new
      *         ReturnAllBeanProperties class
      */
@@ -149,7 +149,7 @@ public class ResourceWebScriptHelper
     
     /**
      * Takes the "select" parameter and turns it into a List<String> property names
-     * @param selectParam
+     * @param selectParam String
      * @return List<String> bean property names potentially using JSON Pointer syntax
      */
     @SuppressWarnings("unchecked")
@@ -188,7 +188,7 @@ public class ResourceWebScriptHelper
     
     /**
      * Takes the "where" parameter and turns it into a Java Object that can be used for querying
-     * @param whereParam
+     * @param whereParam String
      * @return Query a parsed version of the where clause, represented in Java
      */
     public static Query getWhereClause(String whereParam) throws InvalidQueryException
@@ -312,8 +312,8 @@ public class ResourceWebScriptHelper
      * invoke it. If it fails it just swallows the exceptions and doesn't throw
      * them further.
      * 
-     * @param theObj
-     * @param uniqueId
+     * @param theObj Object
+     * @param uniqueId String
      */
     public static void setUniqueId(Object theObj, String uniqueId)
     {
@@ -393,7 +393,7 @@ public class ResourceWebScriptHelper
 
     /**
      * Looks at the object passed in and recursively expands any @EmbeddedEntityResource annotations or related relationship.
-     * @EmbeddedEntityResource is expanded by calling the ReadById method for this entity.
+     * {@link org.alfresco.rest.framework.resource.EmbeddedEntityResource EmbeddedEntityResource} is expanded by calling the ReadById method for this entity.
      * 
      * Either returns a ExecutionResult object or a CollectionWithPagingInfo containing a collection of ExecutionResult objects.
      * 
@@ -456,17 +456,19 @@ public class ResourceWebScriptHelper
     /**
      * Loops through the embedded Resources and executes them.  The results are added to list of embedded results used by
      * the ExecutionResult object.
-     * 
-     * @param relatedResources
-     * @param execRes
-     * @param uniqueEntityId
+     *
+     * @param api Api
+     * @param params Params
+     * @param objectToWrap Object
+     * @param embeddded Map<String, Pair<String, Method>>
+     * @return Map
      */
     private Map<String, Object> executeEmbeddedResources(Api api, Params params, Object objectToWrap, Map<String, Pair<String, Method>> embeddded)
     {
         final Map<String,Object> results = new HashMap<String,Object>(embeddded.size());
         for (Entry<String, Pair<String,Method>> embeddedEntry : embeddded.entrySet())
         {
-            ResourceWithMetadata res = locator.locateEntityResource(api,embeddedEntry.getValue().getFirst(), HttpMethod.GET);
+            ResourceWithMetadata res = locator.locateEntityResource(api, embeddedEntry.getValue().getFirst(), HttpMethod.GET);
             if (res != null)
             {
                 Object id = ResourceInspectorUtil.invokeMethod(embeddedEntry.getValue().getSecond(), objectToWrap);
@@ -495,10 +497,12 @@ public class ResourceWebScriptHelper
     /**
      * Loops through the related Resources and executed them.  The results are added to list of embedded results used by
      * the ExecutionResult object.
-     * 
-     * @param relatedResources
-     * @param execRes
-     * @param uniqueEntityId
+     *
+     * @param api Api
+     * @param filters Map<String, BeanPropertiesFilter>
+     * @param relatedResources Map<String, ResourceWithMetadata>
+     * @param uniqueEntityId String
+     * @return Map
      */
     private Map<String,Object> executeRelatedResources(final Api api, Map<String, BeanPropertiesFilter> filters,
                 Map<String, ResourceWithMetadata> relatedResources,
@@ -519,9 +523,13 @@ public class ResourceWebScriptHelper
     /**
      * Executes a single related Resource.  The results are added to list of embedded results used by
      * the ExecutionResult object.
-     * 
-     * @param relatedResources
-     * @param uniqueEntityId
+     *
+     * @param api Api
+     * @param filters Map<String, BeanPropertiesFilter>
+     * @param uniqueEntityId String
+     * @param resourceKey String
+     * @param resource ResourceWithMetadata
+     * @return Object
      */
     private Object executeRelatedResource(final Api api, final Map<String, BeanPropertiesFilter> filters,
                 final String uniqueEntityId, final String resourceKey, final ResourceWithMetadata resource)
@@ -573,7 +581,7 @@ public class ResourceWebScriptHelper
      * and returns them for use.
      * 
      * @param req - the WebScriptRequest object
-     * @return Map<String, String[]> the request parameters
+     * @return the request parameters
      */
     public static Map<String, String[]> getRequestParameters(WebScriptRequest req)
     {

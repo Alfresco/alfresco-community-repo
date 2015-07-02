@@ -40,7 +40,7 @@ public class ReplicationServiceStatusGet extends DeclarativeWebScript
     /**
      * Used to inject the {@link ReplicationService}.
      * 
-     * @param replicationService
+     * @param replicationService ReplicationService
      */
     public void setReplicationService(ReplicationService replicationService)
     {

@@ -53,7 +53,6 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>, Enti
     /**
      * Returns a paged list of all sites in the current tenant.
      * 
-     * @see org.alfresco.rest.framework.resource.actions.interfaces.CollectionResourceAction.Get#get()
      */
     @Override
     @WebApiDescription(title="A paged list of visible sites in the network.", description="A site is visible if it is public or if the person is a member")

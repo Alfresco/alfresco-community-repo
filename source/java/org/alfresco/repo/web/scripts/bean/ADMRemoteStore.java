@@ -865,8 +865,8 @@ public class ADMRemoteStore extends BaseRemoteStore
      * <p>
      * Disassmbles the path to correct match either user, site or generic folder path.
      * 
-     * @param path
-     * @param create
+     * @param path String
+     * @param create boolean
      * 
      * @return NodeRef to the "surf-config" folder, or null if it does not exist yet.
      */

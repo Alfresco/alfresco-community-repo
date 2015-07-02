@@ -132,7 +132,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
 	}
 
 	/**
-     * @param repository
+     * @param repository Repository
      */
     public void setRepository(Repository repository)
     {
@@ -140,7 +140,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
 
     /**
-     * @param imageResolver
+     * @param imageResolver RepositoryImageResolver
      */
     public void setRepositoryImageResolver(RepositoryImageResolver imageResolver)
     {
@@ -148,7 +148,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
     
     /**
-     * @param transactionService
+     * @param transactionService TransactionService
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -164,7 +164,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
 
     /**
-     * @param descriptorService
+     * @param descriptorService DescriptorService
      */
     public void setDescriptorService(DescriptorService descriptorService)
     {
@@ -172,7 +172,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     }
 
     /**
-     * @param authorityService
+     * @param authorityService AuthorityService
      */
     public void setAuthorityService(AuthorityService authorityService)
     {
@@ -259,7 +259,7 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     /**
      * Add Repository specific parameters
      * 
-     * @param params
+     * @param params Map<String, Object>
      */
     private void addRepoParameters(Map<String, Object> params)
     {
@@ -443,8 +443,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     /**
      * Execute script within required level of transaction
      * 
-     * @param scriptReq
-     * @param scriptRes
+     * @param script WebScript
+     * @param scriptReq WebScriptRequest
+     * @param scriptRes WebScriptResponse
      * @throws IOException
      */
     protected void transactionedExecute(final WebScript script, final WebScriptRequest scriptReq, final WebScriptResponse scriptRes)
@@ -627,8 +628,9 @@ public class RepositoryContainer extends AbstractRuntimeContainer
     /**
      * Execute script within required level of transaction as required effective user.
      * 
-     * @param scriptReq
-     * @param scriptRes
+     * @param script WebScript
+     * @param scriptReq WebScriptRequest
+     * @param scriptRes WebScriptResponse
      * @throws IOException
      */
     private void transactionedExecuteAs(final WebScript script, final WebScriptRequest scriptReq,

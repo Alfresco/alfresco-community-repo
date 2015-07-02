@@ -364,7 +364,7 @@ public class WorkflowRestImpl
 
     /**
      * @param type the type to get the elements for
-     * @param paging 
+     * @param paging Paging
      * @return collection with all valid form-model elements for the given type.
      */
     public CollectionWithPagingInfo<FormModelElement> getFormModelElements(TypeDefinition type, Paging paging)

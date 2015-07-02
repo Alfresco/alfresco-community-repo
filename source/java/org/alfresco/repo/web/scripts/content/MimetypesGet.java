@@ -138,7 +138,7 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
      * Sets the map of content transformer worker bean names to
      * message formatting labels
      * 
-     * @param knownWorkerBeanLabels
+     * @param knownWorkerBeanLabels Map<String, String>
      */
     public void setKnownWorkerBeanLabels(Map<String, String> knownWorkerBeanLabels)
     {
@@ -252,8 +252,8 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
     
     /**
      * Gets the display label for complex transformers
-     * 
-     * @param cct
+     *
+     * @param cct ComplexContentTransformer
      * @return the transformer display label
      */
     protected String getComplexTransformerLabel(ComplexContentTransformer cct)
@@ -268,7 +268,7 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
     /**
      * Gets the display label for proxy content transformers
      * 
-     * @param pct
+     * @param pct ProxyContentTransformer
      * @return the transformer display label
      */
     protected String getProxyTransformerLabel(ProxyContentTransformer pct)
@@ -290,7 +290,7 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
      * <p>
      * In the future ContentTransformerWorker may be made bean name aware.
      * 
-     * @param ctw
+     * @param ctw ContentTransformerWorker
      * @return the bean name
      */
     protected String getWorkerBeanName(ContentTransformerWorker ctw)

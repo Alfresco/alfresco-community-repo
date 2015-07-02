@@ -29,7 +29,6 @@ public class CollectionWithPagingInfo<T>
      * @param paging - Paging request info
      * @param hasMoreItems - Are there more items after this Collection?
      * @param totalItems - The total number of items available.
-     * @return CollectionWithPagingInfo
      */
     protected CollectionWithPagingInfo(Collection<T> collection, Paging paging, boolean hasMoreItems, Integer totalItems)
     {

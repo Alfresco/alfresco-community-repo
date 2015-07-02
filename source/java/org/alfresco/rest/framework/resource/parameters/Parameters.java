@@ -19,7 +19,7 @@ public interface Parameters
     /**
      * Gets a single request parameter passed in by the user.
      * Currently doesn't support multiple values.
-     * @param parameterName
+     * @param parameterName String
      * @return String The Parameter value
      */
     public String getParameter(String parameterName);
@@ -29,7 +29,7 @@ public interface Parameters
      * Attempts to convert the parameter to the specified type.
      * If unable to convert the parameter to the specified type then throws an InvalidArgumentException.
      * Currently doesn't support multiple values.
-     * @param parameterName
+     * @param parameterName String
      * @param clazz - type to use for conversion.
      * @return The Parameter value
      * @throws InvalidArgumentException

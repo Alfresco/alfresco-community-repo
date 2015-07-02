@@ -31,7 +31,7 @@ public class Document extends Node implements ExpectedComparison, JSONAble
 
 	/**
 	 * For POSTs
-	 * @param guid
+	 * @param guid String
 	 */
 	public Document(String guid)
 	{

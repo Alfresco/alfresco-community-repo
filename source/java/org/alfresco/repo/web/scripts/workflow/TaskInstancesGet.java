@@ -240,8 +240,8 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
     /**
      * Gets the specified {@link WorkflowTaskState}, null if not requested
      * 
-     * @param req
-     * @return
+     * @param req WebScriptRequest
+     * @return WorkflowTaskState
      */
     private WorkflowTaskState getState(WebScriptRequest req)
     {
@@ -264,8 +264,8 @@ public class TaskInstancesGet extends AbstractWorkflowWebscript
 
     /**
      * Returns the specified authority. If no authority is specified then returns the current Fully Authenticated user.
-     * @param req
-     * @return
+     * @param req WebScriptRequest
+     * @return String
      */
     private String getAuthority(WebScriptRequest req)
     {

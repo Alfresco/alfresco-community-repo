@@ -34,7 +34,7 @@ public class Node implements Serializable, ExpectedComparison
 	/**
 	 * For POSTs
 	 * 
-	 * @param guid
+	 * @param guid String
 	 */
 	public Node(String guid)
 	{

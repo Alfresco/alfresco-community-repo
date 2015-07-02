@@ -151,7 +151,7 @@ public class BlogPostsPost extends AbstractBlogWebScript
     
     /**
      * Taken from JS
-     * @param node
+     * @param node NodeRef
      */
     private void ensureTagScope(NodeRef node)
     {

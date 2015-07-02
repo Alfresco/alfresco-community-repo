@@ -483,7 +483,7 @@ public class WebDAV
     /**
      * Returns string representation of the depth
      * 
-     * @param depth
+     * @param depth int
      * @return String
      */
     public static final String getDepthName(int depth)

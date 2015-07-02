@@ -956,7 +956,7 @@ public class PropFindMethod extends WebDAVMethod
     /**
      * Loads all dead properties persisted on the node
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @return the map of all dead properties
      */
     @SuppressWarnings("unchecked")
@@ -1022,8 +1022,7 @@ public class PropFindMethod extends WebDAVMethod
     /**
      * Output the lockentry element of the specified type
      * @param xml XMLWriter
-     * @param lockType lock type. Can be WebDAV.XML_NS_EXCLUSIVE or WebDAV.XML_NS_SHARED
-     * @param lockType lock type containing namespace
+     * @param lockType lock type containing namespace. Can be WebDAV.XML_NS_EXCLUSIVE or WebDAV.XML_NS_SHARED
      * @throws SAXException
      * @throws IOException
      */

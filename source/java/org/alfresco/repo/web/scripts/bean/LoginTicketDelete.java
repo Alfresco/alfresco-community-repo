@@ -45,7 +45,7 @@ public class LoginTicketDelete extends DeclarativeWebScript
     private TicketComponent ticketComponent;
     
     /**
-     * @param ticketComponent
+     * @param ticketComponent TicketComponent
      */
     public void setTicketComponent(TicketComponent ticketComponent)
     {
@@ -53,7 +53,7 @@ public class LoginTicketDelete extends DeclarativeWebScript
     }
 
     /**
-     * @param authenticationService
+     * @param authenticationService AuthenticationService
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {

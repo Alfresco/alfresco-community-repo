@@ -12,7 +12,7 @@ public class EntityNotFoundException extends NotFoundException
     
     /**
      * The entity id param will be shown in the default error message.
-     * @param entityId
+     * @param entityId String
      */
     public EntityNotFoundException(String entityId)
     {

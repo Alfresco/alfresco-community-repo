@@ -35,7 +35,8 @@ public class RepositoryServerModel implements ServerModel
     /**
      * Construct
      * 
-     * @param serverDescriptor
+     * @param currentDescriptor Descriptor
+     * @param serverDescriptor Descriptor
      */
     /*package*/ RepositoryServerModel(Descriptor currentDescriptor, Descriptor serverDescriptor)
     {

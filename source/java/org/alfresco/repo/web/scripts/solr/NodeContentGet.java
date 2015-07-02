@@ -89,7 +89,7 @@ public class NodeContentGet extends StreamContent
     
     /**
      * Setter of the transformer debug. 
-     * @param transformerDebug
+     * @param transformerDebug TransformerDebug
      */
     public void setTransformerDebug(TransformerDebug transformerDebug)
     {
@@ -97,7 +97,10 @@ public class NodeContentGet extends StreamContent
     }
 
     /**
-     * @in
+     *
+     * @param req WebScriptRequest
+     * @param res WebScriptResponse
+     * @throws IOException
      */
     public void execute(WebScriptRequest req, WebScriptResponse res) throws IOException
     {

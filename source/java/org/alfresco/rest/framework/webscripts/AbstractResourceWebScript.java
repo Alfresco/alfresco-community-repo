@@ -152,7 +152,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     /**
      * The response status must be set before the response is written by Jackson (which will by default close and commit the response).
      * In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important.
-     * @param res
+     * @param res WebScriptResponse
      */
     protected void setSuccessResponseStatus(final WebScriptResponse res)
     {
@@ -164,7 +164,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
      * Finds the action executor to execute actions on.
      * @param httpMethod - the http method
      * @param params Params
-     * @param resource 
+     * @param resource ResourceWithMetadata
      * @param contentType Request content type
      * @return ActionExecutor the action executor
      */

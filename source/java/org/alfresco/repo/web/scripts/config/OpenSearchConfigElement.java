@@ -102,7 +102,7 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
     /**
      * Sets the proxy configuration
      * 
-     * @param proxyConfig
+     * @param proxyConfig ProxyConfig
      */
     /*package*/ void setProxy(ProxyConfig proxyConfig)
     {
@@ -168,8 +168,8 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         /**
          * Construct
          * 
-         * @param label
-         * @param labelId
+         * @param label String
+         * @param labelId String
          */
         public EngineConfig(String label, String labelId)
         {
@@ -184,9 +184,9 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         /**
          * Construct
          * 
-         * @param label
-         * @param labelId
-         * @param proxy
+         * @param label String
+         * @param labelId String
+         * @param proxy String
          */
         public EngineConfig(String label, String labelId, String proxy)
         {
@@ -254,7 +254,7 @@ public class OpenSearchConfigElement extends ConfigElementAdapter
         /**
          * Construct
          * 
-         * @param url
+         * @param url String
          */
         public ProxyConfig(String url)
         {

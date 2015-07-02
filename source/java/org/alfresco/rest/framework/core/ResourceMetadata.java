@@ -41,7 +41,7 @@ public class ResourceMetadata
 
     /**
      * Indicates if this resource can support the specified HTTPMethod
-     * @param supportedMethod
+     * @param supportedMethod HttpMethod
      * @return true if can support it
      */
     public boolean supports(HttpMethod supportedMethod)
@@ -55,7 +55,7 @@ public class ResourceMetadata
 
     /**
      * Indicates if this resource can support the specified HTTPMethod
-     * @param supportedMethod
+     * @param supportedMethod HttpMethod
      * @return true if can support it
      */
     @SuppressWarnings("rawtypes")
@@ -78,7 +78,7 @@ public class ResourceMetadata
     
     /**
      * Indicates if this resource action is no longer supported.
-     * @param resourceAction
+     * @param resourceAction Class<? extends ResourceAction>
      * @return true if it is no longer supported
      */
     public boolean isDeleted(Class<? extends ResourceAction> resourceAction)
@@ -170,7 +170,7 @@ public class ResourceMetadata
     /**
      * Gets the parameters for the specified http method.
      * Matches the first operation.
-     * @param httpMethod
+     * @param httpMethod HttpMethod
      * @return If not found returns an empty list
      */
     public List<ResourceParameter> getParameters(HttpMethod httpMethod)

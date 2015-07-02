@@ -78,7 +78,7 @@ public class ContentStreamer implements ResourceLoaderAware
         protected EventPublisher eventPublisher;
         protected SiteService siteService;
         /**
-         * @param mimetypeService
+         * @param mimetypeService MimetypeService
          */
         public void setMimetypeService(MimetypeService mimetypeService)
         {
@@ -86,7 +86,7 @@ public class ContentStreamer implements ResourceLoaderAware
         }
 
         /**
-         * @param nodeService
+         * @param nodeService NodeService
          */
         public void setNodeService(NodeService nodeService)
         {
@@ -116,7 +116,7 @@ public class ContentStreamer implements ResourceLoaderAware
         }
         
         /**
-         * @param contentService
+         * @param contentService ContentService
          */
         public void setContentService(ContentService contentService)
     
@@ -433,10 +433,10 @@ public class ContentStreamer implements ResourceLoaderAware
     /**
      * Set attachment header
      * 
-     * @param req
-     * @param res
-     * @param attach
-     * @param attachFileName
+     * @param req WebScriptRequest
+     * @param res WebScriptResponse
+     * @param attach boolean
+     * @param attachFileName String
      */
     public void setAttachment(WebScriptRequest req, WebScriptResponse res, boolean attach, String attachFileName)
     {
@@ -478,9 +478,10 @@ public class ContentStreamer implements ResourceLoaderAware
     /**
      * Set the cache settings on the response
      * 
-     * @param res
-     * @param modified
-     * @param eTag
+     * @param res WebScriptResponse
+     * @param modified Date
+     * @param eTag String
+     * @param model Map<String, Object>
      */
     protected void setResponseCache(WebScriptResponse res, Date modified, String eTag, Map<String, Object> model)
     {

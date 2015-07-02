@@ -671,10 +671,10 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
     /**
      * Validate the MD4 hash against local password
      * 
-     * @param type3Msg
-     * @param ntlmDetails
-     * @param authenticated
-     * @param md4hash
+     * @param type3Msg Type3NTLMMessage
+     * @param ntlmDetails NTLMLogonDetails
+     * @param authenticated boolean
+     * @param md4hash String
      * 
      * @return true if password hash is valid, false otherwise
      */
@@ -978,7 +978,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
     /**
      * Get the stored MD4 hashed password for the user, or null if the user does not exist
      * 
-     * @param userName
+     * @param userName String
      *
      * @return MD4 hash or null
      */

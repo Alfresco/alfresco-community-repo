@@ -87,9 +87,8 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
 
 	/**
      * Returns the basic content info from the request.
-     * @param req
+     * @param req WebScriptRequest
      * @return BasicContentInfo
-     * @throws IOException 
      */
     private BasicContentInfo getContentInfo(WebScriptRequest req) {
     	
@@ -111,9 +110,8 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
 
 	/**
      * Returns the input stream for the request
-     * @param req
-     * @return
-     * @throws IOException 
+     * @param req WebScriptRequest
+     * @return InputStream
      */
     private InputStream getStream(WebScriptRequest req)
     {
@@ -134,7 +132,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
     
     /**
      * Executes the action on the resource
-     * @param resource
+     * @param resource ResourceWithMetadata
      * @param params parameters to use
      * @return anObject the result of the execute
      */

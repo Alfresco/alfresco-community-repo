@@ -36,7 +36,7 @@ public class ClassGet extends AbstractClassGet
     private static final String DICTIONARY_SHORT_CLASS_NAME = "shortClassName";
     
     /**
-     * @Override method from AbstractClassGet
+     * Override method from AbstractClassGet
      */
     @Override
     protected QName getClassQname(WebScriptRequest req)

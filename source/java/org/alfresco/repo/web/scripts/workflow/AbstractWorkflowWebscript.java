@@ -257,7 +257,7 @@ public abstract class AbstractWorkflowWebscript extends DeclarativeWebScript
     /**
      * Get capacity instaead of size of list
      * MNT-9074 My Tasks fails to render if tasks quantity is excessive
-     * @param list
+     * @param list List<?>
      * @return capacity of list
      * @throws Exception
      */

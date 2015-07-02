@@ -58,7 +58,7 @@ public class HttpRangeProcessor
     /**
      * Constructor.
      * 
-     * @param contentService
+     * @param contentService ContentService
      */
     public HttpRangeProcessor(ContentService contentService)
     {
@@ -444,7 +444,6 @@ public class HttpRangeProcessor
      * @param os      ServletOutputStream
      * @param offset  Assumed InputStream position - to calculate skip bytes from
      * 
-     * @return current InputStream position - so the stream can be reused if required 
      */
     private void streamRangeBytes(final Range r, final InputStream is, final OutputStream os, long offset)
        throws IOException

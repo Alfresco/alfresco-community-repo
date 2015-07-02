@@ -36,22 +36,22 @@ public interface Nodes
 	
     /**
      * Get the node representation for the given node.
-     * @param nodeId
-     * @return
+     * @param nodeId String
+     * @return Node
      */
     Node getNode(String nodeId);
     
     /**
      * Get the document representation for the given node.
-     * @param nodeRef
-     * @return
+     * @param nodeRef NodeRef
+     * @return Document
      */
     Document getDocument(NodeRef nodeRef);
     
     /**
      * Get the folder representation for the given node.
-     * @param nodeRef
-     * @return
+     * @param nodeRef NodeRef
+     * @return Folder
      */
     Folder getFolder(NodeRef nodeRef);
 }

@@ -28,9 +28,9 @@ public class Api implements Comparable<Api>
     
     /**
      * Constructor used to create an api
-     * @param name
-     * @param scope
-     * @param version
+     * @param name String
+     * @param scope SCOPE
+     * @param version int
      */
     private Api(String name, SCOPE scope, int version)
     {

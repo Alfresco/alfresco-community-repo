@@ -122,7 +122,7 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     
     
     /**
-     * @param qname
+     * @param qname QName
      * @return the namespaceuri from a qname 
      */
     public String getNamespaceURIfromQname(QName qname)
@@ -313,8 +313,8 @@ public abstract class DictionaryWebServiceBase extends DeclarativeWebScript
     }
     
     /**
-     * @param classname 
-     * @returns the shortname from the classname of the format cm_person 
+     * @param classname  String
+     * @return the shortname from the classname of the format cm_person
      * 			here person represents the shortname
      */
     public String getShortName(String classname)

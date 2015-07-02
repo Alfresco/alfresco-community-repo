@@ -24,7 +24,7 @@ import junit.framework.TestSuite;
 /**
  * See {@link RemoteApi01TestSuite}
  *
- * @Author Alan Davis
+ * @author Alan Davis
  */
 public class RemoteApi04TestSuite extends TestSuite
 {

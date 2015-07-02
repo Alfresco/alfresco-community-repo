@@ -17,10 +17,10 @@ public class ResourceOperation
     private final List<ResourceParameter> parameters;
     
     /**
-     * @param httpMethod
-     * @param title
-     * @param description
-     * @param parameters
+     * @param httpMethod HttpMethod
+     * @param title String
+     * @param description String
+     * @param parameters List<ResourceParameter>
      */
     public ResourceOperation(HttpMethod httpMethod, String title, String description, List<ResourceParameter> parameters)
     {

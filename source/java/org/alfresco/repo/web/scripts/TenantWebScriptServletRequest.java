@@ -46,13 +46,14 @@ public class TenantWebScriptServletRequest extends WebScriptServletRequest
         tenant = realPathInfo.substring(1, idx == -1 ? realPathInfo.length() : idx);
         pathInfo = realPathInfo.substring(tenant.length() + 1);
     }
-    
+
     /**
      * Construction
      *
-     * @param container  request generator
-     * @param req
-     * @param serviceMatch
+     * @param container Runtime
+     * @param req HttpServletRequest
+     * @param serviceMatch Match
+     * @param serverProperties ServerProperties
      */
     public TenantWebScriptServletRequest(Runtime container, HttpServletRequest req, Match serviceMatch, ServerProperties serverProperties)
     {

@@ -365,8 +365,7 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * 
      * @param store the store id
      * @param path  document path
-     * @return  
-     * 
+     *
      * @throws IOException if an error occurs retrieving the document
      */
     protected abstract void getDocument(WebScriptResponse res, String store, String path)
@@ -409,7 +408,6 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * @param path          document path
      * @param content       content of the document to write
      * 
-     * @throws IOException if the create fails
      */
     protected abstract void createDocument(WebScriptResponse res, String store, String path, InputStream content);
     
@@ -420,7 +418,6 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * @param store         the store id
      * @param content       content of the document to write
      * 
-     * @throws IOException if the create fails
      */
     protected abstract void createDocuments(WebScriptResponse res, String store, InputStream content);
 
@@ -431,7 +428,6 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * @param path  document path
      * @param content       content to update the document with
      * 
-     * @throws IOException if the update fails
      */
     protected abstract void updateDocument(WebScriptResponse res, String store, String path, InputStream content);
     
@@ -441,7 +437,6 @@ public abstract class BaseRemoteStore extends AbstractWebScript
      * @param store the store id
      * @param path  document path
      * 
-     * @throws IOException if the delete fails
      */
     protected abstract void deleteDocument(WebScriptResponse res, String store, String path);
     

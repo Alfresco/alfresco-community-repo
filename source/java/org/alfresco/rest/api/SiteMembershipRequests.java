@@ -16,7 +16,7 @@ public interface SiteMembershipRequests
 	 * Create a site membership request for the user 'inviteeId'
 	 * @param inviteeId the site inviteee id
 	 * @param siteInvite the site invite
-	 * @return
+	 * @return SiteMembershipRequest
 	 */
 	SiteMembershipRequest createSiteMembershipRequest(String inviteeId, final SiteMembershipRequest siteInvite);
 	

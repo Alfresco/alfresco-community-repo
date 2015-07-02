@@ -50,7 +50,7 @@ public class ArchivedNodesGet extends AbstractArchivedNodeWebScript
     /**
      * This method is used to inject {@link org.alfresco.repo.web.scripts.archive.ArchivedNodesFilter node filters} on this GET call.
      * 
-     * @param nodeFilters
+     * @param nodeFilters List<ArchivedNodesFilter>
      */
     public void setArchivedNodeFilters(List<ArchivedNodesFilter> nodeFilters)
     {

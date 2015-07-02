@@ -148,7 +148,7 @@ public abstract class BaseAuthenticationFilter
     /**
      * Sets the authentication listener.
      * 
-     * @param
+     * @param authenticationListener AuthenticationListener
      */
     public void setAuthenticationListener(AuthenticationListener authenticationListener)
     {

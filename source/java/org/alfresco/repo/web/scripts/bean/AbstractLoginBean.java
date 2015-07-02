@@ -47,7 +47,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
     protected EventPublisher eventPublisher;
     
     /**
-     * @param authenticationService
+     * @param authenticationService AuthenticationService
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
@@ -55,7 +55,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
     }
 
     /**
-     * @param eventPublisher
+     * @param eventPublisher EventPublisher
      */
     public void setEventPublisher(EventPublisher eventPublisher)
     {

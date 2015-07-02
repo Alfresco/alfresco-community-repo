@@ -24,7 +24,7 @@ public class Folder extends Node implements ExpectedComparison, JSONAble
 
 	/**
 	 * For POSTs
-	 * @param guid
+	 * @param guid String
 	 */
 	public Folder(String guid)
 	{

@@ -24,7 +24,7 @@ public class ResourceWithMetadata
 
     /**
      * Returns the REST resource object
-     * @return
+     * @return Object
      */
     @JsonIgnore
     public Object getResource()
@@ -34,7 +34,7 @@ public class ResourceWithMetadata
 
     /**
      * Returns the meta data for this resource
-     * @return
+     * @return ResourceMetadata
      */
     public ResourceMetadata getMetaData()
     {

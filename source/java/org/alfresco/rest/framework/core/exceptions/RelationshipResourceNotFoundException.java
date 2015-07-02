@@ -12,8 +12,8 @@ public class RelationshipResourceNotFoundException extends NotFoundException
     
     /**
      * The entity id param will be shown in the default error message.
-     * @param entityId
-     * @param relationshipId
+     * @param entityId String
+     * @param relationshipId String
      */
     public RelationshipResourceNotFoundException(String entityId, String relationshipId)
     {

@@ -63,9 +63,9 @@ public class ResourceDictionaryBuilder
 
     /**
      * Finds a resources map, if it doesn't exist then it will create it.
-     * @param allResources
+     * @param allResources Map<Api, Map<String, ResourceWithMetadata>>
      * @param api Key
-     * @return Map<String, ResourceWithMetadata>
+     * @return Map
      */
     private static Map<String, ResourceWithMetadata> findResources(Map<Api, Map<String, ResourceWithMetadata>> allResources, Api api)
     {
@@ -80,8 +80,8 @@ public class ResourceDictionaryBuilder
 
     /**
      * Sort through the resources grouping them by api name/scope, then version.
-     * @param resources
-     * @return
+     * @param resources Collection<Object>
+     * @return Map
      */
     private static <T> Map<ApiScopeKey,Map<Integer,List<ResourceWithMetadata>>> parseResources(Collection<Object> resources)
     {

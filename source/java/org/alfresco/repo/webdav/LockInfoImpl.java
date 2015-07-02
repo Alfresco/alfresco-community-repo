@@ -31,7 +31,7 @@ import org.codehaus.jackson.map.ObjectMapper;
  * Class to represent a WebDAV lock info. Instances of this class are accessible
  * my multiple threads as they are kept in the {@link LockStore}. Clients of this
  * class are expected to synchronise externally using the provided
- * ReentrantReadWriteLock (use {@link #getRWLock()}).
+ * ReentrantReadWriteLock.
  * 
  * @author Ivan Rybnikov
  *
@@ -125,7 +125,7 @@ public class LockInfoImpl implements Serializable, LockInfo
     /**
      * Setter for lock scope.
      * 
-     * @param scope
+     * @param scope String
      */
     @Override
     public void setScope(String scope)
@@ -180,7 +180,7 @@ public class LockInfoImpl implements Serializable, LockInfo
     /**
      * Setter for sharedLockTokens list.
      * 
-     * @param sharedLockTokens
+     * @param sharedLockTokens Set<String>
      */
     @Override
     public void setSharedLockTokens(Set<String> sharedLockTokens)
@@ -394,7 +394,7 @@ public class LockInfoImpl implements Serializable, LockInfo
      * Sets the expiry date/time to lockTimeout seconds into the future. Provide
      * a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
      * 
-     * @param lockTimeoutSecs
+     * @param lockTimeoutSecs int
      */
     @Override
     @JsonIgnore
@@ -417,7 +417,7 @@ public class LockInfoImpl implements Serializable, LockInfo
      * Sets the expiry date/time to lockTimeout minutes into the future. Provide
      * a lockTimeout of WebDAV.TIMEOUT_INFINITY for never expires.
      * 
-     * @param lockTimeoutMins
+     * @param lockTimeoutMins int
      */
     @Override
     @JsonIgnore

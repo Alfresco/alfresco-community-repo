@@ -78,8 +78,8 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
     /**
      * If the @WebApiParam has been used and set allowMultiple to false then this will get a single entry.  It
      * should error if an array is passed in.
-     * @param resourceMeta
-     * @param req
+     * @param resourceMeta ResourceMetadata
+     * @param req WebScriptRequest
      * @return Either an object 
      */
     private Object extractObjFromJson(ResourceMetadata resourceMeta, WebScriptRequest req)
@@ -118,7 +118,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
 
     /**
      * Executes the action on the resource
-     * @param resource
+     * @param resource ResourceWithMetadata
      * @param params parameters to use
      * @return anObject the result of the execute
      */

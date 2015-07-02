@@ -233,9 +233,9 @@ public class SitesImpl implements Sites
 	/**
 	 * people/<personId>/sites/<siteId>
 	 * 
-	 * @param siteId
-	 * @param personId
-	 * @return
+	 * @param siteId String
+	 * @param personId String
+	 * @return MemberOfSite
 	 */
 	public MemberOfSite getMemberOfSite(String personId, String siteId)
 	{

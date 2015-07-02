@@ -470,10 +470,10 @@ public class WhereTests {
 
 	/**
 	 * Used by BetweenClauseTest, validates the clause
-	 * @param theQuery
-	 * @param propName
-	 * @param firstValue
-	 * @param secondValue
+	 * @param theQuery Query
+	 * @param propName String
+	 * @param firstValue String
+	 * @param secondValue String
 	 */
 	private void betweenChecks(Query theQuery, final String propName, final String firstValue, final String secondValue) {
 	    assertNotNull(theQuery);
@@ -497,9 +497,9 @@ public class WhereTests {
 	
 	/**
 	 * Used by the matchesClauseTest
-	 * @param theQuery
-	 * @param propName
-	 * @param propVal
+	 * @param theQuery Query
+	 * @param propName String
+	 * @param propVal String
 	 */
 	private void matchesChecks(Query theQuery, final String propName, final String propVal) {
 	    assertNotNull(theQuery);
@@ -520,9 +520,9 @@ public class WhereTests {
 	
 	/**
 	 * Use by the inClauseTest
-	 * @param theQuery
-	 * @param propName
-	 * @param values
+	 * @param theQuery Query
+	 * @param propName String
+	 * @param values String...
 	 */
 	private void inChecks(Query theQuery, final String propName, final String... values) {
 	    assertNotNull(theQuery);

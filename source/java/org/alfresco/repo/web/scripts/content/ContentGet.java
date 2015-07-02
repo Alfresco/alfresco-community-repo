@@ -60,7 +60,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
     private ContentService contentService;
 
     /**
-     * @param 
+     * @param servletContext ServletContext
      */
     public void setServletContext(ServletContext servletContext)
     {
@@ -68,7 +68,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
     }
 
     /**
-     * @param dictionaryService
+     * @param dictionaryService DictionaryService
      */
     public void setDictionaryService(DictionaryService dictionaryService)
     {
@@ -76,7 +76,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
     }
 
     /**
-     * @param namespaceService
+     * @param namespaceService NamespaceService
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -84,7 +84,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
     }
     
     /**
-     * @param contentService
+     * @param contentService ContentService
      */
     public void setContentService(ContentService contentService)
     {

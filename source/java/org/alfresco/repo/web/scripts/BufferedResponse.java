@@ -31,8 +31,8 @@ public class BufferedResponse implements WrappingWebScriptResponse
     /**
      * Construct
      * 
-     * @param res
-     * @param bufferSize
+     * @param res WebScriptResponse
+     * @param bufferSize int
      */
     public BufferedResponse(WebScriptResponse res, int bufferSize)
     {

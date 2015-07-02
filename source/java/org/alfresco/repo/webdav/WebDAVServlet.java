@@ -313,14 +313,14 @@ public class WebDAVServlet extends HttpServlet
     
     
     /**
-     * @param storeValue
-     * @param rootPath
-     * @param context
-     * @param nodeService
-     * @param searchService
-     * @param namespaceService
-     * @param tenantService
-     * @param m_transactionService
+     * @param storeValue String
+     * @param rootPath String
+     * @param context WebApplicationContext
+     * @param nodeService NodeService
+     * @param searchService SearchService
+     * @param namespaceService NamespaceService
+     * @param tenantService TenantService
+     * @param m_transactionService TransactionService
      */
     private void initializeRootNode(String storeValue, String rootPath, WebApplicationContext context, NodeService nodeService, SearchService searchService,
             NamespaceService namespaceService, TenantService tenantService, TransactionService m_transactionService)
@@ -470,7 +470,7 @@ public class WebDAVServlet extends HttpServlet
         /**
          * See {@link #getUrlPathPrefix()}
          * 
-         * @param urlPathPrefix
+         * @param urlPathPrefix String
          */
         public void setUrlPathPrefix(String urlPathPrefix)
         {

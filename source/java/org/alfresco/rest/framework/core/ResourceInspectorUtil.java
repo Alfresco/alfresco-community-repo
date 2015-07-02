@@ -74,8 +74,8 @@ public class ResourceInspectorUtil
 
     /**
      * Invokes a method and returns the result
-     * @param annotatedMethod
-     * @param obj
+     * @param annotatedMethod Method
+     * @param obj Object
      * @return result of method call
      */
     public static Object invokeMethod(Method annotatedMethod, Object obj)

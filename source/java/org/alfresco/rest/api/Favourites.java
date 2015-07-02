@@ -32,7 +32,7 @@ public interface Favourites
 	 * Get a paged list of favourites for user personId
 	 * 
 	 * @param personId the personId for which the favourite is to be removed
-	 * @param parameters
+	 * @param parameters Parameters
 	 * @return paged favourites
 	 */
     CollectionWithPagingInfo<Favourite> getFavourites(String personId, final Parameters parameters);

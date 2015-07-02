@@ -80,7 +80,7 @@ public class ForumTopicsFilteredGet extends AbstractDiscussionWebScript
    /**
     * Sets the searchService.
     * 
-    * @param searchService
+    * @param searchService SearchService
     */
    public void setSearchService(SearchService searchService)
    {
@@ -90,11 +90,11 @@ public class ForumTopicsFilteredGet extends AbstractDiscussionWebScript
    /**
     * Overrides AbstractDiscussionWebScript to allow a null site
     * 
-    * @param req
-    * @param status
-    * @param cache
+    * @param req WebScriptRequest
+    * @param status Status
+    * @param cache Cache
     * 
-    * @return
+    * @return Map
     */
    @Override
    protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache) 
@@ -125,15 +125,15 @@ public class ForumTopicsFilteredGet extends AbstractDiscussionWebScript
    }
 
    /**
-    * @param site
+    * @param site SiteInfo
     * @param nodeRef Not required. It is only included because it is overriding the parent class.
     * @param topic Not required. It is only included because it is overriding the parent class.
     * @param post Not required. It is only included because it is overriding the parent class.
-    * @param req
+    * @param req WebScriptRequest
     * @param status Not required. It is only included because it is overriding the parent class.
     * @param cache Not required. It is only included because it is overriding the parent class.
     * 
-    * @return
+    * @return Map
     */
    @Override
    protected Map<String, Object> executeImpl(SiteInfo site, NodeRef nodeRef, TopicInfo topic,
@@ -189,9 +189,9 @@ public class ForumTopicsFilteredGet extends AbstractDiscussionWebScript
     * Do the actual search
     * 
     * @param searchQuery Pair with query string in first and query language in second
-    * @param sortAscending
-    * @param paging
-    * @return
+    * @param sortAscending boolean
+    * @param paging PagingRequest
+    * @return PagingResults<TopicInfo>
     */
    protected PagingResults<TopicInfo> doSearch(Pair<String, String> searchQuery, boolean sortAscending, PagingRequest paging)
    {
@@ -240,9 +240,9 @@ public class ForumTopicsFilteredGet extends AbstractDiscussionWebScript
    /**
     * Build the search query from the passed in parameters and SEARCH_QUERY constant
     * 
-    * @param site
-    * @param author
-    * @param daysAgo
+    * @param site SiteInfo
+    * @param author String
+    * @param daysAgo int
     * @return Pair with the query string in first and query language in second
     */
    protected Pair<String, String> getSearchQuery(SiteInfo site, String author, int daysAgo)
@@ -267,8 +267,8 @@ public class ForumTopicsFilteredGet extends AbstractDiscussionWebScript
    /**
     * Get the date x days ago in the format 'yyyy-MM-dd'
     * 
-    * @param daysAgo
-    * @return
+    * @param daysAgo int
+    * @return String
     */
    protected String getDateXDaysAgo(int daysAgo)
    {
@@ -282,8 +282,8 @@ public class ForumTopicsFilteredGet extends AbstractDiscussionWebScript
    /**
     * Builds up a listing Paging request, based on the arguments specified in the URL
     *  
-    * @param req
-    * @return
+    * @param req WebScriptRequest
+    * @return PagingRequest
     */
    @Override
    protected PagingRequest buildPagingRequest(WebScriptRequest req)
@@ -308,9 +308,9 @@ public class ForumTopicsFilteredGet extends AbstractDiscussionWebScript
    /**
     * Wrap up search results as {@link TopicInfo} instances
     * 
-    * @param finalResults
-    * @param paging
-    * @return
+    * @param finalResults ResultSet
+    * @param paging PagingRequest
+    * @return PagingResults<TopicInfo>
     */
    protected PagingResults<TopicInfo> wrap(final ResultSet finalResults, PagingRequest paging)
    {

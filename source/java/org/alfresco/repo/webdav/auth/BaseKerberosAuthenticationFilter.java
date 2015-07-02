@@ -629,12 +629,12 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
         logonStartAgain(context, req, resp);
     }
     
-
     /**
      * The logon to start again
-     * 
+     *
+     * @param context ServletContext
+     * @param req HttpServletRequest
      * @param resp HttpServletResponse
-     * @param httpSess HttpSession
      * @throws IOException
      */
     public void logonStartAgain(ServletContext context, HttpServletRequest req, HttpServletResponse resp) throws IOException

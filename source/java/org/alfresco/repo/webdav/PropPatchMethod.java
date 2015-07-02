@@ -419,8 +419,8 @@ public class PropPatchMethod extends PropFindMethod
         /**
          * Constructor
          * 
-         * @param action
-         * @param property
+         * @param action int
+         * @param property WebDAVProperty
          */
         public PropertyAction(int action, WebDAVProperty property)
         {

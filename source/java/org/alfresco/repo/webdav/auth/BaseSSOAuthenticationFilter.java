@@ -108,7 +108,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     /**
      * Activates or deactivates the fallback authentication support for this filter
      * 
-     * @param delegate
+     * @param delegate AuthenticationDriver
      */
     public final void setFallback(AuthenticationDriver delegate)
     {
@@ -339,7 +339,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      * Redirect to the login page
      * 
      * @param req HttpServletRequest
-     * @param req HttpServletResponse
+     * @param res HttpServletResponse
      * @exception IOException
      */
     protected void redirectToLoginPage(HttpServletRequest req, HttpServletResponse res)
@@ -587,7 +587,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
      * @param context ServletContext
      * @param req HttpServletRequest
      * @param resp HttpServletResponse
-     * @return
+     * @return boolean
      * @throws IOException
      * @throws ServletException
      */

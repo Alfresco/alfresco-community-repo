@@ -26,7 +26,7 @@ public interface RelationshipResourceAction
          * Paging information is provided.  
          * @param entityResourceId Entity resource context for this relationship
          * @param params - will never be null and will have the PAGING default values
-         * @return
+         * @return CollectionWithPagingInfo<E>
          */
         public CollectionWithPagingInfo<E> readAll (String entityResourceId, Parameters params);
     }

@@ -153,7 +153,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     /**
      * Sets whether the repo store must exist
      * 
-     * @param mustExist
+     * @param mustExist boolean
      */
     public void setMustExist(boolean mustExist)
     {
@@ -293,7 +293,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     /**
      * Gets the display path for the specified node
      * 
-     * @param nodeRef
+     * @param nodeRef NodeRef
      * @return  display path
      */
     protected String getPath(NodeRef nodeRef)
@@ -305,7 +305,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
     /**
      * Gets the node ref for the specified path within this repo store
      * 
-     * @param documentPath
+     * @param documentPath String
      * @return  node ref
      */
     protected NodeRef findNodeRef(String documentPath)
@@ -520,8 +520,8 @@ public class RepoStore extends AbstractStore implements TenantDeployer
      * to pass the document 'pattern' though the Lucene escaper, preserving the wildcard parts. Also, because you can't
      * search for whitespace in a QNAME, we have to replace whitespace with the ? wildcard
      * 
-     * @param pattern
-     * @return
+     * @param pattern String
+     * @return String
      */
     private static String lucenifyNamePattern(String pattern)
     {
@@ -888,7 +888,7 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         /**
          * Construct
          * 
-         * @param ref
+         * @param ref NodeRef
          */
         private RepoTemplateSource(NodeRef ref)
         {
@@ -1021,8 +1021,8 @@ public class RepoStore extends AbstractStore implements TenantDeployer
         /**
          * Construct
          * 
-         * @param path
-         * @param nodeRef
+         * @param path String
+         * @param nodeRef NodeRef
          */
         public RepoScriptContent(String path, NodeRef nodeRef)
         {

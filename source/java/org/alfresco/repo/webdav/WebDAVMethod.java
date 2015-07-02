@@ -332,7 +332,7 @@ public abstract class WebDAVMethod
     /**
      * Executes the method, wrapping the call to {@link #executeImpl()} in an appropriate transaction
      * and handling the error conditions.
-     * @throws IOException 
+     * @throws WebDAVServerException
      */
     public void execute() throws WebDAVServerException
     {
@@ -879,8 +879,8 @@ public abstract class WebDAVMethod
      * Generates the lock discovery XML response
      * 
      * @param xml XMLWriter
-     * @param lockNode NodeRef
-     * @param lockInfo
+     * @param lockNodeInfo FileInfo
+     * @param lockInfo LockInfo
      */
     protected void generateLockDiscoveryXML(XMLWriter xml, FileInfo lockNodeInfo, LockInfo lockInfo) throws Exception
     {
@@ -900,7 +900,7 @@ public abstract class WebDAVMethod
      * Generates the lock discovery XML response
      * 
      * @param xml XMLWriter
-     * @param lockNode NodeRef
+     * @param lockNodeInfo FileInfo
      * @param emptyNamespace boolean True if namespace should be empty. Used to avoid bugs in WebDAV clients.
      * @param scope String lock scope
      * @param depth String lock depth
@@ -1049,8 +1049,8 @@ public abstract class WebDAVMethod
     /**
      * Checks if write operation can be performed on node.
      * 
-     * @param fileInfo
-     * @return
+     * @param fileInfo FileInfo
+     * @return LockInfo
      * @throws WebDAVServerException if node has shared or exclusive lock
      *                               or If header preconditions failed
      */
@@ -1206,7 +1206,7 @@ public abstract class WebDAVMethod
     /**
      * Returns node Lock token in consideration of WebDav lock depth. 
      * 
-     * @param fileInfo node
+     * @param nodeInfo FileInfo
      * @return String Lock token
      */
     protected LockInfo getNodeLockInfo(final FileInfo nodeInfo)
@@ -1315,7 +1315,7 @@ public abstract class WebDAVMethod
      * Checks if a node is directly locked. A direct lock is one associated with the node itself
      * rather than associated with some ancestor.
      * 
-     * @param nodeInfo
+     * @param nodeInfo FileInfo
      * @return The LockInfo if the node is <strong>locked</strong>, or null otherwise.
      */
     private LockInfo getNodeLockInfoDirect(FileInfo nodeInfo)
@@ -1337,7 +1337,7 @@ public abstract class WebDAVMethod
     /**
      * Checks whether a parent node has a lock that is valid for all its descendants.
      * 
-     * @param parent
+     * @param parent NodeRef
      * @return The LockInfo if the node is <strong>locked</strong>, or null otherwise.
      */
     private LockInfo getNodeLockInfoIndirect(NodeRef parent)
@@ -1411,7 +1411,7 @@ public abstract class WebDAVMethod
     /**
      * Flushes all XML written so far to the response
      * 
-     * @param xml XMLWriter that should be flushed
+     * @param writer XMLWriter that should be flushed
      */
     protected final void flushXML(XMLWriter writer) throws IOException
     {
@@ -1606,7 +1606,7 @@ public abstract class WebDAVMethod
 
     /**
      * Get the site ID (short-name) that the current request relates to. The site ID
-     * will be {@link DEFAULT_SITE_ID} if not specifically set. 
+     * will be {@code DEFAULT_SITE_ID} if not specifically set.
      * 
      * @return The site ID
      */

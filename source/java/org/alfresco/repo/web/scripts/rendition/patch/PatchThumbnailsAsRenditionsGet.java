@@ -58,7 +58,7 @@ public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
     /**
      * Sets the nodeService.
      * 
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -68,7 +68,7 @@ public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
     /**
      * Sets the renditionService.
      * 
-     * @param renditionService
+     * @param renditionService RenditionService
      */
     public void setRenditionService(RenditionService renditionService)
     {
@@ -78,7 +78,7 @@ public class PatchThumbnailsAsRenditionsGet extends DeclarativeWebScript
     /**
      * Sets the searchService.
      * 
-     * @param searchService
+     * @param searchService SearchService
      */
     public void setSearchService(SearchService searchService)
     {

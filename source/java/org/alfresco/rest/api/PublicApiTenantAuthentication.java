@@ -24,7 +24,7 @@ public class PublicApiTenantAuthentication implements TenantAuthentication
     /**
      * Determine whether tenant exists and enabled
      * 
-     * @param tenant
+     * @param tenant String
      * @return  true => it exists, no it doesn't
      */
     public boolean tenantExists(final String tenant)
@@ -46,8 +46,8 @@ public class PublicApiTenantAuthentication implements TenantAuthentication
     /**
      * Authenticate user against network/tenant.
      * 
-     * @param username
-     * @param networkId
+     * @param username String
+     * @param networkId String
      * @return  true => authenticated, false => not authenticated
      */
     public boolean authenticateTenant(String username, String networkId)

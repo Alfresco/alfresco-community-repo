@@ -96,7 +96,7 @@ public class RepositoryTemplateProcessor extends FreeMarkerProcessor
     }
 
     /**
-     * @param searchPath
+     * @param searchPath SearchPath
      */
     public void setSearchPath(SearchPath searchPath)
     {

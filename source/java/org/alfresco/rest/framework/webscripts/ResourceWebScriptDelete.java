@@ -73,7 +73,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
 
     /**
      * Executes the action on the resource
-     * @param resource
+     * @param resource ResourceWithMetadata
      * @param params parameters to use
      * @return anObject the result of the execute
      */

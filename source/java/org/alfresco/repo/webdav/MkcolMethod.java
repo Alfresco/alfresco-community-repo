@@ -47,7 +47,7 @@ public class MkcolMethod extends WebDAVMethod implements ActivityPostProducer
     /**
      * Parse the request headers
      * 
-     * @Exception WebDAVServerException
+     * @throws WebDAVServerException
      */
     protected void parseRequestHeaders() throws WebDAVServerException
     {

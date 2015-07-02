@@ -240,7 +240,7 @@ public class PublicApiClient
 	/**
 	 * Get CMIS repositories (Enterprise AtomPub CMIS binding)
 	 * 
-	 * @return
+	 * @return List<Repository>
 	 */
 	public List<Repository> getCMISRepositories()
 	{
@@ -276,10 +276,10 @@ public class PublicApiClient
 	/**
 	 * Create a CMIS session using Enterprise AtomPub binding.
 	 * 
-	 * @param repositoryId
-	 * @param username
-	 * @param password
-	 * @return
+	 * @param repositoryId String
+	 * @param username String
+	 * @param password String
+	 * @return CmisSession
 	 */
 	public CmisSession createCMISSession(String repositoryId, String username, String password)
 	{

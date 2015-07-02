@@ -35,10 +35,10 @@ public class WebDAVProperty
    /**
     * Constructs a WebDAVProperty
     * 
-    * @param strName
-    * @param strNamespaceUri
-    * @param strNamespaceName
-    * @param strValue
+    * @param strName String
+    * @param strNamespaceUri String
+    * @param strNamespaceName String
+    * @param strValue String
     */
    public WebDAVProperty(String strName, String strNamespaceUri, String strNamespaceName, String strValue)
    {
@@ -49,9 +49,9 @@ public class WebDAVProperty
    /**
     * Constructs a WebDAVProperty
     * 
-    * @param strName
-    * @param strNamespaceUri
-    * @param strNamespaceName
+    * @param strName String
+    * @param strNamespaceUri String
+    * @param strNamespaceName String
     */
    public WebDAVProperty(String strName, String strNamespaceUri, String strNamespaceName)
    {
@@ -64,7 +64,7 @@ public class WebDAVProperty
    /**
     * Constructs a WebDAVProperty with the default namespace details
     * 
-    * @param strName
+    * @param strName String
     */
    public WebDAVProperty(String strName)
    {

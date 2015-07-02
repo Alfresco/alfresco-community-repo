@@ -33,8 +33,8 @@ public abstract class QueryHelper
 		/**
 		 * Called any time a BETWEEN clause is encountered.
 		 * @param propertyName Name of the property
-		 * @param firstValue
-		 * @param secondValue
+		 * @param firstValue String
+		 * @param secondValue String
          * @param negated returns true if "NOT BETWEEN" was used
 		 */
 		void between(String propertyName, String firstValue, String secondValue, boolean negated);
@@ -56,7 +56,7 @@ public abstract class QueryHelper
 		/**
 		 * Called any time a MATCHES clause is encountered.
 		 * @param property Name of the property
-		 * @param propertyValue
+		 * @param propertyValue String
          * @param negated returns true if "NOT MATCHES" was used
 		 */
 		void matches(String property, String propertyValue, boolean negated);
@@ -115,8 +115,9 @@ public abstract class QueryHelper
     
     /**
      * Processes a tree type and calls the corresponding callback method.
-     * @param tree
-     * @param callback
+     * @param tree Tree
+     * @param callback WalkerCallback
+     * @param negated boolean
      */
     protected static void callbackTree(Tree tree, WalkerCallback callback, boolean negated)
     {
@@ -226,7 +227,7 @@ public abstract class QueryHelper
 
     /**
      * Gets the children as a List
-     * @param tree
+     * @param tree Tree
      * @return either emptyList or the children.
      */
     public static List<Tree> getChildren(Tree tree)
@@ -245,12 +246,13 @@ public abstract class QueryHelper
     	return Collections.emptyList();
     }
     
-	/**
-     * Strips off any leading or trailing single quotes.
-     * @param toBeStripped
-     * @return the String that has been stripped
-     */
     private static final String SINGLE_QUOTE = "'";
+
+	/**
+	 * Strips off any leading or trailing single quotes.
+	 * @param toBeStripped String
+	 * @return the String that has been stripped
+	 */
     public static String stripQuotes(String toBeStripped)
     {
     	if (StringUtils.isNotEmpty(toBeStripped) && toBeStripped.startsWith(SINGLE_QUOTE) && toBeStripped.endsWith(SINGLE_QUOTE))

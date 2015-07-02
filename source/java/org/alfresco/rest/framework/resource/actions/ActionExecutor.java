@@ -15,9 +15,9 @@ public interface ActionExecutor extends HttpMethodSupport
 
     /**
      * Invokes the resource with the Params calling the callback onSuccess
-     * @param resource
-     * @param params
-     * @param executionCallback
+     * @param resource ResourceWithMetadata
+     * @param params Params
+     * @param executionCallback ExecutionCallback
      */
     @SuppressWarnings("rawtypes")
     public void execute(ResourceWithMetadata resource, Params params, ExecutionCallback executionCallback);

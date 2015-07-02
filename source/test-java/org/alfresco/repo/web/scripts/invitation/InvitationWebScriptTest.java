@@ -52,7 +52,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 /**
  * Unit test of Invitation REST API.
  * 
- * @See SiteServiceTest.java which tests invitations to Web sites.
+ * @see org.alfresco.repo.web.scripts.site.SiteServiceTest which tests invitations to Web sites.
  * 
  * @author Mark Rogers
  */

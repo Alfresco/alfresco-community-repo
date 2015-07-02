@@ -178,9 +178,9 @@ public class TestFavourites extends EnterpriseTestApi
 	/**
 	 * Returns a new list.
 	 * 
-	 * @param favourites
-	 * @param types
-	 * @return
+	 * @param favourites List<Favourite>
+	 * @param types Set<Type>
+	 * @return ArrayList<Favourite>
 	 */
 	private ArrayList<Favourite> filter(List<Favourite> favourites, final Set<Type> types)
 	{

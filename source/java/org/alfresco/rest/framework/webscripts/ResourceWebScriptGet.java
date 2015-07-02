@@ -79,7 +79,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
 
     /**
      * Executes the action on the resource
-     * @param resource
+     * @param resource ResourceWithMetadata
      * @param params parameters to use
      * @return anObject the result of the execute
      */

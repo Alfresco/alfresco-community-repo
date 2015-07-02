@@ -49,7 +49,7 @@ public class JacksonHelper implements InitializingBean
     /**
      * Sets the Jackson Module to be used.
      * 
-     * @param module
+     * @param module Module
      */
     public void setModule(Module module)
     {
@@ -74,7 +74,7 @@ public class JacksonHelper implements InitializingBean
     
     /**
      * A callback so a JsonGenerator can be used inline but exception are handled here
-     * @param outStream
+     * @param outStream OutputStream
      * @param writer The writer interface
      * @throws IOException
      */
@@ -97,9 +97,9 @@ public class JacksonHelper implements InitializingBean
        
     /**
      * Constructs the object based on the content.
-     * @param content
-     * @param requiredType
-     * @return
+     * @param content Reader
+     * @param requiredType Class<T>
+     * @return T
      * @throws IOException
      */
     public <T> T construct(Reader content, Class<T> requiredType) throws IOException, JsonMappingException, JsonParseException
@@ -117,8 +117,8 @@ public class JacksonHelper implements InitializingBean
     
     /**
      * Constructs the object based on the content as a List, the JSON can be an array or just a single value without the [] symbols
-     * @param content
-     * @param requiredType
+     * @param content Reader
+     * @param requiredType Class<T>
      * @return A collection of the specified type
      * @throws IOException
      */

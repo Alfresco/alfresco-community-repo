@@ -13,7 +13,7 @@ public class DeletedResourceException extends UnsupportedResourceOperationExcept
     
     /**
      * Creates the exception with the default message and the name of the resource
-     * @param resourceName
+     * @param resourceName String
      */
     public DeletedResourceException(String resourceName)
     {

@@ -27,13 +27,13 @@ public interface AuthenticationDetailsProvider
 {
 
     /**
-     * @param userName 
+     * @param userName String
      * @return the password for the given user. Returns null, if user doesn't exist.
      */
     String getPasswordForUser(String userName);
     
     /**
-     * @param userName 
+     * @param userName String
      * @return the password for the given user. Returns null, if no ticket has been stored for
      * this user or if the user doesn't exist.
      */
@@ -41,8 +41,8 @@ public interface AuthenticationDetailsProvider
     
     /**
      * Update the value of the ticket for the given user.
-     * @param userName
-     * @param ticket
+     * @param userName String
+     * @param ticket String
      * @throws IllegalArgumentException when the user does not exist.
      */
     void updateTicketForUser(String userName, String ticket) throws IllegalArgumentException;

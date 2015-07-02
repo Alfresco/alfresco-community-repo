@@ -55,7 +55,7 @@ public class RepositoryScriptProcessor implements ScriptProcessor
 
     
     /**
-     * @param scriptService
+     * @param scriptService ScriptService
      */
     public void setScriptService(ScriptService scriptService)
     {
@@ -63,7 +63,7 @@ public class RepositoryScriptProcessor implements ScriptProcessor
     }
 
     /**
-     * @param searchPath
+     * @param searchPath SearchPath
      */
     public void setSearchPath(SearchPath searchPath)
     {

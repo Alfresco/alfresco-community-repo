@@ -28,7 +28,7 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * This interface defines a simple POJO/DTO for use in the FTL model and rendering in the JSON API.
- * @param <T >a type to ensure that the comparator is implemented in a typesafe way.
+ * @param <T>a type to ensure that the comparator is implemented in a typesafe way.
  * @since 5.0
  */
 public abstract class FacetablePropertyFTL<T> implements Comparable<T>

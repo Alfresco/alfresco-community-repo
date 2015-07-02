@@ -55,7 +55,7 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
 
     
     /**
-     * @param authenticationService
+     * @param authenticationService AuthenticationService
      */
     public void setAuthenticationService(AuthenticationService authenticationService)
     {
@@ -113,9 +113,9 @@ public class BasicHttpAuthenticatorFactory implements ServletAuthenticatorFactor
         /**
          * Construct
          * 
-         * @param req
-         * @param res
-         * @param listener
+         * @param req WebScriptServletRequest
+         * @param res WebScriptServletResponse
+         * @param listener AuthenticationListener
          */
         public BasicHttpAuthenticator(WebScriptServletRequest req, WebScriptServletResponse res, AuthenticationListener listener)
         {

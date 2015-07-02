@@ -338,7 +338,7 @@ public class WebDAVHelper
     
 
     /**
-     * @param poster
+     * @param poster ActivityPoster
      */
     public void setPoster(ActivityPoster poster)
     {
@@ -780,7 +780,7 @@ public class WebDAVHelper
      * ALF-5333: Microsoft clients use ISO-8859-1 to decode WebDAV responses
      * so this method should only be used for Microsoft user agents.
      * 
-     * @param string
+     * @param string String
      * @return The encoded string for Microsoft clients
      * @throws UnsupportedEncodingException
      */
@@ -1092,11 +1092,11 @@ public class WebDAVHelper
     
     /**
      * Notifies listeners that a read has taken place
-     * @param realNodeInfo
-     * @param mimetype
-     * @param size
-     * @param contentEncoding
-     * @param range
+     * @param realNodeInfo FileInfo
+     * @param mimetype String
+     * @param size Long
+     * @param contentEncoding String
+     * @param range String
      */
     protected void publishReadEvent(final FileInfo realNodeInfo, final String mimetype, final Long size, final String contentEncoding, final String range)
     {

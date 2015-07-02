@@ -42,7 +42,7 @@ public abstract class AbstractClassGet extends DictionaryWebServiceBase
     private static final String MODEL_PROP_KEY_ASSOCIATION_DETAILS = "assocdefs";
 
     /**
-     * @Override method from DeclarativeWebScript
+     * Override method from DeclarativeWebScript
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status)
     {

@@ -78,7 +78,7 @@ public interface WebDAVLockService
     /**
      * Caches current session in a thread local variable.
      * 
-     * @param session
+     * @param session HttpSession
      */
     void setCurrentSession(HttpSession session);
 }

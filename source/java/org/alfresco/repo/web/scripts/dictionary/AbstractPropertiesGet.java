@@ -51,7 +51,7 @@ public abstract class AbstractPropertiesGet extends DictionaryWebServiceBase
     private static final String REQ_PARM_ALLOWED_TYPE = "type";
 
     /**
-     * @Override method from DeclarativeWebScript
+     * Override method from DeclarativeWebScript
      */
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {

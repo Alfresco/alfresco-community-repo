@@ -66,14 +66,14 @@ public class StreamContent extends AbstractWebScript
     protected Repository repository;
     
     /**
-     * @param mimetypeService
+     * @param mimetypeService MimetypeService
      */
     public void setMimetypeService(MimetypeService mimetypeService)
     {
         this.mimetypeService = mimetypeService; 
     }
       /**
-     * @param permissionService
+     * @param permissionService PermissionService
      */
     public void setPermissionService(PermissionService permissionService)
     {
@@ -81,7 +81,7 @@ public class StreamContent extends AbstractWebScript
     }
 
     /**
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -89,7 +89,7 @@ public class StreamContent extends AbstractWebScript
     }
     
     /**
-     * @param delegate
+     * @param delegate ContentStreamer
      */
     public void setDelegate(ContentStreamer delegate)
     {
@@ -97,7 +97,7 @@ public class StreamContent extends AbstractWebScript
     }
     
     /**
-     * @param repository
+     * @param repository Repository
      */
     public void setRepository(Repository repository)
     {
@@ -199,9 +199,9 @@ public class StreamContent extends AbstractWebScript
     /**
      * Set attachment header
      * 
-     * @param res
-     * @param attach
-     * @param attachFileName
+     * @param res WebScriptResponse
+     * @param attach boolean
+     * @param attachFileName String
      */
     protected void setAttachment(WebScriptResponse res, boolean attach, String attachFileName)
     {

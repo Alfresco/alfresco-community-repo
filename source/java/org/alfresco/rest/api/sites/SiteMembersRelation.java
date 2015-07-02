@@ -62,7 +62,7 @@ RelationshipResourceAction.Create<SiteMember>, RelationshipResourceAction.Update
      * 
      * Returns a paged list of all the members of the site 'siteId'.
      * 
-     * @throws If siteId does not exist, NotFoundException (status 404).
+     * If siteId does not exist, throws NotFoundException (status 404).
 	 * 
 	 * (non-Javadoc)
      * @see org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.Read#readAll(org.alfresco.rest.framework.resource.parameters.Parameters)
@@ -80,8 +80,8 @@ RelationshipResourceAction.Create<SiteMember>, RelationshipResourceAction.Update
      * 
      * Adds personId as a member of site siteId.
      * 
-	 * @throws If personId does not exist, NotFoundException (status 404).
-	 * @throws If siteMember. does not exist, NotFoundException (status 404).
+	 * If personId does not exist throws NotFoundException (status 404).
+	 * If siteMember. does not exist throws NotFoundException (status 404).
 	 * 
      * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.Create#create(String, java.util.List, org.alfresco.rest.framework.resource.parameters.Parameters)
      */

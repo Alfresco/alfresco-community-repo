@@ -55,7 +55,7 @@ public class SearchEngines extends DeclarativeWebScript
     protected SearchProxy searchProxy;
 
     /**
-     * @param configService
+     * @param configService ConfigService
      */
     public void setConfigService(ConfigService configService)
     {
@@ -63,7 +63,7 @@ public class SearchEngines extends DeclarativeWebScript
     }
 
     /**
-     * @param searchProxy
+     * @param searchProxy SearchProxy
      */
     public void setSearchProxy(SearchProxy searchProxy)
     {

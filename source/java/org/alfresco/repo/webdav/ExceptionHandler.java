@@ -43,9 +43,9 @@ public class ExceptionHandler
     /**
      * Create an ExceptionHandler.
      * 
-     * @param e
-     * @param request
-     * @param response
+     * @param e Throwable
+     * @param request HttpServletRequest
+     * @param response HttpServletResponse
      */
     public ExceptionHandler(Throwable e, HttpServletRequest request, HttpServletResponse response)
     {

@@ -177,7 +177,7 @@ public class WorkflowModelBuilder
      * Returns a simple representation of a {@link WorkflowTask}.
      * @param task The task to be represented.
      * @param propertyFilters Specify which properties to include.
-     * @return
+     * @return Map
      */
     public Map<String, Object> buildSimple(WorkflowTask task, Collection<String> propertyFilters)
     {
@@ -219,7 +219,7 @@ public class WorkflowModelBuilder
     /**
      * Returns a detailed representation of a {@link WorkflowTask}.
      * @param workflowTask The task to be represented.     
-     * @return
+     * @return Map
      */
     public Map<String, Object> buildDetailed(WorkflowTask workflowTask)
     {
@@ -234,7 +234,7 @@ public class WorkflowModelBuilder
     /**
      * Returns a simple representation of a {@link WorkflowInstance}.
      * @param workflowInstance The workflow instance to be represented.          
-     * @return
+     * @return Map
      */
     public Map<String, Object> buildSimple(WorkflowInstance workflowInstance)
     {
@@ -303,7 +303,7 @@ public class WorkflowModelBuilder
      * Returns a detailed representation of a {@link WorkflowInstance}.
      * @param workflowInstance The workflow instance to be represented.
      * @param includeTasks should we include task in model?     
-     * @return
+     * @return Map
      */
     public Map<String, Object> buildDetailed(WorkflowInstance workflowInstance, boolean includeTasks)
     {
@@ -350,7 +350,7 @@ public class WorkflowModelBuilder
      * Returns a simple representation of a {@link WorkflowDefinition}.
      * 
      * @param workflowDefinition the WorkflowDefinition object to be represented.
-     * @return
+     * @return Map
      */
     public Map<String, Object> buildSimple(WorkflowDefinition workflowDefinition)
     {
@@ -370,7 +370,7 @@ public class WorkflowModelBuilder
      * Returns a detailed representation of a {@link WorkflowDefinition}.
      * 
      * @param workflowDefinition the WorkflowDefinition object to be represented.
-     * @return
+     * @return Map
      */
     public Map<String, Object> buildDetailed(WorkflowDefinition workflowDefinition)
     {
@@ -608,8 +608,8 @@ public class WorkflowModelBuilder
     }
 
     /**
-     * @param properties
-     * @return
+     * @param properties Map<QName, Serializable>
+     * @return List
      */
     private List<?> getHiddenTransitions(Map<QName, Serializable> properties)
     {

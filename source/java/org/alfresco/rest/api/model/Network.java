@@ -48,7 +48,7 @@ public interface Network
     
     /**
      * Gets the subscription level.
-     * @return one of the values of {@link AccountType.SubscriptionLevel}.
+     * @return String
      */
     public String getSubscriptionLevel();
     

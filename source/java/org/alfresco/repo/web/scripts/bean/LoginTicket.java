@@ -43,7 +43,7 @@ public class LoginTicket extends DeclarativeWebScript
     private TicketComponent ticketComponent;
     
     /**
-     * @param ticketComponent
+     * @param ticketComponent TicketComponent
      */
     public void setTicketComponent(TicketComponent ticketComponent)
     {

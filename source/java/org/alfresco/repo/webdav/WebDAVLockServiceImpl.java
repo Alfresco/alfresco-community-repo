@@ -66,7 +66,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Set the LockService
      * 
-     * @param lockService
+     * @param lockService LockService
      */
     public void setLockService(LockService lockService)
     {
@@ -76,7 +76,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Set the NodeService
      * 
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -86,7 +86,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Set the TransactionService
      * 
-     * @param transactionService
+     * @param transactionService TransactionService
      */
     public void setTransactionService(TransactionService transactionService)
     {
@@ -96,7 +96,7 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
     /**
      * Set the CheckOutCheckInService
      * 
-     * @param checkOutCheckInService
+     * @param checkOutCheckInService CheckOutCheckInService
      */
     public void setCheckOutCheckInService(CheckOutCheckInService checkOutCheckInService)
     {
@@ -438,7 +438,6 @@ public class WebDAVLockServiceImpl implements WebDAVLockService
      * @param userName String
      * @param createExclusive boolean
      * @param timeoutSecs int
-     * @exception WebDAVServerException
      */
     private LockInfo createLock(NodeRef nodeRef, String userName, boolean createExclusive, int timeoutSecs)
     {

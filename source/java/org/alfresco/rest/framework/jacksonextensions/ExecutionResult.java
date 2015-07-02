@@ -79,7 +79,7 @@ public class ExecutionResult
     /**
      * Returns the Map of related objects
      * 
-     * @return
+     * @return Map
      */
     public Map<String, Object> getRelated()
     {
@@ -89,7 +89,7 @@ public class ExecutionResult
     /**
      * Returns the Map of embedded objects
      * 
-     * @return
+     * @return Map
      */
     public Map<String, Object> getEmbedded()
     {

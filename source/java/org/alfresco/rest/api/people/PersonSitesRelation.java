@@ -60,7 +60,7 @@ public class PersonSitesRelation implements RelationshipResourceAction.Read<Memb
 	 * @param personId the id (email) of the person
 	 * 
 	 * (non-Javadoc)
-     * @see RelationshipResourceAction.Read#readAll(String, org.alfresco.rest.framework.resource.parameters.Parameters)
+     * @see org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction.Read#readAll(String, org.alfresco.rest.framework.resource.parameters.Parameters)
      */
     @Override
     @WebApiDescription(title = "A paged list of the person's site memberships.")

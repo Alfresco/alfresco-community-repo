@@ -115,7 +115,7 @@ public class ExtensibilityContainer extends RepositoryContainer implements Handl
     
     /**
      * <p>Sets the {@link WebScriptExtensibilityModuleHandler} for this {@link org.springframework.extensions.webscripts.Container}.</p>
-     * @param extensibilityModuleHandler
+     * @param extensibilityModuleHandler WebScriptExtensibilityModuleHandler
      */
     public void setExtensibilityModuleHandler(WebScriptExtensibilityModuleHandler extensibilityModuleHandler)
     {

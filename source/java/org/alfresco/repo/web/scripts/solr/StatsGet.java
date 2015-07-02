@@ -130,7 +130,7 @@ public class StatsGet extends DeclarativeWebScript
 
     /**
      * Finds a facet based on its key
-     * @param facetKey
+     * @param facetKey String
      * @return QName facet
      */
     private QName findFacet(String facetKey)

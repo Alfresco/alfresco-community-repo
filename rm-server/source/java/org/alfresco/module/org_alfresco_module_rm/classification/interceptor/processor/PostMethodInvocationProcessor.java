@@ -26,8 +26,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.apache.log4j.Logger;
-
 /**
  * Registry for post method invocation processors
  *
@@ -36,11 +34,8 @@ import org.apache.log4j.Logger;
  */
 public class PostMethodInvocationProcessor
 {
-    /** Logger */
-    private static Logger LOG = Logger.getLogger(PostMethodInvocationProcessor.class);
-
     /** Post method invocation processors */
-    private Map<Class<?>, BasePostMethodInvocationProcessor> processors = new HashMap<Class<?>, BasePostMethodInvocationProcessor>();
+    private Map<Class<?>, BasePostMethodInvocationProcessor> processors = new HashMap<>();
 
     /**
      * Registers a post method invocation processor
@@ -51,7 +46,7 @@ public class PostMethodInvocationProcessor
     {
         mandatory("object", object);
 
-        processors.put(object.getClassName(), object);
+        getProcessors().put(object.getClassName(), object);
     }
 
     /**
@@ -72,25 +67,27 @@ public class PostMethodInvocationProcessor
      */
     protected BasePostMethodInvocationProcessor getProcessor(Object object)
     {
-        mandatory("object", object);
-
         BasePostMethodInvocationProcessor result = null;
-        Class<? extends Object> clazz = object.getClass();
 
-        if (clazz.isArray())
+        if (object != null)
         {
-            result = getProcessors().get(Array.class);
-        }
+            Class<? extends Object> clazz = object.getClass();
 
-        if (result == null)
-        {
-            Set<Entry<Class<?>, BasePostMethodInvocationProcessor>> processorsEntrySet = getProcessors().entrySet();
-            for (Map.Entry<Class<?>, BasePostMethodInvocationProcessor> processorEntry : processorsEntrySet)
+            if (clazz.isArray())
             {
-                if (processorEntry.getKey().isAssignableFrom(clazz))
+                result = getProcessors().get(Array.class);
+            }
+
+            if (result == null)
+            {
+                Set<Entry<Class<?>, BasePostMethodInvocationProcessor>> processorsEntrySet = getProcessors().entrySet();
+                for (Map.Entry<Class<?>, BasePostMethodInvocationProcessor> processorEntry : processorsEntrySet)
                 {
-                    result = processorEntry.getValue();
-                    break;
+                    if (processorEntry.getKey().isAssignableFrom(clazz))
+                    {
+                        result = processorEntry.getValue();
+                        break;
+                    }
                 }
             }
         }
@@ -114,10 +111,6 @@ public class PostMethodInvocationProcessor
             if (processor != null)
             {
                 result = processor.process(result);
-            }
-            else
-            {
-                LOG.debug("No processor found for '" + result + "'.");
             }
         }
 

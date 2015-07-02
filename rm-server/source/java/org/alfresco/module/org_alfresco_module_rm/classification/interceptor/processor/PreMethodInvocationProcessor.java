@@ -18,22 +18,18 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
-import static java.lang.Boolean.TRUE;
+import static com.google.common.collect.Lists.newArrayList;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
-import static org.alfresco.util.GUID.generate;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.lang.reflect.Method;
+import java.util.List;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
-import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.transaction.TransactionService;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -48,221 +44,88 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class PreMethodInvocationProcessor implements ApplicationContextAware
 {
-    /** Key to mark the transaction as processing */
-    private static final String KEY_PROCESSING = generate();
-
+    /** Application context */
     private ApplicationContext applicationContext;
 
+    /**
+     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
+     */
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
     {
         this.applicationContext = applicationContext;
     }
 
+    /**
+     * Gets the content classification service
+     *
+     * @return The content classification service
+     */
     protected ContentClassificationService getContentClassificationService()
     {
-        return (ContentClassificationService)applicationContext.getBean("contentClassificationService");
+        return (ContentClassificationService) applicationContext.getBean("contentClassificationService");
     }
 
-    protected AlfrescoTransactionSupport getAlfrescoTransactionSupport()
-    {
-        return (AlfrescoTransactionSupport)applicationContext.getBean("rm.alfrescoTransactionSupport");
-    }
-
-    protected RetryingTransactionHelper getRetryingTransactionHelper()
-    {
-        return ((TransactionService)applicationContext.getBean("transactionService")).getRetryingTransactionHelper();
-    }
-
-    protected ClassificationServiceBootstrap getClassificationServiceBootstrap()
-    {
-        return (ClassificationServiceBootstrap)applicationContext.getBean("classificationServiceBootstrap");
-    }
-
+    /**
+     * Gets the node service
+     *
+     * @return The node service
+     */
     protected NodeService getNodeService()
     {
-        return (NodeService)applicationContext.getBean("dbNodeService");
+        return (NodeService) applicationContext.getBean("dbNodeService");
     }
 
+    /**
+     * Gets the dictionary service
+     *
+     * @return The dictionary service
+     */
     protected DictionaryService getDictionaryService()
     {
-        return (DictionaryService)applicationContext.getBean("dictionaryService");
+        return (DictionaryService) applicationContext.getBean("dictionaryService");
     }
-
-//    /** Transaction service */
-//    private TransactionService transactionService;
-//
-//    /** Classification service bootstrap */
-//    private ClassificationServiceBootstrap classificationServiceBootstrap;
-//
-//    /** Alfresco transaction support */
-//    private AlfrescoTransactionSupport alfrescoTransactionSupport;
-//
-//    /** Node service */
-//    private NodeService nodeService;
-//
-//    /** Dictionary service */
-//    private DictionaryService dictionaryService;
-//
-//    /** Content classification service */
-//    private ContentClassificationService contentClassificationService;
-//
-//    /**
-//     * @return the transactionService
-//     */
-//    protected TransactionService getTransactionService()
-//    {
-//        return this.transactionService;
-//    }
-//
-//    /**
-//     * @return the classificationServiceBootstrap
-//     */
-//    protected ClassificationServiceBootstrap getClassificationServiceBootstrap()
-//    {
-//        return this.classificationServiceBootstrap;
-//    }
-//
-//    /**
-//     * @return the alfrescoTransactionSupport
-//     */
-//    protected AlfrescoTransactionSupport getAlfrescoTransactionSupport()
-//    {
-//        return this.alfrescoTransactionSupport;
-//    }
-//
-//    /**
-//     * @return the nodeService
-//     */
-//    protected NodeService getNodeService()
-//    {
-//        return this.nodeService;
-//    }
-//
-//    /**
-//     * @return the dictionaryService
-//     */
-//    protected DictionaryService getDictionaryService()
-//    {
-//        return this.dictionaryService;
-//    }
-//
-//    /**
-//     * @return the contentClassificationService
-//     */
-//    protected ContentClassificationService getContentClassificationService()
-//    {
-//        return this.contentClassificationService;
-//    }
-//
-//    /**
-//     * @param transactionService the transactionService to set
-//     */
-//    public void setTransactionService(TransactionService transactionService)
-//    {
-//        this.transactionService = transactionService;
-//    }
-//
-//    /**
-//     * @param classificationServiceBootstrap the classificationServiceBootstrap to set
-//     */
-//    public void setClassificationServiceBootstrap(ClassificationServiceBootstrap classificationServiceBootstrap)
-//    {
-//        this.classificationServiceBootstrap = classificationServiceBootstrap;
-//    }
-//
-//    /**
-//     * @param alfrescoTransactionSupport the alfrescoTransactionSupport to set
-//     */
-//    public void setAlfrescoTransactionSupport(AlfrescoTransactionSupport alfrescoTransactionSupport)
-//    {
-//        this.alfrescoTransactionSupport = alfrescoTransactionSupport;
-//    }
-//
-//    /**
-//     * @param nodeService the nodeService to set
-//     */
-//    public void setNodeService(NodeService nodeService)
-//    {
-//        this.nodeService = nodeService;
-//    }
-//
-//    /**
-//     * @param dictionaryService the dictionaryService to set
-//     */
-//    public void setDictionaryService(DictionaryService dictionaryService)
-//    {
-//        this.dictionaryService = dictionaryService;
-//    }
-//
-//    /**
-//     * @param contentClassificationService the contentClassificationService to set
-//     */
-//    public void setContentClassificationService(ContentClassificationService contentClassificationService)
-//    {
-//        this.contentClassificationService = contentClassificationService;
-//    }
 
     /**
      * Checks if the current user is cleared to see the items
      * passed as parameters to the current method invocation.
      *
      * @param invocation The current method invocation
-     * @return <code>true</code> if the user is cleared to see the items, <code>false</code> otherwise
      */
-    public boolean process(final MethodInvocation invocation)
+    public void process(MethodInvocation invocation)
     {
         mandatory("invocation", invocation);
 
-        // do in transaction
-        return /*getTransactionService().*/getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Boolean>()
+        Method method = invocation.getMethod();
+        String className = method.getDeclaringClass().getSimpleName();
+        String methodName = method.getName();
+        String name = className + "." + methodName;
+        Object[] args = invocation.getArguments();
+
+        if (getMethodNames().contains(name))
         {
-            @SuppressWarnings("rawtypes")
-            public Boolean execute() throws Throwable
+            for (Object arg : args)
             {
-                Boolean result = true;
-
-                // ensure classification service has been bootstrapped
-                if (getClassificationServiceBootstrap().isInitialised())
+                if (arg != null && NodeRef.class.isAssignableFrom(arg.getClass()))
                 {
-                    // check that we are not already processing a classification check
-                    Object value = getAlfrescoTransactionSupport().getResource(KEY_PROCESSING);
-                    if (value == null)
-                    {
-                        Method method = invocation.getMethod();
-                        Class[] params = method.getParameterTypes();
-
-                        int position = 0;
-                        for (Class param : params)
-                        {
-                            // if the param is a node reference
-                            if (NodeRef.class.isAssignableFrom(param))
-                            {
-                                // mark the transaction as processing a classification check
-                                getAlfrescoTransactionSupport().bindResource(KEY_PROCESSING, TRUE);
-                                try
-                                {
-                                    // get the value of the parameter
-                                    NodeRef testNodeRef = (NodeRef) invocation.getArguments()[position];
-
-                                    // if node exists then see if the current user has clearance
-                                    result = isNodeCleared(testNodeRef);
-                                }
-                                finally
-                                {
-                                    // clear the transaction as processed a classification check
-                                    getAlfrescoTransactionSupport().unbindResource(KEY_PROCESSING);
-                                }
-                            }
-
-                            position++;
-                        }
-                    }
+                    isNodeCleared(((NodeRef) arg), name);
                 }
-
-                return result;
             }
-        }, true);
+        }
+    }
+
+    /**
+     * Returns a list of method names to check before invocation
+     *
+     * @return List of method names to check before invocation
+     */
+    private List<String> getMethodNames()
+    {
+        return newArrayList(
+            "NodeService.setProperty",
+            //"NodeService.getProperty",
+            "FileFolderService.copy"
+        );
     }
 
     /**
@@ -270,19 +133,15 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
      * the currently logged in user is cleared to see it.
      *
      * @param nodeRef Node reference to check
-     * @return <code>true</code> if the node passes the checks, <code>false</code> otherwise
+     * @param name The name of the invoked method
      */
-    private boolean isNodeCleared(NodeRef nodeRef)
+    private void isNodeCleared(NodeRef nodeRef, String name)
     {
-        boolean result = true;
-
         if (getNodeService().exists(nodeRef) &&
                 getDictionaryService().isSubClass(getNodeService().getType(nodeRef), TYPE_CONTENT) &&
                 !getContentClassificationService().hasClearance(nodeRef))
         {
-            result = false;
+            throw new AccessDeniedException("The method '" + name  + "' was called, but you are not cleared for the node.");
         }
-
-        return result;
     }
 }

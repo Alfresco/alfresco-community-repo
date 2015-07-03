@@ -22,9 +22,14 @@ import static com.google.common.collect.Sets.newHashSet;
 import static org.alfresco.repo.site.SiteModel.SITE_MANAGER;
 import static org.alfresco.util.GUID.generate;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ClassificationEnforcementException;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.QName;
 
 /**
  * Classification enforcement pre method invocation test
@@ -34,10 +39,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTestCase
 {
-    private String testUser;
-    private static final String LEVEL1 = "level1";
-    private static final String REASON = "Test Reason 1";
-
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isCollaborationSiteTest()
      */
@@ -51,16 +52,22 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
     {
         /**
          * Given that I am a site manager and not cleared to see a document
-         * When I try to set a property on that document an exception will be thrown
-         * and I try to copy that document an exception will be thrown
+         * When I try to
+         *  - set a property on that document
+         *  - set properties on that document
+         *  - get property from that document
+         *  - copy the document
+         *  - move document
+         * Then a classification exception will be thrown
          */
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
+            private String testUser;
+            private static final String LEVEL1 = "level1";
+            private static final String REASON = "Test Reason 1";
             private NodeRef folder1;
             private NodeRef folder2;
-            private NodeRef doc1;
-            private NodeRef doc2;
-            private String propertyValue = generate();
+            private NodeRef doc;
 
             /**
              * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
@@ -74,10 +81,9 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
 
                 folder1 = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
                 folder2 = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
-                doc1 = fileFolderService.create(folder1, generate(), TYPE_CONTENT).getNodeRef();
-                doc2 = fileFolderService.create(folder1, generate(), TYPE_CONTENT).getNodeRef();
+                doc = fileFolderService.create(folder1, generate(), TYPE_CONTENT).getNodeRef();
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), doc1);
+                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), doc);
             }
 
             /**
@@ -86,40 +92,58 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
             @Override
             public void when() throws Exception
             {
-                doTestInTransaction(new Test<Void>()
-                {
-                    @Override
-                    public Void run()
-                    {
-                        nodeService.setProperty(doc2, PROP_ADDRESSEE, propertyValue);
-                        return null;
-                    }
-                }, testUser);
-
-                doTestInTransaction(new FailureTest(AccessDeniedException.class)
+                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
                 {
                     @Override
                     public void run() throws Exception
                     {
-                        nodeService.setProperty(doc1, PROP_ADDRESSEE, propertyValue);
+                        nodeService.setProperty(doc, PROP_ADDRESSEE, generate());
                     }
                 }, testUser);
 
-//                doTestInTransaction(new FailureTest(AccessDeniedException.class)
+                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
+                {
+                    @Override
+                    public void run()
+                    {
+                        Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
+                        nodeService.setProperties(doc, properties);
+                    }
+                }, testUser);
+
+//                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
 //                {
 //                    @Override
 //                    public void run() throws Exception
 //                    {
-//                        nodeService.getProperty(doc1, PROP_ADDRESSEE);
+//                        nodeService.getProperty(doc, PROP_ADDRESSEE);
 //                    }
 //                }, testUser);
 
-                doTestInTransaction(new FailureTest(AccessDeniedException.class)
+                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
                 {
                     @Override
                     public void run() throws Exception
                     {
-                        fileFolderService.copy(doc1, folder2, null);
+                        nodeService.getProperties(doc);
+                    }
+                }, testUser);
+
+                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
+                {
+                    @Override
+                    public void run() throws Exception
+                    {
+                        fileFolderService.copy(doc, folder2, null);
+                    }
+                }, testUser);
+
+                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
+                {
+                    @Override
+                    public void run() throws Exception
+                    {
+                        fileFolderService.move(doc, folder2, null);
                     }
                 }, testUser);
             }

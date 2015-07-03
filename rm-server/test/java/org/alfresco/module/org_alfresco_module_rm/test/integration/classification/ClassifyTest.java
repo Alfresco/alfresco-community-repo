@@ -19,9 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification;
 
 import java.util.Collections;
-import java.util.List;
 
-import com.google.common.collect.Sets;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -29,6 +27,8 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
+
+import com.google.common.collect.Sets;
 
 /**
  * Classification level integration test
@@ -105,7 +105,6 @@ public class ClassifyTest extends BaseRMTestCase
                         record);
             }
 
-            @SuppressWarnings("unchecked")
             public void then() throws Exception
             {
                 assertTrue(nodeService.hasAspect(record, ClassifiedContentModel.ASPECT_CLASSIFIED));

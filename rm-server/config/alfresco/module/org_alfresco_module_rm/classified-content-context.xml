@@ -43,7 +43,8 @@
    <!-- Classification Method Interceptor -->
 
    <bean id="preMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PreMethodInvocationProcessor">
+      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PreMethodInvocationProcessor"
+      init-method="init">
    </bean>
 
    <bean id="postMethodInvocationProcessor"

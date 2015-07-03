@@ -18,15 +18,14 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
-import static com.google.common.collect.Lists.newArrayList;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -44,6 +43,9 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class PreMethodInvocationProcessor implements ApplicationContextAware
 {
+    /** List of method names to check before invocation */
+    private List<String> methodNames = new ArrayList<>();
+
     /** Application context */
     private ApplicationContext applicationContext;
 
@@ -87,6 +89,29 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
     }
 
     /**
+     * Returns a list of method names to check before invocation
+     *
+     * @return List of method names to check before invocation
+     */
+    protected List<String> getMethodNames()
+    {
+        return this.methodNames;
+    }
+
+    /**
+     * Init method to populate the list of method names which will be checked before invocation
+     */
+    public void init()
+    {
+        getMethodNames().add("NodeService.setProperty");
+        getMethodNames().add("NodeService.setProperties");
+        //getMethodNames().add("NodeService.getProperty");
+        getMethodNames().add("NodeService.getProperties");
+        getMethodNames().add("FileFolderService.copy");
+        getMethodNames().add("FileFolderService.move");
+    }
+
+    /**
      * Checks if the current user is cleared to see the items
      * passed as parameters to the current method invocation.
      *
@@ -115,20 +140,6 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
     }
 
     /**
-     * Returns a list of method names to check before invocation
-     *
-     * @return List of method names to check before invocation
-     */
-    private List<String> getMethodNames()
-    {
-        return newArrayList(
-            "NodeService.setProperty",
-            //"NodeService.getProperty",
-            "FileFolderService.copy"
-        );
-    }
-
-    /**
      * Checks if the given node exists, if it is a content and if
      * the currently logged in user is cleared to see it.
      *
@@ -141,7 +152,7 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
                 getDictionaryService().isSubClass(getNodeService().getType(nodeRef), TYPE_CONTENT) &&
                 !getContentClassificationService().hasClearance(nodeRef))
         {
-            throw new AccessDeniedException("The method '" + name  + "' was called, but you are not cleared for the node.");
+            throw new ClassificationEnforcementException("The method '" + name  + "' was called, but you are not cleared for the node.");
         }
     }
 }

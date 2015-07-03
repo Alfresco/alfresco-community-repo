@@ -103,12 +103,14 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
      */
     public void init()
     {
+        /*
         getMethodNames().add("NodeService.setProperty");
         getMethodNames().add("NodeService.setProperties");
         //getMethodNames().add("NodeService.getProperty");
         getMethodNames().add("NodeService.getProperties");
         getMethodNames().add("FileFolderService.copy");
         getMethodNames().add("FileFolderService.move");
+        */
     }
 
     /**

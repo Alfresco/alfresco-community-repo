@@ -51,7 +51,6 @@ import org.junit.runner.RunWith;
     // The problem can be reproduced if the whole test suite is run locally as well.
     // Tests should not be dependant on other test classes and should run in any order without any problems.
     "!.*EmailMapScriptTest"
-    ,"!.*ClassificationEnforcementPreMethodInvocationTest"
 })
 public class AllTestSuite
 {

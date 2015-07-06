@@ -38,6 +38,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
+import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ClassificationEnforcementException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.ContentServicePolicies;
@@ -600,88 +601,95 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
     @SuppressWarnings("unchecked")
     public boolean hasAccess(NodeRef nodeRef)
     {
-        if ((! nodeService.exists(nodeRef)) || (caveatAspectQNames.size() == 0))
+        try
         {
-            return true;
-        }
-
-        boolean found = false;
-        for (QName caveatAspectQName : caveatAspectQNames)
-        {
-            if (nodeService.hasAspect(nodeRef, caveatAspectQName))
+            if ((! nodeService.exists(nodeRef)) || (caveatAspectQNames.size() == 0))
             {
-                found = true;
-                break;
+                return true;
             }
-        }
 
-        if (! found)
-        {
-            // no caveat aspect
-            return true;
-        }
-        else
-        {
-            // check for caveats
-            String userName = AuthenticationUtil.getRunAsUser();
-            if (userName != null)
+            boolean found = false;
+            for (QName caveatAspectQName : caveatAspectQNames)
             {
-                // check all text properties
-                Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
-                for (Map.Entry<QName, Serializable> entry : props.entrySet())
+                if (nodeService.hasAspect(nodeRef, caveatAspectQName))
                 {
-                    QName propName = entry.getKey();
-                    PropertyDefinition propDef = dictionaryService.getProperty(propName);
+                    found = true;
+                    break;
+                }
+            }
 
-                    if ((propDef != null) && (propDef.getDataType().getName().equals(DATATYPE_TEXT)))
+            if (! found)
+            {
+                // no caveat aspect
+                return true;
+            }
+            else
+            {
+                // check for caveats
+                String userName = AuthenticationUtil.getRunAsUser();
+                if (userName != null)
+                {
+                    // check all text properties
+                    Map<QName, Serializable> props = nodeService.getProperties(nodeRef);
+                    for (Map.Entry<QName, Serializable> entry : props.entrySet())
                     {
-                        List<ConstraintDefinition> conDefs = propDef.getConstraints();
-                        for (ConstraintDefinition conDef : conDefs)
+                        QName propName = entry.getKey();
+                        PropertyDefinition propDef = dictionaryService.getProperty(propName);
+
+                        if ((propDef != null) && (propDef.getDataType().getName().equals(DATATYPE_TEXT)))
                         {
-                            Constraint con = conDef.getConstraint();
-                            if (con instanceof RMListOfValuesConstraint)
+                            List<ConstraintDefinition> conDefs = propDef.getConstraints();
+                            for (ConstraintDefinition conDef : conDefs)
                             {
-                                RMListOfValuesConstraint rmCon = ((RMListOfValuesConstraint)con);
-                                String conName = rmCon.getShortName();
-                                MatchLogic matchLogic = rmCon.getMatchLogicEnum();
-                                Map<String, List<String>> caveatConstraintDef = caveatConfig.get(conName);
-                                if (caveatConstraintDef == null)
+                                Constraint con = conDef.getConstraint();
+                                if (con instanceof RMListOfValuesConstraint)
                                 {
-                                    continue;
-                                }
-                                else
-                                {
-                                    Set<String> userGroupNames = authorityService.getAuthoritiesForUser(userName);
-                                    List<String> allowedValues = getRMAllowedValues(userName, userGroupNames, conName);
-
-                                    List<String> propValues = null;
-                                    Object val = entry.getValue();
-                                    if (val instanceof String)
+                                    RMListOfValuesConstraint rmCon = ((RMListOfValuesConstraint)con);
+                                    String conName = rmCon.getShortName();
+                                    MatchLogic matchLogic = rmCon.getMatchLogicEnum();
+                                    Map<String, List<String>> caveatConstraintDef = caveatConfig.get(conName);
+                                    if (caveatConstraintDef == null)
                                     {
-                                        propValues = new ArrayList<String>(1);
-                                        propValues.add((String)val);
+                                        continue;
                                     }
-                                    else if (val instanceof List)
+                                    else
                                     {
-                                        propValues = (List<String>)val;
-                                    }
+                                        Set<String> userGroupNames = authorityService.getAuthoritiesForUser(userName);
+                                        List<String> allowedValues = getRMAllowedValues(userName, userGroupNames, conName);
 
-                                    if (propValues != null && !isAllowed(propValues, allowedValues, matchLogic))
-                                    {
-                                        if (logger.isDebugEnabled())
+                                        List<String> propValues = null;
+                                        Object val = entry.getValue();
+                                        if (val instanceof String)
                                         {
-                                            logger.debug("Veto access: caveat="+conName+", userName="+userName+", nodeRef="+nodeRef+", propName="+propName+", propValues="+propValues+", allowedValues="+allowedValues);
+                                            propValues = new ArrayList<String>(1);
+                                            propValues.add((String)val);
                                         }
-                                        return false;
+                                        else if (val instanceof List)
+                                        {
+                                            propValues = (List<String>)val;
+                                        }
+
+                                        if (propValues != null && !isAllowed(propValues, allowedValues, matchLogic))
+                                        {
+                                            if (logger.isDebugEnabled())
+                                            {
+                                                logger.debug("Veto access: caveat="+conName+", userName="+userName+", nodeRef="+nodeRef+", propName="+propName+", propValues="+propValues+", allowedValues="+allowedValues);
+                                            }
+                                            return false;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
                 }
-            }
 
-            return true;
+                return true;
+            }
+        }
+        catch (ClassificationEnforcementException cee)
+        {
+            return false;
         }
     }
 

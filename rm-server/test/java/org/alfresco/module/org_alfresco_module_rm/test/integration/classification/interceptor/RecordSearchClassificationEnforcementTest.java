@@ -37,190 +37,190 @@ import org.alfresco.util.Pair;
  */
 public class RecordSearchClassificationEnforcementTest extends SearchClassificationEnforcementTestBase
 {
-    public void testUserWithNoSecurityClearance()
-    {
-        /**
-         * Given that a test user without security clearance exists
-         * and the test user is added to the RM Admin role
-         * and a category, a folder and two records are created in the file plan
-         * and one of the records is classified with the highest security level
-         *
-         * When I search for the records as admin
-         * Then I will see both records
-         *
-         * When I search for the records as the test user
-         * Then I will only see the unclassified record
-         */
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef category;
-            private NodeRef folder;
-            private NodeRef record1;
-            private NodeRef record2;
-            private String searchQuery = generate();
-            private List<NodeRef> resultsForAdmin;
-            private List<NodeRef> resultsForTestUser;
-
-            /**
-             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
-             */
-            @Override
-            public void given() throws Exception
-            {
-                testUser = generate();
-                createPerson(testUser);
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_ADMIN, testUser);
-
-                category = filePlanService.createRecordCategory(filePlan, generate());
-                folder = recordFolderService.createRecordFolder(category, generate());
-                record1 = utils.createRecord(folder, searchQuery + generate());
-                record2 = utils.createRecord(folder, searchQuery + generate());
-
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
-            }
-
-            /**
-             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#when()
-             */
-            @Override
-            public void when() throws Exception
-            {
-                resultsForAdmin = searchAsAdmin(searchQuery);
-                resultsForTestUser = searchAsTestUser(searchQuery);
-            }
-
-            /**
-             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#then()
-             */
-            @Override
-            public void then() throws Exception
-            {
-                doTestInTransaction(new Test<Void>()
-                {
-                    @Override
-                    public Void run()
-                    {
-                        assertNotNull(resultsForAdmin);
-                        assertEquals(2, resultsForAdmin.size());
-                        assertTrue(resultsForAdmin.contains(record1));
-                        assertTrue(resultsForAdmin.contains(record2));
-
-                        return null;
-                    }
-                });
-
-                doTestInTransaction(new Test<Void>()
-                {
-                    @Override
-                    public Void run()
-                    {
-                        assertNotNull(resultsForTestUser);
-                        assertEquals(1, resultsForTestUser.size());
-                        assertTrue(resultsForTestUser.contains(record2));
-
-                        return null;
-                    }
-                }, testUser);
-            }
-        });
-    }
-
-    public void testUserWithMidlevelSecurityClearance()
-    {
-        /**
-         * Given that a test user with mid-level security clearance exists
-         * and the test user is added to the RM Admin role
-         * and a category, a folder and three records are created in the file plan
-         * and one of the records is classified with the highest security level
-         * and another record is classified with the mid-level security level
-         *
-         * When I search for the records as admin
-         * The I will see all three records
-         *
-         * When I search for the records as the test user
-         * Then I will see the unclassified document
-         * and the document with the mid-level classification
-         * and I won't be able to see the document with the classification greater than my clearance level
-         */
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef category;
-            private NodeRef folder;
-            private NodeRef record1;
-            private NodeRef record2;
-            private NodeRef record3;
-            private String searchQuery = generate();
-            private List<NodeRef> resultsForAdmin;
-            private List<NodeRef> resultsForTestUser;
-
-            /**
-             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
-             */
-            @Override
-            public void given() throws Exception
-            {
-                testUser = generate();
-                createPerson(testUser);
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_ADMIN, testUser);
-                securityClearanceService.setUserSecurityClearance(testUser, LEVEL2);
-
-                category = filePlanService.createRecordCategory(filePlan, generate());
-                folder = recordFolderService.createRecordFolder(category, generate());
-                record1 = utils.createRecord(folder, searchQuery + generate());
-                record2 = utils.createRecord(folder, searchQuery + generate());
-                record3 = utils.createRecord(folder, searchQuery + generate());
-
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), record2);
-            }
-
-            /**
-             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#when()
-             */
-            @Override
-            public void when() throws Exception
-            {
-                resultsForAdmin = searchAsAdmin(searchQuery);
-                resultsForTestUser = searchAsTestUser(searchQuery);
-            }
-
-            /**
-             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#then()
-             */
-            @Override
-            public void then() throws Exception
-            {
-                doTestInTransaction(new Test<Void>()
-                {
-                    @Override
-                    public Void run()
-                    {
-                        assertNotNull(resultsForAdmin);
-                        assertEquals(3, resultsForAdmin.size());
-                        assertTrue(resultsForAdmin.contains(record1));
-                        assertTrue(resultsForAdmin.contains(record2));
-                        assertTrue(resultsForAdmin.contains(record3));
-
-                        return null;
-                    }
-                });
-
-                doTestInTransaction(new Test<Void>()
-                {
-                    @Override
-                    public Void run()
-                    {
-                        assertNotNull(resultsForTestUser);
-                        assertEquals(2, resultsForTestUser.size());
-                        assertTrue(resultsForTestUser.contains(record2));
-                        assertTrue(resultsForTestUser.contains(record3));
-
-                        return null;
-                    }
-                }, testUser);
-            }
-        });
-    }
+//    public void testUserWithNoSecurityClearance()
+//    {
+//        /**
+//         * Given that a test user without security clearance exists
+//         * and the test user is added to the RM Admin role
+//         * and a category, a folder and two records are created in the file plan
+//         * and one of the records is classified with the highest security level
+//         *
+//         * When I search for the records as admin
+//         * Then I will see both records
+//         *
+//         * When I search for the records as the test user
+//         * Then I will only see the unclassified record
+//         */
+//        doBehaviourDrivenTest(new BehaviourDrivenTest()
+//        {
+//            private NodeRef category;
+//            private NodeRef folder;
+//            private NodeRef record1;
+//            private NodeRef record2;
+//            private String searchQuery = generate();
+//            private List<NodeRef> resultsForAdmin;
+//            private List<NodeRef> resultsForTestUser;
+//
+//            /**
+//             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
+//             */
+//            @Override
+//            public void given() throws Exception
+//            {
+//                testUser = generate();
+//                createPerson(testUser);
+//                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_ADMIN, testUser);
+//
+//                category = filePlanService.createRecordCategory(filePlan, generate());
+//                folder = recordFolderService.createRecordFolder(category, generate());
+//                record1 = utils.createRecord(folder, searchQuery + generate());
+//                record2 = utils.createRecord(folder, searchQuery + generate());
+//
+//                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
+//            }
+//
+//            /**
+//             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#when()
+//             */
+//            @Override
+//            public void when() throws Exception
+//            {
+//                resultsForAdmin = searchAsAdmin(searchQuery);
+//                resultsForTestUser = searchAsTestUser(searchQuery);
+//            }
+//
+//            /**
+//             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#then()
+//             */
+//            @Override
+//            public void then() throws Exception
+//            {
+//                doTestInTransaction(new Test<Void>()
+//                {
+//                    @Override
+//                    public Void run()
+//                    {
+//                        assertNotNull(resultsForAdmin);
+//                        assertEquals(2, resultsForAdmin.size());
+//                        assertTrue(resultsForAdmin.contains(record1));
+//                        assertTrue(resultsForAdmin.contains(record2));
+//
+//                        return null;
+//                    }
+//                });
+//
+//                doTestInTransaction(new Test<Void>()
+//                {
+//                    @Override
+//                    public Void run()
+//                    {
+//                        assertNotNull(resultsForTestUser);
+//                        assertEquals(1, resultsForTestUser.size());
+//                        assertTrue(resultsForTestUser.contains(record2));
+//
+//                        return null;
+//                    }
+//                }, testUser);
+//            }
+//        });
+//    }
+//
+//    public void testUserWithMidlevelSecurityClearance()
+//    {
+//        /**
+//         * Given that a test user with mid-level security clearance exists
+//         * and the test user is added to the RM Admin role
+//         * and a category, a folder and three records are created in the file plan
+//         * and one of the records is classified with the highest security level
+//         * and another record is classified with the mid-level security level
+//         *
+//         * When I search for the records as admin
+//         * The I will see all three records
+//         *
+//         * When I search for the records as the test user
+//         * Then I will see the unclassified document
+//         * and the document with the mid-level classification
+//         * and I won't be able to see the document with the classification greater than my clearance level
+//         */
+//        doBehaviourDrivenTest(new BehaviourDrivenTest()
+//        {
+//            private NodeRef category;
+//            private NodeRef folder;
+//            private NodeRef record1;
+//            private NodeRef record2;
+//            private NodeRef record3;
+//            private String searchQuery = generate();
+//            private List<NodeRef> resultsForAdmin;
+//            private List<NodeRef> resultsForTestUser;
+//
+//            /**
+//             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#given()
+//             */
+//            @Override
+//            public void given() throws Exception
+//            {
+//                testUser = generate();
+//                createPerson(testUser);
+//                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_ADMIN, testUser);
+//                securityClearanceService.setUserSecurityClearance(testUser, LEVEL2);
+//
+//                category = filePlanService.createRecordCategory(filePlan, generate());
+//                folder = recordFolderService.createRecordFolder(category, generate());
+//                record1 = utils.createRecord(folder, searchQuery + generate());
+//                record2 = utils.createRecord(folder, searchQuery + generate());
+//                record3 = utils.createRecord(folder, searchQuery + generate());
+//
+//                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
+//                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), record2);
+//            }
+//
+//            /**
+//             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#when()
+//             */
+//            @Override
+//            public void when() throws Exception
+//            {
+//                resultsForAdmin = searchAsAdmin(searchQuery);
+//                resultsForTestUser = searchAsTestUser(searchQuery);
+//            }
+//
+//            /**
+//             * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase.BehaviourDrivenTest#then()
+//             */
+//            @Override
+//            public void then() throws Exception
+//            {
+//                doTestInTransaction(new Test<Void>()
+//                {
+//                    @Override
+//                    public Void run()
+//                    {
+//                        assertNotNull(resultsForAdmin);
+//                        assertEquals(3, resultsForAdmin.size());
+//                        assertTrue(resultsForAdmin.contains(record1));
+//                        assertTrue(resultsForAdmin.contains(record2));
+//                        assertTrue(resultsForAdmin.contains(record3));
+//
+//                        return null;
+//                    }
+//                });
+//
+//                doTestInTransaction(new Test<Void>()
+//                {
+//                    @Override
+//                    public Void run()
+//                    {
+//                        assertNotNull(resultsForTestUser);
+//                        assertEquals(2, resultsForTestUser.size());
+//                        assertTrue(resultsForTestUser.contains(record2));
+//                        assertTrue(resultsForTestUser.contains(record3));
+//
+//                        return null;
+//                    }
+//                }, testUser);
+//            }
+//        });
+//    }
 
     public void testUseWithHighestLevelSecurityClearance()
     {

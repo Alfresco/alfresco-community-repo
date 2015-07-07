@@ -40,7 +40,7 @@ public class BufferedRequest implements WrappingWebScriptRequest
         }
         catch (IOException e)
         {
-            bufferStream.destroy(e); // remove temp file
+            bufferStream.destroy(); // remove temp file
             throw e;
         }
 

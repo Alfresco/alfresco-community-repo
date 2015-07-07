@@ -90,7 +90,7 @@ public class ParentSupport implements DBQueryBuilderComponent
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
       
     }
@@ -103,12 +103,16 @@ public class ParentSupport implements DBQueryBuilderComponent
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
-        DBQueryBuilderJoinCommand join = new DBQueryBuilderJoinCommand();
-        alias = "PARENT_" + multiJoins.size();
-        join.setAlias(alias);
-        join.setOuter(leftOuter);
-        join.setType(DBQueryBuilderJoinCommandType.PARENT);
-        multiJoins.add(join);
+        alias = "PARENT";
+        if(commandType == DBQueryBuilderPredicatePartCommandType.ORDER)
+        {
+            DBQueryBuilderJoinCommand join = new DBQueryBuilderJoinCommand();
+            alias = "PARENT_" + multiJoins.size();
+            join.setAlias(alias);
+            join.setOuter(leftOuter);
+            join.setType(DBQueryBuilderJoinCommandType.PARENT);
+            multiJoins.add(join);
+        }
 
     }
 
@@ -122,6 +126,7 @@ public class ParentSupport implements DBQueryBuilderComponent
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
         DBQueryBuilderPredicatePartCommand command = new DBQueryBuilderPredicatePartCommand();
+        command.setJoinCommandType(DBQueryBuilderJoinCommandType.PARENT);
         command.setAlias(alias);
         command.setType(commandType);
         command.setValue(dbid);

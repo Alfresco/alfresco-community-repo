@@ -50,14 +50,27 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
 
     private CMISDictionaryService cmisDictionaryService;
 
-    OptionalPatchApplicationCheckBootstrapBean optionalPatchApplicationCheckBootstrapBean;
+    OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck1;
     
+    OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2;
+    
+   
+
     /**
-     * @param optionalPatchApplicationCheckBootstrapBean the optionalPatchApplicationCheckBootstrapBean to set
+     * @param metadataIndexCheck1 the metadataIndexCheck1 to set
      */
-    public void setOptionalPatchApplicationCheckBootstrapBean(OptionalPatchApplicationCheckBootstrapBean optionalPatchApplicationCheckBootstrapBean)
+    public void setMetadataIndexCheck1(OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck1)
     {
-        this.optionalPatchApplicationCheckBootstrapBean = optionalPatchApplicationCheckBootstrapBean;
+        this.metadataIndexCheck1 = metadataIndexCheck1;
+    }
+
+
+    /**
+     * @param metadataIndexCheck2 the metadataIndexCheck2 to set
+     */
+    public void setMetadataIndexCheck2(OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2)
+    {
+        this.metadataIndexCheck2 = metadataIndexCheck2;
     }
 
 
@@ -90,7 +103,7 @@ public class DbCmisQueryLanguage extends AbstractLuceneQueryLanguage
     @Override
     public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
     {
-        if(optionalPatchApplicationCheckBootstrapBean.getPatchApplied())
+        if(metadataIndexCheck1.getPatchApplied())
         {
             return executeQueryImpl(searchParameters, admLuceneSearcher);
         }

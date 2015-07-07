@@ -1171,4 +1171,17 @@
             </props>
         </property>
     </bean>    
+    
+    <bean id="patch.db-V5.1-metadata-query-indexes" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V5.1-metadata-query-indexes</value></property>
+        <property name="description"><value>patch.db-V5.1-metadata-query-indexes.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9003</value></property>
+        <property name="targetSchema"><value>9004</value></property>
+        <property name="ignored"><value>${system.metadata-query-indexes-more.ignored}</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.1/${db.script.dialect}/metadata-query-indexes-2.sql</value>
+        </property>
+    </bean>
+    
 </beans>

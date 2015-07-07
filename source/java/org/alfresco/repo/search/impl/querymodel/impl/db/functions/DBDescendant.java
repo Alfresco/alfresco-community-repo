@@ -63,7 +63,7 @@ public class DBDescendant extends Descendant implements DBQueryBuilderComponent
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
         throw new QueryModelException("Descendant/IN_TREE() is unsupported");
     }

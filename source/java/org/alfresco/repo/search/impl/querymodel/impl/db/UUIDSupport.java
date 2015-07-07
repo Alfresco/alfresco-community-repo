@@ -104,7 +104,7 @@ public class UUIDSupport implements DBQueryBuilderComponent
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
         
     }
@@ -125,6 +125,7 @@ public class UUIDSupport implements DBQueryBuilderComponent
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
         DBQueryBuilderPredicatePartCommand command = new DBQueryBuilderPredicatePartCommand();
+        command.setJoinCommandType(DBQueryBuilderJoinCommandType.NODE);
         command.setAlias("node");
         command.setType(commandType);
         command.setFieldName("uuid");

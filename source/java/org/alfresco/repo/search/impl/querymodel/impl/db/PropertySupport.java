@@ -153,7 +153,7 @@ public class PropertySupport implements DBQueryBuilderComponent
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
 
     }
@@ -166,31 +166,36 @@ public class PropertySupport implements DBQueryBuilderComponent
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
-        DBQueryBuilderJoinCommand join = singleJoins.get(propertyQName);
-        if (join == null)
+        // JOIN is only required for ordering - predicts are done via semi-join
+        alias = "PROP";
+        if(commandType == DBQueryBuilderPredicatePartCommandType.ORDER)
         {
-            if (pair != null)
+            DBQueryBuilderJoinCommand join = singleJoins.get(propertyQName);
+            if (join == null)
             {
-                join = new DBQueryBuilderJoinCommand();
-                alias = "PROP_" + singleJoins.size();
-                join.setAlias(alias);
-                join.setOuter(leftOuter);
-                join.setType(joinCommandType);
-                join.setQnameId(pair.getFirst());
-                singleJoins.put(propertyQName, join);
+                if (pair != null)
+                {
+                    join = new DBQueryBuilderJoinCommand();
+                    alias = "PROP_" + singleJoins.size();
+                    join.setAlias(alias);
+                    join.setOuter(leftOuter);
+                    join.setType(joinCommandType);
+                    join.setQnameId(pair.getFirst());
+                    singleJoins.put(propertyQName, join);
+                }
+                else
+                {
+                    // there is no value for this property in the DB
+                }
             }
-            else
+
+            if(join != null)
             {
-                // there is no value for this property in the DB
-            }
-        }
-        
-        if(join != null)
-        {
-            alias = join.getAlias();
-            if(leftOuter)
-            {
-                join.setOuter(true);
+                alias = join.getAlias();
+                if(leftOuter)
+                {
+                    join.setOuter(true);
+                }
             }
         }
     }
@@ -206,6 +211,7 @@ public class PropertySupport implements DBQueryBuilderComponent
         if (pair == null)
         {
             DBQueryBuilderPredicatePartCommand command = new DBQueryBuilderPredicatePartCommand();
+            command.setJoinCommandType(DBQueryBuilderJoinCommandType.NODE);
             switch(joinCommandType)
             {
             case NODE:
@@ -232,8 +238,9 @@ public class PropertySupport implements DBQueryBuilderComponent
         }
         else
         {
-
             DBQueryBuilderPredicatePartCommand command = new DBQueryBuilderPredicatePartCommand();
+            command.setJoinCommandType(joinCommandType);
+            command.setQnameId(pair.getFirst());
             switch(joinCommandType)
             {
             case NODE:

@@ -73,7 +73,7 @@ public class DBIn extends In implements DBQueryBuilderComponent
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
         PropertyArgument propertyArgument = (PropertyArgument) functionArgs.get(ARG_PROPERTY);
 
@@ -209,7 +209,7 @@ public class DBIn extends In implements DBQueryBuilderComponent
             propertySupport.setPropertyDataType(DBQuery.getDataTypeDefinition(dictionaryService, propertyQName));
             propertySupport.setPair(qnameDAO.getQName(propertyQName));
             propertySupport.setJoinCommandType(DBQuery.getJoinCommandType(propertyQName));
-            propertySupport.setFieldName(DBQuery.getFieldName(dictionaryService, propertyQName));
+            propertySupport.setFieldName(DBQuery.getFieldName(dictionaryService, propertyQName, supportBooleanFloatAndDouble));
             if((not != null) && (not.equals(Boolean.TRUE)))
             {
                 propertySupport.setCommandType(DBQueryBuilderPredicatePartCommandType.NOTIN);

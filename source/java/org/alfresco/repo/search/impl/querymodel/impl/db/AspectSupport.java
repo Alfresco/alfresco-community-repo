@@ -68,7 +68,7 @@ public class AspectSupport implements DBQueryBuilderComponent
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
 
     }
@@ -81,12 +81,7 @@ public class AspectSupport implements DBQueryBuilderComponent
     @Override
     public void buildJoins(Map<QName, DBQueryBuilderJoinCommand> singleJoins, List<DBQueryBuilderJoinCommand> multiJoins)
     {
-        DBQueryBuilderJoinCommand join = new DBQueryBuilderJoinCommand();
-        alias = "ASPECT_" + multiJoins.size();
-        join.setAlias(alias);
-        join.setOuter(false);
-        join.setType(DBQueryBuilderJoinCommandType.ASPECT);
-        multiJoins.add(join);
+        // Nothing to do (uses semi-join)
 
     }
 
@@ -100,6 +95,7 @@ public class AspectSupport implements DBQueryBuilderComponent
     public void buildPredicateCommands(List<DBQueryBuilderPredicatePartCommand> predicatePartCommands)
     {
         DBQueryBuilderPredicatePartCommand command = new DBQueryBuilderPredicatePartCommand();
+        command.setJoinCommandType(DBQueryBuilderJoinCommandType.ASPECT);
         command.setAlias(alias);
         command.setType(DBQueryBuilderPredicatePartCommandType.ASPECT);
         if(qnameIds.size() > 0)

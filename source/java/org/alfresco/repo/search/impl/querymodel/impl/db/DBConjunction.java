@@ -63,7 +63,7 @@ public class DBConjunction extends BaseConjunction implements DBQueryBuilderComp
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
         for (Constraint constraint : getConstraints())
         {
@@ -74,7 +74,7 @@ public class DBConjunction extends BaseConjunction implements DBQueryBuilderComp
                     throw new QueryModelException("Disjunctions are not suported");
                 }
                 DBQueryBuilderComponent dbQueryBuilderComponent = (DBQueryBuilderComponent) constraint;
-                dbQueryBuilderComponent.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectors, functionArgs, functionContext);
+                dbQueryBuilderComponent.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectors, functionArgs, functionContext, supportBooleanFloatAndDouble);
             }
             else
             {

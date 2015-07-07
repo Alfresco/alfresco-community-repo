@@ -194,7 +194,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
         selectorGroup = selectors;
         if (selectorGroup != null)
@@ -204,7 +204,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
                 Selector current = getSource().getSelector(selector);
                 if (current instanceof DBQueryBuilderComponent)
                 {
-                    ((DBQueryBuilderComponent) current).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, functionArgs, functionContext);
+                    ((DBQueryBuilderComponent) current).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, functionArgs, functionContext, supportBooleanFloatAndDouble);
                 }
                 else
                 {
@@ -217,7 +217,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
         {
             if (getConstraint() instanceof DBQueryBuilderComponent)
             {
-                ((DBQueryBuilderComponent) getConstraint()).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, functionArgs, functionContext);
+                ((DBQueryBuilderComponent) getConstraint()).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, functionArgs, functionContext, supportBooleanFloatAndDouble);
             }
             else
             {
@@ -231,7 +231,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
             {
                 if(ordering instanceof DBQueryBuilderComponent)
                 {
-                    ((DBQueryBuilderComponent) ordering).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, functionArgs, functionContext);
+                    ((DBQueryBuilderComponent) ordering).prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, functionArgs, functionContext, supportBooleanFloatAndDouble);
                 }
                 else
                 {
@@ -744,7 +744,7 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
      * @param propertyQName QName
      * @return String
      */
-    public static String getFieldName(DictionaryService dictionaryService, QName propertyQName)
+    public static String getFieldName(DictionaryService dictionaryService, QName propertyQName, boolean supportBooleanFloatAndDouble)
     {
         if (propertyQName.equals(ContentModel.PROP_CREATED))
         {
@@ -817,6 +817,18 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
             else if (dataType.getName().equals(DataTypeDefinition.TEXT))
             {
                 return "string_value";
+            }
+            else if (dataType.getName().equals(DataTypeDefinition.BOOLEAN) && supportBooleanFloatAndDouble)
+            {
+                return "boolean_value";
+            }
+            else if (dataType.getName().equals(DataTypeDefinition.FLOAT) && supportBooleanFloatAndDouble)
+            {
+                return "float_value";
+            }
+            else if (dataType.getName().equals(DataTypeDefinition.DOUBLE) && supportBooleanFloatAndDouble)
+            {
+                return "double_value";
             }
             else
             {

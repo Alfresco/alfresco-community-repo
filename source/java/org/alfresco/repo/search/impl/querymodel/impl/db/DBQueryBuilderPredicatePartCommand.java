@@ -34,8 +34,44 @@ public class DBQueryBuilderPredicatePartCommand
     Object[] values;
 
     String alias;
+    
+    private DBQueryBuilderJoinCommandType joinCommandType;
 
     private LuceneFunction function;
+    
+    private Long qnameId;
+
+    /**
+     * @return the qnameId
+     */
+    public Long getQnameId()
+    {
+        return qnameId;
+    }
+
+    /**
+     * @param qnameId the qnameId to set
+     */
+    public void setQnameId(Long qnameId)
+    {
+        this.qnameId = qnameId;
+    }
+    
+    /**
+     * @return the joinCommandType
+     */
+    public String getJoinCommandType()
+    {
+        return joinCommandType.toString();
+    }
+
+    /**
+     * @param joinCommandType the joinCommandType to set
+     */
+    public void setJoinCommandType(DBQueryBuilderJoinCommandType joinCommandType)
+    {
+        this.joinCommandType = joinCommandType;
+    }
 
     /**
      * @return the type

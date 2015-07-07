@@ -101,8 +101,11 @@
         <property name="namespaceService">
             <ref bean="namespaceService" />
         </property>
-        <property name="optionalPatchApplicationCheckBootstrapBean">
+         <property name="metadataIndexCheck1">
             <ref bean="metadataQueryIndexesCheck" />
+        </property>
+        <property name="metadataIndexCheck2">
+            <ref bean="metadataQueryIndexesCheck2" />
         </property>
     </bean>
     
@@ -118,6 +121,9 @@
         <property name="nodeService" ref="nodeService"/>
         <property name="nodeDAO" ref="nodeDAO"/>
         <property name="tenantService" ref="tenantService"/>
+        <property name="metadataIndexCheck2">
+            <ref bean="metadataQueryIndexesCheck2" />
+        </property>
     </bean>
    
    <bean id="search.dbQueryEngine" class="org.springframework.aop.framework.ProxyFactoryBean">

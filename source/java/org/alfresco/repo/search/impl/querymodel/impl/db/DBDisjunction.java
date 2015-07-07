@@ -63,22 +63,22 @@ public class DBDisjunction extends BaseDisjunction implements DBQueryBuilderComp
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
-        throw new QueryModelException("Disjunctions are not suported");
+        //throw new QueryModelException("Disjunctions are not suported");
         
-//        for (Constraint constraint : getConstraints())
-//        {
-//            if (constraint instanceof DBQueryBuilderComponent)
-//            {
-//                DBQueryBuilderComponent dbQueryBuilderComponent = (DBQueryBuilderComponent) constraint;
-//                dbQueryBuilderComponent.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, selectors, functionArgs, functionContext);
-//            }
-//            else
-//            {
-//                throw new UnsupportedOperationException();
-//            }
-//        }
+        for (Constraint constraint : getConstraints())
+        {
+            if (constraint instanceof DBQueryBuilderComponent)
+            {
+                DBQueryBuilderComponent dbQueryBuilderComponent = (DBQueryBuilderComponent) constraint;
+                dbQueryBuilderComponent.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectors, functionArgs, functionContext, supportBooleanFloatAndDouble);
+            }
+            else
+            {
+                throw new UnsupportedOperationException();
+            }
+        }
     }
 
     /* (non-Javadoc)

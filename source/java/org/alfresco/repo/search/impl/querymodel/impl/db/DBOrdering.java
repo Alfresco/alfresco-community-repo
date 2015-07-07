@@ -71,7 +71,7 @@ public class DBOrdering extends BaseOrdering implements DBQueryBuilderComponent
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
         if (getColumn().getFunction().getName().equals(PropertyAccessor.NAME))
         {
@@ -154,7 +154,7 @@ public class DBOrdering extends BaseOrdering implements DBQueryBuilderComponent
                 propertySupport.setPropertyQName(propertyQName);
                 propertySupport.setPair(qnameDAO.getQName(propertyQName));
                 propertySupport.setJoinCommandType(DBQuery.getJoinCommandType(propertyQName));
-                propertySupport.setFieldName(DBQuery.getFieldName(dictionaryService, propertyQName));
+                propertySupport.setFieldName(DBQuery.getFieldName(dictionaryService, propertyQName, supportBooleanFloatAndDouble));
                 propertySupport.setCommandType(DBQueryBuilderPredicatePartCommandType.ORDER);
                 propertySupport.setLeftOuter(true);
                 builderSupport = propertySupport;

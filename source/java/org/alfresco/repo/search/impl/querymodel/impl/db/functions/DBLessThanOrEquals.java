@@ -64,7 +64,7 @@ public class DBLessThanOrEquals extends LessThanOrEquals implements DBQueryBuild
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
         setPropertyAndStaticArguments(functionArgs);
         Serializable staticValue = getStaticArgument().getValue(functionContext);
@@ -109,7 +109,7 @@ public class DBLessThanOrEquals extends LessThanOrEquals implements DBQueryBuild
             propertySupport.setPropertyDataType(DBQuery.getDataTypeDefinition(dictionaryService, propertyQName));
             propertySupport.setPair(qnameDAO.getQName(propertyQName));
             propertySupport.setJoinCommandType(DBQuery.getJoinCommandType(propertyQName));
-            propertySupport.setFieldName(DBQuery.getFieldName(dictionaryService, propertyQName));
+            propertySupport.setFieldName(DBQuery.getFieldName(dictionaryService, propertyQName, supportBooleanFloatAndDouble));
             propertySupport.setCommandType(getStaticPosition().equals(ARG_RHS) ? DBQueryBuilderPredicatePartCommandType.LTE : DBQueryBuilderPredicatePartCommandType.LTE.propertyAndValueReversed());
             propertySupport.setLuceneFunction(functionContext.getLuceneFunction(getFunctionArgument()));
             builderSupport = propertySupport;

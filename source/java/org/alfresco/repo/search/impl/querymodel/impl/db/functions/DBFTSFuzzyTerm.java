@@ -57,7 +57,7 @@ public class DBFTSFuzzyTerm extends FTSFuzzyTerm  implements DBQueryBuilderCompo
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
         throw new QueryModelException("Fuzzy term is unsupported");      
     }

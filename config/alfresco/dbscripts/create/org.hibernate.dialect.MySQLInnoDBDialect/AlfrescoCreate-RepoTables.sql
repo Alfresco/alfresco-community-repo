@@ -308,6 +308,9 @@ CREATE TABLE alf_node_properties
     KEY fk_alf_nprop_loc (locale_id),
     KEY idx_alf_nprop_s (qname_id, string_value(42)),
     KEY idx_alf_nprop_l (qname_id, long_value),
+    KEY idx_alf_nprop_b (qname_id, boolean_value),
+    KEY idx_alf_nprop_f (qname_id, float_value),
+    KEY idx_alf_nprop_d (qname_id, double_value),
     CONSTRAINT fk_alf_nprop_loc FOREIGN KEY (locale_id) REFERENCES alf_locale (id),
     CONSTRAINT fk_alf_nprop_n FOREIGN KEY (node_id) REFERENCES alf_node (id),
     CONSTRAINT fk_alf_nprop_qn FOREIGN KEY (qname_id) REFERENCES alf_qname (id)

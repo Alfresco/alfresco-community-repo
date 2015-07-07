@@ -18,10 +18,7 @@
  */
 package org.alfresco.repo.search.impl.solr;
 
-import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.admin.patch.OptionalPatchApplicationCheckBootstrapBean;
-import org.alfresco.repo.admin.patch.PatchService;
-import org.alfresco.repo.search.IndexerAndSearcher;
 import org.alfresco.repo.search.impl.lucene.ADMLuceneSearcherImpl;
 import org.alfresco.repo.search.impl.lucene.AbstractAlfrescoFtsQueryLanguage;
 import org.alfresco.repo.search.impl.querymodel.QueryModelException;
@@ -30,7 +27,6 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.NamespaceService;
-import org.springframework.beans.factory.InitializingBean;
 
 /**
  * @author Andy
@@ -42,18 +38,28 @@ public class DbAftsQueryLanguage  extends AbstractAlfrescoFtsQueryLanguage
     
     DictionaryService dictionaryService;
     
-    OptionalPatchApplicationCheckBootstrapBean optionalPatchApplicationCheckBootstrapBean;
+    OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck1;
     
+    OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2;
+
     /**
-     * @param optionalPatchApplicationCheckBootstrapBean the optionalPatchApplicationCheckBootstrapBean to set
+     * @param metadataIndexCheck1 the metadataIndexCheck1 to set
      */
-    public void setOptionalPatchApplicationCheckBootstrapBean(OptionalPatchApplicationCheckBootstrapBean optionalPatchApplicationCheckBootstrapBean)
+    public void setMetadataIndexCheck1(OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck1)
     {
-        this.optionalPatchApplicationCheckBootstrapBean = optionalPatchApplicationCheckBootstrapBean;
+        this.metadataIndexCheck1 = metadataIndexCheck1;
     }
 
     /**
-     * @param namespaceService the namespaceService to set
+     * @param metadataIndexCheck2 the metadataIndexCheck2 to set
+     */
+    public void setMetadataIndexCheck2(OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2)
+    {
+        this.metadataIndexCheck2 = metadataIndexCheck2;
+    }
+
+    /**
+     ** @param namespaceService the namespaceService to set
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {
@@ -94,7 +100,7 @@ public class DbAftsQueryLanguage  extends AbstractAlfrescoFtsQueryLanguage
     @Override
     public ResultSet executeQuery(SearchParameters searchParameters, ADMLuceneSearcherImpl admLuceneSearcher)
     {
-        if(optionalPatchApplicationCheckBootstrapBean.getPatchApplied())
+        if(metadataIndexCheck1.getPatchApplied())
         {
             return super.executeQuery(searchParameters, admLuceneSearcher);
         }

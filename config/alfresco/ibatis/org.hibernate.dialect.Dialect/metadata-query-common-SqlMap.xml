@@ -33,7 +33,9 @@
             node.type_qname_id &lt;&gt; #{sysDeletedType}
             AND node.store_id = #{storeId}
             <if test="sinceTxId != null">
-                AND node.transaction_id &gt; #{sinceTxId}
+                <if test="sinceTxId > -1">
+                    AND node.transaction_id &gt; #{sinceTxId}
+                </if>
             </if>
             <if test="hasPredicate">
                 AND
@@ -60,47 +62,85 @@
                         <when test="item.type == 'NP_FAILS'">
                             1 = 0
                         </when>
-                        <when test="item.type == 'EQUALS'">
-                            ${item.fieldAndFunction} = #{item.value}
-                        </when>
-                        <when test="item.type == 'EXISTS'">
-                             ${item.alias}.${item.fieldName} IS NOT NULL
-                        </when>
-                        <when test="item.type == 'NOTEXISTS'">
-                             ${item.alias}.${item.fieldName} IS NULL
-                        </when>
-                        <when test="item.type == 'GT'">
-                             ${item.fieldAndFunction} &gt; #{item.value}
-                        </when>
-                        <when test="item.type == 'GTE'">
-                            ${item.fieldAndFunction} &gt;= #{item.value}
-                        </when>
-                        <when test="item.type == 'LT'">
-                             ${item.fieldAndFunction} &lt; #{item.value}
-                        </when>
-                        <when test="item.type == 'LTE'">
-                             ${item.fieldAndFunction} &lt;= #{item.value}
-                        </when>
-                        <when test="item.type == 'IN'">
-                             ${item.fieldAndFunction} IN <foreach item="val" index="iVal" collection="item.values" open="(" separator="," close=")">#{val}</foreach>
-                        </when>
-                        <when test="item.type == 'NOTIN'">
-                             ${item.fieldAndFunction} NOT IN <foreach item="val" index="iVal" collection="item.values" open="(" separator="," close=")">#{val}</foreach>
-                        </when>
-                        <when test="item.type == 'LIKE'">
-                             ${item.fieldAndFunction} LIKE #{item.value}  <include refid="alfresco.util.escape"/>
-                        </when>
-                        <when test="item.type == 'NOTLIKE'">
-                             ${item.fieldAndFunction} NOT LIKE #{item.value}  <include refid="alfresco.util.escape"/>
-                        </when>
-                        <when test="item.type == 'NOTEQUALS'">
-                             ${item.fieldAndFunction} &lt;&gt; #{item.value}
-                        </when>
                         <when test="item.type == 'ASPECT'">
-                             EXISTS (select 1 from alf_node_aspects aspect where aspect.node_id = node.id AND 
-                             aspect.qname_id IN <foreach item="val" index="iVal" collection="item.values" open="(" separator="," close=")">#{val}</foreach>)
+                             node.id IN (select aspect.node_id from alf_node_aspects aspect  
+                             where aspect.qname_id IN <foreach item="val" index="iVal" collection="item.values" open="(" separator="," close=")">#{val}</foreach>)
                         </when>
-                        <!--  skip ORDER and NO_ORDER -->
+                        <otherwise>
+                            <!--  skip ORDER and NO_ORDER -->
+                            <if test="item.type != 'ORDER' and item.type != 'NO_ORDER'">
+                                <choose>
+                                    <when test="item.joinCommandType == 'NODE'">
+                                    ( 
+                                    </when>
+                                	<otherwise>
+                                 	node.id IN (
+                                	</otherwise>
+                            	</choose>
+                           
+                            	<choose>
+                            		<when test="item.joinCommandType == 'PARENT'">
+                            	    	select ${item.alias}.child_node_id from alf_child_assoc ${item.alias} where 
+                            		</when>
+                            		<when test="item.joinCommandType == 'PROPERTY'">
+                            			select ${item.alias}.node_id from alf_node_properties ${item.alias} where (#{item.qnameId} = ${item.alias}.qname_id) AND 
+                            		</when>
+                            		<when test="item.joinCommandType == 'CONTENT_MIMETYPE'">
+                            	    	select ${item.alias}_p.node_id from alf_node_properties ${item.alias}_p 
+                                        	          join alf_content_data ${item.alias}_cd on (${item.alias}_cd.id = ${item.alias}_p.long_value)
+                                        	          join alf_mimetype  ${item.alias} on (${item.alias}_cd.content_mimetype_id = ${item.alias}.id)
+                                           	       where (#{item.qnameId} = ${item.alias}_p.qname_id)
+                                           	       AND
+                            		</when>
+                            		<when test="item.joinCommandType == 'CONTENT_URL'">
+                            	    	select ${item.alias}_p.node_id from alf_node_properties ${item.alias}_p 
+                                        	          join alf_content_data ${item.alias}_cd on (${item.alias}_cd.id = ${item.alias}_p.long_value)
+                                           		      join alf_content_url ${item.alias} on (${item.alias}.id = ${item.alias}_cd.content_url_id)
+                                           	       where (#{item.qnameId} = ${item.alias}_p.qname_id)
+                                                   AND 
+                            		</when>
+                            	</choose>
+                            	<choose>
+                                	<when test="item.type == 'EQUALS'">
+                                    	${item.fieldAndFunction} = #{item.value}
+                                	</when>
+                                	<when test="item.type == 'EXISTS'">
+                                    	${item.alias}.${item.fieldName} IS NOT NULL
+                                	</when>
+                                	<when test="item.type == 'NOTEXISTS'">
+                                    	${item.alias}.${item.fieldName} IS NULL
+                                	</when>
+                                	<when test="item.type == 'GT'">
+                                    	${item.fieldAndFunction} &gt; #{item.value}
+                                	</when>
+                                	<when test="item.type == 'GTE'">
+                                    	${item.fieldAndFunction} &gt;= #{item.value}
+                                	</when>
+                                	<when test="item.type == 'LT'">
+                                    	${item.fieldAndFunction} &lt; #{item.value}
+                                	</when>
+                                	<when test="item.type == 'LTE'">
+                                    	${item.fieldAndFunction} &lt;= #{item.value}
+                                	</when>
+                                	<when test="item.type == 'IN'">
+                                    	${item.fieldAndFunction} IN <foreach item="val" index="iVal" collection="item.values" open="(" separator="," close=")">#{val}</foreach>
+                                	</when>
+                                	<when test="item.type == 'NOTIN'">
+                                    	${item.fieldAndFunction} NOT IN <foreach item="val" index="iVal" collection="item.values" open="(" separator="," close=")">#{val}</foreach>
+                                	</when>
+                                	<when test="item.type == 'LIKE'">
+                                    	${item.fieldAndFunction} LIKE #{item.value}  <include refid="alfresco.util.escape"/>
+                                	</when>
+                                	<when test="item.type == 'NOTLIKE'">
+                                    	${item.fieldAndFunction} NOT LIKE #{item.value}  <include refid="alfresco.util.escape"/>
+                                	</when>
+                                	<when test="item.type == 'NOTEQUALS'">
+                                    	${item.fieldAndFunction} &lt;&gt; #{item.value}
+                                	</when>
+                            	</choose>
+                            	)
+                        	</if>
+                        </otherwise>
                     </choose>
                 </foreach>
             </if>

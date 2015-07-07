@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.patch.OptionalPatchApplicationCheckBootstrapBean;
 import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
@@ -68,6 +69,13 @@ public class DBQueryEngine implements QueryEngine
     private NodeService nodeService;
 
     private TenantService tenantService;
+    
+    private OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2;
+
+    public void setMetadataIndexCheck2(OptionalPatchApplicationCheckBootstrapBean metadataIndexCheck2)
+    {
+        this.metadataIndexCheck2 = metadataIndexCheck2;
+    }
     
     public void setTenantService(TenantService tenantService)
     {
@@ -184,7 +192,7 @@ public class DBQueryEngine implements QueryEngine
         }
         dbQuery.setSinceTxId(sinceTxId);
         
-        dbQuery.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, null, functionContext);
+        dbQuery.prepare(namespaceService, dictionaryService, qnameDAO, nodeDAO, tenantService, selectorGroup, null, functionContext, metadataIndexCheck2.getPatchApplied());
         List<Node> nodes = template.selectList(SELECT_BY_DYNAMIC_QUERY, dbQuery);
         LinkedHashSet<Long> set = new LinkedHashSet<Long>(nodes.size());
         for(Node node : nodes)

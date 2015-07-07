@@ -407,6 +407,18 @@
             <ref bean="patch.db-V4.2-metadata-query-indexes" />
         </property>
     </bean>
+    
+     <bean id="metadataQueryIndexesCheck2" class="org.alfresco.repo.admin.patch.OptionalPatchApplicationCheckBootstrapBean">
+        <property name="patchService">
+            <ref bean="PatchService" />
+        </property>
+        <property name="descriptorService">
+            <ref bean="descriptorComponent" />
+        </property>
+        <property name="patch">
+            <ref bean="patch.db-V5.1-metadata-query-indexes" />
+        </property>
+    </bean>
 
     <!-- Import other Alfresco bootstrap components -->
     <import resource="classpath*:alfresco/alfresco-*-bootstrap-context.xml" />

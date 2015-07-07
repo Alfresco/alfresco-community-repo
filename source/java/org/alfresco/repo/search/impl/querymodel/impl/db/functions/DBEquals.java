@@ -72,7 +72,7 @@ public class DBEquals extends Equals implements DBQueryBuilderComponent
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
         setPropertyAndStaticArguments(functionArgs);
         Serializable staticValue = getStaticArgument().getValue(functionContext);
@@ -150,7 +150,7 @@ public class DBEquals extends Equals implements DBQueryBuilderComponent
             propertySupport.setPropertyDataType(DBQuery.getDataTypeDefinition(dictionaryService, propertyQName));
             propertySupport.setPair(qnameDAO.getQName(propertyQName));
             propertySupport.setJoinCommandType(DBQuery.getJoinCommandType(propertyQName));
-            propertySupport.setFieldName(DBQuery.getFieldName(dictionaryService, propertyQName));
+            propertySupport.setFieldName(DBQuery.getFieldName(dictionaryService, propertyQName, supportBooleanFloatAndDouble));
             propertySupport.setCommandType(DBQueryBuilderPredicatePartCommandType.EQUALS);
             propertySupport.setLuceneFunction(functionContext.getLuceneFunction(getFunctionArgument()));
             builderSupport = propertySupport;

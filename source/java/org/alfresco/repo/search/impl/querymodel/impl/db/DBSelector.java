@@ -75,7 +75,7 @@ public class DBSelector extends BaseSelector implements DBQueryBuilderComponent
      */
     @Override
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors,
-            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext)
+            Map<String, Argument> functionArgs, FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble)
     {
         ClassDefinition classDef = dictionaryService.getClass(getType());
         List<Long> qnameIds = new ArrayList<Long>();

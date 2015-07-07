@@ -296,7 +296,7 @@ public class OpenCmisLocalTest extends TestCase
         ThresholdOutputStream tos = streamFactory.newOutputStream();
         OutputStreamWriter writer = new OutputStreamWriter(tos);
         writer.write(content);
-        ContentStreamImpl contentStream = new ContentStreamImpl(filename, BigInteger.valueOf(tos.getLength()), MimetypeMap.MIMETYPE_TEXT_PLAIN, tos.getInputStream());
+        ContentStreamImpl contentStream = new ContentStreamImpl(filename, BigInteger.valueOf(tos.getSize()), MimetypeMap.MIMETYPE_TEXT_PLAIN, tos.getInputStream());
         return contentStream;
     }
 

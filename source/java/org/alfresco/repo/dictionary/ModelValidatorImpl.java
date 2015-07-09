@@ -110,7 +110,6 @@ public class ModelValidatorImpl implements ModelValidator
         }
     }
 
-     * @param modelName
     private boolean canDeleteModel(Collection<NamespaceDefinition> namespaceDefs, Collection<TypeDefinition> typeDefs,
             Collection<AspectDefinition> aspectDefs, Tenant tenant)
     {
@@ -244,7 +243,6 @@ public class ModelValidatorImpl implements ModelValidator
             }
         }
     }
-     * @param compiledModel
 
     private void validateDeleteProperty(QName modelName, QName propertyQName, boolean sharedModel)
     {

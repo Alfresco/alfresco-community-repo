@@ -108,7 +108,7 @@
                     </ruleList>
                 </throwError>
                 <throwError>
-                    <text>Password must not contain non-ascii characters</text>
+                    <text>You need to use ASCII characters only when setting the password here. You can reset it after installation and use non-ASCII characters.</text>
                     <ruleList>
                         <stringTest text="${alfresco_admin_password}" type="not_ascii" />
                     </ruleList>

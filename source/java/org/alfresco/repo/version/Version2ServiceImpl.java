@@ -1019,18 +1019,14 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
     
                 Map<QName, Serializable> forumProps = null;
                 
-                // Collect forum properties
-                // only if previous version hasn't discussable aspect
-                if (needToRestoreDiscussion)
+                // always collect forum properties
+                Map<QName, Serializable> currentVersionProp = this.nodeService.getProperties(nodeRef);
+                forumProps = new HashMap<QName, Serializable>();
+                for (QName key : currentVersionProp.keySet())
                 {
-                    Map<QName, Serializable> currentVersionProp = this.nodeService.getProperties(nodeRef);
-                    forumProps = new HashMap<QName, Serializable>();
-                    for (QName key : currentVersionProp.keySet())
+                    if (key.getNamespaceURI().equals(NamespaceService.FORUMS_MODEL_1_0_URI))
                     {
-                        if (key.getNamespaceURI().equals(NamespaceService.FORUMS_MODEL_1_0_URI))
-                        {
-                            forumProps.put(key, currentVersionProp.get(key));
-                        }
+                        forumProps.put(key, currentVersionProp.get(key));
                     }
                 }
                     
@@ -1089,10 +1085,7 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
             this.nodeService.setProperties(nodeRef, newProps);
                 
                 //Restore forum properties
-                if (needToRestoreDiscussion)
-                {
-                    this.nodeService.addProperties(nodeRef, forumProps);
-                }
+                this.nodeService.addProperties(nodeRef, forumProps);
 
             Set<QName> aspectsToRemove = new HashSet<QName>(oldAspectQNames);
         	aspectsToRemove.removeAll(newAspectQNames);

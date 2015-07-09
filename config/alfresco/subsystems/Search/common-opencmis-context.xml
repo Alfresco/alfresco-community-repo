@@ -99,6 +99,9 @@
         <property name="queryEngine">
             <ref bean="search.dbQueryEngine" />
         </property>
+        <property name="cmisDictionaryService">
+            <ref bean="OpenCMISDictionaryService1.1" />
+        </property>
         <property name="metadataIndexCheck1">
             <ref bean="metadataQueryIndexesCheck" />
         </property>

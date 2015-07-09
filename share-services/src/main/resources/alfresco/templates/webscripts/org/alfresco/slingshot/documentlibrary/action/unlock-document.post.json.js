@@ -20,7 +20,7 @@ function runAction(p_params)
    try
    {
       var originalDoc = p_params.destNode;
-      if (p_params.destNode.hasAspect("cm:workingcopy") && p_params.destNode.hasAspect("cm:lockable"))
+      if (p_params.destNode.hasAspect("cm:lockable") && !p_params.destNode.hasAspect("trx:transferred"))
       {
          p_params.destNode.unlock();
       }

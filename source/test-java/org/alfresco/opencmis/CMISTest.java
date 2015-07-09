@@ -64,6 +64,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.version.VersionableAspect;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -132,6 +133,7 @@ import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
@@ -166,6 +168,7 @@ public class CMISTest
     private RuleService ruleService;
     private NodeArchiveService nodeArchiveService;
     private DictionaryService dictionaryService;
+    private VersionableAspect versionableAspect;
 
     private AlfrescoCmisServiceFactory factory;
 	
@@ -338,6 +341,15 @@ public class CMISTest
         this.auditDAO = (AuditDAO) ctx.getBean("auditDAO");
         this.nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         this.dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
+        
+        this.versionableAspect = (VersionableAspect) ctx.getBean("versionableAspect");
+        this.versionableAspect.setEnableAutoVersionOnUpdateProps(true);
+    }
+    
+    @After
+    public void after()
+    {
+        this.versionableAspect.setEnableAutoVersionOnUpdateProps(false);
     }
     
     /**

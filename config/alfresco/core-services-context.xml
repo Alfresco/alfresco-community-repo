@@ -557,6 +557,7 @@
             </list>
         </property>
         <property name="enableAutoVersioning" value="${version.store.enableAutoVersioning}" />
+        <property name="enableAutoVersionOnUpdateProps" value="${version.store.enableAutoVersionOnUpdateProps}" />
     </bean>
 
     <!--                 -->

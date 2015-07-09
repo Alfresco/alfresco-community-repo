@@ -2329,6 +2329,21 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     }
     
     /**
+     * Ensures that this document has the cm:versionable aspect applied to it,
+     *  and that it has the initial version in the version store.
+     * Calling this on a versioned node with a version store entry will have 
+     *  no effect.
+     * Calling this on a newly uploaded share node will have versioning enabled
+     *  for it (Share currently does lazy versioning to improve performance of
+     *  documents that are uploaded but never edited, and multi upload performance).
+     * 
+     */
+    public void ensureVersioningEnabled()
+    {
+        this.services.getVersionService().ensureVersioningEnabled(nodeRef, null);
+    }
+    
+    /**
      * Create a version of this document.  Note: this will add the cm:versionable aspect.
      * 
      * @param history       Version history note

@@ -102,6 +102,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         personService = (PersonService) applicationContext.getBean("personService");
         versionableAspect = (VersionableAspect) applicationContext.getBean("versionableAspect");
         excludedOnUpdateProps = versionableAspect.getExcludedOnUpdateProps();
+        versionableAspect.setEnableAutoVersionOnUpdateProps(true);
     }
 
     @Override
@@ -109,6 +110,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     {
         super.onTearDownAfterTransaction();
         versionableAspect.setExcludedOnUpdateProps(excludedOnUpdateProps);
+        versionableAspect.setEnableAutoVersionOnUpdateProps(false);
         versionableAspect.afterDictionaryInit();
     }
 

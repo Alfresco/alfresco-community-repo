@@ -78,6 +78,7 @@ public class VersionableAspectTest extends TestCase
     private TransactionService transactionService = (TransactionService) applicationContext.getBean("transactionService");
     private CheckOutCheckInService checkOutCheckInService = (CheckOutCheckInService) applicationContext.getBean("checkOutCheckInService");
     private AuthenticationService authenticationService = (AuthenticationService) applicationContext.getBean("authenticationService");
+    private VersionableAspect versionableAspect = (VersionableAspect) applicationContext.getBean("versionableAspect");
 
     private NodeRef document;
     private NodeRef parentFolder;
@@ -85,6 +86,8 @@ public class VersionableAspectTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
+        versionableAspect.setEnableAutoVersionOnUpdateProps(true);
+        
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -136,6 +139,8 @@ public class VersionableAspectTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
+        versionableAspect.setEnableAutoVersionOnUpdateProps(false);
+        
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override

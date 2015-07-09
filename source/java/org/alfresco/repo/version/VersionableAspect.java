@@ -115,6 +115,9 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     /** flag indicating whether auto-versioning should be enabled or not */
     private boolean enableAutoVersioning = true;
     
+    /** flag indicating whether auto-versioning should be enabled on properties update or not */
+    private boolean enableAutoVersionOnUpdateProps = false;
+    
     /**
      * Set the policy component
      * 
@@ -202,6 +205,17 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     public void setEnableAutoVersioning(boolean enableAutoVersioning)
     {
         this.enableAutoVersioning = enableAutoVersioning;
+    }
+
+    /**
+     * Set whether the OnUpdatePropertiesPolicy should be binded or not.  This is only used
+     * during {@link #init() initialization}.
+     * 
+     * @param enableAutoVersionOnUpdateProps          <tt>true</tt> to bind OnUpdatePropertiesPolicy sotherwise <tt>false</tt>
+     */
+    public void setEnableAutoVersionOnUpdateProps(boolean enableAutoVersionOnUpdateProps)
+    {
+        this.enableAutoVersionOnUpdateProps = enableAutoVersionOnUpdateProps;
     }
 
     /**
@@ -453,7 +467,8 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-        if ((this.nodeService.exists(nodeRef) == true) &&
+        if (this.enableAutoVersionOnUpdateProps && // MNT-12226 : additional setting to override the behavior for metadata versioning
+            (this.nodeService.exists(nodeRef) == true) &&
             !LockUtils.isLockedAndReadOnly(nodeRef, lockService) &&
             (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true) && 
             (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false))

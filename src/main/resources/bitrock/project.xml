@@ -26,6 +26,12 @@
     <windowsResourceOriginalFilename>${project.installerFilename}</windowsResourceOriginalFilename>
     <windowsResourceFileDescription>${project.fullName} Installer</windowsResourceFileDescription>
 
+    <!-- Code signing parameters -->
+    <windowsSigningTimestampServer>http://timestamp.digicert.com</windowsSigningTimestampServer>
+
+    <!-- Generate a DMG for OSX Installer -->
+    <createOsxBundleDmg>1</createOsxBundleDmg>
+
     <platformOptionsList>
         <platformOptions>
             <platform>osx</platform>

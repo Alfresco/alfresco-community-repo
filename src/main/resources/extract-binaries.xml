@@ -1,4 +1,6 @@
-<project default="extract-binaries" xmlns:unless="ant:unless">
+<project default="extract-all" xmlns:unless="ant:unless">
+
+    <target name="extract-all" depends="extract-binaries, extract-installbuilder"/>
 
     <target name="extract-binaries">
         <extract-for platform="linux" unless:set="skipLinInstaller" />
@@ -83,5 +85,25 @@
             </exec>
         </sequential>
     </macrodef>
+
+    <target name="extract-installbuilder">
+        <echo>  Check running platform for Installbuilder...</echo>
+        <condition property="runningPlatform" value="osx">
+            <os family="mac" />
+        </condition>
+        <condition property="runningPlatform" value="linux">
+            <os family="unix" />
+        </condition>
+        <condition property="runningPlatform" value="win">
+            <os family="windows" />
+        </condition>
+        
+        <echo>  Extracting Installbuilder...</echo>
+        <mkdir dir="${project.build.directory}/installbuilder" />
+        <exec failonerror="true" executable="tar" dir="${project.build.directory}/installbuilder">
+            <arg value="xzf" />
+            <arg value="${maven.localrepo}/com/bitnami/installbuilder/${installer.installbuilder.version}/installbuilder-${installer.installbuilder.version}-${runningPlatform}.tgz" />
+        </exec>
+    </target>
 
 </project>

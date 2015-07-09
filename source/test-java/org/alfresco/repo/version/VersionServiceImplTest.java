@@ -250,6 +250,22 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     	return false;
     }
     
+    // MNT-13647, MNT-13719 check for comment count in node property
+    public void testCommentsCountProperty() {
+    	final String COMMENT = "<p>Comment</p>";
+    	
+        NodeRef versionableNode = createNewVersionableNode();
+        addComment(versionableNode, COMMENT, false);
+        
+        // Test scenario 1
+        Version v1 = createVersion(versionableNode);
+        addComment(versionableNode, COMMENT, false);
+        Version v2 = createVersion(versionableNode);
+        this.versionService.revert(versionableNode, v1);
+
+        assertEquals("Incorrect comments count:", 2, nodeService.getProperty(versionableNode, ForumModel.PROP_COMMENT_COUNT));
+	}
+    
     /**
      * Tests the creation of the initial version of a versionable node
      */

@@ -22,6 +22,8 @@ package org.alfresco.repo.usage;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import javax.transaction.UserTransaction;
@@ -34,6 +36,7 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -90,7 +93,8 @@ public class UserUsageTest extends TestCase
     protected NodeRef personNodeRef2;
     
     private static final QName customType = QName.createQName("{my.new.model}sop"); // from exampleModel.xml
-    
+    private List<NodeRef> nodesToDelete = new LinkedList<>();
+
     protected void setUp() throws Exception
     {
         if (AlfrescoTransactionSupport.isActualTransactionActive())
@@ -206,6 +210,22 @@ public class UserUsageTest extends TestCase
                 }
             }
         }
+
+        // Make sure we remove all nodes created with the example model so that the model can be
+        // removed.
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                for(NodeRef nodeRef : nodesToDelete)
+                {
+                    nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
+                    nodeService.deleteNode(nodeRef);
+                }
+                return null;
+            }
+        }, true, true);
     }
     
     protected void runAs(String userName)
@@ -982,7 +1002,8 @@ public class UserUsageTest extends TestCase
                 contentProps);
         
         NodeRef content = association.getChildRef();
-        
+        nodesToDelete.add(content);
+
         ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
         
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);

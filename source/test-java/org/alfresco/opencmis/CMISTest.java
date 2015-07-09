@@ -461,7 +461,7 @@ public class CMISTest
      * Test for MNT-9203.
      */
     @Test
-    public void testCeheckIn()
+    public void testCheckIn()
     {
         String repositoryId = null;
         ObjectData objectData = null;
@@ -470,7 +470,7 @@ public class CMISTest
 
         final String folderName = "testfolder." + GUID.generate();
         final String docName = "testdoc.txt." + GUID.generate();
-        final String customModel = "my.new.model";
+        final String customModel = "cmistest.model";
 
         final QName testCustomTypeQName = QName.createQName(customModel, "sop");
         final QName authorisedByQname = QName.createQName(customModel, "authorisedBy");
@@ -522,7 +522,7 @@ public class CMISTest
                 service = factory.getService(context);
 
                 PropertyStringImpl prop = new PropertyStringImpl();
-                prop.setId("my:" + authorisedByQname.toPrefixString());
+                prop.setId("abc:" + authorisedByQname.toPrefixString());
                 prop.setValue(null);
 
                 Collection<PropertyData<?>> propsList = new ArrayList<PropertyData<?>>();

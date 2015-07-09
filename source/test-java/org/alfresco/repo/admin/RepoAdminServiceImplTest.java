@@ -326,7 +326,8 @@ public class RepoAdminServiceImplTest extends TestCase
                 // expected
                 assertTrue(
                         "Incorrect exception message: " + are.getMessage(),
-                        are.getMessage().contains("Failed to validate model delete"));
+                        are.getMessage().contains("Cannot delete model") &&
+                        are.getMessage().contains("it is being used"));
             }
             
             nodeService.deleteNode(node1);
@@ -345,7 +346,7 @@ public class RepoAdminServiceImplTest extends TestCase
             catch (AlfrescoRuntimeException are)
             {
                 // expected
-                assertTrue(are.getMessage().contains("Failed to validate model delete"));
+                assertTrue(are.getMessage().contains("Cannot delete model"));
             }
             
             nodeService.deleteNode(archiveNode1);
@@ -476,7 +477,7 @@ public class RepoAdminServiceImplTest extends TestCase
             {
                 // expected
                 assertTrue(are.getMessage().contains("Model undeployment failed"));
-                assertTrue(are.getCause().getMessage().contains("Failed to validate model delete"));
+                assertTrue(are.getCause().getMessage().contains("Cannot delete model"));
             }
             
             nodeService.deleteNode(node1);
@@ -496,7 +497,7 @@ public class RepoAdminServiceImplTest extends TestCase
             {
                 // expected
                 assertTrue(are.getMessage().contains("Model undeployment failed"));
-                assertTrue(are.getCause().getMessage().contains("Failed to validate model delete"));
+                assertTrue(are.getCause().getMessage().contains("Cannot delete model"));
             }
             
             nodeService.deleteNode(archiveNode1);

@@ -585,13 +585,8 @@
         <property name="workflowService" ref="WorkflowService"/>
         <property name="tenantService" ref="tenantService"/>
         <property name="tenantAdminService" ref="tenantAdminService"/>
-        <property name="searchService" ref="searchService"/>
-	    <property name="storeUrls">
-	        <list>
-	            <value>${spaces.store}</value>
-	            <value>${spaces.archive.store}</value>
-	        </list>
-	    </property>
+        <property name="transactionService" ref="transactionService"/>
+        <property name="qnameDAO" ref="qnameDAO"/>
         <property name="enforceTenantInNamespace" value="${models.enforceTenantInNamespace}"/>
     </bean>
 

@@ -36,6 +36,7 @@ import org.springframework.context.ApplicationContext;
  * @see QNameDAO
  * 
  * @author Derek Hulley
+ * @author sglover
  * @since 3.4
  */
 @Category(OwnJVMTestsCategory.class)
@@ -217,5 +218,26 @@ public class QNameDAOTest extends TestCase
         getQName(qnameOld, false, false);
         // The new QName should be there
         getQName(qnameNew, false, true);
+    }
+
+    public void testDeleteQName() throws Exception
+    {
+        // Create a qname
+        final QName qname = QName.createQName(GUID.generate(), GUID.generate());
+        getQName(qname, true, true);
+
+        // Now delete the qname
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                qnameDAO.deleteQName(qname);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(callback, false, true);
+
+        // The QName should not be there
+        getQName(qname, false, false);
     }
 }

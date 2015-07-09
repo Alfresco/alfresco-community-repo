@@ -119,4 +119,11 @@
            id = #{id}
     </update>
 
+    <delete id="delete_QName" parameterType="QName">
+       delete from
+           alf_qname
+       where
+           id = #{id}
+    </delete>
+
 </mapper>

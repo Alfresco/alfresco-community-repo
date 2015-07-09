@@ -289,6 +289,28 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
         return new Pair<Long, QName>(qnameId, qnameNew);
     }
 
+    @Override
+    public void deleteQName(QName qname)
+    {
+        if (qname == null)
+        {
+            throw new IllegalArgumentException("QName cannot be null");
+        }
+        // See if the QName exists
+        Pair<Long, QName> qnamePair = qnameCache.getByValue(qname);
+        if (qnamePair == null)
+        {
+            throw new IllegalArgumentException("Cannot delete QName.  QName " + qname + " does not exist");
+        }
+        // Delete
+        Long qnameId = qnamePair.getFirst();
+        int deleted = qnameCache.deleteByKey(qnameId);
+        if (deleted != 1)
+        {
+            throw new ConcurrencyFailureException("Failed to delete QName entity " + qnameId);
+        }
+    }
+
     /**
      * Callback for <b>alf_qname</b> DAO.
      */
@@ -371,13 +393,25 @@ public abstract class AbstractQNameDAOImpl implements QNameDAO
             // Create QName
             return updateQNameEntity(entity, nsId, localName);
         }
+
+        public int deleteByKey(Long id)
+        {
+            QNameEntity entity = findQNameEntityById(id);
+            if (entity == null)
+            {
+                // No chance of updating
+                return 0;
+            }
+        		return deleteQNameEntity(entity);
+        }
     }
     
     protected abstract QNameEntity findQNameEntityById(Long id);
     protected abstract QNameEntity findQNameEntityByNamespaceAndLocalName(Long nsId, String localName);
     protected abstract QNameEntity createQNameEntity(Long nsId, String localName);
     protected abstract int updateQNameEntity(QNameEntity entity, Long nsId, String localName);
-    
+    protected abstract int deleteQNameEntity(QNameEntity entity);
+
     
     //================================
     // Utility method implementations

@@ -402,11 +402,6 @@ public class DictionaryModelTypeTest extends BaseSpringTest
         TenantAdminService tenantAdminService = (TenantAdminService)this.applicationContext.getBean("tenantAdminService");
         MessageService messageService = (MessageService)this.applicationContext.getBean("messageService");
 
-        List<String> storeUrlsToValidate = new ArrayList<String>(1);
-        storeUrlsToValidate.add(this.storeRef.toString());
-        ModelValidatorImpl modelValidator = (ModelValidatorImpl)this.applicationContext.getBean("modelValidator");
-        modelValidator.setStoreUrls(storeUrlsToValidate);
-
         txn.commit();
 
         txn = transactionService.getUserTransaction();

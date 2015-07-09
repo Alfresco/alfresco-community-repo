@@ -9,7 +9,7 @@
                 <value>opencmis/testcmisinteger_model.xml</value>
                 <value>opencmis/testcmisdecimal_model.xml</value>
                 <value>opencmis/testcmis_item_model.xml</value>
-                <value>tenant/exampleModel.xml</value>
+                <value>cmis/exampleModel.xml</value>
             </list>
         </property>
     </bean>

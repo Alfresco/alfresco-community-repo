@@ -39,8 +39,8 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
     private static final String SELECT_QNAME_BY_NS_AND_LOCALNAME = "alfresco.qname.select_QNameByNsAndLocalName";
     private static final String INSERT_QNAME = "alfresco.qname.insert.insert_QName";
     private static final String UPDATE_QNAME = "alfresco.qname.update_QName";
-    
-    
+    private static final String DELETE_QNAME = "alfresco.qname.delete_QName";
+
     private SqlSessionTemplate template;
     
     public final void setSqlSessionTemplate(SqlSessionTemplate sqlSessionTemplate) 
@@ -121,5 +121,11 @@ public class QNameDAOImpl extends AbstractQNameDAOImpl
         entity.setLocalNameSafe(localName);
         entity.incrementVersion();
         return template.update(UPDATE_QNAME, entity);
+    }
+
+    @Override
+    protected int deleteQNameEntity(QNameEntity entity)
+    {
+        return template.update(DELETE_QNAME, entity.getId());
     }
 }

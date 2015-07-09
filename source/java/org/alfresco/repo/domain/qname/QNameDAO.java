@@ -99,7 +99,14 @@ public interface QNameDAO
      * @return              the QName pair (id, qname) with the ID unchanged from old to new
      */
     Pair<Long, QName> updateQName(QName qnameOld, QName qnameNew);
-    
+
+    /**
+     * Delete a QName. This will work only if the QName is not in use e.g. by nodes,
+     * properties, etc
+     * 
+     */
+    void deleteQName(QName qname);
+
     /**
      * Bulk-convert QName IDs into QNames
      * 

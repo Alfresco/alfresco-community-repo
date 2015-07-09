@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.lock.JobLockService;
@@ -59,7 +60,7 @@ import org.springframework.dao.ConcurrencyFailureException;
 /**
  * Dictionary model type behaviour.
  * 
- * @author Roy Wetherall, janv
+ * @author Roy Wetherall, janv, sglover
  */
 public class DictionaryModelType implements ContentServicePolicies.OnContentUpdatePolicy,
                                             NodeServicePolicies.OnUpdatePropertiesPolicy,
@@ -341,8 +342,11 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             if (modelName != null)
             {
                 // Validate model delete against usages - content and/or workflows
-                modelValidator.validateModelDelete(modelName);
-                
+                if(!modelValidator.canDeleteModel(modelName))
+                {
+                    throw new AlfrescoRuntimeException("Cannot delete model " + modelName + ", it is being used");
+                }
+
                 Set<NodeRef> pendingModelDeletes = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_DELETE_MODELS);
                 if (pendingModelDeletes == null)
                 {
@@ -646,8 +650,12 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                     if (modelName != null)
                                     {
                                         // Validate model delete against usages - content and/or workflows
-                                    	modelValidator.validateModelDelete(modelName);
-                                        
+                                        if(!modelValidator.canDeleteModel(modelName))
+                                        {
+                                            throw new AlfrescoRuntimeException("Cannot delete model "
+                                                    + modelName + ", it is being used");
+                                        }
+
                                         // invalidate - to force lazy re-init
                                         //dictionaryDAO.destroy();
                                         

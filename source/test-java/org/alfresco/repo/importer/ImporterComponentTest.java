@@ -37,6 +37,8 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.view.ImporterBinding.UUID_BINDING;
+import org.alfresco.service.cmr.view.ImporterBinding;
+import org.alfresco.service.cmr.view.ImporterContentCache;
 import org.alfresco.service.cmr.view.ImporterService;
 import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.NamespaceService;
@@ -250,6 +252,82 @@ public class ImporterComponentTest extends BaseSpringTest
         importerBootstrap.bootstrap();
         authenticationComponent.setSystemUserAsCurrentUser();
         System.out.println(NodeStoreInspector.dumpNodeStore(nodeService, bootstrapStoreRef));
+    }
+    
+    public void testImportFoldersUuidBindingNullUuidNullLocationPath() throws Exception
+    {
+        Location location = new Location(storeRef);
+         
+        InputStream test1 = getClass().getClassLoader().getResourceAsStream("org/alfresco/repo/importer/import_folders.xml");
+        InputStreamReader testReader1 = new InputStreamReader(test1, "UTF-8");
+        try
+        {
+            importerService.importView(testReader1, location, new ImporterBinding()
+            {
+                
+                @Override
+                public String getValue(String key)
+                {
+                    return null;
+                }
+                
+                @Override
+                public UUID_BINDING getUUIDBinding()
+                {
+                    return UUID_BINDING.UPDATE_EXISTING;
+                }
+                
+                @Override
+                public ImporterContentCache getImportConentCache()
+                {
+                    return null;
+                }
+                
+                @Override
+                public QName[] getExcludedClasses()
+                {
+                    return null;
+                }
+                
+                @Override
+                public boolean allowReferenceWithinTransaction()
+                {
+                    return true;
+                }
+            }, new ImportTimerProgress());
+        }
+        finally
+        {
+            testReader1.close();
+        }
+        
+        //  - root        
+        //      - Main folder  
+        //          - sub folder 
+        //              - sub folder 1
+        //              - sub folder 2
+        //      - Archive folder
+        
+        NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+        List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(
+                rootNodeRef,
+                RegexQNamePattern.MATCH_ALL,
+                new RegexQNamePattern(NamespaceService.CONTENT_MODEL_1_0_URI, "main folder"));
+        assertEquals("'main folder' path not found", 1, childAssocs.size());
+        
+        NodeRef mainFolderNode = childAssocs.get(0).getChildRef();
+        childAssocs = nodeService.getChildAssocs(mainFolderNode);
+        assertEquals("'sub folder' path not found", 1, childAssocs.size());
+        
+        NodeRef subFolderNode = childAssocs.get(0).getChildRef();
+        childAssocs = nodeService.getChildAssocs(subFolderNode);                
+        assertEquals("'subsub folder' path not found", 2, childAssocs.size());
+        
+        childAssocs = nodeService.getChildAssocs(
+                rootNodeRef,
+                RegexQNamePattern.MATCH_ALL,
+                new RegexQNamePattern(NamespaceService.CONTENT_MODEL_1_0_URI, "ArchiveFolder"));
+        assertEquals("'ArchiveFolder' path not found", 1, childAssocs.size());
     }
 }
 

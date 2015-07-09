@@ -1605,7 +1605,7 @@ public class ImporterComponent implements ImporterService
                 // uuid already exists
                 String uuid = node.getUUID();
                 NodeRef existingNodeRef = null;
-                if (uuid == null)
+                if (uuid == null && location.getPath() != null ) //need a valid location where to search
                 {
                     NodeRef parentNodeRef = node.getParentContext().getParentRef();
 

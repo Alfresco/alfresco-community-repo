@@ -745,11 +745,11 @@ public class GetChildrenCannedQueryTest extends TestCase
         assertFalse(results.hasMoreItems());
         totalCnt = results.getPage().size();
         assertTrue(totalCnt == 5);
-        assertEquals(nodeRef1, results.getPage().get(0));
-        assertEquals(nodeRef2, results.getPage().get(1));
-        assertEquals(nodeRef3, results.getPage().get(2));
-        assertEquals(nodeRef4, results.getPage().get(3));
-        assertEquals(nodeRef5, results.getPage().get(4));
+        assertTrue(results.getPage().contains(nodeRef1));
+        assertTrue(results.getPage().contains(nodeRef2));
+        assertTrue(results.getPage().contains(nodeRef3));
+        assertTrue(results.getPage().contains(nodeRef4));
+        assertTrue(results.getPage().contains(nodeRef5));
         
         pattern = "foo*bar";
         results = list(parentNodeRef, -1, -1, 0, pattern, null);

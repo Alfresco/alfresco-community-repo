@@ -13,7 +13,7 @@
     <properties>
         <installer.version>2015-1-EA</installer.version>
         <binaries.folder>${user.home}/binaries</binaries.folder>
-        <bitrock.folder>${binaries.folder}/bitrock/bitrock-9.5.1</bitrock.folder>
+        <bitrock.folder>${project.build.directory}/installbuilder</bitrock.folder>
         <signing.key.location>${binaries.folder}/build-classpath/alfresco-code-sign</signing.key.location>
         <bitrock.arguments>
            --license
@@ -22,12 +22,17 @@
            project.outputDirectory=${project.build.directory}
            project.version=${installer.version}
            project.fullName='Alfresco One ${installer.version}'
+           project.osxSigningPkcs12File=${binaries.folder}/build-classpath/code-signing/Alfresco-Software-Ltd-osx.p12
+           project.osxSigningPkcs12Password=${p12Password}
+           project.windowsSigningPkcs12File=${binaries.folder}/build-classpath/code-signing/Alfresco-Software-Ltd.p12
+           project.windowsSigningPkcs12Password=${p12Password}
            alfresco_edition=enterprise
            distribution_folder=${project.build.directory}/distribution/alfresco-enterprise-${project.version}
            wcmqs_folder=${project.build.directory}/wcmqs
            alfresco_amps_source_directory=${project.build.directory}/dependency
            alfrescosharepoint_component_enabled=0
         </bitrock.arguments>
+        <installer.name>alfresco-enterprise</installer.name>
     </properties>
 
     <dependencies>
@@ -195,7 +200,7 @@
                                ${bitrock.arguments}
                                binaries_folder=${binaries.folder}/bitrock/binaries-windows
                                local_binaries_folder=${project.build.directory}/binaries-windows
-                               project.installerFilename=alfresco-enterprise-${project.version}-installer-win-x32.exe
+                               project.installerFilename=${installer.name}-${project.version}-installer-win-x32.exe
                             </commandlineArgs>
                         </configuration>
                     </execution>
@@ -215,7 +220,7 @@
                                ${bitrock.arguments}
                                binaries_folder=${binaries.folder}/bitrock/binaries-windows-x64
                                local_binaries_folder=${project.build.directory}/binaries-windows-x64
-                               project.installerFilename=alfresco-enterprise-${project.version}-installer-win-x64.exe
+                               project.installerFilename=${installer.name}-${project.version}-installer-win-x64.exe
                             </commandlineArgs>
                         </configuration>
                     </execution>
@@ -235,7 +240,7 @@
                                ${bitrock.arguments}
                                binaries_folder=${binaries.folder}/bitrock/binaries-linux-x64
                                local_binaries_folder=${project.build.directory}/binaries-linux-x64
-                               project.installerFilename=alfresco-enterprise-${project.version}-installer-linux-x64.bin
+                               project.installerFilename=${installer.name}-${project.version}-installer-linux-x64.bin
                             </commandlineArgs>
                         </configuration>
                     </execution>
@@ -255,7 +260,7 @@
                                ${bitrock.arguments}
                                binaries_folder=${binaries.folder}/bitrock/binaries-osx-x64
                                local_binaries_folder=${project.build.directory}/binaries-osx-x64
-                               project.installerFilename=alfresco-enterprise-${project.version}-installer-osx-x64.app
+                               project.installerFilename=${installer.name}-${project.version}-installer-osx-x64.app
                             </commandlineArgs>
                         </configuration>
                     </execution>
@@ -274,7 +279,7 @@
                 </os>
             </activation>
             <properties>
-                <bitrock.executable>${bitrock.folder}/win/bin/builder-cli.exe</bitrock.executable>
+                <bitrock.executable>${bitrock.folder}/bin/builder-cli.exe</bitrock.executable>
             </properties>
         </profile>
         <profile>
@@ -285,43 +290,20 @@
                 </os>
             </activation>
             <properties>
-                <bitrock.executable>${bitrock.folder}/linux/bin/builder</bitrock.executable>
+                <bitrock.executable>${bitrock.folder}/bin/builder</bitrock.executable>
             </properties>
         </profile>
-
-        <!-- Signing Windows installers -->
         <profile>
-            <id>sign</id>
+            <id>osx-bitrock</id>
             <activation>
-                <file>
-                    <exists>${user.home}/binaries/build-classpath/alfresco-code-sign.der</exists>
-                </file>
+                <os>
+                    <family>mac</family>
+                </os>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>sign-windows-installers</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipWinInstaller}</skip>
-                                    <target>
-                                        <ant antfile="${project.build.directory}/sign.xml">
-                                             <property name="installer.name" value="alfresco-enterprise" />
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+            <properties>
+                <bitrock.executable>${bitrock.folder}/bin/builder</bitrock.executable>
+            </properties>
         </profile>
     </profiles>
-
+    
 </project>

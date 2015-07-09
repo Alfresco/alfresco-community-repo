@@ -59,6 +59,7 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
     private static final String SELECT_NODES_BY_TYPE_AND_NAME_PATTERN = "alfresco.patch.select_nodesByTypeAndNamePattern";
     
     private static final String UPDATE_CONTENT_MIMETYPE_ID = "alfresco.patch.update_contentMimetypeId";
+    private static final String UPDATE_PERSON_SIZECURRENT_TYPE = "alfresco.patch.update_fixSizeCurrentType";
     
     private static final String SELECT_COUNT_NODES_WITH_ASPECTS = "alfresco.patch.select_CountNodesWithAspectIds";
     
@@ -143,6 +144,15 @@ public class PatchDAOImpl extends AbstractPatchDAOImpl
         params.put("newMimetypeId", newMimetypeId);
         params.put("oldMimetypeId", oldMimetypeId);
         return template.update(UPDATE_CONTENT_MIMETYPE_ID, params);
+    }
+    
+    @Override
+    public int updatePersonSizeCurrentType()
+    {
+        Map<String, Object> params = new HashMap<String, Object>(2);
+        Long sizeCurrentPropQNameId = qnameDAO.getOrCreateQName(ContentModel.PROP_SIZE_CURRENT).getFirst();
+        params.put("sizeCurrentQNameId", sizeCurrentPropQNameId);
+        return template.update(UPDATE_PERSON_SIZECURRENT_TYPE, params);
     }
     
     @Override

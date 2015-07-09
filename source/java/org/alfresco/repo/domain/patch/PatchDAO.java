@@ -48,6 +48,13 @@ public interface PatchDAO
     public int updateContentMimetypeIds(Long oldMimetypeId, Long newMimetypeId);
     
     /**
+     * Update all <b>alf_node_properties</b> of 'sizeCurrent' name to have correct persisted type of Long.
+     * 
+     * @return                  the number of rows affected
+     */
+    public int updatePersonSizeCurrentType();
+    
+    /**
      * Query for a list of nodes that have a given type and share the same name pattern (SQL LIKE syntax)
      * 
      * @param typeQName             the node type

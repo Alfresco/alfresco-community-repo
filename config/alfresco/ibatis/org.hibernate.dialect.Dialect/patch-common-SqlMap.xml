@@ -73,6 +73,10 @@
         <parameter property="maxNodeId" jdbcType="BIGINT" javaType="java.lang.Long"/>
     </parameterMap>
     
+    <parameterMap id="parameter_fixSizeCurrentType" type="map">
+        <parameter property="sizeCurrentQNameId" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </parameterMap>
+    
     <!--                -->
     <!-- Selects        -->
     <!--                -->
@@ -260,6 +264,15 @@
             content_mimetype_id = ?
         where
             content_mimetype_id = ?
+    </update>
+    
+    <update id="update_fixSizeCurrentType" parameterMap="parameter_fixSizeCurrentType">
+        update
+            alf_node_properties
+        set
+            actual_type_n = 3, persisted_type_n = 3
+        where
+            qname_id = #{sizeCurrentQNameId} AND (actual_type_n = 0 OR persisted_type_n = 0)
     </update>
     
     <!--                -->

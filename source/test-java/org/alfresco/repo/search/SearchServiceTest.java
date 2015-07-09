@@ -31,12 +31,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.LimitBy;
-import org.alfresco.service.cmr.search.PermissionEvaluationMode;
-import org.alfresco.service.cmr.search.QueryConsistency;
-import org.alfresco.service.cmr.search.ResultSet;
-import org.alfresco.service.cmr.search.SearchParameters;
-import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.search.*;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
@@ -299,5 +294,54 @@ public class SearchServiceTest extends TestCase
         assertEquals(results.getResultSetMetaData().getLimitedBy(), LimitBy.UNLIMITED);
         assertEquals(results.getResultSetMetaData().getPermissionEvaluationMode(), PermissionEvaluationMode.EAGER);
         results.close();
+    }
+
+    // MNT-13713: row.getValue() returns null when indexing with lucene and sort is applied
+    public void testSearchWithSort()
+    {
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+        // Output with sort
+        // do some search and display the values sorted
+        SearchParameters sp = new SearchParameters();
+        sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.addSort("@cm:name", true);
+        sp.setQuery("TYPE:\"cm:content\"");
+
+        ResultSet rs = pubSearchService.query(sp);
+        
+        try
+        {
+        	for (ResultSetRow row : rs)
+            {
+            	assertFalse(null == row.getValue(ContentModel.PROP_NAME));
+            }
+        }
+        finally
+        {
+        	rs.close();
+        }
+
+        // Output without sort
+        // do some search and display the values sorted
+        sp = new SearchParameters();
+        sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery("TYPE:\"cm:content\"");
+
+        rs = pubSearchService.query(sp);
+
+        try
+        {
+        	for (ResultSetRow row : rs)
+            {
+            	assertFalse(null == row.getValue(ContentModel.PROP_NAME));
+            }
+        }
+        finally
+        {
+        	rs.close();
+        }
     }
 }

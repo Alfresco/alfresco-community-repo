@@ -18,11 +18,13 @@
  */
 package org.alfresco.repo.search.results;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.repo.search.AbstractResultSetRow;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.namespace.QName;
 
 /**
  * @author andyh
@@ -60,8 +62,11 @@ public class SortedResultSetRow extends AbstractResultSetRow implements ResultSe
         throw new UnsupportedOperationException();
     }
 
-    
-
+    protected Map<QName, Serializable> getDirectProperties()
+    {
+        SortedResultSet srs = (SortedResultSet) getResultSet();
+        return srs.getNodeService().getProperties(srs.getNodeRef(getIndex()));
+    }
   
 
     

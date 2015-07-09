@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -214,6 +214,11 @@ public class SortedResultSet implements ResultSet
         return resultSet.getResultSetMetaData();
     }
 
+    public NodeService getNodeService()
+    {
+        return nodeService;
+    }
+    
     public ResultSetRow getRow(int i)
     {
         if (i < length())

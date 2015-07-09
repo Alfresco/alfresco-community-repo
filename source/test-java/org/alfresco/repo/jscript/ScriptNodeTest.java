@@ -36,6 +36,7 @@ import org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap;
 import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
@@ -138,6 +139,7 @@ public class ScriptNodeTest
     private static TenantAdminService          TENANT_ADMIN_SERVICE;
     private static MessageService              MESSAGE_SERVICE;
     private static TransactionService          TRANSACTION_SERVICE;
+    private static PolicyComponent             POLICY_COMPONENT;
 
     private static TestSiteAndMemberInfo USER_ONES_TEST_SITE;
     private static NodeRef               USER_ONES_TEST_FILE;
@@ -175,6 +177,7 @@ public class ScriptNodeTest
         TENANT_ADMIN_SERVICE  = APP_CONTEXT_INIT.getApplicationContext().getBean("tenantAdminService", TenantAdminService.class);
         MESSAGE_SERVICE       = APP_CONTEXT_INIT.getApplicationContext().getBean("messageService", MessageService.class);
         TRANSACTION_SERVICE   = APP_CONTEXT_INIT.getApplicationContext().getBean("transactionComponent", TransactionService.class);
+        POLICY_COMPONENT      = APP_CONTEXT_INIT.getApplicationContext().getBean("policyComponent", PolicyComponent.class);
 
         USER_ONES_TEST_SITE = STATIC_TEST_SITES.createTestSiteWithUserPerRole(GUID.generate(), "sitePreset", SiteVisibility.PRIVATE, USER_ONE_NAME);
         USER_ONES_TEST_FILE = STATIC_TEST_NODES.createQuickFile(MimetypeMap.MIMETYPE_TEXT_PLAIN, USER_ONES_TEST_SITE.doclib, "test.txt", USER_ONE_NAME);		
@@ -216,6 +219,7 @@ public class ScriptNodeTest
         bootstrap.setNodeService(NODE_SERVICE);
         bootstrap.setNamespaceService(NAMESPACE_SERVICE);
         bootstrap.setMessageService(MESSAGE_SERVICE);
+        bootstrap.setPolicyComponent(POLICY_COMPONENT);
 
         RepositoryLocation location = new RepositoryLocation();
         location.setStoreProtocol(storeRef.getProtocol());

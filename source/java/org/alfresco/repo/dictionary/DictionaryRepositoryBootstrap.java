@@ -31,6 +31,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.EmptyContentReader;
+import org.alfresco.repo.dictionary.DynamicModelPolicies.OnLoadDynamicModel;
 import org.alfresco.repo.i18n.MessageDeployer;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
@@ -52,14 +53,12 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
-import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
-import org.alfresco.repo.dictionary.DynamicModelPolicies.OnLoadDynamicModel;
 
 /**
  * Bootstrap the dictionary from specified locations within the repository

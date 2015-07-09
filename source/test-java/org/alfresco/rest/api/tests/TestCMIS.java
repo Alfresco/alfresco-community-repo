@@ -61,6 +61,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.version.VersionableAspect;
 import org.alfresco.rest.api.tests.RepoService.SiteInformation;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
@@ -122,6 +123,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisUpdateConflictExcept
 import org.apache.chemistry.opencmis.commons.impl.dataobjects.ContentStreamImpl;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
@@ -155,6 +157,7 @@ public class TestCMIS extends EnterpriseTestApi
     private CMISStrictDictionaryService cmisDictionary;
     private QNameFilter cmisTypeExclusions;
 	private NodeService nodeService;
+    private VersionableAspect versionableAspect;
 
     @Before
     public void before() throws Exception
@@ -166,6 +169,15 @@ public class TestCMIS extends EnterpriseTestApi
         this.cmisDictionary = (CMISStrictDictionaryService)ctx.getBean("OpenCMISDictionaryService");
         this.cmisTypeExclusions = (QNameFilter)ctx.getBean("cmisTypeExclusions");
 		this.nodeService = (NodeService) ctx.getBean("NodeService");
+        
+        this.versionableAspect = (VersionableAspect) ctx.getBean("versionableAspect");
+        this.versionableAspect.setEnableAutoVersionOnUpdateProps(true);
+    }
+    
+    @After
+    public void after()
+    {
+        this.versionableAspect.setEnableAutoVersionOnUpdateProps(false);
     }
 
     private void checkSecondaryTypes(Document doc, Set<String> expectedSecondaryTypes, Set<String> expectedMissingSecondaryTypes)

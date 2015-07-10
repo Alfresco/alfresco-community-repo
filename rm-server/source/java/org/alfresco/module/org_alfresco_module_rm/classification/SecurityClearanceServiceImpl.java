@@ -18,8 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
+import static org.alfresco.module.org_alfresco_module_rm.classification.ClearanceLevelManager.NO_CLEARANCE;
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.ASPECT_SECURITY_CLEARANCE;
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_CLEARANCE_LEVEL;
+import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -201,5 +203,33 @@ public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements Sec
         if (targetIndex == -1) { return Collections.emptyList(); }
         List<ClearanceLevel> subList = allLevels.subList(targetIndex, allLevels.size());
         return Collections.unmodifiableList(subList);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService#hasCurrentUserClearance()
+     */
+    @Override
+    public boolean hasCurrentUserClearance()
+    {
+        return hasUserClearance(authenticationUtil.getRunAsUser());
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService#hasUserClearance(java.lang.String)
+     */
+    @Override
+    public boolean hasUserClearance(String userId)
+    {
+        checkNotBlank("userId", userId);
+
+        boolean hasUserClearance = false;
+
+        ClearanceLevel userCleranceLevel = getUserSecurityClearance(userId).getClearanceLevel();
+        if (userCleranceLevel != null && userCleranceLevel != NO_CLEARANCE)
+        {
+            hasUserClearance = true;
+        }
+
+        return hasUserClearance;
     }
 }

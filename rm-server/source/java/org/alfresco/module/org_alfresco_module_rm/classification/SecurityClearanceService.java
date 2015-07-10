@@ -74,4 +74,19 @@ public interface SecurityClearanceService
      * and therefore access to the most restricted documents).
      */
     List<ClearanceLevel> getClearanceLevels();
+
+    /**
+     * Checks if the current user has any clearance set
+     *
+     * @return <code>true</code> if the current user has a clearance set different than "No Clearance", <code>false</code> otherwise
+     */
+    boolean hasCurrentUserClearance();
+
+    /**
+     * Checks if the user with the given id has any clearance set
+     *
+     * @param userId {@link String} The user id
+     * @return <code>true</code> if the user with the given id has a clearance set different than "No Clearance", <code>false</code> otherwise
+     */
+    boolean hasUserClearance(String userId);
 }

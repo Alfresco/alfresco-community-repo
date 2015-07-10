@@ -18,6 +18,7 @@
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="siteService" ref="SiteService" />
       <property name="contentClassificationService" ref="contentClassificationService"/>
+      <property name="securityClearanceService" ref="SecurityClearanceService" />
       <property name="policyComponent" ref="policyComponent" />
       <property name="jsonConversionComponentCache" ref="jsonConversionComponentCache" />
    </bean>

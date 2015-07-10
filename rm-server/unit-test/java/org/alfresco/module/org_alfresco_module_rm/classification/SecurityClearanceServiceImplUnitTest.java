@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.ASPECT_SECURITY_CLEARANCE;
 import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_CLEARANCE_LEVEL;
+import static org.alfresco.util.GUID.generate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -30,7 +31,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
@@ -45,6 +45,8 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * Unit tests for {@link SecurityClearanceServiceImpl}.
@@ -300,4 +302,26 @@ public class SecurityClearanceServiceImplUnitTest
         assertEquals(mockClearanceLevels.get(1), restrictedClearanceLevels.get(0));
         assertEquals(mockClearanceLevels.get(2), restrictedClearanceLevels.get(1));
     }
+
+    @Test
+    public void hasUserClearance()
+    {
+        // Check if the current user has clearance
+        PersonInfo user1 = createMockPerson(generate(), generate(), generate(), null);
+        MockAuthenticationUtilHelper.setup(mockAuthenticationUtil, user1.getUserName());
+        assertFalse(securityClearanceServiceImpl.hasCurrentUserClearance());
+
+        // Check if a user with a given id has clearance
+        String user2 = generate();
+        String classificationLevelId = generate();
+        ClassificationLevel classificationLevel = new ClassificationLevel(classificationLevelId, generate());
+        ClearanceLevel clearanceLevel = new ClearanceLevel(classificationLevel, generate());
+
+        when(mockClearanceLevelManager.findLevelByClassificationLevelId(classificationLevelId)).thenReturn(clearanceLevel);
+
+        createMockPerson(user2, generate(), generate(), classificationLevelId);
+        MockAuthenticationUtilHelper.setup(mockAuthenticationUtil, user2);
+        assertTrue(securityClearanceServiceImpl.hasUserClearance(user2));
+    }
+
 }

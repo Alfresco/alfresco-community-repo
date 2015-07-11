@@ -79,7 +79,6 @@
    <modules>
       <module>rm-server</module>
       <module>rm-share</module>
-      <module>rm-automation</module>
    </modules>
 
    <properties>

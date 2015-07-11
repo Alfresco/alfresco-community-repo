@@ -14,22 +14,19 @@
         <installer.version>2015-a-EA</installer.version>
         <binaries.folder>${user.home}/binaries</binaries.folder>
         <bitrock.folder>${project.build.directory}/installbuilder</bitrock.folder>
-        <signing.key.location>${binaries.folder}/build-classpath/alfresco-code-sign</signing.key.location>
+        <signing.key.location>${binaries.folder}/build-classpath/code-signing</signing.key.location>
+        <license.file.location>${binaries.folder}/build-classpath/license.xml"</license.file.location>
         <bitrock.arguments>
-           --license
-           ${binaries.folder}/build-classpath/license.xml
-           --setvars
-           project.outputDirectory=${project.build.directory}
-           project.version=${installer.version}
-           project.fullName='Alfresco Community ${installer.version}'
-           project.osxSigningPkcs12File=${binaries.folder}/build-classpath/code-signing/Alfresco-Software-Ltd-osx.p12
-           project.osxSigningPkcs12Password=${p12Password}
-           project.windowsSigningPkcs12File=${binaries.folder}/build-classpath/code-signing/Alfresco-Software-Ltd.p12
-           project.windowsSigningPkcs12Password=${p12Password}
-           alfresco_edition=community
-           distribution_folder=${project.build.directory}/distribution/alfresco-community-${project.version}
-           wcmqs_folder=${project.build.directory}/wcmqs
-           alfresco_amps_source_directory=${project.build.directory}/dependency
+            project.outputDirectory=${project.build.directory} 
+            project.version=${installer.version} 
+            project.fullName='Alfresco Community ${installer.version}' 
+            project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
+            project.osxSigningPkcs12Password=${p12Password} 
+            project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 
+            project.windowsSigningPkcs12Password=${p12Password} 
+            alfresco_edition=community
+            wcmqs_folder=${project.build.directory}/wcmqs 
+            alfresco_amps_source_directory=${project.build.directory}/dependency
         </bitrock.arguments>
         <installer.name>alfresco-community</installer.name>
     </properties>
@@ -272,10 +269,11 @@
                 </executions>
             </plugin>
 
-            <!-- Extract all the binaries: Tomcat, PostgreSQL, Java, LibreOffice, Installbuilder-->
+            
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
+                    <!-- Extract all the binaries: Tomcat, PostgreSQL, Java, LibreOffice, Installbuilder-->
                     <execution>
                         <id>extract-binaries-tgz</id>
                         <phase>prepare-package</phase>
@@ -288,94 +286,18 @@
                             </target>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <configuration>
-                    <executable>${bitrock.executable}</executable>
-                    <workingDirectory>${basedir}/src/main/resources/bitrock</workingDirectory>
-                </configuration>
-                <executions>
-                    <!-- Windows 32 -->
+                    <!-- Build installers -->
                     <execution>
-                        <id>win32-installer</id>
+                        <id>build-installers</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <skip>${skipWinInstaller}</skip>
-                            <commandlineArgs>
-                               build project.xml
-                               windows
-                               ${bitrock.arguments}
-                               binaries_folder=${binaries.folder}/bitrock/binaries-windows
-                               local_binaries_folder=${project.build.directory}/binaries-windows
-                               project.installerFilename=${installer.name}-${project.version}-installer-win-x32.exe
-                            </commandlineArgs>
-                        </configuration>
-                    </execution>
-
-                    <!-- Windows 64 -->
-                    <execution>
-                        <id>win64-installer</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipWinInstaller}</skip>
-                            <commandlineArgs>
-                               build project.xml
-                               windows
-                               ${bitrock.arguments}
-                               binaries_folder=${binaries.folder}/bitrock/binaries-windows-x64
-                               local_binaries_folder=${project.build.directory}/binaries-windows-x64
-                               project.installerFilename=${installer.name}-${project.version}-installer-win-x64.exe
-                            </commandlineArgs>
-                        </configuration>
-                    </execution>
-
-                    <!-- Linux 64 -->
-                    <execution>
-                        <id>linux-installer</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipLinInstaller}</skip>
-                            <commandlineArgs>
-                               build project.xml
-                               linux-x64
-                               ${bitrock.arguments}
-                               binaries_folder=${binaries.folder}/bitrock/binaries-linux-x64
-                               local_binaries_folder=${project.build.directory}/binaries-linux-x64
-                               project.installerFilename=${installer.name}-${project.version}-installer-linux-x64.bin
-                            </commandlineArgs>
-                        </configuration>
-                    </execution>
-
-                    <!-- OS X -->
-                    <execution>
-                        <id>osx-installer</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipOSXInstaller}</skip>
-                            <commandlineArgs>
-                               build project.xml
-                               osx
-                               ${bitrock.arguments}
-                               binaries_folder=${binaries.folder}/bitrock/binaries-osx-x64
-                               local_binaries_folder=${project.build.directory}/binaries-osx-x64
-                               project.installerFilename=${installer.name}-${project.version}-installer-osx-x64.app
-                            </commandlineArgs>
+                            <workingDirectory>${basedir}/src/main/resources/bitrock</workingDirectory>
+                            <target>
+                                <ant antfile="src/main/resources/build-installers.xml" />
+                            </target>
                         </configuration>
                     </execution>
                 </executions>

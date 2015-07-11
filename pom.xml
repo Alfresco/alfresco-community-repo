@@ -15,7 +15,7 @@
         <binaries.folder>${user.home}/binaries</binaries.folder>
         <bitrock.folder>${project.build.directory}/installbuilder</bitrock.folder>
         <signing.key.location>${binaries.folder}/build-classpath/code-signing</signing.key.location>
-        <license.file.location>${binaries.folder}/build-classpath/license.xml"</license.file.location>
+        <license.file.location>${binaries.folder}/build-classpath/license.xml</license.file.location>
         <bitrock.arguments>
             project.outputDirectory=${project.build.directory} 
             project.version=${installer.version} 

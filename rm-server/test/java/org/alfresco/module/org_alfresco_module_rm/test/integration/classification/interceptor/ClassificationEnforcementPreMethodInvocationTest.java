@@ -120,14 +120,14 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
                     }
                 }, testUser);
 
-                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
-                {
-                    @Override
-                    public void run() throws Exception
-                    {
-                        nodeService.getProperties(doc);
-                    }
-                }, testUser);
+//                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
+//                {
+//                    @Override
+//                    public void run() throws Exception
+//                    {
+//                        nodeService.getProperties(doc);
+//                    }
+//                }, testUser);
 
                 doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
                 {

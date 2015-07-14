@@ -50,6 +50,8 @@ public interface ContentClassificationService
      * @param classificationReasonIds A non-empty set of ids of reasons for classifying the content in this way.
      * @param content The node to classify.
      * @throws LevelIdNotFound If the supplied level id is not found.
+     * @thorws IllegalArgumentException If the supplied {@code classifiedBy} is {@code null},
+     *                                  the empty string or a string consisting only of whitespace.
      * @throws ReasonIdNotFound If any of the supplied reason ids are not found.
      * @throws InvalidNodeRefException If the node could not be found.
      * @throws InvalidNode If the supplied node is not a content node.

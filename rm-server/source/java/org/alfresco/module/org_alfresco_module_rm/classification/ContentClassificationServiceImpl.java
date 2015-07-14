@@ -89,7 +89,7 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl implements
                                 Set<String> classificationReasonIds, final NodeRef content)
     {
         checkNotBlank("classificationLevelId", classificationLevelId);
-        mandatory("classifiedBy", classifiedBy);
+        checkNotBlank("classifiedBy", classifiedBy);
         mandatory("classificationReasonIds", classificationReasonIds);
         mandatory("content", content);
 

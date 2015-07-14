@@ -37,27 +37,12 @@ import com.icegreen.greenmail.util.ServerSetup;
 
 import javax.net.ssl.SSLServerSocketFactory;
 import javax.net.ssl.SSLServerSocket;
-import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.management.subsystems.LoggableErrorEvent;
-import org.alfresco.util.PortUtil;
-import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
  * @author Mike Shavnev
  */
-public class AlfrescoImapServer extends AbstractLifecycleBean implements ApplicationEventPublisherAware
+public class AlfrescoImapServer extends AbstractLifecycleBean
 {
-    private static final String IMAP_PORT_OCCUPIED_MESSAGE = "system.imap.err.port_in_use";
-    
-    private ApplicationEventPublisher applicationEventPublisher;
-    
-    @Override
-    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher)
-    {
-        this.applicationEventPublisher = applicationEventPublisher;
-    }
-    
     private class SecureImapServer extends ImapServer
     {
         
@@ -265,13 +250,6 @@ public class AlfrescoImapServer extends AbstractLifecycleBean implements Applica
             
             if(isImapEnabled())
             {
-                // Check if port is occupied.
-                if (!PortUtil.isPortFree(port))
-                {
-                    applicationEventPublisher.publishEvent(new LoggableErrorEvent(this,
-                            new AlfrescoRuntimeException(IMAP_PORT_OCCUPIED_MESSAGE, new String[] { "" + port })));
-                }
-                
                 AtomicReference<Exception> serverOpeningExceptionRef = new AtomicReference<Exception>();
                 serverImpl = new DefaultImapServer(new ServerSetup(port, host, ServerSetup.PROTOCOL_IMAP), imapManagers, serverOpeningExceptionRef);
                 serverImpl.startService(null);

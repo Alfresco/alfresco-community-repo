@@ -28,7 +28,6 @@ import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.service.cmr.email.EmailMessageException;
 import org.alfresco.service.cmr.email.EmailService;
-import org.alfresco.util.PortUtil;
 import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.BeansException;
@@ -43,7 +42,6 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public abstract class EmailServer extends AbstractLifecycleBean
 {
     private static final String ERR_SENDER_BLOCKED = "email.server.err.sender_blocked";
-    private static final String SMTP_PORT_OCCUPIED_MESSAGE = "system.smtp.err.port_in_use";
     
     private boolean enabled;
     private String domain;
@@ -68,7 +66,7 @@ public abstract class EmailServer extends AbstractLifecycleBean
         this.blockedSenders = new HashSet<String>(23);
         this.allowedSenders = new HashSet<String>(23);
     }
-    
+
     /**
      * @param enabled Enable/disable server
      */
@@ -250,13 +248,6 @@ public abstract class EmailServer extends AbstractLifecycleBean
         {
             throw new AlfrescoRuntimeException("Property 'port' is incorrect");
         }
-        
-        // Check if port is occupied.
-        if (!PortUtil.isPortFree(port))
-        {
-            throw new AlfrescoRuntimeException(SMTP_PORT_OCCUPIED_MESSAGE, new String[] { "" + port });
-        }
-
         PropertyCheck.mandatory(this, "emailService", emailService);
         // Startup
         startup();

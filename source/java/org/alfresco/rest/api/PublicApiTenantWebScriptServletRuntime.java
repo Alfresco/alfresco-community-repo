@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,8 @@
  */
 package org.alfresco.rest.api;
 
+import java.util.regex.Pattern;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -31,6 +33,8 @@ import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFac
 
 public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServletRuntime
 {
+    private static final Pattern CMIS_URI_PATTERN = Pattern.compile(".*/cmis/versions/[0-9]+\\.[0-9]+/.*");
+    
 	public PublicApiTenantWebScriptServletRuntime(RuntimeContainer container, ServletAuthenticatorFactory authFactory, HttpServletRequest req,
 			HttpServletResponse res, ServerProperties serverProperties)
 	{
@@ -53,6 +57,11 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
             // NOTE: assume a redirect has taken place e.g. tomcat welcome-page
             // NOTE: this is unlikely, and we'll take the hit if the path contains a semi-colon
             pathInfo = req.getPathInfo();
+        }
+        // MNT-13057 fix, do not decode CMIS uris.
+        else if (CMIS_URI_PATTERN.matcher(requestURI).matches())
+        {
+            pathInfo = requestURI.substring(serviceContextPath.length());
         }
         else
         {

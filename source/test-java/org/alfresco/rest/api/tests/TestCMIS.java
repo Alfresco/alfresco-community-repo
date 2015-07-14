@@ -127,7 +127,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
-import org.springframework.test.AssertThrows;
+import org.springframework.extensions.surf.util.URLEncoder;
 
 public class TestCMIS extends EnterpriseTestApi
 {
@@ -2079,6 +2079,70 @@ public class TestCMIS extends EnterpriseTestApi
         IOUtils.copy(in, writer, "UTF-8");
         String content = writer.toString();
         assertEquals("Ipsum and so on", content);
+    }
+    
+    @Test
+    public void testMNT_13057() throws Exception
+    {
+        final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+        String username = "user" + System.currentTimeMillis();
+        PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
+        TestPerson person1 = network1.createUser(personInfo);
+        String person1Id = person1.getId();
+        
+        String guid = GUID.generate();
+        String name = guid + "_KRUIS_LOGO_100%_PMS.txt";
+        String urlFileName = guid + "_KRUIS_LOGO_100%25_PMS.txt";
+        
+        final String siteName = "site" + System.currentTimeMillis();
+
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
+                TestSite site = repoService.createSite(null, siteInfo);
+
+                String name = GUID.generate();
+                NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
+                return folderNodeRef;
+            }
+        }, person1Id, network1.getId());
+        
+        // Create a document...
+        publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_11);
+        Folder docLibrary = (Folder)cmisSession.getObjectByPath("/Sites/" + siteName + "/documentLibrary");
+        
+        Map<String, Object> properties = new HashMap<String, Object>();
+        {
+            properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
+            properties.put(PropertyIds.NAME, name);
+        }
+        
+        ContentStreamImpl fileContent = new ContentStreamImpl();
+        {
+            ContentWriter writer = new FileContentWriter(TempFileProvider.createTempFile(GUID.generate(), ".txt"));
+            writer.putContent("Ipsum");
+            ContentReader reader = writer.getReader();
+            fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            fileContent.setStream(reader.getContentInputStream());
+        }
+
+        /* Create document */
+        Document doc = docLibrary.createDocument(properties, fileContent, VersioningState.MAJOR);
+        
+        String id = doc.getId();
+        assertNotNull(id);
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("id", URLEncoder.encode(id));
+        
+        urlFileName += "?id=" + URLEncoder.encode(id);
+
+        HttpResponse response = publicApiClient.get("/" + network1.getId() + "/public/cmis/versions/1.1/atom/content/" + urlFileName, null);
+        assertEquals(200, response.getStatusCode());
     }
     
     @Test

@@ -282,7 +282,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <ant antfile="src/main/resources/extract-binaries.xml" />
+                                <ant antfile="${project.build.directory}/classes/extract-binaries.xml" />
                             </target>
                         </configuration>
                     </execution>
@@ -294,9 +294,9 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
-                            <workingDirectory>${basedir}/src/main/resources/bitrock</workingDirectory>
+                            <workingDirectory>${project.build.directory}/classes/bitrock</workingDirectory>
                             <target>
-                                <ant antfile="src/main/resources/build-installers.xml" />
+                                <ant antfile="${project.build.directory}/classes/build-installers.xml" />
                             </target>
                         </configuration>
                     </execution>

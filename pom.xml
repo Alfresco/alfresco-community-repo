@@ -59,7 +59,7 @@
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-installer</artifactId>
                                     <version>${project.version}</version>
-                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
@@ -167,7 +167,7 @@
                         </goals>
                         <configuration>
                             <target>
-                                <ant antfile="${project.build.directory}/extract-binaries.xml" />
+                                <ant antfile="${project.build.directory}/classes/extract-binaries.xml" />
                             </target>
                         </configuration>
                     </execution>
@@ -179,8 +179,9 @@
                             <goal>run</goal>
                         </goals>
                         <configuration>
+                            <workingDirectory>${project.build.directory}/classes/bitrock</workingDirectory>
                             <target>
-                                <ant antfile="${project.build.directory}/build-installers.xml" />
+                                <ant antfile="${project.build.directory}/classes/build-installers.xml" />
                             </target>
                         </configuration>
                     </execution>

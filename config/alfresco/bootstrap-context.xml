@@ -435,8 +435,19 @@
     </bean>
 
     <!--  System Administration Parameters -->
-    <bean id="sysAdmin" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean"/>
-
+    <bean id="sysAdmin" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
+        <property name="earlyPropertyCheckers">
+            <map>
+                <entry key="share.port" value-ref="sharePortEarlyChecker" />
+            </map>
+        </property>
+    </bean>
+    <bean id="sharePortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="Share" />
+        <constructor-arg value="false" />
+        <constructor-arg value="false" />
+    </bean>    
+  
     <!--  File Servers Subsystem -->
     <bean id="fileServers" class="org.alfresco.repo.management.subsystems.ChildApplicationContextFactory" parent="abstractPropertyBackedBean">
         <property name="autoStart">
@@ -464,6 +475,16 @@
         <property name="persister">
         	<bean class="org.alfresco.config.AlfrescoPropertiesPersister"/>
         </property>
+        <property name="earlyPropertyCheckers">
+            <map>
+                <entry key="ftp.port" value-ref="ftpPortEarlyChecker" />
+            </map>
+        </property>
+    </bean>
+    <bean id="ftpPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="FTP" />
+        <constructor-arg value="false" />
+        <constructor-arg value="true" />
     </bean>
 
    <bean id="fileServerConfiguration" class="org.alfresco.repo.management.subsystems.SubsystemProxyFactory">
@@ -510,6 +531,22 @@
                </entry>
             </map>
         </property>
+        <property name="earlyPropertyCheckers">
+            <map>
+                <entry key="imap.server.port" value-ref="imapPortEarlyChecker" />
+                <entry key="imap.server.imaps.port" value-ref="imapsPortEarlyChecker" />
+            </map>
+        </property>
+    </bean>
+    <bean id="imapPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="IMAP" />
+        <constructor-arg value="false" />
+        <constructor-arg value="true" />
+    </bean>
+    <bean id="imapsPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="IMAPS" />
+        <constructor-arg value="false" />
+        <constructor-arg value="true" />
     </bean>
 
     <!-- Outbound Email subsystem -->
@@ -546,6 +583,16 @@
         <property name="autoStart">
             <value>true</value>
         </property>
+        <property name="earlyPropertyCheckers">
+            <map>
+                <entry key="email.server.port" value-ref="smtpPortEarlyChecker" />
+            </map>
+        </property>
+    </bean>
+    <bean id="smtpPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="SMTP" />
+        <constructor-arg value="false" />
+        <constructor-arg value="true" />
     </bean>
 
     <!--  Subscription Service subsystem -->

@@ -103,7 +103,14 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     
     /** Lock for concurrent access. */
     protected ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-
+    
+    private Map<String, SubsystemEarlyPropertyChecker> earlyPropertyCheckers;
+    
+    public void setEarlyPropertyCheckers(Map<String, SubsystemEarlyPropertyChecker> earlyPropertyCheckers)
+    {
+        this.earlyPropertyCheckers = earlyPropertyCheckers;
+    }
+    
     /**
      * Used in conjunction with {@link #localSetProperties} to control setting of
      * properties from either a JMX client or by code in the local Alfresco
@@ -311,6 +318,56 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
         this.saveSetProperty = saveSetProperty;
     }
 
+    /**
+     * Check properties for invalid values using {@link SubsystemEarlyPropertyChecker}s
+     * @param properties
+     * @throws InvalidPropertyValueException 
+     */
+    public void performEarlyPropertyChecks(Map<String, String> properties) throws InvalidPropertyValueException
+    {
+        if (properties != null && !properties.isEmpty() && earlyPropertyCheckers != null)
+        {
+            List<InvalidPropertyValueException> exceptions = new ArrayList<InvalidPropertyValueException>();
+
+            for (String property : properties.keySet())
+            {
+                if (earlyPropertyCheckers.containsKey(property))
+                {
+                    try
+                    {
+                        SubsystemEarlyPropertyChecker propertyChecker = earlyPropertyCheckers.get(property);
+
+                        if (propertyChecker != null)
+                        {
+                            propertyChecker.checkPropertyValue(property, properties.get(property));
+                        }
+                    }
+                    catch (InvalidPropertyValueException ipve)
+                    {
+                        exceptions.add(ipve);
+                    }
+                }
+            }
+
+            if (exceptions.size() > 0)
+            {
+                String allExceptionsMessages = "";
+                
+                for (InvalidPropertyValueException ipve : exceptions)
+                {
+                    if (!allExceptionsMessages.equals(""))
+                    {
+                        allExceptionsMessages += " | ";
+                    }
+
+                    allExceptionsMessages += ipve.getLocalizedMessage();
+                }
+
+                throw new InvalidPropertyValueException(allExceptionsMessages);
+            }
+        }
+    }
+    
     /**
      * {@inheritDoc}
      */

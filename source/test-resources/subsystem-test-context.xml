@@ -18,9 +18,29 @@
                </entry>
             </map>
         </property>
+        <property name="earlyPropertyCheckers">
+            <map>
+                <entry key="test1.port" value-ref="testPortEarlyChecker" />
+                <entry key="test2.port" value-ref="testPortEarlyChecker" />
+                <entry key="test3.port" value-ref="testPortEarlyChecker" />
+                <entry key="test4.port" value-ref="testPortEarlyChecker" />
+                <entry key="test5.port" value-ref="testPortEarlyChecker" />
+            </map>
+        </property>
+    </bean>
+    <bean id="testPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="TestSubsystem" />
+        <constructor-arg value="false" />
+        <constructor-arg value="true" />
     </bean>
     
     <bean id="sampleService" class="org.alfresco.repo.management.subsystems.test.SampleService">
     </bean>    
+    
+    <bean id="testPortNumber" class="java.lang.Integer">
+        <constructor-arg>
+            <value>65534</value>
+        </constructor-arg> 
+    </bean>
 
 </beans>

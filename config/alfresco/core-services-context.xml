@@ -995,6 +995,22 @@
                 <value>solr</value>
             </list>
         </property>
+        <property name="earlyPropertyCheckers">
+            <map>
+                <entry key="solr.port" value-ref="solrPortEarlyChecker" />
+                <entry key="solr.port.ssl" value-ref="solrSSLPortEarlyChecker" />
+            </map>
+        </property>
+    </bean>
+    <bean id="solrPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="Solr" />
+        <constructor-arg value="false" />
+        <constructor-arg value="false" />
+    </bean>
+    <bean id="solrSSLPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="Solr SSL" />
+        <constructor-arg value="false" />
+        <constructor-arg value="false" />
     </bean>
 
     <bean id="solr4" class="org.alfresco.repo.search.impl.solr.SolrChildApplicationContextFactory" parent="abstractPropertyBackedBean">
@@ -1020,6 +1036,22 @@
                 <value>solr4</value>
             </list>
         </property>
+        <property name="earlyPropertyCheckers">
+            <map>
+                <entry key="solr.port" value-ref="solr4PortEarlyChecker" />
+                <entry key="solr.port.ssl" value-ref="solr4SSLPortEarlyChecker" />
+            </map>
+        </property>
+    </bean>
+    <bean id="solr4PortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="Solr" />
+        <constructor-arg value="false" />
+        <constructor-arg value="false" />
+    </bean>
+    <bean id="solr4SSLPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+        <constructor-arg value="Solr SSL" />
+        <constructor-arg value="false" />
+        <constructor-arg value="false" />
     </bean>
     
     <bean id="buildonly" class="org.alfresco.repo.management.subsystems.LuceneChildApplicationContextFactory" parent="abstractPropertyBackedBean">

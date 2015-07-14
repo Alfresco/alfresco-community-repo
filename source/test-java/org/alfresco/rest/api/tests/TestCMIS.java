@@ -2141,7 +2141,7 @@ public class TestCMIS extends EnterpriseTestApi
         
         urlFileName += "?id=" + URLEncoder.encode(id);
 
-        HttpResponse response = publicApiClient.get("/" + network1.getId() + "/public/cmis/versions/1.1/atom/content/" + urlFileName, null);
+        HttpResponse response = publicApiClient.get(network1.getId() + "/public/cmis/versions/1.1/atom/content/" + urlFileName, null);
         assertEquals(200, response.getStatusCode());
     }
     

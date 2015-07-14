@@ -343,4 +343,28 @@ public final class WebScriptUtils
 
         return jsonArray;
     }
+
+    /**
+     * Returns {@code true} if the provided {@link WebScriptException}
+     * represents an HTTP 4xx error, else {@code false}.
+     */
+    public static boolean is4xxError(WebScriptException e)
+    {
+        return isStatusInRange(e, 400, 500);
+    }
+
+    /**
+     * Returns {@code true} if the provided {@link WebScriptException}
+     * represents an HTTP 5xx error, else {@code false}.
+     */
+    public static boolean is5xxError(WebScriptException e)
+    {
+        return isStatusInRange(e, 500, 600);
+    }
+
+    private static boolean isStatusInRange(WebScriptException e, int lowerLimitInclusive, int upperLimitExclusive)
+    {
+        final int status = e.getStatus();
+        return status >= lowerLimitInclusive && status < upperLimitExclusive;
+    }
 }

@@ -24,6 +24,7 @@ import static org.alfresco.module.org_alfresco_module_rm.script.classification.C
 import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFICATION_REASONS;
 import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFIED_BY;
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
+import static org.alfresco.util.WebScriptUtils.is4xxError;
 import static org.alfresco.util.WebScriptUtils.putValuetoJSONObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -44,6 +45,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.WebScriptException;
 
 /**
  * Classify content REST API POST implementation unit test.
@@ -103,13 +105,13 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
         // Setup web script parameters
         Map<String, String> parameters = buildParameters
         (
-                STORE_TYPE,       record.getStoreRef().getProtocol(),
-                STORE_ID,         record.getStoreRef().getIdentifier(),
-                ID,               record.getId()
+            STORE_TYPE,       record.getStoreRef().getProtocol(),
+            STORE_ID,         record.getStoreRef().getIdentifier(),
+            ID,               record.getId()
         );
 
         // Build JSON to send to server
-        String content = buildContent();
+        String content = buildContent().toString();
 
         // Execute web script
         JSONObject json = executeJSONWebScript(parameters, content);
@@ -121,12 +123,40 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
         verify(mockedContentClassificationService, times(1)).classifyContent(LEVEL_ID, BY, AGENCY, newHashSet(REASON1_ID, REASON2_ID), record);
     }
 
-    /**
-     * Helper method to build the request content
-     *
-     * @return The request content as {@link String}
-     */
-    private String buildContent()
+    @Test public void classifyingWithBlankClassifiedByShouldReturn4xxResponse() throws Exception
+    {
+        // Setup web script parameters
+        Map<String, String> parameters = buildParameters
+        (
+            STORE_TYPE,       record.getStoreRef().getProtocol(),
+            STORE_ID,         record.getStoreRef().getIdentifier(),
+            ID,               record.getId()
+        );
+
+        final String whitespace = "  \t  ";
+
+        JSONObject jsonObj = buildContent();
+        putValuetoJSONObject(jsonObj, CLASSIFIED_BY, whitespace);
+        String json = jsonObj.toString();
+
+        // Execute web script
+        boolean exceptionThrown = false;
+        try
+        {
+            executeJSONWebScript(parameters, json);
+        }
+        catch (WebScriptException expected)
+        {
+            exceptionThrown = true;
+            assertTrue("HTTP rsp should have been a 400 error. Was " + expected.getStatus(),
+                       is4xxError(expected));
+        }
+
+        assertTrue("Expected exception was not thrown", exceptionThrown);
+    }
+
+    /** Helper method to build the request content. */
+    private JSONObject buildContent()
     {
         JSONObject content = new JSONObject();
         putValuetoJSONObject(content, CLASSIFICATION_LEVEL_ID, LEVEL_ID);
@@ -143,6 +173,6 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
         classificationReasons.put(classificationReason2);
         putValuetoJSONObject(content, CLASSIFICATION_REASONS, classificationReasons);
 
-        return content.toString();
+        return content;
     }
 }

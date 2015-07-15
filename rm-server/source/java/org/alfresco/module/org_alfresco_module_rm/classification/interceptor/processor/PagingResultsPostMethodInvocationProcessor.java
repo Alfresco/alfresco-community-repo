@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
+import static org.apache.commons.collections.ListUtils.isEqualList;
+
 import java.util.List;
 
 import org.alfresco.query.PagingResults;
@@ -58,31 +60,34 @@ public class PagingResultsPostMethodInvocationProcessor extends BasePostMethodIn
             List page = pagingResults.getPage();
             final List processedPage = getPostMethodInvocationProcessor().process(page);
 
-            result = (T) new PagingResults<T>()
+            if (!isEqualList(page, processedPage))
             {
-                @Override
-                public String getQueryExecutionId()
+                result = (T) new PagingResults<T>()
                 {
-                    return pagingResults.getQueryExecutionId();
-                }
-                @Override
-                public List<T> getPage()
-                {
-                    return processedPage;
-                }
-                @Override
-                public boolean hasMoreItems()
-                {
-                    // hasMoreItems might not be correct. Cannot determine the correct value as request details are needed.
-                    return pagingResults.hasMoreItems();
-                }
-                @Override
-                public Pair<Integer, Integer> getTotalResultCount()
-                {
-                    int size = processedPage.size();
-                    return new Pair<Integer, Integer>(size, size);
-                }
-            };
+                    @Override
+                    public String getQueryExecutionId()
+                    {
+                        return pagingResults.getQueryExecutionId();
+                    }
+                    @Override
+                    public List<T> getPage()
+                    {
+                        return processedPage;
+                    }
+                    @Override
+                    public boolean hasMoreItems()
+                    {
+                        // hasMoreItems might not be correct. Cannot determine the correct value as request details are needed.
+                        return pagingResults.hasMoreItems();
+                    }
+                    @Override
+                    public Pair<Integer, Integer> getTotalResultCount()
+                    {
+                        int size = processedPage.size();
+                        return new Pair<Integer, Integer>(size, size);
+                    }
+                };
+            }
         }
 
         return result;

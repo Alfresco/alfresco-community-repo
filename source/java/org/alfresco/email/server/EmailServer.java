@@ -42,6 +42,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public abstract class EmailServer extends AbstractLifecycleBean
 {
     private static final String ERR_SENDER_BLOCKED = "email.server.err.sender_blocked";
+    private static final String ERR_FROM_SYNTAX_INCORRECT = "email.server.err.from_syntax";
     
     private boolean enabled;
     private String domain;
@@ -56,6 +57,7 @@ public abstract class EmailServer extends AbstractLifecycleBean
 
     private EmailService emailService;
     private AuthenticationComponent authenticationComponent;
+    private String unknownUser;
 
     protected EmailServer()
     {
@@ -184,6 +186,20 @@ public abstract class EmailServer extends AbstractLifecycleBean
     {
         this.emailService = emailService;
     }
+    
+    /**
+     * Used only for check "isNullReversePatAllowed".
+     * @param unknownUser authority name
+     */
+    public void setUnknownUser(String unknownUser)
+    {
+        this.unknownUser = unknownUser;
+    }
+    
+    protected boolean isNullReversePatAllowed()
+    {
+        return isAuthenticate() || (unknownUser != null && !unknownUser.isEmpty());
+    }
 
     /**
      * Filter incoming message by its sender e-mail address.
@@ -193,6 +209,19 @@ public abstract class EmailServer extends AbstractLifecycleBean
      */
     protected void filterSender(String sender)
     {
+        if (sender == null)
+        {
+            if (isNullReversePatAllowed())
+            {
+             // allow null reverse-path: e.g.: an undeliverable mail response
+                return;
+            }
+            else
+            {
+                throw new EmailMessageException(ERR_FROM_SYNTAX_INCORRECT);
+            }
+        }
+        
         // Check if the sender is in the blocked list
         for (String blockedSender : blockedSenders)
         {

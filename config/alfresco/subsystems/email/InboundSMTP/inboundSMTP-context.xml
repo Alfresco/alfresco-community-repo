@@ -51,6 +51,9 @@
         <property name="authenticationComponent">
             <ref bean="authenticationComponent" />
         </property>
+        <property name="unknownUser">
+           <value>${email.inbound.unknownUser}</value>
+        </property>
     </bean>
 
    <alias name="emailService" alias="EmailService"/>

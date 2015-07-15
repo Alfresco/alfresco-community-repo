@@ -52,6 +52,7 @@ public class Repository01TestSuite extends TestSuite
     static void tests3(TestSuite suite) // tests="76" time="82.566"
     {
         suite.addTestSuite(org.alfresco.email.server.EmailServiceImplTest.class);
+        suite.addTestSuite(org.alfresco.email.server.EmailServerTest.class);
         suite.addTestSuite(org.alfresco.filesys.FTPServerTest.class);
         suite.addTestSuite(org.alfresco.filesys.repo.CifsIntegrationTest.class);
         suite.addTestSuite(org.alfresco.filesys.repo.ContentDiskDriverTest.class);

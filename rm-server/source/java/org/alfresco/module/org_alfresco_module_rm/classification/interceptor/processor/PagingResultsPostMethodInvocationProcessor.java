@@ -18,8 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
-import static org.apache.commons.collections.ListUtils.isEqualList;
-
 import java.util.List;
 
 import org.alfresco.query.PagingResults;
@@ -60,34 +58,31 @@ public class PagingResultsPostMethodInvocationProcessor extends BasePostMethodIn
             List page = pagingResults.getPage();
             final List processedPage = getPostMethodInvocationProcessor().process(page);
 
-            if (!isEqualList(page, processedPage))
+            result = (T) new PagingResults<T>()
             {
-                result = (T) new PagingResults<T>()
+                @Override
+                public String getQueryExecutionId()
                 {
-                    @Override
-                    public String getQueryExecutionId()
-                    {
-                        return pagingResults.getQueryExecutionId();
-                    }
-                    @Override
-                    public List<T> getPage()
-                    {
-                        return processedPage;
-                    }
-                    @Override
-                    public boolean hasMoreItems()
-                    {
-                        // hasMoreItems might not be correct. Cannot determine the correct value as request details are needed.
-                        return pagingResults.hasMoreItems();
-                    }
-                    @Override
-                    public Pair<Integer, Integer> getTotalResultCount()
-                    {
-                        int size = processedPage.size();
-                        return new Pair<Integer, Integer>(size, size);
-                    }
-                };
-            }
+                    return pagingResults.getQueryExecutionId();
+                }
+                @Override
+                public List<T> getPage()
+                {
+                    return processedPage;
+                }
+                @Override
+                public boolean hasMoreItems()
+                {
+                    // hasMoreItems might not be correct. Cannot determine the correct value as request details are needed.
+                    return pagingResults.hasMoreItems();
+                }
+                @Override
+                public Pair<Integer, Integer> getTotalResultCount()
+                {
+                    // getTotalResultCount may not be correct. We haven't checked how many other results will be filtered.
+                    return pagingResults.getTotalResultCount();
+                }
+            };
         }
 
         return result;

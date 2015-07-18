@@ -105,7 +105,7 @@ public class UserQuotaDetails {
      * @return long
      */
     public final long getAvailableSpace() {
-        if ( getUserQuota() == 0)
+        if (!hasUserQuota() || getUserQuota() == 0)
             return -1L;
         long availSpace = getUserQuota() - getCurrentUsage();
         if ( availSpace < 0L)

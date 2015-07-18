@@ -125,6 +125,35 @@ public class ContentQuotaManager implements QuotaManager, Runnable {
 		return freeSpace;
 	}
 
+	/**
+	 * Return the quota space available to the specified user/session
+	 *
+	 * @param sess SrvSession
+	 * @param tree TreeConnection
+	 * @return long
+	 */
+	public long getUserTotalSpace(SrvSession sess, TreeConnection tree)
+	{
+
+		// Check if content usage is enabled
+
+		if (m_usageService.getEnabled() == false)
+			return -1L;
+
+		UserQuotaDetails userQuota = getQuotaDetails(sess, true);
+		if (userQuota != null)
+		{
+			synchronized (userQuota)
+			{
+				return userQuota.getUserQuota();
+			}
+		}
+
+		// No quota details available
+
+		return -1L;
+	}
+	
     /**
      * Return the free space available to the specified user/session
      *

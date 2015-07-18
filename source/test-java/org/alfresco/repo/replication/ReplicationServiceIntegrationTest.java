@@ -33,6 +33,7 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
+import org.alfresco.repo.action.RuntimeActionService;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.model.Repository;
@@ -54,6 +55,7 @@ import org.alfresco.service.cmr.action.scheduled.ScheduledPersistedActionService
 import org.alfresco.service.cmr.action.scheduled.SchedulableAction.IntervalPeriod;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.UnableToReleaseLockException;
+import org.alfresco.service.cmr.replication.DisabledReplicationJobException;
 import org.alfresco.service.cmr.replication.ReplicationDefinition;
 import org.alfresco.service.cmr.replication.ReplicationService;
 import org.alfresco.service.cmr.replication.ReplicationServiceException;
@@ -77,6 +79,8 @@ import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -91,6 +95,8 @@ public class ReplicationServiceIntegrationTest extends TestCase
 {
    private static ConfigurableApplicationContext ctx = 
       (ConfigurableApplicationContext)ApplicationContextHelper.getApplicationContext();
+   private static final Log log = LogFactory.getLog(ReplicationServiceIntegrationTest.class);
+   
    
     private ReplicationActionExecutor replicationActionExecutor;
     private ReplicationService replicationService;
@@ -553,17 +559,6 @@ public class ReplicationServiceIntegrationTest extends TestCase
        } catch(ReplicationServiceException e) {}
        txn.rollback();
        
-       // Now disabled, not allowed
-       assertEquals(true, rd.isEnabled());
-       rd.setEnabled(false);
-       assertEquals(false, rd.isEnabled());
-       txn = transactionService.getUserTransaction();
-       txn.begin();
-       try {
-          actionService.executeAction(rd, replicationRoot);
-          fail("Shouldn't be permitted when disabled");
-       } catch(ReplicationServiceException e) {}
-       txn.rollback();
        
        // Invalid Transfer Target, not allowed
        rd = replicationService.createReplicationDefinition(ACTION_NAME, "Test");
@@ -626,6 +621,29 @@ public class ReplicationServiceIntegrationTest extends TestCase
        txn.begin();
        actionService.executeAction(rd2, replicationRoot);
        txn.commit();
+       
+       // Now disabled, not allowed
+       assertEquals(true, rd.isEnabled());
+       rd.setEnabled(false);
+       assertEquals(false, rd.isEnabled());
+       txn = transactionService.getUserTransaction();
+       txn.begin();
+       try {
+          actionService.executeAction(rd, replicationRoot);
+          fail("Shouldn't be permitted when disabled");
+       } catch(ReplicationServiceException e) {
+           //check if throwed exception is of expected type
+           assertTrue(e instanceof DisabledReplicationJobException);
+           assertTrue(actionService instanceof RuntimeActionService);
+           if (actionService instanceof RuntimeActionService){
+               RuntimeActionService runtimeActionService = (RuntimeActionService)actionService;
+               //check if throwed exception is considered handled 
+               assertTrue(runtimeActionService.onLogException(rd, log, e, e.getMessage()));
+           }
+         
+       }
+       txn.rollback();
+       rd.setEnabled(true);
        
        
        // Schedule it for 0.5 seconds into the future

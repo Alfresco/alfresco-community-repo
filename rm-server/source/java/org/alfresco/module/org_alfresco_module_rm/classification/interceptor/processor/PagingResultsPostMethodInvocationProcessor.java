@@ -56,33 +56,37 @@ public class PagingResultsPostMethodInvocationProcessor extends BasePostMethodIn
         {
             final PagingResults pagingResults = getClassName().cast(result);
             List page = pagingResults.getPage();
+            int originalPageSize = page.size();
             final List processedPage = getPostMethodInvocationProcessor().process(page);
 
-            result = (T) new PagingResults<T>()
+            if (processedPage != null && processedPage.size() != originalPageSize)
             {
-                @Override
-                public String getQueryExecutionId()
+                result = (T) new PagingResults<T>()
                 {
-                    return pagingResults.getQueryExecutionId();
-                }
-                @Override
-                public List<T> getPage()
-                {
-                    return processedPage;
-                }
-                @Override
-                public boolean hasMoreItems()
-                {
-                    // hasMoreItems might not be correct. Cannot determine the correct value as request details are needed.
-                    return pagingResults.hasMoreItems();
-                }
-                @Override
-                public Pair<Integer, Integer> getTotalResultCount()
-                {
-                    // getTotalResultCount may not be correct. We haven't checked how many other results will be filtered.
-                    return pagingResults.getTotalResultCount();
-                }
-            };
+                    @Override
+                    public String getQueryExecutionId()
+                    {
+                        return pagingResults.getQueryExecutionId();
+                    }
+                    @Override
+                    public List<T> getPage()
+                    {
+                        return processedPage;
+                    }
+                    @Override
+                    public boolean hasMoreItems()
+                    {
+                        // hasMoreItems might not be correct. Cannot determine the correct value as request details are needed.
+                        return pagingResults.hasMoreItems();
+                    }
+                    @Override
+                    public Pair<Integer, Integer> getTotalResultCount()
+                    {
+                        int size = processedPage.size();
+                        return new Pair<Integer, Integer>(size, size);
+                    }
+                };
+            }
         }
 
         return result;

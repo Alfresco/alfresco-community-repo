@@ -1,0 +1,40 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>distribution</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+
+    <fileSets>
+        <!-- Local resources: README, etc. -->
+        <fileSet>
+            <directory>target/classes</directory>
+            <outputDirectory></outputDirectory>
+        </fileSet>
+
+        <!-- Platform Distribution -->
+        <fileSet>
+            <directory>${project.build.directory}/dependency/alfresco-platform-community-${alfresco.platform.version}</directory>
+            <outputDirectory/>
+        </fileSet>
+
+        <!-- Share services WAR -->
+        <fileSet>
+            <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.platform.version}</directory>
+            <includes>
+                <include>share.war</include>
+            </includes>
+            <outputDirectory>web-server/webapps</outputDirectory>
+        </fileSet>
+
+        <!-- Share services AMP -->
+        <fileSet>
+            <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.platform.version}</directory>
+            <includes>
+                <include>*.amp</include>
+            </includes>
+            <outputDirectory>amps_share</outputDirectory>
+        </fileSet>
+    </fileSets>
+
+</assembly>

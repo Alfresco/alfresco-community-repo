@@ -372,16 +372,6 @@ function main()
          newFile.properties.content.write(content, false, true);
          newFile.save();
          
-         // TODO (THOR-175) - review
-         // Ensure the file is versionable (autoVersion and autoVersionProps read from config)
-         if (autoVersion != null && autoVersionProps != null)
-         {
-             newFile.ensureVersioningEnabled(autoVersion, autoVersionProps);
-         }
-         else
-         {
-             newFile.ensureVersioningEnabled();
-         }
 
          // NOTE: Removal of first request for thumbnails to improve upload performance
          //       Thumbnails are still requested by Share on first render of the doclist image.
@@ -397,6 +387,17 @@ function main()
 
          // Extract the metadata
          extractMetadata(newFile);
+
+         // TODO (THOR-175) - review
+         // Ensure the file is versionable (autoVersion and autoVersionProps read from config)
+         if (autoVersion != null && autoVersionProps != null)
+         {
+             newFile.ensureVersioningEnabled(autoVersion, autoVersionProps);
+         }
+         else
+         {
+             newFile.ensureVersioningEnabled();
+         }
 
          // Record the file details ready for generating the response
          model.document = newFile;

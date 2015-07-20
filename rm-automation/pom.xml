@@ -68,6 +68,11 @@
            <version>1.4</version>
        </dependency>
        <dependency>
+		   <groupId>org.alfresco.test</groupId>
+		   <artifactId>alfresco-testng</artifactId>
+		   <version>1.1</version>
+	   </dependency>
+       <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>selenium-grid</artifactId>
             <version>1.4</version>

@@ -18,17 +18,24 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor;
 
+import static java.lang.Boolean.TRUE;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
+import static org.alfresco.util.GUID.generate;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
+import org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.transaction.TransactionService;
 import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -43,6 +50,9 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class PreMethodInvocationProcessor implements ApplicationContextAware
 {
+    /** Key to mark the transaction as processing */
+    private static final String KEY_PROCESSING = generate();
+
     /** List of method names to check before invocation */
     private List<String> methodNames = new ArrayList<>();
 
@@ -89,6 +99,36 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
     }
 
     /**
+     * Gets the alfresco transaction support
+     *
+     * @return The alfresco transaction support
+     */
+    protected AlfrescoTransactionSupport getAlfrescoTransactionSupport()
+    {
+        return (AlfrescoTransactionSupport) applicationContext.getBean("rm.alfrescoTransactionSupport");
+    }
+
+    /**
+     * Gets the retrying transaction helper
+     *
+     * @return The retrying transaction helper
+     */
+    protected RetryingTransactionHelper getRetryingTransactionHelper()
+    {
+        return ((TransactionService) applicationContext.getBean("transactionService")).getRetryingTransactionHelper();
+    }
+
+    /**
+     * Gets the classification service bootstrap
+     *
+     * @return The classification service bootstrap
+     */
+    protected ClassificationServiceBootstrap getClassificationServiceBootstrap()
+    {
+        return (ClassificationServiceBootstrap) applicationContext.getBean("classificationServiceBootstrap");
+    }
+
+    /**
      * Returns a list of method names to check before invocation
      *
      * @return List of method names to check before invocation
@@ -103,12 +143,11 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
      */
     public void init()
     {
-        getMethodNames().add("NodeService.setProperty");
-        getMethodNames().add("NodeService.setProperties");
-        getMethodNames().add("NodeService.getProperty");
-        //getMethodNames().add("NodeService.getProperties");
-        getMethodNames().add("FileFolderService.copy");
-        getMethodNames().add("FileFolderService.move");
+        getMethodNames().add("NodeService.exists");
+        getMethodNames().add("NodeService.getType");
+        getMethodNames().add("NodeService.hasAspect");
+        getMethodNames().add("NodeService.getAspects");
+        getMethodNames().add("NodeService.getProperties");
     }
 
     /**
@@ -117,26 +156,64 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
      *
      * @param invocation The current method invocation
      */
-    public void process(MethodInvocation invocation)
+    public void process(final MethodInvocation invocation)
     {
         mandatory("invocation", invocation);
 
-        Method method = invocation.getMethod();
-        String className = method.getDeclaringClass().getSimpleName();
-        String methodName = method.getName();
-        String name = className + "." + methodName;
-        Object[] args = invocation.getArguments();
-
-        if (getMethodNames().contains(name))
+        // do in transaction
+        getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
-            for (Object arg : args)
+            @SuppressWarnings("rawtypes")
+            public Void execute() throws Throwable
             {
-                if (arg != null && NodeRef.class.isAssignableFrom(arg.getClass()))
+                // ensure classification service has been bootstrapped
+                if (getClassificationServiceBootstrap().isInitialised())
                 {
-                    isNodeCleared(((NodeRef) arg), name);
+                    // check that we are not already processing a classification check
+                    Object value = getAlfrescoTransactionSupport().getResource(KEY_PROCESSING);
+                    if (value == null)
+                    {
+                        Method method = invocation.getMethod();
+                        Class[] params = method.getParameterTypes();
+
+                        int position = 0;
+                        for (Class param : params)
+                        {
+                            // if the param is a node reference
+                            if (NodeRef.class.isAssignableFrom(param))
+                            {
+                                String className = method.getDeclaringClass().getSimpleName();
+                                String methodName = method.getName();
+                                String name = className + "." + methodName;
+
+                                if (!getMethodNames().contains(name))
+                                {
+                                    // mark the transaction as processing a classification check
+                                    getAlfrescoTransactionSupport().bindResource(KEY_PROCESSING, TRUE);
+                                    try
+                                    {
+                                        // get the value of the parameter
+                                        NodeRef testNodeRef = (NodeRef) invocation.getArguments()[position];
+
+                                        // if node exists then see if the current user has clearance
+                                        isNodeCleared(testNodeRef, name);
+                                    }
+                                    finally
+                                    {
+                                        // clear the transaction as processed a classification check
+                                        getAlfrescoTransactionSupport().unbindResource(KEY_PROCESSING);
+                                    }
+                                }
+                            }
+
+                            position++;
+                        }
+                    }
                 }
+
+                return null;
             }
-        }
+        }, true);
     }
 
     /**
@@ -148,7 +225,8 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
      */
     private void isNodeCleared(NodeRef nodeRef, String name)
     {
-        if (getNodeService().exists(nodeRef) &&
+        if (nodeRef != null &&
+                getNodeService().exists(nodeRef) &&
                 getDictionaryService().isSubClass(getNodeService().getType(nodeRef), TYPE_CONTENT) &&
                 !getContentClassificationService().hasClearance(nodeRef))
         {

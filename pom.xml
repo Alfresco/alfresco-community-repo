@@ -25,8 +25,6 @@
             project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 
             project.windowsSigningPkcs12Password=${p12Password} 
             alfresco_edition=community
-            wcmqs_folder=${project.build.directory}/wcmqs 
-            alfresco_amps_source_directory=${project.build.directory}/dependency
         </bitrock.arguments>
         <installer.name>alfresco-community</installer.name>
     </properties>

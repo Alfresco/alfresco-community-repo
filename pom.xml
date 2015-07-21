@@ -54,10 +54,29 @@
     <build>
         <finalName>${alfresco.package.name}-${project.version}</finalName>
         <plugins>
-            <!-- Extract keystore from alfresco-repository -->
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
+                    <!-- Extract keystore from alfresco-repository -->
+                    <execution>
+                        <id>extract-keystore</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>${project.groupId}</groupId>
+                                    <artifactId>alfresco-repository</artifactId>
+                                    <version>${project.version}</version>
+                                    <includes>alfresco/keystore/**</includes>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+
+                    <!-- Extract JLAN DLLs -->
                     <execution>
                         <id>extract-jlan-dll</id>
                         <phase>generate-resources</phase>

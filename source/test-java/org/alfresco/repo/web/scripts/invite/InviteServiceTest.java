@@ -38,7 +38,6 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.alfresco.repo.workflow.jbpm.JBPMEngine;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -92,7 +91,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     // can be removed in the tearDown() method
     private List<String> inviteeEmailAddrs;
 
-    private static final String WF_DEFINITION_INVITE = WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME;
+    private static final String WF_DEFINITION_INVITE = WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
 
     private static final String USER_INVITER = "InviterUser";
     private static final String USER_INVITER_2 = "InviterUser2";
@@ -165,14 +164,14 @@ public class InviteServiceTest extends BaseWebScriptTest
                 {
                     public Object doWork() throws Exception
                     {
-                        // redeploy invite process definition in case it has been modified
-                        WorkflowDefinition inviteWfDefinition = workflowService.getDefinitionByName(
-                                "jbpm$" + WorkflowModelNominatedInvitation.WF_PROCESS_INVITE.toPrefixString(namespaceService));
-                        workflowService.undeployDefinition(inviteWfDefinition.id);
-                        ClassPathResource inviteWfResource = new ClassPathResource(
-                                "alfresco/workflow/invitation-nominated_processdefinition.xml");
-                        workflowService.deployDefinition(
-                                JBPMEngine.ENGINE_ID, inviteWfResource.getInputStream(), MimetypeMap.MIMETYPE_XML);
+//                        // redeploy invite process definition in case it has been modified
+//                        WorkflowDefinition inviteWfDefinition = workflowService.getDefinitionByName(
+//                                "jbpm$" + WorkflowModelNominatedInvitation.WF_PROCESS_INVITE.toPrefixString(namespaceService));
+//                        workflowService.undeployDefinition(inviteWfDefinition.id);
+//                        ClassPathResource inviteWfResource = new ClassPathResource(
+//                                "alfresco/workflow/invitation-nominated_processdefinition.xml");
+//                        workflowService.deployDefinition(
+//                                JBPMEngine.ENGINE_ID, inviteWfResource.getInputStream(), MimetypeMap.MIMETYPE_XML);
                         
                         // Create new invitee email address list
                         inviteeEmailAddrs = new ArrayList<String>();

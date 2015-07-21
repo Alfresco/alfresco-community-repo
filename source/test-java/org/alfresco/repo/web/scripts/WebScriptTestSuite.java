@@ -52,7 +52,6 @@ import org.alfresco.repo.web.scripts.tagging.TaggingServiceTest;
 import org.alfresco.repo.web.scripts.thumbnail.ThumbnailServiceTest;
 import org.alfresco.repo.web.scripts.transfer.TransferWebScriptTest;
 import org.alfresco.repo.web.scripts.workflow.ActivitiWorkflowRestApiTest;
-import org.alfresco.repo.web.scripts.workflow.JBPMWorkflowRestApiTest;
 import org.alfresco.repo.web.scripts.workflow.WorkflowModelBuilderTest;
 
 /**
@@ -95,7 +94,6 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( TransferWebScriptTest.class );
         suite.addTestSuite( WorkflowModelBuilderTest.class );
         suite.addTestSuite( ActivitiWorkflowRestApiTest.class );
-        suite.addTestSuite( JBPMWorkflowRestApiTest.class );
         suite.addTestSuite( PublishingRestApiTest.class );
         suite.addTestSuite( SOLRWebScriptTest.class );
         suite.addTestSuite( SubscriptionServiceRestApiTest.class );

@@ -56,6 +56,10 @@ public abstract class BasePostMethodInvocationProcessor
     /** Post method invocation processor */
     @Autowired
     private PostMethodInvocationProcessor postMethodInvocationProcessor;
+    
+    /** Pre method invocation processor */
+    @Autowired
+    private PreMethodInvocationProcessor preMethodInvocationProcessor;
 
     /**
      * @return the nodeService
@@ -133,11 +137,21 @@ public abstract class BasePostMethodInvocationProcessor
     {
         NodeRef filter = nodeRef;
 
-        if (getNodeService().exists(nodeRef) &&
+        // disable pre-method invocation processor
+        preMethodInvocationProcessor.disable();        
+        try
+        {
+            if (getNodeService().exists(nodeRef) &&
                 getDictionaryService().isSubClass(getNodeService().getType(nodeRef), TYPE_CONTENT) &&
                 !getContentClassificationService().hasClearance(nodeRef))
+            {
+                filter = null;
+            }
+        }
+        finally
         {
-            filter = null;
+            // re-enable pre-method invocation processor
+            preMethodInvocationProcessor.enable();
         }
 
         return filter;

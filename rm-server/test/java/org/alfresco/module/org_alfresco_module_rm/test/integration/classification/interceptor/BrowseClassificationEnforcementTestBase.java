@@ -32,7 +32,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class BrowseClassificationEnforcementTestBase extends BaseRMTestCase
+public abstract class BrowseClassificationEnforcementTestBase extends BaseRMTestCase
 {
     protected String testUser;
     protected static final String LEVEL1 = "level1";

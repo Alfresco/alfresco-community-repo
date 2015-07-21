@@ -86,7 +86,6 @@
         </dependencySet>
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
             <outputDirectory>web-server/webapps</outputDirectory>
             <outputFileNameMapping>share.war</outputFileNameMapping>
             <includes>

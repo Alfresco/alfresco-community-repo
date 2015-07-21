@@ -7,14 +7,9 @@
         <version>5.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>alfresco-distribution</artifactId>
+    <artifactId>alfresco-platform-distribution</artifactId>
     <packaging>jar</packaging>
-    <name>Alfresco Distribution (WAR Installation)</name>
-
-    <!-- To replace in share-config-custom.xml -->
-    <properties>
-        <BITROCK_TOMCAT_PORT>8080</BITROCK_TOMCAT_PORT>
-    </properties>
+    <name>Alfresco Platform Distribution (WAR Installation)</name>
 
     <dependencies>
         <!-- WAR files -->
@@ -26,22 +21,10 @@
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>${share.war.artifactId}</artifactId>
-            <version>${project.version}</version>
-            <type>war</type>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
             <artifactId>alfresco-solr4</artifactId>
             <version>${project.version}</version>
             <classifier>ssl</classifier>
             <type>war</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>jdk.tools</groupId>
-                    <artifactId>jdk.tools</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- Solr4 config -->
@@ -51,12 +34,6 @@
             <version>${project.version}</version>
             <classifier>config-ssl</classifier>
             <type>zip</type>
-            <exclusions>
-                <exclusion>
-                    <groupId>jdk.tools</groupId>
-                    <artifactId>jdk.tools</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <dependency>
@@ -93,17 +70,6 @@
     <build>
         <finalName>${alfresco.package.name}-${project.version}</finalName>
         <plugins>
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <configuration>
-                    <delimiters>
-                        <delimiter>${*}</delimiter>
-                        <delimiter>@@</delimiter> <!-- To replace Tomcat port in share-config-custom.xml -->
-                    </delimiters>
-                    <useDefaultDelimiters>false</useDefaultDelimiters>
-                </configuration>
-            </plugin>
-
             <!-- Extract keystore from alfresco-repository -->
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -186,26 +152,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <!-- profiles to only depend on alfresco-spp when building Community: it is not built in Enterprise, and fails the build -->
-        <profile>
-            <id>community</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <dependencies>
-                <dependency>
-                    <groupId>org.alfresco</groupId>
-                    <artifactId>alfresco-spp</artifactId>
-                    <version>${project.version}</version>
-                    <type>amp</type>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>enterprise</id>
-        </profile>
-    </profiles>
-
 </project>

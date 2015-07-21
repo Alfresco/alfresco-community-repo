@@ -38,7 +38,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
-import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ClassificationEnforcementException;
+import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.ContentServicePolicies;
@@ -687,7 +687,7 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
                 return true;
             }
         }
-        catch (ClassificationEnforcementException cee)
+        catch (AccessDeniedException ade)
         {
             return false;
         }

@@ -26,7 +26,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.ClassificationEnforcementException;
+import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -92,7 +92,7 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
             @Override
             public void when() throws Exception
             {
-                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
+                doTestInTransaction(new FailureTest(AccessDeniedException.class)
                 {
                     @Override
                     public void run() throws Exception
@@ -101,7 +101,7 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
                     }
                 }, testUser);
 
-                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
+                doTestInTransaction(new FailureTest(AccessDeniedException.class)
                 {
                     @Override
                     public void run()
@@ -111,7 +111,7 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
                     }
                 }, testUser);
 
-                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
+                doTestInTransaction(new FailureTest(AccessDeniedException.class)
                 {
                     @Override
                     public void run() throws Exception
@@ -120,7 +120,7 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
                     }
                 }, testUser);
 
-                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
+                doTestInTransaction(new FailureTest(AccessDeniedException.class)
                 {
                     @Override
                     public void run() throws Exception
@@ -129,7 +129,7 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
                     }
                 }, testUser);
 
-                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
+                doTestInTransaction(new FailureTest(AccessDeniedException.class)
                 {
                     @Override
                     public void run() throws Exception
@@ -138,7 +138,7 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
                     }
                 }, testUser);
 
-                doTestInTransaction(new FailureTest(ClassificationEnforcementException.class)
+                doTestInTransaction(new FailureTest(AccessDeniedException.class)
                 {
                     @Override
                     public void run() throws Exception

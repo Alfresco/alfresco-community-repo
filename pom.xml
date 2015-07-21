@@ -68,6 +68,22 @@
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>
                                 </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-solr4-distribution</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/distribution/${installer.name}-${project.version}/solr4</outputDirectory>
+                                    <excludes>solr4.war</excludes>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-solr4-distribution</artifactId>
+                                    <version>${project.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/distribution/${installer.name}-${project.version}/web-server/webapps</outputDirectory>
+                                    <includes>solr4.war</includes>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>

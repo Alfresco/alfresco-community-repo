@@ -19,7 +19,7 @@
         <bitrock.arguments>
            project.outputDirectory=${project.build.directory}
            project.version=${project.version}
-           project.fullName='Alfresco One Platform ${installer.version}'
+           project.fullName='Alfresco One Platform ${project.version}'
            project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
            project.osxSigningPkcs12Password=${p12Password} 
            project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 

@@ -20,12 +20,11 @@ package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.pr
 
 import static java.lang.Boolean.TRUE;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;
+import static org.alfresco.repo.security.authentication.AuthenticationUtil.getFullyAuthenticatedUser;
 import static org.alfresco.util.GUID.generate;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
@@ -52,9 +51,6 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
 {
     /** Key to mark the transaction as processing */
     private static final String KEY_PROCESSING = generate();
-
-    /** List of method names to check before invocation */
-    private List<String> methodNames = new ArrayList<>();
 
     /** Application context */
     private ApplicationContext applicationContext;
@@ -129,34 +125,24 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
     }
 
     /**
-     * Returns a list of method names to check before invocation
-     *
-     * @return List of method names to check before invocation
-     */
-    protected List<String> getMethodNames()
-    {
-        return this.methodNames;
-    }
-    
-    /**
      * is pre-processing enabled?
-     * 
-     * @return boolean  true if enabled, false otherwise
+     *
+     * @return boolean <code>true</code> if enabled, <code>false</code> otherwise
      */
     public boolean isEnabled()
     {
         return (getAlfrescoTransactionSupport().getResource(KEY_PROCESSING) == null);
     }
-    
+
     /**
      * disable pre-processing for this transaction
      */
     public void disable()
     {
         // mark the transaction as processing a classification check
-        getAlfrescoTransactionSupport().bindResource(KEY_PROCESSING, TRUE);        
+        getAlfrescoTransactionSupport().bindResource(KEY_PROCESSING, TRUE);
     }
-    
+
     /**
      * enable pre-processing for this transaction
      */
@@ -197,27 +183,20 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
                             // if the param is a node reference
                             if (NodeRef.class.isAssignableFrom(param))
                             {
-                                String className = method.getDeclaringClass().getSimpleName();
-                                String methodName = method.getName();
-                                String name = className + "." + methodName;
-
-                                if (!getMethodNames().contains(name))
+                                // disable pre-processing
+                                disable();
+                                try
                                 {
-                                    // disable pre-processing
-                                    disable();
-                                    try
-                                    {
-                                        // get the value of the parameter
-                                        NodeRef testNodeRef = (NodeRef) invocation.getArguments()[position];
+                                    // get the value of the parameter
+                                    NodeRef testNodeRef = (NodeRef) invocation.getArguments()[position];
 
-                                        // if node exists then see if the current user has clearance
-                                        isNodeCleared(testNodeRef, name);
-                                    }
-                                    finally
-                                    {
-                                        // re-enable pre-processing
-                                        enable();
-                                    }
+                                    // if node exists then see if the current user has clearance
+                                    isNodeCleared(testNodeRef, method);
+                                }
+                                finally
+                                {
+                                    // re-enable pre-processing
+                                    enable();
                                 }
                             }
 
@@ -236,16 +215,21 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
      * the currently logged in user is cleared to see it.
      *
      * @param nodeRef Node reference to check
-     * @param name The name of the invoked method
+     * @param method The invoked method
      */
-    private void isNodeCleared(NodeRef nodeRef, String name)
+    private void isNodeCleared(NodeRef nodeRef, Method method)
     {
         if (nodeRef != null &&
                 getNodeService().exists(nodeRef) &&
                 getDictionaryService().isSubClass(getNodeService().getType(nodeRef), TYPE_CONTENT) &&
                 !getContentClassificationService().hasClearance(nodeRef))
         {
-            throw new ClassificationEnforcementException("The method '" + name  + "' was called, but you are not cleared for the node.");
+            String className = method.getDeclaringClass().getSimpleName();
+            String methodName = method.getName();
+            String name = className + "." + methodName;
+
+            throw new ClassificationEnforcementException("The user '" + getFullyAuthenticatedUser() + "' called the method '"
+                    + name + "' for the node '" + nodeRef + "' but is not cleared to see it.");
         }
     }
 }

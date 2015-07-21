@@ -228,8 +228,8 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
             String methodName = method.getName();
             String name = className + "." + methodName;
 
-            throw new ClassificationEnforcementException("The user '" + getFullyAuthenticatedUser() + "' called the method '"
-                    + name + "' for the node '" + nodeRef + "' but is not cleared to see it.");
+            throw new AccessDeniedException("Access is denied for the user '" + getFullyAuthenticatedUser()
+                    + "'  to call the method '" + name + "' for the node '" + nodeRef + "'.");
         }
     }
 }

@@ -21,12 +21,12 @@ package org.alfresco.module.org_alfresco_module_rm.classification.interceptor.pr
 import org.alfresco.error.AlfrescoRuntimeException;
 
 /**
- * Classification enforcement exception
+ * Access denied exception thrown when a user tries to execute a method call on an uncleared node.
  *
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class ClassificationEnforcementException extends AlfrescoRuntimeException
+public class AccessDeniedException extends AlfrescoRuntimeException
 {
     /** Serial version uid */
     private static final long serialVersionUID = -1546218007029075883L;
@@ -36,7 +36,7 @@ public class ClassificationEnforcementException extends AlfrescoRuntimeException
      *
      * @param key The key of the exception to be localized
      */
-    public ClassificationEnforcementException(String key)
+    public AccessDeniedException(String key)
     {
         super(key);
     }

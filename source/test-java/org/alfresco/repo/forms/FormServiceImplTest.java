@@ -1307,10 +1307,6 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
                     QName.createQName("http://www.alfresco.org/model/my-fdk/1.0", "more_text")));
     }
     
-    public void testGetFormForJbpmTask() throws Exception
-    {
-        checkGetFormForTask("jbpm$wf:review");
-    }
 
     public void testGetFormForActivitiTask() throws Exception
     {
@@ -1346,11 +1342,6 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         }
     }
 
-    public void testSaveJbpmTask() throws Exception
-    {
-        checkSaveTask("jbpm$wf:review");
-    }
-
     public void testSaveActivitiTask() throws Exception
     {
         checkSaveTask("activiti$activitiReview");
@@ -1375,10 +1366,6 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(testDesc, newTask.getProperties().get(descName));
     }
     
-    public void testTransitionJbpmTask() throws Exception
-    {
-        checkTransitionTask("jbpm$wf:review", "approve", "approve");
-    }
     
     public void testTransitionActivitiTask() throws Exception
     {
@@ -1451,12 +1438,7 @@ public class FormServiceImplTest extends BaseAlfrescoSpringTest
         fields.add(WorkflowModel.PROP_DUE_DATE.toPrefixString(namespaceService));
         return fields;
     }
-    
-    public void testJbpmWorkflowForm() throws Exception
-    {
-        checkWorkflowForms("jbpm$wf:adhoc", "|Task Done");
-    }
-    
+        
     public void testActivitiWorkflowForm() throws Exception
     {
         checkWorkflowForms("activiti$activitiAdhoc", "Next|Task Done");

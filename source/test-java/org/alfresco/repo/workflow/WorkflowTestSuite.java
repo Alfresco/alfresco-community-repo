@@ -26,12 +26,6 @@ import org.alfresco.repo.workflow.activiti.ActivitiMultitenantWorkflowTest;
 import org.alfresco.repo.workflow.activiti.ActivitiSpringTransactionTest;
 import org.alfresco.repo.workflow.activiti.ActivitiTimerExecutionTest;
 import org.alfresco.repo.workflow.activiti.ActivitiWorkflowServiceIntegrationTest;
-import org.alfresco.repo.workflow.jbpm.AlfrescoJavaScriptIntegrationTest;
-import org.alfresco.repo.workflow.jbpm.JBPMEngineTest;
-import org.alfresco.repo.workflow.jbpm.JBPMSpringTest;
-import org.alfresco.repo.workflow.jbpm.JbpmMultitenantWorkflowTest;
-import org.alfresco.repo.workflow.jbpm.JbpmWorkflowServiceIntegrationTest;
-import org.alfresco.repo.workflow.jbpm.ReviewAndApproveTest;
 import org.alfresco.util.ApplicationContextHelper;
 
 /**
@@ -51,13 +45,8 @@ public class WorkflowTestSuite extends TestSuite
         // Ensure that the default context is available
         ApplicationContextHelper.getApplicationContext();
 
-        // Add the JBPM tests to be run
         suite.addTestSuite( StartWorkflowActionExecuterTest.class );
-        suite.addTestSuite( JbpmWorkflowServiceIntegrationTest.class );
-        suite.addTestSuite( ReviewAndApproveTest.class );
-        suite.addTestSuite( JBPMSpringTest.class );
-        suite.addTestSuite( JBPMEngineTest.class );
-        suite.addTestSuite( AlfrescoJavaScriptIntegrationTest.class );
+
         // Add the Activiti tests to be run
         suite.addTestSuite( ActivitiWorkflowServiceIntegrationTest.class );
         suite.addTestSuite( ActivitiSpringTransactionTest.class );
@@ -69,9 +58,7 @@ public class WorkflowTestSuite extends TestSuite
 
         // These tests use a different Spring config.
         suite.addTestSuite( ActivitiMultitenantWorkflowTest.class );
-        
-        suite.addTestSuite( JbpmMultitenantWorkflowTest.class );
-        
+                
         // Note the following workflow tests are not included in this sutie:
         // ActivitiTaskComponentTest
         // ActivitiWorkflowComponentTest

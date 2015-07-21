@@ -87,8 +87,8 @@
                <!-- JbpmEngine configuration -->
                <props>
                    <prop key="engineId">jbpm</prop>
-                   <prop key="enabled">${system.workflow.engine.jbpm.enabled}</prop>
-                   <prop key="visible">${system.workflow.engine.jbpm.definitions.visible}</prop>
+                   <prop key="enabled">false</prop>
+                   <prop key="visible">false</prop>
               </props>
                <!-- ActivitiWorkflowEngine configuration -->
                <props>

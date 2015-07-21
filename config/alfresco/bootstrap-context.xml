@@ -102,7 +102,6 @@
        <property name="schemaReferenceUrls">
           <list>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/Schema-Reference-ALF.xml</value>
-             <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/Schema-Reference-JBPM.xml</value>
              <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/Schema-Reference-ACT.xml</value>
           </list>
        </property>
@@ -147,56 +146,6 @@
     <bean id="workflowBootstrap" parent="workflowDeployer">
         <property name="workflowDefinitions">
             <list>
-                <!-- Adhoc workflow definition -->
-                <props>
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/adhoc_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">false</prop>
-                </props>
-
-                <!-- Review and Approve workflow definitions -->
-                <props>
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/review_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">false</prop>
-                </props>
-                <props>
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/review_pooled_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">false</prop>
-                </props>
-                <props>
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/parallelreview_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">false</prop>
-                </props>
-                <props>
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/parallelreview_group_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">false</prop>
-                </props>
-
-                <!-- Invitation service workflow definition -->
-                <props>
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/invitation-nominated_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">false</prop>
-                </props>
-
-                <!-- Invitation service workflow definition -->
-                <props>
-                    <prop key="engineId">jbpm</prop>
-                    <prop key="location">alfresco/workflow/invitation-moderated_processdefinition.xml</prop>
-                    <prop key="mimetype">text/xml</prop>
-                    <prop key="redeploy">false</prop>
-                </props>
-
                 <!-- Activiti Adhoc workflow definition -->
                 <props>
                     <prop key="engineId">activiti</prop>
@@ -698,14 +647,6 @@
         <property name="autoStart">
             <value>true</value>
         </property>
-    </bean>
-
-    <!-- Workflow Scheduler -->
-    <bean id="workflowScheduler" class="org.alfresco.repo.workflow.jbpm.JBPMScheduler">
-       <property name="JBPMTemplate" ref="jbpm_template" />
-       <property name="JBPMEngineEnabled">
-       		<value>${system.workflow.engine.jbpm.enabled}</value>
-       </property>
     </bean>
 
     <!--  Start Auditing -->

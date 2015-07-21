@@ -15,7 +15,6 @@
         <bitrock.folder>${project.build.directory}/installbuilder</bitrock.folder>
         <signing.key.location>${binaries.folder}/build-classpath/code-signing</signing.key.location>
         <license.file.location>${binaries.folder}/build-classpath/license.xml</license.file.location>
-        <installer.name>alfresco-platform</installer.name>
         <bitrock.arguments>
            project.outputDirectory=${project.build.directory}
            project.version=${project.version}
@@ -73,7 +72,7 @@
                                     <artifactId>alfresco-solr4-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/${installer.name}-${project.version}/solr4</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/solr4</outputDirectory>
                                     <excludes>solr4.war</excludes>
                                 </artifactItem>
                                 <artifactItem>
@@ -81,7 +80,7 @@
                                     <artifactId>alfresco-solr4-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/${installer.name}-${project.version}/web-server/webapps</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/web-server/webapps</outputDirectory>
                                     <includes>solr4.war</includes>
                                 </artifactItem>
                             </artifactItems>

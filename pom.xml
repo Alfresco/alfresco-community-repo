@@ -78,7 +78,6 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-solr4-distribution</artifactId>
-                                    <version>${dependency.share.version}</version>
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/web-server/webapps</outputDirectory>

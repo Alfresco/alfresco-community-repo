@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<libraries:Library xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:libraries="http://www.ibm.com/websphere/appserver/schemas/5.0/libraries.xmi" xmi:id="Library_1241799478800" name="myfaces1_1" isolatedClassLoader="true">
+  <classPath>$(WAS_INSTALL_ROOT)/myfaces1_1</classPath>
+</libraries:Library>

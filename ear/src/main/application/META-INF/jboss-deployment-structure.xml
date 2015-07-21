@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<jboss-deployment-structure>
+    <sub-deployment name="alfresco.war">
+        <dependencies>
+            <module name="org.alfresco.configuration" />
+            <module name="org.apache.xalan" />
+        </dependencies>
+    </sub-deployment>
+    <sub-deployment name="share.war">
+        <dependencies>
+            <module name="org.alfresco.configuration" />
+        </dependencies>
+    </sub-deployment>
+</jboss-deployment-structure>

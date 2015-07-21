@@ -1,0 +1,32 @@
+<assembly xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
+    <id>distribution</id>
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <fileSets>
+        <fileSet>
+            <directory>${project.build.directory}/dependency/alfresco-enterprise-${project.version}</directory>
+            <outputDirectory/>
+            <excludes>
+                <exclude>web-server/shared/**</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/dependency/alfresco-enterprise-${project.version}/web-server/shared/classes</directory>
+            <outputDirectory>web-server/classpath</outputDirectory>
+        </fileSet>
+    </fileSets>
+
+    <files>
+        <file>
+            <source>${project.build.directory}/myfaces1_1-websphere-shared-lib-${project.version}.zip</source>
+        </file>
+        <file>
+            <source>${project.build.directory}/alfresco-enterprise-ear-${project.version}.ear</source>
+            <destName>alfresco-enterprise-${project.version}.ear</destName>
+        </file>
+    </files>
+</assembly>

@@ -50,17 +50,6 @@
             </includes>
         </dependencySet>
 
-        <!-- SOLR4 Config -->
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>solr4</outputDirectory>
-            <unpack>true</unpack>
-            <includes>
-                <include>*:alfresco-solr4:zip:config*</include>
-            </includes>
-        </dependencySet>
-
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
@@ -79,26 +68,6 @@
             <outputFileNameMapping>alfresco.war</outputFileNameMapping>
             <includes>
                 <include>org.alfresco:alfresco*:war</include>
-            </includes>
-            <excludes>
-                <exclude>org.alfresco:alfresco-solr*:war</exclude>
-            </excludes>
-        </dependencySet>
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <outputDirectory>web-server/webapps</outputDirectory>
-            <outputFileNameMapping>share.war</outputFileNameMapping>
-            <includes>
-                <include>org.alfresco:share*:war</include>
-            </includes>
-        </dependencySet>
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>web-server/webapps</outputDirectory>
-            <outputFileNameMapping>solr4.war</outputFileNameMapping>
-            <includes>
-                <include>org.alfresco:alfresco-solr4:war</include>
             </includes>
         </dependencySet>
         <dependencySet>

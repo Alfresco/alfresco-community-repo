@@ -12,8 +12,19 @@
     <name>Alfresco Full Installation</name>
 
     <properties>
-        <alfresco.platform.version>5.1-AIR1-SNAPSHOT</alfresco.platform.version>
-        <alfresco.share.version>5.1-AIR1-SNAPSHOT</alfresco.share.version>
+        <!-- Alfresco Platform version -->
+        <alfresco.platform.version>5.1-SNAPSHOT</alfresco.platform.version>
+
+        <!-- Alfresco Share version -->
+        <alfresco.share.version>5.1-SNAPSHOT</alfresco.share.version>
+
+        <!-- Versions of binaries packaged in the installer -->
+        <installer.common.version>5.0-20150414</installer.common.version>
+        <installer.tomcat.version>7.0.59-alfresco-distribution</installer.tomcat.version>
+        <installer.java.version>1.8.0_31</installer.java.version>
+        <installer.postgresql.version>9.3.6-openssl101</installer.postgresql.version>
+        <installer.libreoffice.version>4.2.5-alfresco</installer.libreoffice.version>
+        <installer.installbuilder.version>15.1.0</installer.installbuilder.version>
     </properties>
 
     <modules>

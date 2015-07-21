@@ -6,37 +6,184 @@
         <artifactId>alfresco-full-installation</artifactId>
         <version>2015-1-EA-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-full-installer</artifactId>
+    <artifactId>alfresco-community-installer</artifactId>
     <packaging>pom</packaging>
-    <name>Alfresco Enterprise Installers</name>
+    <name>Alfresco Community Full Installers</name>
 
     <properties>
-        <installer.version>2015-1-EA</installer.version>
         <binaries.folder>${user.home}/binaries</binaries.folder>
-        <bitrock.folder>${binaries.folder}/bitrock/bitrock-9.5.1</bitrock.folder>
-        <signing.key.location>${binaries.folder}/build-classpath/alfresco-code-sign</signing.key.location>
+        <bitrock.folder>${project.build.directory}/installbuilder</bitrock.folder>
+        <signing.key.location>${binaries.folder}/build-classpath/code-signing</signing.key.location>
+        <license.file.location>${binaries.folder}/build-classpath/license.xml</license.file.location>
         <bitrock.arguments>
-           --license
-           ${binaries.folder}/build-classpath/license.xml
-           --setvars
            project.outputDirectory=${project.build.directory}
-           project.version=${installer.version}
-           project.fullName='Alfresco One ${installer.version}'
-           alfresco_edition=enterprise
-           distribution_folder=${project.build.directory}/distribution/alfresco-enterprise-${project.version}
-           wcmqs_folder=${project.build.directory}/wcmqs
-           alfresco_amps_source_directory=${project.build.directory}/dependency
-           alfrescosharepoint_component_enabled=0
+           project.version=${project.version}
+           project.fullName='Alfresco One Platform ${project.version}'
+           project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
+           project.osxSigningPkcs12Password=${p12Password} 
+           project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 
+           project.windowsSigningPkcs12Password=${p12Password} 
+           alfresco_edition=community
+           alfrescogoogledocs_component_enabled=1
+           alfrescosharepoint_component_enabled=1
+           alfrescosolr_component_enabled=1
+           alfrescowcmqs_component_enabled=1
         </bitrock.arguments>
     </properties>
 
     <dependencies>
-        <!-- Import the dependencies from the Community installer -->
+        <!-- These binaries are extracted using tar, to preserve symlinks -->
+
+        <!-- Common -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-installer</artifactId>
-            <version>${project.version}</version>
-            <type>pom</type>
+            <artifactId>installer-common</artifactId>
+            <version>${installer.common.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>installer-common</artifactId>
+            <version>${installer.common.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>
+
+        <!-- Tomcat -->
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${installer.tomcat.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${installer.tomcat.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${installer.tomcat.version}</version>
+            <classifier>win32</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${installer.tomcat.version}</version>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
+
+        <!-- PostgreSQL -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql-distribution</artifactId>
+            <version>${installer.postgresql.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql-distribution</artifactId>
+            <version>${installer.postgresql.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>        
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql-distribution</artifactId>
+            <version>${installer.postgresql.version}</version>
+            <classifier>win32</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql-distribution</artifactId>
+            <version>${installer.postgresql.version}</version>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
+
+        <!-- Java -->
+        <dependency>
+            <groupId>com.oracle.java</groupId>
+            <artifactId>jre</artifactId>
+            <version>${installer.java.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.java</groupId>
+            <artifactId>jre</artifactId>
+            <version>${installer.java.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>        
+        <dependency>
+            <groupId>com.oracle.java</groupId>
+            <artifactId>jre</artifactId>
+            <version>${installer.java.version}</version>
+            <classifier>win32</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.java</groupId>
+            <artifactId>jre</artifactId>
+            <version>${installer.java.version}</version>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
+
+        <!-- LibreOffice -->
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>libreoffice-dist</artifactId>
+            <version>${installer.libreoffice.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>libreoffice-dist</artifactId>
+            <version>${installer.libreoffice.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>        
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>libreoffice-dist</artifactId>
+            <version>${installer.libreoffice.version}</version>
+            <classifier>windows</classifier>
+            <type>tgz</type>
+        </dependency>
+        
+        <!-- Installbuilder -->
+        <dependency>
+            <groupId>com.bitnami</groupId>
+            <artifactId>installbuilder</artifactId>
+            <version>${installer.installbuilder.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>com.bitnami</groupId>
+            <artifactId>installbuilder</artifactId>
+            <version>${installer.installbuilder.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>com.bitnami</groupId>
+            <artifactId>installbuilder</artifactId>
+            <version>${installer.installbuilder.version}</version>
+            <classifier>win</classifier>
+            <type>tgz</type>
         </dependency>
     </dependencies>
 
@@ -55,22 +202,47 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-installer</artifactId>
-                                    <version>${project.version}</version>
-                                    <outputDirectory>${project.build.directory}</outputDirectory>
+                                    <artifactId>alfresco-installer-resources</artifactId>
+                                    <version>${alfresco.platform.version}</version>
+                                    <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-enterprise-distribution</artifactId>
+                                    <artifactId>alfresco-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>
+                                </artifactItem>
+                                <!-- Solr1 Distribution -->
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-solr1-distribution</artifactId>
+                                    <version>${alfresco.platform.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/web-server/webapps</outputDirectory>
+                                </artifactItem>
+                                <!-- Solr4 Distribution -->
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-solr4-distribution</artifactId>
+                                    <version>${alfresco.platform.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/solr4</outputDirectory>
+                                    <excludes>solr4.war</excludes>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-solr4-distribution</artifactId>
+                                    <version>${alfresco.platform.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/web-server/webapps</outputDirectory>
+                                    <includes>solr4.war</includes>
                                 </artifactItem>
                                 <!-- WCMQS Distribution -->
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-wcmqs-distribution</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${alfresco.share.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
                                 </artifactItem>
@@ -78,7 +250,7 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-wcmqs-web</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${alfresco.share.version}</version>
                                     <classifier>classes</classifier>
                                     <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
                                     <includes>alfresco/web-extension/**</includes>
@@ -87,44 +259,9 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-wcmqs-client-api</artifactId>
-                                    <version>${project.version}</version>
+                                    <version>${alfresco.share.version}</version>
                                     <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
                                     <includes>alfresco/extension/**</includes>
-                                </artifactItem>
-                                <!-- Solr1 Distribution -->
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-solr1-distribution</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/alfresco-enterprise-${project.version}/alf_data/solr</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>get-amps</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.alfresco.integrations</groupId>
-                                    <artifactId>alfresco-googledocs-repo</artifactId>
-                                    <version>${alfresco.googledocs.version}</version>
-                                    <classifier>enterprise</classifier>
-                                    <type>amp</type>
-                                    <destFileName>alfresco-googledocs-repo-${alfresco.googledocs.version}.amp</destFileName>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.alfresco.integrations</groupId>
-                                    <artifactId>alfresco-googledocs-share</artifactId>
-                                    <version>${alfresco.googledocs.version}</version>
-                                    <classifier>enterprise</classifier>
-                                    <destFileName>alfresco-googledocs-share-${alfresco.googledocs.version}.amp</destFileName>
-                                    <type>amp</type>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
@@ -153,10 +290,10 @@
                 </executions>
             </plugin>
 
-            <!-- Extract all the binaries: Tomcat, PostgreSQL, Java, LibreOffice -->
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
+                    <!-- Extract all the binaries: Tomcat, PostgreSQL, Java, LibreOffice, Installbuilder-->
                     <execution>
                         <id>extract-binaries-tgz</id>
                         <phase>prepare-package</phase>
@@ -165,98 +302,22 @@
                         </goals>
                         <configuration>
                             <target>
-                                <ant antfile="${project.build.directory}/extract-binaries.xml" />
+                                <ant antfile="${project.build.directory}/classes/extract-binaries.xml" />
                             </target>
                         </configuration>
                     </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <configuration>
-                    <executable>${bitrock.executable}</executable>
-                    <workingDirectory>${project.build.directory}/bitrock</workingDirectory>
-                </configuration>
-                <executions>
-                    <!-- Windows 32 -->
+                    <!-- Build installers -->
                     <execution>
-                        <id>win32-installer</id>
+                        <id>build-installers</id>
                         <phase>package</phase>
                         <goals>
-                            <goal>exec</goal>
+                            <goal>run</goal>
                         </goals>
                         <configuration>
-                            <skip>${skipWinInstaller}</skip>
-                            <commandlineArgs>
-                               build project.xml
-                               windows
-                               ${bitrock.arguments}
-                               binaries_folder=${binaries.folder}/bitrock/binaries-windows
-                               local_binaries_folder=${project.build.directory}/binaries-windows
-                               project.installerFilename=alfresco-enterprise-${project.version}-installer-win-x32.exe
-                            </commandlineArgs>
-                        </configuration>
-                    </execution>
-
-                    <!-- Windows 64 -->
-                    <execution>
-                        <id>win64-installer</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipWinInstaller}</skip>
-                            <commandlineArgs>
-                               build project.xml
-                               windows
-                               ${bitrock.arguments}
-                               binaries_folder=${binaries.folder}/bitrock/binaries-windows-x64
-                               local_binaries_folder=${project.build.directory}/binaries-windows-x64
-                               project.installerFilename=alfresco-enterprise-${project.version}-installer-win-x64.exe
-                            </commandlineArgs>
-                        </configuration>
-                    </execution>
-
-                    <!-- Linux 64 -->
-                    <execution>
-                        <id>linux-installer</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipLinInstaller}</skip>
-                            <commandlineArgs>
-                               build project.xml
-                               linux-x64
-                               ${bitrock.arguments}
-                               binaries_folder=${binaries.folder}/bitrock/binaries-linux-x64
-                               local_binaries_folder=${project.build.directory}/binaries-linux-x64
-                               project.installerFilename=alfresco-enterprise-${project.version}-installer-linux-x64.bin
-                            </commandlineArgs>
-                        </configuration>
-                    </execution>
-
-                    <!-- OS X -->
-                    <execution>
-                        <id>osx-installer</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <skip>${skipOSXInstaller}</skip>
-                            <commandlineArgs>
-                               build project.xml
-                               osx
-                               ${bitrock.arguments}
-                               binaries_folder=${binaries.folder}/bitrock/binaries-osx-x64
-                               local_binaries_folder=${project.build.directory}/binaries-osx-x64
-                               project.installerFilename=alfresco-enterprise-${project.version}-installer-osx-x64.app
-                            </commandlineArgs>
+                            <workingDirectory>${project.build.directory}/classes/bitrock</workingDirectory>
+                            <target>
+                                <ant antfile="${project.build.directory}/classes/build-installers.xml" />
+                            </target>
                         </configuration>
                     </execution>
                 </executions>
@@ -274,7 +335,7 @@
                 </os>
             </activation>
             <properties>
-                <bitrock.executable>${bitrock.folder}/win/bin/builder-cli.exe</bitrock.executable>
+                <bitrock.executable>${bitrock.folder}/bin/builder-cli.exe</bitrock.executable>
             </properties>
         </profile>
         <profile>
@@ -285,43 +346,20 @@
                 </os>
             </activation>
             <properties>
-                <bitrock.executable>${bitrock.folder}/linux/bin/builder</bitrock.executable>
+                <bitrock.executable>${bitrock.folder}/bin/builder</bitrock.executable>
             </properties>
         </profile>
-
-        <!-- Signing Windows installers -->
         <profile>
-            <id>sign</id>
+            <id>osx-bitrock</id>
             <activation>
-                <file>
-                    <exists>${user.home}/binaries/build-classpath/alfresco-code-sign.der</exists>
-                </file>
+                <os>
+                    <family>mac</family>
+                </os>
             </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <artifactId>maven-antrun-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>sign-windows-installers</id>
-                                <phase>verify</phase>
-                                <goals>
-                                    <goal>run</goal>
-                                </goals>
-                                <configuration>
-                                    <skip>${skipWinInstaller}</skip>
-                                    <target>
-                                        <ant antfile="${project.build.directory}/sign.xml">
-                                             <property name="installer.name" value="alfresco-enterprise" />
-                                        </ant>
-                                    </target>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
+            <properties>
+                <bitrock.executable>${bitrock.folder}/bin/builder</bitrock.executable>
+            </properties>
         </profile>
     </profiles>
-
+    
 </project>

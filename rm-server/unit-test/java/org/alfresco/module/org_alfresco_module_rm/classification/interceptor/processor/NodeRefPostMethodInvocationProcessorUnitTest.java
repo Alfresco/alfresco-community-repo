@@ -39,6 +39,7 @@ public class NodeRefPostMethodInvocationProcessorUnitTest extends BaseUnitTest
 {
     @InjectMocks private NodeRefPostMethodInvocationProcessor nodeRefPostMethodInvocationProcessor;
     @Mock private ContentClassificationService mockedContentClassificationService;
+    @Mock private PreMethodInvocationProcessor mockedPreMethodInvocationProcessor;
 
     @Test
     public void testProcessingNonExistingNode()

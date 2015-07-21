@@ -60,7 +60,8 @@ public class ClassificationMethodInterceptorPostProcessor implements BeanFactory
             // only modify proxy factory beans that follow the public service naming postfix convention
             if (beanDefinition.getBeanClassName() != null &&
                 beanDefinition.getBeanClassName().endsWith(TYPE_PROXY_FACTORY_BEAN) &&
-                bean.endsWith(POSTFIX_SERVICE))
+                bean.endsWith(POSTFIX_SERVICE) &&
+                Character.isUpperCase(bean.charAt(0)))
             {
                 // get the property values for the bean definition
                 MutablePropertyValues propertyValues = beanDefinition.getPropertyValues();

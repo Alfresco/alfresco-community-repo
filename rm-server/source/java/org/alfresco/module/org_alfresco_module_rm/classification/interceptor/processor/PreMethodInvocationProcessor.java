@@ -137,17 +137,33 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
     {
         return this.methodNames;
     }
-
+    
     /**
-     * Init method to populate the list of method names which will be checked before invocation
+     * is pre-processing enabled?
+     * 
+     * @return boolean  true if enabled, false otherwise
      */
-    public void init()
+    public boolean isEnabled()
     {
-        getMethodNames().add("NodeService.exists");
-        getMethodNames().add("NodeService.getType");
-        getMethodNames().add("NodeService.hasAspect");
-        getMethodNames().add("NodeService.getAspects");
-        getMethodNames().add("NodeService.getProperties");
+        return (getAlfrescoTransactionSupport().getResource(KEY_PROCESSING) == null);
+    }
+    
+    /**
+     * disable pre-processing for this transaction
+     */
+    public void disable()
+    {
+        // mark the transaction as processing a classification check
+        getAlfrescoTransactionSupport().bindResource(KEY_PROCESSING, TRUE);        
+    }
+    
+    /**
+     * enable pre-processing for this transaction
+     */
+    public void enable()
+    {
+        // clear the transaction as processed a classification check
+        getAlfrescoTransactionSupport().unbindResource(KEY_PROCESSING);
     }
 
     /**
@@ -169,9 +185,8 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
                 // ensure classification service has been bootstrapped
                 if (getClassificationServiceBootstrap().isInitialised())
                 {
-                    // check that we are not already processing a classification check
-                    Object value = getAlfrescoTransactionSupport().getResource(KEY_PROCESSING);
-                    if (value == null)
+                    // if pre-processing is enabled
+                    if (isEnabled())
                     {
                         Method method = invocation.getMethod();
                         Class[] params = method.getParameterTypes();
@@ -188,8 +203,8 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
 
                                 if (!getMethodNames().contains(name))
                                 {
-                                    // mark the transaction as processing a classification check
-                                    getAlfrescoTransactionSupport().bindResource(KEY_PROCESSING, TRUE);
+                                    // disable pre-processing
+                                    disable();
                                     try
                                     {
                                         // get the value of the parameter
@@ -200,8 +215,8 @@ public class PreMethodInvocationProcessor implements ApplicationContextAware
                                     }
                                     finally
                                     {
-                                        // clear the transaction as processed a classification check
-                                        getAlfrescoTransactionSupport().unbindResource(KEY_PROCESSING);
+                                        // re-enable pre-processing
+                                        enable();
                                     }
                                 }
                             }

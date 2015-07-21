@@ -6,25 +6,28 @@
         <artifactId>alfresco-packaging</artifactId>
         <version>5.1-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-installer</artifactId>
+    <artifactId>alfresco-platform-installer</artifactId>
     <packaging>jar</packaging>
-    <name>Alfresco Installers</name>
+    <name>Alfresco Platform Installers</name>
 
     <properties>
-        <installer.version>2015-a-EA</installer.version>
         <binaries.folder>${user.home}/binaries</binaries.folder>
         <bitrock.folder>${project.build.directory}/installbuilder</bitrock.folder>
         <signing.key.location>${binaries.folder}/build-classpath/code-signing</signing.key.location>
         <license.file.location>${binaries.folder}/build-classpath/license.xml</license.file.location>
         <bitrock.arguments>
-            project.outputDirectory=${project.build.directory} 
-            project.version=${installer.version} 
-            project.fullName='Alfresco Community ${installer.version}' 
-            project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
-            project.osxSigningPkcs12Password=${p12Password} 
-            project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 
-            project.windowsSigningPkcs12Password=${p12Password} 
-            alfresco_edition=community
+           project.outputDirectory=${project.build.directory}
+           project.version=${project.version}
+           project.fullName='Alfresco Platform Community'
+           project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
+           project.osxSigningPkcs12Password=${p12Password} 
+           project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 
+           project.windowsSigningPkcs12Password=${p12Password} 
+           alfresco_edition=community
+           alfrescogoogledocs_component_enabled=0
+           alfrescosharepoint_component_enabled=0
+           alfrescosolr_component_enabled=0
+           alfrescowcmqs_component_enabled=0
         </bitrock.arguments>
         <installer.name>alfresco-community</installer.name>
     </properties>
@@ -200,66 +203,10 @@
                                 <!-- Distribution -->
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-distribution</artifactId>
+                                    <artifactId>alfresco-platform-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>
-                                </artifactItem>
-                                <!-- WCMQS Distribution -->
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-wcmqs-distribution</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
-                                </artifactItem>
-                                <!-- WCMQS War Config file -->
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-wcmqs-web</artifactId>
-                                    <version>${project.version}</version>
-                                    <classifier>classes</classifier>
-                                    <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
-                                    <includes>alfresco/web-extension/**</includes>
-                                </artifactItem>
-                                <!-- WCMQS Client Config file -->
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-wcmqs-client-api</artifactId>
-                                    <version>${project.version}</version>
-                                    <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
-                                    <includes>alfresco/extension/**</includes>
-                                </artifactItem>
-                                <!-- Solr1 Distribution -->
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-solr1-distribution</artifactId>
-                                    <version>${project.version}</version>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/alfresco-community-${project.version}/alf_data/solr</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>get-amps</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>copy</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.alfresco.integrations</groupId>
-                                    <artifactId>alfresco-googledocs-repo</artifactId>
-                                    <version>${alfresco.googledocs.version}</version>
-                                    <type>amp</type>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.alfresco.integrations</groupId>
-                                    <artifactId>alfresco-googledocs-share</artifactId>
-                                    <version>${alfresco.googledocs.version}</version>
-                                    <type>amp</type>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

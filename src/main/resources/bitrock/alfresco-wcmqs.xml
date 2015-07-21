@@ -5,8 +5,12 @@
     <canBeEdited>1</canBeEdited>
     <selected>0</selected>
     <show>1</show>
+    <shouldPackRuleList>
+        <isTrue value="${alfrescowcmqs_component_enabled}" />
+    </shouldPackRuleList>
 
     <parameterList>
+        <booleanParameter name="alfrescowcmqs_component_enabled" ask="0" value="1" />
     </parameterList>
   
     <folderList>

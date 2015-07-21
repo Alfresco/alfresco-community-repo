@@ -5,6 +5,13 @@
     <canBeEdited>1</canBeEdited>
     <selected>1</selected>
     <show>1</show>
+    <shouldPackRuleList>
+        <isTrue value="${alfrescogoogledocs_component_enabled}" />
+    </shouldPackRuleList>
+
+    <parameterList>
+        <booleanParameter name="alfrescogoogledocs_component_enabled" ask="0" value="1" />
+    </parameterList>
 
     <folderList>
         <folder>

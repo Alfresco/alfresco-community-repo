@@ -23,6 +23,9 @@
 <%@ page import="org.alfresco.service.descriptor.DescriptorService" %>
 <%@ page import="org.alfresco.service.transaction.TransactionService" %>
 <%@ page import="org.alfresco.util.UrlUtil" %>
+<%@ page import="org.alfresco.service.cmr.module.ModuleService" %>
+<%@ page import="org.alfresco.service.cmr.module.ModuleDetails" %>
+<%@ page import="org.alfresco.service.cmr.module.ModuleInstallState" %>
 
 <!-- Enterprise index-jsp placeholder -->
 <%
@@ -38,6 +41,8 @@ WebApplicationContext context = WebApplicationContextUtils.getRequiredWebApplica
 SysAdminParams sysAdminParams = (SysAdminParams)context.getBean("sysAdminParams");
 DescriptorService descriptorService = (DescriptorService)context.getBean("descriptorComponent");
 TransactionService transactionService = (TransactionService)context.getBean("transactionService");
+ModuleService moduleService = (ModuleService) context.getBean("moduleService");
+ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-services");
 %>
 
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
@@ -62,7 +67,19 @@ TransactionService transactionService = (TransactionService)context.getBean("tra
             <p></p>
             <p><a href="http://docs.alfresco.com/">Online Documentation</a></p>
             <p></p>
-            <p><a href="<%=UrlUtil.getShareUrl(sysAdminParams)%>">Alfresco Share</a></p>
+             <%
+                 if (shareServicesModule != null && ModuleInstallState.INSTALLED.equals(shareServicesModule.getInstallState()))
+                 {
+             %>
+                <p><a href="<%=UrlUtil.getShareUrl(sysAdminParams)%>">Alfresco Share</a></p>
+             <%
+             }
+             else
+             {
+             %><p style="color: white;">Share Services is not installed.</p>
+             <%
+             }
+             %>
             <p><a href="./webdav">Alfresco WebDav</a></p>
             <p></p>
             <p><a href="./s/index">Alfresco WebScripts Home</a> (admin only)</p>

@@ -29,9 +29,11 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.workflow.WorkflowConstants;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
@@ -43,6 +45,7 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
     private PersonService personService;
     private AuthorityService authorityService;
     private WorkflowService workflowService;
+    private NodeService nodeService;
 
     @Override
     public Object invoke(MethodInvocation invocation) throws Throwable
@@ -137,6 +140,16 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
         Map<QName, Serializable> props = wt.getProperties();
 
         String ownerName = (String) props.get(ContentModel.PROP_OWNER);
+		//fix for MNT-14366; if owner value can't be found on workflow properties because initiator nodeRef no longer exists
+		//get owner from initiatorhome nodeRef owner property
+        if (ownerName == null)
+        {
+            NodeRef initiatorHomeNodeRef = (NodeRef)props.get( QName.createQName("", WorkflowConstants.PROP_INITIATOR_HOME));
+            if (initiatorHomeNodeRef != null )
+            {
+                ownerName = (String)nodeService.getProperty(initiatorHomeNodeRef, ContentModel.PROP_OWNER);
+            }
+        }
         if (userName != null && userName.equalsIgnoreCase(ownerName))
         {
             return true;
@@ -273,5 +286,10 @@ public class WorkflowPermissionInterceptor implements MethodInterceptor
     public void setWorkflowService(WorkflowService workflowService)
     {
         this.workflowService = workflowService;
+    }
+    
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
     }
 }

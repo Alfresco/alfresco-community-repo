@@ -939,6 +939,7 @@
       <property name="personService"><ref bean="personService"/></property>
       <property name="authorityService"><ref bean="authorityService"/></property>
       <property name="workflowService"><ref bean="workflowServiceImpl" /></property>
+      <property name="nodeService"><ref bean="nodeService"></ref></property>
     </bean>
 
     <!-- ============= -->

@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.workflow.WorkflowTaskQuery;
 import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 
 /**
  * @author Nick Smith
@@ -51,6 +52,8 @@ import org.alfresco.service.namespace.QName;
  */
 public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServiceIntegrationTest
 {
+    private final static String USER_RECREATED = "WFUserRecreated" + GUID.generate();
+    
     public void testOutcome() throws Exception
     {
         WorkflowDefinition definition = deployDefinition("alfresco/workflow/review.bpmn20.xml");
@@ -352,6 +355,44 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertEquals("Complete listener was not triggered", new Double(1), complete1);
         Double assignment1 = (Double) props.get(QName.createQName("http://www.alfresco.org/model/bpm/1.0", "assignment1"));
         assertEquals("Assign listener was not triggered", new Double(1), assignment1);
+    }
+    
+    /**
+     * Test for MNT-14366
+     */
+    public void testWorkflowRecreatedUser()
+    {
+        WorkflowDefinition definition = deployDefinition("alfresco/workflow/review.bpmn20.xml");
+        
+        personManager.createPerson(USER_RECREATED);
+        personManager.setUser(USER_RECREATED);
+        
+        //create an workfow as USER_RECREATED
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        Serializable wfPackage = workflowService.createPackage(null);
+        params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
+        NodeRef assignee = personManager.get(USER2);
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, assignee);  // task instance field
+        WorkflowPath path = workflowService.startWorkflow(definition.getId(), params);
+        String instanceId = path.getInstance().getId();
+        
+        //check if workflow owner property value is the same as initiator username
+        WorkflowTask startTask = workflowService.getStartTask(instanceId);
+        String owner = (String)startTask.getProperties().get(ContentModel.PROP_OWNER);
+        assertEquals(owner, USER_RECREATED);
+
+        //delete and recreate user
+        personManager.deletePerson(USER_RECREATED);
+        personManager.createPerson(USER_RECREATED);
+        personManager.setUser(USER_RECREATED);
+
+        //check workflow owner after user deletion and recreation
+        startTask = workflowService.getStartTask(instanceId);
+        owner = (String)startTask.getProperties().get(ContentModel.PROP_OWNER);
+        //owner is now null as nodeRef pointed by initiator property no longer exists;
+        //user has access to wokflow because owner value is extracted after fix from initiatorhome noderef
+        assertNull(owner);        
+        workflowService.endTask(startTask.getId(), null);
     }
     
     protected String getLongString(int numberOfCharacters) {

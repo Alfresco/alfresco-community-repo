@@ -76,6 +76,20 @@ public class TestPersonManager
             }
         }, AuthenticationUtil.getSystemUserName());
     }
+    
+    public void deletePerson(final String userName)
+    {
+        AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                personService.deletePerson(userName);
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+        people.remove(userName);
+        AuthenticationUtil.clearCurrentSecurityContext();
+    }
 
     private NodeRef makePersonNode(String userName)
     {

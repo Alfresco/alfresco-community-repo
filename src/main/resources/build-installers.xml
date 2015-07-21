@@ -19,12 +19,12 @@
             <arg value="${license.file.location}"/>
             <arg value="--setvars" />
             <arg line="${bitrock.arguments}" />
-            <arg value="distribution_folder=${project.build.directory}/distribution/${installer.name}-${project.version}" />
+            <arg value="distribution_folder=${project.build.directory}/distribution/${alfresco.package.name}-${project.version}" />
             <arg value="binaries_folder=${binaries.folder}/bitrock/binaries-windows" />
             <arg value="local_binaries_folder=${project.build.directory}/binaries-windows" />
             <arg value="alfresco_amps_source_directory=${project.build.directory}/dependency" />
             <arg value="wcmqs_folder=${project.build.directory}/wcmqs" />
-            <arg value="project.installerFilename=${installer.name}-${project.version}-installer-win-x32.exe" /> 
+            <arg value="project.installerFilename=${alfresco.package.name}-${project.version}-installer-win-x32.exe" /> 
         </exec>
     </target>
 
@@ -37,12 +37,12 @@
             <arg value="${license.file.location}"/>
             <arg value="--setvars" />
             <arg line="${bitrock.arguments}" />
-            <arg value="distribution_folder=${project.build.directory}/distribution/${installer.name}-${project.version}" />
+            <arg value="distribution_folder=${project.build.directory}/distribution/${alfresco.package.name}-${project.version}" />
             <arg value="binaries_folder=${binaries.folder}/bitrock/binaries-windows-x64" />
             <arg value="local_binaries_folder=${project.build.directory}/binaries-windows-x64" />
             <arg value="alfresco_amps_source_directory=${project.build.directory}/dependency" />
             <arg value="wcmqs_folder=${project.build.directory}/wcmqs" />
-            <arg value="project.installerFilename=${installer.name}-${project.version}-installer-win-x64.exe" /> 
+            <arg value="project.installerFilename=${alfresco.package.name}-${project.version}-installer-win-x64.exe" /> 
         </exec>
     </target>
 
@@ -55,12 +55,12 @@
             <arg value="${license.file.location}"/>
             <arg value="--setvars" />
             <arg line="${bitrock.arguments}" />
-            <arg value="distribution_folder=${project.build.directory}/distribution/${installer.name}-${project.version}" />
+            <arg value="distribution_folder=${project.build.directory}/distribution/${alfresco.package.name}-${project.version}" />
             <arg value="binaries_folder=${binaries.folder}/bitrock/binaries-linux-x64" />
             <arg value="local_binaries_folder=${project.build.directory}/binaries-linux-x64" />
             <arg value="alfresco_amps_source_directory=${project.build.directory}/dependency" />
             <arg value="wcmqs_folder=${project.build.directory}/wcmqs" />
-            <arg value="project.installerFilename=${installer.name}-${project.version}-installer-linux-x64.bin" /> 
+            <arg value="project.installerFilename=${alfresco.package.name}-${project.version}-installer-linux-x64.bin" /> 
         </exec>
     </target>
 
@@ -73,12 +73,12 @@
             <arg value="${license.file.location}"/>
             <arg value="--setvars" />
             <arg line="${bitrock.arguments}" />
-            <arg value="distribution_folder=${project.build.directory}/distribution/${installer.name}-${project.version}" />
+            <arg value="distribution_folder=${project.build.directory}/distribution/${alfresco.package.name}-${project.version}" />
             <arg value="binaries_folder=${binaries.folder}/bitrock/binaries-osx-x64" />
             <arg value="local_binaries_folder=${project.build.directory}/binaries-osx-x64" />
             <arg value="alfresco_amps_source_directory=${project.build.directory}/dependency" />
             <arg value="wcmqs_folder=${project.build.directory}/wcmqs" />
-            <arg value="project.installerFilename=${installer.name}-${project.version}-installer-osx-x64.app" /> 
+            <arg value="project.installerFilename=${alfresco.package.name}-${project.version}-installer-osx-x64.app" /> 
         </exec>
     </target>
 </project>

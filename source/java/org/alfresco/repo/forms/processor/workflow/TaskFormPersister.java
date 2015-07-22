@@ -22,7 +22,6 @@ package org.alfresco.repo.forms.processor.workflow;
 import java.io.Serializable;
 import java.util.List;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.forms.FormData.FieldData;
 import org.alfresco.repo.forms.processor.node.ContentModelItemData;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -34,7 +33,6 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
-import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
@@ -60,12 +58,6 @@ public class TaskFormPersister extends ContentModelFormPersister<WorkflowTask>
     {
         super(itemData, namespaceService, dictionaryService, logger);
         WorkflowTask item = itemData.getItem();
-        
-        // make sure that the task is not already completed
-        if (item.getState().equals(WorkflowTaskState.COMPLETED))
-        {
-            throw new AlfrescoRuntimeException("workflowtask.already.done.error");
-        }
         
         // make sure the current user is able to edit the task
         if (!workflowService.isTaskEditable(item, authenticationService.getCurrentUserName()))

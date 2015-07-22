@@ -14,7 +14,7 @@
 
         <!-- Platform Distribution -->
         <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-platform-community-${alfresco.platform.version}</directory>
+            <directory>${project.build.directory}/dependency/alfresco-platform-${alfresco.platform.edition}-${alfresco.platform.version}</directory>
             <outputDirectory/>
         </fileSet>
 

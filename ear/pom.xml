@@ -13,27 +13,27 @@
         <!-- WARs to include in the EAR -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-enterprise</artifactId>
-            <version>${project.version}</version>
+            <artifactId>alfresco-platform-enterprise</artifactId>
+            <version>${alfresco.platform.version}</version>
             <type>war</type>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>share</artifactId>
-            <version>${dependency.share.version}</version>
+            <version>${alfresco.share.version}</version>
             <type>war</type>
         </dependency>
 
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-enterprise-vti-bin</artifactId>
-            <version>${project.version}</version>
+            <version>${alfresco.platform.version}</version>
             <type>war</type>
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-enterprise-server-root</artifactId>
-            <version>${project.version}</version>
+            <version>${alfresco.platform.version}</version>
             <type>war</type>
         </dependency>
 
@@ -42,7 +42,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
-            <version>${project.version}</version>
+            <version>${alfresco.platform.version}</version>
             <type>zip</type>
             <scope>provided</scope>
         </dependency>

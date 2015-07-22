@@ -30,6 +30,20 @@
             </exclusions>
         </dependency>
 
+        <!-- Solr4 Distribution -->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-solr4-distribution</artifactId>
+            <version>${alfresco.share.version}</version>
+            <type>zip</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
         <!-- Share Distribution -->
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -64,6 +78,13 @@
                                     <artifactId>alfresco-platform-distributionzip</artifactId>
                                     <version>${alfresco.platform.version}</version>
                                     <type>zip</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-solr4-distribution</artifactId>
+                                    <version>${alfresco.platform.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/dependency/solr4</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>

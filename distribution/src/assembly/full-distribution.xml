@@ -18,22 +18,40 @@
             <outputDirectory/>
         </fileSet>
 
-        <!-- Share services WAR -->
+        <!-- Solr4 Distribution -->
         <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.platform.version}</directory>
+            <directory>${project.build.directory}/dependency/solr4</directory>
+            <outputDirectory>solr4</outputDirectory>
+            <excludes>
+                <exclude>solr4.war</exclude>
+            </excludes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/dependency/solr4</directory>
+            <outputDirectory>web-server/webapps</outputDirectory>
+            <includes>
+                <include>solr4.war</include>
+            </includes>
+        </fileSet>
+
+        <!-- Share -->
+        <fileSet>
+            <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}</directory>
             <includes>
                 <include>share.war</include>
             </includes>
             <outputDirectory>web-server/webapps</outputDirectory>
         </fileSet>
-
-        <!-- Share services AMP -->
         <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.platform.version}</directory>
+            <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}</directory>
             <includes>
                 <include>*.amp</include>
             </includes>
             <outputDirectory>amps_share</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}/web-extension-samples</directory>
+            <outputDirectory>web-server/shared/classes/alfresco/web-extension</outputDirectory>
         </fileSet>
     </fileSets>
 

@@ -221,23 +221,6 @@
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/web-server/webapps</outputDirectory>
                                 </artifactItem>
-                                <!-- Solr4 Distribution -->
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-solr4-distribution</artifactId>
-                                    <version>${alfresco.platform.version}</version>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/solr4</outputDirectory>
-                                    <excludes>solr4.war</excludes>
-                                </artifactItem>
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-solr4-distribution</artifactId>
-                                    <version>${alfresco.platform.version}</version>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/web-server/webapps</outputDirectory>
-                                    <includes>solr4.war</includes>
-                                </artifactItem>
                                 <!-- WCMQS Distribution -->
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>

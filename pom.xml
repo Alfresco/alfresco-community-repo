@@ -15,7 +15,7 @@
         <!-- WAR files -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>${alfresco.war.artifactId}</artifactId>
+            <artifactId>alfresco-platform</artifactId>
             <version>${project.version}</version>
             <type>war</type>
         </dependency>

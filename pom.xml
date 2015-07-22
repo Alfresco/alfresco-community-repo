@@ -46,4 +46,10 @@
         </profile>
     </profiles>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>alfresco-internal-snapshots</id>
+            <url>https://artifacts.alfresco.com/nexus/content/repositories/internal-snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
 </project>

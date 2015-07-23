@@ -23,12 +23,12 @@ import java.util.Set;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Implementation for Java backed webscript to classify a content.
+ * Implementation for Java backed webscript to edit a classified content.
  *
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class ClassifyContentPost extends ClassifyContentBase
+public class ClassifyContentPut extends ClassifyContentBase
 {
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase#doClassifyAction(java.lang.String, java.lang.String, java.lang.String, java.util.Set, org.alfresco.service.cmr.repository.NodeRef)
@@ -36,6 +36,6 @@ public class ClassifyContentPost extends ClassifyContentBase
     @Override
     protected void doClassifyAction(String classificationLevelId, String classifiedBy, String classificationAgency, Set<String> classificationReasonIds, NodeRef document)
     {
-        getContentClassificationService().classifyContent(classificationLevelId, classifiedBy, classificationAgency, classificationReasonIds, document);
+        getContentClassificationService().editClassifiedContent(classificationLevelId, classifiedBy, classificationAgency, classificationReasonIds, document);
     }
 }

@@ -670,12 +670,20 @@
       <property name="securityClearanceService" ref="SecurityClearanceService"/>
    </bean>
 
+   <!-- Base bean for classify content web scripts -->
+   <bean id="rmClassifyContentBase" parent="rmBaseWebscript" abstract="true">
+      <property name="contentClassificationService" ref="ContentClassificationService" />
+   </bean>
+
    <!-- REST impl for POST classify content -->
    <bean id="webscript.org.alfresco.rma.classification.classifycontent.post"
       class="org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost"
-      parent="rmBaseWebscript">
-      <property name="contentClassificationService" ref="contentClassificationService" />
-   </bean>
+      parent="rmClassifyContentBase"/>
+
+   <!-- REST impl for PUT classify content -->
+   <bean id="webscript.org.alfresco.rma.classification.classifycontent.put"
+      class="org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPut"
+      parent="rmClassifyContentBase"/>
 
    <!-- REST impl for GET user security clearance -->
    <bean id="webscript.org.alfresco.rma.classification.usersecurityclearance.get"

@@ -393,6 +393,12 @@
    </profiles>
    <dependencies>
       <dependency>
+         <groupId>com.google.code.gson</groupId>
+         <artifactId>gson</artifactId>
+         <version>2.3.1</version>
+      </dependency>
+      <!-- Alfresco dependencies -->
+      <dependency>
          <groupId>org.alfresco</groupId>
          <artifactId>${webapp.id}</artifactId>
          <version>${alfresco.base.version}</version>

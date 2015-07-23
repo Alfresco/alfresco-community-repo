@@ -925,11 +925,19 @@
       <property name="capability" value="MoveDmRecords"/>
    </bean>
 
-   <bean id="classificationPropertyDecorator"
+   <bean id="currentClassificationPropertyDecorator"
          parent="baseDecorator"
-         class="org.alfresco.repo.jscript.app.ClassificationPropertyDecorator"
+         class="org.alfresco.repo.jscript.app.CurrentClassificationPropertyDecorator"
          depends-on="classifiedContentDictionaryBootstrap">
       <property name="propertyName" value="clf:currentClassification" />
+      <property name="classificationSchemeService" ref="ClassificationSchemeService" />
+   </bean>
+
+   <bean id="classificationReasonsPropertyDecorator"
+         parent="baseDecorator"
+         class="org.alfresco.repo.jscript.app.ClassificationReasonsPropertyDecorator"
+         depends-on="classifiedContentDictionaryBootstrap">
+      <property name="propertyName" value="clf:classificationReasons" />
       <property name="classificationSchemeService" ref="ClassificationSchemeService" />
    </bean>
 

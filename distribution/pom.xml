@@ -20,7 +20,7 @@
         <!-- Platform Distribution -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-platform-distributionzip</artifactId>
+            <artifactId>alfresco-platform-community-distributionzip</artifactId>
             <version>${alfresco.platform.version}</version>
             <type>zip</type>
             <exclusions>
@@ -76,7 +76,7 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-platform-distributionzip</artifactId>
+                                    <artifactId>alfresco-platform-community-distributionzip</artifactId>
                                     <version>${alfresco.platform.version}</version>
                                     <type>zip</type>
                                 </artifactItem>

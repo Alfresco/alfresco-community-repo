@@ -225,6 +225,23 @@
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
                                 </artifactItem>
+                                <!-- WCMQS War Config file -->
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-wcmqs-web</artifactId>
+                                    <version>${alfresco.share.version}</version>
+                                    <classifier>classes</classifier>
+                                    <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
+                                    <includes>alfresco/web-extension/**</includes>
+                                </artifactItem>
+                                <!-- WCMQS Client Config file -->
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-wcmqs-client-api</artifactId>
+                                    <version>${alfresco.share.version}</version>
+                                    <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
+                                    <includes>alfresco/extension/**</includes>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>

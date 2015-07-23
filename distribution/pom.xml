@@ -35,7 +35,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-solr4-distribution</artifactId>
-            <version>${alfresco.share.version}</version>
+            <version>${alfresco.platform.version}</version>
             <type>zip</type>
             <exclusions>
                 <exclusion>

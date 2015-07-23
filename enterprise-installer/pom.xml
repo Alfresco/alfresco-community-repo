@@ -31,7 +31,7 @@
         </bitrock.arguments>
 
         <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->
-        <alfresco.package.name>alfresco-enterprise</alfresco.package.name>
+        <alfresco.package.name>alfresco-enterprise-distribution</alfresco.package.name>
     </properties>
 
     <dependencies>
@@ -76,7 +76,7 @@
                                     <artifactId>alfresco-solr1-distribution</artifactId>
                                     <version>${alfresco.platform.version}</version>
                                     <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/web-server/webapps</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/alf_data/solr</outputDirectory>
                                 </artifactItem>
                                 <!-- WCMQS Distribution -->
                                 <artifactItem>
@@ -85,23 +85,6 @@
                                     <version>${alfresco.share.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
-                                </artifactItem>
-                                <!-- WCMQS War Config file -->
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-wcmqs-web</artifactId>
-                                    <version>${alfresco.share.version}</version>
-                                    <classifier>classes</classifier>
-                                    <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
-                                    <includes>alfresco/web-extension/**</includes>
-                                </artifactItem>
-                                <!-- WCMQS Client Config file -->
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-wcmqs-client-api</artifactId>
-                                    <version>${alfresco.share.version}</version>
-                                    <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
-                                    <includes>alfresco/extension/**</includes>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

@@ -38,7 +38,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * Current classification property decorator unit test
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 @RunWith(MockitoJUnitRunner.class)
 public class CurrentClassificationPropertyDecoratorUnitTest

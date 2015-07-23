@@ -26,7 +26,7 @@ import org.apache.commons.lang3.StringUtils;
  * Validator that fails if the first character of a field is non-alphanumeric.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class StartCharacterFieldValidator implements FieldValidator<String>
 {

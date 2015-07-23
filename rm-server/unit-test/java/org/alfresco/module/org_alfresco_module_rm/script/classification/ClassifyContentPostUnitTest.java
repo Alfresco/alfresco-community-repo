@@ -51,7 +51,7 @@ import org.springframework.extensions.webscripts.WebScriptException;
  * Classify content REST API POST implementation unit test.
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
 {

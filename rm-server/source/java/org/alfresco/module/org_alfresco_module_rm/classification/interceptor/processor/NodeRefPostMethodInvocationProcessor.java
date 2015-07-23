@@ -25,7 +25,7 @@ import org.springframework.stereotype.Component;
  * NodeRef Post Method Invocation Processor
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 @Component
 public class NodeRefPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor

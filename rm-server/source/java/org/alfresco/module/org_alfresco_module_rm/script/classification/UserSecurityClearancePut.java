@@ -35,7 +35,7 @@ import java.util.Map;
  *
  * @author David Webster
  * @author Tom Page
- * @since 3.0
+ * @since 3.0.a
  */
 public class UserSecurityClearancePut extends AbstractRmWebScript
 {

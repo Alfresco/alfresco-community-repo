@@ -26,7 +26,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationR
  * Validator for the fields in {@link ClassificationReason}.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassificationReasonFieldsValidator implements EntityFieldsValidator<ClassificationReason>
 {

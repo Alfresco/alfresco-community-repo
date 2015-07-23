@@ -40,7 +40,7 @@ import org.alfresco.util.ParameterCheck;
 /**
  * @author Neil Mc Erlean
  * @author David Webster
- * @since 3.0
+ * @since 3.0.a
  */
 public class SecurityClearanceServiceImpl extends ServiceBaseImpl implements SecurityClearanceService
 {

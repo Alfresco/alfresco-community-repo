@@ -51,7 +51,7 @@ import org.springframework.extensions.webscripts.DeclarativeWebScript;
  * Test for get user security clearance API
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 public class UserSecurityClearanceGetUnitTest extends BaseWebScriptUnitTest
 {

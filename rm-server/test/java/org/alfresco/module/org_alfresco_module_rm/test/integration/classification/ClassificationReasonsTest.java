@@ -29,7 +29,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
  * Tests of classification reason handling.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassificationReasonsTest extends BaseRMTestCase
 {

@@ -33,7 +33,7 @@ import org.alfresco.util.Pair;
  * Enforcement of classification when searching records in the file plan
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 public class RecordSearchClassificationEnforcementTest extends SearchClassificationEnforcementTestBase
 {

@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * Generic class for any runtime exception to do with classified records.
  *
  * @author Neil Mc Erlean
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassificationException extends AlfrescoRuntimeException
 {

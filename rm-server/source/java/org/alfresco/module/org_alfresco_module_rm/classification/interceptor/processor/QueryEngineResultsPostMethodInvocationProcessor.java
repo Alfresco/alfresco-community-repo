@@ -31,7 +31,7 @@ import org.springframework.stereotype.Component;
  * A post method invocation processor for {@link QueryEngineResults}.
  *
  * @author Tom Page
- * @since 3.0
+ * @since 3.0.a
  */
 @Component
 public class QueryEngineResultsPostMethodInvocationProcessor extends BasePostMethodInvocationProcessor

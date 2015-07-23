@@ -32,7 +32,7 @@ import org.json.simple.JSONObject;
  * Current classification property decorator
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 public class CurrentClassificationPropertyDecorator extends BasePropertyDecorator
 {

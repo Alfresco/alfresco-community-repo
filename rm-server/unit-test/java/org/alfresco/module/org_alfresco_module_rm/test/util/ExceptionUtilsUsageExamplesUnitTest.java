@@ -30,8 +30,8 @@ import static org.junit.Assert.*;
 /**
  * Unit tests showing usage of {@link ExceptionUtils}.
  *
- * @since 3.0
  * @author Neil Mc Erlean
+ * @since 3.0.a
  */
 public class ExceptionUtilsUsageExamplesUnitTest
 {

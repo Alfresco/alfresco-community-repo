@@ -35,7 +35,7 @@ import org.alfresco.util.ParameterCheck;
  * Configurable options to be used when querying for users by {@link SecurityClearance}.
  *
  * @author Neil Mc Erlean
- * @since 3.0
+ * @since 3.0.a
  */
 public final class UserQueryParams
 {

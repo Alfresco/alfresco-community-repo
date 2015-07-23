@@ -24,7 +24,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * Access denied exception thrown when a user tries to execute a method call on an uncleared node.
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 public class AccessDeniedException extends AlfrescoRuntimeException
 {

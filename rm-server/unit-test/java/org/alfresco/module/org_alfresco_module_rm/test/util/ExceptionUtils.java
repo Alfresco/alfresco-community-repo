@@ -24,8 +24,8 @@ import java.util.function.Supplier;
 /**
  * Utility class to help with Java exceptions, particularly in test code.
  *
- * @since 3.0
  * @author Neil Mc Erlean
+ * @since 3.0.a
  */
 public class ExceptionUtils
 {
@@ -34,7 +34,7 @@ public class ExceptionUtils
     {
         /** serial version uid */
         private static final long serialVersionUID = 3900164716673246207L;
-        
+
         private final Class<? extends Throwable> expected;
         private final Throwable                  actual;
 
@@ -59,7 +59,7 @@ public class ExceptionUtils
     {
         /** serial version uid */
         private static final long serialVersionUID = -988022536370047222L;
-        
+
         private final Class<? extends Throwable> expected;
 
         public MissingThrowableException(Class<? extends Throwable> expected)

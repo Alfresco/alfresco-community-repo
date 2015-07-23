@@ -34,7 +34,7 @@ import com.google.common.collect.Sets;
  * Classification level integration test
  *
  * @author Roy Wetherall
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassifyTest extends BaseRMTestCase
 {

@@ -24,7 +24,7 @@ import java.util.Comparator;
  * A class to compare classification levels. More secure classification levels are "higher" than less secure levels.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassificationLevelComparator implements Comparator<ClassificationLevel>
 {

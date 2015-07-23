@@ -26,7 +26,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationL
  * A validator that checks that the reserved symbol "U" is not configured as a classification level.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassificationLevelIsNotUnclassifiedValidator implements FieldValidator<String>
 {

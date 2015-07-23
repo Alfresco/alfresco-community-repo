@@ -64,7 +64,7 @@ import com.google.common.collect.Sets;
  * Unit tests for {@link ContentClassificationServiceImpl}.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class ContentClassificationServiceImplUnitTest implements ClassifiedContentModel
 {

@@ -34,9 +34,9 @@ import java.util.Map;
 
 /**
  * Unit tests for {@link RMCollectionUtils}.
- * 
+ *
  * @author Neil Mc Erlean
- * @since 3.0
+ * @since 3.0.a
  */
 public class RMCollectionUtilsUnitTest
 {

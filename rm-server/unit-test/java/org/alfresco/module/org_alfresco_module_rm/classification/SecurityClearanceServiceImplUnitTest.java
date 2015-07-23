@@ -53,7 +53,7 @@ import com.google.common.collect.ImmutableList;
  *
  * @author Neil Mc Erlean
  * @author David Webster
- * @since 3.0
+ * @since 3.0.a
  */
 public class SecurityClearanceServiceImplUnitTest
 {

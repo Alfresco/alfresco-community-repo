@@ -34,7 +34,7 @@ import org.alfresco.service.cmr.search.SearchParameters;
  * Tests for enforcement of classification when searching documents in the document library
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 public class DocumentSearchClassificationEnforcementTest extends SearchClassificationEnforcementTestBase
 {

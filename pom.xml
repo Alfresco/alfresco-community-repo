@@ -18,6 +18,9 @@
         <!-- Alfresco Share version -->
         <alfresco.share.version>5.1-SNAPSHOT</alfresco.share.version>
 
+        <!-- Alfresco GoogleDocs integration version -->
+        <alfresco.googledocs.version>3.0.2</alfresco.googledocs.version>
+
         <!-- Versions of binaries packaged in the installer -->
         <installer.common.version>5.0-20150414</installer.common.version>
         <installer.tomcat.version>7.0.59-alfresco-distribution</installer.tomcat.version>

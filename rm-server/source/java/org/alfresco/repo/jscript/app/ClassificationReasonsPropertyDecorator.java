@@ -21,7 +21,9 @@ package org.alfresco.repo.jscript.app;
 import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.io.Serializable;
+import java.util.List;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationReason;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -75,8 +77,25 @@ public class ClassificationReasonsPropertyDecorator extends BasePropertyDecorato
         mandatory("value", value);
 
         JSONArray jsonArray = new JSONArray();
+        JSONArray classificationReasonIds = new JSONArray();
 
-        JSONArray classificationReasonIds = new Gson().fromJson(value.toString(), JSONArray.class);
+        if (value instanceof String)
+        {
+            classificationReasonIds = new Gson().fromJson((String) value, JSONArray.class);
+        }
+        else if (value instanceof List)
+        {
+            List<String> values = (List<String>) value;
+            for (String classificationReasonId : values)
+            {
+                classificationReasonIds.add(classificationReasonId);
+            }
+        }
+        else
+        {
+            throw new AlfrescoRuntimeException("Unexpected value instance: '" + value + "'.");
+        }
+
         for (int i = 0; i < classificationReasonIds.size(); i++)
         {
             String classificationReasonId = (String) classificationReasonIds.get(i);

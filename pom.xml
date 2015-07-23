@@ -7,7 +7,7 @@
         <version>5.1-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
-    <artifactId>alfresco-platform-distributionzip</artifactId>
+    <artifactId>alfresco-platform-community-distributionzip</artifactId>
     <packaging>jar</packaging>
     <name>Alfresco Platform Distribution (WAR Installation)</name>
 

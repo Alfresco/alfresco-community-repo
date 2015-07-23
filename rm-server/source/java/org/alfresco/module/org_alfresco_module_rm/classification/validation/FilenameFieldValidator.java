@@ -31,7 +31,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationL
  * Check that a field is suitable to be used as part of a filename.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class FilenameFieldValidator implements FieldValidator<String>
 {

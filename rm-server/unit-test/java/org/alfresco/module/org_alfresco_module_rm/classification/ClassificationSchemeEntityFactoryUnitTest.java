@@ -33,7 +33,7 @@ import org.mockito.Mock;
  * Unit tests for the {@link ClassificationSchemeEntityFactory}.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassificationSchemeEntityFactoryUnitTest
 {

@@ -33,7 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Base class for post method invocation processors
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 public abstract class BasePostMethodInvocationProcessor
 {
@@ -56,7 +56,7 @@ public abstract class BasePostMethodInvocationProcessor
     /** Post method invocation processor */
     @Autowired
     private PostMethodInvocationProcessor postMethodInvocationProcessor;
-    
+
     /** Pre method invocation processor */
     @Autowired
     private PreMethodInvocationProcessor preMethodInvocationProcessor;
@@ -138,7 +138,7 @@ public abstract class BasePostMethodInvocationProcessor
         NodeRef filter = nodeRef;
 
         // disable pre-method invocation processor
-        preMethodInvocationProcessor.disable();        
+        preMethodInvocationProcessor.disable();
         try
         {
             if (getNodeService().exists(nodeRef) &&

@@ -36,7 +36,7 @@ import org.alfresco.util.ParameterCheck;
 
 /**
  * @author Neil Mc Erlean
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassificationSchemeServiceImpl extends ServiceBaseImpl implements ClassificationSchemeService,
             ClassifiedContentModel

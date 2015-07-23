@@ -26,7 +26,7 @@ import org.springframework.stereotype.Component;
  * Permission Check Value Post Method Invocation Processor
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 @Component
 public class PermissionCheckValuePostMethodInvocationProcessor extends BasePostMethodInvocationProcessor

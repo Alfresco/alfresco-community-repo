@@ -38,7 +38,7 @@ import org.json.JSONObject;
  * Integration test for saved searches with classification enforcement
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 public class SavedSearchClassificationEnforcementTest extends SearchClassificationEnforcementTestBase
 {

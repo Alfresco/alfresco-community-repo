@@ -30,7 +30,7 @@ import org.springframework.context.ApplicationEvent;
  * Tests of exemption category loading.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class ExemptionCategoriesTest extends BaseRMTestCase
 {

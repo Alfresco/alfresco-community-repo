@@ -33,7 +33,7 @@ import org.aopalliance.intercept.MethodInvocation;
  *
  * @author Roy Wetherall
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassificationMethodInterceptor implements MethodInterceptor
 {

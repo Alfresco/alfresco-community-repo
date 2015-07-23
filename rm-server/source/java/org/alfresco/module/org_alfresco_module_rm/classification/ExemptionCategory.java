@@ -28,7 +28,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * declassified.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public final class ExemptionCategory implements ClassificationSchemeEntity
 {

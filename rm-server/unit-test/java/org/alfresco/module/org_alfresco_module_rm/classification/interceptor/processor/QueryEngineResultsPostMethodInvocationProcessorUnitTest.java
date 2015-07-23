@@ -41,7 +41,7 @@ import com.google.common.collect.Sets;
  * Unit tests for {@link QueryEngineResultPostMethodInvocationProcessor}.
  *
  * @author Tom Page
- * @since 3.0
+ * @since 3.0.a
  */
 public class QueryEngineResultsPostMethodInvocationProcessorUnitTest
 {

@@ -26,7 +26,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * Implementation for Java backed webscript to edit a classified content.
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassifyContentPut extends ClassifyContentBase
 {

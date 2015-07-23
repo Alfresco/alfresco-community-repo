@@ -30,7 +30,7 @@ import java.util.Set;
  * Registry for post method invocation processors
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 public class PostMethodInvocationProcessor
 {

@@ -31,7 +31,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * Implementation for Java backed webscript to get the classification reasons.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class ReasonsGet extends AbstractRmWebScript
 {

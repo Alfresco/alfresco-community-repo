@@ -27,7 +27,7 @@ import org.alfresco.service.cmr.security.PersonService.PersonInfo;
  * A simple data type for a single user's security clearance.
  *
  * @author Neil Mc Erlean
- * @since 3.0
+ * @since 3.0.a
  */
 public final class SecurityClearance implements Serializable
 {

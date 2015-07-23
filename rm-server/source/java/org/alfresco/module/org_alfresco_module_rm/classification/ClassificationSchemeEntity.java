@@ -24,7 +24,7 @@ import java.io.Serializable;
  * Marker interface for classes that contain basic information about the classification scheme.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public interface ClassificationSchemeEntity extends Serializable
 {

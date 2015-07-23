@@ -33,11 +33,11 @@ import org.alfresco.util.GUID;
 
 /**
  * Utilities helpful when mocking Alfresco constructs.
- * 
+ *
  * @author Roy Wetherall
- * @since 3.0
+ * @since 3.0.a
  */
-public class AlfMock 
+public class AlfMock
 {
 	/**
      * Helper to generate random text value suitable for a property
@@ -55,7 +55,7 @@ public class AlfMock
     {
         return generateQName(GUID.generate());
     }
-    
+
     /**
      * Helper method to generate a qname.
      */
@@ -63,7 +63,7 @@ public class AlfMock
     {
         return QName.createQName(uri, GUID.generate());
     }
-	
+
 	/**
      * Helper method to generate a node reference.
      *

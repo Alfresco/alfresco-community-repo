@@ -31,7 +31,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationS
  *
  * @author Neil Mc Erlean
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassificationSchemeEntityValidator<T extends ClassificationSchemeEntity>
 {

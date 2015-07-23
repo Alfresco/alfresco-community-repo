@@ -27,7 +27,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationE
  * Container for the configured {@link ExemptionCategory} objects.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class ExemptionCategoryManager
 {

@@ -44,7 +44,7 @@ import static org.mockito.Mockito.doReturn;
  * Tests for the get clearance levels API.
  *
  * @author David Webster
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClearanceLevelsGetUnitTest extends BaseWebScriptUnitTest
 {

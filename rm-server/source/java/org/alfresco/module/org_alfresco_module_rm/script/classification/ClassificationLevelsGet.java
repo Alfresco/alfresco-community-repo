@@ -31,7 +31,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * Implementation for Java backed webscript to get the classification levels.
  *
  * @author Tuna Aksoy
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassificationLevelsGet extends AbstractRmWebScript
 {

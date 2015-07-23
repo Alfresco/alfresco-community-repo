@@ -45,7 +45,7 @@ import org.alfresco.service.namespace.QName;
  * A service to handle the classification of content.
  *
  * @author tpage
- * @since 3.0
+ * @since 3.0.a
  */
 public class ContentClassificationServiceImpl extends ServiceBaseImpl
                                               implements ContentClassificationService, ClassifiedContentModel

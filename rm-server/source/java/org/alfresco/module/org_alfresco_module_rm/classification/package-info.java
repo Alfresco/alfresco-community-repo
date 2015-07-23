@@ -27,6 +27,6 @@
  * {@link org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService} which deals
  * wth users and their clearances.
  *
- * @since 3.0
+ * @since 3.0.a
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;

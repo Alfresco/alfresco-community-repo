@@ -43,7 +43,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * This class is responsible for initialising any Classification-specific data on server bootstrap.
  *
  * @author Neil Mc Erlean
- * @since 3.0
+ * @since 3.0.a
  */
 public class ClassificationServiceBootstrap extends AbstractLifecycleBean implements ClassifiedContentModel
 {

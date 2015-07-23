@@ -23,12 +23,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Check that a value is a valid {@link ClassificationLevel} by checking the {@link ClassificationSchemeService}.
+ * Check that a value is a valid {@link ClassificationReason} by checking the {@link ClassificationSchemeService}.
  *
  * @author tpage
  * @since 3.0.a
  */
-public class ClassificationLevelConstraint extends ClassificationSchemeEntityConstraint
+public class ClassificationReasonConstraint extends ClassificationSchemeEntityConstraint
 {
     /**
      * Get the allowed values.  Note that these are <tt>String</tt> instances, but may
@@ -39,11 +39,11 @@ public class ClassificationLevelConstraint extends ClassificationSchemeEntityCon
     @Override
     protected List<String> getAllowedValues()
     {
-        List<ClassificationLevel> classificationLevels = classificationSchemeService.getClassificationLevels();
+        List<ClassificationReason> classificationReasons = classificationSchemeService.getClassificationReasons();
         List<String> values = new ArrayList<String>();
-        for (ClassificationLevel classificationLevel : classificationLevels)
+        for (ClassificationReason classificationReason : classificationReasons)
         {
-            values.add(classificationLevel.getId());
+            values.add(classificationReason.getId());
         }
         return values;
     }

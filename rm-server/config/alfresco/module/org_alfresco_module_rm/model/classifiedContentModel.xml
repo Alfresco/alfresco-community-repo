@@ -28,6 +28,10 @@
    <constraints>
       <constraint name="clf:classificationLevelRestriction"
                   type="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelConstraint" />
+      <constraint name="clf:classificationReasonRestriction"
+                  type="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationReasonConstraint" />
+      <constraint name="clf:exemptionCategoryRestriction"
+                  type="org.alfresco.module.org_alfresco_module_rm.classification.ExemptionCategoryConstraint" />
    </constraints>
 
    <!-- Types -->
@@ -78,6 +82,49 @@
                <description>Holds the ids of classification reasons</description>
                <type>d:text</type>
                <multiple>true</multiple>
+               <constraints>
+                  <constraint ref="clf:classificationReasonRestriction" />
+               </constraints>
+            </property>
+            <property name="clf:downgradeDate">
+               <title>Downgrade Date</title>
+               <description>The date when the classification may be downgraded</description>
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="clf:downgradeEvent">
+               <title>Downgrade Event</title>
+               <description>An event for which the classification may be downgraded</description>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="clf:downgradeInstructions">
+               <title>Downgrade Instructions</title>
+               <description>Instructions to be followed when considering whether to downgrade the classification</description>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <!-- TODO Constraint on this and two previous fields -->
+            </property>
+            <property name="clf:declasificationDate">
+               <title>Declassification Date</title>
+               <description>The date when this may be declassified</description>
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="clf:declasificationEvent">
+               <title>Declassification Event</title>
+               <description>The event when this may be declassified</description>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="clf:declasificationExemptions">
+               <title>Declassification Exemptions</title>
+               <description>Exemptions that may preclude this from being declassified</description>
+               <type>d:text</type>
+               <multiple>true</multiple>
+               <constraints>
+                  <constraint ref="clf:exemptionCategoryRestriction" />
+               </constraints>
             </property>
          </properties>
       </aspect>

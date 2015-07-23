@@ -32,12 +32,151 @@
     </properties>
 
     <dependencies>
-        <!-- Import the dependencies from the Community installer -->
+        <!-- These binaries are extracted using tar, to preserve symlinks -->
+
+        <!-- Common -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-installer</artifactId>
-            <version>${project.version}</version>
-            <type>pom</type>
+            <artifactId>installer-common</artifactId>
+            <version>${installer.common.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>installer-common</artifactId>
+            <version>${installer.common.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>
+
+        <!-- Tomcat -->
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${installer.tomcat.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${installer.tomcat.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${installer.tomcat.version}</version>
+            <classifier>win32</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>tomcat</artifactId>
+            <version>${installer.tomcat.version}</version>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
+
+        <!-- PostgreSQL -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql-distribution</artifactId>
+            <version>${installer.postgresql.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql-distribution</artifactId>
+            <version>${installer.postgresql.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>        
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql-distribution</artifactId>
+            <version>${installer.postgresql.version}</version>
+            <classifier>win32</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql-distribution</artifactId>
+            <version>${installer.postgresql.version}</version>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
+
+        <!-- Java -->
+        <dependency>
+            <groupId>com.oracle.java</groupId>
+            <artifactId>jre</artifactId>
+            <version>${installer.java.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.java</groupId>
+            <artifactId>jre</artifactId>
+            <version>${installer.java.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>        
+        <dependency>
+            <groupId>com.oracle.java</groupId>
+            <artifactId>jre</artifactId>
+            <version>${installer.java.version}</version>
+            <classifier>win32</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>com.oracle.java</groupId>
+            <artifactId>jre</artifactId>
+            <version>${installer.java.version}</version>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
+
+        <!-- LibreOffice -->
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>libreoffice-dist</artifactId>
+            <version>${installer.libreoffice.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>libreoffice-dist</artifactId>
+            <version>${installer.libreoffice.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>        
+        <dependency>
+            <groupId>org.libreoffice</groupId>
+            <artifactId>libreoffice-dist</artifactId>
+            <version>${installer.libreoffice.version}</version>
+            <classifier>windows</classifier>
+            <type>tgz</type>
+        </dependency>
+        
+        <!-- Installbuilder -->
+        <dependency>
+            <groupId>com.bitnami</groupId>
+            <artifactId>installbuilder</artifactId>
+            <version>${installer.installbuilder.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>com.bitnami</groupId>
+            <artifactId>installbuilder</artifactId>
+            <version>${installer.installbuilder.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
         </dependency>
     </dependencies>
 

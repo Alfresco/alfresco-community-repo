@@ -32,10 +32,18 @@
 
     <modules>
         <module>distribution</module>
-        <module>installer</module>
     </modules>
 
     <profiles>
+        <profile>
+            <id>community</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>installer</module>
+            </modules>
+        </profile>
         <profile>
             <id>enterprise</id>
             <modules>

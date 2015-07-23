@@ -9,6 +9,19 @@
     </parent>
     <packaging>pom</packaging>
 
+    <dependencyManagement>
+        <dependencies>
+            <!-- Import all dependencyManagement from Alfresco Platform -->
+            <dependency>
+                <groupId>org.alfresco</groupId>
+                <artifactId>alfresco-parent</artifactId>
+                <version>${alfresco.platform.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <!-- WARs to include in the EAR -->
         <dependency>

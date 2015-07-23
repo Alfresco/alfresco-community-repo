@@ -22,23 +22,30 @@ import static org.alfresco.util.ParameterCheck.mandatory;
 
 import java.io.Serializable;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationReason;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONAware;
 import org.json.simple.JSONObject;
 
+import com.google.gson.Gson;
+
 /**
- * Classification property decorator
+ * Classification reasons property decorator
  *
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class ClassificationPropertyDecorator extends BasePropertyDecorator
+public class ClassificationReasonsPropertyDecorator extends BasePropertyDecorator
 {
     /** Constants */
-    private static final String ID = "id";
-    private static final String LABEL = "label";
+    protected static final String ID = "id";
+    protected static final String LABEL = "label";
+    protected static final String VALUE = "value";
+    protected static final String DISPLAY_LABEL = "displayLabel";
+    protected static final String FULL_REASON = "fullReason";
 
     /** Classification scheme service */
     private ClassificationSchemeService classificationSchemeService;
@@ -66,10 +73,27 @@ public class ClassificationPropertyDecorator extends BasePropertyDecorator
     public JSONAware decorate(QName propertyName, NodeRef nodeRef, Serializable value)
     {
         mandatory("value", value);
-        JSONObject jsonObj = new JSONObject();
-        String currentClassificationId = value.toString();
-        jsonObj.put(ID, currentClassificationId);
-        jsonObj.put(LABEL, getClassificationSchemeService().getClassificationLevelById(currentClassificationId).getDisplayLabel());
-        return jsonObj;
+
+        JSONArray jsonArray = new JSONArray();
+
+        JSONArray classificationReasonIds = new Gson().fromJson(value.toString(), JSONArray.class);
+        for (int i = 0; i < classificationReasonIds.size(); i++)
+        {
+            String classificationReasonId = (String) classificationReasonIds.get(i);
+            ClassificationReason classificationReason = getClassificationSchemeService().getClassificationReasonById(classificationReasonId);
+            String classificationReasonDisplayLabel = classificationReason.getDisplayLabel();
+            String classificationFullReason = classificationReasonId + ": " + classificationReasonDisplayLabel;
+
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put(ID, classificationReasonId);
+            jsonObject.put(LABEL, classificationFullReason);
+            jsonObject.put(VALUE, classificationReasonId);
+            jsonObject.put(DISPLAY_LABEL, classificationReasonDisplayLabel);
+            jsonObject.put(FULL_REASON, classificationFullReason);
+
+            jsonArray.add(jsonObject);
+        }
+
+        return jsonArray;
     }
 }

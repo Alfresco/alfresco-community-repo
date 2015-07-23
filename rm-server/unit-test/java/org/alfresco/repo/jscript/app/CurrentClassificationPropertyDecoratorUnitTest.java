@@ -18,6 +18,8 @@
  */
 package org.alfresco.repo.jscript.app;
 
+import static org.alfresco.repo.jscript.app.CurrentClassificationPropertyDecorator.ID;
+import static org.alfresco.repo.jscript.app.CurrentClassificationPropertyDecorator.LABEL;
 import static org.alfresco.util.GUID.generate;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -25,51 +27,36 @@ import static org.mockito.Mockito.doReturn;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.json.simple.JSONObject;
-import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 /**
- * Classification property decorator test
+ * Current classification property decorator unit test
  *
  * @author Tuna Aksoy
  * @since 3.0
  */
-public class ClassificationPropertyDecoratorTest extends BaseUnitTest
+@RunWith(MockitoJUnitRunner.class)
+public class CurrentClassificationPropertyDecoratorUnitTest
 {
-    /** Constants */
-    private static final String ID = "id";
-    private static final String LABEL = "label";
-
-    /** Classification property decorator */
-    private ClassificationPropertyDecorator decorator;
+    /** Current classification property decorator */
+    private @InjectMocks CurrentClassificationPropertyDecorator decorator = new CurrentClassificationPropertyDecorator();
 
     /** Mocked classification scheme service */
     private @Mock ClassificationSchemeService mockedClassificationSchemeService;
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest#before()
-     */
-    @Before
-    @Override
-    public void before() throws Exception
-    {
-        super.before();
-        decorator = new ClassificationPropertyDecorator();
-        decorator.setClassificationSchemeService(mockedClassificationSchemeService);
-    }
 
     /**
      * Given that no classification id is supplied
      * When decorated
      * Then an {@link IllegalArgumentException} is thrown
      */
-    @Test
+    @Test(expected = IllegalArgumentException.class)
     public void testDecoratorWithoutClassificationId()
     {
-        exception.expect(IllegalArgumentException.class);
         decorator.decorate(null, null, null);
     }
 

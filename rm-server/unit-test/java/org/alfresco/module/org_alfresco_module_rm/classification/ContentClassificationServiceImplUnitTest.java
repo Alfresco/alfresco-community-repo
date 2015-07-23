@@ -64,6 +64,7 @@ import com.google.common.collect.Sets;
  * Unit tests for {@link ContentClassificationServiceImpl}.
  *
  * @author tpage
+ * @since 3.0
  */
 public class ContentClassificationServiceImplUnitTest implements ClassifiedContentModel
 {
@@ -136,20 +137,6 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         // Call the method under test.
         contentClassificationServiceImpl.classifyContent("levelId1", "classifiedBy", "classificationAgency",
                     Sets.newHashSet("reasonId1", "reasonId2"), notAPieceOfContent);
-    }
-
-    /** Classify a piece of content that has already been classified. */
-    @Test(expected = UnsupportedOperationException.class)
-    public void classifyContent_alreadyClassified()
-    {
-        // Create a classified piece of content.
-        NodeRef classifiedContent = new NodeRef("classified://content/");
-        when(mockDictionaryService.isSubClass(mockNodeService.getType(classifiedContent), ContentModel.TYPE_CONTENT)).thenReturn(true);
-        when(mockNodeService.hasAspect(classifiedContent, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(true);
-
-        // Call the method under test.
-        contentClassificationServiceImpl.classifyContent("levelId1", "classifiedBy", "classificationAgency",
-                    Sets.newHashSet("reasonId1", "reasonId2"), classifiedContent);
     }
 
     /** Classify a piece of content that has already been shared */

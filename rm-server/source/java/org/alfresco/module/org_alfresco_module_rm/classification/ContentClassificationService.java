@@ -30,6 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * A service to handle the classification of content.
  *
  * @author tpage
+ * @since 3.0
  */
 public interface ContentClassificationService
 {
@@ -50,7 +51,7 @@ public interface ContentClassificationService
      * @param classificationReasonIds A non-empty set of ids of reasons for classifying the content in this way.
      * @param content The node to classify.
      * @throws LevelIdNotFound If the supplied level id is not found.
-     * @thorws IllegalArgumentException If the supplied {@code classifiedBy} is {@code null},
+     * @throws IllegalArgumentException If the supplied {@code classifiedBy} is {@code null},
      *                                  the empty string or a string consisting only of whitespace.
      * @throws ReasonIdNotFound If any of the supplied reason ids are not found.
      * @throws InvalidNodeRefException If the node could not be found.
@@ -58,6 +59,25 @@ public interface ContentClassificationService
      */
     void classifyContent(String classificationLevelId, String classifiedBy, String classificationAgency,
                          Set<String> classificationReasonIds, NodeRef content)
+            throws LevelIdNotFound, ReasonIdNotFound, InvalidNodeRefException, InvalidNode;
+
+    /**
+     * Edits the classified content.
+     *
+     * @param classificationLevelId The security clearance needed to access the content.
+     * @param classifiedBy Free-form text identifying who edited the classified content.
+     * @param classificationAgency The name of the agency responsible for editing the classified content.
+     * @param classificationReasonIds A non-empty set of ids of reasons for editing the classified content in this way.
+     * @param content The classified content which will be edited.
+     * @throws LevelIdNotFound If the supplied level id is not found.
+     * @throws IllegalArgumentException If the supplied {@code classifiedBy} is {@code null},
+     *                                  the empty string or a string consisting only of whitespace.
+     * @throws ReasonIdNotFound If any of the supplied reason ids are not found.
+     * @throws InvalidNodeRefException If the node could not be found.
+     * @throws InvalidNode If the supplied node is not a content node.
+     */
+    void editClassifiedContent(String classificationLevelId, String classifiedBy, String classificationAgency,
+                        Set<String> classificationReasonIds, NodeRef content)
             throws LevelIdNotFound, ReasonIdNotFound, InvalidNodeRefException, InvalidNode;
 
     /**

@@ -229,6 +229,7 @@
             org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService.getCurrentClassification=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService.classifyContent=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService.hasClearance=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService.editClassifiedContent=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService.*=ACL_DENY
          </value>
       </property>

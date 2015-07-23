@@ -32,10 +32,12 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -43,6 +45,7 @@ import org.alfresco.service.namespace.QName;
  * A service to handle the classification of content.
  *
  * @author tpage
+ * @since 3.0
  */
 public class ContentClassificationServiceImpl extends ServiceBaseImpl
                                               implements ContentClassificationService, ClassifiedContentModel
@@ -63,6 +66,9 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
         this.reasonManager = classificationServiceBootstrap.getClassificationReasonManager();
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService#getCurrentClassification(org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
     public ClassificationLevel getCurrentClassification(final NodeRef nodeRef)
     {
@@ -84,23 +90,22 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
         });
     };
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService#classifyContent(java.lang.String, java.lang.String, java.lang.String, java.util.Set, org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
     public void classifyContent(String classificationLevelId, String classifiedBy, String classificationAgency,
                                 Set<String> classificationReasonIds, final NodeRef content)
     {
         checkNotBlank("classificationLevelId", classificationLevelId);
         checkNotBlank("classifiedBy", classifiedBy);
+        // classificationAgency can be blank
         mandatory("classificationReasonIds", classificationReasonIds);
         mandatory("content", content);
 
         if (!dictionaryService.isSubClass(nodeService.getType(content), ContentModel.TYPE_CONTENT))
         {
             throw new InvalidNode(content, "The supplied node is not a content node.");
-        }
-        if (nodeService.hasAspect(content, ASPECT_CLASSIFIED))
-        {
-            throw new UnsupportedOperationException(
-                        "The content has already been classified. Reclassification is currently not supported.");
         }
         if (nodeService.hasAspect(content, QuickShareModel.ASPECT_QSHARE))
         {
@@ -147,6 +152,9 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
         }, authenticationUtil.getAdminUserName());
     }
 
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService#hasClearance(org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
     public boolean hasClearance(NodeRef nodeRef)
     {
@@ -173,5 +181,22 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
         }
 
         return isClassified;
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService#editClassifiedContent(java.lang.String, java.lang.String, java.lang.String, java.util.Set, org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public void editClassifiedContent(String classificationLevelId, String classifiedBy, String classificationAgency,
+            Set<String> classificationReasonIds, NodeRef content)
+                    throws LevelIdNotFound, ReasonIdNotFound, InvalidNodeRefException, InvalidNode
+    {
+        checkNotBlank("classificationLevelId", classificationLevelId);
+        checkNotBlank("classifiedBy", classifiedBy);
+        // classificationAgency can be blank
+        mandatory("classificationReasonIds", classificationReasonIds);
+        mandatory("content", content);
+
+        classifyContent(classificationLevelId, classifiedBy, classificationAgency, classificationReasonIds, content);
     }
 }

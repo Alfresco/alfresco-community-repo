@@ -16,17 +16,32 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import java.io.Serializable;
+import static java.util.Collections.unmodifiableList;
+
+import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 /**
- * Marker interface for classes that contain basic information about the classification scheme.
+ * Check that a {@link ClassifiedContentModel#PROP_LAST_RECLASSIFICATION_ACTION reclassifiction action }value is valid.
  *
- * @author tpage
- * @since 3.0
+ * @author Neil Mc Erlean
+ * @since 3.0.a
  */
-public interface ClassificationSchemeEntity extends Serializable
+public class ReclassificationValueConstraint extends ClassificationSchemeEntityConstraint
 {
-    // Intentionally empty
+    @Override
+    protected List<String> getAllowedValues()
+    {
+        final Set<String> resultSet = classificationSchemeService.getReclassificationValues();
+        List<String> result = new ArrayList<>(resultSet.size());
+        result.addAll(resultSet);
+
+        return unmodifiableList(result);
+    }
 }

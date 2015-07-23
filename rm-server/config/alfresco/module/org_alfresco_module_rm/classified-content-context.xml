@@ -113,6 +113,8 @@
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getClassificationReasonById=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getUnclassifiedClassificationLevel=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getExemptionCategories=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getReclassification=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getReclassificationValues=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.*=ACL_DENY
          </value>
       </property>
@@ -231,4 +233,12 @@
          </value>
       </property>
    </bean>
+
+    <!-- Beans relating to the classification content model -->
+    <bean id="clf.classified"
+          class="org.alfresco.module.org_alfresco_module_rm.model.clf.aspect.ClassifiedAspect"
+          parent="rm.baseBehaviour">
+       <property name="classificationSchemeService" ref="ClassificationSchemeService" />
+    </bean>
+
 </beans>

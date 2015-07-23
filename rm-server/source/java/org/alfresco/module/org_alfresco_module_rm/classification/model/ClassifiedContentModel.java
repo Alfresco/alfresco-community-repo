@@ -54,6 +54,15 @@ public interface ClassifiedContentModel
     QName PROP_DECLASSIFICATION_EVENT = QName.createQName(CLF_URI, "declassificationEvent");
     QName PROP_DECLASSIFICATION_EXEMPTIONS = QName.createQName(CLF_URI, "declassificationExemptions");
 
+    QName PROP_LAST_RECLASSIFY_BY = QName.createQName(CLF_URI, "lastReclassifyBy");
+    QName PROP_LAST_RECLASSIFY_AT = QName.createQName(CLF_URI, "lastReclassifyAt");
+    QName PROP_LAST_RECLASSIFY_REASON = QName.createQName(CLF_URI, "lastReclassifyReason");
+    QName PROP_LAST_RECLASSIFICATION_ACTION = QName.createQName(CLF_URI, "lastReclassificationAction");
+    /** Reclassification allowed values. */
+    String RECLASSIFICATION_UPGRADE    = "UPGRADE";
+    String RECLASSIFICATION_DOWNGRADE  = "DOWNGRADE";
+    String RECLASSIFICATION_DECLASSIFY = "DECLASSIFY";
+
     /** Security Clearance aspect. */
     QName ASPECT_SECURITY_CLEARANCE = QName.createQName(CLF_URI, "securityClearance");
     QName PROP_CLEARANCE_LEVEL = QName.createQName(CLF_URI, "clearanceLevel");

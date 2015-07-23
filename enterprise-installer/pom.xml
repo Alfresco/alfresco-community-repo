@@ -16,18 +16,18 @@
         <signing.key.location>${binaries.folder}/build-classpath/code-signing</signing.key.location>
         <license.file.location>${binaries.folder}/build-classpath/license.xml</license.file.location>
         <bitrock.arguments>
-           project.version=${project.version}
-           project.fullName='Alfresco One Platform ${project.version}'
+           project.version=${project.version} 
+           project.fullName='Alfresco One' 
            project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
            project.osxSigningPkcs12Password=${p12Password} 
            project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 
            project.windowsSigningPkcs12Password=${p12Password} 
-           alfresco_edition=enterprise
-           alfrescogoogledocs_component_enabled=1
-           alfrescosharepoint_component_enabled=1
-           alfrescosolr_component_enabled=1
-           alfrescowcmqs_component_enabled=1
-           project.outputDirectory=${project.build.directory}
+           alfresco_edition=enterprise 
+           alfrescogoogledocs_component_enabled=1 
+           alfrescosharepoint_component_enabled=1 
+           alfrescosolr_component_enabled=1 
+           alfrescowcmqs_component_enabled=1 
+           project.outputDirectory=${project.build.directory} 
         </bitrock.arguments>
 
         <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->

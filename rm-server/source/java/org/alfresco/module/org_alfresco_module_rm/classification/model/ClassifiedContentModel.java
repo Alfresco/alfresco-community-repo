@@ -47,6 +47,12 @@ public interface ClassifiedContentModel
     QName PROP_CLASSIFICATION_AGENCY  = QName.createQName(CLF_URI, "classificationAgency");
     QName PROP_CLASSIFIED_BY = QName.createQName(CLF_URI, "classifiedBy");
     QName PROP_CLASSIFICATION_REASONS = QName.createQName(CLF_URI, "classificationReasons");
+    QName PROP_DOWNGRADE_DATE = QName.createQName(CLF_URI, "downgradeDate");
+    QName PROP_DOWNGRADE_EVENT = QName.createQName(CLF_URI, "downgradeEvent");
+    QName PROP_DOWNGRADE_INSTRUCTIONS = QName.createQName(CLF_URI, "downgradeInstructions");
+    QName PROP_DECLASSIFICATION_DATE = QName.createQName(CLF_URI, "declassificationDate");
+    QName PROP_DECLASSIFICATION_EVENT = QName.createQName(CLF_URI, "declassificationEvent");
+    QName PROP_DECLASSIFICATION_EXEMPTIONS = QName.createQName(CLF_URI, "declassificationExemptions");
 
     /** Security Clearance aspect. */
     QName ASPECT_SECURITY_CLEARANCE = QName.createQName(CLF_URI, "securityClearance");

@@ -27,7 +27,7 @@
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>share-po</artifactId>
-                                    <version>${dependency.share.version}</version>
+                                    <version>${alfresco.share.version}</version>
                                     <classifier>src</classifier>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}</outputDirectory>

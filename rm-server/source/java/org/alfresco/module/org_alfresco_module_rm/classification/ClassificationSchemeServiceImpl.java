@@ -18,16 +18,21 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
+import static java.util.Collections.unmodifiableSet;
+
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * @author Neil Mc Erlean
@@ -121,5 +126,40 @@ public class ClassificationSchemeServiceImpl extends ServiceBaseImpl implements 
     {
         return (exemptionCategoryManager == null ? Collections.<ExemptionCategory>emptyList() :
             Collections.unmodifiableList(exemptionCategoryManager.getExemptionCategories()));
+    }
+
+    @Override
+    public Reclassification getReclassification(ClassificationLevel from, ClassificationLevel to)
+    {
+        ParameterCheck.mandatory("from", from);
+        ParameterCheck.mandatory("to", to);
+
+        final List<ClassificationLevel> levels = getClassificationLevels();
+
+        final int fromIndex = levels.indexOf(from);
+        final int toIndex   = levels.indexOf(to);
+        final int lastIndex = levels.size() - 1;
+
+        if (from.equals(to))
+        { return null; }
+        else if (fromIndex < lastIndex && toIndex == lastIndex)
+        {
+            return Reclassification.DECLASSIFY;
+        }
+        else
+        {
+            return fromIndex < toIndex ? Reclassification.DOWNGRADE : Reclassification.UPGRADE;
+        }
+    }
+
+    @Override
+    public Set<String> getReclassificationValues()
+    {
+        Set<String> result = new HashSet<>();
+        for (Reclassification r : Reclassification.values())
+        {
+            result.add(r.toModelString());
+        }
+        return unmodifiableSet(result);
     }
 }

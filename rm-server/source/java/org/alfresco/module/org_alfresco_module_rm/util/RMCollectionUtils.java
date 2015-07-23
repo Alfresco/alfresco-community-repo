@@ -18,13 +18,17 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
+import static org.springframework.util.ObjectUtils.nullSafeEquals;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 /**
- * Various common helper methods for Collections.
+ * Various common helper methods for Collections. This class is probably only appropriate for use with relatively
+ * small collections as it has not been optimised for dealing with large collections.
  *
  * @author Neil Mc Erlean
  * @since 3.0
@@ -57,5 +61,46 @@ public final class RMCollectionUtils
             }
         }
         return duplicateElems;
+    }
+
+    /**
+     * This enum represents a change in an entry between 2 collections.
+     */
+    public enum Difference
+    {
+        ADDED, REMOVED, CHANGED, UNCHANGED
+    }
+
+    /**
+     * Determines the change in a Map entry between two Maps.
+     * Note that both maps must have the same types of key-value pair.
+     *
+     * @param from the first collection.
+     * @param to   the second collection.
+     * @param key  the key identifying the entry.
+     * @param <K>  the type of the key.
+     * @param <V>  the type of the value.
+     * @return the {@link Difference}.
+     *
+     * @throws IllegalArgumentException if {@code key} is {@code null}.
+     */
+    public static <K, V> Difference diffKey(Map<K, V> from, Map<K, V> to, K key)
+    {
+        if (key == null) { throw new IllegalArgumentException("Key cannot be null."); }
+
+        if (from.containsKey(key))
+        {
+            if (to.containsKey(key))
+            {
+                if (nullSafeEquals(from.get(key), to.get(key))) { return Difference.UNCHANGED; }
+                else                                            { return Difference.CHANGED; }
+            }
+            else { return Difference.REMOVED; }
+        }
+        else
+        {
+            if (to.containsKey(key)) { return Difference.ADDED; }
+            else                     { return Difference.UNCHANGED; }
+        }
     }
 }

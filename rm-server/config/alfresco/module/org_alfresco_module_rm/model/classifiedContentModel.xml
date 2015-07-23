@@ -32,6 +32,8 @@
                   type="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationReasonConstraint" />
       <constraint name="clf:exemptionCategoryRestriction"
                   type="org.alfresco.module.org_alfresco_module_rm.classification.ExemptionCategoryConstraint" />
+      <constraint name="clf:reclassificationList"
+                  type="org.alfresco.module.org_alfresco_module_rm.classification.ReclassificationValueConstraint" />
    </constraints>
 
    <!-- Types -->
@@ -105,19 +107,19 @@
                <mandatory>false</mandatory>
                <!-- TODO Constraint on this and two previous fields -->
             </property>
-            <property name="clf:declasificationDate">
+            <property name="clf:declassificationDate">
                <title>Declassification Date</title>
                <description>The date when this may be declassified</description>
                <type>d:date</type>
                <mandatory>false</mandatory>
             </property>
-            <property name="clf:declasificationEvent">
+            <property name="clf:declassificationEvent">
                <title>Declassification Event</title>
                <description>The event when this may be declassified</description>
                <type>d:text</type>
                <mandatory>false</mandatory>
             </property>
-            <property name="clf:declasificationExemptions">
+            <property name="clf:declassificationExemptions">
                <title>Declassification Exemptions</title>
                <description>Exemptions that may preclude this from being declassified</description>
                <type>d:text</type>
@@ -125,6 +127,32 @@
                <constraints>
                   <constraint ref="clf:exemptionCategoryRestriction" />
                </constraints>
+            </property>
+            <property name="clf:lastReclassificationAction">
+               <title>Last Reclassification Action</title>
+               <description>Text identifying the type of the previous reclassification on this node</description>
+               <type>d:text</type>
+               <constraints>
+                  <constraint ref="clf:reclassificationList" />
+               </constraints>
+            </property>
+            <property name="clf:lastReclassifyBy">
+               <title>Last user to reclassify this node</title>
+               <description>Identifier for the user who most recently reclassified this node</description>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="clf:lastReclassifyAt">
+               <title>Last reclassification date</title>
+               <description>Date for when this node was last reclassified</description>
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="clf:lastReclassifyReason">
+               <title>Last reclassification reason</title>
+               <description>Text giving the reason for the last reclassification</description>
+               <type>d:text</type>
+               <mandatory>false</mandatory>
             </property>
          </properties>
       </aspect>

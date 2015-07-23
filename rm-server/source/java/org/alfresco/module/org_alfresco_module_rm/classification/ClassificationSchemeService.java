@@ -19,6 +19,7 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import java.util.List;
+import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
@@ -78,4 +79,31 @@ public interface ClassificationSchemeService
      * @return The exemption categories in the order that they are defined.
      */
     List<ExemptionCategory> getExemptionCategories();
+
+    /**
+     * Identifies the reclassification type for the provided pair of {@link ClassificationLevel levels}.
+     *
+     * @param from the first classification level.
+     * @param to   the second classification level.
+     * @return the reclassification represented by this change, or {@code null} if it is not a change.
+     */
+    Reclassification getReclassification(ClassificationLevel from, ClassificationLevel to);
+
+    Set<String> getReclassificationValues();
+
+    /** Types of reclassification. */
+    enum Reclassification
+    {
+        UPGRADE, DOWNGRADE, DECLASSIFY;
+
+        /** Returns the name of this enum value in a format suitable for storage in the Alfresco repo. */
+        public String toModelString()
+        {
+            final String name = toString();
+            final StringBuilder result = new StringBuilder(name.length());
+            result.append(name.charAt(0))
+                  .append(name.substring(1).toLowerCase());
+            return result.toString();
+        }
+    }
 }

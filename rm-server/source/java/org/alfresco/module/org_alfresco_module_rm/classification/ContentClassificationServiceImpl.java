@@ -44,8 +44,8 @@ import org.alfresco.service.namespace.QName;
  *
  * @author tpage
  */
-public class ContentClassificationServiceImpl extends ServiceBaseImpl implements ContentClassificationService,
-            ClassifiedContentModel
+public class ContentClassificationServiceImpl extends ServiceBaseImpl
+                                              implements ContentClassificationService, ClassifiedContentModel
 {
     private ClassificationLevelManager levelManager;
     private ClassificationReasonManager reasonManager;

@@ -6,6 +6,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.ArrayList;
 
+import junit.framework.TestCase;
+
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.service.cmr.email.EmailService;
 import org.alfresco.util.ApplicationContextHelper;
@@ -14,24 +16,25 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 
-import junit.framework.TestCase;
-
 public class EmailServerTest extends TestCase
 {
     /**
      * Services used by the tests
      */
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-
+    
     private EmailServer emailServer;
     
     // Linux-based env. should use port bigger than 1024
-    private final int TEST_PORT = 2225;
+    private final int DEFAULT_TEST_PORT = 2225;
     private final String TEST_HOST = "localhost";
     private final int TEST_CLIENT_TIMEOUT = 20000;
+    
+    private final short SHUTDOWN_SLEEP_TIME = 1000;
 
     private EmailService emailService;
-
+    private int currentPort;
+    
     @Before
     @Override
     public void setUp() throws Exception
@@ -42,12 +45,16 @@ public class EmailServerTest extends TestCase
         emailServer = (EmailServer) emailCtx.getBean("emailServer");
         emailService = (EmailService)emailCtx.getBean("emailService");       
         assertNotNull("emailService", emailService);
+        
+        // MNT-14417
+        shutdownServer();
     }
 
     @After
     public void tearDown() throws Exception
     {
-        // nothing now
+    	// MNT-14417
+        shutdownServer();
     }
 
     /*
@@ -61,18 +68,15 @@ public class EmailServerTest extends TestCase
     @Test
     public void testDisallowedNulableFromUser() throws Exception
     {
-        emailServer.onShutdown(null);
-
         emailServer.setEnableTLS(false);
-        emailServer.setEnabled(true);
         
         emailServer.setAuthenticate(false);
         emailServer.setUnknownUser(null);
         
-        emailServer.setPort(TEST_PORT);
-        emailServer.startup();
+        // MNT-14417
+        startupServer();
 
-        String[] response = getMailFromNullableResponse(TEST_HOST, TEST_PORT);
+        String[] response = getMailFromNullableResponse(TEST_HOST, getServerPort());
         checkResponse(response);
         
         // expects smth. like: "504 some data"
@@ -91,18 +95,15 @@ public class EmailServerTest extends TestCase
     @Test
     public void testAllowedNulableFromUserWithAuth() throws Exception
     {
-        emailServer.onShutdown(null);
-
         emailServer.setEnableTLS(false);
-        emailServer.setEnabled(true);
         
         emailServer.setAuthenticate(true);
         emailServer.setUnknownUser(null);
         
-        emailServer.setPort(TEST_PORT);
-        emailServer.startup();
+        // MNT-14417
+        startupServer();
 
-        String[] response = getMailFromNullableResponse(TEST_HOST, TEST_PORT);
+        String[] response = getMailFromNullableResponse(TEST_HOST, getServerPort());
         checkResponse(response);
         
         // expects smth. like: "250 some data"
@@ -121,18 +122,15 @@ public class EmailServerTest extends TestCase
     @Test
     public void testAllowedNulableFromUserWithAnonymous() throws Exception
     {
-        emailServer.onShutdown(null);
-
         emailServer.setEnableTLS(false);
-        emailServer.setEnabled(true);
         
         emailServer.setAuthenticate(false);
         emailServer.setUnknownUser("anonymous");
         
-        emailServer.setPort(TEST_PORT);
-        emailServer.startup();
+        // MNT-14417
+        startupServer();
 
-        String[] response = getMailFromNullableResponse(TEST_HOST, TEST_PORT);
+        String[] response = getMailFromNullableResponse(TEST_HOST, getServerPort());
         checkResponse(response);
         
         // expects smth. like: "250 some data"
@@ -149,8 +147,6 @@ public class EmailServerTest extends TestCase
     @Test
     public void testForDataAcceptingIfUserIsEmpty() throws Exception
     {
-        emailServer.onShutdown(null);
-        
         // we need to delete value from "email.inbound.unknownUser" in service too
         if (emailService instanceof EmailServiceImpl)
         {
@@ -160,10 +156,9 @@ public class EmailServerTest extends TestCase
 
         emailServer.setAuthenticate(true);
         emailServer.setEnableTLS(false);
-        emailServer.setEnabled(true);
         
-        emailServer.setPort(TEST_PORT);
-        emailServer.startup();
+        // MNT-14417
+        startupServer();
         
         String[] request = new String[] 
                 {
@@ -173,7 +168,7 @@ public class EmailServerTest extends TestCase
                    "Hello world\r\n.\r\n",
                    "QUIT\r\n"
                 };
-        String[] response = getResponse(TEST_HOST, TEST_PORT, request);
+        String[] response = getResponse(TEST_HOST, getServerPort(), request);
         
         checkResponse(response);
         
@@ -181,6 +176,51 @@ public class EmailServerTest extends TestCase
         // expects smth. like: "554 some data"
         // we are expect error code
         assertTrue("Response should have error code", response[4].indexOf("5") == 0);
+    }
+    
+    private void startupServer()
+    {
+        currentPort = DEFAULT_TEST_PORT;
+        boolean started = false;
+        while (!started && currentPort < 65535)
+        {
+            try
+            {
+                emailServer.setEnabled(true);
+                emailServer.setPort(currentPort);
+                emailServer.onBootstrap(null);
+                started = true;
+            }
+            catch (Exception exc)
+            {
+                // There is RuntimeException. We need to extract cause of error
+                if (exc.getCause() instanceof java.net.BindException)
+                {
+                    currentPort++;
+                }
+                else
+                {
+                    throw exc;
+                }
+            }
+        }
+        if (!started)
+        {
+            throw new RuntimeException("Unable to start email server");
+        }
+    }
+    
+    // MNT-14417: wait for a while to avoid "java.net.BindException: Address already in use"
+    private void shutdownServer() throws InterruptedException
+    {
+    	emailServer.onShutdown(null);
+    	Thread.sleep(SHUTDOWN_SLEEP_TIME);
+    	emailServer.setEnabled(false);
+    }
+    
+    private int getServerPort()
+    {
+        return currentPort;
     }
     
     private void checkResponse(String[] response)

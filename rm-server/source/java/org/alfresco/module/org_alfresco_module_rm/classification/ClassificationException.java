@@ -130,4 +130,17 @@ public class ClassificationException extends AlfrescoRuntimeException
             super("Operation not permitted on node " + nodeRef + ", error message: " + message);
         }
     }
+
+    /** A downgrade date or event has been specified, but there are no corresponding instructions. */
+    public static class MissingDowngradeInstructions extends ClassificationException
+    {
+        /** serial version uid */
+        private static final long serialVersionUID = -1561288436418050014L;
+
+        public MissingDowngradeInstructions(NodeRef nodeRef)
+        {
+            super("A downgrade date or event has been specified, but there are no corresponding instructions for "
+                        + nodeRef);
+        }
+    }
 }

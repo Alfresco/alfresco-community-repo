@@ -18,7 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFICATION_AGENCY;
 import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFICATION_LEVEL_ID;
 import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFICATION_REASONS;
@@ -29,11 +28,14 @@ import static org.alfresco.util.WebScriptUtils.putValuetoJSONObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.util.Map;
 
+import com.google.common.collect.Sets;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelManager;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationReasonManager;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
@@ -41,6 +43,8 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTes
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -74,13 +78,13 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
 
     /** Mocked content classification service */
     private @Mock ContentClassificationService mockedContentClassificationService;
-
     /** Mocked classification level manager */
     private @Mock ClassificationLevelManager mockedClassificationLevelManager;
-
     /** Mocked classification reason manager */
     private @Mock ClassificationReasonManager mockedClassificationReasonManager;
 
+    /** Captor for the classification aspect properties. */
+    private @Captor ArgumentCaptor<ClassificationAspectProperties> propertiesDTOCaptor;
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest#getWebScript()
      */
@@ -120,7 +124,14 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
         assertEquals(getStringValueFromJSONObject(json, SUCCESS), Boolean.TRUE.toString());
 
         // Verify that the classify content method was called
-        verify(mockedContentClassificationService, times(1)).classifyContent(LEVEL_ID, BY, AGENCY, newHashSet(REASON1_ID, REASON2_ID), record);
+        verify(mockedContentClassificationService, times(1)).classifyContent(propertiesDTOCaptor.capture(), eq(record));
+
+        // Check the values in the DTO.
+        ClassificationAspectProperties propertiesDTO = propertiesDTOCaptor.getValue();
+        assertEquals(LEVEL_ID, propertiesDTO.getClassificationLevelId());
+        assertEquals(BY, propertiesDTO.getClassifiedBy());
+        assertEquals(AGENCY, propertiesDTO.getClassificationAgency());
+        assertEquals(Sets.newHashSet(REASON1_ID, REASON2_ID), propertiesDTO.getClassificationReasonIds());
     }
 
     @Test public void classifyingWithBlankClassifiedByShouldReturn4xxResponse() throws Exception

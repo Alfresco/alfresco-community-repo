@@ -18,10 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.ROLE_USER;
 import static org.alfresco.util.GUID.generate;
 
+import java.util.Collections;
+
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -35,6 +37,18 @@ public class RM2260Test extends BaseRMTestCase
 {
     private static final String LEVEL = "level1";
     private static final String REASON = "Test Reason 1";
+    private ClassificationAspectProperties propertiesDTO;
+
+    @Override
+    public void setUp() throws Exception
+    {
+        super.setUp();
+        propertiesDTO = new ClassificationAspectProperties();
+        propertiesDTO.setClassificationLevelId(LEVEL);
+        propertiesDTO.setClassifiedBy(generate());
+        propertiesDTO.setClassificationAgency(generate());
+        propertiesDTO.setClassificationReasonIds(Collections.singleton(REASON));
+    }
 
     public void testClassifiyingContentAsNonAdminUser()
     {
@@ -86,7 +100,7 @@ public class RM2260Test extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        contentClassificationService.classifyContent(LEVEL, generate(), generate(), newHashSet(REASON), record);
+                        contentClassificationService.classifyContent(propertiesDTO, record);
                         return null;
                     }
                 }, myUser);

@@ -19,7 +19,6 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification.interceptor;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
 import static org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.ROLE_ADMIN;
 import static org.alfresco.util.GUID.generate;
 
@@ -74,7 +73,7 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
                 record1 = utils.createRecord(folder, generate());
                 record2 = utils.createRecord(folder, generate());
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(propertiesDTO1, record1);
             }
 
             /**
@@ -169,8 +168,8 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
                 record2 = utils.createRecord(folder, generate());
                 record3 = utils.createRecord(folder, generate());
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), record2);
+                contentClassificationService.classifyContent(propertiesDTO1, record1);
+                contentClassificationService.classifyContent(propertiesDTO2, record2);
             }
 
             /**
@@ -267,8 +266,8 @@ public class RecordBrowseClassificationEnforcementTest extends BrowseClassificat
                 record2 = utils.createRecord(folder, generate());
                 record3 = utils.createRecord(folder, generate());
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), record2);
+                contentClassificationService.classifyContent(propertiesDTO1, record1);
+                contentClassificationService.classifyContent(propertiesDTO2, record2);
             }
 
             /**

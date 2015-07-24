@@ -18,8 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
-import java.util.Set;
-
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -34,8 +33,8 @@ public class ClassifyContentPost extends ClassifyContentBase
      * @see org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase#doClassifyAction(java.lang.String, java.lang.String, java.lang.String, java.util.Set, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected void doClassifyAction(String classificationLevelId, String classifiedBy, String classificationAgency, Set<String> classificationReasonIds, NodeRef document)
+    protected void doClassifyAction(ClassificationAspectProperties classificationAspectProperties, NodeRef document)
     {
-        getContentClassificationService().classifyContent(classificationLevelId, classifiedBy, classificationAgency, classificationReasonIds, document);
+        getContentClassificationService().classifyContent(classificationAspectProperties, document);
     }
 }

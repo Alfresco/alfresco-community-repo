@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.classificati
 
 import java.util.Collections;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
@@ -27,8 +28,6 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.GUID;
-
-import com.google.common.collect.Sets;
 
 /**
  * Classification level integration test
@@ -45,6 +44,19 @@ public class ClassifyTest extends BaseRMTestCase
     private static final String CLASSIFICATION_AGENCY = "classification agency";
     private static final String CLASSIFIED_BY = "classified by text";
     private static final String RECORD_NAME = "recordname.txt";
+
+    private ClassificationAspectProperties propertiesDTO;
+
+    @Override
+    public void setUp() throws Exception
+    {
+        super.setUp();
+        propertiesDTO = new ClassificationAspectProperties();
+        propertiesDTO.setClassificationLevelId(CLASSIFICATION_LEVEL);
+        propertiesDTO.setClassifiedBy(CLASSIFIED_BY);
+        propertiesDTO.setClassificationAgency(CLASSIFICATION_AGENCY);
+        propertiesDTO.setClassificationReasonIds(Collections.singleton(CLASSIFICATION_REASON));
+    }
 
     /**
      * Given that a record is frozen
@@ -68,12 +80,7 @@ public class ClassifyTest extends BaseRMTestCase
 
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(
-                        CLASSIFICATION_LEVEL,
-                        CLASSIFIED_BY,
-                        CLASSIFICATION_AGENCY,
-                        Collections.singleton(CLASSIFICATION_REASON),
-                        record);
+                contentClassificationService.classifyContent(propertiesDTO, record);
             }
         });
     }
@@ -97,12 +104,7 @@ public class ClassifyTest extends BaseRMTestCase
 
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(
-                        CLASSIFICATION_LEVEL,
-                        CLASSIFIED_BY,
-                        CLASSIFICATION_AGENCY,
-                        Collections.singleton(CLASSIFICATION_REASON),
-                        record);
+                contentClassificationService.classifyContent(propertiesDTO, record);
             }
 
             public void then() throws Exception
@@ -151,8 +153,7 @@ public class ClassifyTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        contentClassificationService.classifyContent(CLASSIFICATION_LEVEL, CLASSIFIED_BY, CLASSIFICATION_AGENCY,
-                                    Sets.newHashSet(CLASSIFICATION_REASON), record);
+                        contentClassificationService.classifyContent(propertiesDTO, record);
                         return null;
                     }
                 }, myUser);
@@ -202,8 +203,7 @@ public class ClassifyTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        contentClassificationService.classifyContent(CLASSIFICATION_LEVEL, CLASSIFIED_BY, CLASSIFICATION_AGENCY,
-                                    Sets.newHashSet(CLASSIFICATION_REASON), record);
+                        contentClassificationService.classifyContent(propertiesDTO, record);
                         return null;
                     }
                 }, myUser);

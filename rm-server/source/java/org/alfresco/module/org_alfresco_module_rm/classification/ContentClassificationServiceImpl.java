@@ -26,7 +26,6 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
@@ -94,52 +93,12 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
      * @see org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService#classifyContent(java.lang.String, java.lang.String, java.lang.String, java.util.Set, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public void classifyContent(String classificationLevelId, String classifiedBy, String classificationAgency,
-                                Set<String> classificationReasonIds, final NodeRef content)
+    public void classifyContent(ClassificationAspectProperties classificationAspectProperties, final NodeRef content)
     {
-        checkNotBlank("classificationLevelId", classificationLevelId);
-        checkNotBlank("classifiedBy", classifiedBy);
-        // classificationAgency can be blank
-        mandatory("classificationReasonIds", classificationReasonIds);
-        mandatory("content", content);
+        validateProperties(classificationAspectProperties);
+        validateContent(content);
 
-        if (!dictionaryService.isSubClass(nodeService.getType(content), ContentModel.TYPE_CONTENT))
-        {
-            throw new InvalidNode(content, "The supplied node is not a content node.");
-        }
-        if (nodeService.hasAspect(content, QuickShareModel.ASPECT_QSHARE))
-        {
-            throw new IllegalStateException("A shared content cannot be classified.");
-        }
-        if (!securityClearanceService.isCurrentUserClearedForClassification(classificationLevelId))
-        {
-            throw new LevelIdNotFound(classificationLevelId);
-        }
-
-        final Map<QName, Serializable> properties = new HashMap<>();
-        // Initial classification id
-        if (nodeService.getProperty(content, PROP_INITIAL_CLASSIFICATION) == null)
-        {
-            properties.put(PROP_INITIAL_CLASSIFICATION, classificationLevelId);
-        }
-
-        // Current classification id
-        properties.put(PROP_CURRENT_CLASSIFICATION, classificationLevelId);
-
-        // Classification agency
-        properties.put(PROP_CLASSIFICATION_AGENCY, classificationAgency);
-
-        properties.put(PROP_CLASSIFIED_BY, classifiedBy);
-
-        // Classification reason ids
-        HashSet<String> classificationReasons = new HashSet<>();
-        for (String classificationReasonId : classificationReasonIds)
-        {
-            // Check the classification reason id - an exception will be thrown if the id cannot be found
-            reasonManager.findReasonById(classificationReasonId);
-            classificationReasons.add(classificationReasonId);
-        }
-        properties.put(PROP_CLASSIFICATION_REASONS, classificationReasons);
+        final Map<QName, Serializable> properties = createPropertiesMap(classificationAspectProperties, content);
 
         // Add aspect
         authenticationUtil.runAs(new RunAsWork<Void>()
@@ -150,6 +109,75 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
                 return null;
             }
         }, authenticationUtil.getAdminUserName());
+    }
+
+    /**
+     * Validate the properties contained in the {@link ClassificationAspectProperties}.
+     *
+     * @param classificationAspectProperties The DTO containing properties to be stored on the aspect.
+     */
+    protected void validateProperties(ClassificationAspectProperties classificationAspectProperties)
+    {
+        String classificationLevelId = classificationAspectProperties.getClassificationLevelId();
+        checkNotBlank("classificationLevelId", classificationLevelId);
+        checkNotBlank("classifiedBy", classificationAspectProperties.getClassifiedBy());
+        mandatory("classificationReasonIds", classificationAspectProperties.getClassificationReasonIds());
+
+        if (!securityClearanceService.isCurrentUserClearedForClassification(classificationLevelId))
+        {
+            throw new LevelIdNotFound(classificationLevelId);
+        }
+
+        for (String classificationReasonId : classificationAspectProperties.getClassificationReasonIds())
+        {
+            // Check the classification reason id - an exception will be thrown if the id cannot be found
+            reasonManager.findReasonById(classificationReasonId);
+        }
+    }
+
+    /**
+     * Check the node is suitable for classifying.
+     *
+     * @param content The node to be classified.
+     */
+    protected void validateContent(NodeRef content)
+    {
+        mandatory("content", content);
+
+        if (!dictionaryService.isSubClass(nodeService.getType(content), ContentModel.TYPE_CONTENT))
+        {
+            throw new InvalidNode(content, "The supplied node is not a content node.");
+        }
+        if (nodeService.hasAspect(content, QuickShareModel.ASPECT_QSHARE))
+        {
+            throw new IllegalStateException("A shared content cannot be classified.");
+        }
+    }
+
+    /**
+     * Create a map suitable for storing against the aspect from the data transfer object.
+     *
+     * @param propertiesDTO The properties data transfer object.
+     * @param content The node to be classified.
+     * @return A map from {@link QName QNames} to values.
+     */
+    protected Map<QName, Serializable> createPropertiesMap(
+                ClassificationAspectProperties propertiesDTO, NodeRef content)
+    {
+        final Map<QName, Serializable> propertiesMap = new HashMap<>();
+
+        if (nodeService.getProperty(content, PROP_INITIAL_CLASSIFICATION) == null)
+        {
+            propertiesMap.put(PROP_INITIAL_CLASSIFICATION, propertiesDTO.getClassificationLevelId());
+        }
+        propertiesMap.put(PROP_CURRENT_CLASSIFICATION, propertiesDTO.getClassificationLevelId());
+        propertiesMap.put(PROP_CLASSIFICATION_AGENCY, propertiesDTO.getClassificationAgency());
+        propertiesMap.put(PROP_CLASSIFIED_BY, propertiesDTO.getClassifiedBy());
+
+        HashSet<String> classificationReasons = new HashSet<>(propertiesDTO.getClassificationReasonIds());
+        propertiesMap.put(PROP_CLASSIFICATION_REASONS, classificationReasons);
+
+        return propertiesMap;
     }
 
     /**
@@ -187,16 +215,9 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
      * @see org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService#editClassifiedContent(java.lang.String, java.lang.String, java.lang.String, java.util.Set, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public void editClassifiedContent(String classificationLevelId, String classifiedBy, String classificationAgency,
-            Set<String> classificationReasonIds, NodeRef content)
+    public void editClassifiedContent(ClassificationAspectProperties classificationAspectProperties, NodeRef content)
                     throws LevelIdNotFound, ReasonIdNotFound, InvalidNodeRefException, InvalidNode
     {
-        checkNotBlank("classificationLevelId", classificationLevelId);
-        checkNotBlank("classifiedBy", classifiedBy);
-        // classificationAgency can be blank
-        mandatory("classificationReasonIds", classificationReasonIds);
-        mandatory("content", content);
-
-        classifyContent(classificationLevelId, classifiedBy, classificationAgency, classificationReasonIds, content);
+        classifyContent(classificationAspectProperties, content);
     }
 }

@@ -18,14 +18,15 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification.interceptor;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static org.alfresco.repo.site.SiteModel.SITE_MANAGER;
 import static org.alfresco.util.GUID.generate;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -39,6 +40,22 @@ import org.alfresco.service.namespace.QName;
  */
 public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTestCase
 {
+    private static final String LEVEL1 = "level1";
+    private static final String REASON = "Test Reason 1";
+
+    private ClassificationAspectProperties propertiesDTO;
+
+    @Override
+    public void setUp() throws Exception
+    {
+        super.setUp();
+        propertiesDTO = new ClassificationAspectProperties();
+        propertiesDTO.setClassificationLevelId(LEVEL1);
+        propertiesDTO.setClassifiedBy(generate());
+        propertiesDTO.setClassificationAgency(generate());
+        propertiesDTO.setClassificationReasonIds(Collections.singleton(REASON));
+    }
+
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isCollaborationSiteTest()
      */
@@ -63,8 +80,6 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
             private String testUser;
-            private static final String LEVEL1 = "level1";
-            private static final String REASON = "Test Reason 1";
             private NodeRef folder1;
             private NodeRef folder2;
             private NodeRef doc;
@@ -83,7 +98,7 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
                 folder2 = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
                 doc = fileFolderService.create(folder1, generate(), TYPE_CONTENT).getNodeRef();
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), doc);
+                contentClassificationService.classifyContent(propertiesDTO, doc);
             }
 
             /**

@@ -19,9 +19,12 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification.interceptor;
 
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.getAdminUserName;
+import static org.alfresco.util.GUID.generate;
 
+import java.util.Collections;
 import java.util.List;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -38,6 +41,26 @@ public abstract class BrowseClassificationEnforcementTestBase extends BaseRMTest
     protected static final String LEVEL1 = "level1";
     protected static final String LEVEL2 = "level2";
     protected static final String REASON = "Test Reason 1";
+    /** Classified properties for classification level 1. */
+    protected ClassificationAspectProperties propertiesDTO1;
+    /** Classified properties for classification level 2. */
+    protected ClassificationAspectProperties propertiesDTO2;
+
+    @Override
+    public void setUp() throws Exception
+    {
+        super.setUp();
+        propertiesDTO1 = new ClassificationAspectProperties();
+        propertiesDTO1.setClassificationLevelId(LEVEL1);
+        propertiesDTO1.setClassifiedBy(generate());
+        propertiesDTO1.setClassificationAgency(generate());
+        propertiesDTO1.setClassificationReasonIds(Collections.singleton(REASON));
+        propertiesDTO2 = new ClassificationAspectProperties();
+        propertiesDTO2.setClassificationLevelId(LEVEL2);
+        propertiesDTO2.setClassifiedBy(generate());
+        propertiesDTO2.setClassificationAgency(generate());
+        propertiesDTO2.setClassificationReasonIds(Collections.singleton(REASON));
+    }
 
     protected List<ChildAssociationRef> browse(NodeRef folder, String userName)
     {

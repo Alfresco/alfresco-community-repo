@@ -19,13 +19,14 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification.interceptor;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static com.google.common.collect.Sets.newHashSet;
 import static org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.ROLE_USER;
 import static org.alfresco.util.GUID.generate;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -42,6 +43,18 @@ public class RelationshipClassificationEnforcementTest extends BaseRMTestCase
     private static final String LEVEL1 = "level1";
     private static final String LEVEL3 = "level3";
     private static final String REASON = "Test Reason 1";
+    private ClassificationAspectProperties propertiesDTO;
+
+    @Override
+    public void setUp() throws Exception
+    {
+        super.setUp();
+        propertiesDTO = new ClassificationAspectProperties();
+        propertiesDTO.setClassificationLevelId(LEVEL1);
+        propertiesDTO.setClassifiedBy(generate());
+        propertiesDTO.setClassificationAgency(generate());
+        propertiesDTO.setClassificationReasonIds(Collections.singleton(REASON));
+    }
 
     public void testRelationshipClassification()
     {
@@ -94,7 +107,7 @@ public class RelationshipClassificationEnforcementTest extends BaseRMTestCase
             {
                 filePlanPermissionService.setPermission(category, myUser, FILING);
                 securityClearanceService.setUserSecurityClearance(myUser, LEVEL3);
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), record1);
+                contentClassificationService.classifyContent(propertiesDTO, record1);
                 relationshipService.addRelationship(CUSTOM_REF_RENDITION.getLocalName(), record1, record2);
             }
 

@@ -6,7 +6,7 @@
         <artifactId>alfresco-full-installation</artifactId>
         <version>2015-1-EA-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-distribution</artifactId>
+    <artifactId>alfresco-community-distribution</artifactId>
     <packaging>jar</packaging>
     <name>Alfresco Full Distribution (Community Edition)</name>
 
@@ -61,7 +61,7 @@
     </dependencies>
 
     <build>
-        <finalName>alfresco-community-${project.version}</finalName>
+        <finalName>${project.artifactId}-${project.version}</finalName>
         <plugins>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>

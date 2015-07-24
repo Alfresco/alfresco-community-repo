@@ -161,7 +161,7 @@
         </folder>
         <folder>
             <description>//Share Services AMP</description>
-            <destination>${alfresco_amps_share_directory}</destination>
+            <destination>${alfresco_amps_directory}</destination>
             <name>shareservices</name>
             <platforms>all</platforms>
             <distributionFileList>

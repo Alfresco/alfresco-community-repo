@@ -87,7 +87,7 @@ public class DataListDownloadWebScript extends DeclarativeSpreadsheetWebScript
     }
 
     /**
-     * @param nodeService
+     * @param nodeService NodeService
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -103,7 +103,7 @@ public class DataListDownloadWebScript extends DeclarativeSpreadsheetWebScript
     }
     
     /**
-     * @param namespaceService
+     * @param namespaceService NamespaceService
      */
     public void setNamespaceService(NamespaceService namespaceService)
     {

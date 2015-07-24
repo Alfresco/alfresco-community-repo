@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * Register an additional custom metadata output for the DocLib webscript response
  *
- * @author: Will Abson
+ * @author Will Abson
  */
 public final class SlingshotDocLibCustomResponseRegistrar
 {

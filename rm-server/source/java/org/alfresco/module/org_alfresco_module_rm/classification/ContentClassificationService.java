@@ -18,8 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import java.util.Set;
-
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
@@ -45,10 +43,7 @@ public interface ContentClassificationService
     /**
      * Classify a piece of content.
      *
-     * @param classificationLevelId The security clearance needed to access the content.
-     * @param classifiedBy Free-form text identifying who classified the content.
-     * @param classificationAgency The name of the agency responsible for the classification of this content.
-     * @param classificationReasonIds A non-empty set of ids of reasons for classifying the content in this way.
+     * @param classificationAspectProperties The properties for the classification aspect.
      * @param content The node to classify.
      * @throws LevelIdNotFound If the supplied level id is not found.
      * @throws IllegalArgumentException If the supplied {@code classifiedBy} is {@code null},
@@ -57,17 +52,13 @@ public interface ContentClassificationService
      * @throws InvalidNodeRefException If the node could not be found.
      * @throws InvalidNode If the supplied node is not a content node.
      */
-    void classifyContent(String classificationLevelId, String classifiedBy, String classificationAgency,
-                         Set<String> classificationReasonIds, NodeRef content)
+    void classifyContent(ClassificationAspectProperties classificationAspectProperties, NodeRef content)
             throws LevelIdNotFound, ReasonIdNotFound, InvalidNodeRefException, InvalidNode;
 
     /**
      * Edits the classified content.
      *
-     * @param classificationLevelId The security clearance needed to access the content.
-     * @param classifiedBy Free-form text identifying who edited the classified content.
-     * @param classificationAgency The name of the agency responsible for editing the classified content.
-     * @param classificationReasonIds A non-empty set of ids of reasons for editing the classified content in this way.
+     * @param classificationAspectProperties The properties for the classification aspect.
      * @param content The classified content which will be edited.
      * @throws LevelIdNotFound If the supplied level id is not found.
      * @throws IllegalArgumentException If the supplied {@code classifiedBy} is {@code null},
@@ -76,8 +67,7 @@ public interface ContentClassificationService
      * @throws InvalidNodeRefException If the node could not be found.
      * @throws InvalidNode If the supplied node is not a content node.
      */
-    void editClassifiedContent(String classificationLevelId, String classifiedBy, String classificationAgency,
-                        Set<String> classificationReasonIds, NodeRef content)
+    void editClassifiedContent(ClassificationAspectProperties classificationAspectProperties, NodeRef content)
             throws LevelIdNotFound, ReasonIdNotFound, InvalidNodeRefException, InvalidNode;
 
     /**

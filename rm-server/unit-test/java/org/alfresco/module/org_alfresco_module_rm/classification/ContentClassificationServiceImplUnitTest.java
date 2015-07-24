@@ -18,7 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateNodeRef;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateText;
 import static org.junit.Assert.assertEquals;
@@ -37,6 +36,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Sets;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.InvalidNode;
@@ -57,9 +58,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Sets;
-
 /**
  * Unit tests for {@link ContentClassificationServiceImpl}.
  *
@@ -78,6 +76,7 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
     @Mock DictionaryService mockDictionaryService;
     @Mock SecurityClearanceService mockSecurityClearanceService;
     @Mock AuthenticationUtil mockAuthenticationUtil;
+    @Mock ClassificationAspectProperties mockPropertiesDTO;
     @Captor ArgumentCaptor<Map<QName, Serializable>> propertiesCaptor;
 
     @Before public void setUp()
@@ -103,10 +102,14 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         when(mockDictionaryService.isSubClass(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockNodeService.hasAspect(content, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(false);
         when(mockSecurityClearanceService.isCurrentUserClearedForClassification("levelId1")).thenReturn(true);
+        // Set up the mock DTO.
+        when(mockPropertiesDTO.getClassificationLevelId()).thenReturn("levelId1");
+        when(mockPropertiesDTO.getClassifiedBy()).thenReturn("classifiedBy");
+        when(mockPropertiesDTO.getClassificationAgency()).thenReturn("classificationAgency");
+        when(mockPropertiesDTO.getClassificationReasonIds()).thenReturn(Sets.newHashSet("reasonId1", "reasonId2"));
 
         // Call the method under test
-        contentClassificationServiceImpl.classifyContent("levelId1", "classifiedBy", "classificationAgency",
-                Sets.newHashSet("reasonId1", "reasonId2"), content);
+        contentClassificationServiceImpl.classifyContent(mockPropertiesDTO, content);
 
         verify(mockNodeService).addAspect(eq(content), eq(ClassifiedContentModel.ASPECT_CLASSIFIED),
                     propertiesCaptor.capture());
@@ -128,28 +131,26 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
 
     /** Classify a folder using the <code>classifyContent</code> method and check that an exception is raised. */
     @Test(expected = InvalidNode.class)
-    public void classifyContent_notContent()
+    public void validateContent_notContent()
     {
         // Create a folder node.
         NodeRef notAPieceOfContent = new NodeRef("not://a/piece/of/content/");
         when(mockNodeService.getType(notAPieceOfContent)).thenReturn(ContentModel.TYPE_FOLDER);
 
         // Call the method under test.
-        contentClassificationServiceImpl.classifyContent("levelId1", "classifiedBy", "classificationAgency",
-                    Sets.newHashSet("reasonId1", "reasonId2"), notAPieceOfContent);
+        contentClassificationServiceImpl.validateContent(notAPieceOfContent);
     }
 
     /** Classify a piece of content that has already been shared */
     @Test(expected = IllegalStateException.class)
-    public void classifySharedContent()
+    public void validateContent_sharedContent()
     {
         NodeRef sharedContent = generateNodeRef(mockNodeService);
         when(mockDictionaryService.isSubClass(mockNodeService.getType(sharedContent), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockNodeService.hasAspect(sharedContent, QuickShareModel.ASPECT_QSHARE)).thenReturn(true);
 
         // Call the method under test.
-        contentClassificationServiceImpl.classifyContent(generateText(), generateText(), generateText(),
-                newHashSet(generateText(), generateText()), sharedContent);
+        contentClassificationServiceImpl.validateContent(sharedContent);
     }
 
     /**
@@ -159,15 +160,16 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
     @Test(expected = LevelIdNotFound.class)
     public void classifyContent_notFound()
     {
-        // Create a classified piece of content.
-        NodeRef classifiedContent = new NodeRef("classified://content/");
-        when(mockDictionaryService.isSubClass(mockNodeService.getType(classifiedContent), ContentModel.TYPE_CONTENT)).thenReturn(true);
-        when(mockNodeService.hasAspect(classifiedContent, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(false);
+        // The user doesn't have level 1 clearance.
         when(mockSecurityClearanceService.isCurrentUserClearedForClassification("levelId1")).thenReturn(false);
+        // Set up the mock DTO.
+        when(mockPropertiesDTO.getClassificationLevelId()).thenReturn("levelId1");
+        when(mockPropertiesDTO.getClassifiedBy()).thenReturn("classifiedBy");
+        when(mockPropertiesDTO.getClassificationAgency()).thenReturn("classificationAgency");
+        when(mockPropertiesDTO.getClassificationReasonIds()).thenReturn(Sets.newHashSet("reasonId1", "reasonId2"));
 
         // Call the method under test.
-        contentClassificationServiceImpl.classifyContent("levelId1", "classifiedBy","classificationAgency",
-                    Sets.newHashSet("reasonId1", "reasonId2"), classifiedContent);
+        contentClassificationServiceImpl.validateProperties(mockPropertiesDTO);
     }
 
     /**

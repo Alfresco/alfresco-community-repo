@@ -28,6 +28,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -78,13 +79,10 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
      * Abstract method which does the action of either
      * classifying a content or editing a classified content
      *
-     * @param classificationLevelId The security clearance needed to access the content.
-     * @param classifiedBy Free-form text identifying who edited the classified content.
-     * @param classificationAgency The name of the agency responsible for editing the classified content.
-     * @param classificationReasonIds A non-empty set of ids of reasons for editing the classified content in this way.
+     * @param classificationAspectProperties The properties to use when classifying the content.
      * @param document The classified content which will be edited.
      */
-    protected abstract void doClassifyAction(String classificationLevelId, String classifiedBy, String classificationAgency, Set<String> classificationReasonIds, NodeRef document);
+    protected abstract void doClassifyAction(ClassificationAspectProperties classificationAspectProperties, NodeRef document);
 
     /**
      * @see org.springframework.extensions.webscripts.DeclarativeWebScript#executeImpl(org.springframework.extensions.webscripts.WebScriptRequest,
@@ -99,9 +97,16 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
         String classifiedBy = getStringValueFromJSONObject(jsonObject, CLASSIFIED_BY);
         String classificationAgency = getStringValueFromJSONObject(jsonObject, CLASSIFICATION_AGENCY, false, false);
         Set<String> classificationReasonIds = getClassificationReasonIds(jsonObject);
+
+        ClassificationAspectProperties propertiesDTO = new ClassificationAspectProperties();
+        propertiesDTO.setClassificationLevelId(classificationLevelId);
+        propertiesDTO.setClassifiedBy(classifiedBy);
+        propertiesDTO.setClassificationAgency(classificationAgency);
+        propertiesDTO.setClassificationReasonIds(classificationReasonIds);
+
         NodeRef document = parseRequestForNodeRef(req);
 
-        doClassifyAction(classificationLevelId, classifiedBy, classificationAgency, classificationReasonIds, document);
+        doClassifyAction(propertiesDTO, document);
 
         Map<String, Object> model = new HashMap<>(1);
         model.put(SUCCESS, true);

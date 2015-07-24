@@ -18,7 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification.interceptor;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static java.lang.Integer.MAX_VALUE;
 import static org.alfresco.repo.site.SiteModel.SITE_MANAGER;
 import static org.alfresco.service.cmr.repository.StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
@@ -83,7 +82,7 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                 doc1 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
                 doc2 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), doc1);
+                contentClassificationService.classifyContent(propertiesDTO1, doc1);
             }
 
             /**
@@ -174,8 +173,8 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                 doc2 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
                 doc3 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), doc1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), doc2);
+                contentClassificationService.classifyContent(propertiesDTO1, doc1);
+                contentClassificationService.classifyContent(propertiesDTO2, doc2);
             }
 
             /**
@@ -266,8 +265,8 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                 doc2 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
                 doc3 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
 
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON), doc1);
-                contentClassificationService.classifyContent(LEVEL2, generate(), generate(), newHashSet(REASON), doc2);
+                contentClassificationService.classifyContent(propertiesDTO1, doc1);
+                contentClassificationService.classifyContent(propertiesDTO2, doc2);
             }
 
             /**

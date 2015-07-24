@@ -18,13 +18,14 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.jscript;
 
-import static com.google.common.collect.Sets.newHashSet;
 import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelManager.UNCLASSIFIED_ID;
 import static org.alfresco.module.org_alfresco_module_rm.jscript.app.JSONConversionComponent.IS_CLASSIFIED;
 import static org.alfresco.util.GUID.generate;
 
 import java.io.Serializable;
+import java.util.Collections;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.jscript.app.JSONConversionComponent;
@@ -45,6 +46,26 @@ public class JSONConversionComponentTest extends BaseRMTestCase
     private ContentClassificationService contentClassificationService;
 
     private NodeRef record;
+    /** Classification properties for classification level 1. */
+    private ClassificationAspectProperties level1PropertiesDTO;
+    /** Classification properties for unclassified content. */
+    private ClassificationAspectProperties unclassifiedPropertiesDTO;
+
+    @Override
+    public void setUp() throws Exception
+    {
+        super.setUp();
+        level1PropertiesDTO = new ClassificationAspectProperties();
+        level1PropertiesDTO.setClassificationLevelId(LEVEL1);
+        level1PropertiesDTO.setClassifiedBy(generate());
+        level1PropertiesDTO.setClassificationAgency(generate());
+        level1PropertiesDTO.setClassificationReasonIds(Collections.singleton(REASON1));
+        unclassifiedPropertiesDTO = new ClassificationAspectProperties();
+        unclassifiedPropertiesDTO.setClassificationLevelId(UNCLASSIFIED_ID);
+        unclassifiedPropertiesDTO.setClassifiedBy(generate());
+        unclassifiedPropertiesDTO.setClassificationAgency(generate());
+        unclassifiedPropertiesDTO.setClassificationReasonIds(Collections.singleton(REASON1));
+    }
 
     @Override
     protected void initServices()
@@ -92,7 +113,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON1), record);
+                contentClassificationService.classifyContent(level1PropertiesDTO, record);
                 jsonString = converter.toJSON(record, true);
             }
 
@@ -131,7 +152,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(UNCLASSIFIED_ID, generate(), generate(), newHashSet(REASON1), record);
+                contentClassificationService.classifyContent(unclassifiedPropertiesDTO, record);
                 jsonString = converter.toJSON(record, true);
             }
 
@@ -206,7 +227,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(LEVEL1, generate(), generate(), newHashSet(REASON1), file);
+                contentClassificationService.classifyContent(level1PropertiesDTO, file);
                 jsonString = converter.toJSON(file, true);
             }
 
@@ -243,7 +264,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(UNCLASSIFIED_ID, generate(), generate(), newHashSet(REASON1), file);
+                contentClassificationService.classifyContent(unclassifiedPropertiesDTO, file);
                 jsonString = converter.toJSON(file, true);
             }
 

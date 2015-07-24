@@ -47,7 +47,7 @@
             <includes>
                 <include>*.amp</include>
             </includes>
-            <outputDirectory>amps_share</outputDirectory>
+            <outputDirectory>amps</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}/web-extension-samples</directory>

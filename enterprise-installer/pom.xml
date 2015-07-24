@@ -31,7 +31,7 @@
         </bitrock.arguments>
 
         <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->
-        <alfresco.package.name>alfresco-enterprise-distribution</alfresco.package.name>
+        <alfresco.package.name>alfresco-enterprise</alfresco.package.name>
         <alfresco.distribution.name>${alfresco.package.name}-distributionzip</alfresco.distribution.name>
     </properties>
 

@@ -91,7 +91,7 @@
       <filter-class>org.alfresco.web.app.servlet.AlfrescoX509ServletFilter</filter-class>
       <init-param>
          <param-name>cert-contains</param-name>
-         <param-value>CN=Alfresco Repository</param-value>
+         <param-value>CN=Alfresco Repository Client,OU=Unknown,O=Alfresco Software Ltd.,L=Maidenhead,ST=UK,C=GB</param-value>
       </init-param>
    </filter>
    

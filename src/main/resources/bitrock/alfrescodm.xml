@@ -159,6 +159,18 @@
                 <distributionDirectory origin="${alfresco_extensions_source_directory}/*" allowWildcards="1"/>
             </distributionFileList>
         </folder>
+        <folder>
+            <description>//Share Services AMP</description>
+            <destination>${alfresco_amps_share_directory}</destination>
+            <name>shareservices</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+              <distributionFile origin="{distribution_folder.unix}/amps_share/alfresco-share-services.amp" />
+            </distributionFileList>
+            <actionList>
+                <setInstallerVariable name="alfresco_apply_amps_share" value="1" />
+            </actionList>
+        </folder>
 	<folder>
             <description>//Endorsed Files</description>
             <destination>${tomcat_server_directory}/endorsed</destination>

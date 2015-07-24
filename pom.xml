@@ -29,8 +29,8 @@
         <installer.libreoffice.version>4.2.5-alfresco</installer.libreoffice.version>
         <installer.installbuilder.version>15.1.0</installer.installbuilder.version>
 
-        <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->
         <alfresco.package.name>alfresco-community</alfresco.package.name>
+        <alfresco.distribution.name>${alfresco.package.name}-distributionzip</alfresco.distribution.name>
     </properties>
 
     <modules>

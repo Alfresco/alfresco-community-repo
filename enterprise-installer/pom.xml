@@ -32,6 +32,7 @@
 
         <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->
         <alfresco.package.name>alfresco-enterprise-distribution</alfresco.package.name>
+        <alfresco.distribution.name>${alfresco.package.name}-distributionzip</alfresco.distribution.name>
     </properties>
 
     <dependencies>
@@ -76,7 +77,7 @@
                                     <artifactId>alfresco-solr1-distribution</artifactId>
                                     <version>${alfresco.platform.version}</version>
                                     <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/alf_data/solr</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.distribution.name}-${project.version}/alf_data/solr</outputDirectory>
                                 </artifactItem>
                                 <!-- WCMQS Distribution -->
                                 <artifactItem>

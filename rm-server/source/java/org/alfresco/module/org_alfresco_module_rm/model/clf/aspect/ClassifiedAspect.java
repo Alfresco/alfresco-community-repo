@@ -18,18 +18,19 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.clf.aspect;
 
-import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.Reclassification;
-import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.ASPECT_CLASSIFIED;
-import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION;
-import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_LAST_RECLASSIFICATION_ACTION;
-import static org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel.PROP_LAST_RECLASSIFY_AT;
-import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.Difference;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.diffKey;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.Map;
+
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingDowngradeInstructions;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.Reclassification;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
+import org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.Difference;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
@@ -40,10 +41,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Map;
-
 /**
  * clf:classification behaviour bean
  *
@@ -53,8 +50,8 @@ import java.util.Map;
 (
    defaultType = "clf:classified"
 )
-public class ClassifiedAspect extends BaseBehaviourBean
-                              implements NodeServicePolicies.OnUpdatePropertiesPolicy
+public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePolicies.OnUpdatePropertiesPolicy,
+            NodeServicePolicies.OnAddAspectPolicy, ClassifiedContentModel
 {
     private ClassificationSchemeService classificationSchemeService;
 
@@ -64,9 +61,13 @@ public class ClassifiedAspect extends BaseBehaviourBean
     }
 
     /**
+     * Behaviour associated with updating the classified aspect properties.
+     * <p>
      * Ensures that on reclassification of content (in other words a change in the value of the
      * {@link ClassifiedContentModel#PROP_CURRENT_CLASSIFICATION clf:currentClassification} property)
      * that various metadata are correctly updated as a side-effect.
+     * <p>
+     * Validates the consistency of the properties.
      */
     @Override
     @Behaviour
@@ -100,8 +101,48 @@ public class ClassifiedAspect extends BaseBehaviourBean
                         nodeService.setProperty(nodeRef, PROP_LAST_RECLASSIFY_AT, new Date());
                     }
                 }
+
+                checkConsistencyOfProperties(nodeRef);
+
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+
+    /**
+     * Behaviour associated with updating the classified aspect properties.
+     * <p>
+     * Validates the consistency of the properties.
+     */
+    @Override
+    public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            public Void doWork()
+            {
+                checkConsistencyOfProperties(nodeRef);
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+
+    /**
+     * Check the consistency of the classification properties and throw an exception if they are invalid.
+     *
+     * @param nodeRef The classified node.
+     */
+    protected void checkConsistencyOfProperties(NodeRef nodeRef) throws MissingDowngradeInstructions
+    {
+        if (nodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED))
+        {
+            Serializable downgradeDate = nodeService.getProperty(nodeRef, PROP_DOWNGRADE_DATE);
+            Serializable downgradeEvent = nodeService.getProperty(nodeRef, PROP_DOWNGRADE_EVENT);
+            Serializable downgradeInstructions = nodeService.getProperty(nodeRef, PROP_DOWNGRADE_INSTRUCTIONS);
+            if (downgradeInstructions == null && (downgradeDate != null || downgradeEvent != null))
+            {
+                throw new MissingDowngradeInstructions(nodeRef);
+            }
+        }
     }
 }

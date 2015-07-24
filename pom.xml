@@ -211,7 +211,7 @@
                                     <artifactId>alfresco-solr4-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/solr4</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.distribution.name}-${project.version}/solr4</outputDirectory>
                                     <excludes>solr4.war</excludes>
                                 </artifactItem>
                                 <artifactItem>
@@ -219,7 +219,7 @@
                                     <artifactId>alfresco-solr4-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.package.name}-${project.version}/web-server/webapps</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.distribution.name}-${project.version}/web-server/webapps</outputDirectory>
                                     <includes>solr4.war</includes>
                                 </artifactItem>
                             </artifactItems>

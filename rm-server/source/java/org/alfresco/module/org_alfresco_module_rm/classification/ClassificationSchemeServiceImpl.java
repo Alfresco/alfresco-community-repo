@@ -142,7 +142,7 @@ public class ClassificationSchemeServiceImpl extends ServiceBaseImpl implements 
 
         if (from.equals(to))
         { return null; }
-        else if (fromIndex < lastIndex && toIndex == lastIndex)
+        else if (toIndex == lastIndex)
         {
             return Reclassification.DECLASSIFY;
         }

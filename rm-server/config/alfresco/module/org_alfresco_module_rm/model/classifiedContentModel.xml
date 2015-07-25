@@ -138,7 +138,7 @@
             </property>
             <property name="clf:lastReclassifyBy">
                <title>Last user to reclassify this node</title>
-               <description>Identifier for the user who most recently reclassified this node</description>
+               <description>Free form text identifier for the user or entity who most recently reclassified this node</description>
                <type>d:text</type>
                <mandatory>false</mandatory>
             </property>

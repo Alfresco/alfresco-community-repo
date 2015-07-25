@@ -83,8 +83,8 @@ public class KerberosAuthenticationFilter extends BaseKerberosAuthenticationFilt
 
         final PrintWriter out = resp.getWriter();
         out.println("<html><head>");
-        out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + req.getContextPath() + "/faces/jsp/login.jsp?_alfRedirect=%2Falfresco%2Fwebdav\">");
-        out.println("</head><body><p>Please <a href=\"" + req.getContextPath() + "/faces/jsp/login.jsp?_alfRedirect=%2Falfresco%2Fwebdav\">log in</a>.</p>");
+        out.println("<meta http-equiv=\"Refresh\" content=\"0; url=" + req.getContextPath() + "/webdav\">");
+        out.println("</head><body><p>Please <a href=\"" + req.getContextPath() + "/webdav\">log in</a>.</p>");
         out.println("</body></html>");
         out.close();
     }

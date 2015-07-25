@@ -89,6 +89,10 @@ public interface ClassificationSchemeService
      */
     Reclassification getReclassification(ClassificationLevel from, ClassificationLevel to);
 
+    /**
+     * Gets the allowed values for reclassification actions.
+     * @see Reclassification
+     */
     Set<String> getReclassificationValues();
 
     /** Types of reclassification. */

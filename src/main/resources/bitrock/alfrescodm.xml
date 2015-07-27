@@ -165,7 +165,7 @@
             <name>shareservices</name>
             <platforms>all</platforms>
             <distributionFileList>
-              <distributionFile origin="${distribution_folder.unix}/amps/alfresco-share-services.amp" />
+              <distributionFile origin="${distribution_folder.unix}/amps/alfresco-share-services.amp*" allowWildcards="1"/>
             </distributionFileList>
             <actionList>
                 <setInstallerVariable name="alfresco_apply_amps" value="1" />

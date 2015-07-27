@@ -115,6 +115,11 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
      * Validates the consistency of the properties.
      */
     @Override
+    @Behaviour
+    (
+       kind = BehaviourKind.CLASS,
+       notificationFrequency = NotificationFrequency.EVERY_EVENT
+    )
     public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()

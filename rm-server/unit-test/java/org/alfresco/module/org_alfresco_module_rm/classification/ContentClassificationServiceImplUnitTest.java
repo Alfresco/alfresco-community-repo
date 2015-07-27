@@ -115,11 +115,18 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
                     propertiesCaptor.capture());
         // Check the properties that were received.
         Map<QName, Serializable> properties = propertiesCaptor.getValue();
-        HashSet<QName> expectedPropertyKeys = Sets.newHashSet(ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION,
-                    ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION,
-                    ClassifiedContentModel.PROP_CLASSIFICATION_AGENCY,
-                    ClassifiedContentModel.PROP_CLASSIFIED_BY,
-                    ClassifiedContentModel.PROP_CLASSIFICATION_REASONS);
+        HashSet<QName> expectedPropertyKeys = Sets.newHashSet(
+                    PROP_INITIAL_CLASSIFICATION,
+                    PROP_CURRENT_CLASSIFICATION,
+                    PROP_CLASSIFICATION_AGENCY,
+                    PROP_CLASSIFIED_BY,
+                    PROP_CLASSIFICATION_REASONS,
+                    PROP_DOWNGRADE_DATE,
+                    PROP_DOWNGRADE_EVENT,
+                    PROP_DOWNGRADE_INSTRUCTIONS,
+                    PROP_DECLASSIFICATION_DATE,
+                    PROP_DECLASSIFICATION_EVENT,
+                    PROP_DECLASSIFICATION_EXEMPTIONS);
         assertEquals("Aspect created with unexpected set of keys.", expectedPropertyKeys, properties.keySet());
         assertEquals("Unexpected initial classification.", level.getId(), properties.get(ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION));
         assertEquals("Unexpected current classification.", level.getId(), properties.get(ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));

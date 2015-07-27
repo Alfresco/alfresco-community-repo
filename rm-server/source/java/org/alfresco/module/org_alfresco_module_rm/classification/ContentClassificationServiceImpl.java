@@ -177,6 +177,15 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
         HashSet<String> classificationReasons = new HashSet<>(propertiesDTO.getClassificationReasonIds());
         propertiesMap.put(PROP_CLASSIFICATION_REASONS, classificationReasons);
 
+        propertiesMap.put(PROP_DOWNGRADE_DATE, propertiesDTO.getDowngradeDate());
+        propertiesMap.put(PROP_DOWNGRADE_EVENT, propertiesDTO.getDowngradeEvent());
+        propertiesMap.put(PROP_DOWNGRADE_INSTRUCTIONS, propertiesDTO.getDowngradeInstructions());
+        propertiesMap.put(PROP_DECLASSIFICATION_DATE, propertiesDTO.getDeclassificationDate());
+        propertiesMap.put(PROP_DECLASSIFICATION_EVENT, propertiesDTO.getDeclassificationEvent());
+
+        HashSet<String> declassificationExemptions = new HashSet<>(propertiesDTO.getExemptionCategoryIds());
+        propertiesMap.put(PROP_DECLASSIFICATION_EXEMPTIONS, declassificationExemptions);
+
         return propertiesMap;
     }
 

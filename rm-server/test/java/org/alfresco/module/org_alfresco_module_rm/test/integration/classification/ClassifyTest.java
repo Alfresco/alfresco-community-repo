@@ -19,9 +19,11 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification;
 
 import java.util.Collections;
+import java.util.Date;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingDowngradeInstructions;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -207,6 +209,44 @@ public class ClassifyTest extends BaseRMTestCase
                         return null;
                     }
                 }, myUser);
+            }
+        });
+    }
+
+    /**
+     * Downgrade instructions are mandatory when downgrade date is set.
+     * <p>
+     * <a href="https://issues.alfresco.com/jira/browse/RM-2409">RM-2409</a><pre>
+     * Given I am a cleared user
+     * And I am classifying the content for the first time
+     * And I enter a downgrade date and/or event
+     * When I attempt to save the classification information
+     * Then I will be informed that downgrade instructions are mandatory when the downgrade date and/or event are set
+     * And the save will not be successful
+     * </pre>
+     */
+    public void testMissingDowngradeInstructions() throws Exception
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(MissingDowngradeInstructions.class)
+        {
+            private NodeRef record;
+
+            public void given() throws Exception
+            {
+                record = utils.createRecord(rmFolder, RECORD_NAME);
+            }
+
+            public void when() throws Exception
+            {
+                propertiesDTO.setDowngradeDate(new Date());
+                assertNull("Downgrade instructions should be null.", propertiesDTO.getDowngradeInstructions());
+                contentClassificationService.classifyContent(propertiesDTO, record);
+            }
+
+            public void after()
+            {
+                assertFalse("Record should not have been classified.",
+                            nodeService.hasAspect(record, ClassifiedContentModel.ASPECT_CLASSIFIED));
             }
         });
     }

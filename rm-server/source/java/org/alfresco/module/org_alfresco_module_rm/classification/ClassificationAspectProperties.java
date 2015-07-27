@@ -19,7 +19,10 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * A data transfer object for properties from the classification aspect.
@@ -36,7 +39,7 @@ public class ClassificationAspectProperties
     /** The name of the agency responsible for the classification of this content. */
     private String classificationAgency;
     /** A non-empty set of ids of reasons for classifying the content in this way. */
-    private Set<String> classificationReasonIds;
+    private Set<String> classificationReasonIds = new HashSet<>();
     /** If provided, this is the date of the next downgrade evaluation. */
     private Date downgradeDate;
     /** If provided, this is the event at which the next downgrade evaluation will take place. */
@@ -47,8 +50,8 @@ public class ClassificationAspectProperties
     private Date declassificationDate;
     /** If provided, this is the event at which the next declassification evaluation will take place. */
     private String declassificationEvent;
-    /** This is an optional list of exemption category ids. */
-    private Set<String> exemptionCategoryIds;
+    /** An optional list of exemption category ids. */
+    private Set<String> exemptionCategoryIds = new HashSet<>();
 
     /** @return The security clearance needed to access the content. */
     public String getClassificationLevelId()
@@ -85,10 +88,14 @@ public class ClassificationAspectProperties
     {
         return classificationReasonIds;
     }
-    /** @param classificationReasonIds A non-empty set of ids of reasons for classifying the content in this way. */
+    /**
+     * Store an immutable copy of the given set of classification reason ids.
+     *
+     * @param classificationReasonIds A non-empty set of ids of reasons for classifying the content in this way.
+     */
     public void setClassificationReasonIds(Set<String> classificationReasonIds)
     {
-        this.classificationReasonIds = classificationReasonIds;
+        this.classificationReasonIds = ImmutableSet.copyOf(classificationReasonIds);
     }
     /** @return If provided, this is the date of the next downgrade evaluation. */
     public Date getDowngradeDate()
@@ -145,9 +152,13 @@ public class ClassificationAspectProperties
     {
         return exemptionCategoryIds;
     }
-    /** @param exemptionCategoryIds This is an optional list of exemption category ids. */
+    /**
+     * Store an immutable copy of the given set of exemption category ids.
+     *
+     * @param exemptionCategoryIds This is an optional list of exemption category ids.
+     */
     public void setExemptionCategoryIds(Set<String> exemptionCategoryIds)
     {
-        this.exemptionCategoryIds = exemptionCategoryIds;
+        this.exemptionCategoryIds = ImmutableSet.copyOf(exemptionCategoryIds);
     }
 }

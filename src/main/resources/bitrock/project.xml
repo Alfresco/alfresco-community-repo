@@ -288,7 +288,7 @@
 	</actionGroup>
 
 	<actionGroup>
-	    <progressText>Launch ${product_fullname} Share</progressText>
+	    <progressText>Launch ${product_fullname}</progressText>
 	    <actionList>
 		<actionGroup>
 		    <actionList>
@@ -365,6 +365,7 @@
 		    <url>http://${application_server_domain}:${application_server_port}/share</url>
 		    <ruleList>
 			<compareText text="${installer_ui}" logic="equals" value="gui"/>
+			<fileExists path="${application_server_directory}/webapps/share.war" />
 		    </ruleList>
 		</launchBrowser>
 	    </actionList>

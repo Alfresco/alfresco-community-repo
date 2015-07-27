@@ -254,63 +254,10 @@
                         <goals>
                             <goal>exploded</goal>
                         </goals>
-                        <!-- Must be done before the replacer filter-copies web.xml into place -->
                         <phase>prepare-package</phase>
-                    </execution>
-                    <!-- Another execution of the war plugin with non-SSL web.xml -->
-                    <execution>
-                        <id>nossl-war</id>
-                        <goals>
-                            <goal>war</goal>
-                        </goals>
-                        <configuration>
-                            <webappDirectory>${project.build.directory}/${project.build.finalName}</webappDirectory>
-                            <classifier>nossl</classifier>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>default-war</id>
-                        <goals>
-                            <goal>war</goal>
-                        </goals>
-                        <phase>package</phase>
-                        <configuration>
-                            <!-- Use the original, unfiltered web.xml -->
-                            <webappDirectory>${project.build.directory}/alfresco-ssl</webappDirectory>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
-
-            <!-- NonSSL war: Replaces web.xml where applicable, commenting out the security-constraints -->
-            <plugin>
-                <groupId>com.google.code.maven-replacer-plugin</groupId>
-                <artifactId>replacer</artifactId>
-                <executions>
-                    <execution>
-                        <id>disable-securecomms</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>replace</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <file>${basedir}/source/web/WEB-INF/web.xml</file>
-                    <outputFile>${project.build.directory}/${project.build.finalName}/WEB-INF/web.xml</outputFile>
-                    <replacements>
-                        <replacement>
-                            <token><![CDATA[<!-- Toggle securecomms placeholder start -->]]></token>
-                            <value><![CDATA[<!-- ]]></value>
-                        </replacement>
-                        <replacement>
-                            <token><![CDATA[<!-- Toggle securecomms placeholder end -->]]></token>
-                            <value><![CDATA[--> ]]></value>
-                        </replacement>
-                    </replacements>
-                </configuration>
-            </plugin>
-
 
             <!--
                 Configure the Tomcat plugin. Keeping the configuration separate from the 'run' profile,

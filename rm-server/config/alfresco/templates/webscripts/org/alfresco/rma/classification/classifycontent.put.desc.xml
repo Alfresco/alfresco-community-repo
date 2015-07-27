@@ -3,7 +3,7 @@
   <description><![CDATA[
   Edits the classified content.<br/>
   <br/>
-  The body of the pust should be in the form, e.g.<br/>
+  The body of the put should be in the form, e.g.<br/>
   {<br/>
     "classificationLevelId": "aLevelId",<br/>
     "classifiedBy": "some person or entity",<br/>

@@ -105,7 +105,6 @@
                <description>Instructions to be followed when considering whether to downgrade the classification</description>
                <type>d:text</type>
                <mandatory>false</mandatory>
-               <!-- TODO Constraint on this and two previous fields -->
             </property>
             <property name="clf:declassificationDate">
                <title>Declassification Date</title>

@@ -309,7 +309,7 @@ public class ModuleManagementTool implements LogOutput
             if (forceInstall == true)
             {
                 // Warn of forced install
-                outputVerboseMessage("WARNING: The installation of this module is being forced.  All files will be removed and replaced regardless of exiting versions present.",false);
+                outputVerboseMessage("WARNING: The installation of this module is being forced.  All files will be removed and replaced regardless of existing versions present.",false);
             }
             
             if (compareValue == 0)

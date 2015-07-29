@@ -49,7 +49,6 @@ public class FileServerConfig implements FileServerConfigMBean {
 	
 	private FTPServerBean  m_ftpServer;
 	private CIFSServerBean m_smbServer;
-	private NFSServerBean  m_nfsServer;
 
 	/**
 	 * Default constructor
@@ -149,43 +148,6 @@ public class FileServerConfig implements FileServerConfigMBean {
 		if (enabled && !isFTPServerEnabled())
 		{
 			m_ftpServer.startServer();
-		}
-	}
-	
-	/**
-	 * Set the NFS server
-	 * 
-	 * @param nfsServer  NFS server
-	 */
-	public void setNfsServer(NFSServerBean nfsServer)
-	{
-		m_nfsServer = nfsServer;
-	}
-	
-	/**
-	 * Check if the NFS server is enabled
-	 * 
-	 * @return boolean
-	 */
-	public boolean isNFSServerEnabled()
-	{
-		return (m_nfsServer.isStarted() && m_serverConfig.hasConfigSection(NFSConfigSection.SectionName));
-	}
-	
-	/*
-	 * (non-Javadoc)
-	 * @see org.alfresco.filesys.server.config.FileServerConfigMBean#setNFSServerEnabled(boolean)
-	 */
-	public void setNFSServerEnabled(boolean enabled) throws Exception
-	{
-		if (!enabled && isNFSServerEnabled())
-		{
-			m_nfsServer.stopServer();
-		}
-		
-		if (enabled && !isNFSServerEnabled())
-		{
-			m_nfsServer.startServer();
 		}
 	}
 	

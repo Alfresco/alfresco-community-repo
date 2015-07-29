@@ -53,21 +53,7 @@ public interface FileServerConfigMBean {
 	 * @param enabled  true to enable, false to disable
 	 */	
 	public void setFTPServerEnabled(boolean enabled) throws Exception;
-	
-	/**
-	 * Check if the NFS server is enabled
-	 * 
-	 * @return boolean
-	 */
-	public boolean isNFSServerEnabled();
-	
-	/**
-	 * Enable/disable NFS server
-	 * 
-	 * @param enabled  true to enable, false to disable
-	 */	
-	public void setNFSServerEnabled(boolean enabled) throws Exception;
-	
+		
 	/**
 	 * Return the CIFS server name
 	 * 

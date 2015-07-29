@@ -404,9 +404,6 @@
         </property>
         <property name="compositePropertyTypes">
             <map>
-                <entry key="nfs.user.mappings">
-                    <value>org.alfresco.filesys.auth.nfs.UserMapping</value>
-                </entry>
                 <entry key="filesystem.acl.global.domainAccessControls">
                     <value>org.alfresco.filesys.config.acl.DomainAccessControlBean</value>
                 </entry>

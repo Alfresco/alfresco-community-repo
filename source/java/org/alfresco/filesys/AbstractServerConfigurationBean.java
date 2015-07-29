@@ -492,25 +492,7 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
           // Configuration error
         
           logger.error("FTP server configuration error, " + ex.getMessage(), ex);
-      }           
-
-      // Initialize the NFS server
-
-      try
-      {
-          // Process the NFS server configuration
-          processNFSServerConfig();
-          
-          // Log the successful startup
-          
-          logger.info("NFS server " + (isNFSServerEnabled() ? "" : "NOT ") + "started");
-      }
-      catch (Exception ex)
-      {
-          // Configuration error
-        
-          logger.error("NFS server configuration error, " + ex.getMessage(), ex);
-      }           
+      }                 
   }
 
   protected abstract void processCoreServerConfig() throws InvalidConfigurationException;
@@ -520,8 +502,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
   protected abstract void processFilesystemsConfig();
 
   protected abstract void processCIFSServerConfig();
-
-  protected abstract void processNFSServerConfig();
 
   protected abstract void processFTPServerConfig();
   

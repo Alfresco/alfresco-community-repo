@@ -1,6 +1,4 @@
-
 <!-- NOT FINISHED -->
-
 <!-- JAVA 1.0a
 Componentname: Java 
 
@@ -31,8 +29,8 @@ Copyrighted by BitRock
                         </validVersion>
                     </validVersionList>
                     <ruleList>
-                        <isFalse value="${java_required_or_abort}" />
-			<platformTest type="osx" negate="1" />
+                        <isFalse value="${java_required_or_abort}"/>
+                        <platformTest negate="1" type="osx"/>
                     </ruleList>
                 </autodetectJava>
                 <autodetectJava>
@@ -48,13 +46,12 @@ Copyrighted by BitRock
                         </validVersion>
                     </validVersionList>
                     <ruleList>
-                        <isTrue value="${java_required_or_abort}" />
-			<platformTest type="osx" negate="1" />
+                        <isTrue value="${java_required_or_abort}"/>
+                        <platformTest negate="1" type="osx"/>
                     </ruleList>
                 </autodetectJava>
-
-<!-- Compatible java version -->
-<autodetectJava>
+                <!-- Compatible java version -->
+                <autodetectJava>
                     <customErrorMessage>This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again.</customErrorMessage>
                     <validVersionList>
                         <validVersion>
@@ -97,7 +94,7 @@ Copyrighted by BitRock
                     <name>java_home_directory</name>
                     <value>/usr/local/java</value>
                     <ruleList>
-                        <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
+                        <regExMatch logic="matches" pattern="unknown" text="${java_executable}"/>
                         <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
                     </ruleList>
                 </setInstallerVariable>
@@ -105,7 +102,7 @@ Copyrighted by BitRock
                     <name>java_home_directory</name>
                     <value>${platform_install_prefix}\java</value>
                     <ruleList>
-                        <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
+                        <regExMatch logic="matches" pattern="unknown" text="${java_executable}"/>
                         <compareText logic="equals" text="${platform_name}" value="windows"/>
                     </ruleList>
                 </setInstallerVariable>
@@ -115,65 +112,20 @@ Copyrighted by BitRock
                     </actionList>
                     <ruleEvaluationLogic>or</ruleEvaluationLogic>
                     <ruleList>
-                        <regExMatch logic="matches" text="${java_executable}" pattern="unknown"/>
+                        <regExMatch logic="matches" pattern="unknown" text="${java_executable}"/>
                         <compareText logic="equals" text="${java_executable}" value=""/>
                     </ruleList>
                 </actionGroup>
             </actionList>
             <ruleList>
-                <compareText text="${component(java).parameter(java_installation_type).value}" logic="equals" value="existing"/>
+                <compareText logic="equals" text="${component(java).parameter(java_installation_type).value}" value="existing"/>
             </ruleList>
         </actionGroup>
-
-<!--<addChoiceOptions>
-			<name>java_installation_type</name>
-			<optionList>
-				<option>
-					<text>I wish to use the bundled Java distribution</text>
-					<value>bundled</value>
-				</option>
-			</optionList>
-			<ruleList>
-				<compareText text="${component(java).parameter(java_installation_type_options).value}" logic="equals" value="bundled" />
-			</ruleList>
-		</addChoiceOptions>
-		<addChoiceOptions>
-			<name>java_installation_type</name>
-			<optionList>
-				<option>
-					<text>I wish to use an existing Java distribution</text>
-					<value>existing</value>
-				</option>
-			</optionList>
-			<ruleList>
-				<compareText text="${component(java).parameter(java_installation_type_options).value}" logic="equals" value="existing" />
-			</ruleList>
-		</addChoiceOptions>
-        	<addChoiceOptions>
-                	<name>java_installation_type</name>
-                	<optionList>
-                        	<option>
-                                	<text>I wish to use the bundled Java distribution</text>
-                                	<value>bundled</value>
-                        	</option>
-                        	<option>
-                                	<text>I wish to use an existing Java installation</text>
-                               	 	<value>existing</value>
-                        	</option>
-                	</optionList>
-                	<ruleList>
-                        	<compareText text="${component(java).parameter(java_installation_type_options).value}" logic="equals" value="bundledAndExisting" />
-                	</ruleList>
-		</addChoiceOptions>
-	</initializationActionList>
-
-        <initializationActionList>-->
-
     </initializationActionList>
     <parameterList>
-<!-- hidden parameter -->
-<directoryParameter name="java_distribution_folder" value="${build_project_directory}/java" ask="0" />
-<stringParameter>
+        <!-- hidden parameter -->
+        <directoryParameter ask="0" name="java_distribution_folder" value="${build_project_directory}/java"/>
+        <stringParameter>
             <name>java_installation_type_options</name>
             <ask>0</ask>
             <default>bundledAndExisting</default>
@@ -194,8 +146,8 @@ Copyrighted by BitRock
             <value/>
             <ask>0</ask>
         </stringParameter>
-        <booleanParameter name="java_required_or_abort" value="0" ask="0" />
-        <booleanParameter name="java_required_jdk" value="1" ask="0" />
+        <booleanParameter ask="0" name="java_required_or_abort" value="0"/>
+        <booleanParameter ask="0" name="java_required_jdk" value="1"/>
         <directoryParameter>
             <name>java_home_directory</name>
             <value/>
@@ -208,21 +160,19 @@ Copyrighted by BitRock
                     <text>The directory you selected does not seem to be a valid JDK directory. Please try again.</text>
                     <ruleEvaluationLogic>or</ruleEvaluationLogic>
                     <ruleList>
-                        <fileTest path="${java_home_directory}/jre" condition="not_exists"/>
-                        <fileTest path="${java_home_directory}/bin" condition="not_exists"/>
+                        <fileTest condition="not_exists" path="${java_home_directory}/jre"/>
+                        <fileTest condition="not_exists" path="${java_home_directory}/bin"/>
                     </ruleList>
                 </throwError>
             </validationActionList>
             <ruleList>
-                <compareText logic="equals" text="${java_installation_type}" value="existing"/> 
+                <compareText logic="equals" text="${java_installation_type}" value="existing"/>
                 <isFalse value="${java_autodetected}"/>
             </ruleList>
         </directoryParameter>
     </parameterList>
-
     <readyToInstallActionList>
         <setInstallerVariable name="java_execute_abort_action_list" value="1"/>
-
         <actionGroup>
             <actionList>
                 <setInstallerVariable name="java_home_directory" value="${installdir}\java">
@@ -240,25 +190,22 @@ Copyrighted by BitRock
                 <compareText logic="equals" text="${java_installation_type}" value="bundled"/>
             </ruleList>
         </actionGroup>
-
         <setInstallerVariable name="JAVA_PATH" value="${java_home_directory}/bin"/>
         <setInstallerVariable name="PATH" value="${JAVA_PATH}:${PATH}">
             <ruleList>
-                <compareText text="${PATH}" value="${JAVA_PATH}" nocase="1" logic="does_not_contain"/>
+                <compareText logic="does_not_contain" nocase="1" text="${PATH}" value="${JAVA_PATH}"/>
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariable name="JAVA_PATH_WIN" value="${java_home_directory.dos}\bin"/>
         <setInstallerVariable name="PATH_WIN" value="${JAVA_PATH_WIN};${PATH_WIN}">
             <ruleList>
-                <compareText text="${PATH_WIN}" value="${JAVA_PATH_WIN}" nocase="1" logic="does_not_contain"/>
+                <compareText logic="does_not_contain" nocase="1" text="${PATH_WIN}" value="${JAVA_PATH_WIN}"/>
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariable name="JAVA_ENV_VAR">
             <value>##### JAVA ENV #####
 JAVA_HOME=${java_home_directory}
-export JAVA_HOME
-
-</value>
+export JAVA_HOME</value>
             <ruleList>
                 <platformTest type="unix"/>
             </ruleList>
@@ -270,21 +217,15 @@ export JAVA_BINDIR
 JAVA_ROOT=${java_home_directory}
 export JAVA_ROOT
 JRE_HOME=${java_home_directory}/jre
-export JRE_HOME
-
-</value>
+export JRE_HOME</value>
             <ruleList>
                 <platformTest type="unix"/>
-                <compareText text="${linux_distribution}" logic="equals" value="suse"/>
+                <compareText logic="equals" text="${linux_distribution}" value="suse"/>
             </ruleList>
         </setInstallerVariable>
-
-
         <setInstallerVariable name="JAVA_ENV_VAR">
             <value>rem ##### JAVA ENV #####
-set JAVA_HOME=${java_home_directory}
-			
-</value>
+set JAVA_HOME=${java_home_directory}</value>
             <ruleList>
                 <platformTest type="windows"/>
             </ruleList>
@@ -293,7 +234,6 @@ set JAVA_HOME=${java_home_directory}
             <value>${JAVA_ENV_VAR}${ENV_VAR}</value>
         </setInstallerVariable>
     </readyToInstallActionList>
-
     <folderList>
         <folder>
             <description>//Program Files</description>
@@ -311,14 +251,11 @@ set JAVA_HOME=${java_home_directory}
         </folder>
     </folderList>
     <installationAbortedActionList>
-        <deleteFile path="${installdir}/java" abortOnError="0" showMessageOnError="0">
+        <deleteFile abortOnError="0" path="${installdir}/java" showMessageOnError="0">
             <ruleList>
-                <compareText text="${java_execute_abort_action_list}" value="1" logic="equals"/>
+                <compareText logic="equals" text="${java_execute_abort_action_list}" value="1"/>
             </ruleList>
         </deleteFile>
     </installationAbortedActionList>
-
-    <postInstallationActionList>
-    </postInstallationActionList>
+    <postInstallationActionList/>
 </component>
-

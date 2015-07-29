@@ -1,44 +1,120 @@
-<project default="extract-all" xmlns:unless="ant:unless">
+<project default="extract-all" xmlns:unless="ant:unless"  xmlns:if="ant:if" >
 
     <target name="extract-all" depends="extract-binaries, extract-installbuilder"/>
 
     <target name="extract-binaries">
-        <extract-for platform="linux" unless:set="skipLinInstaller" />
-        <extract-for platform="osx" unless:set="skipOSXInstaller" />
-        <extract-for platform="win32" unless:set="skipWinInstaller" />
-        <extract-for platform="win64" unless:set="skipWinInstaller" />
+        <antcall target="all-binaries" unless:set="shareInstaller" />
+        <antcall target="share-binaries" if:set="shareInstaller" />
     </target>
 
-    <macrodef name="extract-for">
-        <attribute name="platform" />
+    <target name="all-binaries" depends="extract-base, extract-platform"/>
+    <target name="share-binaries" depends="extract-base"/>
+
+    <target name="extract-base">
+        <extract-base-for targetPlatform="linux" unless:set="skipLinInstaller" />
+        <extract-base-for targetPlatform="osx" unless:set="skipOSXInstaller" />
+        <extract-base-for targetPlatform="win32" unless:set="skipWinInstaller" />
+        <extract-base-for targetPlatform="win64" unless:set="skipWinInstaller" />
+    </target>
+
+    <target name="extract-platform">
+        <extract-platform-for targetPlatform="linux" unless:set="skipLinInstaller" />
+        <extract-platform-for targetPlatform="osx" unless:set="skipOSXInstaller" />
+        <extract-platform-for targetPlatform="win32" unless:set="skipWinInstaller" />
+        <extract-platform-for targetPlatform="win64" unless:set="skipWinInstaller" />
+    </target>
+
+    <macrodef name="extract-base-for">
+        <attribute name="targetPlatform" />
 
         <sequential>
-            <echo>Extracting binaries for @{platform}</echo>
+            <echo>Extracting binaries for @{targetPlatform}</echo>
             <!-- Set binaries folder depending on the platform -->
             <local name="bin.folder"/>
             <condition property="bin.folder" value="${project.build.directory}/binaries-linux-x64">
-                <equals arg1="@{platform}" arg2="linux" />
+                <equals arg1="@{targetPlatform}" arg2="linux" />
             </condition>
             <condition property="bin.folder" value="${project.build.directory}/binaries-osx-x64">
-                <equals arg1="@{platform}" arg2="osx" />
+                <equals arg1="@{targetPlatform}" arg2="osx" />
             </condition>
             <condition property="bin.folder" value="${project.build.directory}/binaries-windows">
-                <equals arg1="@{platform}" arg2="win32" />
+                <equals arg1="@{targetPlatform}" arg2="win32" />
             </condition>
             <condition property="bin.folder" value="${project.build.directory}/binaries-windows-x64">
-                <equals arg1="@{platform}" arg2="win64" />
+                <equals arg1="@{targetPlatform}" arg2="win64" />
+            </condition>
+
+            <!-- Accommodate poor Cygwin users -->
+            <pathconvert property="maven.localrepo" targetos="unix">
+                <map from="C:" to="/c" />
+                <path>
+                    <pathelement path="${settings.localRepository}"/>
+                </path>
+            </pathconvert>
+
+            <mkdir dir="${bin.folder}" />
+
+            <!-- Check if platform is windows -->
+            <local name="isPlatformWindows"/>
+            <condition property="isPlatformWindows">
+                <or>
+                    <equals arg1="@{targetPlatform}" arg2="win32" />
+                    <equals arg1="@{targetPlatform}" arg2="win64" />
+                </or>
+            </condition>
+
+            <echo>  Extracting Common...</echo>
+            <exec failonerror="true" executable="tar" dir="${bin.folder}" unless:set="isPlatformWindows">
+                <arg value="xf" />
+                <arg value="${maven.localrepo}/org/alfresco/installer-common/${installer.common.version}/installer-common-${installer.common.version}-@{targetPlatform}.tgz" />
+            </exec>
+
+            <echo>  Extracting Tomcat...</echo>
+            <exec failonerror="true" executable="tar" dir="${bin.folder}">
+                <arg value="xf" />
+                <arg value="${maven.localrepo}/org/apache/tomcat/tomcat/${installer.tomcat.version}/tomcat-${installer.tomcat.version}-@{targetPlatform}.tgz" />
+            </exec>
+            <!-- Delete ROOT folder in Tomcat -->
+            <delete dir="${bin.folder}/apache-tomcat/webapps/ROOT"/>
+
+            <echo>  Extracting Java...</echo>
+            <exec failonerror="true" executable="tar" dir="${bin.folder}">
+                <arg value="xf" />
+                <arg value="${maven.localrepo}/com/oracle/java/jre/${installer.java.version}/jre-${installer.java.version}-@{targetPlatform}.tgz" />
+            </exec>
+        </sequential>
+    </macrodef>
+
+    <macrodef name="extract-platform-for">
+        <attribute name="targetPlatform" />
+
+        <sequential>
+            <echo>Extracting binaries for @{targetPlatform}</echo>
+            <!-- Set binaries folder depending on the platform -->
+            <local name="bin.folder"/>
+            <condition property="bin.folder" value="${project.build.directory}/binaries-linux-x64">
+                <equals arg1="@{targetPlatform}" arg2="linux" />
+            </condition>
+            <condition property="bin.folder" value="${project.build.directory}/binaries-osx-x64">
+                <equals arg1="@{targetPlatform}" arg2="osx" />
+            </condition>
+            <condition property="bin.folder" value="${project.build.directory}/binaries-windows">
+                <equals arg1="@{targetPlatform}" arg2="win32" />
+            </condition>
+            <condition property="bin.folder" value="${project.build.directory}/binaries-windows-x64">
+                <equals arg1="@{targetPlatform}" arg2="win64" />
             </condition>
 
             <!-- LibreOffice is the same for win32 and win64 -->
             <local name="isPlatformWindows"/>
             <condition property="isPlatformWindows">
                 <or>
-                    <equals arg1="@{platform}" arg2="win32" />
-                    <equals arg1="@{platform}" arg2="win64" />
+                    <equals arg1="@{targetPlatform}" arg2="win32" />
+                    <equals arg1="@{targetPlatform}" arg2="win64" />
                 </or>
             </condition>
             <local name="libreoffice.platform"/>
-            <condition property="libreoffice.platform" value="windows" else="@{platform}">
+            <condition property="libreoffice.platform" value="windows" else="@{targetPlatform}">
                 <isset property="isPlatformWindows"/>
             </condition>
 
@@ -52,30 +128,10 @@
 
             <mkdir dir="${bin.folder}" />
 
-            <echo>  Extracting Common...</echo>
-            <exec failonerror="true" executable="tar" dir="${bin.folder}" unless:set="isPlatformWindows">
-                <arg value="xf" />
-                <arg value="${maven.localrepo}/org/alfresco/installer-common/${installer.common.version}/installer-common-${installer.common.version}-@{platform}.tgz" />
-            </exec>
-
-            <echo>  Extracting Tomcat...</echo>
-            <exec failonerror="true" executable="tar" dir="${bin.folder}">
-                <arg value="xf" />
-                <arg value="${maven.localrepo}/org/apache/tomcat/tomcat/${installer.tomcat.version}/tomcat-${installer.tomcat.version}-@{platform}.tgz" />
-            </exec>
-            <!-- Delete ROOT folder in Tomcat -->
-            <delete dir="${bin.folder}/apache-tomcat/webapps/ROOT"/>
-
             <echo>  Extracting PostgreSQL...</echo>
             <exec failonerror="true" executable="tar" dir="${bin.folder}">
                 <arg value="xf" />
-                <arg value="${maven.localrepo}/org/postgresql/postgresql-distribution/${installer.postgresql.version}/postgresql-distribution-${installer.postgresql.version}-@{platform}.tgz" />
-            </exec>
-
-            <echo>  Extracting Java...</echo>
-            <exec failonerror="true" executable="tar" dir="${bin.folder}">
-                <arg value="xf" />
-                <arg value="${maven.localrepo}/com/oracle/java/jre/${installer.java.version}/jre-${installer.java.version}-@{platform}.tgz" />
+                <arg value="${maven.localrepo}/org/postgresql/postgresql-distribution/${installer.postgresql.version}/postgresql-distribution-${installer.postgresql.version}-@{targetPlatform}.tgz" />
             </exec>
 
             <echo>  Extracting LibreOffice...</echo>
@@ -97,6 +153,14 @@
         <condition property="runningPlatform" value="win">
             <os family="windows" />
         </condition>
+
+        <!-- Accommodate poor Cygwin users -->
+        <pathconvert property="maven.localrepo" targetos="unix">
+            <map from="C:" to="/c" />
+            <path>
+                <pathelement path="${settings.localRepository}"/>
+            </path>
+        </pathconvert>
         
         <echo>  Extracting Installbuilder...</echo>
         <mkdir dir="${project.build.directory}/installbuilder" />

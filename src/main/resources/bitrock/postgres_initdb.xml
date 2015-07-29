@@ -1,4 +1,3 @@
-
 <!-- POSTGRESINITDB
 Componentname: PostgreSQL_initdb
 
@@ -18,9 +17,9 @@ System variables provided by this component:
   * postgres_create_super_user
 
 - Changelog 02 Jul 2007:
-	* Add the choice to ask database parameters in installation time. (Backwards compatibility)
+    * Add the choice to ask database parameters in installation time. (Backwards compatibility)
 - Changelog 14 Jun 2007:
-	* Add createsupersuer variable to handle if database user created has or not superuser privileges. It is value is set to 1 by default for compatibility.
+    * Add createsupersuer variable to handle if database user created has or not superuser privileges. It is value is set to 1 by default for compatibility.
 -->
 <component>
     <name>postgresinitdb</name>
@@ -28,7 +27,11 @@ System variables provided by this component:
     <canBeEdited>1</canBeEdited>
     <selected>1</selected>
     <show>0</show>
+    <shouldPackRuleList>
+        <isTrue value="${postgresinitdb_component_enabled}"/>
+    </shouldPackRuleList>
     <parameterList>
+        <booleanParameter ask="0" name="postgresinitdb_component_enabled" value="1"/>
         <stringParameter>
             <title>Database Configuration</title>
             <name>database_name</name>
@@ -57,9 +60,7 @@ System variables provided by this component:
         </passwordParameter>
         <stringParameter>
             <name>database_encoding</name>
-            <!--title>Database Configuration</title>
-            <explanation>Please, select the encoding type.</explanation>
-            <description>Encoding</description-->
+            <!--title>Database Configuration</title><explanation>Please, select the encoding type.</explanation><description>Encoding</description-->
             <ask>0</ask>
             <value/>
             <default>UTF-8</default>
@@ -82,7 +83,7 @@ System variables provided by this component:
                     <programArguments>start</programArguments>
                     <ruleList>
                         <compareText logic="equals" text="${installer_root_install}" value="1"/>
-			<compareText text="${postgres_installation_type}" logic="equals" value="bundled"/>
+                        <compareText logic="equals" text="${postgres_installation_type}" value="bundled"/>
                     </ruleList>
                 </runProgram>
                 <runProgram>
@@ -90,7 +91,7 @@ System variables provided by this component:
                     <programArguments>start</programArguments>
                     <ruleList>
                         <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
-			<compareText text="${postgres_installation_type}" logic="equals" value="bundled"/>
+                        <compareText logic="equals" text="${postgres_installation_type}" value="bundled"/>
                     </ruleList>
                 </runProgram>
                 <wait>
@@ -105,4 +106,3 @@ System variables provided by this component:
         </actionGroup>
     </postInstallationActionList>
 </component>
-

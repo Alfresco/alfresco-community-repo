@@ -1,7 +1,7 @@
 <component>
     <name>alfrescovalidations</name>
     <description>Alfresco Validations</description>
-    <detailedDescription></detailedDescription>
+    <detailedDescription/>
     <selected>1</selected>
     <show>0</show>
     <functionDefinitionList>
@@ -16,7 +16,7 @@
                 </throwError>
                 <alfrescoAutodetectJava javaRequiredOrAbort="1" javaRequiredJdk="1" alfrescoInstallerBitness="${alfresco_installer_bitness}">
                     <ruleList>
-                        <isFalse value="${component(javaalfresco).selected}" />
+                        <isFalse value="${component(javaalfresco).selected}"/>
                     </ruleList>
                 </alfrescoAutodetectJava>
             </actionList>
@@ -99,7 +99,7 @@
                     <values>machine_total_memory minimum_ram recommended_ram</values>
                     <actionList>
                         <mathExpression text="double(${${memory_convertion}})/1024" variable="${memory_convertion}GB"/>
-                        <setInstallerVariableFromRegEx name="${memory_convertion}GB" pattern="(^\d+(\.\d{0,2})?).*" substitution="\1" text="${${memory_convertion}GB}&#xA;"/>
+                        <setInstallerVariableFromRegEx name="${memory_convertion}GB" pattern="(^\d+(\.\d{0,2})?).*" substitution="\1" text="${${memory_convertion}GB}"/>
                     </actionList>
                 </foreach>
                 <throwError>
@@ -133,7 +133,6 @@
                         <platformTest type="windows" negate="1"/>
                     </ruleList>
                 </setInstallerVariable>
-
                 <!-- Network validation -->
                 <actionGroup>
                     <actionList>
@@ -242,7 +241,7 @@
             <explanation>This environment is not configured optimally for Alfresco - please carefully review this list before continuing.
 
 While these issues will not prevent Alfresco from functioning, some product features may be unavailable, or the system may not perform optimally.</explanation>
-            <value></value>
+            <value/>
             <insertBefore>readytoinstall</insertBefore>
         </infoParameter>
     </parameterList>
@@ -256,4 +255,3 @@ While these issues will not prevent Alfresco from functioning, some product feat
         </alfrescoComponentsValidations>
     </preInstallationActionList>
 </component>
-

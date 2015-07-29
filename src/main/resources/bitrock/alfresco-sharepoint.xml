@@ -6,9 +6,8 @@
     <selected>1</selected>
     <show>1</show>
     <shouldPackRuleList>
-        <isTrue value="${alfrescosharepoint_component_enabled}" />
+        <isTrue value="${alfrescosharepoint_component_enabled}"/>
     </shouldPackRuleList>
-
     <parameterList>
         <booleanParameter name="alfrescosharepoint_component_enabled" ask="0" value="1" />
         <stringParameter>
@@ -33,7 +32,6 @@
                 </throwError>
             </validationActionList>
         </stringParameter>
-
     </parameterList>
     <folderList>
         <folder>
@@ -42,7 +40,7 @@
             <name>alfrescocustomextensions</name>
             <platforms>all</platforms>
             <actionList>
-                <alfrescoConfigure alfrescoFiles="*/*" />
+                <alfrescoConfigure alfrescoFiles="*/*"/>
             </actionList>
             <distributionFileList>
               <distributionFile origin="${alfresco_sharepoint_on_install_settings_directory}/shared/extension/*" allowWildcards="1" />
@@ -57,11 +55,8 @@
               <distributionFile origin="${alfresco_sharepoint_source_file}" allowWildcards="1" />
             </distributionFileList>
             <actionList>
-                <setInstallerVariable name="alfresco_apply_amps" value="1" />
+                <setInstallerVariable name="alfresco_apply_amps" value="1"/>
             </actionList>
         </folder>
     </folderList>
 </component>
-
-
-

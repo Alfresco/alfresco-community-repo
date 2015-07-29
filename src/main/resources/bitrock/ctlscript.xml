@@ -11,7 +11,7 @@
             <value>ctlscript.sh</value>
             <ask>0</ask>
         </stringParameter>
-        <booleanParameter name="ctlscript_windows_use_default_service_scripts" value="1" ask="0" />
+        <booleanParameter ask="0" name="ctlscript_windows_use_default_service_scripts" value="1"/>
         <stringParameter>
             <name>ctlscript_windows</name>
             <default>servicerun.bat</default>
@@ -40,7 +40,7 @@
     <readyToInstallActionList>
         <setInstallerVariable name="component(script).parameter(ctlscript_allow_root).value" value="0">
             <ruleList>
-                <compareText text="${installer_root_install}" logic="does_not_equal" value="1"/>
+                <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
             </ruleList>
         </setInstallerVariable>
     </readyToInstallActionList>
@@ -70,10 +70,9 @@
 if [ `id|sed -e s/uid=//g -e s/\(.*//g` -eq 0 ]; then
     echo "Execution by root not allowed"
     exit 1
-fi
-</value>
+fi</value>
                             <ruleList>
-                                <compareText text="${ctlscript_allow_root}" logic="does_not_equal" value="1"/>
+                                <compareText logic="does_not_equal" text="${ctlscript_allow_root}" value="1"/>
                             </ruleList>
                         </substitution>
                         <substitution>
@@ -84,10 +83,9 @@ fi
 if [ `id|sed -e s/uid=//g -e s/\(.*//g` -ne 0 ]; then
     echo "This script requires root privileges"
     exit 1
-fi
-</value>
+fi</value>
                             <ruleList>
-                                <compareText text="${ctlscript_allow_root}" logic="equals" value="1"/>
+                                <compareText logic="equals" text="${ctlscript_allow_root}" value="1"/>
                             </ruleList>
                         </substitution>
                     </substitutionList>
@@ -97,7 +95,7 @@ fi
                 <platformTest type="unix"/>
             </ruleList>
             <shouldPackRuleList>
-                <compareText text="${platform_name}" logic="does_not_equal" value="windows"  />
+                <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
             </shouldPackRuleList>
         </folder>
         <folder>
@@ -125,8 +123,8 @@ fi
                 </substitute>
             </actionList>
             <shouldPackRuleList>
-                <isTrue value="${ctlscript_windows_use_default_service_scripts}" />
-                <compareText text="${platform_name}" logic="equals" value="windows"  />
+                <isTrue value="${ctlscript_windows_use_default_service_scripts}"/>
+                <compareText logic="equals" text="${platform_name}" value="windows"/>
             </shouldPackRuleList>
         </folder>
     </folderList>
@@ -153,7 +151,7 @@ fi
                         </waitForPort>
                     </actionList>
                     <ruleList>
-                        <compareText text="${ctlscript_start_apache}" logic="equals" value="1"/>
+                        <compareText logic="equals" text="${ctlscript_start_apache}" value="1"/>
                     </ruleList>
                 </actionGroup>
             </actionList>
@@ -161,22 +159,6 @@ fi
                 <platformTest type="unix"/>
             </ruleList>
         </actionGroup>
-
-<!--<actionGroup>
-	    <actionList>
-		<runProgram>
-			<program>${installdir}/${ctlscript_unix}</program>
-			<programArguments>start tomcat &amp; &gt; /dev/null</programArguments>
-		</runProgram>
-		<waitForPort>
-		        <port>${application_server_port}</port>
-			<timeout>30000</timeout>
-		</waitForPort>
-	    </actionList>
-	    <ruleList>
-		    <platformTest type="unix" />
-	    </ruleList>
-	</actionGroup>-->
+        <!--<actionGroup><actionList><runProgram><program>${installdir}/${ctlscript_unix}</program><programArguments>start tomcat &amp; &gt; /dev/null</programArguments></runProgram><waitForPort><port>${application_server_port}</port><timeout>30000</timeout></waitForPort></actionList><ruleList><platformTest type="unix" /></ruleList></actionGroup>-->
     </postInstallationActionList>
 </component>
-

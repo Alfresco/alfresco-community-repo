@@ -8,11 +8,9 @@
     <shouldPackRuleList>
         <isTrue value="${alfrescogoogledocs_component_enabled}" />
     </shouldPackRuleList>
-
     <parameterList>
         <booleanParameter name="alfrescogoogledocs_component_enabled" ask="0" value="1" />
     </parameterList>
-
     <folderList>
         <folder>
             <description>Program Files</description>
@@ -23,7 +21,7 @@
               <distributionFile origin="${alfresco_amps_source_directory}/alfresco-googledocs-repo-*.amp" allowWildcards="1" />
             </distributionFileList>
             <actionList>
-                <setInstallerVariable name="alfresco_apply_amps" value="1" />
+                <setInstallerVariable name="alfresco_apply_amps" value="1"/>
             </actionList>
         </folder>
         <folder>
@@ -35,7 +33,7 @@
               <distributionFile origin="${alfresco_amps_source_directory}/alfresco-googledocs-share-*.amp" allowWildcards="1" />
             </distributionFileList>
             <actionList>
-                <setInstallerVariable name="alfresco_apply_amps_share" value="1" />
+                <setInstallerVariable name="alfresco_apply_amps_share" value="1"/>
             </actionList>
         </folder>
     </folderList>

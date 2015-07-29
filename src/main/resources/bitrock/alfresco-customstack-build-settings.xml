@@ -2,60 +2,48 @@
     <name>alfrescocustombuildsettings</name>
     <show>0</show>
     <preBuildActionList>
-        
         <!-- ALFRESCO BUILD SYSTEM-->
         <actionGroup>
-        <actionList>
-        <!-- AlfrescoDM build settings -->
-        <!-- NOTE: licenses directory should also include the licenses provided by BitRock -->
-
-        <setInstallerVariable name="alfresco_extensions_source_directory" value="${distribution_folder.unix}/web-server/shared/classes" />
-        <setInstallerVariable name="alfresco_lib_source_directory" value="${distribution_folder.unix}/web-server/lib" />
-        <setInstallerVariable name="alfresco_endorsed_source_directory" value="${distribution_folder.unix}/web-server/endorsed" />
-        <setInstallerVariable name="alfresco_war_source_directory" value="${distribution_folder.unix}/web-server/webapps" />
-        <setInstallerVariable name="alfresco_licenses_directory" value="${distribution_folder.unix}/licenses" />
-        <setInstallerVariable name="alfresco_readme_source_directory" value="${distribution_folder.unix}" />
-        <setInstallerVariable name="alfresco_on_install_settings_directory" value="${build_project_directory.unix}/bitrock" />
-
-        <setInstallerVariable name="alfresco_mmt_source_file" value="${distribution_folder.unix}/bin/alfresco-mmt.jar" />
-
-
-        <setInstallerVariable name="alfresco_commands_source_directory" value="${distribution_folder.unix}/bin" />
-        <setInstallerVariable name="alfresco_solr_source_directory" value="${distribution_folder.unix}/alf_data/solr" />
-        <setInstallerVariable name="alfresco_solr4_source_directory" value="${distribution_folder.unix}/solr4" />
-        <setInstallerVariable name="alfresco_keystore_source_directory" value="${distribution_folder.unix}/alf_data/keystore" />
-        <setInstallerVariable name="alfresco_sharepoint_source_file" value="${distribution_folder.unix}/amps/alfresco-spp.amp" />
-        <setInstallerVariable name="alfresco_sharepoint_on_install_settings_directory" value="${build_project_directory.unix}/bitrock/alfrescosharepoint" />
-
-
-        <setInstallerVariable name="alfresco_wcmqs_source_file" value="${wcmqs_folder.unix}/alfresco-wcmqs.amp" />
-        <setInstallerVariable name="alfresco_wcmqs_share_source_file" value="${wcmqs_folder.unix}/alfresco-wcmqs-share.amp" />
-        <setInstallerVariable name="alfresco_wcmqs_war_source_file" value="${wcmqs_folder.unix}/wcmqs.war" />
-        <setInstallerVariable name="alfresco_awe_war_source_file" value="${wcmqs_folder.unix}/awe.war" />
-        <setInstallerVariable name="alfresco_awe_config_source_file" value="${wcmqs_folder.unix}/alfresco" />
-        <setInstallerVariable name="alfresco_wcmqs_config_source_file" value="${wcmqs_folder.unix}/alfresco" />
-
-        <!-- Binaries -->
-        <setInstallerVariable name="manager_distribution_folder" value="${binaries_folder}/manager" />
-        <setInstallerVariable name="common_distribution_folder" value="${local_binaries_folder}/common" />
-        <setInstallerVariable name="postgres_distribution_folder" value="${local_binaries_folder}/postgresql" />
-        <setInstallerVariable name="imagemagick_distribution_folder_windows" value="${binaries_folder}/ImageMagick-6.8.6-gs8.64" />
-        <setInstallerVariable name="imagemagick_distribution_folder_unix" value="${binaries_folder}/ImageMagick-6.8.6-gs8.64" />
-        <setInstallerVariable name="java_distribution_folder" value="${local_binaries_folder}/java" />
-        <setInstallerVariable name="libreoffice_distribution_folder" value="${local_binaries_folder}/libreoffice" />
-        <setInstallerVariable name="swftools_distribution_folder" value="${binaries_folder}/swftools-0.9.2" />
-        <setInstallerVariable name="tomcat_distribution_folder" value="${local_binaries_folder}/apache-tomcat" />
-
-        <!-- END ALFRESCO BUILD SYSTEM-->
-        </actionList>
+            <actionList>
+                <!-- AlfrescoDM build settings -->
+                <!-- NOTE: licenses directory should also include the licenses provided by BitRock -->
+                <setInstallerVariable name="alfresco_extensions_source_directory" value="${distribution_folder.unix}/web-server/shared/classes"/>
+                <setInstallerVariable name="alfresco_lib_source_directory" value="${distribution_folder.unix}/web-server/lib"/>
+                <setInstallerVariable name="alfresco_endorsed_source_directory" value="${distribution_folder.unix}/web-server/endorsed"/>
+                <setInstallerVariable name="alfresco_war_source_directory" value="${distribution_folder.unix}/web-server/webapps"/>
+                <setInstallerVariable name="alfresco_licenses_directory" value="${distribution_folder.unix}/licenses"/>
+                <setInstallerVariable name="alfresco_readme_source_directory" value="${distribution_folder.unix}"/>
+                <setInstallerVariable name="alfresco_on_install_settings_directory" value="${build_project_directory.unix}/bitrock"/>
+                <setInstallerVariable name="alfresco_mmt_source_file" value="${distribution_folder.unix}/bin/alfresco-mmt.jar"/>
+                <setInstallerVariable name="alfresco_commands_source_directory" value="${distribution_folder.unix}/bin"/>
+                <setInstallerVariable name="alfresco_solr_source_directory" value="${distribution_folder.unix}/alf_data/solr"/>
+                <setInstallerVariable name="alfresco_solr4_source_directory" value="${distribution_folder.unix}/solr4"/>
+                <setInstallerVariable name="alfresco_keystore_source_directory" value="${distribution_folder.unix}/alf_data/keystore"/>
+                <setInstallerVariable name="alfresco_sharepoint_source_file" value="${distribution_folder.unix}/amps/alfresco-spp.amp"/>
+                <setInstallerVariable name="alfresco_sharepoint_on_install_settings_directory" value="${build_project_directory.unix}/bitrock/alfrescosharepoint"/>
+                <setInstallerVariable name="alfresco_wcmqs_source_file" value="${wcmqs_folder.unix}/alfresco-wcmqs.amp"/>
+                <setInstallerVariable name="alfresco_wcmqs_share_source_file" value="${wcmqs_folder.unix}/alfresco-wcmqs-share.amp"/>
+                <setInstallerVariable name="alfresco_wcmqs_war_source_file" value="${wcmqs_folder.unix}/wcmqs.war"/>
+                <setInstallerVariable name="alfresco_awe_war_source_file" value="${wcmqs_folder.unix}/awe.war"/>
+                <setInstallerVariable name="alfresco_awe_config_source_file" value="${wcmqs_folder.unix}/alfresco"/>
+                <setInstallerVariable name="alfresco_wcmqs_config_source_file" value="${wcmqs_folder.unix}/alfresco"/>
+                <!-- Binaries -->
+                <setInstallerVariable name="manager_distribution_folder" value="${binaries_folder}/manager"/>
+                <setInstallerVariable name="common_distribution_folder" value="${local_binaries_folder}/common"/>
+                <setInstallerVariable name="postgres_distribution_folder" value="${local_binaries_folder}/postgresql"/>
+                <setInstallerVariable name="imagemagick_distribution_folder_windows" value="${binaries_folder}/ImageMagick-6.8.6-gs8.64"/>
+                <setInstallerVariable name="imagemagick_distribution_folder_unix" value="${binaries_folder}/ImageMagick-6.8.6-gs8.64"/>
+                <setInstallerVariable name="java_distribution_folder" value="${local_binaries_folder}/java"/>
+                <setInstallerVariable name="libreoffice_distribution_folder" value="${local_binaries_folder}/libreoffice"/>
+                <setInstallerVariable name="swftools_distribution_folder" value="${binaries_folder}/swftools-0.9.2"/>
+                <setInstallerVariable name="tomcat_distribution_folder" value="${local_binaries_folder}/apache-tomcat"/>
+                <!-- END ALFRESCO BUILD SYSTEM-->
+            </actionList>
         </actionGroup>
-
         <setInstallerVariable name="component(alfresco).parameter(alfresco_rmi_port).ask" value="0">
             <ruleList>
                 <compareText text="${alfresco_edition}" value="community"/>
             </ruleList>
         </setInstallerVariable>
-
     </preBuildActionList>
-
 </component>

@@ -10,10 +10,10 @@
             <ruleList>
                 <compareText logic="equals" text="${installer_root_install}" value="0"/>
             </ruleList>
-        </setInstallerVariable> 
+        </setInstallerVariable>
     </initializationActionList>
     <installationAbortedActionList>
-            <deleteFile path="${installdir}/alf_data">
+        <deleteFile path="${installdir}/alf_data">
             <ruleList>
                 <compareText text="${postgres_execute_abort_action_list}" logic="equals" value="1"/>
             </ruleList>
@@ -73,7 +73,6 @@
                 </throwError>
             </validationActionList>
         </stringParameter>
-
         <directoryParameter>
             <name>alfresco_data_directory</name>
             <title>Alfresco data directory</title>
@@ -88,17 +87,17 @@
             <ask>0</ask>
             <width>32</width>
         </directoryParameter>
-        <stringParameter name="alfresco_admin_username" ask="0" value="admin" />
-        <passwordParameter name="alfresco_admin_password" description="Admin Password:" descriptionRetype="Repeat Password:" allowEmptyValue="0">
-		    <title>Admin Password</title>
+        <stringParameter ask="0" name="alfresco_admin_username" value="admin"/>
+        <passwordParameter allowEmptyValue="0" description="Admin Password:" descriptionRetype="Repeat Password:" name="alfresco_admin_password">
+            <title>Admin Password</title>
             <explanation>Please give a password to use for the Alfresco administrator account.</explanation>
             <validationActionList>
-	        <throwError>
+                <throwError>
                     <text>The length of the password must be greater than 3 characters</text>
-		    <ruleList>
-		        <compareTextLength text="${alfresco_admin_password}" logic="less" length="3"/>
-	            </ruleList>
-		</throwError>
+                    <ruleList>
+                        <compareTextLength length="3" logic="less" text="${alfresco_admin_password}"/>
+                    </ruleList>
+                </throwError>
                 <throwError>
                     <text>Password must not contain leading or trailing spaces</text>
                     <ruleList>
@@ -110,12 +109,11 @@
                 <throwError>
                     <text>You need to use ASCII characters only when setting the password here. You can reset it after installation and use non-ASCII characters.</text>
                     <ruleList>
-                        <stringTest text="${alfresco_admin_password}" type="not_ascii" />
+                        <stringTest text="${alfresco_admin_password}" type="not_ascii"/>
                     </ruleList>
                 </throwError>
-	    </validationActionList>
+            </validationActionList>
         </passwordParameter>
-
     </parameterList>
     <readyToInstallActionList>
         <md4 text="${alfresco_admin_password}" variable="alfresco_admin_password_md4"/>
@@ -133,8 +131,7 @@
                 <deleteFile path="${alfresco_library_directory}/mysql-connector-java-*.jar"/>
             </actionList>
             <distributionFileList>
-                <distributionFile origin="${alfresco_war_source_directory}/*.war" allowWildcards="1"
-                    excludeFiles="${alfresco_war_source_directory}/solr4.war" />
+                <distributionFile allowWildcards="1" excludeFiles="${alfresco_war_source_directory}/solr4.war" origin="${alfresco_war_source_directory}/*.war"/>
             </distributionFileList>
         </folder>
         <folder>
@@ -144,7 +141,7 @@
             <platforms>all</platforms>
             <!-- ALF-16809: It's an Alfresco convention to have a shared/lib directory -->
             <actionList>
-                <createDirectory path="${alfresco_shared_library_directory}" />
+                <createDirectory path="${alfresco_shared_library_directory}"/>
             </actionList>
             <distributionFileList>
                 <distributionFile origin="${alfresco_lib_source_directory}/*" allowWildcards="1"/>
@@ -168,18 +165,18 @@
               <distributionFile origin="${distribution_folder.unix}/amps/alfresco-share-services.amp*" allowWildcards="1"/>
             </distributionFileList>
             <actionList>
-                <setInstallerVariable name="alfresco_apply_amps" value="1" />
+                <setInstallerVariable name="alfresco_apply_amps" value="1"/>
             </actionList>
         </folder>
-	<folder>
+        <folder>
             <description>//Endorsed Files</description>
             <destination>${tomcat_server_directory}/endorsed</destination>
             <name>endorsedfiles</name>
             <platforms>all</platforms>
             <distributionFileList>
-		<distributionDirectory origin="${alfresco_endorsed_source_directory}/*" allowWildcards="1"/>
-	    </distributionFileList>
-	</folder>
+                <distributionDirectory allowWildcards="1" origin="${alfresco_endorsed_source_directory}/*"/>
+            </distributionFileList>
+        </folder>
         <folder>
             <description>//Program Files</description>
             <destination>${alfresco_shared_directory}/alfresco/web-extension</destination>
@@ -192,7 +189,6 @@
                 <distributionFile origin="${alfresco_on_install_settings_directory}/alfresco/shared/web-extension/*" allowWildcards="1"/>
             </distributionFileList>
         </folder>
-
         <folder>
             <description>//Program Files</description>
             <destination>${alfresco_shared_directory}</destination>
@@ -203,12 +199,12 @@
                     <actionList>
                         <substitute>
                             <files>*/alfresco-global.properties</files>
-			    <type>regexp</type>
+                            <type>regexp</type>
                             <substitutionList>
-				<substitution>
-				    <pattern>db.driver=.*$</pattern>
-				    <value>db.driver=${jdbc_driver}</value>
-				</substitution>
+                                <substitution>
+                                    <pattern>db.driver=.*$</pattern>
+                                    <value>db.driver=${jdbc_driver}</value>
+                                </substitution>
                                 <substitution>
                                     <pattern>@@BITROCK_DB_USER@@</pattern>
                                     <value>${jdbc_username}</value>
@@ -221,10 +217,10 @@
                                     <pattern>@@BITROCK_DB_NAME@@</pattern>
                                     <value>${jdbc_database}</value>
                                 </substitution>
-				<substitution>
-				    <pattern>db.url=.*$</pattern>
-				    <value>db.url=${jdbc_url}</value>
-				</substitution>
+                                <substitution>
+                                    <pattern>db.url=.*$</pattern>
+                                    <value>db.url=${jdbc_url}</value>
+                                </substitution>
                                 <substitution>
                                     <pattern>@@BITROCK_MYSQL_PORT@@</pattern>
                                     <value>3306</value>
@@ -240,22 +236,22 @@
                             </substitutionList>
                         </substitute>
                     </actionList>
-		    <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
                     <ruleList>
-			<ruleGroup>
-			    <ruleEvaluationLogic>and</ruleEvaluationLogic>
-			    <ruleList>
-				<componentTest name="alfrescomysqlquestion" logic="exists"/>
-				<isFalse value="${alfrescomysqlquestion_bundled}"/>
-			    </ruleList>
-			</ruleGroup>
-			<ruleGroup>
-			    <ruleEvaluationLogic>and</ruleEvaluationLogic>
-			    <ruleList>
-				<componentTest name="postgres" logic="exists"/>
-				<isFalse value="${component(postgres).selected}"/>
-			    </ruleList>
-			</ruleGroup>
+                        <ruleGroup>
+                            <ruleEvaluationLogic>and</ruleEvaluationLogic>
+                            <ruleList>
+                                <componentTest logic="exists" name="alfrescomysqlquestion"/>
+                                <isFalse value="${alfrescomysqlquestion_bundled}"/>
+                            </ruleList>
+                        </ruleGroup>
+                        <ruleGroup>
+                            <ruleEvaluationLogic>and</ruleEvaluationLogic>
+                            <ruleList>
+                                <componentTest logic="exists" name="postgres"/>
+                                <isFalse value="${component(postgres).selected}"/>
+                            </ruleList>
+                        </ruleGroup>
                     </ruleList>
                 </actionGroup>
                 <alfrescoConfigure alfrescoFiles="*/alfresco-global.properties"/>
@@ -264,30 +260,30 @@
                 <distributionFile origin="${alfresco_on_install_settings_directory}/alfresco/shared/alfresco-global.properties"/>
             </distributionFileList>
         </folder>
-	<folder>
-	    <name>conf</name>
+        <folder>
+            <name>conf</name>
             <description>//Configuration files</description>
-	    <destination>${alfresco_base_application_directory}</destination>
-	    <distributionFileList>
-		<distributionDirectory origin="alfresco/conf"/>
-	    </distributionFileList>
-	    <actionList>
-		<substitute>
-		    <files>${alfresco_base_application_directory}/conf/alfresco.conf</files>
-		    <type>exact</type>
-		    <substitutionList>
-			<substitution>
-			    <pattern>@@BITROCK_TOMCAT_AJP_PORT@@</pattern>
-			    <value>${application_server_ajp_port}</value>
-			</substitution>
-		    </substitutionList>
-		</substitute>		
-	    </actionList>
+            <destination>${alfresco_base_application_directory}</destination>
+            <distributionFileList>
+                <distributionDirectory origin="alfresco/conf"/>
+            </distributionFileList>
+            <actionList>
+                <substitute>
+                    <files>${alfresco_base_application_directory}/conf/alfresco.conf</files>
+                    <type>exact</type>
+                    <substitutionList>
+                        <substitution>
+                            <pattern>@@BITROCK_TOMCAT_AJP_PORT@@</pattern>
+                            <value>${application_server_ajp_port}</value>
+                        </substitution>
+                    </substitutionList>
+                </substitute>
+            </actionList>
             <shouldPackRuleList>
-                <fileTest path="alfresco/conf" condition="exists"/>
-		<componentTest name="alfrescomodule" logic="exists"/>
+                <fileTest condition="exists" path="alfresco/conf"/>
+                <componentTest logic="exists" name="alfrescomodule"/>
             </shouldPackRuleList>
-	</folder>
+        </folder>
         <folder>
             <description>//Program Files</description>
             <destination>${installdir}/apps/alfresco</destination>
@@ -324,8 +320,8 @@
                 </actionGroup>
                 <actionGroup>
                     <actionList>
-			<changePermissions permissions="755" files="${alfresco_commands_directory}/apply_amps.sh" />
-			<changePermissions permissions="755" files="${alfresco_commands_directory}/clean_tomcat.sh" />
+                        <changePermissions files="${alfresco_commands_directory}/apply_amps.sh" permissions="755"/>
+                        <changePermissions files="${alfresco_commands_directory}/clean_tomcat.sh" permissions="755"/>
                         <deleteFile path="${alfresco_commands_directory}/*.bat"/>
                         <deleteFile path="${alfresco_commands_directory}/*.dll"/>
                         <deleteFile path="${alfresco_commands_directory}/*.exe"/>
@@ -334,15 +330,14 @@
                         <platformTest type="unix"/>
                     </ruleList>
                 </actionGroup>
-	    </actionList>
+            </actionList>
             <distributionFileList>
                 <distributionFile origin="${alfresco_commands_source_directory}/*" allowWildcards="1"/>
             </distributionFileList>
         </folder>
     </folderList>
     <postInstallationActionList>
-
-        <alfrescoConfigure alfrescoFiles="${tomcat_server_directory}/bin/service.bat;${tomcat_server_directory}/scripts/ctl.sh" />
+        <alfrescoConfigure alfrescoFiles="${tomcat_server_directory}/bin/service.bat;${tomcat_server_directory}/scripts/ctl.sh"/>
         <actionGroup>
             <actionList>
                 <copyFile>
@@ -373,8 +368,7 @@
                 <substitution>
                     <pattern>&lt;Context&gt;</pattern>
                     <value>&lt;Context&gt;
-&lt;Valve className="org.apache.catalina.authenticator.SSLAuthenticator" securePagesWithPragma="false" /&gt;
-</value>
+&lt;Valve className=&quot;org.apache.catalina.authenticator.SSLAuthenticator&quot; securePagesWithPragma=&quot;false&quot; /&gt;</value>
                 </substitution>
             </substitutionList>
         </substitute>
@@ -394,14 +388,14 @@
             <value>OFF</value>
         </propertiesFileSet>
     </postInstallationActionList>
-    <postUninstallationActionList> 
+    <postUninstallationActionList>
         <actionGroup>
             <actionList>
                 <deleteFile path="${installdir}/alfresco.log*"/>
-                <deleteFile path="${installdir}/webquickstart.log*" />
-                <deleteFile path="${installdir}/awe.log*" />
-                <deleteFile path="${installdir}/share.log*" />
-                <deleteFile path="${installdir}/solr.log*" />
+                <deleteFile path="${installdir}/webquickstart.log*"/>
+                <deleteFile path="${installdir}/awe.log*"/>
+                <deleteFile path="${installdir}/share.log*"/>
+                <deleteFile path="${installdir}/solr.log*"/>
                 <deleteFile path="${alfresco_data_directory}"/>
             </actionList>
             <ruleList>

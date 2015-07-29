@@ -4,8 +4,13 @@
     <canBeEdited>0</canBeEdited>
     <show>0</show>
     <selected>1</selected>
+    <shouldPackRuleList>
+        <isTrue value="${swftools_component_enabled}" />
+    </shouldPackRuleList>
+
     <initializationActionList/>
     <parameterList>
+        <booleanParameter name="swftools_component_enabled" ask="0" value="1" />
         <directoryParameter>
             <ask>0</ask>
             <description>SWFTOOLS installation directory</description>

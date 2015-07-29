@@ -4,6 +4,12 @@
     <canBeEdited>0</canBeEdited>
     <show>0</show>
     <selected>1</selected>
+    <shouldPackRuleList>
+        <isTrue value="${postgreswriteproperties_component_enabled}"/>
+    </shouldPackRuleList>
+    <parameterList>
+        <booleanParameter ask="0" name="postgreswriteproperties_component_enabled" value="1"/>
+    </parameterList>
     <readyToInstallActionList>
         <actionGroup>
             <actionList>
@@ -42,13 +48,13 @@
                 </iniFileGet>
                 <actionGroup>
                     <actionList>
-                        <setInstallerVariable name="postgres_port" value="${database_port}" persist="1" />
-                        <setInstallerVariable name="postgres_root_directory" value="${database_root_directory}" persist="1" />
-                        <setInstallerVariable name="postgres_binary_directory" value="${database_binary_directory}" persist="1" />
-                        <setInstallerVariable name="postgres_hostname" value="${database_hostname}" persist="1" />
+                        <setInstallerVariable name="postgres_port" persist="1" value="${database_port}"/>
+                        <setInstallerVariable name="postgres_root_directory" persist="1" value="${database_root_directory}"/>
+                        <setInstallerVariable name="postgres_binary_directory" persist="1" value="${database_binary_directory}"/>
+                        <setInstallerVariable name="postgres_hostname" persist="1" value="${database_hostname}"/>
                     </actionList>
                     <ruleList>
-                        <componentTest name="postgres" logic="does_not_exist" />
+                        <componentTest logic="does_not_exist" name="postgres"/>
                     </ruleList>
                 </actionGroup>
             </actionList>
@@ -93,4 +99,3 @@
         </iniFileSet>
     </postInstallationActionList>
 </component>
-

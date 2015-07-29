@@ -22,7 +22,12 @@ import static org.alfresco.util.WebScriptUtils.getJSONArrayFromJSONObject;
 import static org.alfresco.util.WebScriptUtils.getJSONArrayValue;
 import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+import static org.apache.commons.lang3.time.DateFormatUtils.ISO_DATE_FORMAT;
+import static org.springframework.extensions.webscripts.Status.STATUS_BAD_REQUEST;
 
+import java.text.ParseException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,10 +37,12 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationA
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.apache.commons.lang3.time.DateUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
@@ -51,6 +58,12 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
     public static final String CLASSIFIED_BY = "classifiedBy";
     public static final String CLASSIFICATION_AGENCY = "classificationAgency";
     public static final String CLASSIFICATION_REASONS = "classificationReasons";
+    public static final String DOWNGRADE_DATE = "downgradeDate";
+    public static final String DOWNGRADE_EVENT = "downgradeEvent";
+    public static final String DOWNGRADE_INSTRUCTIONS = "downgradeInstructions";
+    public static final String DECLASSIFICATION_DATE = "declassificationDate";
+    public static final String DECLASSIFICATION_EVENT = "declassificationEvent";
+    public static final String DECLASSIFICATION_EXEMPTIONS = "declassificationExemptions";
 
     /** The service responsible for classifying content. */
     private ContentClassificationService contentClassificationService;
@@ -97,12 +110,24 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
         String classifiedBy = getStringValueFromJSONObject(jsonObject, CLASSIFIED_BY);
         String classificationAgency = getStringValueFromJSONObject(jsonObject, CLASSIFICATION_AGENCY, false, false);
         Set<String> classificationReasonIds = getClassificationReasonIds(jsonObject);
+        String downgradeDate = getStringValueFromJSONObject(jsonObject, DOWNGRADE_DATE, false, false);
+        String downgradeEvent = getStringValueFromJSONObject(jsonObject, DOWNGRADE_EVENT, false, false);
+        String downgradeInstructions = getStringValueFromJSONObject(jsonObject, DOWNGRADE_INSTRUCTIONS, false, false);
+        String declassificationDate = getStringValueFromJSONObject(jsonObject, DECLASSIFICATION_DATE, false, false);
+        String declassificationEvent = getStringValueFromJSONObject(jsonObject, DECLASSIFICATION_EVENT, false, false);
+        Set<String> exemptionCategoryIds = getExemptionCategoryIds(jsonObject);
 
         ClassificationAspectProperties propertiesDTO = new ClassificationAspectProperties();
         propertiesDTO.setClassificationLevelId(classificationLevelId);
         propertiesDTO.setClassifiedBy(classifiedBy);
         propertiesDTO.setClassificationAgency(classificationAgency);
         propertiesDTO.setClassificationReasonIds(classificationReasonIds);
+        propertiesDTO.setDowngradeDate(parseDate(downgradeDate));
+        propertiesDTO.setDowngradeEvent(downgradeEvent);
+        propertiesDTO.setDowngradeInstructions(downgradeInstructions);
+        propertiesDTO.setDeclassificationDate(parseDate(declassificationDate));
+        propertiesDTO.setDeclassificationEvent(declassificationEvent);
+        propertiesDTO.setExemptionCategoryIds(exemptionCategoryIds);
 
         NodeRef document = parseRequestForNodeRef(req);
 
@@ -115,6 +140,27 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
     }
 
     /**
+     * Helper method used to get the classification reason ids and exemption category ids
+     *
+     * @param jsonObject The json object representing the request body
+     * @param key The key
+     * @return {@link Set}<{@link String}> ids
+     */
+    private Set<String> getIds(JSONObject jsonObject, String key)
+    {
+        Set<String> ids = new HashSet<>();
+
+        JSONArray jsonArray = getJSONArrayFromJSONObject(jsonObject, key);
+        for (int i = 0; i < jsonArray.length(); i++)
+        {
+            JSONObject id = (JSONObject) getJSONArrayValue(jsonArray, i);
+            ids.add(getStringValueFromJSONObject(id, ID));
+        }
+
+        return ids;
+    }
+
+    /**
      * Helper method to get the classification reason ids
      *
      * @param jsonObject The json object representing the request body
@@ -122,15 +168,49 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
      */
     private Set<String> getClassificationReasonIds(JSONObject jsonObject)
     {
-        Set<String> classificationReasonIds = new HashSet<>();
+        return getIds(jsonObject, CLASSIFICATION_REASONS);
+    }
 
-        JSONArray classificationReasons = getJSONArrayFromJSONObject(jsonObject, CLASSIFICATION_REASONS);
-        for (int i = 0; i < classificationReasons.length(); i++)
+    /**
+     * Helper method to get the exemption category ids
+     *
+     * @param jsonObject The json object representing the request body
+     * @return {@link Set}<{@link String}> exemption category ids
+     */
+    private Set<String> getExemptionCategoryIds(JSONObject jsonObject)
+    {
+        Set<String> exemptionCategoryIds = new HashSet<>();
+
+        if (jsonObject.has(DECLASSIFICATION_EXEMPTIONS))
         {
-            JSONObject classificationReason = (JSONObject) getJSONArrayValue(classificationReasons, i);
-            classificationReasonIds.add(getStringValueFromJSONObject(classificationReason, ID));
+            exemptionCategoryIds.addAll(getIds(jsonObject, DECLASSIFICATION_EXEMPTIONS));
         }
 
-        return classificationReasonIds;
+        return exemptionCategoryIds;
+    }
+
+    /**
+     * Parses the given string as date
+     *
+     * @param date The {@link String} which will be parsed
+     * @return The parsed date, if the given date is blank then <code>null</code> will be returned.
+     */
+    private Date parseDate(String date)
+    {
+        Date parsedDate = null;
+
+        if (isNotBlank(date))
+        {
+            try
+            {
+                parsedDate = DateUtils.parseDate(date, ISO_DATE_FORMAT.getPattern());
+            }
+            catch (ParseException error)
+            {
+                throw new WebScriptException(STATUS_BAD_REQUEST, "The given date '" + date + "' could not be parsed.");
+            }
+        }
+
+        return parsedDate;
     }
 }

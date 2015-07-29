@@ -941,4 +941,12 @@
       <property name="classificationSchemeService" ref="ClassificationSchemeService" />
    </bean>
 
+   <bean id="exemptionsCategoriesPropertyDecorator"
+         parent="baseDecorator"
+         class="org.alfresco.repo.jscript.app.ExemptionsCategoriesPropertyDecorator"
+         depends-on="classifiedContentDictionaryBootstrap">
+      <property name="propertyName" value="clf:declassificationExemptions" />
+      <property name="classificationSchemeService" ref="ClassificationSchemeService" />
+   </bean>
+
 </beans>

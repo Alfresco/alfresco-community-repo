@@ -19,7 +19,6 @@
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
 import static java.util.Collections.unmodifiableSet;
-
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 
 import java.util.Collections;
@@ -27,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ExemptionCategoryIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
@@ -161,5 +161,15 @@ public class ClassificationSchemeServiceImpl extends ServiceBaseImpl implements 
             result.add(r.toModelString());
         }
         return unmodifiableSet(result);
+    }
+
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService#getExemptionCategoryById(java.lang.String)
+     */
+    @Override
+    public ExemptionCategory getExemptionCategoryById(String exemptionCategoryId) throws ExemptionCategoryIdNotFound
+    {
+        checkNotBlank("exemptionCategoryId", exemptionCategoryId);
+        return exemptionCategoryManager.findCategoryById(exemptionCategoryId);
     }
 }

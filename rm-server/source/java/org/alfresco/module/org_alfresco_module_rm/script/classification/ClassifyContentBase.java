@@ -22,7 +22,6 @@ import static org.alfresco.util.WebScriptUtils.getJSONArrayFromJSONObject;
 import static org.alfresco.util.WebScriptUtils.getJSONArrayValue;
 import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.time.DateFormatUtils.ISO_DATE_FORMAT;
 import static org.springframework.extensions.webscripts.Status.STATUS_BAD_REQUEST;
 
@@ -110,10 +109,10 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
         String classifiedBy = getStringValueFromJSONObject(jsonObject, CLASSIFIED_BY);
         String classificationAgency = getStringValueFromJSONObject(jsonObject, CLASSIFICATION_AGENCY, false, false);
         Set<String> classificationReasonIds = getClassificationReasonIds(jsonObject);
-        String downgradeDate = getStringValueFromJSONObject(jsonObject, DOWNGRADE_DATE, false, false);
+        Object downgradeDate = jsonObject.isNull(DOWNGRADE_DATE) ? null : getStringValueFromJSONObject(jsonObject, DOWNGRADE_DATE, false, false);
         String downgradeEvent = getStringValueFromJSONObject(jsonObject, DOWNGRADE_EVENT, false, false);
         String downgradeInstructions = getStringValueFromJSONObject(jsonObject, DOWNGRADE_INSTRUCTIONS, false, false);
-        String declassificationDate = getStringValueFromJSONObject(jsonObject, DECLASSIFICATION_DATE, false, false);
+        Object declassificationDate = jsonObject.isNull(DECLASSIFICATION_DATE) ? null : getStringValueFromJSONObject(jsonObject, DECLASSIFICATION_DATE, false, false);
         String declassificationEvent = getStringValueFromJSONObject(jsonObject, DECLASSIFICATION_EVENT, false, false);
         Set<String> exemptionCategoryIds = getExemptionCategoryIds(jsonObject);
 
@@ -190,21 +189,20 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
     }
 
     /**
-     * Parses the given string as date
+     * Parses the given date
      *
-     * @param date The {@link String} which will be parsed
-     * @return The parsed date, if the given date is blank then <code>null</code> will be returned.
+     * @param date The {@link Object} which will be parsed
+     * @return The parsed date. If the given date is <code>null</code> then <code>null</code> will be returned.
      */
-    private Date parseDate(String date)
+    private Date parseDate(Object date)
     {
         Date parsedDate = null;
 
-        // FIXME: "null" check
-        if (isNotBlank(date) && !date.equalsIgnoreCase("null"))
+        if (date != null)
         {
             try
             {
-                parsedDate = DateUtils.parseDate(date, ISO_DATE_FORMAT.getPattern());
+                parsedDate = DateUtils.parseDate((String) date, ISO_DATE_FORMAT.getPattern());
             }
             catch (ParseException error)
             {

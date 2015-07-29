@@ -1579,6 +1579,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 // association have no ACL - return an empty list of ACEs
                 result.setAcl(new AccessControlListImpl((List<Ace>) Collections.EMPTY_LIST));
+                result.setIsExactAcl(Boolean.FALSE);
             }
         }
         else
@@ -1614,7 +1615,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 					@Override
 					public Void doWork() throws Exception
 					{
-		                result.setAcl(getACL(info.getCurrentNodeNodeRef(), false));
+					    Acl acl = getACL(info.getCurrentNodeNodeRef(), false);
+		                if (acl != null)
+		                {
+					        result.setAcl(acl);
+					        result.setIsExactAcl(acl.isExact());
+		                }
 						return null;
 					}
             	});

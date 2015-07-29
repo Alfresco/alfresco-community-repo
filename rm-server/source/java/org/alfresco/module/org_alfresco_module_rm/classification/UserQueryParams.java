@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import com.google.common.collect.ImmutableList;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
@@ -37,7 +38,7 @@ import org.alfresco.util.ParameterCheck;
  * @author Neil Mc Erlean
  * @since 3.0.a
  */
-public final class UserQueryParams
+public class UserQueryParams
 {
     /** Required parameter. No default value. This is the username fragment. */
     private final String searchTerm;
@@ -89,6 +90,19 @@ public final class UserQueryParams
         return this;
     }
 
+    /**
+     * Sets the sort properties required for the query.
+     *
+     * @param sortProps A list of pairs of properties and sort directions.
+     * @return The updated {@code UserQueryParams} object.
+     */
+    public UserQueryParams withSortProps(List<Pair<QName, Boolean>> sortProps)
+    {
+        this.sortProps = ImmutableList.copyOf(sortProps);
+        validateList(sortProps);
+        return this;
+    }
+
     public String                     getSearchTerm()  { return this.searchTerm; }
     public List<QName>                getFilterProps() { return this.filterProps; }
     public List<Pair<QName, Boolean>> getSortProps()   { return this.sortProps; }
@@ -99,24 +113,25 @@ public final class UserQueryParams
     @SuppressWarnings("unchecked")
     private <T> List<T> toList(T firstElem, T... otherElems)
     {
-        // At least one element is required.
-        ParameterCheck.mandatory("firstElem", firstElem);
-
         List<T> elementList = new ArrayList<>();
         elementList.add(firstElem);
 
         if (otherElems != null)
         {
-            final List<T> tList = asList(otherElems);
-            final int firstNull = tList.indexOf(null);
-            if (firstNull != -1)
-            {
-                // "+ 2" so that position 1 points to 'firstElem' and so on through otherElems.
-                throw new IllegalArgumentException("Unexpected null element at position " + firstNull + 2);
-            }
-            elementList.addAll(tList);
+            elementList.addAll(asList(otherElems));
         }
 
+        validateList(elementList);
+
         return elementList;
+    }
+
+    /** Validate a list of elements to check none of them are null. */
+    private <T> void validateList(List<T> elementList)
+    {
+        if (elementList.contains(null))
+        {
+            throw new IllegalArgumentException("Unexpected null in parameter list: " + elementList);
+        }
     }
 }

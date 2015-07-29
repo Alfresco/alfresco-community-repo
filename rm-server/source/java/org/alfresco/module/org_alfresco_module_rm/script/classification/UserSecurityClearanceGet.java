@@ -20,10 +20,13 @@ package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
 import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
+import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 import static org.springframework.extensions.webscripts.Status.STATUS_INTERNAL_SERVER_ERROR;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -34,6 +37,7 @@ import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.commons.collections.iterators.ArrayIterator;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -51,8 +55,9 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
     private static final String TOTAL = "total";
     private static final String SKIP_COUNT = "startIndex";
     private static final String MAX_ITEMS = "pageSize";
-    private static final String SORT_FIELD = "sortField";
-    private static final String SORT_ASCENDING = "sortAscending";
+    private static final String SORT_FIELDS = "sortField";
+    private static final String SORT_ASCENDING_FLAGS = "sortAscending";
+    private static final String SEPARATOR = ",";
     private static final String ITEM_COUNT = "itemCount";
     private static final String ITEMS = "items";
     private static final String DATA = "data";
@@ -204,14 +209,31 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
      * @param req {@link WebScriptRequest} The webscript request
      */
     @SuppressWarnings("unchecked")
-    private void setSortProps(UserQueryParams userQueryParams, WebScriptRequest req)
+    protected void setSortProps(UserQueryParams userQueryParams, WebScriptRequest req)
     {
-        String sortField = req.getParameter(SORT_FIELD);
-        String sortAscending = req.getParameter(SORT_ASCENDING);
-
-        if (isNotBlank(sortField) && isNotBlank(sortAscending))
+        String sortFields = req.getParameter(SORT_FIELDS);
+        if (isBlank(sortFields))
         {
-            userQueryParams.withSortProps(new Pair<>(QName.createQName(sortField, getNamespaceService()), parseBoolean(sortAscending)));
+            return;
+        }
+        String sortAscendingFlags = req.getParameter(SORT_ASCENDING_FLAGS);
+        sortAscendingFlags = (isBlank(sortAscendingFlags) ? "True" : sortAscendingFlags);
+
+        List<Pair<QName, Boolean>> sortPairs = new ArrayList<>();
+        Iterator<String> ascendingFlagIterator = new ArrayIterator((String[]) sortAscendingFlags.split(SEPARATOR));
+        for (String sortField : sortFields.split(SEPARATOR))
+        {
+            boolean ascendingFlag = (ascendingFlagIterator.hasNext() ? parseBoolean(ascendingFlagIterator.next()) : true);
+
+            if (isNotBlank(sortField))
+            {
+                Pair<QName, Boolean> sortPair = new Pair<>(QName.createQName(sortField, getNamespaceService()), ascendingFlag);
+                sortPairs.add(sortPair);
+            }
+        }
+        if (!sortPairs.isEmpty())
+        {
+            userQueryParams.withSortProps(sortPairs);
         }
     }
 }

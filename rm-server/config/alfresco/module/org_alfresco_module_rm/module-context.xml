@@ -258,5 +258,8 @@
 
    <!-- Import the Classified Content Services -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/classified-content-context.xml"/>
+   
+   <!-- Import the Content Services -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/content-context.xml"/>
 
 </beans>

@@ -24,7 +24,7 @@
            project.windowsSigningPkcs12Password=${p12Password} 
            alfresco_edition=enterprise 
            alfrescogoogledocs_component_enabled=1 
-           alfrescosharepoint_component_enabled=1 
+           alfrescosharepoint_component_enabled=0 
            alfrescosolr_component_enabled=1 
            alfrescowcmqs_component_enabled=1 
            project.outputDirectory=${project.build.directory} 

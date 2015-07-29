@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ExemptionCategoryIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils;
@@ -84,6 +85,7 @@ public class ClassificationSchemeServiceImplUnitTest
     @Mock private DictionaryService           mockDictionaryService;
     @Mock private ClassificationLevelManager  mockLevelManager;
     @Mock private ClassificationReasonManager mockReasonManager;
+    @Mock private ExemptionCategoryManager    mockExemptionCategoryManager;
     @Captor private ArgumentCaptor<Map<QName, Serializable>> propertiesCaptor;
 
     @Before public void setUp()
@@ -155,5 +157,22 @@ public class ClassificationSchemeServiceImplUnitTest
         String classificationReasonId = "aRandomId";
         doThrow(new ReasonIdNotFound("Id not found!")).when(mockReasonManager).findReasonById(classificationReasonId);
         classificationSchemeServiceImpl.getClassificationReasonById(classificationReasonId);
+    }
+
+    @Test
+    public void getExemptionCategoryById()
+    {
+        String exemptionCategoryId = "exemptionCategoryId";
+        ExemptionCategory exemptionCategory = new ExemptionCategory(exemptionCategoryId, "displayLabelKey");
+        when(mockExemptionCategoryManager.findCategoryById(exemptionCategoryId)).thenReturn(exemptionCategory);
+        classificationSchemeServiceImpl.getExemptionCategoryById(exemptionCategoryId);
+    }
+
+    @Test(expected = ExemptionCategoryIdNotFound.class)
+    public void getExemptionCategoryById_nonExisting()
+    {
+        String exemptionCategoryId = "aRandomId";
+        doThrow(new ExemptionCategoryIdNotFound("Id not found!")).when(mockExemptionCategoryManager).findCategoryById(exemptionCategoryId);
+        classificationSchemeServiceImpl.getExemptionCategoryById(exemptionCategoryId);
     }
 }

@@ -115,6 +115,7 @@
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getExemptionCategories=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getReclassification=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getReclassificationValues=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getExemptionCategoryById=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.*=ACL_DENY
          </value>
       </property>

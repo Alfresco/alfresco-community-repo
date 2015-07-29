@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ExemptionCategoryIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
 
@@ -79,6 +80,15 @@ public interface ClassificationSchemeService
      * @return The exemption categories in the order that they are defined.
      */
     List<ExemptionCategory> getExemptionCategories();
+
+    /**
+     * Gets the exemption category for the given exemption category id
+     *
+     * @param exemptionCategoryId {@link String} The exemption category id for which the exemption category should be retrieved.
+     * @return The exemption category for the given exemption category id
+     * @throws ExemptionCategoryIdNotFound If the given exemption id is not found
+     */
+    ExemptionCategory getExemptionCategoryById(String exemptionCategoryId) throws ExemptionCategoryIdNotFound;
 
     /**
      * Identifies the reclassification type for the provided pair of {@link ClassificationLevel levels}.

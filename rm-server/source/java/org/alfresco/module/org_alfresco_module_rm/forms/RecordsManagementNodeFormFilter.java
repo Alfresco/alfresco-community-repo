@@ -78,6 +78,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     protected static final String TRANSIENT_CURRENT_CLASSIFICATION = "clfCurrentClassification";
     protected static final String TRANSIENT_INITIAL_CLASSIFICATION = "clfInitialClassification";
     protected static final String TRANSIENT_CLASSIFICATION_REASON_LABELS = "clfClassificationReasonLabels";
+    protected static final String TRANSIENT_DECLASSIFICATION_EXEMPTIONS = "clfDeclassificationExemptions";
 
     /** Disposition service */
     private DispositionService dispositionService;
@@ -231,6 +232,21 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                     classificationReasonLabels.add(id + ": " + displayLabel + (i < size - 1 ? "|": ""));
                 }
                 addTransientPropertyField(form, TRANSIENT_CLASSIFICATION_REASON_LABELS, DataTypeDefinition.TEXT, classificationReasonLabels);
+            }
+
+            @SuppressWarnings("unchecked")
+            List<String> declassificationExemptions = (List<String>) nodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_DECLASSIFICATION_EXEMPTIONS);
+            if (declassificationExemptions != null && !declassificationExemptions.isEmpty())
+            {
+                List<String> declassificationExemptionLabels = new ArrayList<>();
+                int size = declassificationExemptions.size();
+                for (int i = 0; i < size; i++)
+                {
+                    String id = declassificationExemptions.get(i);
+                    String displayLabel = getClassificationSchemeService().getExemptionCategoryById(id).getDisplayLabel();
+                    declassificationExemptionLabels.add(id + ": " + displayLabel + (i < size - 1 ? "|": ""));
+                }
+                addTransientPropertyField(form, TRANSIENT_DECLASSIFICATION_EXEMPTIONS, DataTypeDefinition.TEXT, declassificationExemptionLabels);
             }
         }
     }

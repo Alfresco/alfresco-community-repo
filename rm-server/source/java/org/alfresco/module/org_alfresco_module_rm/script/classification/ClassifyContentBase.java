@@ -199,7 +199,8 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
     {
         Date parsedDate = null;
 
-        if (isNotBlank(date))
+        // FIXME: "null" check
+        if (isNotBlank(date) && !date.equalsIgnoreCase("null"))
         {
             try
             {

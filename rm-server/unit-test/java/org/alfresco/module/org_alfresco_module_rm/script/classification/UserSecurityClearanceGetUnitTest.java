@@ -23,8 +23,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -38,6 +43,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTes
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -46,6 +52,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Test for get user security clearance API
@@ -193,6 +200,66 @@ public class UserSecurityClearanceGetUnitTest extends BaseWebScriptUnitTest
         ObjectMapper mapper = new ObjectMapper();
         JsonNode expected = mapper.readTree(getExpectedResult(numberOfUsers, startIndex, pageSize, fromIndex, toIndex - 1, items.size()));
         assertEquals(expected, mapper.readTree(response.toString()));
+    }
+
+    /**
+     * Check that when supplying a single field with no sort direction, the UserQueryParams are populated with the
+     * specified field and the default direction (true).
+     */
+    @Test
+    public void testSetSortProps_singleField()
+    {
+        UserQueryParams userQueryParams = mock(UserQueryParams.class);
+        WebScriptRequest req = mock(WebScriptRequest.class);
+        when(req.getParameter("sortField")).thenReturn("field");
+        when(mockedNamespaceService.getNamespaceURI("")).thenReturn("namespace");
+
+        // Call the method under test.
+        webscript.setSortProps(userQueryParams, req);
+
+        // Check the userQueryParams contains the field (and the direction has defaulted to ascending (TRUE)).
+        Pair<QName, Boolean> sortPair = new Pair<>(QName.createQName("field", mockedNamespaceService), Boolean.TRUE);
+        List<Pair<QName, Boolean>> expectedSortProps = Arrays.asList(sortPair);
+        verify(userQueryParams).withSortProps(expectedSortProps);
+    }
+
+    /**
+     * Check that when supplying three fields with different sort directions (ascending, descending, unspecified), the
+     * UserQueryParams gets populated correctly.
+     */
+    @Test
+    public void testSetSortProps_multipleFieldsAndDirections()
+    {
+        UserQueryParams userQueryParams = mock(UserQueryParams.class);
+        WebScriptRequest req = mock(WebScriptRequest.class);
+        when(req.getParameter("sortField")).thenReturn("fieldA,fieldB,fieldC");
+        // The sort order for the fields is ascending, descending, unspecified (which should default to ascending).
+        when(req.getParameter("sortAscending")).thenReturn("true,false");
+        when(mockedNamespaceService.getNamespaceURI("")).thenReturn("namespace");
+
+        // Call the method under test.
+        webscript.setSortProps(userQueryParams, req);
+
+        Pair<QName, Boolean> sortPairA = new Pair<>(QName.createQName("fieldA", mockedNamespaceService), Boolean.TRUE);
+        Pair<QName, Boolean> sortPairB = new Pair<>(QName.createQName("fieldB", mockedNamespaceService), Boolean.FALSE);
+        Pair<QName, Boolean> sortPairC = new Pair<>(QName.createQName("fieldC", mockedNamespaceService), Boolean.TRUE);
+        List<Pair<QName, Boolean>> expectedSortProps = Arrays.asList(sortPairA, sortPairB, sortPairC);
+        verify(userQueryParams).withSortProps(expectedSortProps);
+    }
+
+    /** Check that if no sort information is given there are no exceptions. */
+    @Test
+    public void testSetSortProps_noFields()
+    {
+        UserQueryParams userQueryParams = mock(UserQueryParams.class);
+        WebScriptRequest req = mock(WebScriptRequest.class);
+        when(req.getParameter("sortField")).thenReturn(null);
+        when(mockedNamespaceService.getNamespaceURI("")).thenReturn("namespace");
+
+        // Call the method under test.
+        webscript.setSortProps(userQueryParams, req);
+
+        verifyNoMoreInteractions(userQueryParams);
     }
 
     private String getExpectedResult(int total, int startIndex, int pageSize, int fromIndex, int toIndex, int itemCount)

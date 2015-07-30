@@ -204,20 +204,24 @@ Copyrighted by BitRock
         </setInstallerVariable>
         <setInstallerVariable name="JAVA_ENV_VAR">
             <value>##### JAVA ENV #####
-JAVA_HOME=${java_home_directory}
-export JAVA_HOME</value>
+                JAVA_HOME=${java_home_directory}
+                export JAVA_HOME
+
+            </value>
             <ruleList>
                 <platformTest type="unix"/>
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariable name="JAVA_ENV_VAR">
             <value>${JAVA_ENV_VAR}
-JAVA_BINDIR=${java_home_directory}/bin
-export JAVA_BINDIR
-JAVA_ROOT=${java_home_directory}
-export JAVA_ROOT
-JRE_HOME=${java_home_directory}/jre
-export JRE_HOME</value>
+                JAVA_BINDIR=${java_home_directory}/bin
+                export JAVA_BINDIR
+                JAVA_ROOT=${java_home_directory}
+                export JAVA_ROOT
+                JRE_HOME=${java_home_directory}/jre
+                export JRE_HOME
+
+            </value>
             <ruleList>
                 <platformTest type="unix"/>
                 <compareText logic="equals" text="${linux_distribution}" value="suse"/>
@@ -225,7 +229,9 @@ export JRE_HOME</value>
         </setInstallerVariable>
         <setInstallerVariable name="JAVA_ENV_VAR">
             <value>rem ##### JAVA ENV #####
-set JAVA_HOME=${java_home_directory}</value>
+                set JAVA_HOME=${java_home_directory}
+
+            </value>
             <ruleList>
                 <platformTest type="windows"/>
             </ruleList>

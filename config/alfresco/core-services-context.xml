@@ -373,6 +373,7 @@
                 <value>alfresco.messages.replication</value>
                 <value>alfresco.messages.categories</value>
                 <value>alfresco.messages.authentication</value>
+                <value>alfresco.messages.file-folder-service</value>
             </list>
         </property>
     </bean>

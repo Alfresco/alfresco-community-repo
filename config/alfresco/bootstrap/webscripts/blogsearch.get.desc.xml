@@ -8,4 +8,5 @@
    <format default="html">extension</format>
    <authentication>guest</authentication>
    <transaction>required</transaction>
+   <lifecycle>sample</lifecycle>
 </webscript>

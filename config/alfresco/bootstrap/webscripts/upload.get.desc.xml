@@ -3,4 +3,5 @@
   <description>Form for uploading file content and meta-data into Repository</description>
   <url>/sample/upload</url>
   <authentication>user</authentication>
+  <lifecycle>sample</lifecycle>
 </webscript>

@@ -2,7 +2,7 @@
 
     <target name="build-all">
         <!-- Build installers in parallel -->
-        <parallel threadCount="4" failonany="true">
+        <parallel threadCount="2" failonany="true">
             <antcall target="build-win32-installer" unless:set="skipWinInstaller" />
             <antcall target="build-win64-installer" unless:set="skipWinInstaller" />
             <antcall target="build-linux-installer" unless:set="skipLinInstaller" />

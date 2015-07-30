@@ -13,4 +13,5 @@
   <format default="json">argument</format>
   <!-- Note transactions are handled by the CMISServiceFactory -->
   <transaction>none</transaction>
+  <lifecycle>public_api</lifecycle>
 </webscript>

@@ -4,4 +4,5 @@
    <url>/calendar/feed/{nodeId}</url>
    <authentication>guest</authentication>
    <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
 </webscript>

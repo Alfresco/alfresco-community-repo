@@ -9,4 +9,5 @@
   <format default="json" />
   <authentication>none</authentication>
   <transaction allow="readonly">required</transaction>
+  <lifecycle>internal</lifecycle>
 </webscript>

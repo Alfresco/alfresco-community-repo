@@ -38,7 +38,7 @@
   ]]></description>
   <url>/api/sites/{shortname}/invitations</url>
   <format default="json"/>
-  <lifecycle>draft_public_api</lifecycle>
+  <lifecycle>limited_support</lifecycle>
   <authentication>user</authentication>
   <transaction>required</transaction>
 </webscript>

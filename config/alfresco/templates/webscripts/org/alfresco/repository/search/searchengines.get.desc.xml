@@ -5,4 +5,5 @@
   <url>/search/engines?type={type?}</url>
   <url>/api/search/engines.atom?type={type?}</url>
   <url>/search/engines.atom?type={type?}</url>
+  <lifecycle>limited_support</lifecycle>
 </webscript>

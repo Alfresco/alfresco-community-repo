@@ -7,7 +7,6 @@
    <format default="html"/>
    <authentication>user</authentication>
    <transaction>required</transaction>
-   <lifecycle>public_api</lifecycle>
    <args>
       <arg>
          <shortname>store_protocol</shortname>

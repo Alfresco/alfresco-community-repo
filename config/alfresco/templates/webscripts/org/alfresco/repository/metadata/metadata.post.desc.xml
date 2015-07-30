@@ -4,4 +4,5 @@
   <url>/api/metadata/node/{store_type}/{store_id}/{id}</url>
   <format default="json">argument</format>
   <authentication>user</authentication>
+  <lifecycle>limited_support</lifecycle>
 </webscript>

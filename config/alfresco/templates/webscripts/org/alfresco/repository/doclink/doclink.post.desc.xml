@@ -7,7 +7,8 @@
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
- <args>
+  <lifecycle>limited_support</lifecycle>
+  <args>
     <arg>
       <shortname>store_type</shortname>
       <description>Protocol for the source store, e.g. workspace or versionstore.</description>
@@ -32,21 +33,21 @@
       <shortname>path</shortname>
       <description>The path to the source node in the site's container.</description>
     </arg>
-  </args>
+   </args>
    <requests>
-  	<request>
-  		<format>json</format>
-  		<type>
-  			<![CDATA[{ "destinationNodeRef" : string }]]>
-  		</type>
-  	</request>
-  </requests>
-  <responses>
-  	<response>
-  		<format>json</format>
-  		<type>
-  			<![CDATA[{ "linkNodeRef" : string }]]>
-  		</type>
-  	</response>
-  </responses>
+     	<request>
+     		<format>json</format>
+     		<type>
+     			<![CDATA[{ "destinationNodeRef" : string }]]>
+     		</type>
+     	</request>
+   </requests>
+   <responses>
+     	<response>
+     		<format>json</format>
+     		<type>
+     			<![CDATA[{ "linkNodeRef" : string }]]>
+     		</type>
+     	</response>
+   </responses>
 </webscript>

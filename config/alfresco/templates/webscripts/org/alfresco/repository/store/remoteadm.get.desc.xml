@@ -6,4 +6,5 @@
   <authentication>none</authentication>
   <transaction allow="readonly">required</transaction>
   <format default="">argument</format>
+  <lifecycle>internal</lifecycle>
 </webscript>

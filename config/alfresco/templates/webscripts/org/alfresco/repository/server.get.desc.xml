@@ -4,4 +4,5 @@
    <url>/api/server</url>
    <format default="json"/>
    <authentication>none</authentication>
+   <lifecycle>limited_support</lifecycle>
 </webscript>

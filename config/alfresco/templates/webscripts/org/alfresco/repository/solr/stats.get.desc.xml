@@ -9,4 +9,5 @@
   <authentication>user</authentication>
   <transaction allow="readonly">required</transaction>
   <family>SOLR</family>
+  <lifecycle>limited_support</lifecycle>
 </webscript>

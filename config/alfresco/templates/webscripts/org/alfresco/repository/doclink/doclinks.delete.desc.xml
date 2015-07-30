@@ -7,7 +7,8 @@
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
- <args>
+  <lifecycle>limited_support</lifecycle>
+  <args>
     <arg>
       <shortname>store_type</shortname>
       <description>Protocol for the destination store, e.g. workspace or versionstore.</description>
@@ -32,10 +33,10 @@
       <shortname>path</shortname>
       <description>The path to the destination node in the site's container.</description>
     </arg>
-  </args>
+   </args>
    <requests>
    </requests>
-  <responses>
+   <responses>
     <response>
         <format>json</format>
         <type>
@@ -53,5 +54,5 @@
             ]]>
         </type>
     </response>
-  </responses>
+   </responses>
 </webscript>

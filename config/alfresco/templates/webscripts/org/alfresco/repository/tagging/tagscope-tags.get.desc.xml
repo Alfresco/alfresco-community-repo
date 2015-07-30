@@ -9,6 +9,6 @@
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction allow="readonly">required</transaction>
-  <lifecycle>draft_public_api</lifecycle>
+  <lifecycle>limited_support</lifecycle>
   <family>Tagging</family>
 </webscript>

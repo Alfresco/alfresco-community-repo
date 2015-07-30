@@ -13,4 +13,5 @@
   <format default="atomfeed">argument</format>
   <authentication>admin</authentication>
   <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
 </webscript>

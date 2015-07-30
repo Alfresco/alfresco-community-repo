@@ -10,4 +10,5 @@
    <authentication>user</authentication>
    <transaction>required</transaction>
    <family>IMAP</family>
+   <lifecycle>internal</lifecycle>
 </webscript>

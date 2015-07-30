@@ -10,4 +10,5 @@
   <url>/api/search/person.portlet?q={searchTerms}&amp;p={startPage?}&amp;c={count?}&amp;l={language?}</url>
   <authentication>guest</authentication>
   <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
 </webscript>

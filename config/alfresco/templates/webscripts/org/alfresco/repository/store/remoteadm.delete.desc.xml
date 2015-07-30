@@ -5,4 +5,5 @@
   <authentication>user</authentication>
   <transaction buffersize="0">required</transaction>
   <format default="">argument</format>
+  <lifecycle>internal</lifecycle>
 </webscript>

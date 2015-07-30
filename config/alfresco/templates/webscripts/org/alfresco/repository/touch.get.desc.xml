@@ -5,4 +5,5 @@
   <format default="">argument</format>
   <authentication>guest</authentication>
   <transaction>none</transaction>
+  <lifecycle>internal</lifecycle>
 </webscript>

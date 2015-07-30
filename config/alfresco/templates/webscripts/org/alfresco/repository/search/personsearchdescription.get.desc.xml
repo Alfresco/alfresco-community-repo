@@ -4,4 +4,5 @@
   <url>/api/search/person/description.xml</url>
   <url>/search/person/description.xml</url>
   <format default="opensearchdescription">argument</format>
+  <lifecycle>limited_support</lifecycle>
 </webscript>

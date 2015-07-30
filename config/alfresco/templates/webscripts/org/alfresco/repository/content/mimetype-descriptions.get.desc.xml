@@ -11,4 +11,5 @@
   <format default="json"/>
   <authentication>none</authentication>
   <transaction allow="readonly">required</transaction>
+  <lifecycle>limited_support</lifecycle>
 </webscript>

@@ -18,7 +18,7 @@
   <format default="xml"/>
   <authentication>user</authentication>
   <transaction>required</transaction>
-  <lifecycle>public_api</lifecycle>
+  <lifecycle>limited_support</lifecycle>
   <family>Authentication</family>
   <args>
     <arg>

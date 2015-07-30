@@ -14,4 +14,5 @@
    <lifecycle>internal</lifecycle>
    <!-- Transactions are handled inside the webscript itself -->
    <transaction>none</transaction>
+   <lifecycle>limited_support</lifecycle>
 </webscript>

@@ -8,4 +8,5 @@
   <url>/quickshare/enabled</url>
   <format default="json" />
   <authentication>none</authentication>
+  <lifecycle>internal</lifecycle>
 </webscript>

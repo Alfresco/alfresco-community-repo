@@ -24,7 +24,7 @@
    <format default="json"/>
    <authentication>user</authentication>
    <transaction>required</transaction>
-   <lifecycle>public_api</lifecycle>
+   <lifecycle>limited_support</lifecycle>
    <args>
       <arg>
          <shortname>siteId</shortname>

@@ -3,6 +3,7 @@
    <description>Gets the collection of association definitions for a given classname.</description>
    <url>/api/classes/{classname}/associations?af={associationFilter?}&amp;nsp={namespacePrefix?}&amp;n={name?}</url>
    <format default="json">argument</format>
-  <authentication>user</authentication>
+   <authentication>user</authentication>
    <transaction>required</transaction>
+   <lifecycle>limited_support</lifecycle>
 </webscript>

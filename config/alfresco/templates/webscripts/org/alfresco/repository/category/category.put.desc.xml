@@ -7,7 +7,7 @@
    <format default="json">argument</format>
    <authentication>admin</authentication>
    <transaction allow="readwrite" buffersize="0">required</transaction>
-   <lifecycle>draft_public_api</lifecycle>
+   <lifecycle>limited_support</lifecycle>
    <args>
       <arg>
          <shortname>store_protocol</shortname>

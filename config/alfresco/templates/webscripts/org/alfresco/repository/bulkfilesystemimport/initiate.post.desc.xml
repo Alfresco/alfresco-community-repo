@@ -5,6 +5,7 @@
   <authentication>admin</authentication>
   <transaction>none</transaction>
   <family>Bulk Filesystem Import</family>
+  <lifecycle>internal</lifecycle>
   <cache>
     <never>true</never>
   </cache>

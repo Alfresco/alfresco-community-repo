@@ -5,6 +5,7 @@
   <authentication>admin</authentication>
   <format default="json">any</format>
   <family>Bulk Filesystem Import</family>
+  <lifecycle>internal</lifecycle>
   <cache>
     <never>true</never>
   </cache>

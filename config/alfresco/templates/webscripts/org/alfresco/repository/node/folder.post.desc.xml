@@ -37,7 +37,7 @@
   <format default="json">argument</format>
   <authentication>user</authentication>
   <transaction>required</transaction>
-  <lifecycle>public_api</lifecycle>
+  <lifecycle>limited_support</lifecycle>
   <args>
     <arg>
       <shortname>store_type</shortname>

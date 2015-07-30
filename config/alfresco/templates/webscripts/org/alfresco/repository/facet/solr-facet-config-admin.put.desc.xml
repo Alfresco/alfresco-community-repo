@@ -48,4 +48,5 @@
    <format default="json">argument</format>
    <authentication>user</authentication>
    <transaction>required</transaction>
+   <lifecycle>limited_support</lifecycle>
 </webscript>

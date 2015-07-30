@@ -7,4 +7,5 @@
   <format default="json"/>
   <authentication>admin</authentication>
   <transaction>required</transaction>
+  <lifecycle>limited_support</lifecycle>
 </webscript>

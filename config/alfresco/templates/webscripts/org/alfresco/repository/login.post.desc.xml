@@ -19,7 +19,7 @@
   <format default="json"/>
   <authentication>none</authentication>
   <transaction allow="readonly">required</transaction>
-  <lifecycle>public_api</lifecycle>
+  <lifecycle>limited_support</lifecycle>
   <family>Authentication</family>
   <requests>
     <request>

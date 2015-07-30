@@ -13,4 +13,5 @@
   <authentication>user</authentication>
   <format default="json">argument</format>
   <transaction>none</transaction>
+  <lifecycle>public_api</lifecycle>
 </webscript>

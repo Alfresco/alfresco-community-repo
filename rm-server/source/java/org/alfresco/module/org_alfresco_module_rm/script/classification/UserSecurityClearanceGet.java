@@ -220,7 +220,7 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
         sortAscendingFlags = (isBlank(sortAscendingFlags) ? "True" : sortAscendingFlags);
 
         List<Pair<QName, Boolean>> sortPairs = new ArrayList<>();
-        Iterator<String> ascendingFlagIterator = new ArrayIterator((String[]) sortAscendingFlags.split(SEPARATOR));
+        Iterator<String> ascendingFlagIterator = new ArrayIterator(sortAscendingFlags.split(SEPARATOR));
         for (String sortField : sortFields.split(SEPARATOR))
         {
             boolean ascendingFlag = (ascendingFlagIterator.hasNext() ? parseBoolean(ascendingFlagIterator.next()) : true);

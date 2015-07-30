@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.calendar.CalendarServiceImpl;
@@ -63,6 +65,13 @@ public class UserCalendarEntriesGet extends AbstractCalendarListingWebScript
       if (siteName != null)
       {
          site = siteService.getSite(siteName);
+         
+         // MNT-3053 fix, siteName was provided in request but it doesn't exists or user has no permissions to access it.
+         if (site == null)
+         {
+             status.setCode(HttpServletResponse.SC_NOT_FOUND, "Site '" + siteName + "' does not exist or user has no permissions to access it.");
+             return null;
+         }
       }
       
       return executeImpl(site, null, req, null, status, cache);

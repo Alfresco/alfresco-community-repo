@@ -39,6 +39,7 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -1181,6 +1182,20 @@ public class CalendarRestApiTest extends BaseWebScriptTest
        result = new JSONObject(response.getContentAsString());
        events = result.getJSONArray("events");
        assertEquals(0, events.length());
+    }
+    
+    /**
+     * Listing for a user
+     */
+    public void testMNT_3053() throws Exception
+    {
+        String siteName = null; 
+        do
+        {
+            siteName = GUID.generate();
+        }
+        while (siteService.getSite(siteName) != null);
+        sendRequest(new GetRequest("/calendar/events/" + siteName + "/user"), 404);
     }
 
     /**

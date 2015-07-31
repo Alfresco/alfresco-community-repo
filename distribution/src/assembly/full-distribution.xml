@@ -36,7 +36,7 @@
 
         <!-- Share -->
         <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}</directory>
+            <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}/web-server/webapps</directory>
             <includes>
                 <include>share.war</include>
             </includes>

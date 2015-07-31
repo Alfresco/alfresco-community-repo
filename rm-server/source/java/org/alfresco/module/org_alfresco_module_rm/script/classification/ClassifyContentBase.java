@@ -63,6 +63,8 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
     public static final String DECLASSIFICATION_DATE = "declassificationDate";
     public static final String DECLASSIFICATION_EVENT = "declassificationEvent";
     public static final String DECLASSIFICATION_EXEMPTIONS = "declassificationExemptions";
+    public static final String LAST_RECLASSIFY_BY = "lastReclassifyBy";
+    public static final String LAST_RECLASSIFY_REASON = "lastReclassifyReason";
 
     /** The service responsible for classifying content. */
     private ContentClassificationService contentClassificationService;
@@ -115,6 +117,8 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
         Object declassificationDate = jsonObject.isNull(DECLASSIFICATION_DATE) ? null : getStringValueFromJSONObject(jsonObject, DECLASSIFICATION_DATE, false, false);
         String declassificationEvent = getStringValueFromJSONObject(jsonObject, DECLASSIFICATION_EVENT, false, false);
         Set<String> exemptionCategoryIds = getExemptionCategoryIds(jsonObject);
+        String lastReclassifyBy = getStringValueFromJSONObject(jsonObject, LAST_RECLASSIFY_BY, false, false);
+        String lastReclassifyReason = getStringValueFromJSONObject(jsonObject, LAST_RECLASSIFY_REASON, false, false);
 
         ClassificationAspectProperties propertiesDTO = new ClassificationAspectProperties();
         propertiesDTO.setClassificationLevelId(classificationLevelId);
@@ -127,6 +131,8 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
         propertiesDTO.setDeclassificationDate(parseDate(declassificationDate));
         propertiesDTO.setDeclassificationEvent(declassificationEvent);
         propertiesDTO.setExemptionCategoryIds(exemptionCategoryIds);
+        propertiesDTO.setLastReclassifyBy(lastReclassifyBy);
+        propertiesDTO.setLastReclassifyReason(lastReclassifyReason);
 
         NodeRef document = parseRequestForNodeRef(req);
 

@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import static org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelManager.UNCLASSIFIED_ID;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.checkNotBlank;
 import static org.alfresco.util.ParameterCheck.mandatory;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -173,18 +174,25 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
         propertiesMap.put(PROP_CURRENT_CLASSIFICATION, propertiesDTO.getClassificationLevelId());
         propertiesMap.put(PROP_CLASSIFICATION_AGENCY, propertiesDTO.getClassificationAgency());
         propertiesMap.put(PROP_CLASSIFIED_BY, propertiesDTO.getClassifiedBy());
-
-        HashSet<String> classificationReasons = new HashSet<>(propertiesDTO.getClassificationReasonIds());
-        propertiesMap.put(PROP_CLASSIFICATION_REASONS, classificationReasons);
-
+        propertiesMap.put(PROP_CLASSIFICATION_REASONS, new HashSet<>(propertiesDTO.getClassificationReasonIds()));
         propertiesMap.put(PROP_DOWNGRADE_DATE, propertiesDTO.getDowngradeDate());
         propertiesMap.put(PROP_DOWNGRADE_EVENT, propertiesDTO.getDowngradeEvent());
         propertiesMap.put(PROP_DOWNGRADE_INSTRUCTIONS, propertiesDTO.getDowngradeInstructions());
         propertiesMap.put(PROP_DECLASSIFICATION_DATE, propertiesDTO.getDeclassificationDate());
         propertiesMap.put(PROP_DECLASSIFICATION_EVENT, propertiesDTO.getDeclassificationEvent());
+        propertiesMap.put(PROP_DECLASSIFICATION_EXEMPTIONS, new HashSet<>(propertiesDTO.getExemptionCategoryIds()));
 
-        HashSet<String> declassificationExemptions = new HashSet<>(propertiesDTO.getExemptionCategoryIds());
-        propertiesMap.put(PROP_DECLASSIFICATION_EXEMPTIONS, declassificationExemptions);
+        String lastReclassifyBy = propertiesDTO.getLastReclassifyBy();
+        if (isNotBlank(lastReclassifyBy))
+        {
+            propertiesMap.put(PROP_LAST_RECLASSIFY_BY, lastReclassifyBy);
+        }
+
+        String lastReclassifyReason = propertiesDTO.getLastReclassifyReason();
+        if (isNotBlank(lastReclassifyReason))
+        {
+            propertiesMap.put(PROP_LAST_RECLASSIFY_REASON, lastReclassifyReason);
+        }
 
         return propertiesMap;
     }

@@ -1,12 +1,12 @@
 <component>
     <name>alfrescopostgresquestion</name>
+    <description>//Alfresco PostgreSQL Question</description>
     <selected>1</selected>
     <show>0</show>
     <shouldPackRuleList>
-        <isTrue value="${alfrescopostgresquestion_component_enabled}"/>
+        <isTrue value="${postgres_component_enabled}"/>
     </shouldPackRuleList>
     <parameterList>
-        <booleanParameter ask="0" name="alfrescopostgresquestion_component_enabled" value="1"/>
         <parameterGroup>
             <name>alfrescopostgresquestion_existing</name>
             <title>Database Configuration</title>
@@ -55,7 +55,6 @@
                 <setInstallerVariable name="component(alfrescopostgresdbcreation).selected" value="0"/>
             </actionList>
             <ruleList>
-                <!--isFalse value="${alfrescopostgresquestion_bundled}" /-->
                 <isFalse value="${component(postgres).selected}" />
 		<compareText text="${installer_ui}" logic="equals" value="unattended"/>
             </ruleList>
@@ -69,7 +68,6 @@
                 <setInstallerVariable name="component(alfrescopostgresdbcreation).selected" value="1"/>
             </actionList>
             <ruleList>
-                <!--isTrue value="${alfrescopostgresquestion_bundled}" /-->
                 <isTrue value="${component(postgres).selected}"/>
                 <compareText logic="equals" text="${installer_ui}" value="unattended"/>
             </ruleList>
@@ -82,7 +80,6 @@
                 <setInstallerVariable name="component(alfrescopostgresdbcreation).selected" value="0"/>
             </actionList>
             <ruleList>
-                <!--isFalse value="${alfrescopostgresquestion_bundled}" /-->
                 <isFalse value="${component(postgres).selected}"/>
                 <compareText logic="equals" text="${installer_ui}" value="unattended"/>
             </ruleList>
@@ -104,7 +101,6 @@
                 </substitute>
             </actionList>
             <ruleList>
-                <!--isFalse value="${alfrescopostgresquestion_bundled}" /-->
                 <isFalse value="${component(postgres).selected}"/>
             </ruleList>
         </actionGroup>

@@ -159,6 +159,5 @@ fi</value>
                 <platformTest type="unix"/>
             </ruleList>
         </actionGroup>
-        <!--<actionGroup><actionList><runProgram><program>${installdir}/${ctlscript_unix}</program><programArguments>start tomcat &amp; &gt; /dev/null</programArguments></runProgram><waitForPort><port>${application_server_port}</port><timeout>30000</timeout></waitForPort></actionList><ruleList><platformTest type="unix" /></ruleList></actionGroup>-->
     </postInstallationActionList>
 </component>

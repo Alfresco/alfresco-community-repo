@@ -1,6 +1,6 @@
 <component>
     <name>alfrescovalidations</name>
-    <description>Alfresco Validations</description>
+    <description>//Alfresco Validations</description>
     <detailedDescription/>
     <selected>1</selected>
     <show>0</show>
@@ -10,8 +10,14 @@
                 <throwError>
                     <text>You need to select at least one of the Solr components</text>
                     <ruleList>
-                        <componentTest name="alfrescosolr4" logic="not_selected"/>
-                        <componentTest name="alfrescosolr" logic="not_selected"/>
+                        <ruleGroup ruleEvaluationLogic="and">
+                            <ruleList>
+                                <componentTest name="alfrescosolr4" logic="exists"/>
+                                <componentTest name="alfrescosolr" logic="exists"/>
+                                <componentTest name="alfrescosolr4" logic="not_selected"/>
+                                <componentTest name="alfrescosolr" logic="not_selected"/>
+                            </ruleList>
+                        </ruleGroup>
                     </ruleList>
                 </throwError>
                 <alfrescoAutodetectJava javaRequiredOrAbort="1" javaRequiredJdk="1" alfrescoInstallerBitness="${alfresco_installer_bitness}">

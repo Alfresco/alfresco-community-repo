@@ -1,10 +1,8 @@
 <component>
     <name>alfrescocustomstacksettings</name>
+    <description>//Alfresco Custom Stack Settings</description>
     <selected>1</selected>
     <show>0</show>
-    <shouldPackRuleList>
-        <isTrue value="${alfrescocustomstacksettings_component_enabled}"/>
-    </shouldPackRuleList>
     <preBuildActionList>
         <!-- Only OS X x64 supported -->
         <setInstallerVariable name="component(javasettings).parameter(java_osx_arch).value" value="x64">
@@ -14,13 +12,11 @@
         </setInstallerVariable>
         <setInstallerVariable name="component(alfresco).parameter(alfresco_database_name).default" value="alfresco"/>
         <setInstallerVariable name="component(script).parameter(ctlscript_unix).value" value="alfresco.sh"/>
-        <setInstallerVariable name="component(postgres).canBeEdited" value="0"/>
-        <setInstallerVariable name="component(postgres).parameter(postgres_root_password).ask" value="0"/>
-        <setInstallerVariable name="component(postgres).canBeEdited" value="1"/>
+
         <setInstallerVariable name="component(java).show" value="0"/>
         <setInstallerVariable name="component(java).selected" value="1"/>
         <setInstallerVariable name="component(java).canBeEdited" value="0"/>
-        <setInstallerVariable name="component(java).detailedDescription" value="Java Component required to run the Alfresco server."/>
+        <setInstallerVariable name="component(java).detailedDescription" value="Java Component required to run ${product_fullname}"/>
         <setInstallerVariable name="component(java).parameter(java_required_jdk).value" value="1"/>
         <setInstallerVariable name="component(java).parameter(java_min_version).value" value="1.7.0_25"/>
         <!-- Alfresco don't won't to abort the installation if proper JDK not found -->
@@ -28,6 +24,31 @@
         <setInstallerVariable name="component(tomcat).parameter(tomcat_dirname).value" value="tomcat"/>
         <setInstallerVariable name="component(baseparamdir).parameter(installdir).title" value="Installation Folder"/>
         <setInstallerVariable name="component(baseparamdir).parameter(installdir).explanation" value="${'${tr('Please choose a folder to install ${product_fullname}')}'}"/>
+
+        <!-- PostgreSQL specifics -->
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="component(postgres).canBeEdited" value="0"/>
+                <setInstallerVariable name="component(postgres).parameter(postgres_root_password).ask" value="0"/>
+                <setInstallerVariable name="component(postgres).canBeEdited" value="1"/>
+            </actionList>
+            <ruleList>
+                <componentTest logic="exists" name="postgres"/>
+            </ruleList>
+        </actionGroup>
+
+        <!-- Disable password prompt when PostgreSQL is not packaged -->
+        <setInstallerVariable name="component(alfresco).parameter(alfresco_admin_password).allowEmptyValue" value="1">
+            <ruleList>
+                <compareText text="${product_fullname}" logic="equals" value="Alfresco Share"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="component(alfresco).parameter(alfresco_admin_password).ask" value="0">
+            <ruleList>
+                <compareText text="${product_fullname}" logic="equals" value="Alfresco Share"/>
+            </ruleList>
+        </setInstallerVariable>
+
     </preBuildActionList>
     <initializationActionList>
         <setInstallerVariable name="alfresco_installer_bitness" value="64"/>
@@ -37,28 +58,52 @@
                 <compareText text="${project.installerFilename}" logic="contains" value="windows"/>
             </ruleList>
         </setInstallerVariable>
-        <setInstallerVariable name="component(libreofficecomponent).parameter(libreofficeservice_notstart).value" value="1"/>
-        <setInstallerVariable name="component(libreofficecomponent).parameter(libreoffice_installed_as_service).value" value="0"/>
+
+        <!-- Libreoffice specifics -->
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="component(libreofficecomponent).parameter(libreofficeservice_notstart).value" value="1"/>
+                <setInstallerVariable name="component(libreofficecomponent).parameter(libreoffice_installed_as_service).value" value="0"/>
+            </actionList>
+            <ruleList>
+                <componentTest logic="exists" name="libreofficecomponent"/>
+            </ruleList>
+        </actionGroup>
+
         <setInstallerVariable name="component(tomcatservice).parameter(tomcatservice_notstart).value" value="1"/>
-        <setInstallerVariable name="component(postgresinitdb).parameter(database_name).value" value="alfresco"/>
-        <setInstallerVariable name="component(postgresinitdb).parameter(database_user).value" value="alfresco"/>
-        <setInstallerVariable name="component(postgres).parameter(postgres_installation_type).ask" value="0"/>
-        <setInstallerVariable name="component(postgres).parameter(postgres_installation_type).value" value="bundled"/>
-        <setInstallerVariable name="component(postgres).parameter(postgres_logminmessage_level).value" value="fatal"/>
-        <setInstallerVariable name="component(postgres).parameter(postgres_logminerrorstatement_level).value" value="fatal"/>
-        <setInstallerVariable name="component(postgres).parameter(postgres_enable_silentmode).value" value="1"/>
-        <setInstallerVariable name="component(postgres).parameter(postgres_max_connections).value" value="300"/>
+
+        <!-- PostgreSQL specifics -->
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="component(postgresinitdb).parameter(database_name).value" value="alfresco"/>
+                <setInstallerVariable name="component(postgresinitdb).parameter(database_user).value" value="alfresco"/>
+                <setInstallerVariable name="component(postgres).parameter(postgres_installation_type).ask" value="0"/>
+                <setInstallerVariable name="component(postgres).parameter(postgres_installation_type).value" value="bundled"/>
+                <setInstallerVariable name="component(postgres).parameter(postgres_logminmessage_level).value" value="fatal"/>
+                <setInstallerVariable name="component(postgres).parameter(postgres_logminerrorstatement_level).value" value="fatal"/>
+                <setInstallerVariable name="component(postgres).parameter(postgres_enable_silentmode).value" value="1"/>
+                <setInstallerVariable name="component(postgres).parameter(postgres_max_connections).value" value="300"/>
+            </actionList>
+            <ruleList>
+                <componentTest logic="exists" name="postgres"/>
+            </ruleList>
+        </actionGroup>
+
+        <!-- Install dir adaptation if Windows -->
         <setInstallerVariable name="installdir" value="${env(SYSTEMDRIVE)}\Alfresco">
             <ruleList>
                 <platformTest type="windows"/>
             </ruleList>
         </setInstallerVariable>
+
         <setInstallerVariable name="component(baseparamdir).parameter(base_allow_spaces).value" value="0"/>
         <setInstallerVariable name="component(baseparamdir).parameter(base_allow_spaces).value" value="1">
             <ruleList>
                 <compareText text="${installer_ui}" logic="equals" value="unattended"/>
             </ruleList>
         </setInstallerVariable>
+
+        <!-- JVM config -->
         <!-- 50% in MB-->
         <mathExpression text="int(ceil(${machine_total_memory}/2))" variable="java_xmx_setting"/>
         <setInstallerVariable name="java_xmx_setting" value="2048">
@@ -89,9 +134,15 @@
                 <setInstallerVariable name="component(alfrescopostgresdbcreation).selected" value="0"/>
                 <setInstallerVariable name="component(tomcatservice).parameter(tomcatservice_waittostart).value" value="0"/>
             </actionList>
+            <ruleEvaluationLogic>and</ruleEvaluationLogic>
             <ruleList>
-                <compareText logic="equals" text="${installer_ui}" value="unattended"/>
-                <isFalse value="${component(postgres).selected}"/>
+                <componentTest logic="exists" name="postgres"/>
+                <ruleGroup>
+                    <ruleList>
+                        <compareText logic="equals" text="${installer_ui}" value="unattended"/>
+                        <isFalse value="${component(postgres).selected}"/>
+                    </ruleList>
+                </ruleGroup>
             </ruleList>
         </actionGroup>
     </preInstallationActionList>
@@ -111,8 +162,14 @@
                 <setInstallerVariable name="component(alfrescopostgresdbcreation).selected" value="1"/>
                 <setInstallerVariable name="component(tomcatservice).parameter(tomcatservice_waittostart).value" value="1"/>
             </actionList>
+            <ruleEvaluationLogic>and</ruleEvaluationLogic>
             <ruleList>
-                <isTrue value="${component(postgres).selected}"/>
+                <componentTest logic="exists" name="postgres"/>
+                <ruleGroup>
+                    <ruleList>
+                        <isTrue value="${component(postgres).selected}"/>
+                    </ruleList>
+                </ruleGroup>
             </ruleList>
         </actionGroup>
         <actionGroup>
@@ -122,13 +179,18 @@
                 <setInstallerVariable name="component(alfrescopostgresdbcreation).selected" value="0"/>
                 <setInstallerVariable name="component(tomcatservice).parameter(tomcatservice_waittostart).value" value="0"/>
             </actionList>
+            <ruleEvaluationLogic>and</ruleEvaluationLogic>
             <ruleList>
-                <isFalse value="${component(postgres).selected}"/>
+                <componentTest logic="exists" name="postgres"/>
+                <ruleGroup>
+                    <ruleList>
+                        <isFalse value="${component(postgres).selected}"/>
+                    </ruleList>
+                </ruleGroup>
             </ruleList>
         </actionGroup>
     </componentSelectionValidationActionList>
     <parameterList>
-        <booleanParameter ask="0" name="alfrescocustomstacksettings_component_enabled" value="1"/>
         <choiceParameter>
             <name>alfrescocustomstack_installation_type</name>
             <title>Installation Type</title>
@@ -142,17 +204,37 @@
                 <option description="Also choose optional components to install." text="Advanced - Configures server ports and service properties." value="advanced"/>
             </optionList>
             <validationActionList>
-                <setInstallerVariable name="component(postgres).selected" value="1"/>
-                <setInstallerVariable name="component(postgresinitdb).selected" value="1"/>
-                <setInstallerVariable name="component(postgresservice).selected" value="1"/>
-                <setInstallerVariable name="component(alfrescopostgresdbcreation).selected" value="1"/>
-                <setInstallerVariable name="component(tomcatservice).parameter(tomcatservice_waittostart).value" value="1"/>
-                <componentSelection select="libreofficecomponent,alfrescosharepoint,alfrescowmqs,alfrescogoogledocs"/>
                 <actionGroup>
                     <actionList>
-                        <setInstallerVariable name="component(tomcat).parameter(tomcat_show_ports).value" value="1"/>
-                        <setInstallerVariable name="component(libreofficecomponent).parameter(libreoffice_show_ports).value" value="1"/>
-                        <setInstallerVariable name="component(postgres).parameter(postgres_show_ports).value" value="1"/>
+                        <setInstallerVariable name="component(postgres).selected" value="1"/>
+                        <setInstallerVariable name="component(postgresinitdb).selected" value="1"/>
+                        <setInstallerVariable name="component(postgresservice).selected" value="1"/>
+                        <setInstallerVariable name="component(alfrescopostgresdbcreation).selected" value="1"/>
+                        <setInstallerVariable name="component(tomcatservice).parameter(tomcatservice_waittostart).value" value="1"/>
+                        <componentSelection select="libreofficecomponent,alfrescosharepoint,alfrescowmqs,alfrescogoogledocs"/>
+                    </actionList>
+                    <ruleList>
+                        <componentTest logic="exists" name="postgres"/>
+                        <componentTest logic="exists" name="postgresinitdb"/>
+                        <componentTest logic="exists" name="postgresservice"/>
+                        <componentTest logic="exists" name="alfrescopostgresdbcreation"/>
+                        <componentTest logic="exists" name="libreofficecomponent"/>
+                    </ruleList>
+                </actionGroup>
+                <!-- Advanced mode -->
+                <actionGroup>
+                    <actionList>
+                        <setInstallerVariable name="component(tomcat).parameter(tomcat_show_ports).value" value="1"/> 
+                        <setInstallerVariable name="component(libreofficecomponent).parameter(libreoffice_show_ports).value" value="1">
+                            <ruleList>
+                                <componentTest logic="exists" name="libreofficecomponent"/>
+                            </ruleList>
+                        </setInstallerVariable>
+                        <setInstallerVariable name="component(postgres).parameter(postgres_show_ports).value" value="1">
+                            <ruleList>
+                                <componentTest logic="exists" name="postgres"/>
+                            </ruleList>
+                        </setInstallerVariable>
                         <setInstallerVariable name="alfresco_show_ports" value="yes"/>
                         <setInstallerVariable name="project.allowComponentSelection" value="1"/>
                     </actionList>
@@ -160,11 +242,20 @@
                         <compareText logic="equals" text="${alfrescocustomstack_installation_type}" value="advanced"/>
                     </ruleList>
                 </actionGroup>
+                <!-- Easy mode -->
                 <actionGroup>
                     <actionList>
                         <setInstallerVariable name="component(tomcat).parameter(tomcat_show_ports).value" value="0"/>
-                        <setInstallerVariable name="component(libreofficecomponent).parameter(libreoffice_show_ports).value" value="0"/>
-                        <setInstallerVariable name="component(postgres).parameter(postgres_show_ports).value" value="0"/>
+                        <setInstallerVariable name="component(libreofficecomponent).parameter(libreoffice_show_ports).value" value="0">
+                            <ruleList>
+                                <componentTest logic="exists" name="libreofficecomponent"/>
+                            </ruleList>
+                        </setInstallerVariable>
+                        <setInstallerVariable name="component(postgres).parameter(postgres_show_ports).value" value="0">
+                            <ruleList>
+                                <componentTest logic="exists" name="postgres"/>
+                            </ruleList>
+                        </setInstallerVariable> 
                         <setInstallerVariable name="alfresco_show_ports" value="no"/>
                         <setInstallerVariable name="project.allowComponentSelection" value="0"/>
                     </actionList>
@@ -174,6 +265,7 @@
                 </actionGroup>
             </validationActionList>
         </choiceParameter>
+        <!-- Service startup (Windows specifics) -->
         <choiceParameter>
             <name>alfrescocustomstack_services_startup</name>
             <title>Service Startup Configuration</title>
@@ -192,12 +284,24 @@
         </choiceParameter>
     </parameterList>
     <readyToInstallActionList>
-        <setInstallerVariable name="postgres_data_directory" value="${alfresco_data_directory}/postgresql"/>
+        <setInstallerVariable name="postgres_data_directory" value="${alfresco_data_directory}/postgresql">
+            <ruleList>
+                <componentTest logic="exists" name="postgresservice"/>
+            </ruleList>
+        </setInstallerVariable>
         <actionGroup>
             <actionList>
                 <setInstallerVariable name="component(tomcatservice).parameter(tomcatservice_startup).value" value="${alfrescocustomstack_services_startup}"/>
-                <setInstallerVariable name="component(postgresservice).parameter(postgres_service_startup).value" value="${alfrescocustomstack_services_startup}"/>
-                <setInstallerVariable name="component(libreofficecomponent).parameter(libreofficeservice_startup).value" value="${alfrescocustomstack_services_startup}"/>
+                <setInstallerVariable name="component(postgresservice).parameter(postgres_service_startup).value" value="${alfrescocustomstack_services_startup}">
+                    <ruleList>
+                        <componentTest logic="exists" name="postgresservice"/>
+                    </ruleList>
+                </setInstallerVariable> 
+                <setInstallerVariable name="component(libreofficecomponent).parameter(libreofficeservice_startup).value" value="${alfrescocustomstack_services_startup}">
+                    <ruleList>
+                        <componentTest logic="exists" name="libreofficecomponent"/>
+                    </ruleList>
+                </setInstallerVariable>
             </actionList>
             <ruleList>
                 <platformTest type="windows"/>

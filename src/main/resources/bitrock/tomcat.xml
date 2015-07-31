@@ -42,7 +42,7 @@ System variables provided by this component:
             <value>bundledAndExisting</value>
         </stringParameter>
     
-        <!-- insternal configuration switches -->
+        <!-- Internal configuration switches -->
         <booleanParameter name="tomcat_show_ports" value="0" ask="0" />
         <booleanParameter name="tomcat_existing_required_running" value="1" ask="0" />
         <booleanParameter name="tomcat_force_home_directory_validation" value="0" ask="0" />
@@ -51,18 +51,18 @@ System variables provided by this component:
         <booleanParameter name="java_is_jdk" value="0" ask="0"/>
 
         <!-- Tomcat settings for bundled component -->
-	<stringParameter name="tomcat_memory_settings_unix" value="-XX:MaxPermSize=256M -Xms256M -Xmx512M" ask="0" />
-	<stringParameter> 
-	    <name>tomcat_memory_settings_windows</name>
-	    <value>--JvmMs 256 --JvmMx 512 ++JvmOptions="-XX:MaxPermSize=256M"</value>
-	    <ask>0</ask>
-	</stringParameter>
-	<stringParameter name="tomcat_extra_opts_unix" value="-Djava.awt.headless=true -XX:+UseG1GC -Dfile.encoding=UTF-8" ask="0" />
-	<stringParameter>
-	    <name>tomcat_extra_opts_windows</name>
-	    <value>++JvmOptions="-Djava.awt.headless=true" ++JvmOptions="-XX:+UseG1GC" ++JvmOptions="-Dfile.encoding=UTF-8"</value>
-	    <ask>0</ask>
-	</stringParameter>
+        <stringParameter name="tomcat_memory_settings_unix" value="-XX:MaxPermSize=256M -Xms256M -Xmx512M" ask="0" />
+        <stringParameter> 
+            <name>tomcat_memory_settings_windows</name>
+            <value>--JvmMs 256 --JvmMx 512 ++JvmOptions="-XX:MaxPermSize=256M"</value>
+            <ask>0</ask>
+        </stringParameter>
+        <stringParameter name="tomcat_extra_opts_unix" value="-Djava.awt.headless=true -XX:+UseG1GC -Dfile.encoding=UTF-8" ask="0" />
+        <stringParameter>
+            <name>tomcat_extra_opts_windows</name>
+            <value>++JvmOptions="-Djava.awt.headless=true" ++JvmOptions="-XX:+UseG1GC" ++JvmOptions="-Dfile.encoding=UTF-8"</value>
+            <ask>0</ask>
+        </stringParameter>
         
         <booleanParameter name="tomcat_disable_juli_login" value="0" ask="0"/>
         <!-- directory to pack -->

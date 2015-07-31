@@ -5,11 +5,8 @@
     <show>0</show>
     <selected>1</selected>
     <shouldPackRuleList>
-        <isTrue value="${postgreswriteproperties_component_enabled}"/>
+        <isTrue value="${postgres_component_enabled}"/>
     </shouldPackRuleList>
-    <parameterList>
-        <booleanParameter ask="0" name="postgreswriteproperties_component_enabled" value="1"/>
-    </parameterList>
     <readyToInstallActionList>
         <actionGroup>
             <actionList>

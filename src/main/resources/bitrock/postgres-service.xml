@@ -5,10 +5,9 @@
     <selected>1</selected>
     <show>0</show>
     <shouldPackRuleList>
-        <isTrue value="${postgresservice_component_enabled}"/>
+        <isTrue value="${postgres_component_enabled}"/>
     </shouldPackRuleList>
     <parameterList>
-        <booleanParameter ask="0" name="postgresservice_component_enabled" value="1"/>
         <stringParameter ask="0" name="postgres_service_name" value="${product_shortname}PostgreSQL"/>
         <stringParameter ask="0" name="postgres_displayName" value="${product_fullname} PostgreSQL Service"/>
         <stringParameter ask="0" name="postgres_unique_service_name" value=""/>
@@ -44,34 +43,32 @@ start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\pg_ctl.exe register 
                     </ruleList>
                 </actionGroup>
                 <setInstallerVariable name="postgres_service_installed" value="1"/>
-		<runProgram>
-		    <program>sc</program>
-		    <programArguments>config "${postgres_unique_service_name}" start= ${postgres_service_startup}</programArguments>
-		    <ruleList>
-			<platformTest type="windows"/>
-			<compareText text="${postgres_service_startup}" logic="does_not_equal" value="auto" />
-		    </ruleList>
-		</runProgram>
-                                                       
-                    <substitute>
-                        <files>${postgres_root_directory}/scripts/servicerun.bat;${postgres_root_directory}/scripts/serviceinstall.bat</files>
-                        <type>regexp</type>
-                        <substitutionList>
-                            <substitution>
-                                <pattern>@@BITROCK_POSTGRESQL_SERVICE_NAME@@</pattern>
-                                <value>${postgres_unique_service_name}</value>
-                            </substitution>
-                            <substitution>
-                                <pattern>@@BITROCK_POSTGRESQL_DATADIR@@</pattern>
-                                <value>${postgres_data_directory.dos.unix}</value>
-                            </substitution>
-                            <substitution>
-                                <pattern>@@BITROCK_POSTGRESQL_ROOTDIR@@</pattern>
-                                <value>${postgres_root_directory}</value>
-                            </substitution>
-                        </substitutionList>
-                    </substitute>
-        
+                <runProgram>
+                    <program>sc</program>
+                    <programArguments>config "${postgres_unique_service_name}" start= ${postgres_service_startup}</programArguments>
+                    <ruleList>
+                        <platformTest type="windows"/>
+                        <compareText text="${postgres_service_startup}" logic="does_not_equal" value="auto" />
+                    </ruleList>
+                </runProgram>
+                <substitute>
+                    <files>${postgres_root_directory}/scripts/servicerun.bat;${postgres_root_directory}/scripts/serviceinstall.bat</files>
+                    <type>regexp</type>
+                    <substitutionList>
+                        <substitution>
+                            <pattern>@@BITROCK_POSTGRESQL_SERVICE_NAME@@</pattern>
+                            <value>${postgres_unique_service_name}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_POSTGRESQL_DATADIR@@</pattern>
+                            <value>${postgres_data_directory.dos.unix}</value>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_POSTGRESQL_ROOTDIR@@</pattern>
+                            <value>${postgres_root_directory}</value>
+                        </substitution>
+                    </substitutionList>
+                </substitute>
                 <wait ms="7000"/>
                 <runProgram>
                     <program>cmd</program>
@@ -94,5 +91,4 @@ start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\pg_ctl.exe register 
             </ruleList>
         </runProgram>
     </preUninstallationActionList>
-    <!--installationAbortedActionList><runProgram><program>${postgres_root_directory}\scripts\serviceinstall.bat</program><programArguments>REMOVE</programArguments><ruleList><platformTest type="windows"/><isTrue value="${postgres_service_installed}"/></ruleList></runProgram></installationAbortedActionList-->
 </component>

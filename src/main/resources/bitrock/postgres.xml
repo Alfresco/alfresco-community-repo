@@ -915,8 +915,6 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                         <logMessage text="Initializing database"/>
                         <showProgressDialog title="Initializing database">
                             <actionList>
-                                <!--writeFile progressText="Initializing database"><path>${postgres_root_directory}/bin/runinitdb.bat</path><text>@echo off
-start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\initdb.exe -U postgres -E UTF8 -D ${postgres_root_directory.dos.unix}/data"</text></writeFile><runProgram><program>${postgres_root_directory}/bin/runinitdb.bat</program><programArguments></programArguments><workingDirectory>${postgres_root_directory}/bin</workingDirectory></runProgram><deleteFile path="${postgres_root_directory}/bin/runinitdb.bat" /-->
                                 <!-- Install vcruntime on Windows x64 -->
                                 <runProgram>
                                     <workingDirectory>${postgres_root_directory}/bin</workingDirectory>
@@ -1081,7 +1079,6 @@ start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\initdb.exe -U postgr
 			      <portTest port="${postgres_port}" condition="cannot_bind" />
 			  </ruleList>
 		      </logMessage>
-
                       <runProgram>
                           <program>${postgres_root_directory}/bin/psql.exe</program>
                           <programArguments>-U SYSTEM -d postgres -p ${postgres_port} -h ${postgres_hostname} -c "CREATE USER postgres SUPERUSER PASSWORD '${postgres_root_password.password}'"</programArguments>
@@ -1128,8 +1125,6 @@ start /MIN /WAIT cmd /c "${postgres_root_directory.dos}\bin\initdb.exe -U postgr
                       <compareText text="${platform_name}" logic="equals" value="windows"/>
                   </ruleList>
               </actionGroup>
-                              
-                
           </actionList>
           <ruleList>
               <compareText text="${postgres_installation_type}" logic="equals" value="bundled"/>

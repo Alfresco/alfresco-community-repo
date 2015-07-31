@@ -1,6 +1,6 @@
 <component>
     <name>readme</name>
-    <description>README Folder Component</description>
+    <description>//README Folder Component</description>
     <canBeEdited>1</canBeEdited>
     <show>0</show>
     <selected>1</selected>

@@ -1,6 +1,6 @@
 <component>
     <name>alfresco</name>
-    <description>Alfresco</description>
+    <description>${product_fullname}</description>
     <detailedDescription>Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management and Image Management.</detailedDescription>
     <canBeEdited>0</canBeEdited>
     <selected>1</selected>
@@ -20,7 +20,7 @@
         </deleteFile>
     </installationAbortedActionList>
     <parameterList>
-        
+        <stringParameter name="alfresco_component_name" ask="0" value="Alfresco One" />
         <directoryParameter name="alfresco_base_application_directory" value="${installdir}" ask="0"/>
         <directoryParameter name="alfresco_commands_directory" value="${installdir}/bin" ask="0" description="Use to configure the destination of the content in commands folder"/>
         <directoryParameter name="alfresco_library_directory" value="${tomcat_server_directory}/lib" ask="0"/>
@@ -368,7 +368,7 @@
                 <substitution>
                     <pattern>&lt;Context&gt;</pattern>
                     <value>&lt;Context&gt;
-&lt;Valve className=&quot;org.apache.catalina.authenticator.SSLAuthenticator&quot; securePagesWithPragma=&quot;false&quot; /&gt;</value>
+&lt;Valve className="org.apache.catalina.authenticator.SSLAuthenticator" securePagesWithPragma="false" /&gt;</value>
                 </substitution>
             </substitutionList>
         </substitute>

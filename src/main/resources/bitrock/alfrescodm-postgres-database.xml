@@ -1,13 +1,11 @@
 <component>
     <name>alfrescopostgresdbcreation</name>
+    <description>//Alfresco PostgreSQL DB Creation</description>
     <selected>1</selected>
     <show>0</show>
     <shouldPackRuleList>
-        <isTrue value="${alfrescopostgresdbcreation_component_enabled}"/>
+        <isTrue value="${postgres_component_enabled}"/>
     </shouldPackRuleList>
-    <parameterList>
-        <booleanParameter ask="0" name="alfrescopostgresdbcreation_component_enabled" value="1"/>
-    </parameterList>
     <postInstallationActionList>
         <actionGroup>
             <actionList>

@@ -1,5 +1,6 @@
 <component>
     <name>alfrescocustombuildsettings</name>
+    <description>//Alfresco Custom Build Settings</description>
     <show>0</show>
     <preBuildActionList>
         <!-- ALFRESCO BUILD SYSTEM-->

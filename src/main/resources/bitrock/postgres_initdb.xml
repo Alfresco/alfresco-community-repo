@@ -28,10 +28,9 @@ System variables provided by this component:
     <selected>1</selected>
     <show>0</show>
     <shouldPackRuleList>
-        <isTrue value="${postgresinitdb_component_enabled}"/>
+        <isTrue value="${postgres_component_enabled}"/>
     </shouldPackRuleList>
     <parameterList>
-        <booleanParameter ask="0" name="postgresinitdb_component_enabled" value="1"/>
         <stringParameter>
             <title>Database Configuration</title>
             <name>database_name</name>

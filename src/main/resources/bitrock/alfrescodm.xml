@@ -178,6 +178,24 @@
             </distributionFileList>
         </folder>
         <folder>
+            <description>//Module Files</description>
+            <destination>${installdir}/modules</destination>
+            <name>modulefiles</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+                <distributionDirectory allowWildcards="1" origin="${alfresco_modules_directory}/*"/>
+            </distributionFileList>
+        </folder>
+        <folder>
+            <description>//Tomcat Conf Files</description>
+            <destination>${application_server_conf_directory}</destination>
+            <name>tomcatconffiles</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+                <distributionDirectory allowWildcards="1" origin="${alfresco_tomcat_conf_directory}/*"/>
+            </distributionFileList>
+        </folder>
+        <folder>
             <description>//Program Files</description>
             <destination>${alfresco_shared_directory}/alfresco/web-extension</destination>
             <name>alfrescocustomwebextension</name>

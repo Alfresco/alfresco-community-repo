@@ -9,6 +9,8 @@
                 <!-- AlfrescoDM build settings -->
                 <!-- NOTE: licenses directory should also include the licenses provided by BitRock -->
                 <setInstallerVariable name="alfresco_extensions_source_directory" value="${distribution_folder.unix}/web-server/shared/classes"/>
+                <setInstallerVariable name="alfresco_tomcat_conf_directory" value="${distribution_folder.unix}/web-server/conf"/>
+                <setInstallerVariable name="alfresco_modules_directory" value="${distribution_folder.unix}/modules"/>
                 <setInstallerVariable name="alfresco_lib_source_directory" value="${distribution_folder.unix}/web-server/lib"/>
                 <setInstallerVariable name="alfresco_endorsed_source_directory" value="${distribution_folder.unix}/web-server/endorsed"/>
                 <setInstallerVariable name="alfresco_war_source_directory" value="${distribution_folder.unix}/web-server/webapps"/>

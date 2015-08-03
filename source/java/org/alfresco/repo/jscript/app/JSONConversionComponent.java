@@ -188,6 +188,16 @@ public class JSONConversionComponent
     @SuppressWarnings("unchecked")
     public String toJSON(final NodeRef nodeRef, final boolean useShortQNames)
     {
+        return toJSONObject(nodeRef, useShortQNames).toJSONString();
+    }
+    
+    /**
+     * Convert a node reference to a JSON object.  Selects the correct converter based on selection
+     * implementation.
+     */
+    @SuppressWarnings("unchecked")
+    public JSONObject toJSONObject(final NodeRef nodeRef, final boolean useShortQNames)
+    {
         final JSONObject json = new JSONObject();
         
         if (this.nodeService.exists(nodeRef))
@@ -214,7 +224,7 @@ public class JSONConversionComponent
             }
         }    
         
-        return json.toJSONString();
+        return json;
     }
     
     /**
@@ -239,7 +249,7 @@ public class JSONConversionComponent
             NodeRef targetNodeRef = nodeInfo.getLinkNodeRef();
             if (targetNodeRef != null)
             {
-                rootJSONObject.put("linkedNode", toJSON(targetNodeRef, useShortQNames));
+                rootJSONObject.put("linkedNode", toJSONObject(targetNodeRef, useShortQNames));
             }
         }    
         

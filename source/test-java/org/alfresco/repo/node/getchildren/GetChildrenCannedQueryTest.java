@@ -737,8 +737,8 @@ public class GetChildrenCannedQueryTest extends TestCase
 
         totalCnt = results.getPage().size();
         assertTrue(totalCnt == 2);
-        assertEquals(nodeRef1, results.getPage().get(0));
-        assertEquals(nodeRef2, results.getPage().get(1));
+        assertTrue(results.getPage().contains(nodeRef1));
+        assertTrue(results.getPage().contains(nodeRef2));
         
         pattern = "*";
         results = list(parentNodeRef, -1, -1, 0, pattern, null);

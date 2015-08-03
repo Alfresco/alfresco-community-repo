@@ -52,6 +52,7 @@
             <modules>
                 <module>ear</module>
                 <module>enterprise-distribution</module>
+                <module>enterprise-update</module>
                 <module>enterprise-installer</module>
             </modules>
         </profile>

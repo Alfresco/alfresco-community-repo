@@ -1,0 +1,17 @@
+<model name="cmm:customModelManagementModel" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+
+   <description>Alfresco Custom Model Management</description>
+   <author>Alfresco</author>
+   <version>1.0</version>
+
+   <namespaces>
+      <namespace uri="http://www.alfresco.org/model/custommodelmanagement/1.0" prefix="cmm" />
+   </namespaces>
+
+   <aspects>
+      <aspect name="cmm:customModelManagement">
+         <title>Marker aspect to indicate the model is created as a custom model by CMM service.</title>
+      </aspect>
+   </aspects>
+
+</model>

@@ -25,6 +25,7 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -36,6 +37,7 @@ public class AddGroupAuthorityPatch extends AbstractPatch
 {
     private static final String MSG_START = "patch.addGroupAuthority.start";
     private static final String MSG_RESULT = "patch.addGroupAuthority.result";
+    private static final String MSG_EXIST ="patch.addGroupAuthority.exist";
 
     private AuthorityService authorityService;
     private GroupAuthorityDetails groupAuthorityDetails;
@@ -72,15 +74,22 @@ public class AddGroupAuthorityPatch extends AbstractPatch
     {
         StringBuilder result = new StringBuilder(I18NUtil.getMessage(MSG_START));
 
-        String groupAuthorityName = authorityService.createAuthority(AuthorityType.GROUP,
-                    this.groupAuthorityDetails.groupName,
-                    this.groupAuthorityDetails.groupDisplayName,
-                    this.groupAuthorityDetails.authorityZones);
+        String groupAuthorityName = PermissionService.GROUP_PREFIX + this.groupAuthorityDetails.groupName;
+        if (!authorityService.authorityExists(groupAuthorityName))
+        {
+            groupAuthorityName = authorityService.createAuthority(AuthorityType.GROUP,
+                        this.groupAuthorityDetails.groupName,
+                        this.groupAuthorityDetails.groupDisplayName,
+                        this.groupAuthorityDetails.authorityZones);
 
-        authorityService.addAuthority(groupAuthorityName, AuthenticationUtil.getAdminUserName());
+            authorityService.addAuthority(groupAuthorityName, AuthenticationUtil.getAdminUserName());
 
-        result.append(I18NUtil.getMessage(MSG_RESULT, groupAuthorityName));
-
+            result.append(I18NUtil.getMessage(MSG_RESULT, groupAuthorityName));
+        }
+        else
+        {
+            result.append(I18NUtil.getMessage(MSG_EXIST, groupAuthorityName));
+        }
         return result.toString();
     }
 

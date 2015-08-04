@@ -1193,4 +1193,36 @@
             <ref bean="patchDAO"/>
         </property>
     </bean>
+
+    <bean id="patch.alfrescoModelAdministrators" class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch" parent="basePatch" >
+        <property name="id"><value>patch.alfrescoModelAdministrators</value></property>
+        <property name="description"><value>patch.alfrescoModelAdministrators.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9008</value></property>
+        <property name="targetSchema"><value>9009</value></property>
+        <property name="dependsOn" >
+            <list>
+               <ref bean="patch.updateDmPermissions" />
+            </list>
+        </property>
+        <property name="authorityService">
+            <ref bean="authorityService" />
+        </property>
+        <property name="groupAuthorityDetails" >
+            <bean class="org.alfresco.repo.admin.patch.impl.AddGroupAuthorityPatch$GroupAuthorityDetails">
+                <property name="groupName">
+                    <value>ALFRESCO_MODEL_ADMINISTRATORS</value>
+                </property>
+                <property name="groupDisplayName">
+                    <value>ALFRESCO_MODEL_ADMINISTRATORS</value>
+                </property>
+                <property name="authorityZones">
+                    <set>
+                        <value>APP.DEFAULT</value>
+                        <value>AUTH.ALF</value>
+                     </set>
+                </property>
+             </bean>
+        </property>
+    </bean>
 </beans>

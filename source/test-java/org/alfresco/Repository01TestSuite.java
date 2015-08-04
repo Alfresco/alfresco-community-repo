@@ -139,6 +139,8 @@ public class Repository01TestSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.descriptor.DescriptorServiceTest.class);
         suite.addTestSuite(org.alfresco.repo.dictionary.DictionaryModelTypeTest.class);
         suite.addTestSuite(org.alfresco.repo.dictionary.DictionaryRepositoryBootstrapTest.class);
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.dictionary.CustomModelServiceImplTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.dictionary.ValueDataTypeValidatorImplTest.class));
         suite.addTestSuite(org.alfresco.repo.dictionary.types.period.PeriodTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.discussion.DiscussionServiceImplTest.class));
     }
@@ -411,7 +413,6 @@ public class Repository01TestSuite extends TestSuite
     {
         suite.addTestSuite(org.alfresco.repo.content.transform.DifferrentMimeTypeTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.attributes.PropTablesCleanupJobIntegrationTest.class));
-        suite.addTestSuite(org.alfresco.repo.dictionary.DictionaryModelTypeTest.class);
         suite.addTestSuite(org.alfresco.repo.tagging.UpdateTagScopesActionExecuterTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.service.ServiceRegistryTest.class));
     }

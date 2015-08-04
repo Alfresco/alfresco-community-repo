@@ -374,6 +374,7 @@
                 <value>alfresco.messages.categories</value>
                 <value>alfresco.messages.authentication</value>
                 <value>alfresco.messages.file-folder-service</value>
+                <value>alfresco.messages.custommodel-service</value>
             </list>
         </property>
     </bean>
@@ -658,6 +659,7 @@
                 <value>alfresco/model/imapModel.xml</value>
                 <value>alfresco/model/transferModel.xml</value>
                 <value>alfresco/model/solrFacetModel.xml</value>
+                <value>alfresco/model/customModelManagementModel.xml</value>
 
                 <!-- Content models -->
                 <value>alfresco/model/applicationModel.xml</value>

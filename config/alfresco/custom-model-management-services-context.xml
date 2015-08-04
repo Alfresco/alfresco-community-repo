@@ -1,0 +1,29 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="customModelService" class="org.alfresco.repo.dictionary.CustomModelServiceImpl" init-method="init">
+      <property name="nodeService" ref="nodeService" />
+      <property name="dictionaryDAO" ref="dictionaryDAO" />
+      <property name="contentService" ref="contentService" />
+      <property name="searchService" ref="admSearchService"/>
+      <property name="repositoryModelsLocation" ref="customModelsRepositoryLocation"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="namespaceDAO" ref="namespaceDAO"/>
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
+      <property name="repoAdminService" ref="repoAdminService" />
+      <property name="authorityService" ref="authorityService" />
+      <property name="hiddenAspect" ref="hiddenAspect" />
+      <property name="downloadService" ref="downloadService"/>
+      <property name="downloadStorage" ref="downloadStorage"/>
+      <property name="shareExtModulePath">
+         <value>./${spaces.company_home.childname}/${spaces.sites.childname}/cm:surf-config/cm:extensions/cm:default-persisted-extension.xml</value>
+      </property>
+   </bean>
+
+   <bean id="valueDataTypeValidator" class="org.alfresco.repo.dictionary.ValueDataTypeValidatorImpl" init-method="init">
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="dictionaryService" ref="dictionaryService"/>
+   </bean>
+</beans>

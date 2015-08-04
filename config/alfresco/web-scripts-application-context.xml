@@ -1856,5 +1856,12 @@
         <property name="siteService" ref="SiteService" />
         <property name="documentLinkService" ref="DocumentLinkService" />
    </bean>
-   
+
+   <!-- CMM - Custom model import API -->
+   <bean id="webscript.org.alfresco.repository.custommodel.cmm-upload.post"
+         class="org.alfresco.repo.web.scripts.custommodel.CustomModelUploadPost"
+         parent="webscript">
+        <property name="customModels" ref="CustomModels" />
+        <property name="customModelService" ref="customModelService" />
+   </bean>
 </beans>

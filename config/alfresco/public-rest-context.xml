@@ -102,6 +102,7 @@
         <property name="resourceBundles">
             <list>
                 <value>alfresco.messages.rest-framework-messages</value>
+                <value>alfresco.messages.custommodel-restapi-messages</value>
             </list>
         </property>
    </bean>
@@ -936,5 +937,51 @@
    
    <bean class="org.alfresco.rest.workflow.api.tasks.TaskItemsRelation">
         <property name="tasks" ref="Tasks"/>
+   </bean>
+
+   <!--                            -->
+   <!--        CMM REST API        -->
+   <!--                            -->
+   <bean id="customModels" class="org.alfresco.rest.api.impl.CustomModelsImpl">
+      <property name="customModelService" ref="customModelService" />
+      <property name="dictionaryService" ref="dictionaryService"/>
+      <property name="personService" ref="personService"/>
+      <property name="nodeService" ref="nodeService"/>
+      <property name="namespaceService" ref="namespaceService"/>
+      <property name="valueDataTypeValidator" ref="valueDataTypeValidator"/>
+   </bean>
+
+   <bean id="CustomModels" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.rest.api.CustomModels</value>
+      </property>
+      <property name="target">
+         <ref bean="customModels" />
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref bean="legacyExceptionInterceptor" />
+         </list>
+      </property>
+   </bean>
+
+   <bean class="org.alfresco.rest.api.cmm.CustomModelEntityResource">
+      <property name="customModels" ref="CustomModels" />
+   </bean>
+
+   <bean class="org.alfresco.rest.api.cmm.CustomModelTypesRelation">
+      <property name="customModels" ref="CustomModels" />
+   </bean>
+
+   <bean class="org.alfresco.rest.api.cmm.CustomModelAspectsRelation">
+      <property name="customModels" ref="CustomModels" />
+   </bean>
+
+   <bean class="org.alfresco.rest.api.cmm.CustomModelConstraintRelation">
+      <property name="customModels" ref="CustomModels" />
+   </bean>
+
+   <bean class="org.alfresco.rest.api.cmm.CustomModelDownloadRelation">
+      <property name="customModels" ref="CustomModels" />
    </bean>
 </beans>

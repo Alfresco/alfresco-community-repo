@@ -311,17 +311,28 @@ public class CustomModelServiceImplTest
         testUser.put(ContentModel.PROP_LASTNAME, "Doe");
         testUser.put(ContentModel.PROP_PASSWORD, "password");
 
-        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        final NodeRef personNodeRef = transactionHelper.doInTransaction(new RetryingTransactionCallback<NodeRef>()
         {
-            public Void execute() throws Exception
+            public NodeRef execute() throws Exception
             {
-                personService.createPerson(testUser);
-
+                NodeRef nodeRef = personService.createPerson(testUser);
+                assertNotNull(nodeRef);
                 assertFalse(customModelService.isModelAdmin(userName));
 
                 // Add the user to the group
                 authorityService.addAuthority(CustomModelServiceImpl.GROUP_ALFRESCO_MODEL_ADMINISTRATORS_AUTHORITY, userName);
                 assertTrue(customModelService.isModelAdmin(userName));
+
+                return nodeRef;
+            }
+        });
+
+        // Cleanup
+        transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Exception
+            {
+                personService.deletePerson(personNodeRef);
                 return null;
             }
         });

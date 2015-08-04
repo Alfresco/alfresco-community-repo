@@ -63,6 +63,40 @@ public final class RMCollectionUtils
         return duplicateElems;
     }
 
+    /** Returns the head (element at index 0) of the provided List.
+     *
+     * @param l the list whose head is sought.
+     * @param <T> the type of the List.
+     * @return the head element or {@code null} for the empty list.
+     * @throws NullPointerException if l is {@code null}
+     */
+    public static <T> T head(List<T> l)
+    {
+        return l.isEmpty() ? null : l.get(0);
+    }
+
+    /**
+     * Returns the tail of the provided List i&#46;e&#46; the sublist which contains
+     * all elements of the given list except the {@link #head(List) head}.
+     *
+     * @param l the list whose tail is sought.
+     * @param <T> the type of the List.
+     * @return the tail sublist, which will be an empty list if the provided list had only a single element.
+     * @throws NullPointerException if l is {@code null}
+     * @throws UnsupportedOperationException if the provided list was empty.
+     */
+    public static <T> List<T> tail(List<T> l)
+    {
+        if (l.isEmpty())
+        {
+            throw new UnsupportedOperationException("Cannot get tail of empty list.");
+        }
+        else
+        {
+            return l.subList(1, l.size());
+        }
+    }
+
     /**
      * This enum represents a change in an entry between 2 collections.
      */

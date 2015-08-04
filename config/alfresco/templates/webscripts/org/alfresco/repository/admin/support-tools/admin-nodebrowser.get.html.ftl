@@ -40,13 +40,13 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
    
    <div class="column-full">
       <@section label=msg("nodebrowser.store") />
-      <@options name="nodebrowser-store" style="display:inline" valueStyle="display:inline" onchange="AdminConsole_execute('root')" value="${args.store!'workspace://SpacesStore'}">
+      <@options name="nodebrowser-store" style="display:inline" valueStyle="display:inline" onchange="AdminConsole_action('root')" value="${args.store!'workspace://SpacesStore'}">
          <#list stores as s>
             <@option label=s value=s />
          </#list>
       </@options>
-      <@button label=msg("nodebrowser.root") onclick="AdminConsole_execute('root')" />
-      <#if action??><@button label=msg("nodebrowser.refresh") onclick="AdminConsole_execute('${action?html}')" class="input" style="position:absolute;top:60px;left:1042px" /></#if>
+      <@button label=msg("nodebrowser.root") onclick="AdminConsole_action('root')" />
+      <#if action??><@button label=msg("nodebrowser.refresh") onclick="AdminConsole_action('${action?html}')" class="input" style="position:absolute;top:60px;left:1042px" /></#if>
       
       <@section label=msg("nodebrowser.query") />
       <@options name="nodebrowser-search" style="display:inline" valueStyle="display:inline" value="${args.searcher!''}">
@@ -61,7 +61,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
          <@option label="db-cmis" value="db-cmis" />
       </@options>
       <@text id="query" name="nodebrowser-query" label="" value="${query!''}" style="display:inline" valueStyle="display:inline" controlStyle="width:50em" />
-      <@button label=msg("nodebrowser.execute") onclick="AdminConsole_execute('search')" />
+      <@button label=msg("nodebrowser.execute") onclick="AdminConsole_action('search')" />
       <@tsection label=msg("nodebrowser.search-settings")>
          <div class="column-left">
             <@text name="nodebrowser-query-maxresults" label=msg("nodebrowser.maxresults") value="${args.maxResults!''}" />
@@ -74,6 +74,8 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
       <!-- hidden values set by button and key events to provide action ID to the Form POST -->
       <@hidden name="nodebrowser-action" id="action" />
       <@hidden name="nodebrowser-action-value" id="action-value" value="${actionValue!''}" />
+      <@hidden name="nodebrowser-execute" id="execute" />
+      <@hidden name="nodebrowser-execute-value" id="execute-value" />
    </div>
    
    <#if result??>
@@ -101,6 +103,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
             <th>${msg("nodebrowser.type")}</th>
             <th>${msg("nodebrowser.value")}</th>
             <th>${msg("nodebrowser.residual")}</th>
+            <th>${msg("nodebrowser.actions")}</th>
          </tr>
          <#list result.properties as p>
          <tr>
@@ -108,6 +111,9 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
             <td><#if p.typeName??>${p.typeName.prefixedName}<#else>${none}</#if></td>
             <td><#if (p.values?size > 1)><span style="color:red">${collection} (${p.values?size?c})</span><br></#if><#list p.values as v><#if v.content><a target="new" href="<@contentUrl result.info.nodeRef p.name.prefixedName/>"></#if><@propValue v/><#if v.content></a></#if><#if v_has_next><br></#if></#list></td>
             <td>${p.residual?string}</td>
+            <td>
+               <b><a href="#" onclick="AdminConsole_confirmExecute('${result.info.nodeRef}|${p.name}','delete-property');return false;" title="${msg("nodebrowser.delete-property.tip")}">${msg("nodebrowser.delete")}</a></b>
+            </td>
          </tr>
          </#list>
       </table>
@@ -136,6 +142,7 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
             <th>${msg("nodebrowser.primary")}</th>
             <th>${msg("nodebrowser.association-type")}</th>
             <th>${msg("nodebrowser.index")}</th>
+            <th>${msg("nodebrowser.actions")}</th>
          </tr>
          <#list result.children as n>
          <tr>
@@ -144,6 +151,16 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
             <td>${n.primary?string}</td>
             <td>${n.typeQName}</td>
             <td>${n_index}</td>
+            <#assign isarchive=(args.store!"")?starts_with("archive://")>
+            <td>
+               <b><a href="#" onclick="AdminConsole_execute('${n.childRef}','delete');return false;" title="${msg("nodebrowser.delete.tip")}">${msg("nodebrowser.delete")}</a></b>
+               <#if isarchive>| <b><a href="#" onclick="AdminConsole_execute('${n.childRef}','restore');return false;" title="${msg("nodebrowser.restore.tip")}">${msg("nodebrowser.restore")}</a></b>
+               <#else>| <b><a href="#" onclick="AdminConsole_confirmExecute('${n.childRef}','fdelete');return false;" title="${msg("nodebrowser.force-delete.tip")}">${msg("nodebrowser.force-delete")}</a></b>
+               | <b><a href="#" onclick="AdminConsole_execute('${n.childRef}','take-ownership');return false;" title="${msg("nodebrowser.take-ownership.tip")}">${msg("nodebrowser.take-ownership")}</a></b>
+               | <b><a href="#" onclick="AdminConsole_execute('${n.childRef}','delete-permissions');return false;" title="${msg("nodebrowser.delete-permissions.tip")}">${msg("nodebrowser.delete-permissions")}</a></b>
+               <#if n.childLocked>| <b><a href="#" onclick="AdminConsole_execute('${n.childRef}','unlock');return false;" title="${msg("nodebrowser.unlock.tip")}">${msg("nodebrowser.unlock")}</a></b></#if>
+               </#if>
+            </td>
          </tr>
          </#list>
       </table>
@@ -250,16 +267,16 @@ ${url.serviceContext}/api/node/${nodeRef?replace("://","/")}/content;${prop?url}
 Admin.addEventListener(window, 'load', function() {
    // bind Enter key press to call the Execute search button event handler
    Admin.addEventListener(el("query"), 'keypress', function(e) {
-      if (e.keyCode === 13) AdminConsole_execute('search');
+      if (e.keyCode === 13) AdminConsole_action('search');
       return true;
    });
    
    <#if args.nodeRef??>
-      AdminConsole_execute('search');
+      AdminConsole_action('search');
    </#if>
 });
 
-function AdminConsole_execute(action)
+function AdminConsole_action(action)
 {
    el("action").value = action;
    el("${FORM_ID}").submit();
@@ -269,13 +286,28 @@ function AdminConsole_execute(action)
 function AdminConsole_childClick(ref)
 {
    el("action-value").value = ref;
-   AdminConsole_execute("children");
+   AdminConsole_action("children");
 }
 
 function AdminConsole_parentClick(ref)
 {
    el("action-value").value = ref;
-   AdminConsole_execute("parent");
+   AdminConsole_action("parent");
+}
+
+function AdminConsole_execute(value, execute)
+{
+   el("execute-value").value = value;
+   el("execute").value = execute;
+   AdminConsole_action('${(action!"")?html}');
+}
+
+function AdminConsole_confirmExecute(value, execute)
+{
+   if (confirm("${msg("nodebrowser.confirm")}"))
+   {
+      AdminConsole_execute(value, execute);
+   }
 }
 
 //]]></script>

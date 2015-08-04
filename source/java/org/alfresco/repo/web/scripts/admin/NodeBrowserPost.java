@@ -32,9 +32,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -85,6 +89,8 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
     transient private NamespaceService namespaceService;
     transient private PermissionService permissionService;
     transient private OwnableService ownableService;
+    transient private LockService lockService;
+    transient private CheckOutCheckInService cociService;
 
     /**
      * @param transactionService        transaction service
@@ -172,6 +178,26 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
     protected OwnableService getOwnableService()
     {
         return ownableService;
+    }
+    
+    public void setLockService(LockService lockService)
+    {
+        this.lockService = lockService;
+    }
+    
+    protected LockService getLockService()
+    {
+        return this.lockService;
+    }
+    
+    public void setCheckOutCheckInService(CheckOutCheckInService cociService)
+    {
+        this.cociService = cociService;
+    }
+    
+    protected CheckOutCheckInService getCheckOutCheckInService()
+    {
+        return this.cociService;
     }
 
     /**
@@ -425,8 +451,141 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
         long timeStart = System.currentTimeMillis();
         String actionValue = req.getParameter("nodebrowser-action-value");
         String action = req.getParameter("nodebrowser-action");
+        final String execute = req.getParameter("nodebrowser-execute");
+        final String executeValue = req.getParameter("nodebrowser-execute-value");
+        String message = null;
         try
         {
+            // 'execute' is an action that performs an operation on a node e.g. delete
+            // the 'executeValue' param provides context
+            // this is done before the view action to ensure node state is correct
+            if (execute != null)
+            {
+                switch (execute)
+                {
+                    case "delete":
+                    {
+                        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+                        {
+                            @Override
+                            public Void execute() throws Throwable
+                            {
+                                // delete the node using the standard NodeService
+                                nodeService.deleteNode(new NodeRef(executeValue));
+                                return null;
+                            }
+                        }, false, true);
+                        message = "nodebrowser.message.delete";
+                        break;
+                    }
+                    case "fdelete":
+                    {
+                        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+                        {
+                            @Override
+                            public Void execute() throws Throwable
+                            {
+                                // delete the node - but ensure that it is not archived
+                                NodeRef ref = new NodeRef(executeValue);
+                                nodeService.addAspect(ref, ContentModel.ASPECT_TEMPORARY, null);
+                                nodeService.deleteNode(ref);
+                                return null;
+                            }
+                        }, false, true);
+                        message = "nodebrowser.message.delete";
+                        break;
+                    }
+                    case "restore":
+                    {
+                        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+                        {
+                            @Override
+                            public Void execute() throws Throwable
+                            {
+                                nodeService.restoreNode(new NodeRef(executeValue), null, null, null);
+                                return null;
+                            }
+                        }, false, true);
+                        message = "nodebrowser.message.restore";
+                        break;
+                    }
+                    case "take-ownership":
+                    {
+                        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+                        {
+                            @Override
+                            public Void execute() throws Throwable
+                            {
+                                ownableService.takeOwnership(new NodeRef(executeValue));
+                                return null;
+                            }
+                        }, false, true);
+                        message = "nodebrowser.message.take-ownership";
+                        break;
+                    }
+                    case "delete-permissions":
+                    {
+                        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+                        {
+                            @Override
+                            public Void execute() throws Throwable
+                            {
+                                NodeRef ref = new NodeRef(executeValue);
+                                permissionService.deletePermissions(ref);
+                                permissionService.setInheritParentPermissions(ref, true);
+                                return null;
+                            }
+                        }, false, true);
+                        message = "nodebrowser.message.delete-permissions";
+                        break;
+                    }
+                    case "delete-property":
+                    {
+                        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+                        {
+                            @Override
+                            public Void execute() throws Throwable
+                            {
+                                // argument value contains "NodeRef|QName" packed string
+                                String[] parts = executeValue.split("\\|");
+                                nodeService.removeProperty(new NodeRef(parts[0]), QName.createQName(parts[1]));
+                                return null;
+                            }
+                        }, false, true);
+                        message = "nodebrowser.message.delete-property";
+                        break;
+                    }
+                    case "unlock":
+                    {
+                        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+                        {
+                            @Override
+                            public Void execute() throws Throwable
+                            {
+                                NodeRef ref = new NodeRef(executeValue);
+                                if (cociService.isCheckedOut(ref))
+                                {
+                                    NodeRef wcRef = cociService.getWorkingCopy(ref);
+                                    if (wcRef != null)
+                                    {
+                                        cociService.cancelCheckout(wcRef);
+                                    }
+                                }
+                                else
+                                {
+                                    lockService.unlock(ref);
+                                }
+                                return null;
+                            }
+                        }, false, true);
+                        message = "nodebrowser.message.unlock";
+                        break;
+                    }
+                }
+            }
+            
+            // 'action' is a view action that request an update of the admin console view state e.g. 'search' or 'children'
+            // the 'actionValue' param provides context as may other parameters such as 'query'
             switch (action)
             {
                 // on Execute btn press and query present, perform search
@@ -580,13 +739,14 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
         returnParams.put("skipCount", skipCount);
         returnParams.put("in", Long.toString(System.currentTimeMillis()-timeStart));
         returnParams.put("e", error);
+        returnParams.put("m", message);
         
         // redirect as all admin console pages do (follow standard pattern)
         // The logic to generate the navigation section and server meta-data is all tied into alfresco-common.lib.js
         // which is great for writing JS based JMX surfaced pages, but not so great for Java backed WebScripts. 
         status.setCode(301);
         status.setRedirect(true);
-        status.setLocation(buildUrl(req, returnParams, action));
+        status.setLocation(buildUrl(req, returnParams, execute != null && execute.length() != 0 ? execute : action));
         
         return null;
     }
@@ -883,6 +1043,11 @@ public class NodeBrowserPost extends DeclarativeWebScript implements Serializabl
         public boolean isPrimary()
         {
             return ref.isPrimary();
+        }
+        
+        public boolean isChildLocked()
+        {
+            return lockService != null && lockService.getLockType(ref.getChildRef()) != null;
         }
     }
     

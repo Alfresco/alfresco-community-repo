@@ -20,8 +20,13 @@
 package org.alfresco.module.org_alfresco_module_rm.util;
 
 import static java.util.Arrays.asList;
+import static java.util.Collections.emptyList;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.diffKey;
+import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.head;
+import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.tail;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 
 import org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.Difference;
 
@@ -75,4 +80,18 @@ public class RMCollectionUtilsUnitTest
         assertEquals(Difference.UNCHANGED, diffKey(mapA, mapB, -1));
         assertEquals(Difference.CHANGED,   diffKey(mapA, mapB, 3));
     }
+
+    @Test public void tailsOfLists()
+    {
+        assertEquals(asList(2), tail(asList(1, 2)));
+        assertEquals(emptyList(), tail(asList(1)));
+        expectedException(UnsupportedOperationException.class, () -> tail(emptyList()));
+    }
+
+    @Test public void headsOfLists()
+    {
+        assertEquals("a", head(asList("a", "b")));
+        assertEquals("a", head(asList("a")));
+        assertNull(head(emptyList()));
+   }
 }

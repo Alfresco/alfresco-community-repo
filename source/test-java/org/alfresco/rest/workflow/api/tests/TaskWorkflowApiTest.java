@@ -485,7 +485,110 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             cleanupProcessInstance(processInfo.getId());
         }
     }
-    
+
+   /* 
+    * Test association definition extraction from the dictionary as per MNT-11472.
+    *  
+    * We are going to test association definition extraction through dictionary, when one is not retrieved in context.
+    * Context doesn't contains all type definitions, because it requires entire history extraction of a process that causes performance implications.   
+    * Type definition extraction from the dictionary is quite fast and it doesn't affect performance.
+    * 
+    */
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testAssociationDefinitionExtraction() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+
+        // The "wbpm:delegatee" custom association is defined in bpmDelegateeModel.xml. This association has "cm:person" target type.
+        final String delegatee = "wbpm_delegatee";
+        final String user = requestContext.getRunAsUser();
+        final String networkId = requestContext.getNetworkId();
+        
+        // Get person
+        final ActivitiScriptNode person = TenantUtil.runAsUserTenant(new TenantRunAsWork<ActivitiScriptNode>()
+        {
+            @Override
+            public ActivitiScriptNode doWork() throws Exception
+            {
+                return getPersonNodeRef(user);
+            }
+        }, user, networkId);
+        
+        // Start custom process instance
+        ProcessInstance processInstance = TenantUtil.runAsUserTenant(new TenantRunAsWork<ProcessInstance>()
+        {
+            @Override
+            public ProcessInstance doWork() throws Exception
+            {
+                deployProcessDefinition("workflow/testCustomDelegatee.bpmn20.xml");
+                String processDefinitionKey = "@" + networkId + "@myProcess";
+                Map<String, Object> variables = new HashMap<String, Object>();
+                variables.put("bpm_assignee", person);
+                variables.put("wf_notifyMe", Boolean.FALSE);
+                variables.put(WorkflowConstants.PROP_INITIATOR, person);
+                return activitiProcessEngine.getRuntimeService().startProcessInstanceByKey(processDefinitionKey, "myProcessKey", variables);
+            }
+        }, user, networkId);
+        
+        // Get task 
+        Task activeTask = activitiProcessEngine.getTaskService().createTaskQuery().processInstanceId(processInstance.getId()).singleResult();
+        assertNotNull(activeTask);
+        try
+        {
+            TasksClient tasksClient = publicApiClient.tasksClient();
+
+            // Define the "wbpm_delegatee" variable for the taskDefine delegatee user name. POST request will be executed.
+            JSONArray variablesArray = new JSONArray();
+            JSONObject variableBody = new JSONObject();
+            variableBody.put("name", delegatee);
+            variableBody.put("value", user);
+            variableBody.put("scope", "local");
+            variablesArray.add(variableBody);
+
+            try
+            {
+                // Set variable for the task.
+                JSONObject response = tasksClient.createTaskVariables(activeTask.getId(), variablesArray);
+                assertNotNull(response);
+                JSONObject variable = (JSONObject) response.get("entry");
+                assertEquals(delegatee, variable.get("name"));
+                
+                // Check that d:noderef type was returned with appropriate nodeRef Id value. 
+                assertEquals("d:noderef", variable.get("type"));
+                assertEquals(person.getNodeRef().getId(), variable.get("value"));
+                
+                // Get process variables. GET request will be executed.
+                response = publicApiClient.processesClient().getProcessvariables(processInstance.getId());
+                assertNotNull(response);
+                assertTrue(delegatee + " variable was not set", response.toJSONString().contains(delegatee));
+                JSONArray entries = (JSONArray) response.get("entries");
+
+                // Find "wbpm_delegatee" variable.
+                for (Object entry : entries)
+                {
+                    variable = (JSONObject) ((JSONObject) entry).get("entry");
+                    if (variable.get("name").equals(delegatee))
+                    {
+                        // Check that type corresponds to the target class. 
+                        // It means that assoc type def was retrieved successfully from the dictionary.
+                        assertEquals("cm:person", variable.get("type"));
+                        // Value should be an actual user name.
+                        assertEquals(user, variable.get("value"));
+                    }
+                }
+            }
+            catch (PublicApiException ex)
+            {
+                fail("Unexpected result " + ex);
+            }
+        }
+        finally
+        {
+            cleanupProcessInstance(processInstance);
+        }
+    }
+
     @Test
     @SuppressWarnings("unchecked")
     public void testUpdateTaskAuthorization() throws Exception

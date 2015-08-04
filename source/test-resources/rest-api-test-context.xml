@@ -18,6 +18,7 @@
         <property name="models">
             <list>
                 <value>models/custom-model.xml</value>
+                <value>models/bpmDelegateeModel.xml</value>
             </list>
         </property>
     </bean>

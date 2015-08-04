@@ -778,6 +778,7 @@
    <bean id="restVariableHelper" class="org.alfresco.rest.workflow.api.impl.RestVariableHelper">
       <property name="nodeService" ref="nodeService" />
       <property name="namespaceService" ref="namespaceService" />
+      <property name="dictionaryService" ref="DictionaryService" />
    </bean>
    
    <bean id="baseWorkflowRest" class="org.alfresco.rest.workflow.api.impl.WorkflowRestImpl" abstract="true">

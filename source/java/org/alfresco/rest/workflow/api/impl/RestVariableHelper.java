@@ -39,6 +39,7 @@ import org.alfresco.rest.workflow.api.model.VariableScope;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -60,6 +61,8 @@ public class RestVariableHelper
     
     private WorkflowQNameConverter qNameConverter;
     
+    private DictionaryService dictionaryService;
+    
     public static final Set<String> INTERNAL_PROPERTIES = new HashSet<String>(Arrays.asList(ActivitiConstants.VAR_TENANT_DOMAIN));
     
     public void setNodeService(NodeService nodeService)
@@ -70,6 +73,11 @@ public class RestVariableHelper
     public void setNamespaceService(NamespaceService namespaceService)
     {
         this.namespaceService = namespaceService;
+    }
+    
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
     }
     
     protected WorkflowQNameConverter getQNameConverter()
@@ -165,7 +173,7 @@ public class RestVariableHelper
     protected void setVariableValueAndType(Variable variable, Object value, TypeDefinitionContext context)
     {
         PropertyDefinition propDef = context.getPropertyDefinition(variable.getName());
-        if(propDef != null)
+        if (propDef != null)
         {
             variable.setValue(getSafePropertyValue(value));
             variable.setType(propDef.getDataType().getName().toPrefixString(namespaceService));
@@ -174,7 +182,18 @@ public class RestVariableHelper
         {
             // Not defined as a property, check if it's an association
             AssociationDefinition assocDef = context.getAssociationDefinition(variable.getName());
-            if(assocDef != null)
+            if (assocDef == null)
+            {
+                // Try to get an association definition through dictionary
+                String[] prefixLocalName = variable.getName().split("_");
+                if (prefixLocalName.length == 2)
+                {
+                    QName qName = QName.createQName(prefixLocalName[0], prefixLocalName[1], namespaceService);
+                    assocDef = dictionaryService.getAssociation(qName);
+                }
+            }
+            
+            if (assocDef != null)
             {
                 // Type of variable is the target class-name
                 variable.setType(assocDef.getTargetClass().getName().toPrefixString(namespaceService));
@@ -182,8 +201,7 @@ public class RestVariableHelper
             }
             else
             {
-                // Variable is not a declared property not association on the type-definition. Revert to using the actual raw value 
-                // as base for conversion.
+                // Variable is not declared as property or association type-def. Use actual raw value as base for conversion.
                 variable.setValue(getSafePropertyValue(value));
                 variable.setType(extractTypeStringFromValue(value));
             }

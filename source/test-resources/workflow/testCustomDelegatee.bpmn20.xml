@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:activiti="http://activiti.org/bpmn" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:omgdc="http://www.omg.org/spec/DD/20100524/DC" xmlns:omgdi="http://www.omg.org/spec/DD/20100524/DI" typeLanguage="http://www.w3.org/2001/XMLSchema" expressionLanguage="http://www.w3.org/1999/XPath" targetNamespace="http://www.activiti.org/test">
+  <process id="myProcess" name="My process" isExecutable="true">
+    <startEvent id="alfrescoStartEv" name="Start Assignee Process" activiti:formKey="wf:submitAdhocTask"></startEvent>
+    <userTask id="delegateToAssignee" name="Delegate Task" activiti:candidateGroups="GROUP_ALFRESCO_ADMINISTRATORS" activiti:formKey="wbpm:DelegateTask">
+      <extensionElements>
+        <activiti:taskListener event="complete" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+          <activiti:field name="script">
+            <activiti:string><![CDATA[execution.setVariable('wbpm_nextStep', task.getVariable('wbpm_nextStep'));
+execution.setVariable('wbpm_delegatee', task.getVariable('wbpm_delegatee'));]]></activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="flow1" sourceRef="alfrescoStartEv" targetRef="delegateToAssignee"></sequenceFlow>
+    <exclusiveGateway id="DelegateeGateway" name="Exclusive Gateway" default="otherFlow"></exclusiveGateway>
+    <sequenceFlow id="flow2" sourceRef="delegateToAssignee" targetRef="DelegateeGateway"></sequenceFlow>
+    <userTask id="oncreateUT" name="On Create Assignee" activiti:formKey="wbpm:onCreateTask">
+      <extensionElements>
+        <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
+          <activiti:field name="script">
+            <activiti:string><![CDATA[task.assignee = execution.getVariable("wbpm_delegatee");]]></activiti:string>
+          </activiti:field>
+        </activiti:taskListener>
+      </extensionElements>
+    </userTask>
+    <sequenceFlow id="OnCreateFlow" sourceRef="DelegateeGateway" targetRef="oncreateUT">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${wbpm_nextStep == 'OnCreate'}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="expressionUT" name="Expression Assignee" activiti:assignee="${wbpm_delegatee.properties.userName}" activiti:formKey="wbpm:expressionTask"></userTask>
+    <sequenceFlow id="ExpressionFlow" sourceRef="DelegateeGateway" targetRef="expressionUT">
+      <conditionExpression xsi:type="tFormalExpression"><![CDATA[${wbpm_nextStep == 'Expression'}]]></conditionExpression>
+    </sequenceFlow>
+    <userTask id="otherUT" name="Default Assgnee Task" activiti:candidateGroups="GROUP_ALFRESCO_ADMINISTRATORS" activiti:formKey="wbpm:otherTask"></userTask>
+    <sequenceFlow id="otherFlow" sourceRef="DelegateeGateway" targetRef="otherUT"></sequenceFlow>
+    <endEvent id="endevent1" name="End"></endEvent>
+    <sequenceFlow id="flow3" sourceRef="expressionUT" targetRef="endevent1"></sequenceFlow>
+    <sequenceFlow id="flow4" sourceRef="oncreateUT" targetRef="endevent1"></sequenceFlow>
+    <sequenceFlow id="flow5" sourceRef="otherUT" targetRef="endevent1"></sequenceFlow>
+  </process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_myProcess">
+    <bpmndi:BPMNPlane bpmnElement="myProcess" id="BPMNPlane_myProcess">
+      <bpmndi:BPMNShape bpmnElement="alfrescoStartEv" id="BPMNShape_alfrescoStartEv">
+        <omgdc:Bounds height="35.0" width="35.0" x="170.0" y="190.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="delegateToAssignee" id="BPMNShape_delegateToAssignee">
+        <omgdc:Bounds height="55.0" width="105.0" x="250.0" y="180.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="DelegateeGateway" id="BPMNShape_DelegateeGateway">
+        <omgdc:Bounds height="40.0" width="40.0" x="400.0" y="188.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="oncreateUT" id="BPMNShape_oncreateUT">
+        <omgdc:Bounds height="55.0" width="105.0" x="485.0" y="181.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="expressionUT" id="BPMNShape_expressionUT">
+        <omgdc:Bounds height="55.0" width="105.0" x="485.0" y="90.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="otherUT" id="BPMNShape_otherUT">
+        <omgdc:Bounds height="55.0" width="105.0" x="485.0" y="270.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape bpmnElement="endevent1" id="BPMNShape_endevent1">
+        <omgdc:Bounds height="35.0" width="35.0" x="660.0" y="197.0"></omgdc:Bounds>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge bpmnElement="flow1" id="BPMNEdge_flow1">
+        <omgdi:waypoint x="205.0" y="207.0"></omgdi:waypoint>
+        <omgdi:waypoint x="250.0" y="207.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow2" id="BPMNEdge_flow2">
+        <omgdi:waypoint x="355.0" y="207.0"></omgdi:waypoint>
+        <omgdi:waypoint x="400.0" y="208.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="OnCreateFlow" id="BPMNEdge_OnCreateFlow">
+        <omgdi:waypoint x="440.0" y="208.0"></omgdi:waypoint>
+        <omgdi:waypoint x="485.0" y="208.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="ExpressionFlow" id="BPMNEdge_ExpressionFlow">
+        <omgdi:waypoint x="420.0" y="188.0"></omgdi:waypoint>
+        <omgdi:waypoint x="419.0" y="117.0"></omgdi:waypoint>
+        <omgdi:waypoint x="485.0" y="117.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="otherFlow" id="BPMNEdge_otherFlow">
+        <omgdi:waypoint x="420.0" y="228.0"></omgdi:waypoint>
+        <omgdi:waypoint x="420.0" y="297.0"></omgdi:waypoint>
+        <omgdi:waypoint x="485.0" y="297.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow3" id="BPMNEdge_flow3">
+        <omgdi:waypoint x="537.0" y="145.0"></omgdi:waypoint>
+        <omgdi:waypoint x="677.0" y="197.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow4" id="BPMNEdge_flow4">
+        <omgdi:waypoint x="590.0" y="208.0"></omgdi:waypoint>
+        <omgdi:waypoint x="660.0" y="214.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge bpmnElement="flow5" id="BPMNEdge_flow5">
+        <omgdi:waypoint x="537.0" y="270.0"></omgdi:waypoint>
+        <omgdi:waypoint x="677.0" y="232.0"></omgdi:waypoint>
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</definitions>

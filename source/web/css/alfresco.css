@@ -140,3 +140,9 @@ p
    line-height: 1.333em;
    padding-bottom: 0.333em;
 }
+
+td > b
+{
+   font-weight: normal;
+   font-family: Open Sans Bold, Arial, sans-serif;
+}

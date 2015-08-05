@@ -60,23 +60,40 @@ function main()
       var i = 0;
       while (i < sites.length)
       {
+         var filterObjIndex = 0;
          for (var key in filterObj)
          {
             if (filterObj[key] == sites[i].shortName || key == sites[i].shortName)
             {
-               if (filter != "favourites" ||
-                   filterObj[key] == true)
+               if (filter != "favourites" )
                {
-                  filteredSites.push(sites[i]);
-                  
-                  // If the caller of this webscript has requested a specific result size (non-zero) then do not return more than they asked for
+                  // ACE-379 fix. Fill filteredSites array according to the position of elements in the array 'filterObj'
+                  filteredSites[filterObjIndex] = sites[i];
+
+                  // If the caller of this webscript has requested a specific result size (non-zero) then do not return
+                  // more than they asked for
                   if (size > 0 && filteredSites.length == size)
                   {
                      break;
                   }
-                  
+               }
+               // if filter equals to "favourites" and site is favourite.
+               else
+               {
+                  if (filterObj[key] == true)
+                  {
+                      filteredSites.push(sites[i]);
+                  }
+
+                  // If the caller of this webscript has requested a specific result size (non-zero) then do not return
+                  // more than they asked for
+                  if (size > 0 && filteredSites.length == size)
+                  {
+                      break;
+                  }
                }
             }
+            filterObjIndex++;
          }
          i++;
       }

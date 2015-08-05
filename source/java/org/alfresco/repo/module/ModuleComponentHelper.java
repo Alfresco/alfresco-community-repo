@@ -203,7 +203,7 @@ public class ModuleComponentHelper
         /*
          * Ensure transactionality and the correct authentication
          */
-    	AuthenticationUtil.runAs(new RunAsWork<Object>()
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
         {
             public Object doWork() throws Exception
             {
@@ -244,82 +244,82 @@ public class ModuleComponentHelper
                             }
                         }
                     }
-		            
-		            final List<Tenant> tenants = tenantsNonFinal;
-		            
-		            for (final ModuleDetails module : modules)
-		            {
-		                RetryingTransactionCallback<Object> startModuleWork = new RetryingTransactionCallback<Object>()
-		                {
-		                    public Object execute() throws Exception
-		                    {
-		                        startModule(module, mapStartedModules.get(tenantDomainCtx), mapExecutedComponents.get(tenantDomainCtx));
-		                        
-		                        if (tenants != null)
-		                        {
-		                            for (Tenant tenant : tenants)
-		                            {
-		                                final String tenantDomain = tenant.getTenantDomain();
-		                                TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-		                                {
-		                                    public Object doWork() throws Exception
-		                                    {
-		                                        startModule(module, mapStartedModules.get(tenantDomain), mapExecutedComponents.get(tenantDomain));
-		                                        return null;
-		                                    }
-		                                }, tenantDomain);
-		                            }
-		                        }
-		                        
-		                        return null;
-		                    }
-		                };
+                    
+                    final List<Tenant> tenants = tenantsNonFinal;
+                    
+                    for (final ModuleDetails module : modules)
+                    {
+                        RetryingTransactionCallback<Object> startModuleWork = new RetryingTransactionCallback<Object>()
+                        {
+                            public Object execute() throws Exception
+                            {
+                                startModule(module, mapStartedModules.get(tenantDomainCtx), mapExecutedComponents.get(tenantDomainCtx));
+                                
+                                if (tenants != null)
+                                {
+                                    for (Tenant tenant : tenants)
+                                    {
+                                        final String tenantDomain = tenant.getTenantDomain();
+                                        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
+                                        {
+                                            public Object doWork() throws Exception
+                                            {
+                                                startModule(module, mapStartedModules.get(tenantDomain), mapExecutedComponents.get(tenantDomain));
+                                                return null;
+                                            }
+                                        }, tenantDomain);
+                                    }
+                                }
+                                
+                                return null;
+                            }
+                        };
                         transactionService.getRetryingTransactionHelper().doInTransaction(startModuleWork, transactionService.isReadOnly());
-		            }
-		            
-		            // Check for missing modules.
-		            checkForMissingModules();
-		            
-		            if (tenants != null)
-		            {
-		                for (Tenant tenant : tenants)
-		                {
-		                    TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-		                    {
-		                        public Object doWork() throws Exception
-		                        {
-		                            checkForMissingModules();
-		                            return null;
-		                        }
-		                    }, tenant.getTenantDomain());
-		                }
-		            }
-		            
-		            // Check that all components where executed, or considered for execution
-		            checkForOrphanComponents(mapExecutedComponents.get(tenantDomainCtx));
-		            
-		            if (tenants != null)
-		            {
-		                for (Tenant tenant : tenants)
-		                {
-		                    final String tenantDomain = tenant.getTenantDomain();
-		                    TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
-		                    {
-		                        public Object doWork() throws Exception
-		                        {
-		                            checkForOrphanComponents(mapExecutedComponents.get(tenantDomain));
-		                            return null;
-		                        }
-		                    }, tenantDomain);
-		                }
-		            }
-		        }
-		        catch (Throwable e)
-		        {
-		            throw new AlfrescoRuntimeException("Failed to start modules", e);
-		        }
-		        
-		        return null;
+                    }
+                    
+                    // Check for missing modules.
+                    checkForMissingModules();
+                    
+                    if (tenants != null)
+                    {
+                        for (Tenant tenant : tenants)
+                        {
+                            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
+                            {
+                                public Object doWork() throws Exception
+                                {
+                                    checkForMissingModules();
+                                    return null;
+                                }
+                            }, tenant.getTenantDomain());
+                        }
+                    }
+                    
+                    // Check that all components where executed, or considered for execution
+                    checkForOrphanComponents(mapExecutedComponents.get(tenantDomainCtx));
+                    
+                    if (tenants != null)
+                    {
+                        for (Tenant tenant : tenants)
+                        {
+                            final String tenantDomain = tenant.getTenantDomain();
+                            TenantUtil.runAsSystemTenant(new TenantRunAsWork<Object>()
+                            {
+                                public Object doWork() throws Exception
+                                {
+                                    checkForOrphanComponents(mapExecutedComponents.get(tenantDomain));
+                                    return null;
+                                }
+                            }, tenantDomain);
+                        }
+                    }
+                }
+                catch (Throwable e)
+                {
+                    throw new AlfrescoRuntimeException("Failed to start modules", e);
+                }
+                
+                return null;
             }
         }, AuthenticationUtil.getSystemUserName());
     }

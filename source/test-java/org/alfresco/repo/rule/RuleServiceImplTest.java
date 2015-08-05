@@ -40,10 +40,13 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.CompositeAction;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.Rule;
@@ -58,6 +61,7 @@ import org.alfresco.test_category.BaseSpringTestsCategory;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.GUID;
 import org.junit.experimental.categories.Category;
+import org.junit.Test;
 
 import javax.transaction.UserTransaction;
 
@@ -1412,5 +1416,102 @@ public class RuleServiceImplTest extends BaseRuleTest
 
         this.nodeService.deleteNode(actionedUponNodeRef);
         this.nodeService.deleteNode(parentNodeRef);
+    }
+    
+    /**
+     * MNT-12819
+     * Create two rules: outbound (enabled) and inbound (disabled). Then try to remove them via removeAllRules method.
+     * @throws SystemException 
+     * @throws NotSupportedException 
+     */
+    @Test
+    public void testRemoveAllRulesForInboundAndOutbound() throws Exception
+    {
+        String scriptName = "nothingToDo.js";
+        createNothingToDoScript(scriptName);
+        
+        NodeRef storeRootNodeRef = nodeService.getRootNode(new StoreRef("workspace://SpacesStore"));
+        NodeRef scriptRef = searchService.selectNodes(storeRootNodeRef, "/app:company_home/app:dictionary/app:scripts/cm:"+scriptName, null, namespaceService, false).get(0);
+        
+        NodeRef folderForRulesRef = this.nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("parentnode" + GUID.generate()), ContentModel.TYPE_FOLDER)
+                .getChildRef();
+     
+        try
+        {
+            // Create outbound rule for folderForRules
+            Rule outRule = new Rule();
+            outRule.setRuleType(RuleType.OUTBOUND);
+            outRule.setTitle("TestOutRule" + GUID.generate());
+            outRule.applyToChildren(true);
+            outRule.setRuleDisabled(false);
+            outRule.setExecuteAsynchronously(false);
+            outRule.setAction(createScriptAction());
+            this.ruleService.saveRule(folderForRulesRef, outRule);
+            assertNotNull("Rule was not saved", outRule.getNodeRef());
+
+            // Create inbound rule for folderForRules
+            Rule inRule = new Rule();
+            inRule.setRuleType(RuleType.INBOUND);
+            inRule.setTitle("TestinRule" + GUID.generate());
+            inRule.applyToChildren(false);
+            inRule.setExecuteAsynchronously(false);
+            inRule.setRuleDisabled(true);
+            inRule.setAction(createScriptAction());
+            this.ruleService.saveRule(folderForRulesRef, inRule);
+            assertNotNull("Rule was not saved", inRule.getNodeRef());
+
+            // remove rules
+            this.ruleService.removeAllRules(folderForRulesRef);
+        }
+        catch (InvalidNodeRefException exc)
+        {
+            fail("Cannot remove rules from folder");
+        }
+        finally
+        {
+            this.nodeService.deleteNode(folderForRulesRef);
+            this.nodeService.deleteNode(scriptRef);
+        }
+    }
+    
+    private void createNothingToDoScript(String scriptName)
+    {
+        NodeRef storeRootNodeRef = nodeService.getRootNode(new StoreRef("workspace://SpacesStore"));
+        NodeRef scriptFolderRef = searchService.selectNodes(storeRootNodeRef, "/app:company_home/app:dictionary/app:scripts", null, namespaceService, false).get(0);
+        
+        try
+        {
+            FileInfo fileInfo = fileFolderService.create(scriptFolderRef, scriptName, ContentModel.TYPE_CONTENT);
+
+            ContentWriter writer = fileFolderService.getWriter(fileInfo.getNodeRef());
+            assertNotNull("Writer is null", writer);
+            // write some content
+            String content = "function main(){}\nmain();";
+            writer.putContent(content);
+        }
+        catch (FileExistsException exc)
+        {
+            // file was created before
+        }
+    }
+    
+    private Action createScriptAction()
+    {
+        // get script nodeRef
+        NodeRef storeRootNodeRef = nodeService.getRootNode(new StoreRef("workspace://SpacesStore"));
+        NodeRef scriptRef = searchService.selectNodes(storeRootNodeRef, "/app:company_home/app:dictionary/app:scripts/cm:nothingToDo.js", null, namespaceService, false).get(0);
+        assertNotNull("NodeRef script is null", scriptRef);
+
+        // create action
+        CompositeAction compositeAction = actionService.createCompositeAction();
+
+        // add the action to the rule
+        Action action = actionService.createAction("script");
+        Map<String, Serializable> repoActionParams = new HashMap<String, Serializable>();
+        repoActionParams.put("script-ref", scriptRef);
+        action.setParameterValues(repoActionParams);
+        compositeAction.addAction(action);
+        
+        return compositeAction;
     }
 }

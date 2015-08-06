@@ -2,6 +2,8 @@
   <shortname>Edits a classified content</shortname>
   <description><![CDATA[
   Edits the classified content.<br/>
+  Classification level id, classified by, classification reasons are mandatory fields.<br/>
+  Downgrade instructions becomes a mandotory field if a downgrade date and/or downgrade event is provided.<br/>
   <br/>
   The body of the put should be in the form, e.g.<br/>
   {<br/>
@@ -10,12 +12,36 @@
     "classificationAgency": "anAgency",<br/>
     "classificationReasons": [<br/>
       {<br/>
-        "id": "reason1Id"<br/>
+        "displayLabel": "reason1DisplayLabel",<br/>
+        "fullReason": "reason1Id: reason1DisplayLabel",<br/>
+        "id": "reason1Id",<br/>
+        "label": "reason1Id: reason1DisplayLabel",<br/>
+        "value": "reason1Id"<br/>
       },<br/>
       {<br/>
-        "id": "reason2Id"<br/>
+        "displayLabel": "reason2DisplayLabel",<br/>
+        "fullReason": "reason2Id: reason2DisplayLabel",<br/>
+        "id": "reason2Id",<br/>
+        "label": "reason2Id: reason2DisplayLabel",<br/>
+        "value": "reason2Id"<br/>
       }<br/>
-    ]<br/>
+    ],<br/>
+    "downgradeDate": "YYYY-MM-DD",<br/>
+    "downgradeEvent": "aDowngradeEvent",<br/>
+    "downgradeInstructions": "aDowngradeInstruction",<br/>
+    "declassificationDate": "YYYY-MM-DD",<br/>
+    "declassificationEvent": "adeclassificationEvent",<br/>
+    "declassificationExemptions: [<br/>
+      {<br/>
+        "displayLabel": "anExemptionDisplayLabel",<br/>
+        "fullCategory": "anExemptionId: anExemptionDisplayLabel",<br/>
+        "id": "anExemptionId",<br/>
+        "label": "anExemptionId: anExemptionDisplayLabel",<br/>
+        "value": "anExemptionId"<br/>
+      }<br/>
+    ],<br/>
+    "lastReclassifyBy": "aUsername",<br/>
+    "lastReclassifyReason": "aReasonForReclassification"<br/>
   }<br/>
   ]]>
   </description>

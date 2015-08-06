@@ -18,10 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
-import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFICATION_AGENCY;
-import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFICATION_LEVEL_ID;
-import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFICATION_REASONS;
-import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentPost.CLASSIFIED_BY;
+import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase.CLASSIFICATION_AGENCY;
+import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase.CLASSIFICATION_LEVEL_ID;
+import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase.CLASSIFICATION_REASONS;
+import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase.CLASSIFIED_BY;
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
 import static org.alfresco.util.WebScriptUtils.is4xxError;
 import static org.alfresco.util.WebScriptUtils.putValuetoJSONObject;
@@ -34,7 +34,6 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Map;
 
-import com.google.common.collect.Sets;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelManager;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationReasonManager;
@@ -50,6 +49,8 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.WebScriptException;
+
+import com.google.common.collect.Sets;
 
 /**
  * Classify content REST API POST implementation unit test.
@@ -134,7 +135,8 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
         assertEquals(Sets.newHashSet(REASON1_ID, REASON2_ID), propertiesDTO.getClassificationReasonIds());
     }
 
-    @Test public void classifyingWithBlankClassifiedByShouldReturn4xxResponse() throws Exception
+    @Test
+    public void classifyingWithBlankClassifiedByShouldReturn4xxResponse() throws Exception
     {
         // Setup web script parameters
         Map<String, String> parameters = buildParameters

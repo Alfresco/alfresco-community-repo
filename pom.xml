@@ -35,6 +35,7 @@
 
     <modules>
         <module>distribution</module>
+        <module>public-javadoc</module>
     </modules>
 
     <profiles>

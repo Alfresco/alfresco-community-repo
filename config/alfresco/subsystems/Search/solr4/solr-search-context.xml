@@ -67,6 +67,8 @@
             <value>${solr.query.maximumResultsFromUnlimitedQuery}</value>
         </property>
         <property name="anyDenyDenies" value="${security.anyDenyDenies}"/>
+        <property name="defaultUnshardedFacetLimit" value="${solr.defaultUnshardedFacetLimit}"/>
+        <property name="defaultShardedFacetLimit" value="${solr.defaultShardedFacetLimit}"/>
     </bean>
     
     

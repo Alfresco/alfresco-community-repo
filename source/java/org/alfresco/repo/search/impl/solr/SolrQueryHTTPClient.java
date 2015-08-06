@@ -120,6 +120,10 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     private boolean anyDenyDenies;
 	
     public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
+    
+    private int defaultUnshardedFacetLimit = 100;
+    
+    private int defaultShardedFacetLimit = 20;
 
     public SolrQueryHTTPClient()
     {
@@ -212,6 +216,22 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     public void setAnyDenyDenies(boolean anyDenyDenies)
     {
         this.anyDenyDenies = anyDenyDenies;
+    }
+    
+    /**
+     * @param defaultUnshardedFacetLimit the defaultUnshardedFacetLimit to set
+     */
+    public void setDefaultUnshardedFacetLimit(int defaultUnshardedFacetLimit)
+    {
+        this.defaultUnshardedFacetLimit = defaultUnshardedFacetLimit;
+    }
+
+    /**
+     * @param defaultShardedFacetLimit the defaultShardedFacetLimit to set
+     */
+    public void setDefaultShardedFacetLimit(int defaultShardedFacetLimit)
+    {
+        this.defaultShardedFacetLimit = defaultShardedFacetLimit;
     }
 
     /**
@@ -426,7 +446,23 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
                     {
                         url.append("&").append(encoder.encode("f."+facet.getField()+".facet.enum.cache.minDf", "UTF-8")).append("=").append(encoder.encode(""+facet.getEnumMethodCacheMinDF(), "UTF-8"));
                     }
-                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.limit", "UTF-8")).append("=").append(encoder.encode(""+facet.getLimit(), "UTF-8"));
+                    int facetLimit;
+                    if(facet.getLimit() == null)
+                    {
+                        if(mapping.isSharded())
+                        {
+                            facetLimit = defaultShardedFacetLimit;
+                        }
+                        else
+                        {
+                            facetLimit = defaultUnshardedFacetLimit;
+                        }
+                    }
+                    else
+                    {
+                        facetLimit = facet.getLimit().intValue();
+                    }
+                    url.append("&").append(encoder.encode("f."+facet.getField()+".facet.limit", "UTF-8")).append("=").append(encoder.encode(""+facetLimit, "UTF-8"));
                     if(facet.getMethod() != null)
                     {
                         url.append("&").append(encoder.encode("f."+facet.getField()+".facet.method", "UTF-8")).append("=").append(encoder.encode(facet.getMethod()==FieldFacetMethod.ENUM ?  "enum" : "fc", "UTF-8"));

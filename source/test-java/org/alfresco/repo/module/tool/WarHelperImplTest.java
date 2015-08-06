@@ -79,7 +79,7 @@ public class WarHelperImplTest extends WarHelperImpl
         }
         catch (ModuleManagementToolException exception)
         {
-            assertTrue(exception.getMessage().contains("must be installed on a war version greater than 10.1"));
+            assertTrue(exception.getMessage().contains("must be installed on a war version equal to or greater than 10.1"));
         }
 
         installingModuleDetails.setRepoVersionMin(new VersionNumber("1.1"));
@@ -134,7 +134,7 @@ public class WarHelperImplTest extends WarHelperImpl
         }
         catch (ModuleManagementToolException exception)
         {
-            assertTrue(exception.getMessage().contains("must be installed on a war version greater than 10.1"));
+            assertTrue(exception.getMessage().contains("must be installed on a war version equal to or greater than 10.1"));
         }
 
         installingModuleDetails.setRepoVersionMin(new VersionNumber("1.1"));

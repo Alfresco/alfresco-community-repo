@@ -119,7 +119,7 @@ public abstract class ModulePatchComponent extends AbstractModuleComponent
                 LOGGER.info(" ... completed module patch '" + getName() + "'");
             }
         }
-        catch (Throwable exception)
+        catch (Exception exception)
         {
             // record the exception otherwise it gets swallowed
             if (LOGGER.isInfoEnabled())

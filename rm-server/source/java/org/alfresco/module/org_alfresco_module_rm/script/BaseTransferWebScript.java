@@ -129,7 +129,7 @@ public abstract class BaseTransferWebScript extends StreamACP
             // execute the transfer operation
             tempFile = executeTransfer(transferNode, req, res, status, cache);
         }
-        catch (Throwable e)
+        catch (Exception e)
         {
             throw createStatusException(e, req, res);
         }

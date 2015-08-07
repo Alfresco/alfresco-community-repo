@@ -148,7 +148,7 @@ public class ExportPost extends StreamACP
             throw new WebScriptException(Status.STATUS_BAD_REQUEST,
                         "Could not parse JSON from req.", je);
         }
-        catch(Throwable e)
+        catch(Exception e)
         {
             if (logger.isDebugEnabled())
             {

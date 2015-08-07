@@ -18,24 +18,20 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.content;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.content.cleanser.ContentCleanser;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -79,8 +75,10 @@ public class ContentDestructionComponentUnitTest extends BaseUnitTest
     
     /**
      * Given a record 
+     * And that by default cleansing is off
      * When it is deleted
      * Then it is sent for immediate destruction
+     * And not cleansed
      */
     @Test
     public void deleteRecord()
@@ -100,8 +98,10 @@ public class ContentDestructionComponentUnitTest extends BaseUnitTest
     
     /**
      * Given classified content
+     * And that by default cleansing is off
      * When it is deleted
      * Then it is send for immediate destruction
+     * And not cleansed
      */
     @Test
     public void deleteClassifiedContent()
@@ -122,7 +122,7 @@ public class ContentDestructionComponentUnitTest extends BaseUnitTest
     /**
      * Given that content cleansing is turned on
      * When a sensitive node is deleted
-     * Then it is not scheduled for cleansing before destruction
+     * Then it is scheduled for cleansing before destruction
      */
     @Test
     public void contentCleansingOn()
@@ -144,7 +144,7 @@ public class ContentDestructionComponentUnitTest extends BaseUnitTest
     /**
      * Given that content cleansing is turned off
      * When a sensitive node is deleted
-     * Then it is scheduled for cleansing before destruction
+     * Then it is not scheduled for cleansing before destruction
      */
     @Test
     public void contentCleansingOff()
@@ -202,31 +202,18 @@ public class ContentDestructionComponentUnitTest extends BaseUnitTest
     {
         NodeRef nodeRef = generateCmContent("myContent.txt");
         
-        List<QName> contentProperties = new ArrayList<QName>(contentPropertiesCount);
-        for (int i = 0; i < contentPropertiesCount; i++)
-        {
-            contentProperties.add(AlfMock.generateQName());            
-        }        
-        
-        when(mockedDictionaryService.getAllProperties(ContentModel.TYPE_CONTENT))
-            .thenReturn(contentProperties);
-        
-        DataTypeDefinition mockedDataTypeDefinition = mock(DataTypeDefinition.class);
-        when(mockedDataTypeDefinition.getName())
-            .thenReturn(DataTypeDefinition.CONTENT);
-        
-        PropertyDefinition mockedPropertyDefinition = mock(PropertyDefinition.class);       
-        when(mockedPropertyDefinition.getDataType())
-            .thenReturn(mockedDataTypeDefinition);
-                    
-        when(mockedDictionaryService.getProperty(any(QName.class)))
-            .thenReturn(mockedPropertyDefinition);
-        
-        ContentData mockedDataContent = mock(ContentData.class);
-        when(mockedDataContent.getContentUrl())
+        ContentData mockedContentData = mock(ContentData.class);
+        when(mockedContentData.getContentUrl())
             .thenReturn(contentURL);
-        when(mockedNodeService.getProperty(eq(nodeRef), any(QName.class)))
-            .thenReturn(mockedDataContent);
+        
+        Map<QName, Serializable> propertiesMap = new HashMap<QName, Serializable>(contentPropertiesCount);
+        for(int i = 0; i < contentPropertiesCount; i++)
+        {
+            propertiesMap.put(AlfMock.generateQName(), mockedContentData);
+        }
+                
+        when(mockedNodeService.getProperties(nodeRef))
+            .thenReturn(propertiesMap);
         
         return nodeRef;
     }

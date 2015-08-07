@@ -18,8 +18,12 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.content;
 
-import java.util.Collection;
+import java.io.Serializable;
+import java.util.Map;
+import java.util.Set;
 
+import org.alfresco.model.ContentModel;
+import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
@@ -28,9 +32,8 @@ import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -162,7 +165,7 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
                     recordService.isRecord(nodeRef))
                 {
                     // then register all content for destruction
-                    registerAllContentForDestruction(nodeRef);
+                    registerAllContentForDestruction(nodeRef, false);
                 }                
                 return null;
             }
@@ -170,28 +173,67 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
     }
     
     /**
+     * Destroy content
+     * 
+     * @param nodeRef
+     */
+    public void destroyContent(NodeRef nodeRef)
+    {
+        destroyContent(nodeRef, true);
+    }
+    
+    /**
+     * Destroy content
+     * 
+     * @param nodeRef
+     * @param includeRenditions
+     */
+    @SuppressWarnings("deprecation")
+    public void destroyContent(NodeRef nodeRef, boolean includeRenditions)
+    {
+        // destroy the nodes content properties
+        registerAllContentForDestruction(nodeRef, true);
+        
+        // Remove the renditioned aspect (and its properties and associations) if it is present.
+        //
+        // From Alfresco 3.3 it is the rn:renditioned aspect which defines the
+        // child-association being considered in this method.
+        // Note also that the cm:thumbnailed aspect extends the rn:renditioned aspect.
+        //
+        // We want to remove the rn:renditioned aspect, but due to the possibility
+        // that there is Alfresco 3.2-era data with the cm:thumbnailed aspect
+        // applied, we must consider removing it too.
+        if (nodeService.hasAspect(nodeRef, RenditionModel.ASPECT_RENDITIONED) ||
+            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_THUMBNAILED))
+      {
+          // get the rendition assoc types
+          Set<QName> childAssocTypes = dictionaryService.getAspect(RenditionModel.ASPECT_RENDITIONED).getChildAssociations().keySet();
+          for (ChildAssociationRef child : nodeService.getChildAssocs(nodeRef))
+          {
+              if (childAssocTypes.contains(child.getTypeQName()))
+              {
+                  // destroy renditions content
+                  destroyContent(nodeRef, false);
+              }
+          }
+       }
+    }
+    
+    /**
      * Registers all content on the given node for destruction.
      * 
      * @param nodeRef   node reference
      */
-    private void registerAllContentForDestruction(NodeRef nodeRef)
+    private void registerAllContentForDestruction(NodeRef nodeRef, boolean clearContentProperty)
     {
-        // get node type
-        QName nodeType = nodeService.getType(nodeRef);
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
         
-        // get type properties
-        Collection<QName> nodeProperties = dictionaryService.getAllProperties(nodeType);
-        for (QName nodeProperty : nodeProperties)
+        for (Map.Entry<QName, Serializable> entry : properties.entrySet())
         {
-            // get property definition
-            PropertyDefinition propertyDefinition = dictionaryService.getProperty(nodeProperty);
-            
-            // if content property
-            if (propertyDefinition != null && 
-                DataTypeDefinition.CONTENT.equals(propertyDefinition.getDataType().getName()))
+            if (entry.getValue() instanceof ContentData)
             {
                 // get content data
-                ContentData dataContent = (ContentData)nodeService.getProperty(nodeRef, nodeProperty);
+                ContentData dataContent = (ContentData)entry.getValue();
                 
                 // if enabled cleanse content 
                 if (isCleansingEnabled())
@@ -203,6 +245,12 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
                 {
                     // register for immediate destruction
                     eagerContentStoreCleaner.registerOrphanedContentUrl(dataContent.getContentUrl(), true);
+                }
+                
+                // clear the property
+                if (clearContentProperty)
+                {
+                    nodeService.removeProperty(nodeRef, entry.getKey());
                 }
             }
         }         

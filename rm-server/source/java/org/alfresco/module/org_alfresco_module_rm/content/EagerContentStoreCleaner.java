@@ -140,7 +140,7 @@ public class EagerContentStoreCleaner extends org.alfresco.repo.content.cleanup.
                         contentCleanser.cleanse(file);
                     }
                 }
-                catch (Throwable e)
+                catch (Exception e)
                 {
                     logger.error(
                             "Content cleansing failed: \n" +

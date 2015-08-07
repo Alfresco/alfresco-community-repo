@@ -53,19 +53,13 @@ public abstract class ContentCleanser
         try
         {
             // get an output stream
-            OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
-            try
+            try (OutputStream os = new BufferedOutputStream(new FileOutputStream(file)))
             {
                 for (int i = 0; i < bytes; i++)
                 {
                     // overwrite byte
                     overwriteOperation.operation(os);
                 }
-            }
-            finally
-            {
-                // close ouput stream
-                try {os.close(); } catch (Throwable e) {}
             }
         }
         catch (IOException ioException)
@@ -101,7 +95,7 @@ public abstract class ContentCleanser
     {
         public void operation(OutputStream os) throws IOException
         {
-            os.write(1);
+            os.write(0xff);
         }
     };
     

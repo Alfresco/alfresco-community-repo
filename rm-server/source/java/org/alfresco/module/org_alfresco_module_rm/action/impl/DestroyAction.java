@@ -21,19 +21,13 @@ package org.alfresco.module.org_alfresco_module_rm.action.impl;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
+import org.alfresco.module.org_alfresco_module_rm.content.ContentDestructionComponent;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
-import org.alfresco.repo.content.cleanup.EagerContentStoreCleaner;
 import org.alfresco.service.cmr.action.Action;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.QName;
@@ -49,9 +43,9 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     /** Action name */
     public static final String NAME = "destroy";
 
-    /** Eager content store cleaner */
-    private EagerContentStoreCleaner eagerContentStoreCleaner;
-
+    /** content destruction component */
+    private ContentDestructionComponent contentDestructionComponent;
+    
     /** Capability service */
     private CapabilityService capabilityService;
 
@@ -59,13 +53,13 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     private boolean ghostingEnabled = true;
 
     /**
-     * @param eagerContentStoreCleaner eager content store cleaner
+     * @param contentDestructionComponent   content destruction component
      */
-    public void setEagerContentStoreCleaner(EagerContentStoreCleaner eagerContentStoreCleaner)
+    public void setContentDestructionComponent(ContentDestructionComponent contentDestructionComponent)
     {
-        this.eagerContentStoreCleaner = eagerContentStoreCleaner;
+        this.contentDestructionComponent = contentDestructionComponent;
     }
-
+    
     /**
      * @param capabilityService capability service
      */
@@ -128,10 +122,12 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
         }
         if (isGhostOnDestroySetForAction(action, recordFolder))
         {
+            // add aspect
             getNodeService().addAspect(recordFolder, ASPECT_GHOSTED, Collections.<QName, Serializable> emptyMap());
         }
         else
         {
+            // just delete the node
             getNodeService().deleteNode(recordFolder);
         }
     }
@@ -141,92 +137,19 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
      */
     @Override
     protected void executeRecordLevelDisposition(Action action, NodeRef record)
-    {
-        // Clear the content
-        clearAllContent(record);
-
-        // Clear thumbnail content
-        clearThumbnails(record);
-
+    {        
         if (isGhostOnDestroySetForAction(action, record))
         {
             // Add the ghosted aspect
             getNodeService().addAspect(record, ASPECT_GHOSTED, null);
+            
+            // destroy content
+            contentDestructionComponent.destroyContent(record);
         }
         else
         {
-            // If ghosting is not enabled, delete the node
+            // just delete the node
             getNodeService().deleteNode(record);
-        }
-    }
-
-    /**
-     * Clear all the content properties
-     *
-     * @param nodeRef
-     */
-    private void clearAllContent(NodeRef nodeRef)
-    {
-        Set<QName> props = this.getNodeService().getProperties(nodeRef).keySet();
-        props.retainAll(this.getDictionaryService().getAllProperties(DataTypeDefinition.CONTENT));
-        for (QName prop : props)
-        {
-            // Clear the content
-            clearContent(nodeRef, prop);
-
-            // Remove the property
-            this.getNodeService().removeProperty(nodeRef, prop);
-        }
-    }
-
-    /**
-     * Clear all the thumbnail information
-     *
-     * @param nodeRef
-     */
-    @SuppressWarnings("deprecation")
-    private void clearThumbnails(NodeRef nodeRef)
-    {
-      // Remove the renditioned aspect (and its properties and associations) if it is present.
-      //
-      // From Alfresco 3.3 it is the rn:renditioned aspect which defines the
-      // child-association being considered in this method.
-      // Note also that the cm:thumbnailed aspect extends the rn:renditioned aspect.
-      //
-      // We want to remove the rn:renditioned aspect, but due to the possibility
-      // that there is Alfresco 3.2-era data with the cm:thumbnailed aspect
-      // applied, we must consider removing it too.
-      if (getNodeService().hasAspect(nodeRef, RenditionModel.ASPECT_RENDITIONED) ||
-              getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_THUMBNAILED))
-      {
-          // Add the ghosted aspect to all the renditioned children, so that they will not be archived when the
-          // renditioned aspect is removed
-          Set<QName> childAssocTypes = getDictionaryService().getAspect(RenditionModel.ASPECT_RENDITIONED).getChildAssociations().keySet();
-          for (ChildAssociationRef child : getNodeService().getChildAssocs(nodeRef))
-          {
-              if (childAssocTypes.contains(child.getTypeQName()))
-              {
-                  // Clear the content and delete the rendition
-                  clearAllContent(child.getChildRef());
-                  getNodeService().deleteNode(child.getChildRef());
-              }
-          }
-       }
-    }
-
-    /**
-     * Clear a content property
-     *
-     * @param nodeRef
-     * @param contentProperty
-     */
-    private void clearContent(NodeRef nodeRef, QName contentProperty)
-    {
-        // Ensure the content is cleaned at the end of the transaction
-        ContentData contentData = (ContentData)getNodeService().getProperty(nodeRef, contentProperty);
-        if (contentData != null && contentData.getContentUrl() != null)
-        {
-            eagerContentStoreCleaner.registerOrphanedContentUrl(contentData.getContentUrl(), true);
         }
     }
 

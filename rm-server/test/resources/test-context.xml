@@ -234,4 +234,9 @@
          </list>
       </property>
    </bean>
+   
+   <!-- Test content cleanser -->
+   
+   <bean id="contentCleanser.test" class="org.alfresco.module.org_alfresco_module_rm.test.util.TestContentCleanser"/>
+   
 </beans>

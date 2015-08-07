@@ -18,7 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.content.cleanser;
 
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
 import java.io.File;
@@ -26,6 +26,7 @@ import java.io.File;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.junit.Test;
+import org.mockito.InOrder;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Spy;
@@ -61,12 +62,14 @@ public class ContentCleanser522022MUnitTest extends BaseUnitTest
         
         contentCleanser522022M.cleanse(mockedFile);
         
-        verify(contentCleanser522022M)
+        InOrder inOrder = inOrder(contentCleanser522022M);
+        
+        inOrder.verify(contentCleanser522022M)
             .overwrite(mockedFile, contentCleanser522022M.overwriteOnes);
-        verify(contentCleanser522022M)
+        inOrder.verify(contentCleanser522022M)
             .overwrite(mockedFile, contentCleanser522022M.overwriteZeros);
-        verify(contentCleanser522022M)
-            .overwrite(mockedFile, contentCleanser522022M.overwriteOnes);
+        inOrder.verify(contentCleanser522022M)
+            .overwrite(mockedFile, contentCleanser522022M.overwriteRandom);
     }
     
     /**

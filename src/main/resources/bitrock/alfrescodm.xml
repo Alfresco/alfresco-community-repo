@@ -367,6 +367,7 @@
             </actionList>
             <ruleList>
                 <platformTest type="windows"/>
+                <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco Share"/>
             </ruleList>
         </actionGroup>
         <substitute>

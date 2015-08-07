@@ -59,7 +59,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMWebScriptTestC
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.apache.tools.ant.util.DateUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -182,8 +182,8 @@ public class ClassificationRestApiTest extends BaseRMWebScriptTestCase
         assertEquals(1, editedClassificationReasonsList.size());
         assertTrue(editedClassificationReasonsList.contains(CLASSIFICATION_REASON_3_ID_VALUE));
         assertEquals(DOWNGRADE.toModelString(), nodeService.getProperty(record, PROP_LAST_RECLASSIFICATION_ACTION));
-        String date1 = DateUtils.format(new Date(), ISO_DATE_FORMAT.getPattern());
-        String date2 = DateUtils.format((Date) nodeService.getProperty(record, PROP_LAST_RECLASSIFY_AT), ISO_DATE_FORMAT.getPattern());
+        String date1 = DateFormatUtils.format(new Date(), ISO_DATE_FORMAT.getPattern());
+        String date2 = DateFormatUtils.format((Date) nodeService.getProperty(record, PROP_LAST_RECLASSIFY_AT), ISO_DATE_FORMAT.getPattern());
         assertEquals(date1, date2);
         assertEquals(LAST_RECLASSIFY_BY_VALUE, nodeService.getProperty(record, PROP_LAST_RECLASSIFY_BY));
         assertEquals(LAST_RECLASSIFY_REASON_VALUE, nodeService.getProperty(record, PROP_LAST_RECLASSIFY_REASON));

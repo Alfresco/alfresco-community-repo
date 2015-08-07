@@ -457,7 +457,13 @@
 		   <artifactId>alfresco-testng</artifactId>
 		   <version>1.1</version>
            <scope>test</scope>
-	   </dependency>
+	   </dependency>	   
+	   <dependency>
+	      <groupId>org.apache.ant</groupId>
+	      <artifactId>ant</artifactId>
+	      <version>1.8.2</version>
+          <scope>test</scope>
+      </dependency>
       <!-- Database drivers -->
       <dependency>
          <groupId>postgresql</groupId>

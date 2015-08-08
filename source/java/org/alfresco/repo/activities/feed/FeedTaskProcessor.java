@@ -57,6 +57,7 @@ import org.json.JSONObject;
 import org.springframework.extensions.surf.util.Base64;
 
 import freemarker.cache.URLTemplateLoader;
+import freemarker.core.TemplateClassResolver;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
@@ -619,6 +620,8 @@ public abstract class FeedTaskProcessor
 
         // TODO review i18n
         cfg.setLocalizedLookup(false);
+        
+        cfg.setNewBuiltinClassResolver(TemplateClassResolver.SAFER_RESOLVER);
 
         return cfg;
     }

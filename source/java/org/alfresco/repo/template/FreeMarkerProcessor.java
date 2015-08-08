@@ -43,6 +43,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
 import freemarker.cache.MruCacheStorage;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.core.Environment;
+import freemarker.core.TemplateClassResolver;
 import freemarker.template.Configuration;
 import freemarker.template.ObjectWrapper;
 import freemarker.template.Template;
@@ -137,6 +138,8 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
             {
                 config.setDefaultEncoding(defaultEncoding);
             }
+            
+            config.setNewBuiltinClassResolver(TemplateClassResolver.SAFER_RESOLVER);
         }
         
         return config;
@@ -173,6 +176,8 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
         {
             config.setDefaultEncoding(defaultEncoding);
         }
+        
+        config.setNewBuiltinClassResolver(TemplateClassResolver.SAFER_RESOLVER);
         
         return config;
     }

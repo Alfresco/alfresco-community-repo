@@ -65,6 +65,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
 
+import freemarker.core.TemplateClassResolver;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 
@@ -525,6 +526,8 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
 
             // TODO review i18n
             cfg.setLocalizedLookup(false);
+            
+            cfg.setNewBuiltinClassResolver(TemplateClassResolver.SAFER_RESOLVER);
 
             return cfg;
         }

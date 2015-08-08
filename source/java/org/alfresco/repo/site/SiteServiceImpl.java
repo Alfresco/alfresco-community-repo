@@ -1530,10 +1530,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 }
             }
 
-            // If the site was moderated before, undo the work of #setModeratedPermissions
+            // If the site was moderated/private before, undo the work of #setModeratedPermissions/#setPrivatePermissions
             //   by restoring inherited permissions on the containers
             // (Leaving the old extra permissions on containers is fine)
-            if (SiteVisibility.MODERATED.equals(currentVisibility) == true)
+            if (SiteVisibility.MODERATED.equals(currentVisibility) == true || SiteVisibility.PRIVATE.equals(currentVisibility) == true)
             {
                 List<FileInfo> folders = fileFolderService.listFolders(siteNodeRef);
                 for(FileInfo folder : folders)
@@ -1563,7 +1563,13 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
             }
             else if (SiteVisibility.PRIVATE.equals(updatedVisibility))
             {
-                // No additional permissions need to be granted for a site become private
+                // Set the private permissions on all the containers the site already has
+                List<FileInfo> folders = fileFolderService.listFolders(siteNodeRef);
+                for(FileInfo folder : folders)
+                {
+                    NodeRef containerNodeRef = folder.getNodeRef();
+                    setPrivatePermissions(shortName, containerNodeRef);
+                }
             }
             
             // Update the site node reference with the updated visibility value

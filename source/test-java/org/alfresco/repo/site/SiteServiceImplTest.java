@@ -2614,4 +2614,41 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
 
         
     }
+    
+    /**
+     *  From MNT-14452, insure that GROUP_EVERYONE have read access to public sites' containers.
+     */
+    public void testChangeSiteVisibility()
+    {
+        String siteName = GUID.generate();
+        
+        //Check Private->public
+        SiteInfo siteInfo = createSite(siteName, "doclib", SiteVisibility.PRIVATE);
+
+        NodeRef container = this.siteService.getContainer(siteInfo.getShortName(), "doclib");
+
+        siteInfo.setVisibility(SiteVisibility.PUBLIC);
+        siteService.updateSite(siteInfo);
+
+        assertEquals("ReadPermissions", getAllowedPermissionsMap(container).get(PermissionService.ALL_AUTHORITIES));
+
+        //Check public->moderated
+        siteInfo.setVisibility(SiteVisibility.MODERATED);
+        siteService.updateSite(siteInfo);
+
+        assertNull("GROUP_EVERYONE shouldn't have any permissions on a moderated site's containers", getAllowedPermissionsMap(container).get(PermissionService.ALL_AUTHORITIES));
+
+        //Check moderated->public
+        siteInfo.setVisibility(SiteVisibility.PUBLIC);
+        siteService.updateSite(siteInfo);
+
+        assertEquals("ReadPermissions", getAllowedPermissionsMap(container).get(PermissionService.ALL_AUTHORITIES));
+        
+        //Check public->private
+        siteInfo.setVisibility(SiteVisibility.PRIVATE);
+        siteService.updateSite(siteInfo);
+
+        assertNull("GROUP_EVERYONE shouldn't have any permissions on a moderated site's containers", getAllowedPermissionsMap(container).get(PermissionService.ALL_AUTHORITIES));        
+
+    }
 }

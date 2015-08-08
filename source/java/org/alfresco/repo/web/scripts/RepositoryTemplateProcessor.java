@@ -40,6 +40,7 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import freemarker.cache.MultiTemplateLoader;
 import freemarker.cache.StrongCacheStorage;
 import freemarker.cache.TemplateLoader;
+import freemarker.core.TemplateClassResolver;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
@@ -198,6 +199,8 @@ public class RepositoryTemplateProcessor extends FreeMarkerProcessor
         
         // set output encoding
         config.setOutputEncoding("UTF-8");
+        
+        config.setNewBuiltinClassResolver(TemplateClassResolver.SAFER_RESOLVER);
         
         templateConfig = config;
     }

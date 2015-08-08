@@ -624,7 +624,13 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
+        // Reset the dictionary (destroy and reload)
+        dictionaryDAO.reset();
+
+        // Register listeners
         register();
+        
+        // The listeners can now know about this
         ((ApplicationContext) event.getSource()).publishEvent(new DictionaryRepositoryBootstrappedEvent(this));
     }
 
@@ -645,13 +651,10 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
     }
     
     /**
-     * Register
+     * Register listeners
      */
     public void register()
     {
-    	// deployer - force reload on next get (eg. bootstrap "rmc:rmcustom")
-        dictionaryDAO.destroy();
-        
         // register with Dictionary Service to allow (re-)init
         dictionaryDAO.registerListener(this);
 

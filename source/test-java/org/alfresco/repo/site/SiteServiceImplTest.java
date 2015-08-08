@@ -1864,7 +1864,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Gets the authorities and their allowed permissions for a site root
      */
-    private Map<String,String> getAllowedPermissionsMap(SiteInfo site)
+    private Map<String, Set<String>> getAllowedPermissionsMap(SiteInfo site)
     {
        NodeRef nodeRef = site.getNodeRef();
        return getAllowedPermissionsMap(nodeRef);
@@ -1873,14 +1873,20 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
     /**
      * Gets the authorities and their allowed permissions for a node
      */
-    private Map<String, String> getAllowedPermissionsMap(NodeRef nodeRef)
+    private Map<String, Set<String>> getAllowedPermissionsMap(NodeRef nodeRef)
     {
-       Map<String,String> perms = new HashMap<String, String>();
+       Map<String,Set<String>> perms = new HashMap<String, Set<String>>();
        for (AccessPermission ap : permissionService.getAllSetPermissions(nodeRef))
        {
           if (ap.getAccessStatus() == AccessStatus.ALLOWED)
           {
-             perms.put(ap.getAuthority(), ap.getPermission());
+             Set<String> permsValue = perms.get(ap.getAuthority());
+             if (permsValue == null)
+             {
+                permsValue  = new HashSet<String>();
+             }
+             permsValue.add(ap.getPermission());
+             perms.put(ap.getAuthority(), permsValue);
           }
        }
        return perms;
@@ -1909,14 +1915,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
        
        // Check the permissions on them
        // Everyone has read permissions only, not Consumer
-       assertEquals("ReadPermissions", getAllowedPermissionsMap(s1).get(PermissionService.ALL_AUTHORITIES));
-       assertEquals("ReadPermissions", getAllowedPermissionsMap(s2).get(PermissionService.ALL_AUTHORITIES));
-       assertEquals("ReadPermissions", getAllowedPermissionsMap(s3).get(PermissionService.ALL_AUTHORITIES));
+       assertTrue(getAllowedPermissionsMap(s1).get(PermissionService.ALL_AUTHORITIES).contains("ReadPermissions"));
+       assertTrue(getAllowedPermissionsMap(s2).get(PermissionService.ALL_AUTHORITIES).contains("ReadPermissions"));
+       assertTrue(getAllowedPermissionsMap(s3).get(PermissionService.ALL_AUTHORITIES).contains("ReadPermissions"));
        
        // On the public + moderated sites, the special group will be a Consumer
        assertEquals(null,                    getAllowedPermissionsMap(s1).get(groupFour));
-       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s2).get(groupFour));
-       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s3).get(groupFour));
+       assertTrue(getAllowedPermissionsMap(s2).get(groupFour).contains(SiteModel.SITE_CONSUMER));
+       assertTrue(getAllowedPermissionsMap(s3).get(groupFour).contains(SiteModel.SITE_CONSUMER));
        
        // Our current user will be Manager
        assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole(s1.getShortName(), USER_ONE));
@@ -1935,13 +1941,13 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
        // Check the permissions now
 
        // Everyone still has read permissions everywhere, but nothing more
-       assertEquals("ReadPermissions", getAllowedPermissionsMap(s1).get(PermissionService.ALL_AUTHORITIES));
-       assertEquals("ReadPermissions", getAllowedPermissionsMap(s2).get(PermissionService.ALL_AUTHORITIES));
-       assertEquals("ReadPermissions", getAllowedPermissionsMap(s3).get(PermissionService.ALL_AUTHORITIES));
+       assertTrue(getAllowedPermissionsMap(s1).get(PermissionService.ALL_AUTHORITIES).contains("ReadPermissions"));
+       assertTrue(getAllowedPermissionsMap(s2).get(PermissionService.ALL_AUTHORITIES).contains("ReadPermissions"));
+       assertTrue(getAllowedPermissionsMap(s3).get(PermissionService.ALL_AUTHORITIES).contains("ReadPermissions"));
        
        // The site public group has consumer permissions on mod+public
-       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s1).get(groupFour));
-       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s2).get(groupFour));
+       assertTrue(getAllowedPermissionsMap(s1).get(groupFour).contains(SiteModel.SITE_CONSUMER));
+       assertTrue(getAllowedPermissionsMap(s2).get(groupFour).contains(SiteModel.SITE_CONSUMER));
        assertEquals(null,                    getAllowedPermissionsMap(s3).get(groupFour));
        
        // Our user is still the manager
@@ -1961,14 +1967,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
        // Check the permissions have restored
 
        // Everyone only has read permissions
-       assertEquals("ReadPermissions", getAllowedPermissionsMap(s1).get(PermissionService.ALL_AUTHORITIES));
-       assertEquals("ReadPermissions", getAllowedPermissionsMap(s2).get(PermissionService.ALL_AUTHORITIES));
-       assertEquals("ReadPermissions", getAllowedPermissionsMap(s3).get(PermissionService.ALL_AUTHORITIES));
+       assertTrue(getAllowedPermissionsMap(s1).get(PermissionService.ALL_AUTHORITIES).contains("ReadPermissions"));
+       assertTrue(getAllowedPermissionsMap(s2).get(PermissionService.ALL_AUTHORITIES).contains("ReadPermissions"));
+       assertTrue(getAllowedPermissionsMap(s3).get(PermissionService.ALL_AUTHORITIES).contains("ReadPermissions"));
        
        // The site public group has consumer permissions on mod+public
        assertEquals(null,                    getAllowedPermissionsMap(s1).get(groupFour));
-       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s2).get(groupFour));
-       assertEquals(SiteModel.SITE_CONSUMER, getAllowedPermissionsMap(s3).get(groupFour));
+       assertTrue(getAllowedPermissionsMap(s2).get(groupFour).contains(SiteModel.SITE_CONSUMER));
+       assertTrue(getAllowedPermissionsMap(s3).get(groupFour).contains(SiteModel.SITE_CONSUMER));
        
        // Our user is still the manager
        assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRole(s1.getShortName(), USER_ONE));
@@ -2630,7 +2636,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         siteInfo.setVisibility(SiteVisibility.PUBLIC);
         siteService.updateSite(siteInfo);
 
-        assertEquals("ReadPermissions", getAllowedPermissionsMap(container).get(PermissionService.ALL_AUTHORITIES));
+        assertTrue(getAllowedPermissionsMap(container).get(PermissionService.ALL_AUTHORITIES).contains("ReadPermissions"));
 
         //Check public->moderated
         siteInfo.setVisibility(SiteVisibility.MODERATED);
@@ -2642,7 +2648,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         siteInfo.setVisibility(SiteVisibility.PUBLIC);
         siteService.updateSite(siteInfo);
 
-        assertEquals("ReadPermissions", getAllowedPermissionsMap(container).get(PermissionService.ALL_AUTHORITIES));
+        assertTrue(getAllowedPermissionsMap(container).get(PermissionService.ALL_AUTHORITIES).contains("ReadPermissions"));
         
         //Check public->private
         siteInfo.setVisibility(SiteVisibility.PRIVATE);

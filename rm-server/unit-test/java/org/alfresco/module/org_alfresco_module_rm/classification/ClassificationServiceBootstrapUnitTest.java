@@ -21,7 +21,6 @@ package org.alfresco.module.org_alfresco_module_rm.classification;
 import static java.util.Arrays.asList;
 import static org.apache.commons.collections.ListUtils.union;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -33,7 +32,6 @@ import static org.mockito.Mockito.when;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import com.google.common.collect.ImmutableList;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingConfiguration;
@@ -46,8 +44,6 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUt
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.apache.log4j.Appender;
-import org.apache.log4j.Level;
-import org.apache.log4j.spi.LoggingEvent;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -116,7 +112,6 @@ public class ClassificationServiceBootstrapUnitTest implements ClassifiedContent
     @Mock ClearanceLevelManager mockClearanceLevelManager;
     /** Using a mock appender in the class logger so that we can verify some of the logging requirements. */
     @Mock Appender mockAppender;
-    @Captor ArgumentCaptor<LoggingEvent> loggingEventCaptor;
     @Captor ArgumentCaptor<List<ClearanceLevel>> clearanceLevelCaptor;
 
     private ClassificationLevelFieldsValidator classificationLevelFieldsValidator = new ClassificationLevelFieldsValidator();
@@ -146,7 +141,7 @@ public class ClassificationServiceBootstrapUnitTest implements ClassifiedContent
                 anyString(), anyString(), anyString());
     }
 
-    @Test public void alternativeLevelsConfigurationPreviouslyStartedSystem()
+    @Test public void levelsConfigurationChanged()
     {
         when(mockClassificationServiceDAO.<ClassificationLevel>getConfiguredValues(ClassificationLevel.class)).thenReturn(ALT_CLASSIFICATION_LEVELS);
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString()))
@@ -154,8 +149,7 @@ public class ClassificationServiceBootstrapUnitTest implements ClassifiedContent
 
         List<ClassificationLevel> entities = classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationLevel.class, LEVELS_KEY, classificationLevelValidator);
 
-        // TODO Check that changing the behaviour here is ok.
-        assertEquals(DEFAULT_CLASSIFICATION_LEVELS, entities);
+        assertEquals(ALT_CLASSIFICATION_LEVELS, entities);
     }
 
     @Test (expected=MissingConfiguration.class)
@@ -192,44 +186,21 @@ public class ClassificationServiceBootstrapUnitTest implements ClassifiedContent
                 anyString(), anyString(), anyString());
     }
 
-    /**
-     * Check that if the reasons supplied on the classpath differ from those already persisted then a warning is logged
-     * and no change is made to the persisted reasons.
-     * <p>
-     * This test uses the underlying log4j implementation to insert a mock Appender, and tests this for the warning
-     * message. If the underlying logging framework is changed then this unit test will fail, and it may not be
-     * possible to/worth fixing.
-     */
-    @Test public void previouslyStartedSystemShouldWarnIfConfiguredReasonsHaveChanged()
+    /** Check that if the reasons supplied on the classpath differ from those already persisted then they are changed. */
+    @Test
+    public void changeConfiguredReasons()
     {
         // The classification reasons stored are different from those found on the classpath.
         when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn(
                     (Serializable) PLACEHOLDER_CLASSIFICATION_REASONS);
         when(mockClassificationServiceDAO.<ClassificationReason>getConfiguredValues(ClassificationReason.class)).thenReturn(ALTERNATIVE_CLASSIFICATION_REASONS);
 
-        // Put the mock Appender into the log4j logger and allow warning messages to be received.
-        org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger.getLogger(ClassificationServiceBootstrap.class);
-        log4jLogger.addAppender(mockAppender);
-        Level normalLevel = log4jLogger.getLevel();
-        log4jLogger.setLevel(Level.WARN);
-
         // Call the method under test.
-        classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationReason.class, REASONS_KEY, classificationReasonValidator);
+        List<ClassificationReason> actual = classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationReason.class, REASONS_KEY, classificationReasonValidator);
 
-        // Reset the logging level for other tests.
-        log4jLogger.setLevel(normalLevel);
-
-        // Check the persisted values weren't changed.
-        verify(mockAttributeService, never()).setAttribute(any(Serializable.class),
-                anyString(), anyString(), anyString());
-
-        // Check that the warning message was logged.
-        verify(mockAppender).doAppend(loggingEventCaptor.capture());
-        List<LoggingEvent> loggingEvents = loggingEventCaptor.getAllValues();
-        Stream<String> messages = loggingEvents.stream()
-                                               .map(LoggingEvent::getRenderedMessage);
-        String expectedMessage = "ClassificationReason data configured in classpath does not match data stored in Alfresco. Alfresco will use the unchanged values stored in the database.";
-        assertTrue("Warning message not found in log.", messages.anyMatch(message -> expectedMessage.equals(message)));
+        assertEquals(ALTERNATIVE_CLASSIFICATION_REASONS, actual);
+        // Check the persisted values were changed.
+        verify(mockAttributeService).setAttribute((Serializable) ALTERNATIVE_CLASSIFICATION_REASONS, REASONS_KEY);
     }
 
     @Test(expected = MissingConfiguration.class)
@@ -267,20 +238,16 @@ public class ClassificationServiceBootstrapUnitTest implements ClassifiedContent
     }
 
     /**
-     * Check that if the exemption categories supplied on the classpath differ from those already persisted then a
-     * warning is logged and no change is made to the persisted categories.
+     * Check that if the exemption categories supplied on the classpath differ from those already persisted then the new
+     * values are persisted.
      * <p>
-     * <a href="https://issues.alfresco.com/jira/browse/RM-2322">RM-2322</a><pre>
+     * <a href="https://issues.alfresco.com/jira/browse/RM-2337">RM-2337</a><pre>
      * Given that I have already started the system once
      * When I stop the system
      * And modify the exemption categories
      * And restart the system
-     * Then I am warned that the exemption categories have been changed
-     * And they are not altered
+     * Then the new exemption categories are loaded.
      * </pre>
-     * This test uses the underlying log4j implementation to insert a mock Appender, and tests this for the warning
-     * message. If the underlying logging framework is changed then this unit test will fail, and it may not be possible
-     * to/worth fixing.
      */
     @Test
     public void testInitConfiguredExemptionCategories_changedCategories()
@@ -289,29 +256,12 @@ public class ClassificationServiceBootstrapUnitTest implements ClassifiedContent
                     .thenReturn((Serializable) EXEMPTION_CATEGORIES);
         when(mockClassificationServiceDAO.<ExemptionCategory>getConfiguredValues(ExemptionCategory.class)).thenReturn(CHANGED_EXEMPTION_CATEGORIES);
 
-        // Put the mock Appender into the log4j logger and allow warning messages to be received.
-        org.apache.log4j.Logger log4jLogger = org.apache.log4j.Logger.getLogger(ClassificationServiceBootstrap.class);
-        log4jLogger.addAppender(mockAppender);
-        Level normalLevel = log4jLogger.getLevel();
-        log4jLogger.setLevel(Level.WARN);
-
         // Call the method under test.
-        classificationServiceBootstrap.getConfiguredSchemeEntities(ExemptionCategory.class, EXEMPTION_CATEGORIES_KEY, exemptionCategoryValidator);
+        List<ExemptionCategory> actual = classificationServiceBootstrap.getConfiguredSchemeEntities(ExemptionCategory.class, EXEMPTION_CATEGORIES_KEY, exemptionCategoryValidator);
 
-        // Reset the logging level for other tests.
-        log4jLogger.setLevel(normalLevel);
-
-        // Check the persisted values weren't changed.
-        verify(mockAttributeService, never()).setAttribute(any(Serializable.class),
-                anyString(), anyString(), anyString());
-
-        // Check that the warning message was logged.
-        verify(mockAppender).doAppend(loggingEventCaptor.capture());
-        List<LoggingEvent> loggingEvents = loggingEventCaptor.getAllValues();
-        Stream<String> messages = loggingEvents.stream()
-                                               .map(LoggingEvent::getRenderedMessage);
-        String expectedMessage = "ExemptionCategory data configured in classpath does not match data stored in Alfresco. Alfresco will use the unchanged values stored in the database.";
-        assertTrue("Warning message not found in log.", messages.anyMatch(message -> expectedMessage.equals(message)));
+        assertEquals(CHANGED_EXEMPTION_CATEGORIES, actual);
+        // Check the persisted values were changed.
+        verify(mockAttributeService).setAttribute((Serializable) CHANGED_EXEMPTION_CATEGORIES, EXEMPTION_CATEGORIES_KEY);
     }
 
     @Test(expected = MissingConfiguration.class)

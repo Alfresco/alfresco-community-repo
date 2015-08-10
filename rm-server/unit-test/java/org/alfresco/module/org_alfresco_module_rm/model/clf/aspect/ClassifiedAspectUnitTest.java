@@ -98,4 +98,16 @@ public class ClassifiedAspectUnitTest implements ClassifiedContentModel
 
         classifiedAspect.checkConsistencyOfProperties(NODE_REF);
     }
+
+    /** Check that blank instructions are treated in the same way as null instructions. */
+    @Test(expected = MissingDowngradeInstructions.class)
+    public void testCheckConsistencyOfProperties_emptyStringsSupplied()
+    {
+        when(mockNodeService.hasAspect(NODE_REF, ASPECT_CLASSIFIED)).thenReturn(true);
+        when(mockNodeService.getProperty(NODE_REF, PROP_DOWNGRADE_DATE)).thenReturn("");
+        when(mockNodeService.getProperty(NODE_REF, PROP_DOWNGRADE_EVENT)).thenReturn("Event");
+        when(mockNodeService.getProperty(NODE_REF, PROP_DOWNGRADE_INSTRUCTIONS)).thenReturn("");
+
+        classifiedAspect.checkConsistencyOfProperties(NODE_REF);
+    }
 }

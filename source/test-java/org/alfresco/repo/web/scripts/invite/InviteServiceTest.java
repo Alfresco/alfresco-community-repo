@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.web.scripts.invite;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -38,6 +39,7 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -57,12 +59,14 @@ import org.alfresco.util.PropertyMap;
 import org.apache.commons.lang.RandomStringUtils;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
@@ -1101,5 +1105,97 @@ public class InviteServiceTest extends BaseWebScriptTest
 
             deletePersonByUserName(collaborator);
         }
+    }
+    
+    @Test
+    public void testDontOwerrideModeratedSitePermissions() throws Exception
+    {
+        final String MODERATED_SITE_NAME = RandomStringUtils.randomAlphabetic(6);
+        final String siteManager = RandomStringUtils.randomAlphabetic(6);
+        final String secondUser = RandomStringUtils.randomAlphabetic(6);
+        
+        // Create two users
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork() throws Exception
+                    {
+                        createPerson(siteManager, siteManager, siteManager, "");
+                        createPerson(secondUser, secondUser, secondUser, "");
+                        return null;
+                    }
+
+                }, AuthenticationUtil.getSystemUserName());
+        
+        // Create moderated site
+        SiteInfo siteInfo = InviteServiceTest.this.siteService.getSite(MODERATED_SITE_NAME);
+        if (siteInfo == null)
+        {
+            siteService.createSite(
+                "InviteSitePreset", MODERATED_SITE_NAME,
+                MODERATED_SITE_NAME, MODERATED_SITE_NAME, SiteVisibility.MODERATED);
+        }
+        siteService.setMembership(MODERATED_SITE_NAME, siteManager, SiteModel.SITE_MANAGER);
+        String role = siteService.getMembersRole(MODERATED_SITE_NAME, siteManager);
+        assertEquals(SiteModel.SITE_MANAGER, role);
+        
+        // Create request to join to site
+        String inviteId = createModeratedInvitation(MODERATED_SITE_NAME, "", secondUser, SiteModel.SITE_CONSUMER);
+        
+        // Set second user to Collaborator
+        siteService.setMembership(MODERATED_SITE_NAME, secondUser, SiteModel.SITE_COLLABORATOR);
+        role = siteService.getMembersRole(MODERATED_SITE_NAME, secondUser);
+        assertEquals(SiteModel.SITE_COLLABORATOR, role);
+        
+        final String taskId = getTaskId(inviteId);
+        assertNotNull("Cannot find taskId", taskId);
+        
+        // Accept invitation
+        String oldUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        AuthenticationUtil.setFullyAuthenticatedUser(siteManager);
+        workflowService.endTask(taskId, "approve");
+        AuthenticationUtil.setFullyAuthenticatedUser(oldUser);
+        
+        // Check the role
+        role = siteService.getMembersRole(MODERATED_SITE_NAME, secondUser);
+        assertEquals(SiteModel.SITE_COLLABORATOR, role);
+    }
+    
+    private String createModeratedInvitation(String siteName, String inviteeComments, String inviteeUserName, String inviteeRoleName) throws Exception
+    {
+        String URL_SITES = "/api/sites";
+        /*
+         * Create a new moderated invitation
+         */
+        JSONObject newInvitation = new JSONObject();
+
+        newInvitation.put("invitationType", "MODERATED");
+        newInvitation.put("inviteeRoleName", inviteeRoleName);
+        newInvitation.put("inviteeComments", inviteeComments);
+        newInvitation.put("inviteeUserName", inviteeUserName);
+        Response response = sendRequest(new PostRequest(URL_SITES + "/" + siteName + "/invitations", newInvitation.toString(), "application/json"), 201);
+        JSONObject top = new JSONObject(response.getContentAsString());
+        JSONObject data = top.getJSONObject("data");
+        String inviteId = data.getString("inviteId");
+
+        return inviteId;
+    }
+    
+    private String getTaskId(String inviteId) throws Exception
+    {
+        String url = "/api/task-instances";
+        Response response = sendRequest(new GetRequest(url), 200);
+        JSONObject top = new JSONObject(response.getContentAsString());
+        JSONArray data = top.getJSONArray("data");
+        for (int i=0; i < data.length(); i++)
+        {
+            JSONObject task = data.getJSONObject(i);
+            JSONObject workflowInstance = task.getJSONObject("workflowInstance");
+            if (!inviteId.equalsIgnoreCase(workflowInstance.getString("id")))
+            {
+                continue;
+            }
+            return task.getString("id");
+        }
+        return null;
     }
 }

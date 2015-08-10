@@ -171,24 +171,21 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
 
         validator.validate(classpathValues, clazz.getSimpleName());
 
-        if (isEmpty(persistedValues))
+        if (isEmpty(classpathValues))
         {
-            if (isEmpty(classpathValues))
-            {
-                throw new MissingConfiguration(clazz.getSimpleName() + " configuration is missing.");
-            }
-            attributeService.setAttribute((Serializable) classpathValues, key);
-            return classpathValues;
+            throw new MissingConfiguration(clazz.getSimpleName() + " configuration is missing.");
         }
-        else
+        if (classpathValues.equals(persistedValues))
         {
-            if (isEmpty(classpathValues) || !classpathValues.equals(persistedValues))
-            {
-                LOGGER.warn(clazz.getSimpleName() + " data configured in classpath does not match data stored in Alfresco. "
-                            + "Alfresco will use the unchanged values stored in the database.");
-            }
             return persistedValues;
         }
+        if (!isEmpty(persistedValues))
+        {
+            LOGGER.warn("{} configuration changed. This may result in unpredictable results if the classification scheme is already in use.",
+                        clazz.getSimpleName());
+        }
+        attributeService.setAttribute((Serializable) classpathValues, key);
+        return classpathValues;
     }
 
     /**

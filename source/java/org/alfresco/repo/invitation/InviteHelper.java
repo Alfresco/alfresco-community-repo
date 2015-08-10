@@ -358,7 +358,7 @@ public class InviteHelper implements InitializingBean
         String reviewer = (String)executionVariables.get(WorkflowModelModeratedInvitation.wfVarReviewer);
         
         // Add invitee to the site
-        addSiteMembership(invitee, siteName, role, reviewer, true);
+        addSiteMembership(invitee, siteName, role, reviewer, false);
     }
     
     @SuppressWarnings("unchecked")

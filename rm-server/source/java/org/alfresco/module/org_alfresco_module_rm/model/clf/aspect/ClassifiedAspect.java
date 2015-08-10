@@ -144,10 +144,23 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
             Serializable downgradeDate = nodeService.getProperty(nodeRef, PROP_DOWNGRADE_DATE);
             Serializable downgradeEvent = nodeService.getProperty(nodeRef, PROP_DOWNGRADE_EVENT);
             Serializable downgradeInstructions = nodeService.getProperty(nodeRef, PROP_DOWNGRADE_INSTRUCTIONS);
-            if (downgradeInstructions == null && (downgradeDate != null || downgradeEvent != null))
+            if (isEmpty(downgradeInstructions) && !(isEmpty(downgradeDate) && isEmpty(downgradeEvent)))
             {
                 throw new MissingDowngradeInstructions(nodeRef);
             }
         }
+    }
+
+    /**
+     * Check if a property is null or the empty string. Note that this is the same as
+     * {@link org.apache.commons.lang.StringUtils#isEmpty(String)}, except that it takes a Serializable rather than a
+     * String. This avoids awkward casting exceptions when working with properties.
+     *
+     * @param value The (probably String) value to check.
+     * @return true if the supplied value is null or the empty string.
+     */
+    private boolean isEmpty(Serializable value)
+    {
+        return (value == null || value.equals(""));
     }
 }

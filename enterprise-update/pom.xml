@@ -34,15 +34,26 @@
             <version>${alfresco.updatetool.version}</version>
             <type>jar</type>
         </dependency>
+		
+		<dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-update-tool-distribution</artifactId>
+            <version>${alfresco.updatetool.version}</version>
+            <type>jar</type>
+        </dependency>
+		
     </dependencies>  
 
     <build>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
+				
                 <executions>
                     <execution>
+					
                         <id>update</id>
+						
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
@@ -51,6 +62,20 @@
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptors>
                                 <descriptor>assemblies/update.xml</descriptor>
+                            </descriptors>
+							<finalName>updatePackage</finalName>
+                        </configuration>
+                    </execution>
+					<execution>
+                        <id>update-tool</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <appendAssemblyId>false</appendAssemblyId>
+                            <descriptors>
+								<descriptor>assemblies/updateTool.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>

@@ -4,36 +4,46 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
 
-    <id>update</id>
+    <id>update-tool</id>
     <formats>
         <format>zip</format>
     </formats>
 
     <includeBaseDirectory>false</includeBaseDirectory>
-		
-    <dependencySets>
-        <!-- alfresco web app -->
-        <dependencySet>
+	
+	<files>
+	    <file>
+			<source>${project.basedir}/target/updatePackage.zip</source>
+			<outputDirectory>updates</outputDirectory>
+		</file>
+	</files>
+	
+	<dependencySets>
+	
+		<!-- The update tool itself -->
+		<dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>update/assets/web-server/webapps</outputDirectory>
-            <outputFileNameMapping>alfresco.war</outputFileNameMapping>
+            <outputDirectory>bin</outputDirectory>
+            <outputFileNameMapping>alfresco-update-tool.jar</outputFileNameMapping>
             <includes>
-                <include>org.alfresco:alfresco-enterprise:war</include>
+                <include>org.alfresco:alfresco-update-tool:jar</include>
             </includes>
         </dependencySet>
 
-        <!--  share web app -->
-        <dependencySet>
+		<dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>update/assets/web-server/webapps</outputDirectory>
-            <outputFileNameMapping>share.war</outputFileNameMapping>
+            <outputDirectory></outputDirectory>
+			<unpack>true</unpack>
+			<unpackOptions>
+			   <lineEnding>keep</lineEnding>
+			</unpackOptions>
             <includes>
-                <include>org.alfresco:share:war</include>
+                <include>org.alfresco:alfresco-update-tool-distribution:jar</include>
             </includes>
         </dependencySet>
-		
+
     </dependencySets>
 
 </assembly>

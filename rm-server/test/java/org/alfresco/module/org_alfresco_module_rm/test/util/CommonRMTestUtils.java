@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -190,11 +191,26 @@ public class CommonRMTestUtils implements RecordsManagementModel
         return dispositionSchedule;
     }
 
+    /**
+     * Helper method to create a record in a record folder.
+     * 
+     * @param recordFolder      record folder
+     * @param name              name of record
+     * @return {@link NodeRef}  record node reference
+     */
     public NodeRef createRecord(NodeRef recordFolder, String name)
     {
         return createRecord(recordFolder, name, null, "Some test content");
     }
 
+    /**
+     * Helper method to create a record in a record folder.
+     * 
+     * @param recordFolder      record folder
+     * @param name              name of the record
+     * @param title             title of the record
+     * @return {@link NodeRef}  record node reference
+     */
     public NodeRef createRecord(NodeRef recordFolder, String name, String title)
     {
         Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
@@ -202,7 +218,56 @@ public class CommonRMTestUtils implements RecordsManagementModel
         return createRecord(recordFolder, name, props, "Some test content");
     }
 
+    /**
+     * Helper method to create a record in a record folder.
+     * 
+     * @param recordFolder      record folder
+     * @param name              name of record
+     * @param properties        properties of the record
+     * @param content           content of the record
+     * @return {@link NodeRef}  record node reference
+     */
     public NodeRef createRecord(NodeRef recordFolder, String name, Map<QName, Serializable> properties, String content)
+    {
+        // Create the record
+        NodeRef record = createRecordImpl(recordFolder, name, properties);
+
+        // Set the content
+        ContentWriter writer = contentService.getWriter(record, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        writer.setEncoding("UTF-8");
+        writer.putContent(content);
+
+        return record;
+    }
+    
+    /**
+     * Helper method to create a record in a record folder.
+     * 
+     * @param recordFolder      record folder
+     * @param name              name of record
+     * @param properties        properties of the record
+     * @param content           content of the record
+     * @return {@link NodeRef}  record node reference
+     */
+    public NodeRef createRecord(NodeRef recordFolder, String name, Map<QName, Serializable> properties, String mimetype, InputStream content)
+    {
+        // Create the record
+        NodeRef record = createRecordImpl(recordFolder, name, properties);
+
+        // Set the content
+        ContentWriter writer = contentService.getWriter(record, ContentModel.PROP_CONTENT, true);
+        writer.setMimetype(mimetype);
+        writer.setEncoding("UTF-8");
+        writer.putContent(content);
+
+        return record;
+    }
+    
+    /**
+     * Helper to consolidate creation of contentless record
+     */
+    private NodeRef createRecordImpl(NodeRef recordFolder, String name, Map<QName, Serializable> properties)
     {
         // Create the document
         if (properties == null)
@@ -213,21 +278,14 @@ public class CommonRMTestUtils implements RecordsManagementModel
         {
             properties.put(ContentModel.PROP_NAME, name);
         }
-        NodeRef recordOne = nodeService.createNode(recordFolder,
+        NodeRef record = nodeService.createNode(recordFolder,
                                                         ContentModel.ASSOC_CONTAINS,
                                                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, name),
                                                         ContentModel.TYPE_CONTENT,
-                                                        properties).getChildRef();
-
-        // Set the content
-        ContentWriter writer = contentService.getWriter(recordOne, ContentModel.PROP_CONTENT, true);
-        writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        writer.setEncoding("UTF-8");
-        writer.putContent(content);
-
-        return recordOne;
+                                                        properties).getChildRef();        
+        return record;        
     }
-
+    
     /**
      * Helper method to complete record.
      */

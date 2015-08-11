@@ -18,7 +18,8 @@
       <property name="contentClassificationService" ref="contentClassificationService" />	
    	  <property name="eagerContentStoreCleaner" ref="eagerContentStoreCleaner" />	
    	  <property name="dictionaryService" ref="dictionaryService" />	
-   	  <property name="nodeService" ref="nodeService" />
+   	  <property name="nodeService" ref="nodeService" />   	 
+      <property name="behaviourFilter" ref="policyBehaviourFilter" />
    	  <property name="cleansingEnabled" value="${rm.content.cleansing.enabled}" />		   
    </bean>
    

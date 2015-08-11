@@ -18,8 +18,13 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.destroy;
 
+import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
@@ -30,10 +35,13 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestContentCleanser;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.util.GUID;
 
@@ -51,6 +59,7 @@ public class DestroyContentTest extends BaseRMTestCase
     private TestContentCleanser contentCleanser;
     private EagerContentStoreCleaner eagerContentStoreCleaner;
     private ContentDestructionComponent contentDestructionComponent;
+    private RenditionService renditionService;
     
     @Override
     protected void initServices()
@@ -60,6 +69,7 @@ public class DestroyContentTest extends BaseRMTestCase
         contentCleanser = (TestContentCleanser)applicationContext.getBean(BEAN_NAME_CONTENT_CLEANSER);
         eagerContentStoreCleaner = (EagerContentStoreCleaner)applicationContext.getBean("eagerContentStoreCleaner");
         contentDestructionComponent = (ContentDestructionComponent)applicationContext.getBean("contentDestructionComponent");
+        renditionService = (RenditionService)applicationContext.getBean("renditionService");
         
         // set the test content store cleaner
         eagerContentStoreCleaner.setContentCleanser(contentCleanser);
@@ -92,7 +102,14 @@ public class DestroyContentTest extends BaseRMTestCase
                             false, 
                             true);
                 destroyableFolder = recordFolderService.createRecordFolder(recordCategoryFolderLevel, GUID.generate());
-                subRecord = utils.createRecord(destroyableFolder, GUID.generate(), GUID.generate());
+                
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
+                props.put(ContentModel.PROP_TITLE, GUID.generate());
+                InputStream is = System.class.getResourceAsStream("/alfresco/test/content/Image.jpg");                
+                subRecord = utils.createRecord(destroyableFolder, GUID.generate(), props, MimetypeMap.MIMETYPE_IMAGE_JPEG, is);
+                
+                renditionService.render(subRecord, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "medium"));
+                
                 utils.completeRecord(subRecord);
                 utils.completeEvent(destroyableFolder, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(destroyableFolder, CutOffAction.NAME);

@@ -28,6 +28,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassifi
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -70,6 +71,9 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
     
     /** node service */
     private NodeService nodeService;
+    
+    /** behaviour filter */
+    private BehaviourFilter behaviourFilter;
     
     /** indicates whether cleansing is enabled or not */
     private boolean cleansingEnabled = false;
@@ -128,6 +132,14 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
     public void setCleansingEnabled(boolean cleansingEnabled)
     {
         this.cleansingEnabled = cleansingEnabled;
+    }
+    
+    /**
+     * @param behaviourFilter   behaviour filter
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
     
     /**
@@ -213,7 +225,7 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
               if (childAssocTypes.contains(child.getTypeQName()))
               {
                   // destroy renditions content
-                  destroyContent(nodeRef, false);
+                  destroyContent(child.getChildRef(), false);
               }
           }
        }
@@ -222,7 +234,8 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
     /**
      * Registers all content on the given node for destruction.
      * 
-     * @param nodeRef   node reference
+     * @param nodeRef               node reference
+     * @param clearContentProperty  if true then clear content property, otherwise false
      */
     private void registerAllContentForDestruction(NodeRef nodeRef, boolean clearContentProperty)
     {
@@ -250,7 +263,16 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
                 // clear the property
                 if (clearContentProperty)
                 {
-                    nodeService.removeProperty(nodeRef, entry.getKey());
+                    // disable behaviours to ensure no side effects
+                    behaviourFilter.disableBehaviour();
+                    try
+                    {
+                        nodeService.removeProperty(nodeRef, entry.getKey());
+                    }
+                    finally
+                    {
+                        behaviourFilter.enableBehaviour();
+                    }
                 }
             }
         }         

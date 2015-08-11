@@ -38,6 +38,17 @@
                 <include>org.alfresco:share:war</include>
             </includes>
         </dependencySet>
+		
+		<!-- The update tool itself -->
+		<dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>bin</outputDirectory>
+            <outputFileNameMapping>alfresco-update-tool.jar</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:alfresco-update-tool:jar</include>
+            </includes>
+        </dependencySet>
 
     </dependencySets>
 

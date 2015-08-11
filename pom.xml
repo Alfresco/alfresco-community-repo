@@ -20,6 +20,9 @@
 
         <!-- Alfresco GoogleDocs integration version -->
         <alfresco.googledocs.version>3.0.2</alfresco.googledocs.version>
+		
+		<!-- Alfresco Update Tool version bundled in the update installer -->
+        <alfresco.updatetool.version>1.0-SNAPSHOT</alfresco.updatetool.version>
 
         <!-- Versions of binaries packaged in the installer -->
         <installer.common.version>5.0-20150414</installer.common.version>

@@ -26,6 +26,14 @@
             <version>${alfresco.share.version}</version>
             <type>war</type>
         </dependency>
+		
+		<!-- Update Tool Itself -->
+		<dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-update-tool</artifactId>
+            <version>${alfresco.updatetool.version}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>  
 
     <build>

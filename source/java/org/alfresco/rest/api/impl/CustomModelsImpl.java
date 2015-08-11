@@ -115,6 +115,7 @@ public class CustomModelsImpl implements CustomModels
     protected ValueDataTypeValidator valueDataTypeValidator;
 
     private static final String DEFAULT_DATA_TYPE = "d:text";
+    private static final String BOOLEAN_DATA_TYPE = "d:boolean";
     private static final String SELECT_ALL = "all";
     private static final String SELECT_STATUS = "status";
     private static final String SELECT_PROPS = "props";
@@ -954,17 +955,6 @@ public class CustomModelsImpl implements CustomModels
                 m2Property.setMandatory(prop.isMandatory());
                 m2Property.setMandatoryEnforced(prop.isMandatoryEnforced());
                 m2Property.setMultiValued(prop.isMultiValued());
-                // Set indexing options
-                m2Property.setIndexed(prop.isIndexed());
-                if (Facetable.TRUE == prop.getFacetable())
-                {
-                    m2Property.setFacetable(true);
-                }
-                else if (Facetable.FALSE == prop.getFacetable())
-                {
-                    m2Property.setFacetable(false);
-                }
-                m2Property.setIndexTokenisationMode(prop.getIndexTokenisationMode());
 
                 String dataType = prop.getDataType();
                 // Default type is d:text
@@ -991,6 +981,24 @@ public class CustomModelsImpl implements CustomModels
                 }
                 m2Property.setType(dataType);
                 m2Property.setDefaultValue(prop.getDefaultValue());
+ 
+                // Set indexing options
+                m2Property.setIndexed(prop.isIndexed());
+                // SHA-1234
+                // This 'if' statement can be removed when we fix the Solr schema
+                // so it can support boolean data type.
+                if (!BOOLEAN_DATA_TYPE.equals(dataType))
+                {
+                    if (Facetable.TRUE == prop.getFacetable())
+                    {
+                        m2Property.setFacetable(true);
+                    }
+                    else if (Facetable.FALSE == prop.getFacetable())
+                    {
+                        m2Property.setFacetable(false);
+                    }
+                }
+                m2Property.setIndexTokenisationMode(prop.getIndexTokenisationMode());
 
                 // Check for constraints
                 List<String> constraintRefs = prop.getConstraintRefs();

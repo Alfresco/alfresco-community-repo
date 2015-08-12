@@ -624,13 +624,20 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
-        // Reset the dictionary (destroy and reload)
+        // Reset the dictionary (destroy and reload) in order to ensure that we have a basic version of
+        // the dictionary (static models) loaded at least
         dictionaryDAO.reset();
 
-        // Register listeners
+        // Register listeners, which will be called when the dictionary is next reloaded
         register();
         
+        // Trigger a reload.
+        // The callbacks, which will occur asynchronously, will load the custom models from the repository.
+        dictionaryDAO.init();
+        
         // The listeners can now know about this
+        // However, the listeners will be needing to access the dictionary themselves, hence the earlier 'reset'
+        // to ensure that there is no deadlock waiting for a new dictionary
         ((ApplicationContext) event.getSource()).publishEvent(new DictionaryRepositoryBootstrappedEvent(this));
     }
 

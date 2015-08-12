@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.util.GUID;
@@ -59,6 +58,7 @@ public class DestroyContentTest extends BaseRMTestCase
     private TestContentCleanser contentCleanser;
     private EagerContentStoreCleaner eagerContentStoreCleaner;
     private ContentDestructionComponent contentDestructionComponent;
+    @SuppressWarnings("unused")
     private RenditionService renditionService;
     
     @Override
@@ -105,10 +105,15 @@ public class DestroyContentTest extends BaseRMTestCase
                 
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_TITLE, GUID.generate());
-                InputStream is = System.class.getResourceAsStream("/alfresco/test/content/Image.jpg");                
-                subRecord = utils.createRecord(destroyableFolder, GUID.generate(), props, MimetypeMap.MIMETYPE_IMAGE_JPEG, is);
+                InputStream is = System.class.getResourceAsStream("/alfresco/test/content/Image.jpg");  
                 
+                subRecord = utils.createRecord(destroyableFolder, GUID.generate(), props, MimetypeMap.MIMETYPE_IMAGE_JPEG, is);                
+                
+                // Commented out, because Bamboo doesn't currently support rendition creation
+                // TODO figure out a way to create renditions that is supported on Bamboo
+                /*
                 renditionService.render(subRecord, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "medium"));
+                */
                 
                 utils.completeRecord(subRecord);
                 utils.completeEvent(destroyableFolder, CommonRMTestUtils.DEFAULT_EVENT_NAME);

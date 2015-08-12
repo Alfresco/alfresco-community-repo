@@ -39,25 +39,13 @@
          </list>
       </property>
    </bean>
-
-   <!-- Classification Method Interceptor -->
-
-   <bean id="preMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PreMethodInvocationProcessor">
+    
+   <!-- Classification veto -->
+   <bean id="classificationVeto" class="org.alfresco.module.org_alfresco_module_rm.classification.veto.ClassificationPermissionVeto" parent="parentPermissionVeto">
+      <property name="contentClassificationService" ref="contentClassificationService" />      
+      <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
+      <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
    </bean>
-
-   <bean id="postMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PostMethodInvocationProcessor">
-   </bean>
-
-   <bean id="classificationMethodInterceptor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptor">
-      <property name="preMethodInvocationProcessor" ref="preMethodInvocationProcessor" />
-      <property name="postMethodInvocationProcessor" ref="postMethodInvocationProcessor" />
-   </bean>
-
-   <bean id="classificationMethodInterceptorPostProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptorPostProcessor" />
 
    <!-- Classification service DAO -->
 

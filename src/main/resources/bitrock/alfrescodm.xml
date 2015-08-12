@@ -28,6 +28,17 @@
         <directoryParameter name="alfresco_shared_library_directory" value="${tomcat_server_directory}/shared/lib" ask="0"/>
         <stringParameter name="alfresco_database_name" value="alfresco" ask="0"/>
         <stringParameter name="alfresco_database_validate_query" value="SELECT 1" ask="0"/>
+
+        <!-- Repository URL for Alfresco Share Installer -->
+        <stringParameter>
+            <name>repository_url_port</name>
+            <title>Connect Alfresco Share to Alfresco Platform</title>
+            <explanation>Please enter your Alfresco Platform Url, Port and context.</explanation>
+            <default>http://localhost:8080/alfresco</default>
+            <ask>0</ask>
+            <description>Alfresco Platform location: </description>
+        </stringParameter>
+
         <!-- Ports: FTP, RMI -->
         <stringParameter>
             <name>alfresco_ftp_port</name>
@@ -400,6 +411,20 @@
                     <value>&lt;!--Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" /--&gt;</value>
                 </substitution>
             </substitutionList>
+        </substitute>
+        <!-- Substitute repository url  -->
+        <substitute>
+            <files>${installdir}/tomcat/shared/classes/alfresco/web-extension/share-config-custom.xml</files>
+            <type>exact</type>
+            <substitutionList>
+                <substitution>
+                    <pattern>http://localhost:8080/alfresco</pattern>
+                        <value>${repository_url_port}</value>
+                </substitution>
+            </substitutionList>
+            <ruleList>
+                <compareText text="${product_fullname}" logic="equals" value="Alfresco Share"/>
+            </ruleList>
         </substitute>
         <propertiesFileSet>
             <file>${application_server_conf_directory}/logging.properties</file>

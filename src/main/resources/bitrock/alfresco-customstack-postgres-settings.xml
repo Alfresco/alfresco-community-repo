@@ -49,6 +49,13 @@
             </ruleList>
         </setInstallerVariable>
 
+        <!-- Alfresco Share specifics -->
+        <setInstallerVariable name="component(alfresco).parameter(repository_url_port).ask" value="1">
+            <ruleList>
+                <compareText text="${product_fullname}" logic="equals" value="Alfresco Share"/>
+            </ruleList>
+        </setInstallerVariable>
+
     </preBuildActionList>
     <initializationActionList>
         <setInstallerVariable name="alfresco_installer_bitness" value="64"/>

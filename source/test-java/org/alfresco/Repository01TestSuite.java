@@ -426,4 +426,10 @@ public class Repository01TestSuite extends TestSuite
     {
         suite.addTestSuite(org.alfresco.repo.doclink.DocumentLinkServiceImplTest.class);
     }
+
+    static void tests68(TestSuite suite)
+    {
+        // This test opens, closes and again opens the alfresco application context.
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.dictionary.CustomModelRepoRestartTest.class));
+    }
 }

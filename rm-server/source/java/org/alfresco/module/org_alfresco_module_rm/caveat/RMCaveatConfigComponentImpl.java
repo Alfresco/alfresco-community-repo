@@ -35,10 +35,11 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import net.sf.acegisecurity.AccessDeniedException;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
-import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.ContentServicePolicies;

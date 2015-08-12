@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,6 +23,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -34,6 +35,8 @@ import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamic
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
+import org.alfresco.repo.security.permissions.veto.PermissionVeto;
+import org.alfresco.repo.security.permissions.veto.PermissionVetoRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -49,7 +52,7 @@ import org.springframework.context.ApplicationEvent;
  *
  * @author Roy Wetherall
  */
-public class RMPermissionServiceImpl extends PermissionServiceImpl
+public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
                                      implements ExtendedPermissionService
 {
 	/** Writers simple cache */
@@ -57,6 +60,9 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
 
     /** File plan service */
     private FilePlanService filePlanService;
+    
+    /** Permission veto registry */
+    private PermissionVetoRegistry permissionVetoRegistry;
 
     /**
      * Gets the file plan service
@@ -77,6 +83,11 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     {
         this.filePlanService = filePlanService;
     }
+    
+    public void setPermissionVetoRegistry(PermissionVetoRegistry permissionVetoRegistry) 
+    {
+		this.permissionVetoRegistry = permissionVetoRegistry;
+	}
 
     /**
      * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#setAnyDenyDenies(boolean)
@@ -85,7 +96,10 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     public void setAnyDenyDenies(boolean anyDenyDenies)
     {
         super.setAnyDenyDenies(anyDenyDenies);
-        writersCache.clear();
+        if (writersCache != null)
+        {
+        	writersCache.clear();
+        }
     }
 
     /**
@@ -116,6 +130,19 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     @Override
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
+    	// check permission vetos
+    	List<PermissionVeto> permissionVetos = permissionVetoRegistry.getPermissionVetos();
+    	for (PermissionVeto permissionVeto : permissionVetos) 
+    	{
+    		if (permissionVeto.isVetoed(nodeRef, perm))
+    		{
+    			// TODO add logging so veto cause can be diagnosed
+    			
+    			// veto access to node    			
+    			return AccessStatus.DENIED;
+    		}
+		}
+    	
         AccessStatus acs = super.hasPermission(nodeRef, perm);
         if (AccessStatus.DENIED.equals(acs) &&
             PermissionService.READ.equals(perm) &&

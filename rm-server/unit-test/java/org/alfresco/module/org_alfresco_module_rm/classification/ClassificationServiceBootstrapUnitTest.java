@@ -160,6 +160,53 @@ public class ClassificationServiceBootstrapUnitTest implements ClassifiedContent
         classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationLevel.class, LEVELS_KEY, classificationLevelValidator);
     }
 
+    /**
+     * Check that we can add a classification entity after the system has been bootstrapped for the first time.
+     * <p>
+     * <a href="https://issues.alfresco.com/jira/browse/RM-2484">RM-2484</a><pre>
+     * Given a classification scheme has been installed
+     * When I add new entities into the classification scheme configuration files
+     * And I restart the server
+     * Then the new entities are installed.
+     * </pre>
+     */
+    @Test public void addClassificationSchemeEntity()
+    {
+        List<ClassificationLevel> initialList = asLevelList("A", "Admin", "B", "Board Member");
+        List<ClassificationLevel> correctedList = asLevelList("A", "Admin", "B", "Board Member", "C", "Common Employee");
+
+        when(mockClassificationServiceDAO.<ClassificationLevel>getConfiguredValues(ClassificationLevel.class)).thenReturn(correctedList);
+        when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn((Serializable) initialList);
+
+        List<ClassificationLevel> entities = classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationLevel.class, LEVELS_KEY, classificationLevelValidator);
+
+        assertEquals(correctedList, entities);
+    }
+
+    /**
+     * Check that we can remove a classification entity after the system has been bootstrapped for the first time.
+     * <p>
+     * <a href="https://issues.alfresco.com/jira/browse/RM-2486">RM-2486</a><pre>
+     * Given a classification scheme has been installed
+     * And no content is classified using a given entity
+     * When I delete the entity from the classification scheme configuration
+     * And I restart the server
+     * Then the entity is no longer available in the system.
+     * </pre>
+     */
+    @Test public void deleteUnusedClassificationSchemeEntity()
+    {
+        List<ClassificationLevel> initialList = asLevelList("A", "Admin", "B", "Board Member", "T", "Typo - Oops!", "C", "Common Employee");
+        List<ClassificationLevel> correctedList = asLevelList("A", "Admin", "B", "Board Member", "C", "Common Employee");
+
+        when(mockClassificationServiceDAO.<ClassificationLevel>getConfiguredValues(ClassificationLevel.class)).thenReturn(correctedList);
+        when(mockAttributeService.getAttribute(anyString(), anyString(), anyString())).thenReturn((Serializable) initialList);
+
+        List<ClassificationLevel> entities = classificationServiceBootstrap.getConfiguredSchemeEntities(ClassificationLevel.class, LEVELS_KEY, classificationLevelValidator);
+
+        assertEquals(correctedList, entities);
+    }
+
     @Test public void pristineSystemShouldBootstrapReasonsConfiguration()
     {
         // There are no classification reasons stored in the AttributeService.

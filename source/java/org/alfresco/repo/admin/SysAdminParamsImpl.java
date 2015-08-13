@@ -95,20 +95,13 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         localName = srvName;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.
-     * ApplicationContext)
-     */
+    @Override
     public void setApplicationContext(ApplicationContext ctx)
     {
         this.ctx = ctx;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
-     */
+    @Override
     public void afterPropertiesSet() throws Exception
     {
         if (this.allowWrite)
@@ -147,10 +140,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         }
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.admin.SysAdminParams#getAllowedUserList()
-     */
+    @Override
     public List<String> getAllowedUserList()
     {
         return this.allowedUsers;
@@ -167,10 +157,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         this.maxUsers = new Integer(maxUsers);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.admin.SysAdminParams#getMaxUsers()
-     */
+    @Override
     public int getMaxUsers()
     {
         return this.maxUsers;
@@ -187,15 +174,13 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         this.allowWrite = allowWrite;
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.admin.SysAdminParams#getAllowWrite()
-     */
+    @Override
     public boolean getAllowWrite()
     {
         return this.allowWrite;
     }
 
+    @Override
     public String getAlfrescoContext()
     {
         return alfrescoContext;
@@ -206,6 +191,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         this.alfrescoContext = alfrescoContext;
     }
 
+    @Override
     public String getAlfrescoHost()
     {
         return alfrescoHost;
@@ -216,6 +202,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         this.alfrescoHost = subsituteHost(alfrescoHost);
     }
 
+    @Override
     public int getAlfrescoPort()
     {
         return alfrescoPort;
@@ -226,6 +213,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         this.alfrescoPort = alfrescoPort;
     }
 
+    @Override
     public String getAlfrescoProtocol()
     {
         return alfrescoProtocol;
@@ -236,6 +224,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         this.alfrescoProtocol = alfrescoProtocol;
     }
 
+    @Override
     public String getShareContext()
     {
         return shareContext;
@@ -246,6 +235,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         this.shareContext = shareContext;
     }
 
+    @Override
     public String getShareHost()
     {
         return shareHost;
@@ -256,6 +246,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         this.shareHost = subsituteHost(shareHost);
     }
 
+    @Override
     public int getSharePort()
     {
         return sharePort;
@@ -266,6 +257,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         this.sharePort = sharePort;
     }
 
+    @Override
     public String getShareProtocol()
     {
         return shareProtocol;
@@ -288,18 +280,15 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
         return hostName.replace(TOKEN_LOCAL_NAME, localName);
     }
 
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.admin.SysAdminParams#getSitePublicGroup()
-     */
-	public String getSitePublicGroup()
-	{
-		return this.sitePublicGroup;
-	}
+    @Override
+    public String getSitePublicGroup()
+    {
+        return this.sitePublicGroup;
+    }
 
-	public void setSitePublicGroup(String sitePublicGroup)
-	{
-		this.sitePublicGroup = sitePublicGroup;
-	}
+    public void setSitePublicGroup(String sitePublicGroup)
+    {
+        this.sitePublicGroup = sitePublicGroup;
+    }
 
 }

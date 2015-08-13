@@ -8,13 +8,13 @@
     <formats>
         <format>zip</format>
     </formats>
-
+	
     <includeBaseDirectory>false</includeBaseDirectory>
 	
 	<files>
 	    <file>
-			<source>${project.basedir}/target/updatePackage.zip</source>
-			<outputDirectory>updates</outputDirectory>
+			<source>${project.basedir}/target/update-contents-${version}.zip</source>
+			<outputDirectory>update</outputDirectory>
 		</file>
 	</files>
 	

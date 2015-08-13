@@ -63,7 +63,7 @@
                             <descriptors>
                                 <descriptor>assemblies/update.xml</descriptor>
                             </descriptors>
-							<finalName>updatePackage</finalName>
+							<finalName>update-contents-${version}</finalName>
                         </configuration>
                     </execution>
 					<execution>
@@ -73,6 +73,10 @@
                             <goal>single</goal>
                         </goals>
                         <configuration>
+						    <!-- Does not seem to work suppressing the META-INF folder -->
+							<archive>
+							   <addMavenDescriptor>false</addMavenDescriptor>
+							</archive>	
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptors>
 								<descriptor>assemblies/updateTool.xml</descriptor>

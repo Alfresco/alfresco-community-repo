@@ -25,6 +25,8 @@ import java.util.StringTokenizer;
 
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.license.LicenseService;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
@@ -35,6 +37,8 @@ import org.springframework.context.ApplicationContextAware;
  */
 public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAware, InitializingBean
 {
+    private static Log logger = LogFactory.getLog(SysAdminParams.class);
+    
     /** Token name to substitute current servers DNS name or TCP/IP address into a host name **/
     private static final String TOKEN_LOCAL_NAME = "${localname}";
     
@@ -111,6 +115,10 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
             {
                 licenseService = (LicenseService) this.ctx.getBean("licenseService");
                 this.allowWrite = licenseService.isLicenseValid();
+                if (logger.isInfoEnabled())
+                {
+                    logger.info("'allowWrite' being set to false: licenseService.isLicenseValid() returned false.");
+                }
             }
             catch (NoSuchBeanDefinitionException e)
             {
@@ -172,6 +180,13 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
     public void setAllowWrite(boolean allowWrite)
     {
         this.allowWrite = allowWrite;
+        if (!allowWrite)
+        {
+            if (logger.isInfoEnabled())
+            {
+                logger.info("'allowWrite' being set to false: Bean property setter.");
+            }
+        }
     }
 
     @Override

@@ -11,6 +11,12 @@
    <!--  Authentication Helper -->
    <bean name="rm.authenticationUtil" class="org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil"/>
 
+   <!-- Utility methods that enhance core Alfresco services -->
+   <bean name="rm.coreServicesExtras" class="org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras">
+      <property name="dictionaryService" ref="dictionaryService" />
+      <property name="nodeService" ref="NodeService" />
+   </bean>
+
    <!-- Transactional Resouce Helper -->
    <bean name="rm.transactionalResourceHelper" class="org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper" />
 

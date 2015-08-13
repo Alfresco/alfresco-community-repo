@@ -16,30 +16,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.security.permissions.veto;
+package org.alfresco.repo.security.permissions.processor;
+
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+
+
 
 /**
+ * Permission Post Processor.
+ * 
  * @author Roy Wetherall
  * @since 3.0.a
  */
-public abstract class PermissionVetoBaseImpl implements PermissionVeto 
+public interface PermissionPostProcessor
 {
-	/** permission veto refistry */
-	private PermissionVetoRegistry permissionVetoRegistry;
-	
 	/**
-	 * @param permissionVetoRegistry	permission veto registry
+	 * Process permission.
+	 * 
+	 * @param  accessStatus			current access status
+	 * @param  nodeRef				node reference
+	 * @param  perm					permission
+	 * @return {@link AccessStatus}
 	 */
-	public void setPermissionVetoRegistry(PermissionVetoRegistry permissionVetoRegistry) 
-	{
-		this.permissionVetoRegistry = permissionVetoRegistry;
-	}
-	
-	/**
-	 * Init method to add this permission veto to the registry
-	 */
-	public void init()
-	{
-		permissionVetoRegistry.addPermissionVeto(this);
-	}
+	AccessStatus process(AccessStatus accessStatus, NodeRef nodeRef, String perm);		
 }

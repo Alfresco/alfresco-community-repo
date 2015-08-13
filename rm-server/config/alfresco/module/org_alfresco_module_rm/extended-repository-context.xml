@@ -96,19 +96,24 @@
       <property name="disableSharedCache" value="${system.cache.disableMutableSharedCaches}" />
    </bean>
    
-   <!-- Permission veto registry -->
-   <bean id="permissionVetoRegistry" class='org.alfresco.repo.security.permissions.veto.PermissionVetoRegistry'/>
+   <!-- Permission processor registry -->
+   <bean id="permissionProcessorRegistry" class='org.alfresco.repo.security.permissions.processor.PermissionProcessorRegistry'/>
    
-   <!-- Permission veto base bean -->
-   <bean id="parentPermissionVeto" init-method="init" abstract="true">
-      <property name="permissionVetoRegistry" ref="permissionVetoRegistry"/>
+   <!-- Permission pre-processor base bean -->
+   <bean id="parentPermissionPreProcessor" init-method="init" abstract="true">
+      <property name="permissionProcessorRegistry" ref="permissionProcessorRegistry"/>
+   </bean>
+   
+   <!-- Permission post-processor base bean -->
+   <bean id="parentPermissionPostProcessor" init-method="init" abstract="true">
+      <property name="permissionProcessorRegistry" ref="permissionProcessorRegistry"/>
    </bean>
    
    <!-- Extended permission service implementation bean -->
    <bean id="rm.permissionServiceImpl" abstract="true" class="org.alfresco.repo.security.permissions.impl.ExtendedPermissionServiceImpl">
       <property name="writersCache" ref="writersCache"/>	
       <property name="filePlanService" ref="filePlanService" />
-      <property name="permissionVetoRegistry" ref="permissionVetoRegistry"/>
+      <property name="permissionProcessorRegistry" ref="permissionProcessorRegistry"/>
       <property name="dynamicAuthorities">
          <list>
             <ref bean="ownerDynamicAuthority" />

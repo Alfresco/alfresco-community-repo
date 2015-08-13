@@ -40,11 +40,14 @@
       </property>
    </bean>
     
-   <!-- Classification veto -->
-   <bean id="classificationVeto" class="org.alfresco.module.org_alfresco_module_rm.classification.veto.ClassificationPermissionVeto" parent="parentPermissionVeto">
+   <!-- Classification Permission Pre Processor -->
+   <bean id="classificationPermissionPreProcessor" 
+         class="org.alfresco.module.org_alfresco_module_rm.classification.permission.ClassificationPermissionPreProcessor" 
+         parent="parentPermissionPreProcessor">
       <property name="contentClassificationService" ref="contentClassificationService" />      
       <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
       <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
+      <property name="authenticationUtil" ref="rm.authenticationUtil" />
    </bean>
 
    <!-- Classification service DAO -->

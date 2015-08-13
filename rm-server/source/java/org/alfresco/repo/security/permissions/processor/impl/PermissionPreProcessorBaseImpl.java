@@ -16,33 +16,27 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.security.permissions.veto;
+package org.alfresco.repo.security.permissions.processor.impl;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.alfresco.repo.security.permissions.processor.PermissionPreProcessor;
 
 /**
+ * Permission pre-processor base implementation.
+ * <p>
+ * Helper class that can be extended when providing a custom permission
+ * pre-processor implementation.
+ * 
  * @author Roy Wetherall
  * @since 3.0.a
  */
-public class PermissionVetoRegistry 
+public abstract class PermissionPreProcessorBaseImpl extends PermissionProcessorBaseImpl
+													 implements PermissionPreProcessor 
 {
-	/** list of vetos to apply */
-	private List<PermissionVeto> permissionVetos = new ArrayList<PermissionVeto>();
-	
 	/**
-	 * @param permissionVeto permission veto
+	 * Init method to add this permission extensions to the registry
 	 */
-	public void addPermissionVeto(PermissionVeto permissionVeto)
+	public void init()
 	{
-		permissionVetos.add(permissionVeto);
+		getPermissionProcessorRegistry().addPermissionPreProcessor(this);
 	}
-	
-	/**
-	 * @return {@link List}<{@link PermissionVeto}>	list of permission vetos
-	 */
-	public List<PermissionVeto> getPermissionVetos()
-	{
-		return permissionVetos;
-	}	
 }

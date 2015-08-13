@@ -35,8 +35,9 @@ import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamic
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
-import org.alfresco.repo.security.permissions.veto.PermissionVeto;
-import org.alfresco.repo.security.permissions.veto.PermissionVetoRegistry;
+import org.alfresco.repo.security.permissions.processor.PermissionPostProcessor;
+import org.alfresco.repo.security.permissions.processor.PermissionPreProcessor;
+import org.alfresco.repo.security.permissions.processor.PermissionProcessorRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -53,7 +54,7 @@ import org.springframework.context.ApplicationEvent;
  * @author Roy Wetherall
  */
 public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
-                                     implements ExtendedPermissionService
+                                           implements ExtendedPermissionService
 {
 	/** Writers simple cache */
     protected SimpleCache<Serializable, Set<String>> writersCache;
@@ -61,8 +62,8 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
     /** File plan service */
     private FilePlanService filePlanService;
     
-    /** Permission veto registry */
-    private PermissionVetoRegistry permissionVetoRegistry;
+    /** Permission processor registry */
+    private PermissionProcessorRegistry permissionProcessorRegistry;
 
     /**
      * Gets the file plan service
@@ -84,9 +85,14 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
         this.filePlanService = filePlanService;
     }
     
-    public void setPermissionVetoRegistry(PermissionVetoRegistry permissionVetoRegistry) 
+    /**
+     * Sets the permission processor registry
+     * 
+     * @param permissionProcessorRegistry	the permissions processor registry
+     */
+    public void setPermissionProcessorRegistry(PermissionProcessorRegistry permissionProcessorRegistry) 
     {
-		this.permissionVetoRegistry = permissionVetoRegistry;
+		this.permissionProcessorRegistry = permissionProcessorRegistry;
 	}
 
     /**
@@ -130,34 +136,34 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
     @Override
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
-    	// check permission vetos
-    	List<PermissionVeto> permissionVetos = permissionVetoRegistry.getPermissionVetos();
-    	for (PermissionVeto permissionVeto : permissionVetos) 
+    	AccessStatus result = AccessStatus.UNDETERMINED;
+    	
+    	// permission pre-processors
+    	List<PermissionPreProcessor> preProcessors = permissionProcessorRegistry.getPermissionPreProcessors();
+    	for (PermissionPreProcessor preProcessor : preProcessors) 
     	{
-    		if (permissionVeto.isVetoed(nodeRef, perm))
+    		// pre process permission
+    		result = preProcessor.process(nodeRef, perm);
+    		
+    		// veto if denied
+    		if (AccessStatus.DENIED.equals(result))
     		{
-    			// TODO add logging so veto cause can be diagnosed
-    			
-    			// veto access to node    			
-    			return AccessStatus.DENIED;
+    			return result;
     		}
 		}
     	
-        AccessStatus acs = super.hasPermission(nodeRef, perm);
-        if (AccessStatus.DENIED.equals(acs) &&
-            PermissionService.READ.equals(perm) &&
-            nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+    	// evaluate permission
+        result = super.hasPermission(nodeRef, perm);
+        
+        // permission post-processors
+        List<PermissionPostProcessor> postProcessors = permissionProcessorRegistry.getPermissionPostProcessors();
+        for (PermissionPostProcessor postProcessor : postProcessors) 
         {
-            return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
-        }
-        else if (AccessStatus.DENIED.equals(acs) &&
-                 PermissionService.WRITE.equals(perm) &&
-                 nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-        {
-            return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
-        }
-
-        return acs;
+        	// post process permission
+        	result = postProcessor.process(result, nodeRef, perm);
+		}        
+        
+        return result;
     }
 
     /**

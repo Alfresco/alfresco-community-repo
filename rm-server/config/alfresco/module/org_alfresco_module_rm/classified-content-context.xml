@@ -241,6 +241,15 @@
           class="org.alfresco.module.org_alfresco_module_rm.model.clf.aspect.ClassifiedAspect"
           parent="rm.baseBehaviour">
        <property name="classificationSchemeService" ref="ClassificationSchemeService" />
+       <property name="renditionService" ref="RenditionService" />
+       <property name="coreServicesExtras" ref="rm.coreServicesExtras" />
     </bean>
 
+    <bean id="clf.classifiedRenditions"
+          class="org.alfresco.module.org_alfresco_module_rm.model.clf.ClassifiedRenditions"
+          parent="rm.baseBehaviour">
+        <property name="contentClassificationService" ref="ContentClassificationService" />
+        <property name="renditionService" ref="RenditionService" />
+        <property name="coreServicesExtras" ref="rm.coreServicesExtras" />
+    </bean>
 </beans>

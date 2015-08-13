@@ -30,6 +30,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationS
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.Reclassification;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
+import org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras;
 import org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.Difference;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -38,6 +39,8 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.service.cmr.rendition.RenditionService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -51,13 +54,26 @@ import org.alfresco.service.namespace.QName;
    defaultType = "clf:classified"
 )
 public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePolicies.OnUpdatePropertiesPolicy,
-            NodeServicePolicies.OnAddAspectPolicy, ClassifiedContentModel
+                                                                   NodeServicePolicies.OnAddAspectPolicy,
+                                                                   ClassifiedContentModel
 {
     private ClassificationSchemeService classificationSchemeService;
+    private RenditionService            renditionService;
+    private CoreServicesExtras          servicesExtras;
 
     public void setClassificationSchemeService(ClassificationSchemeService service)
     {
         this.classificationSchemeService = service;
+    }
+
+    public void setRenditionService(RenditionService service)
+    {
+        this.renditionService = service;
+    }
+
+    public void setCoreServicesExtras(CoreServicesExtras extras)
+    {
+        this.servicesExtras = extras;
     }
 
     /**
@@ -104,6 +120,8 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
 
                 checkConsistencyOfProperties(nodeRef);
 
+                copyClassifiedPropertiesToRenditions(nodeRef);
+
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
@@ -127,9 +145,22 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
             public Void doWork()
             {
                 checkConsistencyOfProperties(nodeRef);
+
+                copyClassifiedPropertiesToRenditions(nodeRef);
+
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+
+    private void copyClassifiedPropertiesToRenditions(NodeRef nodeRef)
+    {
+        // All renditions should be given the same classification as their source node
+        for (final ChildAssociationRef chAssRef : renditionService.getRenditions(nodeRef))
+        {
+            final NodeRef renditionNode = chAssRef.getChildRef();
+            servicesExtras.copyAspect(nodeRef, renditionNode, ASPECT_CLASSIFIED);
+        }
     }
 
     /**

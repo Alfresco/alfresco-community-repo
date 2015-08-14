@@ -26,6 +26,8 @@
 
    <!-- Model Constraints -->
    <constraints>
+      <constraint name="clf:initialClassificationLevelRestriction"
+                  type="org.alfresco.module.org_alfresco_module_rm.classification.InitialClassificationLevelConstraint" />
       <constraint name="clf:classificationLevelRestriction"
                   type="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelConstraint" />
       <constraint name="clf:classificationReasonRestriction"
@@ -53,7 +55,7 @@
                <protected>true</protected>
                <mandatory>true</mandatory>
                <constraints>
-                  <constraint ref="clf:classificationLevelRestriction" />
+                  <constraint ref="clf:initialClassificationLevelRestriction" />
                </constraints>
             </property>
             <property name="clf:currentClassification">

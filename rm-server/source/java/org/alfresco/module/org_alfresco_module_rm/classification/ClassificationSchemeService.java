@@ -45,6 +45,15 @@ public interface ClassificationSchemeService
     List<ClassificationLevel> getClassificationLevels();
 
     /**
+     * Returns an immutable list of all the classification levels defined in the system.
+     *
+     * @return classification levels in descending order from highest to lowest
+     *         (where fewer users have access to the highest classification levels
+     *         and therefore access to the most restricted documents).
+     */
+    List<ClassificationLevel> getAllClassificationLevels();
+
+    /**
      * Returns an immutable list of the defined classification reasons.
      * @return classification reasons in the order that they are defined.
      */

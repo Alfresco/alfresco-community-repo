@@ -90,6 +90,16 @@ public class ClassificationSchemeServiceImpl extends ServiceBaseImpl implements 
         return restrictList(levelManager.getClassificationLevels(), usersLevel);
     }
 
+    @Override
+    public List<ClassificationLevel> getAllClassificationLevels()
+    {
+        if (levelManager == null)
+        {
+            return Collections.emptyList();
+        }
+        return levelManager.getClassificationLevels();
+    }
+
     @Override public List<ClassificationReason> getClassificationReasons()
     {
         return reasonManager == null ? Collections.<ClassificationReason>emptyList() :

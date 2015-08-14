@@ -53,6 +53,7 @@ public class RemoteApi01TestSuite extends TestSuite
     {
         suite.addTestSuite(org.alfresco.repo.management.subsystems.test.SubsystemsTest.class);
         suite.addTestSuite(org.alfresco.repo.remoteticket.RemoteAlfrescoTicketServiceTest.class);
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.api.tests.TestCustomModelExport.class));
     }
     
     static void tests2(TestSuite suite) // 
@@ -96,6 +97,9 @@ public class RemoteApi01TestSuite extends TestSuite
 
     static void tests8(TestSuite suite) //
     {
-        suite.addTest(org.alfresco.rest.api.tests.CMMApiTestSuite.suite());
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.api.tests.TestCustomModel.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.api.tests.TestCustomTypeAspect.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.api.tests.TestCustomProperty.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.rest.api.tests.TestCustomConstraint.class));
     }
 }

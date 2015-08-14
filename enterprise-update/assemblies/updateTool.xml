@@ -38,6 +38,9 @@
 			<unpack>true</unpack>
 			<unpackOptions>
 			   <lineEnding>keep</lineEnding>
+			   <excludes>
+				   <exclude>META-INF/**</exclude>
+			   </excludes>
 			</unpackOptions>
             <includes>
                 <include>org.alfresco:alfresco-update-tool-distribution:jar</include>

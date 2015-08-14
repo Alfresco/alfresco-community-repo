@@ -18,21 +18,31 @@
  */
 package org.alfresco.repo.policy;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
+import org.alfresco.repo.nodelocator.CompanyHomeNodeLocator;
+import org.alfresco.repo.nodelocator.NodeLocatorService;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.Policy.Arg;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -50,6 +60,7 @@ public class PolicyComponentTransactionTest extends TestCase
     private static final String TEST_MODEL = "org/alfresco/repo/policy/policycomponenttest_model.xml";
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/policycomponenttest/1.0";
     private static QName BASE_TYPE = QName.createQName(TEST_NAMESPACE, "base");
+    private static QName FILE_TYPE = QName.createQName(TEST_NAMESPACE, "file");
     
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
     private static ClassPolicyDelegate<SideEffectTestPolicy> sideEffectDelegate = null;
@@ -57,6 +68,9 @@ public class PolicyComponentTransactionTest extends TestCase
     private BehaviourFilter behaviourFilter;
     private TransactionService trxService;
     private AuthenticationComponent authenticationComponent;
+    private NodeService nodeService;
+    private NodeLocatorService nodeLocatorService;
+    private NodeRef companyHome;
 
     
     @Override
@@ -75,6 +89,8 @@ public class PolicyComponentTransactionTest extends TestCase
         this.policyComponent = (PolicyComponent)applicationContext.getBean("policyComponent");
         this.behaviourFilter = (BehaviourFilter) applicationContext.getBean("policyBehaviourFilter");
         this.trxService = (TransactionService) applicationContext.getBean("transactionComponent");
+        this.nodeService = (NodeService) applicationContext.getBean("nodeService");
+        this.nodeLocatorService = (NodeLocatorService) applicationContext.getBean("nodeLocatorService");
         this.authenticationComponent = (AuthenticationComponent)applicationContext.getBean("authenticationComponent");
         this.authenticationComponent.setSystemUserAsCurrentUser();
         
@@ -88,6 +104,8 @@ public class PolicyComponentTransactionTest extends TestCase
 	        Behaviour baseBehaviour = new JavaBehaviour(this, "sideEffectTest", NotificationFrequency.TRANSACTION_COMMIT);
 	        this.policyComponent.bindClassBehaviour(policyName, BASE_TYPE, baseBehaviour);
         }
+
+        this.companyHome = nodeLocatorService.getNode(CompanyHomeNodeLocator.NAME, null, null);
     }
 
     
@@ -360,6 +378,224 @@ public class PolicyComponentTransactionTest extends TestCase
     }
 
     /**
+     * Test for MNT_13836
+     * <p>first show that both behaviours are enabled and triggered for a sub- (child) instance</p>
+     * @throws Exception
+     */
+    public void testChildParentBehaviours1() throws Exception
+    {
+        TestOnCreateNodePolicy baseTypeBehavior = new TestOnCreateNodePolicy();
+        TestOnCreateNodePolicy fileTypeBehavior = new TestOnCreateNodePolicy();
+        
+        // bind custom behavior for parent type
+        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, BASE_TYPE, new JavaBehaviour(baseTypeBehavior, "onCreateNode"));
+        // bind custom behavior for child type
+        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, FILE_TYPE, new JavaBehaviour(fileTypeBehavior, "onCreateNode"));
+
+        UserTransaction transaction = trxService.getUserTransaction();
+        try
+        {
+            transaction.begin();
+
+            final String name = "Test (" + System.currentTimeMillis() + ").docx";
+            final Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+            contentProps.put(ContentModel.PROP_NAME, name);
+            
+            // create node of child type
+            nodeService.createNode(companyHome,
+                    ContentModel.ASSOC_CONTAINS,
+                    QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
+                    FILE_TYPE,
+                    contentProps);
+            transaction.commit();
+        }
+        catch(Exception e)
+        {
+            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+            throw e;
+        }
+        
+        assertTrue("Behavior should be executed for parent type.", baseTypeBehavior.isExecuted());
+        assertEquals(1, baseTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for child type.", fileTypeBehavior.isExecuted());
+        assertEquals(1, fileTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT_13836
+     * <p>then disable the super- behaviour only and show that sub behaviour is still enabled and triggered</p>
+     * @throws Exception
+     */
+    public void testChildParentBehaviours2() throws Exception
+    {
+        TestOnCreateNodePolicy baseTypeBehavior = new TestOnCreateNodePolicy();
+        TestOnCreateNodePolicy fileTypeBehavior = new TestOnCreateNodePolicy();
+
+        // bind custom behavior for parent type
+        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, BASE_TYPE, new JavaBehaviour(baseTypeBehavior, "onCreateNode"));
+        // bind custom behavior for child type
+        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, FILE_TYPE, new JavaBehaviour(fileTypeBehavior, "onCreateNode"));
+
+        UserTransaction transaction = trxService.getUserTransaction();
+        try
+        {
+            transaction.begin();
+            // disable behavior for parent type
+            behaviourFilter.disableBehaviour(BASE_TYPE);
+            // check that behavior is disabled correctly
+            try
+            {
+                checkBehaviour(BASE_TYPE, companyHome, true, false, false, true);
+
+                final String name = "Test (" + System.currentTimeMillis() + ").docx";
+                final Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+                contentProps.put(ContentModel.PROP_NAME, name);
+
+                // create node of child type
+                nodeService.createNode(companyHome,
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
+                        FILE_TYPE,
+                        contentProps);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(BASE_TYPE);
+                checkBehaviour(BASE_TYPE, companyHome, true, true, true, true);
+            }
+            transaction.commit();
+        }
+        catch(Exception e)
+        {
+            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+            throw e;
+        }
+
+        assertFalse("Behavior should not be executed for parent type.", baseTypeBehavior.isExecuted());
+        assertEquals(0, baseTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for child type.", fileTypeBehavior.isExecuted());
+        assertEquals(1, fileTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT_13836
+     * <p>then also disable the sub- behaviour and show that neither behaviour is triggered</p>
+     * @throws Exception
+     */
+    public void testChildParentBehaviours3() throws Exception
+    {
+        TestOnCreateNodePolicy baseTypeBehavior = new TestOnCreateNodePolicy();
+        TestOnCreateNodePolicy fileTypeBehavior = new TestOnCreateNodePolicy();
+
+        // bind custom behavior for parent type
+        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, BASE_TYPE, new JavaBehaviour(baseTypeBehavior, "onCreateNode"));
+        // bind custom behavior for child type
+        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, FILE_TYPE, new JavaBehaviour(fileTypeBehavior, "onCreateNode"));
+
+        UserTransaction transaction = trxService.getUserTransaction();
+        try
+        {
+            transaction.begin();
+            // disable behavior for parent type
+            behaviourFilter.disableBehaviour(BASE_TYPE);
+            // check that behavior is disabled correctly
+            checkBehaviour(BASE_TYPE, companyHome, true, false, false, true);
+
+            // disable behavior for child type
+            behaviourFilter.disableBehaviour(FILE_TYPE);
+            // check that behavior is disabled correctly
+            checkBehaviour(FILE_TYPE, companyHome, true, false, false, true);
+            try
+            {
+                final String name = "Test (" + System.currentTimeMillis() + ").docx";
+                final Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+                contentProps.put(ContentModel.PROP_NAME, name);
+
+                // create node of child type
+                nodeService.createNode(companyHome,
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
+                        FILE_TYPE,
+                        contentProps);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(BASE_TYPE);
+                behaviourFilter.enableBehaviour(FILE_TYPE);
+                checkBehaviour(BASE_TYPE, companyHome, true, true, true, true);
+                checkBehaviour(FILE_TYPE, companyHome, true, true, true, true);
+            }
+            transaction.commit();
+        }
+        catch(Exception e)
+        {
+            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+            throw e;
+        }
+
+        assertFalse("Behavior should not be executed for parent type.", baseTypeBehavior.isExecuted());
+        assertEquals(0, baseTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for child type.", fileTypeBehavior.isExecuted());
+        assertEquals(0, fileTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT_13836
+     * <p>then vice-versa, ie. disabling sub- behaviour does not disable inherited super- behaviours</p>
+     * @throws Exception
+     */
+    public void testChildParentBehaviours4() throws Exception
+    {
+        TestOnCreateNodePolicy baseTypeBehavior = new TestOnCreateNodePolicy();
+        TestOnCreateNodePolicy fileTypeBehavior = new TestOnCreateNodePolicy();
+
+        // bind custom behavior for parent type
+        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, BASE_TYPE, new JavaBehaviour(baseTypeBehavior, "onCreateNode"));
+        // bind custom behavior for child type
+        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, FILE_TYPE, new JavaBehaviour(fileTypeBehavior, "onCreateNode"));
+
+        UserTransaction transaction = trxService.getUserTransaction();
+        try
+        {
+            transaction.begin();
+            // disable behavior for child type
+            behaviourFilter.disableBehaviour(FILE_TYPE);
+            // check that behavior is disabled correctly
+            checkBehaviour(FILE_TYPE, companyHome, true, false, false, true);
+
+            try
+            {
+                final String name = "Test (" + System.currentTimeMillis() + ").docx";
+                final Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+                contentProps.put(ContentModel.PROP_NAME, name);
+
+                // create node of child type
+                nodeService.createNode(companyHome,
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
+                        FILE_TYPE,
+                        contentProps);
+            }
+            finally
+            {
+                behaviourFilter.enableBehaviour(FILE_TYPE);
+                checkBehaviour(FILE_TYPE, companyHome, true, true, true, true);
+            }
+            transaction.commit();
+        }
+        catch(Exception e)
+        {
+            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+            throw e;
+        }
+
+        assertTrue("Behavior should be executed for parent type.", baseTypeBehavior.isExecuted());
+        assertEquals(1, baseTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for child type.", fileTypeBehavior.isExecuted());
+        assertEquals(0, fileTypeBehavior.getExecutionCount());
+    }
+
+    /**
      * @param className                 the class to check
      * @param nodeRef                   the node instance to check
      * @param globalEnabled             <tt>true</tt> if the global filter should be enabled
@@ -514,6 +750,29 @@ public class PolicyComponentTransactionTest extends TestCase
         public String toString()
         {
             return "trxId=" + trxId + ", behaviour=" + behaviour + ", key1=" + key1 + ", key2=" + key2 + ", arg1=" + arg1 + ", arg2=" + arg2;
+        }
+    }
+    
+    private class TestOnCreateNodePolicy implements OnCreateNodePolicy
+    {
+        private boolean executed;
+        private int executionCount;
+
+        @Override
+        public void onCreateNode(ChildAssociationRef childAssocRef)
+        {
+            executed = true;
+            executionCount++;
+        }
+        
+        public boolean isExecuted()
+        {
+            return executed;
+        }
+        
+        public int getExecutionCount()
+        {
+            return executionCount;
         }
     }
     

@@ -90,6 +90,7 @@ public class MTPolicyComponentTest extends TestCase
         DictionaryBootstrap bootstrap = new DictionaryBootstrap();
         List<String> bootstrapModels = new ArrayList<String>();
         bootstrapModels.add("alfresco/model/dictionaryModel.xml");
+        bootstrapModels.add("alfresco/model/systemModel.xml");
         bootstrapModels.add("org/alfresco/repo/policy/policycomponenttest_model.xml");
         bootstrapModels.add(TEST_MODEL);
         bootstrap.setModels(bootstrapModels);

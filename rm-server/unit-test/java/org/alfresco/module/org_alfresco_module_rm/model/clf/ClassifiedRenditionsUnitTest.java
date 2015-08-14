@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.model.clf;
 
 import static java.util.Arrays.asList;
 
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
@@ -70,11 +69,11 @@ public class ClassifiedRenditionsUnitTest implements ClassifiedContentModel
 
     @Test public void newRenditionOfClassifiedNodeShouldItselfBeClassified()
     {
-        when(mockRenditionService.getRenditions(eq(SOURCE_NODE)))
+        when(mockRenditionService.getRenditions(SOURCE_NODE))
                 .thenReturn(asList(rendition(SOURCE_NODE, RENDITION_1), rendition(SOURCE_NODE, RENDITION_2)));
-        when(mockRenditionService.getSourceNode(eq(RENDITION_1))).thenReturn(rendition(SOURCE_NODE, RENDITION_1));
-        when(mockRenditionService.getSourceNode(eq(RENDITION_2))).thenReturn(rendition(SOURCE_NODE, RENDITION_2));
-        when(mockContentClassificationService.isClassified(eq(SOURCE_NODE))).thenReturn(true);
+        when(mockRenditionService.getSourceNode(RENDITION_1)).thenReturn(rendition(SOURCE_NODE, RENDITION_1));
+        when(mockRenditionService.getSourceNode(RENDITION_2)).thenReturn(rendition(SOURCE_NODE, RENDITION_2));
+        when(mockContentClassificationService.isClassified(SOURCE_NODE)).thenReturn(true);
 
         final ClassifiedRenditions behaviour = new ClassifiedRenditions();
         behaviour.setAuthenticationUtil(mockAuthenticationUtil);
@@ -85,10 +84,10 @@ public class ClassifiedRenditionsUnitTest implements ClassifiedContentModel
 
         behaviour.onAddAspect(RENDITION_2, RenditionModel.ASPECT_RENDITION);
 
-        verify(mockCoreServicesExtras).copyAspect(eq(SOURCE_NODE), eq(RENDITION_2), eq(ClassifiedContentModel.ASPECT_CLASSIFIED));
+        verify(mockCoreServicesExtras).copyAspect(SOURCE_NODE, RENDITION_2, ClassifiedContentModel.ASPECT_CLASSIFIED);
     }
 
-    /** Creates a mock Rendition ChildAssociationRef. */
+    /** Creates a test Rendition ChildAssociationRef. */
     private ChildAssociationRef rendition(NodeRef source, NodeRef rendition)
     {
         return new ChildAssociationRef(RenditionModel.ASSOC_RENDITION, source, RenditionModel.ASSOC_RENDITION, rendition);

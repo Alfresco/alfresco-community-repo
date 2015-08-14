@@ -152,7 +152,7 @@ public class ClassifiedAspectUnitTest implements ClassifiedContentModel
 
         for (NodeRef rendition : asList(RENDITION_1, RENDITION_2))
         {
-            verify(mockCoreServicesExtras).copyAspect(eq(NODE_REF), eq(rendition), eq(ClassifiedContentModel.ASPECT_CLASSIFIED));
+            verify(mockCoreServicesExtras).copyAspect(NODE_REF, rendition, ClassifiedContentModel.ASPECT_CLASSIFIED);
         }
     }
 
@@ -162,8 +162,8 @@ public class ClassifiedAspectUnitTest implements ClassifiedContentModel
         {
             when(mockNodeService.hasAspect(n, ASPECT_CLASSIFIED)).thenReturn(true);
         }
-        when(mockClassificationSchemeService.getClassificationLevelById(eq("Top Secret"))).thenReturn(TOP_SECRET);
-        when(mockClassificationSchemeService.getClassificationLevelById(eq("Secret"))).thenReturn(SECRET);
+        when(mockClassificationSchemeService.getClassificationLevelById("Top Secret")).thenReturn(TOP_SECRET);
+        when(mockClassificationSchemeService.getClassificationLevelById("Secret")).thenReturn(SECRET);
         when(mockClassificationSchemeService.getReclassification(any(), any())).thenReturn(ClassificationSchemeService.Reclassification.DOWNGRADE);
         when(mockRenditionService.getRenditions(eq(NODE_REF)))
                 .thenReturn(asList(rendition(NODE_REF, RENDITION_1), rendition(NODE_REF, RENDITION_2)));
@@ -178,11 +178,11 @@ public class ClassifiedAspectUnitTest implements ClassifiedContentModel
 
         for (NodeRef rendition : asList(RENDITION_1, RENDITION_2))
         {
-            verify(mockCoreServicesExtras).copyAspect(eq(NODE_REF), eq(rendition), eq(ClassifiedContentModel.ASPECT_CLASSIFIED));
+            verify(mockCoreServicesExtras).copyAspect(NODE_REF, rendition, ClassifiedContentModel.ASPECT_CLASSIFIED);
         }
     }
 
-    /** Creates a mock Rendition ChildAssociationRef. */
+    /** Creates a test Rendition ChildAssociationRef. */
     private ChildAssociationRef rendition(NodeRef source, NodeRef rendition)
     {
         return new ChildAssociationRef(RenditionModel.ASSOC_RENDITION, source, RenditionModel.ASSOC_RENDITION, rendition);

@@ -102,14 +102,14 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
         final Map<QName, Serializable> properties = createPropertiesMap(classificationAspectProperties, content);
 
         // Add aspect
-        authenticationUtil.runAs(new RunAsWork<Void>()
+        authenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             public Void doWork()
             {
                 nodeService.addAspect(content, ASPECT_CLASSIFIED, properties);
                 return null;
             }
-        }, authenticationUtil.getAdminUserName());
+        });
     }
 
     /**

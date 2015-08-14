@@ -108,6 +108,7 @@
       <property name="objectDefinitionSource">
          <value>
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getClassificationLevels=ACL_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getAllClassificationLevels=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getClassificationReasons=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getClassificationLevelById=ACL_ALLOW
             org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.getClassificationReasonById=ACL_ALLOW

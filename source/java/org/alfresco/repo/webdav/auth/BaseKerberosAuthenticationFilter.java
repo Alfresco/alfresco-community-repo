@@ -338,6 +338,11 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                     // Filter validate hook
                     if (getLogger().isDebugEnabled())
                         getLogger().debug("Authenticated with a ticket parameter.");
+
+                    if (user == null)
+                    {
+                        user = (SessionUser) httpSess.getAttribute(getUserAttributeName());
+                    }
                     onValidate( context, req, resp, new TicketCredentials(user.getTicket()));
 
                     // Chain to the next filter

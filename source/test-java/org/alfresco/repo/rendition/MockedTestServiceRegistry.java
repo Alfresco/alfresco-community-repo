@@ -487,13 +487,13 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     {
         // TODO Auto-generated method stub
         return null;
+    }
 
     @Override
     public MessageService getMessageService()
     {
         // A mock response
         return null;
-    }
     }
 
     @Override

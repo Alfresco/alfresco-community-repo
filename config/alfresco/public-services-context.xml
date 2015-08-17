@@ -157,6 +157,9 @@
 
     <alias name="mimetypeService" alias="MimetypeService"/>
 
+
+    <alias name="messageService" alias="MessageService"/>
+
     <!-- Content Filter Languages Service -->
 
     <alias name="contentFilterLanguagesService" alias="ContentFilterLanguagesService"/>

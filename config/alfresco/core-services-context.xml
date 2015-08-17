@@ -241,9 +241,6 @@
         <property name="transactionManager">
             <ref bean="transactionManager" />
         </property>
-        <property name="sysAdminParams">
-            <ref bean="sysAdminParams"/>
-        </property>
         <property name="allowWrite">
             <value>${server.transaction.allow-writes}</value>
         </property>

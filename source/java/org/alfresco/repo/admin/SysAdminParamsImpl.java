@@ -23,12 +23,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+import org.alfresco.repo.transaction.TransactionServiceImpl;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.license.LicenseService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -41,6 +42,7 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
     
     /** Token name to substitute current servers DNS name or TCP/IP address into a host name **/
     private static final String TOKEN_LOCAL_NAME = "${localname}";
+    private static final QName VETO = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "SysAdminParams");
     
     /** The local server name to which the above token will expand. */
     private final String localName;
@@ -108,23 +110,12 @@ public class SysAdminParamsImpl implements SysAdminParams, ApplicationContextAwa
     @Override
     public void afterPropertiesSet() throws Exception
     {
-        if (this.allowWrite)
-        {
-            LicenseService licenseService = null;
-            try
-            {
-                licenseService = (LicenseService) this.ctx.getBean("licenseService");
-                this.allowWrite = licenseService.isLicenseValid();
-                if (logger.isInfoEnabled())
-                {
-                    logger.info("'allowWrite' being set to false: licenseService.isLicenseValid() returned false.");
-                }
-            }
-            catch (NoSuchBeanDefinitionException e)
-            {
-                // ignore
-            }
-        }
+        // Set the transaction read-write state by veto
+        // There is no need to attempt to check the dictionary or any other component as they will handle
+        // their own vetoes (MNT-14579)
+        // No logging is required here: it is done in the TransactionService code, already
+        TransactionServiceImpl transactionService = (TransactionServiceImpl) ctx.getBean("transactionService");
+        transactionService.setAllowWrite(allowWrite, VETO);
     }
 
     /**

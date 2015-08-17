@@ -26,7 +26,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import javax.transaction.UserTransaction;
 
-import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -57,9 +56,6 @@ public class TransactionServiceImpl implements TransactionService
     
     private static final Log logger = LogFactory.getLog(TransactionServiceImpl.class);
 
-    // SysAdmin cache - used to cluster certain configuration parameters
-    private SysAdminParams sysAdminParams;
-    
     // Veto for allow write
     private Set<QName> writeVeto = new HashSet<QName>();
     private final QName generalVetoName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "GeneralVeto");
@@ -85,11 +81,6 @@ public class TransactionServiceImpl implements TransactionService
         this.transactionManager = transactionManager;
     }
 
-    public void setSysAdminParams(SysAdminParams sysAdminParams)
-    {
-        this.sysAdminParams = sysAdminParams;
-    }
-
     /**
      * {@inheritDoc}
      */
@@ -99,7 +90,7 @@ public class TransactionServiceImpl implements TransactionService
         vetoReadLock.lock();
         try
         {
-            return writeVeto.isEmpty() && this.sysAdminParams.getAllowWrite();
+            return writeVeto.isEmpty();
         }
         finally
         {
@@ -138,20 +129,25 @@ public class TransactionServiceImpl implements TransactionService
      */
     public void setAllowWrite(boolean allowWrite, QName nameOfVeto)
     {
-        if(logger.isDebugEnabled())
+        if (logger.isDebugEnabled())
         {
-            logger.debug("setAllowWrite:" + allowWrite + ", name of veto:" + nameOfVeto);
+            logger.debug("setAllowWrite:" + allowWrite + ". Name of veto:" + nameOfVeto);
         }
         vetoWriteLock.lock();
         try
         {
             if(allowWrite)
             {
-                writeVeto.remove(nameOfVeto);
+                boolean removed = writeVeto.remove(nameOfVeto);
+                if (removed)
+                {
+                    logger.warn("setAllowWrite:" + allowWrite + ".  Removing veto on write operations: " + nameOfVeto);
+                }
             }
             else
             {
                 writeVeto.add(nameOfVeto);
+                logger.warn("setAllowWrite:" + allowWrite + ".  Applying veto on write operations: " + nameOfVeto);
             }
         }
         finally
@@ -178,7 +174,7 @@ public class TransactionServiceImpl implements TransactionService
             }
             else
             {
-                return !writeVeto.isEmpty() || !this.sysAdminParams.getAllowWrite();
+                return !writeVeto.isEmpty();
             }
         }
         finally

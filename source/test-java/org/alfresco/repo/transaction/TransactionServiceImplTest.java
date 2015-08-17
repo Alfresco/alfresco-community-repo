@@ -25,7 +25,6 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -76,7 +75,6 @@ public class TransactionServiceImplTest extends TestCase
         transactionService = new TransactionServiceImpl();
         transactionService.setTransactionManager(transactionManager);   
         transactionService.setAllowWrite(true, vetoName);
-        transactionService.setSysAdminParams((SysAdminParams) ctx.getBean("sysAdminParams"));
         
         nodeService = (NodeService) ctx.getBean("dbNodeService");
         authenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");

@@ -631,8 +631,8 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
         // Register listeners, which will be called when the dictionary is next reloaded
         register();
         
-        // Trigger a reload.
-        // The callbacks, which will occur asynchronously, will load the custom models from the repository.
+        // Trigger a reload.  The callbacks will occur immediately on the current thread, however,
+        // the model created in reset() will still be available for the basic necessities
         dictionaryDAO.init();
         
         // The listeners can now know about this

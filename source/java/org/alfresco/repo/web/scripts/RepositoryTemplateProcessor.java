@@ -44,6 +44,7 @@ import freemarker.core.TemplateClassResolver;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.Version;
 
 
 /**
@@ -199,7 +200,7 @@ public class RepositoryTemplateProcessor extends FreeMarkerProcessor
         
         // set output encoding
         config.setOutputEncoding("UTF-8");
-        
+        config.setIncompatibleImprovements(new Version(2, 3, 20));
         config.setNewBuiltinClassResolver(TemplateClassResolver.SAFER_RESOLVER);
         
         templateConfig = config;

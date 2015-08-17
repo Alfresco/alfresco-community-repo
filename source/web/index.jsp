@@ -72,13 +72,9 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
                  {
              %>
                 <p><a href="<%=UrlUtil.getShareUrl(sysAdminParams)%>">Alfresco Share</a></p>
+                <p></p>
              <%
-             }
-             else
-             {
-             %><p style="color: white;">Share Services is not installed.</p>
-             <%
-             }
+                }
              %>
             <p><a href="./webdav">Alfresco WebDav</a></p>
             <p></p>

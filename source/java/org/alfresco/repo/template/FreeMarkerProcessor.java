@@ -48,6 +48,7 @@ import freemarker.template.Configuration;
 import freemarker.template.ObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.Version;
 
 /**
  * FreeMarker implementation of the template processor interface.
@@ -138,7 +139,7 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
             {
                 config.setDefaultEncoding(defaultEncoding);
             }
-            
+            config.setIncompatibleImprovements(new Version(2, 3, 20));
             config.setNewBuiltinClassResolver(TemplateClassResolver.SAFER_RESOLVER);
         }
         
@@ -176,7 +177,7 @@ public class FreeMarkerProcessor extends BaseProcessor implements TemplateProces
         {
             config.setDefaultEncoding(defaultEncoding);
         }
-        
+        config.setIncompatibleImprovements(new Version(2, 3, 20));
         config.setNewBuiltinClassResolver(TemplateClassResolver.SAFER_RESOLVER);
         
         return config;

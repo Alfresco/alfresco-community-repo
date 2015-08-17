@@ -62,6 +62,7 @@ import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
+import freemarker.template.Version;
 
 /**
  * Responsible for processing the individual task
@@ -620,7 +621,7 @@ public abstract class FeedTaskProcessor
 
         // TODO review i18n
         cfg.setLocalizedLookup(false);
-        
+        cfg.setIncompatibleImprovements(new Version(2, 3, 20));
         cfg.setNewBuiltinClassResolver(TemplateClassResolver.SAFER_RESOLVER);
 
         return cfg;

@@ -68,6 +68,7 @@ import org.springframework.core.io.support.ResourcePatternResolver;
 import freemarker.core.TemplateClassResolver;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapper;
+import freemarker.template.Version;
 
 /**
  * The local (ie. not grid) feed task processor is responsible for processing the individual feed job
@@ -526,7 +527,7 @@ public class LocalFeedTaskProcessor extends FeedTaskProcessor implements Applica
 
             // TODO review i18n
             cfg.setLocalizedLookup(false);
-            
+            cfg.setIncompatibleImprovements(new Version(2, 3, 20));
             cfg.setNewBuiltinClassResolver(TemplateClassResolver.SAFER_RESOLVER);
 
             return cfg;

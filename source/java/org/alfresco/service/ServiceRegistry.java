@@ -25,6 +25,7 @@ import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.forms.FormService;
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
@@ -143,6 +144,7 @@ public interface ServiceRegistry
     static final QName NOTIFICATION_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "NotificationService");
     static final QName DOCUMENT_LINK_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "DocumentLinkService");
     
+    static final QName MESSAGE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "MessageService");
     // CMIS
     static final QName CMIS_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "CMISService");
     static final QName CMIS_DICTIONARY_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "OpenCMISDictionaryService");
@@ -521,6 +523,13 @@ public interface ServiceRegistry
     @NotAuditable
     FacetLabelDisplayHandlerRegistry getFacetLabelDisplayHandlerRegistry();
     
+    /**
+     * Get the Message service bean.
+     * @return the Message service bean
+     */
+    @NotAuditable
+    MessageService getMessageService();
+
     /**
      *  Get the document link service
      * @return the document link service

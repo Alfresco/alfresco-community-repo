@@ -26,6 +26,7 @@ import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.forms.FormService;
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
@@ -486,6 +487,13 @@ public class MockedTestServiceRegistry implements ServiceRegistry
     {
         // TODO Auto-generated method stub
         return null;
+
+    @Override
+    public MessageService getMessageService()
+    {
+        // A mock response
+        return null;
+    }
     }
 
     @Override

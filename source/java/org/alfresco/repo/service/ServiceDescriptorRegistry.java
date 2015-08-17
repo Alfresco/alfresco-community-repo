@@ -24,6 +24,7 @@ import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.forms.FormService;
+import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
@@ -465,6 +466,12 @@ public class ServiceDescriptorRegistry
         final String beanName = "facet.facetLabelDisplayHandlerRegistry";
         return (FacetLabelDisplayHandlerRegistry) beanFactory.getBean(beanName);
     }
+
+    @Override
+    public MessageService getMessageService() {
+        return (MessageService)getService(MESSAGE_SERVICE);
+    }
+
 
     @Override
     public DocumentLinkService getDocumentLinkService() {

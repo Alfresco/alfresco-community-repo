@@ -153,7 +153,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
 		}
     	
     	// evaluate permission
-        result = super.hasPermission(nodeRef, perm);
+        result = hasPermissionImpl(nodeRef, perm);
         
         // permission post-processors
         List<PermissionPostProcessor> postProcessors = permissionProcessorRegistry.getPermissionPostProcessors();
@@ -164,6 +164,20 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
 		}        
         
         return result;
+    }
+    
+    /**
+     * Implementation of hasPermission method call.
+     * <p>
+     * Separation also convenient for unit testing.
+     * 
+     * @param nodeRef	node reference
+     * @param perm		permission
+     * @return {@link AccessStatus}	access status result
+     */
+    protected AccessStatus hasPermissionImpl(NodeRef nodeRef, String perm)
+    {
+    	return super.hasPermission(nodeRef, perm);
     }
 
     /**

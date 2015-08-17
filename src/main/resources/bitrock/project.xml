@@ -252,6 +252,20 @@
 	                <isTrue value="${component(postgres).selected}" />
 		    </ruleList>
 		</actionGroup>
+		<!-- Substitute repository url  -->
+        <substitute>
+            <files>${installdir}/tomcat/shared/classes/alfresco/web-extension/share-config-custom.xml</files>
+            <type>exact</type>
+            <substitutionList>
+                <substitution>
+                    <pattern>http://localhost:${application_server_port}/alfresco</pattern>
+                    <value>${project.component(alfresco).parameter(repository_url_port).value}</value>
+                </substitution>
+            </substitutionList>
+            <ruleList>
+                <compareText text="${product_fullname}" logic="equals" value="Alfresco Share"/>
+            </ruleList>
+        </substitute>
     </postInstallationActionList>
     
     <finalPageActionList>

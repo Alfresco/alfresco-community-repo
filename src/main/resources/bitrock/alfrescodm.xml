@@ -415,20 +415,6 @@
                 </substitution>
             </substitutionList>
         </substitute>
-        <!-- Substitute repository url  -->
-        <substitute>
-            <files>${installdir}/tomcat/shared/classes/alfresco/web-extension/share-config-custom.xml</files>
-            <type>exact</type>
-            <substitutionList>
-                <substitution>
-                    <pattern>http://localhost:8080/alfresco</pattern>
-                        <value>${repository_url_port}</value>
-                </substitution>
-            </substitutionList>
-            <ruleList>
-                <compareText text="${product_fullname}" logic="equals" value="Alfresco Share"/>
-            </ruleList>
-        </substitute>
         <propertiesFileSet>
             <file>${application_server_conf_directory}/logging.properties</file>
             <key>org.apache.catalina.loader.WebappClassLoader.level</key>

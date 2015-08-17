@@ -288,6 +288,9 @@
             <distributionFileList>
                 <distributionFile origin="${alfresco_on_install_settings_directory}/alfresco/shared/alfresco-global.properties"/>
             </distributionFileList>
+            <shouldPackRuleList>
+                <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco Share"/>
+            </shouldPackRuleList>
         </folder>
         <folder>
             <name>conf</name>

@@ -56,6 +56,13 @@
             </ruleList>
         </setInstallerVariable>
 
+        <!-- Disable RMI panel for Share Installer -->
+        <setInstallerVariable name="component(alfresco).parameter(alfresco_rmi_port).ask" value="0">
+            <ruleList>
+                <compareText text="${product_fullname}" logic="equals" value="Alfresco Share"/>
+            </ruleList>
+        </setInstallerVariable>
+
     </preBuildActionList>
     <initializationActionList>
         <setInstallerVariable name="alfresco_installer_bitness" value="64"/>

@@ -132,15 +132,15 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
         this.nodeService = nodeService;
     }
 
-	public PolicyComponent getPolicyComponent()
-	{
-		return policyComponent;
-	}
+    public PolicyComponent getPolicyComponent()
+    {
+        return policyComponent;
+    }
 
-	public void setPolicyComponent(PolicyComponent policyComponent)
-	{
-		this.policyComponent = policyComponent;
-	}
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
 
     /**
      * Set the tenant admin service
@@ -211,20 +211,20 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
      */
     public void init()
     {
-    	PropertyCheck.mandatory(this, "dictionaryDAO", dictionaryDAO);
+        PropertyCheck.mandatory(this, "dictionaryDAO", dictionaryDAO);
         PropertyCheck.mandatory(this, "contentService", contentService);
         PropertyCheck.mandatory(this, "nodeService", nodeService);
         PropertyCheck.mandatory(this, "tenantAdminService", tenantAdminService);
-    	PropertyCheck.mandatory(this, "namespaceService", namespaceService);
-    	PropertyCheck.mandatory(this, "messageService", messageService);
-    	PropertyCheck.mandatory(this, "transactionService", transactionService);
-    	PropertyCheck.mandatory(this, "policyComponent", policyComponent);
-    	
-    	if(onLoadDynamicModelDelegate == null)
-    	{
-    		onLoadDynamicModelDelegate = policyComponent.registerClassPolicy(DynamicModelPolicies.OnLoadDynamicModel.class);
-    	}
-    	
+        PropertyCheck.mandatory(this, "namespaceService", namespaceService);
+        PropertyCheck.mandatory(this, "messageService", messageService);
+        PropertyCheck.mandatory(this, "transactionService", transactionService);
+        PropertyCheck.mandatory(this, "policyComponent", policyComponent);
+        
+        if(onLoadDynamicModelDelegate == null)
+        {
+            onLoadDynamicModelDelegate = policyComponent.registerClassPolicy(DynamicModelPolicies.OnLoadDynamicModel.class);
+        }
+        
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Exception
@@ -267,7 +267,7 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
         
         if (this.repositoryModelsLocations != null)
         {
-        	// URI to model map
+            // URI to model map
             Map<String, DynamicModelInfo> modelMap = new HashMap<String, DynamicModelInfo>();
             
             if (logger.isTraceEnabled())
@@ -301,7 +301,7 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
                             {
                                 // Ignore if the node is a working copy or archived, or if its inactive
                                 if (! (nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_WORKING_COPY) ||
-                                		nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_ARCHIVED))) 
+                                        nodeService.hasAspect(dictionaryModel, ContentModel.ASPECT_ARCHIVED))) 
                                 {
                                     Boolean isActive = (Boolean)nodeService.getProperty(dictionaryModel, ContentModel.PROP_MODEL_ACTIVE);
                                     
@@ -364,13 +364,13 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
     
     public void notifyDynamicModelLoaded(DynamicModelInfo entry)
     {
-       	if(onLoadDynamicModelDelegate == null)
-    	{
-    		onLoadDynamicModelDelegate = policyComponent.registerClassPolicy(DynamicModelPolicies.OnLoadDynamicModel.class);
-    	}
+           if(onLoadDynamicModelDelegate == null)
+        {
+            onLoadDynamicModelDelegate = policyComponent.registerClassPolicy(DynamicModelPolicies.OnLoadDynamicModel.class);
+        }
  
-    	DynamicModelPolicies.OnLoadDynamicModel policy = onLoadDynamicModelDelegate.get(ContentModel.TYPE_CONTENT);
-    	policy.onLoadDynamicModel(entry.model, entry.nodeRef);
+        DynamicModelPolicies.OnLoadDynamicModel policy = onLoadDynamicModelDelegate.get(ContentModel.TYPE_CONTENT);
+        policy.onLoadDynamicModel(entry.model, entry.nodeRef);
     }
 
     public void initMessages()
@@ -470,7 +470,7 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
         return modelRefs;
     }
 
-	protected List<NodeRef> getNodes(StoreRef storeRef, RepositoryLocation repositoryLocation, QName nodeType)
+    protected List<NodeRef> getNodes(StoreRef storeRef, RepositoryLocation repositoryLocation, QName nodeType)
     {
         List<NodeRef> nodeRefs = new ArrayList<NodeRef>();
 
@@ -481,10 +481,10 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
             //Should be reworked when MNT-11638 will be implemented
             return nodeRefs;
         }
-		
+        
         if(repositoryLocation instanceof DynamicCreateRepositoryLocation)
         {
-        	((DynamicCreateRepositoryLocation)repositoryLocation).checkAndCreate(rootNodeRef);
+            ((DynamicCreateRepositoryLocation)repositoryLocation).checkAndCreate(rootNodeRef);
         }
 
         String[] pathElements = repositoryLocation.getPathElements();
@@ -516,17 +516,17 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
     
     private class DynamicModelInfo
     {
-    	RepositoryLocation location;
-    	M2Model model;
-    	NodeRef nodeRef;
-    	
-    	
-    	DynamicModelInfo(RepositoryLocation location, M2Model model, NodeRef nodeRef)
-    	{
-    		this.location = location;
-    		this.model = model;
-    		this.nodeRef = nodeRef;
-    	}
+        RepositoryLocation location;
+        M2Model model;
+        NodeRef nodeRef;
+        
+        
+        DynamicModelInfo(RepositoryLocation location, M2Model model, NodeRef nodeRef)
+        {
+            this.location = location;
+            this.model = model;
+            this.nodeRef = nodeRef;
+        }
     }
     
     /**
@@ -561,7 +561,7 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
                 if (logger.isDebugEnabled())
                 {
                     logger.debug("Loading model: " + modelName
-                    		+ " (from ["+ modelLocation.getStoreRef() + "]"+ modelLocation.getPath() + ")");
+                            + " (from ["+ modelLocation.getStoreRef() + "]"+ modelLocation.getPath() + ")");
                 }
 
                 dictionaryDAO.putModel(model);
@@ -746,10 +746,10 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
     @Override
     public void onDictionaryInit()
     {
-    	if(onLoadDynamicModelDelegate == null)
-    	{
-    		onLoadDynamicModelDelegate = policyComponent.registerClassPolicy(DynamicModelPolicies.OnLoadDynamicModel.class);
-    	}
+        if(onLoadDynamicModelDelegate == null)
+        {
+            onLoadDynamicModelDelegate = policyComponent.registerClassPolicy(DynamicModelPolicies.OnLoadDynamicModel.class);
+        }
         RetryingTransactionCallback<Void> initCallback = new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -762,13 +762,13 @@ implements TenantDeployer, DictionaryListener, /*TenantDictionaryListener, */Mes
         transactionService.getRetryingTransactionHelper().doInTransaction(initCallback, true, false);
     }
 
-	@Override
-	public void afterDictionaryDestroy()
-	{
-	}
+    @Override
+    public void afterDictionaryDestroy()
+    {
+    }
 
-	@Override
-	public void afterDictionaryInit()
-	{
-	}
+    @Override
+    public void afterDictionaryInit()
+    {
+    }
 }

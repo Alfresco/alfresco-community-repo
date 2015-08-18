@@ -16,7 +16,7 @@
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>update/assets/web-server/webapps</outputDirectory>
+            <outputDirectory>assets/web-server/webapps</outputDirectory>
             <outputFileNameMapping>alfresco.war</outputFileNameMapping>
             <includes>
                 <include>org.alfresco:alfresco-enterprise:war</include>
@@ -27,7 +27,7 @@
         <dependencySet>
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>update/assets/web-server/webapps</outputDirectory>
+            <outputDirectory>assets/web-server/webapps</outputDirectory>
             <outputFileNameMapping>share.war</outputFileNameMapping>
             <includes>
                 <include>org.alfresco:share:war</include>

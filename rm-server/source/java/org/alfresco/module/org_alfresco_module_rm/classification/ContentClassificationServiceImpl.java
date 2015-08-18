@@ -34,9 +34,11 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationE
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -54,11 +56,13 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
     private ClassificationReasonManager reasonManager;
     private SecurityClearanceService securityClearanceService;
     private ClassificationServiceBootstrap classificationServiceBootstrap;
+    private FreezeService freezeService;
 
     public void setLevelManager(ClassificationLevelManager levelManager) { this.levelManager = levelManager; }
     public void setReasonManager(ClassificationReasonManager reasonManager) { this.reasonManager = reasonManager; }
     public void setSecurityClearanceService(SecurityClearanceService securityClearanceService) { this.securityClearanceService = securityClearanceService; }
     public void setClassificationServiceBootstrap(ClassificationServiceBootstrap classificationServiceBootstrap) { this.classificationServiceBootstrap = classificationServiceBootstrap; }
+    public void setFreezeService(FreezeService service) { this.freezeService = service; }
 
     public void init()
     {
@@ -91,7 +95,7 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
     };
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService#classifyContent(java.lang.String, java.lang.String, java.lang.String, java.util.Set, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService#classifyContent(ClassificationAspectProperties, NodeRef)
      */
     @Override
     public void classifyContent(ClassificationAspectProperties classificationAspectProperties, final NodeRef content)
@@ -106,6 +110,11 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
         {
             public Void doWork()
             {
+                if (freezeService.isFrozen(content))
+                {
+                    throw new AccessDeniedException("Frozen nodes can not be classified.");
+                }
+
                 nodeService.addAspect(content, ASPECT_CLASSIFIED, properties);
                 return null;
             }
@@ -229,7 +238,7 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService#editClassifiedContent(java.lang.String, java.lang.String, java.lang.String, java.util.Set, org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService#editClassifiedContent(ClassificationAspectProperties, NodeRef)
      */
     @Override
     public void editClassifiedContent(ClassificationAspectProperties classificationAspectProperties, NodeRef content)

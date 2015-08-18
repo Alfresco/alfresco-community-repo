@@ -1,11 +1,11 @@
-/distribution/pom.xml<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <artifactId>alfresco-installer-share-po</artifactId>
     <name>Share Page Object tests passed on the installer</name>
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-full-installation</artifactId>
-        <version>${maven.build.timestamp}-SNAPSHOT</version>
+        <version>2015-1-EA-SNAPSHOT</version>
     </parent>
     <packaging>pom</packaging>
 

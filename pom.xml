@@ -7,7 +7,7 @@
         <version>6</version>
     </parent>
     <artifactId>alfresco-full-installation</artifactId>
-    <version>${maven.build.timestamp}-SNAPSHOT</version>
+    <version>2015-1-EA-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Full Installation</name>
 
@@ -34,8 +34,6 @@
 
         <alfresco.package.name>alfresco-community</alfresco.package.name>
         <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
-
-        <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
     </properties>
 
     <modules>

@@ -39,8 +39,8 @@ import org.alfresco.util.Triple;
 public class ClassificationPermissionPreProcessor extends PermissionPreProcessorBaseImpl 
 {
 	/** transaction resource keys */
-	private static final String KEY_PROCESSING = ClassificationPermissionPreProcessor.class.getName() + ".processing";
-	private static final String KEY_CACHE = ClassificationPermissionPreProcessor.class.getName() + ".cache";
+	/*package*/ static final String KEY_PROCESSING = ClassificationPermissionPreProcessor.class.getName() + ".processing";
+	/*package*/ static final String KEY_CACHE = ClassificationPermissionPreProcessor.class.getName() + ".cache";
 	
 	/** content classification service */
 	private ContentClassificationService contentClassificationService;

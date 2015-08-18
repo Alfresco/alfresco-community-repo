@@ -19,7 +19,7 @@
             <outputDirectory>assets/web-server/webapps</outputDirectory>
             <outputFileNameMapping>alfresco.war</outputFileNameMapping>
             <includes>
-                <include>org.alfresco:alfresco-enterprise:war</include>
+                <include>org.alfresco:alfresco-platform-enterprise:war</include>
             </includes>
         </dependencySet>
 

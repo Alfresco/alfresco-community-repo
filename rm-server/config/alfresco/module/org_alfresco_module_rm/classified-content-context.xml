@@ -195,6 +195,7 @@
          parent="baseService" init-method="init">
       <property name="securityClearanceService" ref="SecurityClearanceService"/>
       <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
+      <property name="freezeService" ref="FreezeService"/>
    </bean>
 
    <bean id="ContentClassificationService" class="org.springframework.aop.framework.ProxyFactoryBean">

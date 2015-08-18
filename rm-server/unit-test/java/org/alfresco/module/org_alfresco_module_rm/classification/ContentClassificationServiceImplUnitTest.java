@@ -23,6 +23,7 @@ import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.gener
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -43,8 +44,10 @@ import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.InvalidNode;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
+import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -74,6 +77,7 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
     @Mock ClassificationReasonManager mockReasonManager;
     @Mock NodeService mockNodeService;
     @Mock DictionaryService mockDictionaryService;
+    @Mock FreezeService mockFreezeService;
     @Mock SecurityClearanceService mockSecurityClearanceService;
     @Mock AuthenticationUtil mockAuthenticationUtil;
     @Mock ClassificationAspectProperties mockPropertiesDTO;
@@ -101,6 +105,7 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         NodeRef content = new NodeRef("fake://content/");
         when(mockDictionaryService.isSubClass(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(true);
         when(mockNodeService.hasAspect(content, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(false);
+        when(mockFreezeService.isFrozen(any(NodeRef.class))).thenReturn(false);
         when(mockSecurityClearanceService.isCurrentUserClearedForClassification("levelId1")).thenReturn(true);
         // Set up the mock DTO.
         when(mockPropertiesDTO.getClassificationLevelId()).thenReturn("levelId1");
@@ -177,6 +182,33 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
 
         // Call the method under test.
         contentClassificationServiceImpl.validateProperties(mockPropertiesDTO);
+    }
+
+    /**
+     * Check that a user can't classify content that is frozen.
+     */
+    @Test(expected = AccessDeniedException.class)
+    public void classifyContent_frozen()
+    {
+        ClassificationLevel level = new ClassificationLevel("levelId1", "displayLabelKey");
+        ClassificationReason reason1 = new ClassificationReason("reasonId1", "displayLabelKey1");
+        // Set up the managers to return these objects when the ids are provided.
+        when(mockLevelManager.findLevelById("levelId1")).thenReturn(level);
+        when(mockReasonManager.findReasonById("reasonId1")).thenReturn(reason1);
+        // Create a content node.
+        NodeRef content = new NodeRef("fake://content/");
+        when(mockDictionaryService.isSubClass(mockNodeService.getType(content), ContentModel.TYPE_CONTENT)).thenReturn(true);
+        when(mockNodeService.hasAspect(content, ClassifiedContentModel.ASPECT_CLASSIFIED)).thenReturn(false);
+        when(mockFreezeService.isFrozen(any(NodeRef.class))).thenReturn(true);
+        when(mockSecurityClearanceService.isCurrentUserClearedForClassification("levelId1")).thenReturn(true);
+        // Set up the mock DTO.
+        when(mockPropertiesDTO.getClassificationLevelId()).thenReturn("levelId1");
+        when(mockPropertiesDTO.getClassifiedBy()).thenReturn("classifiedBy");
+        when(mockPropertiesDTO.getClassificationAgency()).thenReturn("classificationAgency");
+        when(mockPropertiesDTO.getClassificationReasonIds()).thenReturn(Sets.newHashSet("reasonId1", "reasonId2"));
+
+        // Call the method under test
+        contentClassificationServiceImpl.classifyContent(mockPropertiesDTO, content);
     }
 
     /**

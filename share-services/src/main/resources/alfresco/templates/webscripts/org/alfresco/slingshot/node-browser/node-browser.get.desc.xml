@@ -7,4 +7,5 @@
    <format default="json">argument</format>
    <authentication>admin</authentication>
    <transaction allow="readonly">required</transaction>
+   <lifecycle>internal</lifecycle>
 </webscript>

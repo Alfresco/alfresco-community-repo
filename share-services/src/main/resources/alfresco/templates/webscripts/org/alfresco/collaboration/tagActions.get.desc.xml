@@ -5,4 +5,5 @@
   <format default="html"/>
   <authentication>user</authentication>
   <transaction>required</transaction>
+  <lifecycle>internal</lifecycle>
 </webscript>

@@ -37,32 +37,23 @@
             </ruleList>
         </actionGroup>
 
-        <!-- Disable password prompt when PostgreSQL is not packaged -->
-        <setInstallerVariable name="component(alfresco).parameter(alfresco_admin_password).allowEmptyValue" value="1">
-            <ruleList>
-                <compareText text="${product_fullname}" logic="equals" value="Alfresco Share"/>
-            </ruleList>
-        </setInstallerVariable>
-        <setInstallerVariable name="component(alfresco).parameter(alfresco_admin_password).ask" value="0">
-            <ruleList>
-                <compareText text="${product_fullname}" logic="equals" value="Alfresco Share"/>
-            </ruleList>
-        </setInstallerVariable>
-
         <!-- Alfresco Share specifics -->
-        <setInstallerVariable name="component(alfresco).parameter(repository_url_port).ask" value="1">
+        <actionGroup>
+            <actionList>
+                <!-- Disable password prompt when PostgreSQL is not packaged -->
+                <setInstallerVariable name="component(alfresco).parameter(alfresco_admin_password).allowEmptyValue" value="1"/>
+                <setInstallerVariable name="component(alfresco).parameter(alfresco_admin_password).ask" value="0"/>
+                <!-- Ask for Platform URL -->
+                <setInstallerVariable name="component(alfresco).parameter(repository_url_port).ask" value="1"/>
+                <!-- Disable RMI panel -->
+                <setInstallerVariable name="component(alfresco).parameter(alfresco_rmi_port).ask" value="0"/>
+                <!-- Disable FTP panel -->
+                <setInstallerVariable name="component(alfresco).parameter(alfresco_ftp_port).ask" value="0"/>
+            </actionList>
             <ruleList>
                 <compareText text="${product_fullname}" logic="equals" value="Alfresco Share"/>
             </ruleList>
-        </setInstallerVariable>
-
-        <!-- Disable RMI panel for Share Installer -->
-        <setInstallerVariable name="component(alfresco).parameter(alfresco_rmi_port).ask" value="0">
-            <ruleList>
-                <compareText text="${product_fullname}" logic="equals" value="Alfresco Share"/>
-            </ruleList>
-        </setInstallerVariable>
-
+        </actionGroup>
     </preBuildActionList>
     <initializationActionList>
         <setInstallerVariable name="alfresco_installer_bitness" value="64"/>

@@ -18,8 +18,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.job;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -41,7 +44,7 @@ import org.quartz.JobExecutionException;
  */
 public class RecordsManagementJob implements Job
 {
-	private static Log logger = LogFactory.getLog(RecordsManagementJob.class);
+    private static Log logger = LogFactory.getLog(RecordsManagementJob.class);
 
     private static final long DEFAULT_TIME = 30000L;
 
@@ -55,6 +58,24 @@ public class RecordsManagementJob implements Job
     {
         return QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, jobName);
     }
+    
+    private class LockCallback implements JobLockRefreshCallback
+    {
+        final AtomicBoolean running = new AtomicBoolean(true);
+        
+        @Override
+        public boolean isActive()
+        {
+            return running.get();
+        }
+        
+        @Override
+        public void lockReleased()
+        {
+            running.set(false);
+        }
+    }
+
 
     /**
      * Attempts to get the lock.  If the lock couldn't be taken, then <tt>null</tt> is returned.
@@ -97,6 +118,7 @@ public class RecordsManagementJob implements Job
             throw new AlfrescoRuntimeException("Job name has not been specified.");
         }
 
+        final LockCallback lockCallback = new LockCallback();
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             public Void doWork()
@@ -107,15 +129,17 @@ public class RecordsManagementJob implements Job
                 {
                     try
                     {
+                        jobLockService.refreshLock(lockToken, getLockQName(), DEFAULT_TIME, lockCallback);
                         // do work
                         jobExecuter.execute();
                     }
                     finally
                     {
-                    	try
-                    	{
-                    		jobLockService.releaseLock(lockToken, getLockQName());
-                    	}
+                        try
+                        {
+                            lockCallback.running.set(false);
+                            jobLockService.releaseLock(lockToken, getLockQName());
+                        }
                         catch (LockAcquisitionException e)
                         {
                             // Ignore

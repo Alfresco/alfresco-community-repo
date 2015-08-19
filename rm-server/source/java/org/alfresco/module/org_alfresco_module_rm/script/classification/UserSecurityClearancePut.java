@@ -22,6 +22,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationE
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearance;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
 import org.alfresco.module.org_alfresco_module_rm.script.AbstractRmWebScript;
+import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -63,7 +64,7 @@ public class UserSecurityClearancePut extends AbstractRmWebScript
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        String username = req.getParameter(USERNAME);
+        String username = URLDecoder.decode(req.getParameter(USERNAME));
         String clearanceId = req.getParameter(CLEARANCE_ID);
         SecurityClearance securityClearance;
 

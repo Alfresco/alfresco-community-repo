@@ -22,6 +22,7 @@ import static org.alfresco.util.WebScriptUtils.getJSONArrayFromJSONObject;
 import static org.alfresco.util.WebScriptUtils.getJSONArrayValue;
 import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
+import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.apache.commons.lang3.time.DateFormatUtils.ISO_DATE_FORMAT;
 import static org.springframework.extensions.webscripts.Status.STATUS_BAD_REQUEST;
@@ -64,6 +65,8 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
     public static final String DECLASSIFICATION_DATE = "declassificationDate";
     public static final String DECLASSIFICATION_EVENT = "declassificationEvent";
     public static final String DECLASSIFICATION_EXEMPTIONS = "declassificationExemptions";
+    public static final String RECLASSIFY_BY = "reclassifyBy";
+    public static final String RECLASSIFY_REASON = "reclassifyReason";
     public static final String LAST_RECLASSIFY_BY = "lastReclassifyBy";
     public static final String LAST_RECLASSIFY_REASON = "lastReclassifyReason";
 
@@ -118,8 +121,13 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
         String declassificationDate = getStringValueFromJSONObject(jsonObject, DECLASSIFICATION_DATE, false, false);
         String declassificationEvent = getStringValueFromJSONObject(jsonObject, DECLASSIFICATION_EVENT, false, false);
         Set<String> exemptionCategoryIds = getExemptionCategoryIds(jsonObject);
-        String lastReclassifyBy = getStringValueFromJSONObject(jsonObject, LAST_RECLASSIFY_BY, false, false);
-        String lastReclassifyReason = getStringValueFromJSONObject(jsonObject, LAST_RECLASSIFY_REASON, false, false);
+        String lastReclassifyBy = getStringValueFromJSONObject(jsonObject, RECLASSIFY_BY, false, false);
+        String lastReclassifyReason = getStringValueFromJSONObject(jsonObject, RECLASSIFY_REASON, false, false);
+        if (isBlank(lastReclassifyBy) || isBlank(lastReclassifyReason))
+        {
+            lastReclassifyBy = getStringValueFromJSONObject(jsonObject, LAST_RECLASSIFY_BY, false, false);
+            lastReclassifyReason = getStringValueFromJSONObject(jsonObject, LAST_RECLASSIFY_REASON, false, false);
+        }
 
         ClassificationAspectProperties propertiesDTO = new ClassificationAspectProperties();
         propertiesDTO.setClassificationLevelId(classificationLevelId);

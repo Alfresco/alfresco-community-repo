@@ -279,7 +279,7 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         assertNotNull("Could not create base folder", folder);
 
         // Create the site
-        siteId = GUID.generate();
+        siteId = getRMSiteId();
         siteInfo = siteService.createSite("rm-site-dashboard", siteId, "title", "descrition", SiteVisibility.PUBLIC, RecordsManagementModel.TYPE_RM_SITE);
         filePlan = siteService.getContainer(siteId, RmSiteType.COMPONENT_DOCUMENT_LIBRARY);
         assertNotNull("Site document library container was not created successfully.", filePlan);
@@ -382,5 +382,10 @@ public class BaseRMWebScriptTestCase extends BaseWebScriptTest
         {
             authorityService.deleteAuthority(groupName, true);
         }
+    }
+    
+    protected String getRMSiteId()
+    {
+    	return GUID.generate();
     }
 }

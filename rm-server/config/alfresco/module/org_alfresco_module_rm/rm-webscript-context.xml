@@ -535,6 +535,8 @@
         <property name="recordsManagementAuditService" ref="RecordsManagementAuditService"/>
         <property name="contentStreamer" ref="webscript.content.streamer" />
         <property name="namespaceService" ref="namespaceService" />
+        <property name="capabilityService" ref="CapabilityService" />
+        <property name="filePlanService" ref="FilePlanService" />
     </bean>
 
    <!-- REST impl for GET Class Definitions for RM/DM -->

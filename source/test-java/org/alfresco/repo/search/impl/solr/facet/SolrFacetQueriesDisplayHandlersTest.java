@@ -26,9 +26,10 @@ import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabel;
 import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandler;
 import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandlerRegistry;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.test.junitrules.ApplicationContextInit;
+import org.alfresco.util.test.junitrules.TemporarySites;
 import org.junit.*;
-import org.springframework.context.ApplicationContext;
 
 import static org.junit.Assert.*;
 
@@ -40,17 +41,22 @@ import static org.junit.Assert.*;
  */
 public class SolrFacetQueriesDisplayHandlersTest
 {
-    private static ApplicationContext context;
+    // Rule to initialise the default Alfresco spring configuration
+    @ClassRule
+    public static ApplicationContextInit context = new ApplicationContextInit();
+
+    // Rule will allow us to create Share sites and users and have them automatically cleaned up for us.
+    @Rule
+    public TemporarySites temporarySites = new TemporarySites(context);
+
     private static SolrFacetHelper helper;
     private static FacetLabelDisplayHandlerRegistry displayHandlerRegistry;
 
     @BeforeClass
     public static void initStaticData() throws Exception
     {
-        context = ApplicationContextHelper.getApplicationContext();
-
-        helper = (SolrFacetHelper) context.getBean("facet.solrFacetHelper");
-        displayHandlerRegistry = (FacetLabelDisplayHandlerRegistry) context.getBean("facet.facetLabelDisplayHandlerRegistry");
+        helper = context.getApplicationContext().getBean("facet.solrFacetHelper", SolrFacetHelper.class);
+        displayHandlerRegistry = context.getApplicationContext().getBean("facet.facetLabelDisplayHandlerRegistry", FacetLabelDisplayHandlerRegistry.class);
     }
 
     /**
@@ -305,7 +311,10 @@ public class SolrFacetQueriesDisplayHandlersTest
     @Test
     public void testGetSiteTitleDisplayHandler() throws Exception
     {
-        String defaultSiteName= "swsdp";
+        final String siteShortName = "siteDisplayHandlerTest" + System.currentTimeMillis();
+        final String siteTitle = "Site Title Display Handler Test";
+        temporarySites.createSite("sitePreset", siteShortName, siteTitle, "site desc", SiteVisibility.PRIVATE, AuthenticationUtil.getAdminUserName());
+
         FacetLabelDisplayHandler siteHandler = displayHandlerRegistry.getDisplayHandler("SITE");
         assertNotNull(siteHandler);
         
@@ -313,8 +322,8 @@ public class SolrFacetQueriesDisplayHandlersTest
         FacetLabel name = siteHandler.getDisplayLabel(randomSiteName);
         assertNotNull(name);
         assertEquals("There is no site with the name [" + randomSiteName + "], hence, the handler should return the passed-in short name.", randomSiteName, name.getLabel());
-        name = siteHandler.getDisplayLabel(defaultSiteName);
+        name = siteHandler.getDisplayLabel(siteShortName);
         assertNotNull(name);
-        assertEquals("Sample: Web Site Design Project", name.getLabel());
+        assertEquals(siteTitle, name.getLabel());
     }
 }

@@ -419,9 +419,11 @@ public class Repository01TestSuite extends TestSuite
 
     static void tests66(TestSuite suite)
     {
-        suite.addTest(org.alfresco.repo.search.impl.solr.facet.SolrFacetTestSuite.suite());
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.solr.facet.SolrFacetQueriesDisplayHandlersTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.solr.facet.SolrFacetServiceImplTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.solr.facet.SolrFacetConfigTest.class));
     }
-    
+
     static void tests67(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.doclink.DocumentLinkServiceImplTest.class);

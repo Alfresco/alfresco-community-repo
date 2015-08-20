@@ -978,28 +978,31 @@ public class SolrFacetServiceImpl extends AbstractLifecycleBean
             for (final Map.Entry<QName, PropertyDefinition> prop : propertyDefs.entrySet())
             {
                 final PropertyDefinition propDef = prop.getValue();
-                final Facetable propIsFacetable  = propDef.getFacetable();
-                
-                switch (propIsFacetable)
+                if (propDef.isIndexed()) //SHA-1308
                 {
-                case TRUE:
-                    result.add(propDef);
-                    break;
-                case FALSE:
-                    // The value is not facetable. Do nothing.
-                    break;
-                case UNSET:
-                    // These values may be facetable.
-                    final DataTypeDefinition datatype = propDef.getDataType();
-                    if (isNumeric(datatype) || isDateLike(datatype) || isFacetableText(datatype))
+                    final Facetable propIsFacetable = propDef.getFacetable();
+
+                    switch (propIsFacetable)
                     {
-                        result.add(propDef);
-                        break;
+                        case TRUE:
+                            result.add(propDef);
+                            break;
+                        case FALSE:
+                            // The value is not facetable. Do nothing.
+                            break;
+                        case UNSET:
+                            // These values may be facetable.
+                            final DataTypeDefinition datatype = propDef.getDataType();
+                            if (isNumeric(datatype) || isDateLike(datatype) || isFacetableText(datatype))
+                            {
+                                result.add(propDef);
+                                break;
+                            }
+                            break;
+                        default:
+                            // This should never happen. If it does, it's a programming error.
+                            throw new IllegalStateException("Failed to handle " + Facetable.class.getSimpleName() + " type: " + propIsFacetable);
                     }
-                    break;
-                default:
-                    // This should never happen. If it does, it's a programming error.
-                    throw new IllegalStateException("Failed to handle " + Facetable.class.getSimpleName() + " type: " + propIsFacetable);
                 }
             }
         }

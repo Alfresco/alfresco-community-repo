@@ -815,14 +815,14 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                                 <runProgram>
                                     <runAs>postgres</runAs>
                                     <program>${postgres_root_directory}/bin/psql</program>
-                                    <programArguments> -c "ALTER USER postgres PASSWORD '\''${postgres_root_password.password}'\''" </programArguments>
+                                    <programArguments>-U postgres  -c "ALTER USER postgres PASSWORD '\''${postgres_root_password.password}'\''" </programArguments>
                                     <ruleList>
                                         <compareText logic="equals" text="${installer_root_install}" value="1"/>
                                     </ruleList>
                                 </runProgram>
                                 <runProgram>
                                     <program>${postgres_root_directory}/bin/psql</program>
-                                    <programArguments>-c "ALTER USER postgres PASSWORD '${postgres_root_password.password}'"</programArguments>
+                                    <programArguments>-U postgres -c "ALTER USER postgres PASSWORD '${postgres_root_password.password}'"</programArguments>
                                     <ruleList>
                                         <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
                                     </ruleList>

@@ -26,41 +26,38 @@
             <version>${alfresco.share.version}</version>
             <type>war</type>
         </dependency>
-		
-		<!-- Update Tool Itself -->
-		<dependency>
+
+        <!-- Update Tool Itself -->
+        <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-update-tool</artifactId>
             <version>${alfresco.updatetool.version}</version>
             <type>jar</type>
         </dependency>
-		
-		<dependency>
+    
+        <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-update-tool-distribution</artifactId>
             <version>${alfresco.updatetool.version}</version>
             <type>jar</type>
         </dependency>
 
-		<!-- Test dependencies -->
-	    <dependency>
-	        <groupId>junit</groupId>
-	        <artifactId>junit</artifactId>
-	        <version>4.12</version>
-	        <scope>test</scope>
-	      </dependency>		
-        </dependencies>  
+        <!-- Test dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+           <scope>test</scope>
+          </dependency>
+    </dependencies>
 
     <build>
         <plugins>
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
-				
                 <executions>
                     <execution>
-					
                         <id>update</id>
-						
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
@@ -70,23 +67,23 @@
                             <descriptors>
                                 <descriptor>assemblies/update.xml</descriptor>
                             </descriptors>
-							<finalName>update-contents-${version}</finalName>
+                            <finalName>update-contents-${project.version}</finalName>
                         </configuration>
                     </execution>
-					<execution>
+                    <execution>
                         <id>update-tool</id>
                         <phase>package</phase>
                         <goals>
                             <goal>single</goal>
                         </goals>
                         <configuration>
-						    <!-- Does not seem to work suppressing the META-INF folder -->
-							<archive>
-							   <addMavenDescriptor>false</addMavenDescriptor>
-							</archive>	
+                            <!-- Does not seem to work suppressing the META-INF folder -->
+                            <archive>
+                               <addMavenDescriptor>false</addMavenDescriptor>
+                            </archive>
                             <appendAssemblyId>false</appendAssemblyId>
                             <descriptors>
-								<descriptor>assemblies/updateTool.xml</descriptor>
+                                <descriptor>assemblies/updateTool.xml</descriptor>
                             </descriptors>
                         </configuration>
                     </execution>
@@ -114,8 +111,8 @@
                             <redirectTestOutputToFile>false</redirectTestOutputToFile>
                             <runOrder>alphabetical</runOrder>
                             <systemPropertyVariables>
-                                <alfresco.update.package>${artifactId}-${version}.zip</alfresco.update.package>
-                                <alfresco.contents.package>update-contents-${version}.zip</alfresco.contents.package>
+                                <alfresco.update.package>${project.artifactId}-${project.version}.zip</alfresco.update.package>
+                                <alfresco.contents.package>update-contents-${project.version}.zip</alfresco.contents.package>
                             </systemPropertyVariables>
                             <excludes>
                                 <exclude>none</exclude>

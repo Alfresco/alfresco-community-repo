@@ -29,7 +29,7 @@
         <installer.tomcat.version>7.0.59-alfresco-distribution</installer.tomcat.version>
         <installer.java.version>1.8.0_51</installer.java.version>
         <installer.postgresql.version>9.4.4</installer.postgresql.version>
-        <installer.libreoffice.version>4.4.5-alfresco</installer.libreoffice.version>
+        <installer.libreoffice.version>4.2.5-alfresco</installer.libreoffice.version>
 
         <!-- Install builder version -->
         <installer.installbuilder.version>15.1.0</installer.installbuilder.version>

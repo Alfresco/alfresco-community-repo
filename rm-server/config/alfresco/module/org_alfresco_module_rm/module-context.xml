@@ -24,9 +24,8 @@
    <bean name="rm.alfrescoTransactionSupport" class="org.alfresco.module.org_alfresco_module_rm.util.AlfrescoTransactionSupport" />
 
    <!-- Import extended repository context -->
-
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/extended-repository-context.xml"/>
-
+   
    <!-- Bootstrap records management data -->
    <bean id="org_alfresco_module_rm_bootstrapData"
       class="org.alfresco.module.org_alfresco_module_rm.bootstrap.BootstrapImporterModuleComponent"
@@ -83,6 +82,12 @@
             <value>alfresco.module.org_alfresco_module_rm.messages.template</value>
          </list>
       </property>
+   </bean>
+   
+   <!-- Records management permission post processor -->
+   <bean id="recordsManagementPermissionPostProcessor" class="org.alfresco.module.org_alfresco_module_rm.permission.RecordsManagementPermissionPostProcessor" parent="parentPermissionPostProcessor">
+      <property name="nodeService" ref="nodeService"/>
+      <property name="permissionService" ref="permissionService"/>
    </bean>
 
    <!-- Import RM model -->

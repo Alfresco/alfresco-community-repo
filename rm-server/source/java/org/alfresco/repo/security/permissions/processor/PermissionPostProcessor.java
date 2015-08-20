@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,25 +16,28 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.security.permissions.impl;
+package org.alfresco.repo.security.permissions.processor;
 
-import java.util.Set;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
 
-import org.alfresco.service.cmr.security.PermissionService;
+
 
 /**
- * Extended Permission Service Interface used in RM.
- *
+ * Permission Post Processor.
+ * 
  * @author Roy Wetherall
- * @since 2.1
+ * @since 3.0.a
  */
-public interface ExtendedPermissionService extends PermissionService
+public interface PermissionPostProcessor
 {
 	/**
-	 * Get a set of all the authorities that have write access.
+	 * Process permission.
 	 * 
-	 * @param  aclId							acl id
-	 * @return {@link Set}<{@link String}>		set of authorities with write access
+	 * @param  accessStatus			current access status
+	 * @param  nodeRef				node reference
+	 * @param  perm					permission
+	 * @return {@link AccessStatus}
 	 */
-    Set<String> getWriters(Long aclId);
+	AccessStatus process(AccessStatus accessStatus, NodeRef nodeRef, String perm);		
 }

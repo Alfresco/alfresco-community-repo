@@ -39,25 +39,16 @@
          </list>
       </property>
    </bean>
-
-   <!-- Classification Method Interceptor -->
-
-   <bean id="preMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PreMethodInvocationProcessor">
+    
+   <!-- Classification Permission Pre Processor -->
+   <bean id="classificationPermissionPreProcessor" 
+         class="org.alfresco.module.org_alfresco_module_rm.classification.permission.ClassificationPermissionPreProcessor" 
+         parent="parentPermissionPreProcessor">
+      <property name="contentClassificationService" ref="contentClassificationService" />      
+      <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
+      <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
+      <property name="authenticationUtil" ref="rm.authenticationUtil" />
    </bean>
-
-   <bean id="postMethodInvocationProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.PostMethodInvocationProcessor">
-   </bean>
-
-   <bean id="classificationMethodInterceptor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptor">
-      <property name="preMethodInvocationProcessor" ref="preMethodInvocationProcessor" />
-      <property name="postMethodInvocationProcessor" ref="postMethodInvocationProcessor" />
-   </bean>
-
-   <bean id="classificationMethodInterceptorPostProcessor"
-      class="org.alfresco.module.org_alfresco_module_rm.classification.interceptor.ClassificationMethodInterceptorPostProcessor" />
 
    <!-- Classification service DAO -->
 

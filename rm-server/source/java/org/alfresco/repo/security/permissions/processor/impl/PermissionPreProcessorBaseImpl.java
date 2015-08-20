@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -16,25 +16,27 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.repo.security.permissions.impl;
+package org.alfresco.repo.security.permissions.processor.impl;
 
-import java.util.Set;
-
-import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.repo.security.permissions.processor.PermissionPreProcessor;
 
 /**
- * Extended Permission Service Interface used in RM.
- *
+ * Permission pre-processor base implementation.
+ * <p>
+ * Helper class that can be extended when providing a custom permission
+ * pre-processor implementation.
+ * 
  * @author Roy Wetherall
- * @since 2.1
+ * @since 3.0.a
  */
-public interface ExtendedPermissionService extends PermissionService
+public abstract class PermissionPreProcessorBaseImpl extends PermissionProcessorBaseImpl
+													 implements PermissionPreProcessor 
 {
 	/**
-	 * Get a set of all the authorities that have write access.
-	 * 
-	 * @param  aclId							acl id
-	 * @return {@link Set}<{@link String}>		set of authorities with write access
+	 * Init method to add this permission extensions to the registry
 	 */
-    Set<String> getWriters(Long aclId);
+	public void init()
+	{
+		getPermissionProcessorRegistry().addPermissionPreProcessor(this);
+	}
 }

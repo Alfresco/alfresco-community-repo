@@ -27,8 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
-import org.alfresco.module.org_alfresco_module_rm.classification.interceptor.processor.AccessDeniedException;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 

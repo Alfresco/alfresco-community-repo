@@ -212,9 +212,14 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
     @Override
     public boolean hasClearance(NodeRef nodeRef)
     {
-        // Get the node's current classification
-        ClassificationLevel currentClassification = getCurrentClassification(nodeRef);
-        return securityClearanceService.isCurrentUserClearedForClassification(currentClassification.getId());
+    	boolean result = true;
+    	if (nodeService.exists(nodeRef))
+    	{
+    		// Get the node's current classification
+    		ClassificationLevel currentClassification = getCurrentClassification(nodeRef);
+    		result = securityClearanceService.isCurrentUserClearedForClassification(currentClassification.getId());
+    	}
+    	return result;
     }
 
     /**

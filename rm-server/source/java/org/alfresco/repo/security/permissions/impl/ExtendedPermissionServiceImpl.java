@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,6 +23,7 @@ import static org.apache.commons.lang.StringUtils.isNotBlank;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
@@ -34,6 +35,9 @@ import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamic
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
+import org.alfresco.repo.security.permissions.processor.PermissionPostProcessor;
+import org.alfresco.repo.security.permissions.processor.PermissionPreProcessor;
+import org.alfresco.repo.security.permissions.processor.PermissionProcessorRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -49,14 +53,17 @@ import org.springframework.context.ApplicationEvent;
  *
  * @author Roy Wetherall
  */
-public class RMPermissionServiceImpl extends PermissionServiceImpl
-                                     implements ExtendedPermissionService
+public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
+                                           implements ExtendedPermissionService
 {
 	/** Writers simple cache */
     protected SimpleCache<Serializable, Set<String>> writersCache;
 
     /** File plan service */
     private FilePlanService filePlanService;
+    
+    /** Permission processor registry */
+    private PermissionProcessorRegistry permissionProcessorRegistry;
 
     /**
      * Gets the file plan service
@@ -77,6 +84,16 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     {
         this.filePlanService = filePlanService;
     }
+    
+    /**
+     * Sets the permission processor registry
+     * 
+     * @param permissionProcessorRegistry	the permissions processor registry
+     */
+    public void setPermissionProcessorRegistry(PermissionProcessorRegistry permissionProcessorRegistry) 
+    {
+		this.permissionProcessorRegistry = permissionProcessorRegistry;
+	}
 
     /**
      * @see org.alfresco.repo.security.permissions.impl.PermissionServiceImpl#setAnyDenyDenies(boolean)
@@ -85,7 +102,10 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     public void setAnyDenyDenies(boolean anyDenyDenies)
     {
         super.setAnyDenyDenies(anyDenyDenies);
-        writersCache.clear();
+        if (writersCache != null)
+        {
+        	writersCache.clear();
+        }
     }
 
     /**
@@ -116,21 +136,48 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
     @Override
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
-        AccessStatus acs = super.hasPermission(nodeRef, perm);
-        if (AccessStatus.DENIED.equals(acs) &&
-            PermissionService.READ.equals(perm) &&
-            nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
+    	AccessStatus result = AccessStatus.UNDETERMINED;
+    	
+    	// permission pre-processors
+    	List<PermissionPreProcessor> preProcessors = permissionProcessorRegistry.getPermissionPreProcessors();
+    	for (PermissionPreProcessor preProcessor : preProcessors) 
+    	{
+    		// pre process permission
+    		result = preProcessor.process(nodeRef, perm);
+    		
+    		// veto if denied
+    		if (AccessStatus.DENIED.equals(result))
+    		{
+    			return result;
+    		}
+		}
+    	
+    	// evaluate permission
+        result = hasPermissionImpl(nodeRef, perm);
+        
+        // permission post-processors
+        List<PermissionPostProcessor> postProcessors = permissionProcessorRegistry.getPermissionPostProcessors();
+        for (PermissionPostProcessor postProcessor : postProcessors) 
         {
-            return super.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
-        }
-        else if (AccessStatus.DENIED.equals(acs) &&
-                 PermissionService.WRITE.equals(perm) &&
-                 nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT))
-        {
-            return super.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);
-        }
-
-        return acs;
+        	// post process permission
+        	result = postProcessor.process(result, nodeRef, perm);
+		}        
+        
+        return result;
+    }
+    
+    /**
+     * Implementation of hasPermission method call.
+     * <p>
+     * Separation also convenient for unit testing.
+     * 
+     * @param nodeRef	node reference
+     * @param perm		permission
+     * @return {@link AccessStatus}	access status result
+     */
+    protected AccessStatus hasPermissionImpl(NodeRef nodeRef, String perm)
+    {
+    	return super.hasPermission(nodeRef, perm);
     }
 
     /**

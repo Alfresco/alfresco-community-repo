@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.cmis.CMISChangeEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;

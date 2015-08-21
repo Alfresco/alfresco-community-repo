@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import org.alfresco.cmis.client.AlfrescoDocument;
@@ -61,7 +62,7 @@ import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.version.VersionableAspect;
+import org.alfresco.repo.version.VersionableAspectTest;
 import org.alfresco.rest.api.tests.RepoService.SiteInformation;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
@@ -157,7 +158,7 @@ public class TestCMIS extends EnterpriseTestApi
     private CMISStrictDictionaryService cmisDictionary;
     private QNameFilter cmisTypeExclusions;
 	private NodeService nodeService;
-    private VersionableAspect versionableAspect;
+	private Properties globalProperties;
 
     @Before
     public void before() throws Exception
@@ -170,14 +171,14 @@ public class TestCMIS extends EnterpriseTestApi
         this.cmisTypeExclusions = (QNameFilter)ctx.getBean("cmisTypeExclusions");
 		this.nodeService = (NodeService) ctx.getBean("NodeService");
         
-        this.versionableAspect = (VersionableAspect) ctx.getBean("versionableAspect");
-        this.versionableAspect.setEnableAutoVersionOnUpdateProps(true);
+		this.globalProperties = (Properties) ctx.getBean("global-properties");
+		this.globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "true");
     }
     
     @After
     public void after()
     {
-        this.versionableAspect.setEnableAutoVersionOnUpdateProps(false);
+        this.globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "false");
     }
 
     private void checkSecondaryTypes(Document doc, Set<String> expectedSecondaryTypes, Set<String> expectedMissingSecondaryTypes)

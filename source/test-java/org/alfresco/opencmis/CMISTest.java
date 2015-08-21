@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.cmis.CMISChangeEvent;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISDictionaryService;
 import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
@@ -64,7 +65,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.version.VersionableAspect;
+import org.alfresco.repo.version.VersionableAspectTest;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -168,7 +169,7 @@ public class CMISTest
     private RuleService ruleService;
     private NodeArchiveService nodeArchiveService;
     private DictionaryService dictionaryService;
-    private VersionableAspect versionableAspect;
+    private java.util.Properties globalProperties;
 
     private AlfrescoCmisServiceFactory factory;
 	
@@ -342,14 +343,14 @@ public class CMISTest
         this.nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         this.dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
         
-        this.versionableAspect = (VersionableAspect) ctx.getBean("versionableAspect");
-        this.versionableAspect.setEnableAutoVersionOnUpdateProps(true);
+        this.globalProperties = (java.util.Properties) ctx.getBean("global-properties");
+        this.globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "true");
     }
     
     @After
     public void after()
     {
-        this.versionableAspect.setEnableAutoVersionOnUpdateProps(false);
+        this.globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "false");
     }
     
     /**

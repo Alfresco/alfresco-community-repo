@@ -21,6 +21,7 @@ package org.alfresco.repo.version;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Properties;
 
 import junit.framework.TestCase;
 
@@ -52,6 +53,9 @@ import org.springframework.context.ApplicationContext;
 @Category(OwnJVMTestsCategory.class)
 public class VersionableAspectTest extends TestCase
 {
+    public static final String AUTO_VERSION_KEY = "version.store.enableAutoVersioning"; 
+    public static final String AUTO_VERSION_PROPS_KEY = "version.store.enableAutoVersionOnUpdateProps"; 
+
     private static final String NAME_AND_EXT_DELIMETER = ".";
 
     private static final String NAME_AND_EXT_DELIMETER_REGEXP = "\\" + NAME_AND_EXT_DELIMETER;
@@ -78,7 +82,7 @@ public class VersionableAspectTest extends TestCase
     private TransactionService transactionService = (TransactionService) applicationContext.getBean("transactionService");
     private CheckOutCheckInService checkOutCheckInService = (CheckOutCheckInService) applicationContext.getBean("checkOutCheckInService");
     private AuthenticationService authenticationService = (AuthenticationService) applicationContext.getBean("authenticationService");
-    private VersionableAspect versionableAspect = (VersionableAspect) applicationContext.getBean("versionableAspect");
+    private Properties globalProperties = (Properties) applicationContext.getBean("global-properties");
 
     private NodeRef document;
     private NodeRef parentFolder;
@@ -86,8 +90,7 @@ public class VersionableAspectTest extends TestCase
     @Override
     protected void setUp() throws Exception
     {
-        versionableAspect.setEnableAutoVersionOnUpdateProps(true);
-        
+        globalProperties.setProperty(AUTO_VERSION_PROPS_KEY, "true");
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -139,8 +142,7 @@ public class VersionableAspectTest extends TestCase
     @Override
     protected void tearDown() throws Exception
     {
-        versionableAspect.setEnableAutoVersionOnUpdateProps(false);
-        
+        globalProperties.setProperty(AUTO_VERSION_PROPS_KEY, "false");
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override

@@ -112,12 +112,6 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     
     private Set<QName> excludedOnUpdatePropQNames = Collections.emptySet();
     
-    /** flag indicating whether auto-versioning should be enabled or not */
-    private boolean enableAutoVersioning = true;
-    
-    /** flag indicating whether auto-versioning should be enabled on properties update or not */
-    private boolean enableAutoVersionOnUpdateProps = false;
-    
     /**
      * Set the policy component
      * 
@@ -197,37 +191,10 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
     }
 
     /**
-     * Set whether the aspect-associated behaviour should be enabled or disabled.  This is only used
-     * during {@link #init() initialization}.
-     * 
-     * @param enableAutoVersioning          <tt>true</tt> to enable the aspect behaviour otherwise <tt>false</tt>
-     */
-    public void setEnableAutoVersioning(boolean enableAutoVersioning)
-    {
-        this.enableAutoVersioning = enableAutoVersioning;
-    }
-
-    /**
-     * Set whether the OnUpdatePropertiesPolicy should be binded or not.  This is only used
-     * during {@link #init() initialization}.
-     * 
-     * @param enableAutoVersionOnUpdateProps          <tt>true</tt> to bind OnUpdatePropertiesPolicy sotherwise <tt>false</tt>
-     */
-    public void setEnableAutoVersionOnUpdateProps(boolean enableAutoVersionOnUpdateProps)
-    {
-        this.enableAutoVersionOnUpdateProps = enableAutoVersionOnUpdateProps;
-    }
-
-    /**
      * Initialise the versionable aspect policies
      */
     public void init()
     {
-        if (!enableAutoVersioning)
-        {
-            return;
-        }
-        
         this.policyComponent.bindClassBehaviour(
                 QName.createQName(NamespaceService.ALFRESCO_URI, "beforeAddAspect"),
                 ContentModel.ASPECT_VERSIONABLE,
@@ -467,8 +434,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
             Map<QName, Serializable> before,
             Map<QName, Serializable> after)
     {
-        if (this.enableAutoVersionOnUpdateProps && // MNT-12226 : additional setting to override the behavior for metadata versioning
-            (this.nodeService.exists(nodeRef) == true) &&
+        if ((this.nodeService.exists(nodeRef) == true) &&
             !LockUtils.isLockedAndReadOnly(nodeRef, lockService) &&
             (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true) && 
             (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false))

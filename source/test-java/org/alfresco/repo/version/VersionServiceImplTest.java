@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import junit.framework.AssertionFailedError;
@@ -94,6 +95,7 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     private PersonService personService;
     private VersionableAspect versionableAspect;
     private List<String> excludedOnUpdateProps;
+    private Properties globalProperties;
     
     @Override
     protected void onSetUpInTransaction() throws Exception
@@ -102,7 +104,8 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
         personService = (PersonService) applicationContext.getBean("personService");
         versionableAspect = (VersionableAspect) applicationContext.getBean("versionableAspect");
         excludedOnUpdateProps = versionableAspect.getExcludedOnUpdateProps();
-        versionableAspect.setEnableAutoVersionOnUpdateProps(true);
+        globalProperties = (Properties) applicationContext.getBean("global-properties");
+        globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "true");
     }
 
     @Override
@@ -110,8 +113,8 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     {
         super.onTearDownAfterTransaction();
         versionableAspect.setExcludedOnUpdateProps(excludedOnUpdateProps);
-        versionableAspect.setEnableAutoVersionOnUpdateProps(false);
         versionableAspect.afterDictionaryInit();
+        globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "false");
     }
 
     public void testSetup()

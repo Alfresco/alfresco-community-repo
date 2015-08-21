@@ -555,8 +555,6 @@
                 <value>cm:content</value>
             </list>
         </property>
-        <property name="enableAutoVersioning" value="${version.store.enableAutoVersioning}" />
-        <property name="enableAutoVersionOnUpdateProps" value="${version.store.enableAutoVersionOnUpdateProps}" />
     </bean>
 
     <!--                 -->
@@ -639,6 +637,7 @@
         <property name="tenantService">
             <ref bean="tenantService"/>
         </property>
+        <property name="globalProperties" ref="global-properties"/>
     </bean>
 
     <bean id="dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="resourceBundles">

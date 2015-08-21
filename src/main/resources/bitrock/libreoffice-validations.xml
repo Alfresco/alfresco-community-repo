@@ -63,7 +63,7 @@ Do you want to continue with the installation?</text>
 										<fileTest condition="not_exists" path="/usr/lib/x86_64-linux-gnu/libXrender.so.1"/>
 										<fileTest condition="not_exists" path="/usr/lib/x86_64-linux-gnu/libfontconfig.so.1"/>
 										<fileTest condition="not_exists" path="/usr/lib/x86_64-linux-gnu/libcups.so.2"/>
-										<fileTest condition="not_exists" path="/usr/lib/libGLU.so.1" />
+										<fileTest condition="not_exists" path="/usr/lib/x86_64-linux-gnu/libGLU.so.1" />
 									</ruleList>
 								</ruleGroup>
 							</ruleList>
@@ -82,7 +82,7 @@ Do you want to continue with the installation?</text>
 										<fileTest condition="not_exists" path="/usr/lib64/libXrender.so.1"/>
 										<fileTest condition="not_exists" path="/usr/lib64/libfontconfig.so.1"/>
 										<fileTest condition="not_exists" path="/usr/lib64/libcups.so.2"/>
-										<fileTest condition="not_exists" path="/usr/lib/libGLU.so.1" />
+										<fileTest condition="not_exists" path="/usr/lib64/libGLU.so.1" />
 									</ruleList>
 								</ruleGroup>
 							</ruleList>

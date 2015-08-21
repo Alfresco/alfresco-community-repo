@@ -118,6 +118,8 @@ import org.alfresco.util.GUID;
 import org.alfresco.util.collections.Function;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.xerces.parsers.DOMParser;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -132,6 +134,8 @@ import org.xml.sax.InputSource;
  */
 public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
 {
+	private static Log logger = LogFactory.getLog(ActivitiWorkflowEngine.class);
+	
     // Workflow Component Messages
     private static final String ERR_DEPLOY_WORKFLOW = "activiti.engine.deploy.workflow.error";
     private static final String ERR_IS_WORKFLOW_DEPLOYED = "activiti.engine.is.workflow.deployed.error";
@@ -260,6 +264,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch(ActivitiException ae) 
         {
             String msg = messageService.getMessage(ERR_CANCEL_WORKFLOW);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -298,6 +306,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch(ActivitiException ae) 
         {
             String msg = messageService.getMessage(ERR_DELETE_WORKFLOW);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -350,6 +362,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          catch(Exception ae) 
          {
              String msg = messageService.getMessage(ERR_DEPLOY_WORKFLOW);
+             if(logger.isDebugEnabled())
+             {
+             	logger.debug(msg, ae);
+             }
              throw new WorkflowException(msg, ae);
          }
      }
@@ -375,6 +391,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch(ActivitiException ae) 
         {
             String message = messageService.getMessage(ERR_GET_ACTIVE_WORKFLOW_INSTS, "");
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(message, ae);
+            }
             throw new WorkflowException(message, ae);
         }
     }
@@ -392,6 +412,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch(ActivitiException ae) 
         {
             String message = messageService.getMessage(ERR_GET_COMPLETED_WORKFLOW_INSTS, "");
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(message, ae);
+            }
             throw new WorkflowException(message, ae);
         }
     }
@@ -409,6 +433,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch(ActivitiException ae) 
         {
             String message = messageService.getMessage(ERR_GET_WORKFLOW_INSTS, "");
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(message, ae);
+            }
             throw new WorkflowException(message, ae);
         }
     }
@@ -425,6 +453,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch(ActivitiException ae) 
         {
             String message = messageService.getMessage(ERR_GET_ACTIVE_WORKFLOW_INSTS, workflowDefinitionId);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(message, ae);
+            }
             throw new WorkflowException(message, ae);
         }
     }
@@ -446,6 +478,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -466,6 +502,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_ALL_DEFS_BY_NAME, workflowName);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -482,6 +522,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch(ActivitiException ae) 
         {
             String message = messageService.getMessage(ERR_GET_COMPLETED_WORKFLOW_INSTS, workflowDefinitionId);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(message, ae);
+            }
             throw new WorkflowException(message, ae);
         }
     }
@@ -508,6 +552,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF_BY_ID, workflowDefinitionId);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -530,6 +578,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF_BY_NAME, workflowName);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -566,11 +618,19 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
        catch(IOException ioe)
        {
            String msg = messageService.getMessage(ERR_GET_DEF_IMAGE, workflowDefinitionId);
+           if(logger.isDebugEnabled())
+           {
+               logger.debug(msg, ioe);
+           }
            throw new WorkflowException(msg, ioe);
        }
        catch(ActivitiException ae)
        {
            String msg = messageService.getMessage(ERR_GET_DEF_IMAGE, workflowDefinitionId);
+           if(logger.isDebugEnabled())
+           {
+               logger.debug(msg, ae);
+           }
            throw new WorkflowException(msg, ae);
        }
     }
@@ -592,6 +652,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -731,7 +795,12 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         }
         catch (ActivitiException ae)
         {
+        	
             String msg = messageService.getMessage(ERR_GET_TASKS_FOR_PATH, pathId);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -781,6 +850,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
          catch (ActivitiException ae)
          {
              String msg = messageService.getMessage(ERR_GET_TIMERS, workflowId);
+             if(logger.isDebugEnabled())
+             {
+             	logger.debug(msg, ae);
+             }
              throw new WorkflowException(msg, ae);
          }
     }
@@ -846,6 +919,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_WORKFLOW_DEF);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -869,7 +946,11 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_WORKFLOW_PATHS);
-              throw new WorkflowException(msg, ae);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
+            throw new WorkflowException(msg, ae);
         }
     }
 
@@ -885,6 +966,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch(ActivitiException ae) 
         {
             String message = messageService.getMessage(ERR_GET_WORKFLOW_INSTS, workflowDefinitionId);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(message, ae);
+            }
             throw new WorkflowException(message, ae);
         }
     }
@@ -902,6 +987,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (Exception ae)
         {
             String msg = messageService.getMessage(ERR_IS_WORKFLOW_DEPLOYED);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -1026,6 +1115,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_START_WORKFLOW, workflowDefinitionId);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -1069,6 +1162,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_UNDEPLOY_WORKFLOW, workflowDefinitionId);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -1442,6 +1539,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_ASSIGNED_TASKS);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -1523,6 +1624,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
                 authorityString = StringUtils.join(authorities.iterator(), ", ");
             }
             String msg = messageService.getMessage(ERR_GET_POOLED_TASKS, authorityString);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }
@@ -1589,6 +1694,10 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
         catch (ActivitiException ae)
         {
             String msg = messageService.getMessage(ERR_GET_TASK_BY_ID);
+            if(logger.isDebugEnabled())
+            {
+            	logger.debug(msg, ae);
+            }
             throw new WorkflowException(msg, ae);
         }
     }

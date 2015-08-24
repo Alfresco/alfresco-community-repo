@@ -30,7 +30,6 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.version.VersionableAspect;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -77,7 +76,6 @@ public class WikiRestApiTest extends BaseWebScriptTest
     private SiteService siteService;
     private WikiService wikiService;
     private NodeArchiveService nodeArchiveService;
-    private VersionableAspect versionableAspect;
     
     private static final String USER_ONE = "UserOneSecondToo";
     private static final String USER_TWO = "UserTwoSecondToo";
@@ -119,8 +117,6 @@ public class WikiRestApiTest extends BaseWebScriptTest
         this.wikiService = (WikiService)getServer().getApplicationContext().getBean("WikiService");
         this.internalNodeService = (NodeService)getServer().getApplicationContext().getBean("nodeService");
         this.nodeArchiveService = (NodeArchiveService)getServer().getApplicationContext().getBean("nodeArchiveService");
-        this.versionableAspect = (VersionableAspect)getServer().getApplicationContext().getBean("versionableAspect");
-        this.versionableAspect.setEnableAutoVersionOnUpdateProps(true);
         
         // Authenticate as user
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
@@ -181,7 +177,6 @@ public class WikiRestApiTest extends BaseWebScriptTest
         {
            this.authenticationService.deleteAuthentication(USER_TWO);
         }
-        this.versionableAspect.setEnableAutoVersionOnUpdateProps(false);
     }
     
     private void createUser(String userName, String role)

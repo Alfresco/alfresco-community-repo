@@ -71,6 +71,7 @@ public class InviteSender
 {
     public static final String WF_INSTANCE_ID = "wf_instanceId";
     public static final String WF_PACKAGE = "wf_package";
+    public static final String SITE_LEAVE_HASH = "#leavesite";
     private static final String SITE_DASHBOARD_ENDPOINT_PATTERN =  "/page/site/{0}/dashboard";
 
     private static final List<String> expectedProperties = Arrays.asList(wfVarInviteeUserName,//
@@ -185,12 +186,14 @@ public class InviteSender
     private Map<String, String> buildArgs(Map<String, String> properties, NodeRef inviter, NodeRef invitee)
     {
         String params = buildUrlParamString(properties);
-        String acceptLink = makeLink(properties.get(wfVarServerPath), properties.get(wfVarAcceptUrl), params);
-        String rejectLink = makeLink(properties.get(wfVarServerPath), properties.get(wfVarRejectUrl), params);
+        String acceptLink = makeLink(properties.get(wfVarServerPath), properties.get(wfVarAcceptUrl), params, null);
+        String rejectLink = makeLink(properties.get(wfVarServerPath), properties.get(wfVarRejectUrl), params, null);
         
         String siteDashboardEndpoint = getSiteDashboardEndpoint(properties);
         String siteDashboardLink = makeLink(properties.get(wfVarServerPath), 
-                siteDashboardEndpoint, null);
+                siteDashboardEndpoint, null, null);
+        String siteLeaveLink = makeLink(properties.get(wfVarServerPath), 
+                siteDashboardEndpoint, null, SITE_LEAVE_HASH);
         
         Map<String, String> args = new HashMap<String, String>();
         args.put("inviteePersonRef", invitee.toString());
@@ -202,10 +205,11 @@ public class InviteSender
         args.put("acceptLink", acceptLink);
         args.put("rejectLink", rejectLink);
         args.put("siteDashboardLink", siteDashboardLink);
+        args.put("siteLeaveLink", siteLeaveLink);
         return args;
     }
 
-    protected String makeLink(String location, String endpoint, String queryParams)
+    protected String makeLink(String location, String endpoint, String queryParams, String hashParam)
     {
         location = location.endsWith("/") ? location : location + "/";
         endpoint = endpoint.startsWith("/") ? endpoint.substring(1) : endpoint;
@@ -217,7 +221,15 @@ public class InviteSender
         {
             queryParams = "";
         }
-        return location + endpoint + queryParams;
+        if (hashParam != null)
+        {
+            hashParam = hashParam.startsWith("#") ? hashParam : "#" + hashParam;
+        }
+        else
+        {
+            hashParam = "";
+        }
+        return location + endpoint + queryParams + hashParam;
     }
 
     private String getRoleName(Map<String, String> properties) 

@@ -97,6 +97,7 @@ public class InviteSenderTest extends TestCase
     private static final String acceptUrl = "/accpet";
     private static final String rejectUrl = "/reject";
     private static final String dashboardUrl = "/dashboard";
+    private static final String leaveSiteUrl = "/dashboard#leavesite";
     private static final String role = "Role";
     private static final String password = "password";
     private static final String ticket = "Ticket";
@@ -176,6 +177,9 @@ public class InviteSenderTest extends TestCase
             assertEquals(
                     "test://test/path/page/site/Full Site Name" + dashboardUrl,
                     argsMap.get("siteDashboardLink"));
+            assertEquals(
+                    "test://test/path/page/site/Full Site Name" + leaveSiteUrl,
+                    argsMap.get("siteLeaveLink"));
         }
 
         
@@ -315,15 +319,15 @@ public class InviteSenderTest extends TestCase
     public void testValidServerPath() throws Exception
     {      
         String validPath = "test://test/path/accept?hello";
-        String link = sender.makeLink("test://test/path", "accept", "hello");
+        String link = sender.makeLink("test://test/path", "accept", "hello", null);
         assertEquals(validPath, link);
-        link = sender.makeLink("test://test/path/", "accept", "hello");
+        link = sender.makeLink("test://test/path/", "accept", "hello", null);
         assertEquals(validPath, link);
-        link = sender.makeLink("test://test/path", "/accept", "hello");
+        link = sender.makeLink("test://test/path", "/accept", "hello", null);
         assertEquals(validPath, link);
-        link = sender.makeLink("test://test/path/", "/accept", "hello");
+        link = sender.makeLink("test://test/path/", "/accept", "hello", null);
         assertEquals(validPath, link);
-        link = sender.makeLink("test://test/path", "/accept", "?hello");
+        link = sender.makeLink("test://test/path", "/accept", "?hello", null);
         assertEquals(validPath, link);
     }
     

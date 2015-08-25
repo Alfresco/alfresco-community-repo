@@ -17,6 +17,13 @@
       {
          color: #0072cf;
       }
+      
+      .alf-leave-site
+      {
+        font-size: 0.8em;
+        color: #B3B3B3;
+        margin-top: 2em;
+      }
       --></style>
    </head>
    
@@ -58,6 +65,11 @@
                                              
                                              <p>Sincerely,<br />
                                              Alfresco ${productName!""}</p>
+                                             
+                                             <div class="alf-leave-site">
+                                                <span>Don't want to be a part of this site?</span><br/>
+                                                <a href="${args["siteLeaveLink"]}">Leave site</a>
+                                             </div>
                                           </div>
                                        </td>
                                     </tr>

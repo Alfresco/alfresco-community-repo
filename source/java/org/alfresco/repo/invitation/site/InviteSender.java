@@ -40,6 +40,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.invitation.activiti.SendNominatedInviteDelegate;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
@@ -111,12 +112,25 @@ public class InviteSender
     }
 
     /**
-     * Sends an invitation email.
+     * Implemented for backwards compatibility
      * 
-     * @param properties A Map containing the properties needed to send the
-     *            email.
+     * @param properties
+     * @deprecated
+     * @see {@link #sendMail(String, String, Map)}
      */
     public void sendMail(Map<String, String> properties)
+    {
+        sendMail(SendNominatedInviteDelegate.EMAIL_TEMPLATE_XPATH, SendNominatedInviteDelegate.EMAIL_SUBJECT_KEY, properties);
+    }
+    
+    /**
+     * Sends an invitation email.
+     * 
+     * @param emailTemplateXpath the XPath to the email template in the repository
+     * @param emailSubjectKey the subject of the email
+     * @param properties A Map containing the properties needed to send the email.
+     */
+    public void sendMail(String emailTemplateXpath, String emailSubjectKey, Map<String, String> properties)
     {
         checkProperties(properties);
         ParameterCheck.mandatory("Properties", properties);
@@ -126,9 +140,9 @@ public class InviteSender
         Action mail = actionService.createAction(MailActionExecuter.NAME);
         mail.setParameterValue(MailActionExecuter.PARAM_FROM, getEmail(inviter));
         mail.setParameterValue(MailActionExecuter.PARAM_TO, getEmail(invitee));
-        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "invitation.invitesender.email.subject");
+        mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT, emailSubjectKey);
         mail.setParameterValue(MailActionExecuter.PARAM_SUBJECT_PARAMS, new Object[] {ModelUtil.getProductName(repoAdminService), getSiteName(properties)});
-        mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, getEmailTemplateNodeRef());
+        mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE, getEmailTemplateNodeRef(emailTemplateXpath));
         mail.setParameterValue(MailActionExecuter.PARAM_TEMPLATE_MODEL, 
                 (Serializable)buildMailTextModel(properties, inviter, invitee));
         mail.setParameterValue(MailActionExecuter.PARAM_IGNORE_SEND_FAILURE, true);
@@ -214,10 +228,10 @@ public class InviteSender
         return new NodeRef(packageRef);
     }
 
-    private NodeRef getEmailTemplateNodeRef()
+    private NodeRef getEmailTemplateNodeRef(String emailTemplateXPath)
     {
         List<NodeRef> nodeRefs = searchService.selectNodes(repository.getRootHome(), 
-                    "app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email.html.ftl", null, 
+                    emailTemplateXPath, null, 
                     this.namespaceService, false);
         
         if (nodeRefs.size() == 1) 

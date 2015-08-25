@@ -33,12 +33,16 @@ import org.alfresco.repo.workflow.activiti.ActivitiConstants;
  */
 public class SendNominatedInviteDelegate extends AbstractInvitationDelegate
 {
+    public static final String EMAIL_TEMPLATE_XPATH = 
+            "app:company_home/app:dictionary/app:email_templates/cm:invite/cm:invite-email.html.ftl";
+    public static final String EMAIL_SUBJECT_KEY = 
+            "invitation.invitesender.email.subject";
 
     @Override
     public void execute(DelegateExecution execution) throws Exception
     {
         String invitationId = ActivitiConstants.ENGINE_ID + "$" + execution.getProcessInstanceId();
         Map<String, Object> variables = execution.getVariables();
-        inviteHelper.sendNominatedInvitation(invitationId, variables);
+        inviteHelper.sendNominatedInvitation(invitationId, EMAIL_TEMPLATE_XPATH, EMAIL_SUBJECT_KEY, variables);
     }
 }

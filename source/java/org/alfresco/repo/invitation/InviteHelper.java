@@ -42,6 +42,7 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.invitation.activiti.SendNominatedInviteDelegate;
 import org.alfresco.repo.invitation.site.InviteInfo;
 import org.alfresco.repo.invitation.site.InviteSender;
 import org.alfresco.repo.jscript.ScriptNode;
@@ -333,7 +334,30 @@ public class InviteHelper implements InitializingBean
         deleteAuthenticationIfUnused(inviteeUserName, currentInviteId);
     }
     
-    public  void sendNominatedInvitation(String inviteId, Map<String, Object> executionVariables)
+    /**
+     * Implemented for backwards compatibility
+     * 
+     * @param inviteId
+     * @param executionVariables
+     * @deprecated
+     * @see {@link #sendNominatedInvitation(String, String, String, Map)}
+     */
+    public void sendNominatedInvitation(String inviteId, Map<String, Object> executionVariables)
+    {
+        sendNominatedInvitation(
+                inviteId, SendNominatedInviteDelegate.EMAIL_TEMPLATE_XPATH, SendNominatedInviteDelegate.EMAIL_SUBJECT_KEY, executionVariables);
+    }
+    
+    /**
+     * Sends the invite email using the given template, subject localization key, and variables.
+     * 
+     * @param inviteId
+     * @param emailTemplateXpath the XPath to the email template in the repository
+     * @param emailSubjectKey the subject of the email
+     * @param executionVariables the variables used to populate the email
+     */
+    public void sendNominatedInvitation(String inviteId, String emailTemplateXpath, 
+            String emailSubjectKey, Map<String, Object> executionVariables)
     {
         if (invitationService.isSendEmails())
         {
@@ -346,7 +370,7 @@ public class InviteHelper implements InitializingBean
             
             properties.put(InviteSender.WF_INSTANCE_ID, inviteId);
             
-            inviteSender.sendMail(properties);
+            inviteSender.sendMail(emailTemplateXpath, emailSubjectKey, properties);
         }
     }
     

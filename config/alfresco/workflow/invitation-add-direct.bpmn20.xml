@@ -11,7 +11,7 @@
       <!-- TODO: SHA-944: Change Order of Email Send to Be After Adding Site -->
       <sequenceFlow id="flow1" sourceRef="start" targetRef="sendInvite" />
       
-      <serviceTask id="sendInvite" name="Send Invite" activiti:delegateExpression="${SendNominatedInviteDelegate}" />
+      <serviceTask id="sendInvite" name="Send Invite" activiti:delegateExpression="${SendNominatedInviteAddDirectDelegate}" />
       
       <sequenceFlow id="flow2" sourceRef="sendInvite" targetRef="accepted" />
       

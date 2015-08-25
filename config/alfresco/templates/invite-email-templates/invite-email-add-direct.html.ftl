@@ -47,7 +47,7 @@
                                                 </td>
                                                 <td>
                                                    <div style="font-size: 22px; padding-bottom: 4px;">
-                                                      You have been added to the '${args["siteName"]}' site
+                                                      ${message("templates.invite-email-add-direct.html.header", args["siteName"])}
                                                    </div>
                                                    <div style="font-size: 13px;">
                                                       ${date?datetime?string.full}
@@ -56,19 +56,16 @@
                                              </tr>
                                           </table>
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
-                                             <p>Hi ${inviteePerson.properties["cm:firstName"]!""},</p>
+                                             <p>${message("templates.invite-email-add-direct.html.salutation", inviteePerson.properties["cm:firstName"]!"")}</p>
       
-                                             <p>${inviterPerson.properties["cm:firstName"]!""} ${inviterPerson.properties["cm:lastName"]!""} 
-                                             has added you to the <b>${args["siteName"]}</b> site with the role of ${args["inviteeSiteRole"]}.</p>
+                                             <p>${message("templates.invite-email-add-direct.html.detail", inviterPerson.properties["cm:firstName"]!"", inviterPerson.properties["cm:lastName"]!"", args["siteName"], args["inviteeSiteRole"])}</p>
                                              
-                                             <p><a href="${args["siteDashboardLink"]}">Go to ${args["siteName"]}</a></p>
+                                             <p><a href="${args["siteDashboardLink"]}">${message("templates.invite-email-add-direct.html.navigate", args["siteName"])}</a></p>
                                              
-                                             <p>Sincerely,<br />
-                                             Alfresco ${productName!""}</p>
+                                             <p>${message("templates.invite-email-add-direct.html.closing", productName!"")}</p>
                                              
                                              <div class="alf-leave-site">
-                                                <span>Don't want to be a part of this site?</span><br/>
-                                                <a href="${args["siteLeaveLink"]}">Leave site</a>
+                                                ${message("templates.invite-email-add-direct.html.leave", args["siteLeaveLink"])}
                                              </div>
                                           </div>
                                        </td>
@@ -83,7 +80,7 @@
                            </tr>
                            <tr>
                               <td style="padding: 0px 30px; font-size: 13px;">
-                                 To find out more about Alfresco ${productName!""} visit <a href="http://www.alfresco.com">http://www.alfresco.com</a>
+                                 ${message("templates.invite-email-add-direct.html.alfresco_info", productName!"")}
                               </td>
                            </tr>
                            <tr>

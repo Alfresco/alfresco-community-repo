@@ -1,3 +1,4 @@
+
 <!-- POSTGRESINITDB
 Componentname: PostgreSQL_initdb
 
@@ -59,7 +60,9 @@ System variables provided by this component:
         </passwordParameter>
         <stringParameter>
             <name>database_encoding</name>
-            <!--title>Database Configuration</title><explanation>Please, select the encoding type.</explanation><description>Encoding</description-->
+            <!--title>Database Configuration</title>
+            <explanation>Please, select the encoding type.</explanation>
+            <description>Encoding</description-->
             <ask>0</ask>
             <value/>
             <default>UTF-8</default>
@@ -76,21 +79,18 @@ System variables provided by this component:
         <actionGroup>
             <actionList>
                 <runProgram>
-                    <runAs>postgres</runAs>
                     <progressText>Creating user and database</progressText>
-                    <program>${postgres_root_directory}/bin/pg_ctl</program>
-                    <programArguments>start</programArguments>
+                    <program>su</program>
+                    <programArguments>postgres -s /bin/sh -c "\"${postgres_root_directory}/bin/pg_ctl\" start"</programArguments>
                     <ruleList>
-                        <compareText logic="equals" text="${installer_root_install}" value="1"/>
-                        <compareText logic="equals" text="${postgres_installation_type}" value="bundled"/>
+                        <isTrue value="${installer_is_root_install}"/>
                     </ruleList>
                 </runProgram>
                 <runProgram>
                     <program>${postgres_root_directory}/bin/pg_ctl</program>
                     <programArguments>start</programArguments>
                     <ruleList>
-                        <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
-                        <compareText logic="equals" text="${postgres_installation_type}" value="bundled"/>
+                        <isFalse value="${installer_is_root_install}"/>
                     </ruleList>
                 </runProgram>
                 <wait>
@@ -101,7 +101,9 @@ System variables provided by this component:
                 <platformTest>
                     <type>unix</type>
                 </platformTest>
+                <compareText text="${postgres_installation_type}" logic="equals" value="bundled"/>
             </ruleList>
         </actionGroup>
     </postInstallationActionList>
 </component>
+

@@ -6,11 +6,11 @@
     <show>0</show>
     <startMenuShortcutList>
         <startMenuLinkShortcut>
-            <comment>Alfresco Website</comment>
-            <name>Alfresco Website</name>
-            <url>http://www.alfresco.com</url>
-            <windowsIcon/>
-        </startMenuLinkShortcut>
+        <comment>Alfresco Website</comment>
+        <name>Alfresco Website</name>
+        <url>http://www.alfresco.com</url>
+        <windowsIcon></windowsIcon>
+    </startMenuLinkShortcut>
         <startMenuLinkShortcut>
             <comment>Alfresco Share</comment>
             <name>Alfresco Share</name>
@@ -77,3 +77,4 @@
         </folder>
     </folderList>
 </component>
+

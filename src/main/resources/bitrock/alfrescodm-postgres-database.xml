@@ -9,21 +9,22 @@
     <postInstallationActionList>
         <actionGroup>
             <actionList>
-                <waitForPort port="${database_port}" progressText="Waiting PostgreSQL to start." timeout="30000"/>
-                <runProgram>
+		<waitForPort port="${database_port}" timeout="30000" progressText="Waiting PostgreSQL to start."/>
+		<runProgram>
                     <program>${database_binary_directory}/createuser</program>
                     <programArguments>-p ${database_port} -U postgres --no-superuser --no-createdb --no-createrole ${alfresco_database_user}</programArguments>
-                </runProgram>
-                <runProgram>
+		</runProgram>
+		<runProgram>
                     <program>${database_binary_directory}/createdb</program>
-                    <programArguments>-p ${database_port} -U postgres -O ${alfresco_database_user} ${alfresco_database_name}</programArguments>
-                </runProgram>
-                <runProgram>
+		    <programArguments>-p ${database_port} -U postgres -O ${alfresco_database_user} ${alfresco_database_name}</programArguments>
+		</runProgram>
+		<runProgram>
                     <program>${postgres_binary_directory}/psql</program>
-                    <programArguments>-U postgres -p ${postgres_port} -h ${postgres_hostname} -c &quot;ALTER USER ${alfresco_database_user} with password '${alfresco_database_password}'&quot;</programArguments>
-                </runProgram>
+                    <programArguments>-U postgres -p ${postgres_port} -h ${postgres_hostname} -c "ALTER USER ${alfresco_database_user} with password '${alfresco_database_password}'"</programArguments>
+		</runProgram>
             </actionList>
         </actionGroup>
+
         <substitute>
             <files>${application_server_directory}/shared/classes/alfresco/extension/custom-hibernate-dialect.properties</files>
             <type>exact</type>
@@ -36,3 +37,4 @@
         </substitute>
     </postInstallationActionList>
 </component>
+

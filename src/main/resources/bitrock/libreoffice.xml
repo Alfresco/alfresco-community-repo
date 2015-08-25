@@ -12,7 +12,7 @@
     <initializationActionList/>
     <parameterList>
         <booleanParameter ask="0" name="libreofficecomponent_component_enabled" value="1"/>
-        <booleanParameter ask="0" name="libreoffice_show_ports" value="0"/>
+    <booleanParameter name="libreoffice_show_ports" value="0" ask="0" />
         <directoryParameter>
             <ask>0</ask>
             <!--description>LibreOffice installation directory</description-->
@@ -30,50 +30,45 @@
             <ask>1</ask>
             <width>10</width>
             <validationActionList>
-                <throwError>
-                    <text>It seems you do not have enough permissions to bind to the port or the port is already taken by another application. Please select another one.</text>
-                    <ruleList>
-                        <portTest condition="cannot_bind" port="${libreoffice_port}"/>
-                    </ruleList>
-                </throwError>
+                <baseCheckPort serverName="LibreOffice" serverPort="${libreoffice_port}"/>
             </validationActionList>
             <ruleEvaluationLogic>or</ruleEvaluationLogic>
             <ruleList>
-                <isTrue value="${libreoffice_show_ports}"/>
+                <isTrue value="${libreoffice_show_ports}" />
                 <portTest condition="cannot_bind" port="${libreoffice_port}"/>
             </ruleList>
         </stringParameter>
-        <stringParameter>
-            <name>libreofficeservice_startup</name>
-            <ask>0</ask>
-            <default>auto</default>
-            <value>auto</value>
-            <cliOptionShow>0</cliOptionShow>
-        </stringParameter>
-        <booleanParameter>
-            <name>libreofficeservice_notstart</name>
-            <ask>0</ask>
-            <default>0</default>
-            <value>0</value>
-            <cliOptionShow>0</cliOptionShow>
-        </booleanParameter>
-        <booleanParameter ask="0" default="1" name="libreoffice_installed_as_service"/>
+    <stringParameter>
+        <name>libreofficeservice_startup</name>
+        <ask>0</ask>
+        <default>auto</default>
+        <value>auto</value>
+        <cliOptionShow>0</cliOptionShow>
+    </stringParameter>
+    <booleanParameter>
+        <name>libreofficeservice_notstart</name>
+        <ask>0</ask>
+        <default>0</default>
+        <value>0</value>
+        <cliOptionShow>0</cliOptionShow>
+    </booleanParameter>
+        <booleanParameter name="libreoffice_installed_as_service" ask="0" default="1" />
     </parameterList>
     <readyToInstallActionList>
         <getUniqueWindowsServiceName>
-            <serviceName>${product_shortname}LibreOffice</serviceName>
+        <serviceName>${product_shortname}LibreOffice</serviceName>
             <displayName>${product_fullname} LibreOffice Service</displayName>
             <selectedServiceNameVariable>LibreOfficeUniqueServiceName</selectedServiceNameVariable>
             <selectedDisplayNameVariable>LibreOfficeUniqueDisplayName</selectedDisplayNameVariable>
             <ruleList>
-                <platformTest type="windows"/>
+                <platformTest type="windows" />
             </ruleList>
         </getUniqueWindowsServiceName>
         <setInstallerVariable name="libreoffice_execute_abort_action_list" value="1"/>
         <setInstallerVariable name="libreoffice_directory" value="${installdir}/libreoffice"/>
         <setInstallerVariable name="libreoffice_directory" value="${installdir}/libreoffice.app">
             <ruleList>
-                <platformTest type="osx"/>
+                <platformTest type="osx" />
             </ruleList>
         </setInstallerVariable>
     </readyToInstallActionList>
@@ -84,15 +79,15 @@
             <name>libreoffice</name>
             <platforms>all</platforms>
             <distributionFileList>
-                <distributionDirectory allowWildcards="1">
+                <distributionDirectory allowWildcards="1" >
                     <origin>${libreoffice_distribution_folder}/*</origin>
                 </distributionDirectory>
             </distributionFileList>
         </folder>
     </folderList>
     <installationAbortedActionList>
-        <!-- WINDOWS -->
-        <actionGroup>
+<!-- WINDOWS -->
+<actionGroup>
             <actionList>
                 <runProgram>
                     <abortOnError>0</abortOnError>
@@ -107,13 +102,14 @@
                 <platformTest type="windows"/>
             </ruleList>
         </actionGroup>
-        <!-- LINUX -->
-        <actionGroup>
+
+<!-- LINUX -->
+<actionGroup>
             <actionList>
                 <deleteFile path="${installdir}/libreoffice"/>
             </actionList>
             <ruleList>
-                <compareText logic="equals" text="${libreoffice_execute_abort_action_list}" value="1"/>
+                <compareText text="${libreoffice_execute_abort_action_list}" value="1" logic="equals"/>
                 <platformTest type="linux"/>
             </ruleList>
         </actionGroup>
@@ -121,19 +117,19 @@
     <postInstallationActionList>
         <actionGroup>
             <actionList>
-                <substitute>
-                    <files>${installdir}/${ctlscript_unix}</files>
-                    <type>exact</type>
-                    <substitutionList>
-                        <substitution>
-                            <pattern>$INSTALLDIR/libreoffice/</pattern>
-                            <value>$INSTALLDIR/libreoffice.app/</value>
-                        </substitution>
-                    </substitutionList>
-                    <ruleList>
-                        <platformTest type="osx"/>
-                    </ruleList>
-                </substitute>
+        <substitute>
+            <files>${installdir}/${ctlscript_unix}</files>
+            <type>exact</type>
+            <substitutionList>
+            <substitution>
+                <pattern>$INSTALLDIR/libreoffice/</pattern>
+                <value>$INSTALLDIR/libreoffice.app/</value>
+            </substitution>
+            </substitutionList>
+            <ruleList>
+            <platformTest type="osx" />
+            </ruleList>
+        </substitute>
                 <substitute>
                     <!--files>${libreoffice_directory}/Contents/MacOS/bootstraprc;${libreoffice_directory}/program/bootstraprc;${libreoffice_directory}/Contents/MacOS/soffice.bin;${libreoffice_directory}/program/soffice.bin</files-->
                     <files>${libreoffice_directory}/Contents/MacOS/bootstraprc;${libreoffice_directory}/program/bootstraprc</files>
@@ -151,7 +147,7 @@
                             <pattern>@@BITROCK_LO_ROOTDIR@@</pattern>
                             <value>${libreoffice_directory.unix}</value>
                             <ruleList>
-                                <fileTest condition="exists" path="${libreoffice_directory}/program/.soffice.bin"/>
+                                <fileTest path="${libreoffice_directory}/program/.soffice.bin" condition="exists" />
                             </ruleList>
                         </substitution>
                     </substitutionList>
@@ -167,7 +163,10 @@
                             <pattern>@@BITROCK_LO_PORT@@</pattern>
                             <value>${libreoffice_port}</value>
                         </substitution>
-                        <!--substitution><pattern>@@BITROCK_XVFB_ROOTDIR@@</pattern><value>${libreoffice_xvfb_directory}</value></substitution-->
+                        <!--substitution>
+                            <pattern>@@BITROCK_XVFB_ROOTDIR@@</pattern>
+                            <value>${libreoffice_xvfb_directory}</value>
+                        </substitution-->
                     </substitutionList>
                 </substitute>
                 <changePermissions>
@@ -182,25 +181,29 @@
                     <progressText>Starting LibreOffice...</progressText>
                     <program>${libreoffice_directory}/scripts/ctl.sh</program>
                     <programArguments>start</programArguments>
-                    <ruleList>
-                        <isFalse value="${libreofficeservice_notstart}"/>
-                    </ruleList>
+            <ruleList>
+            <isFalse value="${libreofficeservice_notstart}" />          
+            </ruleList>
                 </runProgram>
                 <runProgram abortOnError="0" showMessageOnError="0">
                     <progressText>Starting LibreOffice...</progressText>
                     <program>${libreoffice_directory}/scripts/ctl.sh</program>
                     <programArguments>start</programArguments>
-                    <ruleList>
-                        <isFalse value="${libreofficeservice_notstart}"/>
-                    </ruleList>
+            <ruleList>
+            <isFalse value="${libreofficeservice_notstart}" />          
+            </ruleList>
                 </runProgram>
+                <changePermissions>
+                    <permissions>755</permissions>
+                    <files>${libreoffice_directory}</files>
+                </changePermissions>
                 <actionGroup>
                     <actionList>
-                        <renameFile destination="${libreoffice_directory}/scripts/libreoffice_ctl.sh" origin="${libreoffice_directory}/scripts/ctl.sh"/>
-                        <addFilesToUninstaller files="${libreoffice_directory}/scripts/libreoffice_ctl.sh"/>
+                        <renameFile origin="${libreoffice_directory}/scripts/ctl.sh" destination="${libreoffice_directory}/scripts/libreoffice_ctl.sh"/>
+                        <addFilesToUninstaller files="${libreoffice_directory}/scripts/libreoffice_ctl.sh" />
                     </actionList>
                     <ruleList>
-                        <isFalse value="${libreoffice_installed_as_service}"/>
+                         <isFalse value="${libreoffice_installed_as_service}" />
                     </ruleList>
                 </actionGroup>
             </actionList>
@@ -215,9 +218,6 @@
                     <substitutionList>
                         <substitution pattern="UserInstallation *= *[^\n]*" value="UserInstallation=${libreoffice_directory.dos.unix}/settings"/>
                     </substitutionList>
-                    <ruleList>
-                        <platformTest type="windows"/>
-                    </ruleList>
                 </substitute>
                 <substitute>
                     <files>${libreoffice_directory}/scripts/servicerun.bat;${libreoffice_directory}/scripts/serviceinstall.bat</files>
@@ -236,56 +236,55 @@
                         </substitution>
                     </substitutionList>
                 </substitute>
-                <actionGroup>
-                    <actionList>
-                        <runProgram>
-                            <progressText>Installing LibreOffice as a Windows service with name ${LibreOfficeUniqueServiceName}</progressText>
-                            <program>${libreoffice_directory}\scripts\serviceinstall.bat</program>
-                            <programArguments>INSTALL</programArguments>
-                        </runProgram>
-                        <waitForPort port="${libreofficeservice_port}" timeout="15000"/>
-                    </actionList>
-                    <ruleList>
-                        <isFalse value="${libreofficeservice_notstart}"/>
-                        <isTrue value="${libreoffice_installed_as_service}"/>
-                    </ruleList>
-                </actionGroup>
-                <actionGroup>
-                    <actionList>
-                        <runProgram>
-                            <progressText>Installing LibreOffice as a Windows service with name ${LibreOfficeUniqueServiceName}</progressText>
-                            <program>${libreoffice_directory}\scripts\serviceinstall.bat</program>
-                            <programArguments>INSTALL STOP</programArguments>
-                        </runProgram>
-                    </actionList>
-                    <ruleList>
-                        <isTrue value="${libreofficeservice_notstart}"/>
-                        <isTrue value="${libreoffice_installed_as_service}"/>
-                    </ruleList>
-                </actionGroup>
-                <runProgram>
-                    <program>sc</program>
-                    <programArguments>config ${LibreOfficeUniqueServiceName} start= ${libreofficeservice_startup}</programArguments>
-                    <ruleList>
-                        <platformTest type="windows"/>
-                        <compareText logic="does_not_equal" text="${libreofficeservice_startup}" value="auto"/>
-                        <isTrue value="${libreoffice_installed_as_service}"/>
-                    </ruleList>
-                </runProgram>
-                <actionGroup>
-                    <actionList>
-                        <renameFile destination="${libreoffice_directory}/scripts/libreoffice_servicerun.bat" origin="${libreoffice_directory}/scripts/servicerun.bat"/>
-                        <addFilesToUninstaller files="${libreoffice_directory}/scripts/libreoffice_servicerun.bat"/>
-                        <renameFile destination="${libreoffice_directory}/scripts/libreoffice_serviceinstall.bat" origin="${libreoffice_directory}/scripts/serviceinstall.bat"/>
-                        <addFilesToUninstaller files="${libreoffice_directory}/scripts/libreoffice_serviceinstall.bat"/>
-                    </actionList>
-                    <ruleList>
-                        <isFalse value="${libreoffice_installed_as_service}"/>
-                    </ruleList>
-                </actionGroup>
+        <actionGroup>
+            <actionList>
+            <runProgram>
+                <progressText>Installing LibreOffice as a Windows service with name ${LibreOfficeUniqueServiceName}</progressText>
+                <program>${libreoffice_directory}\scripts\serviceinstall.bat</program>
+                <programArguments>INSTALL</programArguments>
+            </runProgram>
+            <waitForPort port="${libreofficeservice_port}" timeout="15000"/>
             </actionList>
             <ruleList>
-                <compareText logic="equals" text="${platform_name}" value="windows"/>
+            <isFalse value="${libreofficeservice_notstart}" />
+                        <isTrue value="${libreoffice_installed_as_service}" />
+            </ruleList>
+        </actionGroup>
+        <actionGroup>
+            <actionList>
+            <runProgram>
+                <progressText>Installing LibreOffice as a Windows service with name ${LibreOfficeUniqueServiceName}</progressText>
+                <program>${libreoffice_directory}\scripts\serviceinstall.bat</program>
+                <programArguments>INSTALL STOP</programArguments>
+            </runProgram>
+            </actionList>
+            <ruleList>
+            <isTrue value="${libreofficeservice_notstart}" />
+                        <isTrue value="${libreoffice_installed_as_service}" />
+            </ruleList>
+        </actionGroup>
+        <runProgram>
+            <program>sc</program>
+            <programArguments>config ${LibreOfficeUniqueServiceName} start= ${libreofficeservice_startup}</programArguments>
+            <ruleList>
+            <compareText text="${libreofficeservice_startup}" logic="does_not_equal" value="auto" />
+                        <isTrue value="${libreoffice_installed_as_service}" />
+            </ruleList>
+        </runProgram>
+                <actionGroup>
+                    <actionList>
+                        <renameFile origin="${libreoffice_directory}/scripts/servicerun.bat" destination="${libreoffice_directory}/scripts/libreoffice_servicerun.bat"/>
+                        <addFilesToUninstaller files="${libreoffice_directory}/scripts/libreoffice_servicerun.bat" />
+                        <renameFile origin="${libreoffice_directory}/scripts/serviceinstall.bat" destination="${libreoffice_directory}/scripts/libreoffice_serviceinstall.bat"/>
+                        <addFilesToUninstaller files="${libreoffice_directory}/scripts/libreoffice_serviceinstall.bat" />
+                    </actionList>
+                    <ruleList>
+                         <isFalse value="${libreoffice_installed_as_service}" />
+                    </ruleList>
+                </actionGroup>
+        </actionList>
+            <ruleList>
+                <platformTest type="windows"/>
             </ruleList>
         </actionGroup>
     </postInstallationActionList>
@@ -293,3 +292,4 @@
         <deleteFile path="${libreoffice_directory}"/>
     </postUninstallationActionList>
 </component>
+

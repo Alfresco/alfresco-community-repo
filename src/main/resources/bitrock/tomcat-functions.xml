@@ -137,11 +137,11 @@
                                         <setInstallerVariable name="tomcatVersionId" value="${tomcatFolderName}" />
                                         <!--lib dir common to RedHat and Ubuntu-->
                                         <setInstallerVariableFromRegEx> <!--A way to distinguish between different installations-->
-					    <name>${tomcatVersionId}_version</name>
-					    <text>${tomcatFolderName}</text>
-					    <pattern>tomcat(\d*)</pattern>
-					    <substitution>\1</substitution>
-					</setInstallerVariableFromRegEx>
+                        <name>${tomcatVersionId}_version</name>
+                        <text>${tomcatFolderName}</text>
+                        <pattern>tomcat(\d*)</pattern>
+                        <substitution>\1</substitution>
+                    </setInstallerVariableFromRegEx>
                                         <actionGroup>
                                             <actionList>
                                             <setInstallerVariable name="${tomcatVersionId}_home_directory" value="/usr/share/${tomcatFolderName}"/>
@@ -503,7 +503,7 @@ ${tomcatUser}" >
                         <runProgram>
                             <abortOnError>0</abortOnError>
                             <showMessageOnError>0</showMessageOnError>
-                            <program>cmd.exe</program>			
+                            <program>cmd.exe</program>          
                             <programArguments>/C start /MIN "" "${installdir}/apache-tomcat/scripts/servicerun.bat" START &amp;</programArguments>
                             <ruleList>
                                 <platformTest type="windows"/>
@@ -527,7 +527,7 @@ ${tomcatUser}" >
                         <runProgram>
                             <abortOnError>0</abortOnError>
                             <showMessageOnError>0</showMessageOnError>
-                            <program>cmd.exe</program>			
+                            <program>cmd.exe</program>          
                             <programArguments>/C start /MIN "" "${installdir}/apache-tomcat/scripts/servicerun.bat" STOP &amp;</programArguments>
                             <ruleList>
                                 <platformTest type="windows"/>
@@ -554,13 +554,13 @@ ${tomcatUser}" >
                                 <runProgram>
                                     <abortOnError>0</abortOnError>
                                     <showMessageOnError>0</showMessageOnError>
-                                    <program>cmd.exe</program>			
+                                    <program>cmd.exe</program>          
                                     <programArguments>/C start /MIN "" "${installdir}/apache-tomcat/scripts/servicerun.bat" STOP</programArguments>
                                 </runProgram>
                                 <runProgram>
                                     <abortOnError>0</abortOnError>
                                     <showMessageOnError>0</showMessageOnError>
-                                    <program>cmd.exe</program>			
+                                    <program>cmd.exe</program>          
                                     <programArguments>/C start /MIN "" "${installdir}/apache-tomcat/scripts/servicerun.bat" START &amp;</programArguments>
                                 </runProgram>
                             </actionList>
@@ -583,6 +583,137 @@ ${tomcatUser}" >
                 </actionGroup>
             </actionList>
         </actionDefinition>
+        <actionDefinition name="waitForTomcatLog">
+            <parameterList>
+                <stringParameter name="timeInterval" default="10000" allowEmptyValue="0"/>
+                <stringParameter name="timeout" default="600000" allowEmptyValue="0"/>
+                <stringParameter name="text" default="Server startup in [0-9]+ ms[\s\n]*$" allowEmptyValue="0"/>
+                <stringParameter name="pattern" default="^.*\n.*\|.*Deploying\s.*[/\\](.*?)\[.*\n$" allowEmptyValue="0"/>
+                <stringParameter name="finishPattern" default=""/>
+            </parameterList>
+            <actionList>
+                <showProgressDialog title="Starting application. It will take several minutes...">
+                    <actionList>
+                        <actionGroup>
+                            <actionList>
+                                <writeFile>
+                                    <path>${installdir}/apache-tomcat/logs/getdate.bat</path>
+                                    <text>@echo off
+set datetimef=%date:~-4%-%date:~-10,2%-%date:~-7,2%
+echo %datetimef% > date.txt
+</text>
+                                </writeFile>
+                                <runProgram>
+                                    <program>${installdir}/apache-tomcat/logs/getdate.bat</program>
+                                </runProgram>
+                                <deleteFile path="${installdir}/apache-tomcat/logs/getdate.bat" />
 
+                                <readFile path="${installdir}/apache-tomcat/logs/date.txt" name="date"/>
+                                <deleteFile path="${installdir}/apache-tomcat/logs/date.txt" />
+
+                                <stringModify text="${date}" variable="date"/>
+
+                                <setInstallerVariable>
+                                    <name>files</name>
+                                    <value>${installdir.unix}/apache-tomcat/logs/catalina.${date}.log</value>
+                                </setInstallerVariable>
+                            </actionList>
+                            <ruleList>
+                                <platformTest type="windows"/>
+                            </ruleList>
+                        </actionGroup>
+                        <actionGroup>
+                            <actionList>
+                                <actionGroup>
+                                    <actionList>
+                                        <setInstallerVariable>
+                                            <name>files</name>
+                                            <value>${installdir}/apache-tomcat/logs/catalina-daemon.out</value>
+                                        </setInstallerVariable>
+                                    </actionList>
+                                    <ruleList>
+                                        <compareText text="${installer_root_install}" logic="equals" value="1"/>
+                                    </ruleList>
+                                </actionGroup>
+                                <actionGroup>
+                                    <actionList>
+                                        <setInstallerVariable>
+                                            <name>files</name>
+                                            <value>${installdir}/apache-tomcat/logs/catalina.out</value>
+                                        </setInstallerVariable>
+                                    </actionList>
+                                    <ruleList>
+                                        <compareText text="${installer_root_install}" logic="equals" value="0"/>
+                                    </ruleList>
+                                </actionGroup>
+                            </actionList>
+                            <ruleList>
+                                <platformTest type="unix"/>
+                            </ruleList>
+                        </actionGroup>
+                        <setInstallerVariable name="log_file" value=""/>
+                        <setInstallerVariable name="last_line_log_file" value="Please wait..."/>
+                        <setInstallerVariable name="tomcat_is_finishing" value="0"/>
+                        <setInstallerVariable name="time" value="0"/>
+                        <!-- make sure the finishPattern is not in the last line -->
+                        <wait ms="${timeInterval}"/>
+                        <while>
+                            <actionList>
+                                <readFile name="log_file" path="${files}"/>
+                                <actionGroup>
+                                    <actionList>
+                                        <setInstallerVariable name="tomcat_is_finishing" value="1"/>
+                                        <setInstallerVariable name="last_line_log_file" value="Finishing..."/>
+                                    </actionList>
+                                    <ruleList>
+                                        <compareText text="${finishPattern}" logic="does_not_equal" value=""/>
+                                        <isFalse value="${tomcat_is_finishing}"/>
+                                        <regExMatch>
+                                            <text>${log_file}</text>
+                                            <logic>matches</logic>
+                                            <pattern>${finishPattern}</pattern>
+                                        </regExMatch>
+                                    </ruleList>
+                                </actionGroup>
+                                <setInstallerVariableFromRegEx name="last_line_log_file" pattern="${pattern}" substitution="\1">
+                                    <text>${log_file}</text>
+                                    <ruleList>
+                                        <isFalse value="${tomcat_is_finishing}"/>
+                                        <regExMatch>
+                                            <text>${log_file}</text>
+                                            <logic>matches</logic>
+                                            <pattern>${pattern}</pattern>
+                                        </regExMatch>
+                                    </ruleList>
+                                </setInstallerVariableFromRegEx>
+                                <wait ms="${timeInterval}" progressText="Deploying: ${last_line_log_file}"/>
+                                <mathExpression>
+                                    <text>${time}+${timeInterval}</text>
+                                    <variable>time</variable>
+                                </mathExpression>
+                            </actionList>
+                            <conditionRuleList>
+                                <compareValues logic="less" value1="${time}" value2="${timeout}"/>
+                                <regExMatch>
+                                    <text>${log_file}</text>
+                                    <logic>does_not_match</logic>
+                                    <pattern>${text}</pattern>
+                                </regExMatch>
+                            </conditionRuleList>
+                        </while>
+                        <throwError>
+                            <text>There was an error while installing the application: the deployment took more than ${timeout} ms.</text>
+                            <ruleList>
+                                <regExMatch>
+                                    <text>${log_file}</text>
+                                    <logic>does_not_match</logic>
+                                    <pattern>${text}</pattern>
+                                </regExMatch>
+                            </ruleList>
+                        </throwError>
+                    </actionList>
+                </showProgressDialog>
+            </actionList>
+        </actionDefinition>
     </functionDefinitionList>
  </component>

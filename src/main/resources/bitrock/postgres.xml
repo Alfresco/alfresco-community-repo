@@ -399,14 +399,16 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                 <compareText logic="does_not_contain" nocase="1" text="${LD_LIBRARY_PATH}" value="${POSTGRES_LD_LIBRARY_PATH}"/>
             </ruleList>
         </setInstallerVariable>
-        <setInstallerVariable name="POSTGRES_DYLD_LIBRARY_PATH" value="${postgres_root_directory}/lib"/>
-        <setInstallerVariable name="DYLD_FALLBACK_LIBRARY_PATH" value="${POSTGRES_DYLD_LIBRARY_PATH}:${DYLD_FALLBACK_LIBRARY_PATH}">
+        <setInstallerVariable name="POSTGRES_DYLD_FALLBACK_LIBRARY_PATH" value="${postgres_root_directory}/lib"/>
+        <setInstallerVariable name="DYLD_FALLBACK_LIBRARY_PATH" value="${POSTGRES_DYLD_FALLBACK_LIBRARY_PATH}:${DYLD_FALLBACK_LIBRARY_PATH}">
             <ruleList>
-                <compareText logic="does_not_contain" nocase="1" text="${DYLD_FALLBACK_LIBRARY_PATH}" value="${POSTGRES_DYLD_LIBRARY_PATH}"/>
+                <compareText logic="does_not_contain" nocase="1" text="${DYLD_FALLBACK_LIBRARY_PATH}" value="${POSTGRES_DYLD_FALLBACK_LIBRARY_PATH}"/>
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariable name="POSTGRES_ENV_VAR">
-            <value>##### POSTGRES ENV #####</value>
+            <value>##### POSTGRES ENV #####
+
+        </value>
             <ruleList>
                 <platformTest type="unix"/>
             </ruleList>
@@ -785,8 +787,10 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                                 </addTextToFile>
                                 <addTextToFile>
                                     <file>${postgres_data_directory}/postgresql.conf</file>
-                                    <text>#---------------------------------------------------------------------------
-                    #Other configuration parameters are set on ${postgres_root_directory}/bin/setenv.sh</text>#---------------------------------------------------------------------------</addTextToFile>
+                                    <text>                    #---------------------------------------------------------------------------
+                    #Other configuration parameters are set on ${postgres_root_directory}/bin/setenv.sh</text>
+                #---------------------------------------------------------------------------
+                                                            </addTextToFile>
                                 <!-- We change authentication from trust (no authentication) to password. Before changing this in pg_hba.conf file, 
             we need to set a password for postgres user. -->
                                 <!-- Maybe this change is not needed if we only use unix socket connection -->
@@ -815,16 +819,16 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                                 <runProgram>
                                     <runAs>postgres</runAs>
                                     <program>${postgres_root_directory}/bin/psql</program>
-                                    <programArguments>-U postgres  -c "ALTER USER postgres PASSWORD '\''${postgres_root_password.password}'\''" </programArguments>
+                                    <programArguments>-U postgres -c "ALTER USER postgres PASSWORD '\''${postgres_root_password.password}'\''" </programArguments>
                                     <ruleList>
-                                        <compareText logic="equals" text="${installer_root_install}" value="1"/>
+                                        <isTrue value="${installer_root_install}"/>
                                     </ruleList>
                                 </runProgram>
                                 <runProgram>
                                     <program>${postgres_root_directory}/bin/psql</program>
                                     <programArguments>-U postgres -c "ALTER USER postgres PASSWORD '${postgres_root_password.password}'"</programArguments>
                                     <ruleList>
-                                        <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
+                                        <isFalse value="${installer_root_install}"/>
                                     </ruleList>
                                 </runProgram>
                                 <runProgram>
@@ -1065,20 +1069,20 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                               <compareText logic="equals" text="${installer_root_install}" value="0"/>
                           </ruleList>
                       </runProgram>
-		      <logMessage text="Wait for Postmaster" />
-		      <waitForPort state="in_use" port="${postgres_port}" progressText="Waiting for Postmaster" timeout="30000" />
-		      <wait ms="7000"/>
-		      
-		      <logMessage text="Port ${postgres_port} free" >
-			  <ruleList>
-			      <portTest port="${postgres_port}" condition="can_bind" />
-			  </ruleList>
-		      </logMessage>
-		      <logMessage text="Port ${postgres_port} in use" >
-			  <ruleList>
-			      <portTest port="${postgres_port}" condition="cannot_bind" />
-			  </ruleList>
-		      </logMessage>
+              <logMessage text="Wait for Postmaster" />
+              <waitForPort state="in_use" port="${postgres_port}" progressText="Waiting for Postmaster" timeout="30000" />
+              <wait ms="7000"/>
+              
+              <logMessage text="Port ${postgres_port} free" >
+              <ruleList>
+                  <portTest port="${postgres_port}" condition="can_bind" />
+              </ruleList>
+              </logMessage>
+              <logMessage text="Port ${postgres_port} in use" >
+              <ruleList>
+                  <portTest port="${postgres_port}" condition="cannot_bind" />
+              </ruleList>
+              </logMessage>
                       <runProgram>
                           <program>${postgres_root_directory}/bin/psql.exe</program>
                           <programArguments>-U SYSTEM -d postgres -p ${postgres_port} -h ${postgres_hostname} -c "CREATE USER postgres SUPERUSER PASSWORD '${postgres_root_password.password}'"</programArguments>

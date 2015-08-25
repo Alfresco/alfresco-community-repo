@@ -41,7 +41,10 @@ System variables provided by this component:
             <default>bundledAndExisting</default>
             <value>bundledAndExisting</value>
         </stringParameter>
-    
+
+        <!-- Java version-->
+        <stringParameter name="tomcat_java_version" default="1.7" ask="0"/>
+
         <!-- Internal configuration switches -->
         <booleanParameter name="tomcat_show_ports" value="0" ask="0" />
         <booleanParameter name="tomcat_existing_required_running" value="1" ask="0" />
@@ -51,18 +54,18 @@ System variables provided by this component:
         <booleanParameter name="java_is_jdk" value="0" ask="0"/>
 
         <!-- Tomcat settings for bundled component -->
-        <stringParameter name="tomcat_memory_settings_unix" value="-XX:MaxPermSize=256M -Xms256M -Xmx512M" ask="0" />
-        <stringParameter> 
-            <name>tomcat_memory_settings_windows</name>
-            <value>--JvmMs 256 --JvmMx 512 ++JvmOptions="-XX:MaxPermSize=256M"</value>
-            <ask>0</ask>
-        </stringParameter>
-        <stringParameter name="tomcat_extra_opts_unix" value="-Djava.awt.headless=true -XX:+UseG1GC -Dfile.encoding=UTF-8" ask="0" />
-        <stringParameter>
-            <name>tomcat_extra_opts_windows</name>
-            <value>++JvmOptions="-Djava.awt.headless=true" ++JvmOptions="-XX:+UseG1GC" ++JvmOptions="-Dfile.encoding=UTF-8"</value>
-            <ask>0</ask>
-        </stringParameter>
+    <stringParameter name="tomcat_memory_settings_unix" value="-XX:MaxPermSize=256M -Xms256M -Xmx512M" ask="0" />
+    <stringParameter> 
+        <name>tomcat_memory_settings_windows</name>
+        <value>--JvmMs 256 --JvmMx 512 ++JvmOptions="-XX:MaxPermSize=256M"</value>
+        <ask>0</ask>
+    </stringParameter>
+    <stringParameter name="tomcat_extra_opts_unix" value="-Djava.awt.headless=true -XX:+UseG1GC -Dfile.encoding=UTF-8" ask="0" />
+    <stringParameter>
+        <name>tomcat_extra_opts_windows</name>
+        <value>++JvmOptions="-Djava.awt.headless=true" ++JvmOptions="-XX:+UseG1GC" ++JvmOptions="-Dfile.encoding=UTF-8"</value>
+        <ask>0</ask>
+    </stringParameter>
         
         <booleanParameter name="tomcat_disable_juli_login" value="0" ask="0"/>
         <!-- directory to pack -->
@@ -184,12 +187,12 @@ System variables provided by this component:
                 <actionGroup>
                     <actionList>
                         <setInstallerVariable name="tomcat_detected_id" value="" />  
-		        <tomcatAutodetect detectedVersionId="tomcat_detected_id" minVersion="${tomcat_minimum_version}" maxVersion="${tomcat_maximum_version}" />
-			<setInstallerVariable name="tomcat_instance_directory" value="${${tomcat_detected_id}_instance_directory}">
-			    <ruleList>
+                <tomcatAutodetect detectedVersionId="tomcat_detected_id" minVersion="${tomcat_minimum_version}" maxVersion="${tomcat_maximum_version}" />
+            <setInstallerVariable name="tomcat_instance_directory" value="${${tomcat_detected_id}_instance_directory}">
+                <ruleList>
                                 <compareText text="${tomcat_detected_id}" logic="does_not_equal" value="" />
-			    </ruleList>
-		        </setInstallerVariable>
+                </ruleList>
+                </setInstallerVariable>
                     </actionList>
                     <ruleList>
                         <isTrue value="${tomcat_enable_autodetection}" />
@@ -206,13 +209,13 @@ System variables provided by this component:
                 <setInstallerVariable name="tomcat_server_directory" value="${tomcat_instance_directory}" />
             </preShowPageActionList>
             <postShowPageActionList>
-	        <setInstallerVariable name="tomcat_home_directory" value="${tomcat_server_directory}" />
-		<setInstallerVariable name="tomcat_home_directory" value="${${tomcat_detected_id}_home_directory}">
-		    <ruleList>
+            <setInstallerVariable name="tomcat_home_directory" value="${tomcat_server_directory}" />
+        <setInstallerVariable name="tomcat_home_directory" value="${${tomcat_detected_id}_home_directory}">
+            <ruleList>
                         <stringTest text="${tomcat_detected_id}" type="not_empty" />
                         <compareText text="${tomcat_server_directory}" logic="equals" value="${${tomcat_detected_id}_instance_directory}" />
-		    </ruleList>
-		</setInstallerVariable>
+            </ruleList>
+        </setInstallerVariable>
             </postShowPageActionList>
             <ruleList>
                 <compareText text="${tomcat_installation_type}" logic="equals" value="existing"/>
@@ -274,30 +277,8 @@ System variables provided by this component:
                     <value/>
                     <ask>1</ask>
                     <description>Tomcat Server Port:</description>
-		    <validationActionList>
-                        <throwError>
-                            <text>Unable to bind to the given port number. Please select another Tomcat Server Port.</text>
-                            <ruleList>
-                                <portTest port="${tomcat_server_port}" condition="cannot_bind"/>
-                                <compareText text="${tomcat_installation_type}" logic="equals" value="bundled"/>
-                            </ruleList>
-                        </throwError>
-                        <throwError>
-                            <text>Unable to find a server running at given port number. Please select another one.</text>
-                            <ruleList>
-                                <portTest port="${tomcat_server_port}" condition="can_bind"/>
-                                <compareText text="${tomcat_installation_type}" logic="equals" value="existing"/>
-                                <isTrue value="${tomcat_existing_required_running}" />
-                            </ruleList>
-                        </throwError>
-                        <throwError>
-                            <text>Unable to bind to the server port. Please make sure that Tomcat is not running.</text>
-                            <ruleList>
-                                <portTest port="${tomcat_server_port}" condition="cannot_bind"/>
-                                <compareText text="${tomcat_installation_type}" logic="equals" value="existing"/>
-                                <isFalse value="${tomcat_existing_required_running}" />
-                            </ruleList>
-                        </throwError>
+            <validationActionList>
+                        <baseCheckPort serverName="Tomcat" serverType="${tomcat_installation_type}" serverPort="${tomcat_server_port}" serverRequiredRunning="${tomcat_existing_required_running}"/>
                     </validationActionList>
                 </stringParameter>
                 <stringParameter>
@@ -306,7 +287,7 @@ System variables provided by this component:
                     <value/>
                     <ask>1</ask>
                     <description>Tomcat Shutdown Port:</description>
-		    <validationActionList>
+            <validationActionList>
                         <throwError>
                             <text>Unable to bind to the given port number. Please select another Tomcat Shutdown Port.</text>
                             <ruleList>
@@ -348,7 +329,7 @@ System variables provided by this component:
                     <value/>
                     <ask>1</ask>
                     <description>Tomcat AJP Port:</description>
-		    <validationActionList>
+            <validationActionList>
                         <throwError>
                             <text>Unable to bind to the given port number. Please select another Tomcat AJP Port.</text>
                             <ruleList>
@@ -393,21 +374,32 @@ System variables provided by this component:
 
     </parameterList>
     <readyToInstallActionList>
+        <!-- check java version and remove java options if v = 8.0 -->
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="tomcat_memory_settings_unix" value=""/>
+                <setInstallerVariable name="tomcat_memory_settings_windows" value=""/>
+            </actionList>
+            <ruleList>
+                <regExMatch text="${tomcat_java_version}" logic="matches" pattern="^.*1.8.(.*).*$"/>
+            </ruleList>
+        </actionGroup>
+
         <setInstallerVariable name="tomcat_home_directory" value="${tomcat_server_directory}">
             <ruleList>
                 <compareText text="${tomcat_installation_type}" logic="equals" value="bundled" />
             </ruleList>
         </setInstallerVariable>
   
-	<getUserAndGroup abortOnError="0" >
-	    <user>tomcat_user</user>
-	    <group>tomcat_group</group>
-	    <file>${tomcat_server_directory}/webapps</file>
+    <getUserAndGroup abortOnError="0" >
+        <user>tomcat_user</user>
+        <group>tomcat_group</group>
+        <file>${tomcat_server_directory}/webapps</file>
             <ruleList>
                 <compareText text="${tomcat_installation_type}" logic="equals" value="existing" />
                 <platformTest type="unix" />
             </ruleList>
-	</getUserAndGroup>
+    </getUserAndGroup>
 
 
         <setInstallerVariable name="tomcat_execute_abort_action_list" value="1"/>
@@ -425,9 +417,9 @@ System variables provided by this component:
 
         <setEnvironmentVariable name="CATALINA_HOME" value="${tomcat_home_directory}" />
         <setEnvironmentVariable name="CATALINA_BASE" value="${tomcat_server_directory}">
-	    <ruleList>
+        <ruleList>
                 <compareText text="${tomcat_server_directory}" logic="does_not_equal" value="${tomcat_home_directory}" />
-	    </ruleList>
+        </ruleList>
         </setEnvironmentVariable>
    
     </readyToInstallActionList>
@@ -466,7 +458,7 @@ System variables provided by this component:
                         </substitution>
                     </substitutionList>
                 </substitute>
-		<!-- PORT SUBSTITUTIONS -->
+        <!-- PORT SUBSTITUTIONS -->
                 <substitute>
                     <type>exact</type>
                     <files>${application_server_directory}/conf/server.xml;${application_server_directory}/conf/tomcat.conf</files>
@@ -490,24 +482,28 @@ System variables provided by this component:
                     </substitutionList>
                 </substitute>
 
-		<!-- SET JAVA_HOME + MEMORY SETTINGS -->
-		<writeFile>
+        <!-- SET JAVA_HOME + MEMORY SETTINGS -->
+        <writeFile>
                     <path>${application_server_directory}/bin/setenv.sh</path>
-                    <text>JAVA_HOME=${java_home_directory}
+                    <text># Load Tomcat Native Library
+LD_LIBRARY_PATH=${installdir}/common/lib:$LD_LIBRARY_PATH
+
+JAVA_HOME=${java_home_directory}
 JRE_HOME=$JAVA_HOME
 JAVA_OPTS="${tomcat_extra_opts_unix} $JAVA_OPTS "
 JAVA_OPTS="${tomcat_memory_settings_unix} $JAVA_OPTS " # java-memory-settings
 export JAVA_HOME
 export JRE_HOME
 export JAVA_OPTS
-			    </text>
+export LD_LIBRARY_PATH
+                </text>
                     <ruleList>
                         <platformTest type="unix"/>
                         <platformTest type="osx" negate="yes" />
                     </ruleList>
                 </writeFile>
 
-		<writeFile>
+        <writeFile>
                     <path>${application_server_directory}/bin/setenv.bat</path>
                     <text>set JAVA_HOME=${java_home_directory.dos}
 set JRE_HOME=%JAVA_HOME%
@@ -530,7 +526,7 @@ set JAVA_OPTS=${tomcat_extra_opts_windows} ${tomcat_memory_settings_windows} %JA
                     </ruleList>
                 </writeFile>
 
-		<writeFile>
+        <writeFile>
                     <path>${application_server_directory}/bin/setenv.sh</path>
                     <text>export JAVA_HOME=${java_home_directory}
 export JRE_HOME=$JAVA_HOME
@@ -542,13 +538,13 @@ export JAVA_OPTS
                         <platformTest type="osx"/>
                     </ruleList>
                 </writeFile>
-		<addFilesToUninstaller files="${application_server_directory}/bin/setenv.sh;${application_server_directory}/bin/setenv.bat" />
-		<addFilesToUninstaller files="${application_server_directory}/bin/setenv.sh;${application_server_directory}/shared" />
+        <addFilesToUninstaller files="${application_server_directory}/bin/setenv.sh;${application_server_directory}/bin/setenv.bat" />
+        <addFilesToUninstaller files="${application_server_directory}/bin/setenv.sh;${application_server_directory}/shared" />
 
-		<!-- SET TOMCAT WINDOWS SERVICE -->
+        <!-- SET TOMCAT WINDOWS SERVICE -->
                 <actionGroup>
                     <actionList>
-        	           	<substitute>
+                        <substitute>
                             <files>${application_server_directory}/bin/service.bat</files>
                             <type>exact</type>
                             <substitutionList>
@@ -620,7 +616,7 @@ export JAVA_OPTS
         </folder>
     </folderList>
     <postInstallationActionList>
-	<addLogrotate name="tomcat" logs="${application_server_directory}/logs/*.out ${application_server_directory}/logs/*.log" />
+    <addLogrotate name="tomcat" logs="${application_server_directory}/logs/*.out ${application_server_directory}/logs/*.log" />
     </postInstallationActionList>
 
     <installationAbortedActionList>
@@ -650,7 +646,7 @@ export JAVA_OPTS
             </ruleList>
         </actionGroup>
 
-	<actionGroup>
+    <actionGroup>
             <actionList>
                 <deleteFile path="${tomcat_server_directory}">
                     <ruleList>

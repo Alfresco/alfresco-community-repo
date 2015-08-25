@@ -25,8 +25,6 @@
   -->
   <!--APR library loader. Documentation at /docs/apr.html -->
   <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
-  <!--Initialize Jasper prior to webapps are loaded. Documentation at /docs/jasper-howto.html -->
-  <Listener className="org.apache.catalina.core.JasperListener" />
   <!-- Prevent memory leaks due to use of particular java/javax APIs-->
   <!-- Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" /-->
   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
@@ -65,25 +63,26 @@
          Java HTTP Connector: /docs/config/http.html (blocking & non-blocking)
          Java AJP  Connector: /docs/config/ajp.html
          APR (HTTP/AJP) Connector: /docs/apr.html
-         Define a non-SSL HTTP/1.1 Connector on port 8080
+         Define a non-SSL/TLS HTTP/1.1 Connector on port 8080
     -->
     <Connector port="@@BITROCK_TOMCAT_PORT@@" URIEncoding="UTF-8" protocol="HTTP/1.1"
                connectionTimeout="20000"
                redirectPort="@@BITROCK_TOMCAT_SSL_PORT@@" maxHttpHeaderSize="32768" />
     <!-- A "Connector" using the shared thread pool-->
     <!--
-    <Connector executor="tomcatThreadPool" 
+    <Connector executor="tomcatThreadPool"
                port="8080" URIEncoding="UTF-8" protocol="HTTP/1.1"
                connectionTimeout="20000"
                redirectPort="8443" maxHttpHeaderSize="32768" />
     -->
-    <!-- Define a SSL HTTP/1.1 Connector on port 8443
-         This connector uses the JSSE configuration, when using APR, the
-         connector should be using the OpenSSL style configuration
-         described in the APR documentation -->
+    <!-- Define a SSL/TLS HTTP/1.1 Connector on port 8443
+         This connector uses the NIO implementation that requires the JSSE
+         style configuration. When using the APR/native implementation, the
+         OpenSSL style configuration is required as described in the APR/native
+         documentation -->
     <!--
-    <Connector port="@@BITROCK_TOMCAT_SSL_PORT@@" URIEncoding="UTF-8" protocol="HTTP/1.1" SSLEnabled="true"
-               maxThreads="150" scheme="https" secure="true"
+    <Connector port="@@BITROCK_TOMCAT_SSL_PORT@@" URIEncoding="UTF-8" protocol="HTTP/1.1"
+               maxThreads="150" SSLEnabled="true" scheme="https" secure="true"
                clientAuth="false" sslProtocol="TLS" maxHttpHeaderSize="32768" />
     -->
 
@@ -93,7 +92,7 @@
     <Connector port="@@BITROCK_TOMCAT_SSL_PORT@@" URIEncoding="UTF-8" protocol="org.apache.coyote.http11.Http11Protocol" SSLEnabled="true"
                maxThreads="150" scheme="https" keystoreFile="@@ALFRESCO_DATA_DIR@@/keystore/ssl.keystore" keystorePass="kT9X6oe68t" keystoreType="JCEKS"
  secure="true" connectionTimeout="240000" truststoreFile="@@ALFRESCO_DATA_DIR@@/keystore/ssl.truststore" truststorePass="kT9X6oe68t" truststoreType="JCEKS"
-               clientAuth="want" sslProtocol="TLS" allowUnsafeLegacyRenegotiation="true" maxHttpHeaderSize="32768" />  
+               clientAuth="want" sslProtocol="TLS" allowUnsafeLegacyRenegotiation="true" maxHttpHeaderSize="32768" maxSavePostSize="-1" />  
 
 
     <!-- An Engine represents the entry point (within Catalina) that processes
@@ -138,7 +137,7 @@
              Documentation at: /docs/config/valve.html
              Note: The pattern used is equivalent to using pattern="common" -->
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-               prefix="localhost_access_log." suffix=".txt"
+               prefix="localhost_access_log" suffix=".txt"
                pattern="%h %l %u %t &quot;%r&quot; %s %b" />
 
       </Host>

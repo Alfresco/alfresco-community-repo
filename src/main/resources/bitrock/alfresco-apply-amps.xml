@@ -17,10 +17,10 @@
             <destination>${installdir}</destination>
             <platforms>all</platforms>
             <actionList>
-                <createDirectory path="${alfresco_amps_directory}"/>
-                <addFilesToUninstaller files="${alfresco_amps_directory}"/>
-                <createDirectory path="${alfresco_amps_share_directory}"/>
-                <addFilesToUninstaller files="${alfresco_amps_share_directory}"/>
+                <createDirectory path="${alfresco_amps_directory}" />
+                <addFilesToUninstaller files="${alfresco_amps_directory}" />
+                <createDirectory path="${alfresco_amps_share_directory}" />
+                <addFilesToUninstaller files="${alfresco_amps_share_directory}" />
             </actionList>
         </folder>
         <folder>
@@ -28,19 +28,19 @@
             <name>mmtjar</name>
             <destination>${alfresco_commands_directory}</destination>
             <distributionFileList>
-              <distributionFile origin="${alfresco_mmt_source_file}" allowWildcards="1" />
+                <distributionFile origin="${alfresco_mmt_source_file}" allowWildcards="1" />
             </distributionFileList>
         </folder>
     </folderList>
     <postInstallationActionList>
-        <showProgressDialog progressText="Alfresco Module Packages">
+        <showProgressDialog progressText="Alfresco Module Packages" >
             <actionList>
                 <runProgram>
                     <progressText>Installing Alfresco Module Packages (AMPs)</progressText>
                     <program>${java_home_directory}/bin/java</program>
                     <programArguments>-jar "${alfresco_commands_directory.unix}/alfresco-mmt.jar" install "${alfresco_amps_directory.unix}" "${installdiralfresco.unix}/alfresco.war" -directory -nobackup -force</programArguments> 
                     <ruleList>
-                        <isTrue value="${alfresco_apply_amps}"/>
+                        <isTrue value="${alfresco_apply_amps}" />
                     </ruleList>
                 </runProgram>
                 <runProgram>
@@ -48,15 +48,18 @@
                     <program>${java_home_directory}/bin/java</program>
                     <programArguments>-jar "${alfresco_commands_directory.unix}/alfresco-mmt.jar" install "${alfresco_amps_share_directory.unix}" "${installdiralfresco.unix}/share.war" -directory -nobackup -force</programArguments> 
                     <ruleList>
-                        <isTrue value="${alfresco_apply_amps_share}"/>
+                        <isTrue value="${alfresco_apply_amps_share}" />
                     </ruleList>
                 </runProgram>
             </actionList>
             <ruleEvaluationLogic>or</ruleEvaluationLogic>
             <ruleList>
-                <isTrue value="${alfresco_apply_amps}"/>
-                <isTrue value="${alfresco_apply_amps_share}"/>
+                <isTrue value="${alfresco_apply_amps}" />
+                <isTrue value="${alfresco_apply_amps_share}" />
             </ruleList>
         </showProgressDialog>
-    </postInstallationActionList>
+     </postInstallationActionList>
 </component>
+
+
+

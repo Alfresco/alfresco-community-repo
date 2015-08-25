@@ -47,25 +47,24 @@
             <default>${product_shortname} Tomcat Service</default>
             <ask>0</ask>
         </stringParameter>
-	<!-- boot, auto, system, demand, disabled-->
-	<stringParameter>
-	    <name>tomcatservice_startup</name>
-	    <ask>0</ask>
-	    <default>auto</default>
-	    <value>auto</value>
-	    <cliOptionShow>0</cliOptionShow>
-	</stringParameter>
-	<booleanParameter>
-	    <name>tomcatservice_notstart</name>
-	    <ask>0</ask>
-	    <default>0</default>
-	    <value>0</value>
-	    <cliOptionShow>0</cliOptionShow>
-	</booleanParameter>
+    <!-- boot, auto, system, demand, disabled-->
+    <stringParameter>
+        <name>tomcatservice_startup</name>
+        <ask>0</ask>
+        <default>auto</default>
+        <value>auto</value>
+        <cliOptionShow>0</cliOptionShow>
+    </stringParameter>
+    <booleanParameter>
+        <name>tomcatservice_notstart</name>
+        <ask>0</ask>
+        <default>0</default>
+        <value>0</value>
+        <cliOptionShow>0</cliOptionShow>
+    </booleanParameter>
     </parameterList>
     <readyToInstallActionList>
         <getUniqueWindowsServiceName>
-            <separator>num</separator>
             <serviceName>${tomcatservice_service_name}</serviceName>
             <displayName>${tomcatservice_service_display_name}</displayName>
             <selectedServiceNameVariable>tomcat_unique_service_name</selectedServiceNameVariable>
@@ -117,17 +116,17 @@
         <actionGroup>
         <actionList>
 
-	<logMessage text="START: Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}" >
-	    <ruleList>
-		<platformTest type="windows" />
-	    </ruleList>
-	</logMessage>
+    <logMessage text="START: Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}" >
+        <ruleList>
+        <platformTest type="windows" />
+        </ruleList>
+    </logMessage>
         <runProgram abortOnError="0" showMessageOnError="0">
             <progressText>Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}</progressText>
             <program>${application_server_directory.dos}\scripts\serviceinstall.bat</program>
             <programArguments>INSTALL</programArguments>
             <ruleList>
-		<isFalse value="${tomcatservice_notstart}" />
+        <isFalse value="${tomcatservice_notstart}" />
                 <compareValues value1="${tomcatservice_username}" logic="equals" value2=""/>
             </ruleList>
         </runProgram>
@@ -137,7 +136,7 @@
             <program>${application_server_directory.dos}\scripts\serviceinstall.bat</program>
             <programArguments>INSTALL STOP</programArguments>
             <ruleList>
-		<isTrue value="${tomcatservice_notstart}" />
+        <isTrue value="${tomcatservice_notstart}" />
                 <compareValues value1="${tomcatservice_username}" logic="equals" value2=""/>
             </ruleList>
         </runProgram>
@@ -164,11 +163,11 @@
             </ruleList>
         </runProgram>
 
-	<logMessage text="END: Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}" >
-	    <ruleList>
-		<platformTest type="windows" />
-	    </ruleList>
-	</logMessage>
+    <logMessage text="END: Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}" >
+        <ruleList>
+        <platformTest type="windows" />
+        </ruleList>
+    </logMessage>
 
         </actionList>
         <ruleList>
@@ -180,20 +179,29 @@
         <waitForPort port="${application_server_port}" timeout="30000">
             <ruleList>
                 <platformTest type="windows"/>
-		<isFalse value="${tomcatservice_notstart}" />
+        <isFalse value="${tomcatservice_notstart}" />
                 <isTrue value="${tomcatservice_waittostart}" />
             </ruleList>
         </waitForPort>
         <logMessage text="END: wait for port ${application_server_port}" />
 
-	<runProgram>
-	    <program>sc</program>
-	    <programArguments>config ${tomcat_unique_service_name} start= ${tomcatservice_startup}</programArguments>
-	    <ruleList>
-		<platformTest type="windows"/>
-		<compareText text="${tomcatservice_startup}" logic="does_not_equal" value="auto" />
-	    </ruleList>
-	</runProgram>
+    <runProgram>
+        <program>sc</program>
+        <programArguments>config ${tomcat_unique_service_name} start= ${tomcatservice_startup}</programArguments>
+        <ruleList>
+        <platformTest type="windows"/>
+        <compareText text="${tomcatservice_startup}" logic="does_not_equal" value="auto" />
+        </ruleList>
+        </runProgram>
+
+        <!-- T4784 -->
+        <renameFile showMessageOnError="0" abortOnError="0">
+            <origin>${application_server_directory}/bin/tomcat?w.exe</origin>
+            <destination>${application_server_directory}/bin/${tomcat_unique_service_name}w.exe</destination>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </renameFile>
     </postInstallationActionList>
 </component>
 

@@ -1,0 +1,69 @@
+<component>
+    <name>ghostscript</name>
+    <description>GhostScript</description>
+    <canBeEdited>0</canBeEdited>
+    <show>0</show>
+    <selected>1</selected>
+        
+    <parameterList>
+        <directoryParameter>
+            <ask>0</ask>
+            <name>ghostscript_root_directory</name>
+            <cliOptionName>ghostscript_root_directory</cliOptionName>
+        </directoryParameter>
+    </parameterList>        
+    <readyToInstallActionList>
+        <setInstallerVariable name="ghostscript_root_directory" value="${installdir}/common" />
+        
+        <setInstallerVariable name="GHOSTSCRIPT_PATH" value="${ghostscript_root_directory}/bin"/>
+        <setInstallerVariable name="GHOSTSCRIPT_PATH_WIN" value="${ghostscript_root_directory.dos}\bin"/>
+        <setInstallerVariable name="PATH" value="${GHOSTSCRIPT_PATH}:${PATH}">
+            <ruleList>
+                <compareText text="${PATH}" value="${GHOSTSCRIPT_PATH}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="PATH_WIN" value="${GHOSTSCRIPT_PATH_WIN};${PATH_WIN}">
+            <ruleList>
+                <compareText text="${PATH_WIN}" value="${GHOSTSCRIPT_PATH_WIN}" nocase="1" logic="does_not_contain"/>
+            </ruleList>
+        </setInstallerVariable>
+        
+        <setInstallerVariable name="GHOSTSCRIPT_ENV_VAR">
+            <value>##### GHOSTSCRIPT ENV #####
+set GS_LIB=${ghostscript_root_directory.dos}\lib
+</value>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="GHOSTSCRIPT_ENV_VAR">
+            <value>##### GHOSTSCRIPT ENV #####
+GS_LIB="${ghostscript_root_directory}/share/ghostscript/fonts"
+export GS_LIB
+</value>
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="ENV_VAR">
+            <value>${GHOSTSCRIPT_ENV_VAR}${ENV_VAR}</value>
+        </setInstallerVariable>
+        <setInstallerVariable name="GHOSTSCRIPT_WRAPPERS">
+            <value>${ghostscript_root_directory}/bin/gs</value>
+        </setInstallerVariable>
+        <setInstallerVariable name="WRAPPERS" value="${GHOSTSCRIPT_WRAPPERS};${WRAPPERS}"/>
+    </readyToInstallActionList>
+    
+    <folderList>
+        <folder>
+            <name>ghostscript</name>
+            <destination>${ghostscript_root_directory}</destination>
+            <distributionFileList>
+                <distributionDirectory allowWildcards="1" origin="ghostscript/*"/>
+            </distributionFileList>
+        </folder>
+    </folderList>
+    
+    <postInstallationActionList/>
+</component>
+

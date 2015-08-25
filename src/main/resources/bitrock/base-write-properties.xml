@@ -5,17 +5,17 @@
     <show>0</show>
     <selected>1</selected>
     <postInstallationActionList>
-        <setInstallerVariable name="baseplatform_name" value="${platform_name}"/>
-        <setInstallerVariable name="baseplatform_name" value="${bitnami_platform_arch}">
-            <ruleList>
-                <compareText logic="does_not_contain" text="${bitnami_platform_arch}" value="***unknown variable"/>
-            </ruleList>
+        <setInstallerVariable name="baseplatform_name" value="${platform_name}" />
+        <setInstallerVariable name="baseplatform_name" value="${bitnami_platform_arch}" >
+        <ruleList>
+        <compareText text="${bitnami_platform_arch}" logic="does_not_contain" value="***unknown variable" />
+        </ruleList>
         </setInstallerVariable>
-        <setInstallerVariable name="baseplatform_name" value="osx-x86_64">
-            <ruleList>
-                <compareText logic="contains" text="${project.installerFileName}" value="osx-x86_64"/>
-            </ruleList>
-        </setInstallerVariable>
+    <setInstallerVariable name="baseplatform_name" value="osx-x86_64" >
+        <ruleList>
+        <compareText text="${project.installerFileName}" logic="contains" value="osx-x86_64" />
+        </ruleList>
+    </setInstallerVariable>
         <baseSaveGeneralStackConfigurationToFile>
             <baseStackName>${project.fullName}</baseStackName>
             <baseStackVersion>${project.version}</baseStackVersion>
@@ -34,13 +34,24 @@
                 </baseSaveGeneralStackConfigurationToFile>
             </actionList>
             <ruleList>
-                <platformTest type="unix"/>
-                <componentTest logic="exists" name="baseunixservice"/>
-                <componentTest logic="selected" name="baseunixservice"/>
-                <isTrue value="${baseunixservice_install_as_service}"/>
-                <compareText logic="equals" text="${installer_root_install}" value="1"/>
+                <platformTest type="unix" />
+                <componentTest name="baseunixservice" logic="exists"/>
+                <componentTest name="baseunixservice" logic="selected"/>
+                <isTrue value="${baseunixservice_install_as_service}" />
+                <compareText text="${installer_root_install}" logic="equals" value="1"/>
             </ruleList>
         </actionGroup>
+        <baseSaveUserAccountConfigurationToFile>
+            <baseStackPropertiesFile>${installdir}/properties.ini</baseStackPropertiesFile>
+            <baseFirstName>${base_user_firstname}</baseFirstName>
+            <baseLastName>${base_user_lastname}</baseLastName>
+            <baseUsername>${base_user_name}</baseUsername>
+            <baseUser>${base_user}</baseUser>
+            <baseEmail>${base_mail}</baseEmail>
+            <ruleList>
+                <componentTest name="paramadminaccount" logic="exists"/>
+            </ruleList>
+        </baseSaveUserAccountConfigurationToFile>
         <changePermissions>
             <files>${installdir}/properties.ini</files>
             <permissions>0700</permissions>
@@ -50,15 +61,16 @@
         </changePermissions>
     </postInstallationActionList>
     <postUninstallationActionList>
-        <deleteFile path="${installdir}/properties.ini">
+        <deleteFile path="${installdir}/properties.ini" >
             <ruleList>
-                <compareText logic="does_not_equal" text="deleteConfirm" value="no"/>
+                <compareText text="deleteConfirm" value="no" logic="does_not_equal" />
             </ruleList>
         </deleteFile>
         <deleteFile path="${installdir}">
             <ruleList>
-                <fileTest condition="is_empty" path="${installdir}"/>
+                <fileTest path="${installdir}" condition="is_empty" />
             </ruleList>
         </deleteFile>
     </postUninstallationActionList>
 </component>
+

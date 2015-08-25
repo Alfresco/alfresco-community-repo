@@ -7,9 +7,9 @@
     <functionDefinitionList>
         <actionDefinition name="alfrescoSetProperty">
             <parameterList>
-                <stringParameter name="property"/>
-                <stringParameter name="value"/>
-                <fileParameter name="configurationFile" value="${tomcat_server_directory}/shared/classes/alfresco-global.properties"/>
+                <stringParameter name="property" />
+                <stringParameter name="value" />
+                <fileParameter name="configurationFile" value="${tomcat_server_directory}/shared/classes/alfresco-global.properties" />
             </parameterList>
             <actionList>
                 <substitute>
@@ -28,23 +28,25 @@
                 </propertiesFileSet>
             </actionList>
         </actionDefinition>
+
+
         <actionDefinition name="alfrescoConfigure">
             <parameterList>
-                <stringParameter name="alfrescoFiles"/>
+                <stringParameter name="alfrescoFiles" />
             </parameterList>
             <actionList>
-                <setInstallerVariableFromRegEx>
-                    <name>imagemagick_root_directory_windows</name>
-                    <pattern>/</pattern>
-                    <substitution>\</substitution>
-                    <text>${imagemagick_root_directory}</text>
-                    <ruleList>
-                        <platformTest type="windows"/>
-                    </ruleList>
-                </setInstallerVariableFromRegEx>
-                <substitute>
-                    <files>${alfrescoFiles}</files>
-                    <substitutionList>
+            <setInstallerVariableFromRegEx>
+                <name>imagemagick_root_directory_windows</name>
+                <pattern>/</pattern>
+                <substitution>\</substitution>
+                <text>${imagemagick_root_directory}</text>
+                <ruleList>
+                    <platformTest type="windows"/>
+                </ruleList>
+             </setInstallerVariableFromRegEx>
+            <substitute>
+            <files>${alfrescoFiles}</files>
+            <substitutionList>
                         <substitution>
                             <pattern>@@BITROCK_INSTALLDIR@@</pattern>
                             <value>${installdir}</value>
@@ -130,9 +132,27 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                         </substitution>
                         <substitution>
                             <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
+                            <value>${libreoffice_directory}/program/soffice.bin</value>
+                            <ruleList>
+                                <platformTest type="linux"/>
+                                <fileExists path="${libreoffice_directory}/program/soffice.bin"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
                             <value>${libreoffice_directory}/program/soffice</value>
                             <ruleList>
                                 <platformTest type="linux"/>
+                                <fileExists negate="1" path="${libreoffice_directory}/program/soffice.bin"/>
+                                <fileExists path="${libreoffice_directory}/program/soffice"/>
+                            </ruleList>
+                        </substitution>
+                        <substitution>
+                            <pattern>@@BITROCK_LIBREOFFICE_PROGRAM_DIR@@</pattern>
+                            <value>${libreoffice_directory}/Contents/MacOS/soffice.bin</value>
+                            <ruleList>
+                                <platformTest type="osx"/>
+                                <fileExists path="${libreoffice_directory}/Contents/MacOS/soffice.bin"/>
                             </ruleList>
                         </substitution>
                         <substitution>
@@ -140,9 +160,11 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                             <value>${libreoffice_directory}/Contents/MacOS/soffice</value>
                             <ruleList>
                                 <platformTest type="osx"/>
+                                <fileExists negate="1" path="${libreoffice_directory}/Contents/MacOS/soffice.bin"/>
+                                <fileExists path="${libreoffice_directory}/Contents/MacOS/soffice"/>
                             </ruleList>
                         </substitution>
-                        <substitution>
+                <substitution>
                             <pattern>@@BITROCK_LIBREOFFICE_JOD_DIR@@</pattern>
                             <value>${libreoffice_directory.dos.unix}/App/libreoffice</value>
                             <ruleList>
@@ -224,7 +246,7 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                             <value>${alfresco_database_user}</value>
                         </substitution>
                         <substitution>
-                            <pattern>@@BITROCK_DB_PASSWORD@@</pattern>
+                           <pattern>@@BITROCK_DB_PASSWORD@@</pattern>
                             <value>${alfresco_database_password}</value>
                         </substitution>
                         <substitution>
@@ -269,11 +291,11 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                         </substitution>
                         <substitution>
                             <pattern>@@BITROCK_TOMCAT_SHUTDOWN_PORT@@</pattern>
-                            <value>${tomcat_server_shutdown_port}</value>
+                            <value>${application_server_shutdown_port}</value>
                         </substitution>
                         <substitution>
                             <pattern>@@BITROCK_TOMCAT_AJP_PORT@@</pattern>
-                            <value>${tomcat_server_ajp_port}</value>
+                            <value>${application_server_ajp_port}</value>
                         </substitution>
                         <substitution>
                             <pattern>@@BITROCK_TOMCAT_HOST@@</pattern>
@@ -308,22 +330,22 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                             <value>${java_home_directory.dos}</value>
                         </substitution>
                     </substitutionList>
-                </substitute>
+        </substitute>
             </actionList>
         </actionDefinition>
         <actionDefinition name="alfrescoCheckJDBCDriver">
             <parameterList>
-                <stringParameter name="jdbcdriver"/>
+                <stringParameter name="jdbcdriver" />
             </parameterList>
             <actionList>
                 <setInstallerVariable name="alfresco_database_validate_query" value="">
-                    <ruleEvaluationLogic>or</ruleEvaluationLogic>
-                    <ruleList>
-                        <compareText text="${jdbcdriver}" value="oracle.jdbc.OracleDriver"/>
-                        <compareText text="${jdbcdriver}" value="com.ibm.db2.jcc.DB2Driver"/>
-                    </ruleList>
+                <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                <ruleList>
+                    <compareText text="${jdbcdriver}" value="oracle.jdbc.OracleDriver"/>
+                    <compareText text="${jdbcdriver}" value="com.ibm.db2.jcc.DB2Driver"/>
+                </ruleList>
                 </setInstallerVariable>
-                <globalVariables names="alfresco_database_validate_query"/>
+                <globalVariables names="alfresco_database_validate_query" />
             </actionList>
         </actionDefinition>
         <actionDefinition name="alfrescoAutodetectJava">
@@ -355,7 +377,7 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                                 </validVersion>
                             </validVersionList>
                             <ruleList>
-                                <isFalse value="${javaRequiredOrAbort}"/>
+                                <isFalse value="${javaRequiredOrAbort}" />
                             </ruleList>
                         </autodetectJava>
                         <setInstallerVariable name="component(tomcat).parameter(java_is_jdk).value" value="1">
@@ -369,10 +391,11 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                             <showMessageOnError>1</showMessageOnError>
                             <text>The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco. Please install a 64bit version of Java before continuing, or go back and ensure the “Java” component is selected.</text>
                             <ruleList>
-                                <compareText logic="equals" text="${alfrescoInstallerBitness}" value="64"/>
+                                <compareText text="${alfrescoInstallerBitness}" logic="equals" value="64"/>
                                 <compareText text="${java_bitness}" value="32"/>
                             </ruleList>
                         </throwError>
+                        
                         <autodetectJava>
                             <abortOnError>1</abortOnError>
                             <showMessageOnError>1</showMessageOnError>
@@ -393,9 +416,10 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                                 </validVersion>
                             </validVersionList>
                             <ruleList>
-                                <isTrue value="${javaRequiredOrAbort}"/>
+                                <isTrue value="${javaRequiredOrAbort}" />
                             </ruleList>
                         </autodetectJava>
+
                         <setInstallerVariableFromRegEx>
                             <name>java_home_directory</name>
                             <text>${java_executable}</text>
@@ -445,7 +469,7 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                                 <compareText>
                                     <text>${java_home_directory}</text>
                                     <logic>contains</logic>
-                                    <value/>
+                                    <value> </value>
                                 </compareText>
                                 <fileExists path="${java_home_directory}"/>
                             </ruleList>
@@ -462,7 +486,7 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                         </actionGroup>
                     </actionList>
                 </actionGroup>
-                <setInstallerVariable name="component(java).parameter(java_installation_type).value" value="existing"/>
+                <setInstallerVariable name="component(java).parameter(java_installation_type).value" value="existing" />
             </actionList>
         </actionDefinition>
     </functionDefinitionList>

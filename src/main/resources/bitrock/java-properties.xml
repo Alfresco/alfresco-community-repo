@@ -16,7 +16,7 @@
                 <throwError>
                     <text>Java is not installed in your Stack. This module requires to have Java installed.</text>
                     <ruleList>
-                        <compareText logic="equals" text="${java_home_directory}" value=""/>
+                        <compareText text="${java_home_directory}" logic="equals" value=""/>
                     </ruleList>
                 </throwError>
             </actionList>
@@ -34,3 +34,4 @@
         </iniFileSet>
     </postInstallationActionList>
 </component>
+

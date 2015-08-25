@@ -1,7 +1,7 @@
 <component>
     <name>alfrescovalidations</name>
     <description>//Alfresco Validations</description>
-    <detailedDescription/>
+    <detailedDescription></detailedDescription>
     <selected>1</selected>
     <show>0</show>
     <functionDefinitionList>
@@ -22,7 +22,7 @@
                 </throwError>
                 <alfrescoAutodetectJava javaRequiredOrAbort="1" javaRequiredJdk="1" alfrescoInstallerBitness="${alfresco_installer_bitness}">
                     <ruleList>
-                        <isFalse value="${component(javaalfresco).selected}"/>
+                        <isFalse value="${component(javaalfresco).selected}" />
                     </ruleList>
                 </alfrescoAutodetectJava>
             </actionList>
@@ -139,6 +139,7 @@
                         <platformTest type="windows" negate="1"/>
                     </ruleList>
                 </setInstallerVariable>
+
                 <!-- Network validation -->
                 <actionGroup>
                     <actionList>
@@ -247,7 +248,7 @@
             <explanation>This environment is not configured optimally for Alfresco - please carefully review this list before continuing.
 
 While these issues will not prevent Alfresco from functioning, some product features may be unavailable, or the system may not perform optimally.</explanation>
-            <value/>
+            <value></value>
             <insertBefore>readytoinstall</insertBefore>
         </infoParameter>
     </parameterList>
@@ -261,3 +262,4 @@ While these issues will not prevent Alfresco from functioning, some product feat
         </alfrescoComponentsValidations>
     </preInstallationActionList>
 </component>
+

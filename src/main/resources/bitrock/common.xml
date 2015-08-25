@@ -1,3 +1,4 @@
+
 <!-- common 1.0
 Componentname: common
 
@@ -17,37 +18,38 @@ Copyrighted by BitRock
     <show>0</show>
     <selected>1</selected>
     <initializationActionList>
-        <setInstallerVariable name="WRAPPERS" persist="1" value=""/>
-        <setInstallerVariable name="PATH" persist="1" value="$PATH"/>
-        <setInstallerVariable name="PATH" persist="1" value="${env(PATH)}:$PATH">
+        <setInstallerVariable name="WRAPPERS" value="" persist="1"/>
+        <setInstallerVariable name="PATH" value="$PATH" persist="1"/>
+        <setInstallerVariable name="PATH" value="${env(PATH)}:$PATH" persist="1">
             <ruleList>
                 <isTrue value="${include_system_path}"/>
             </ruleList>
         </setInstallerVariable>
-        <setInstallerVariable name="PATH_WIN" persist="1" value="%PATH%"/>
-        <setInstallerVariable name="LD_LIBRARY_PATH" persist="1" value="$LD_LIBRARY_PATH"/>
-        <setInstallerVariable name="LD_LIBRARY_PATH" persist="1" value="${env(LD_LIBRARY_PATH)}:$LD_LIBRARY_PATH">
+        <setInstallerVariable name="PATH_WIN" value="%PATH%" persist="1"/>
+        <setInstallerVariable name="LD_LIBRARY_PATH" value="$LD_LIBRARY_PATH" persist="1"/>
+        <setInstallerVariable name="LD_LIBRARY_PATH" value="${env(LD_LIBRARY_PATH)}:$LD_LIBRARY_PATH" persist="1">
             <ruleList>
                 <isTrue value="${include_system_ld_library_path}"/>
             </ruleList>
         </setInstallerVariable>
-        <setInstallerVariable name="DYLD_FALLBACK_LIBRARY_PATH" persist="1" value="$DYLD_FALLBACK_LIBRARY_PATH"/>
-        <setInstallerVariable name="DYLD_FALLBACK_LIBRARY_PATH" persist="1" value="${env(DYLD_FALLBACK_LIBRARY_PATH)}:$DYLD_FALLBACK_LIBRARY_PATH">
+        <setInstallerVariable name="DYLD_FALLBACK_LIBRARY_PATH" value="$DYLD_FALLBACK_LIBRARY_PATH" persist="1"/>
+        <setInstallerVariable name="DYLD_FALLBACK_LIBRARY_PATH" value="${env(DYLD_FALLBACK_LIBRARY_PATH)}:$DYLD_FALLBACK_LIBRARY_PATH" persist="1">
             <ruleList>
                 <isTrue value="${include_system_ld_library_path}"/>
             </ruleList>
         </setInstallerVariable>
-        <setInstallerVariable name="LDFLAGS" persist="1" value="$LDFLAGS"/>
-        <setInstallerVariable name="CFLAGS" persist="1" value="$CFLAGS"/>
-        <setInstallerVariable name="ENV_VAR" persist="1" value=""/>
-        <setInstallerVariable name="ENV_BINARY" persist="1" value="/bin/env">
+    <setInstallerVariable name="LDFLAGS" value="$LDFLAGS" persist="1"/>
+    <setInstallerVariable name="CFLAGS" value="$CFLAGS" persist="1"/>
+    <setInstallerVariable name="CXXFLAGS" value="$CXXFLAGS" persist="1"/>
+        <setInstallerVariable name="ENV_VAR" value="" persist="1"/>
+        <setInstallerVariable name="ENV_BINARY" value="/bin/env" persist="1">
             <ruleList>
-                <fileTest condition="exists" path="/bin/env"/>
+                <fileTest path="/bin/env" condition="exists"/>
             </ruleList>
         </setInstallerVariable>
-        <setInstallerVariable name="ENV_BINARY" persist="1" value="/usr/bin/env">
+        <setInstallerVariable name="ENV_BINARY" value="/usr/bin/env" persist="1">
             <ruleList>
-                <fileTest condition="exists" path="/usr/bin/env"/>
+                <fileTest path="/usr/bin/env" condition="exists"/>
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariable name="COMMON_FILE_LIST" value="*"/>
@@ -94,24 +96,27 @@ Copyrighted by BitRock
         </booleanParameter>
     </parameterList>
     <readyToInstallActionList>
-        <setInstallerVariable name="SET_ENVIRONMENT_SCRIPT" persist="1" value="${base_scripts_root_directory}/setenv.sh">
+        <setInstallerVariable name="SET_ENVIRONMENT_SCRIPT" value="${base_scripts_root_directory}/setenv.sh" persist="1">
             <ruleList>
                 <platformTest type="unix"/>
             </ruleList>
         </setInstallerVariable>
-        <setInstallerVariable name="SET_ENVIRONMENT_SCRIPT" persist="1" value="${base_scripts_root_directory.dos}\setenv.bat">
+        <setInstallerVariable name="SET_ENVIRONMENT_SCRIPT" value="${base_scripts_root_directory.dos}\setenv.bat" persist="1">
             <ruleList>
                 <platformTest type="windows"/>
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariable name="COMMON_PATH" value="${common_root_directory}/bin"/>
+        <setInstallerVariable name="COMMON_PATH_WIN" value="${common_root_directory.dos}\bin"/>
         <setInstallerVariable name="PATH" value="${COMMON_PATH}:${PATH}"/>
+        <setInstallerVariable name="PATH_WIN" value="${COMMON_PATH_WIN};${PATH_WIN}"/>
         <setInstallerVariable name="COMMON_LD_LIBRARY_PATH" value="${common_root_directory}/lib"/>
         <setInstallerVariable name="LD_LIBRARY_PATH" value="${COMMON_LD_LIBRARY_PATH}:${LD_LIBRARY_PATH}"/>
-        <setInstallerVariable name="COMMON_DYLD_LIBRARY_PATH" value="${common_root_directory}/lib"/>
-        <setInstallerVariable name="DYLD_FALLBACK_LIBRARY_PATH" value="${COMMON_DYLD_LIBRARY_PATH}:${DYLD_FALLBACK_LIBRARY_PATH}"/>
+        <setInstallerVariable name="COMMON_DYLD_FALLBACK_LIBRARY_PATH" value="${common_root_directory}/lib"/>
+        <setInstallerVariable name="DYLD_FALLBACK_LIBRARY_PATH" value="${COMMON_DYLD_FALLBACK_LIBRARY_PATH}:${DYLD_FALLBACK_LIBRARY_PATH}"/>
         <setInstallerVariable name="LDFLAGS" value="-L${common_root_directory}/lib ${LDFLAGS}"/>
         <setInstallerVariable name="CFLAGS" value="-I${common_root_directory}/include ${CFLAGS}"/>
+        <setInstallerVariable name="CXXFLAGS" value="-I${common_root_directory}/include ${CXXFLAGS}"/>
     </readyToInstallActionList>
     <folderList>
         <folder>
@@ -119,14 +124,8 @@ Copyrighted by BitRock
             <destination>${common_root_directory}</destination>
             <name>common</name>
             <distributionFileList>
-                <distributionFile allowWildcards="1" origin="${common_distribution_folder}/*"/>
+                <distributionFile origin="${common_distribution_folder}/*" allowWildcards="1"/>
             </distributionFileList>
-            <shouldPackRuleList>
-                <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
-            </shouldPackRuleList>
-            <ruleList>
-                <platformTest type="unix"/>
-            </ruleList>
             <actionList>
                 <substitute>
                     <type>exact</type>
@@ -152,11 +151,18 @@ Copyrighted by BitRock
     <postInstallationActionList>
         <createDirectory path="${base_scripts_root_directory}">
             <ruleList>
-                <fileTest condition="not_exists" path="${base_scripts_root_directory}"/>
+                <fileTest path="${base_scripts_root_directory}" condition="not_exists" />
             </ruleList>
         </createDirectory>
-        <!-- set the environment script -->
-        <writeFile>
+
+        <setInstallerVariable name="ENV_VAR" value="TERMINFO=${installdir}/common/share/terminfo&#10;export TERMINFO&#10;${ENV_VAR}">
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+
+<!-- set the environment script -->
+<writeFile>
             <path>${SET_ENVIRONMENT_SCRIPT}</path>
             <text>#!/bin/sh
 echo $LD_LIBRARY_PATH | egrep "${common_root_directory}" > /dev/null
@@ -167,15 +173,16 @@ LD_LIBRARY_PATH="${LD_LIBRARY_PATH}"
 export LD_LIBRARY_PATH
 fi
 
-${ENV_VAR}</text>
+${ENV_VAR}
+</text>
             <ruleList>
                 <platformTest type="unix"/>
-                <platformTest negate="1" type="osx"/>
-                <platformTest negate="1" type="aix"/>
+                <platformTest type="osx" negate="1" />
+                <platformTest type="aix" negate="1" />
             </ruleList>
         </writeFile>
-        <!-- set the environment script -->
-        <writeFile>
+<!-- set the environment script -->
+<writeFile>
             <path>${SET_ENVIRONMENT_SCRIPT}</path>
             <text>#!/bin/sh
 echo $DYLD_FALLBACK_LIBRARY_PATH | egrep "${common_root_directory}" > /dev/null
@@ -186,13 +193,14 @@ DYLD_FALLBACK_LIBRARY_PATH="${DYLD_FALLBACK_LIBRARY_PATH}"
 export DYLD_FALLBACK_LIBRARY_PATH
 fi
 
-${ENV_VAR}</text>
+${ENV_VAR}
+</text>
             <ruleList>
                 <platformTest type="osx"/>
             </ruleList>
         </writeFile>
-        <!-- set the environment script -->
-        <writeFile>
+<!-- set the environment script -->
+<writeFile>
             <path>${SET_ENVIRONMENT_SCRIPT}</path>
             <text>#!/bin/sh
 echo $LIBPATH | egrep "${common_root_directory}" > /dev/null
@@ -203,44 +211,47 @@ LIBPATH="${LD_LIBRARY_PATH}"
 export LIBPATH
 fi
 
-${ENV_VAR}</text>
+${ENV_VAR}
+</text>
             <ruleList>
                 <platformTest type="aix"/>
             </ruleList>
         </writeFile>
-	<actionGroup>
-	    <actionList>
-		<addTextToFile>
-		    <file>${SET_ENVIRONMENT_SCRIPT}</file>
-		    <text>
+    <actionGroup>
+        <actionList>
+        <addTextToFile>
+            <file>${SET_ENVIRONMENT_SCRIPT}</file>
+            <text>
 . ${base_scripts_root_directory}/build-setenv.sh
 </text>
-		</addTextToFile>
-		<writeFile>
-		    <path>${base_scripts_root_directory}/build-setenv.sh</path>
-		    <text>#!/bin/sh
+        </addTextToFile>
+        <writeFile>
+            <path>${base_scripts_root_directory}/build-setenv.sh</path>
+            <text>#!/bin/sh
 LDFLAGS="${LDFLAGS}"
 export LDFLAGS
 CFLAGS="${CFLAGS}"
 export CFLAGS
-		    </text>
-		</writeFile>
-		<addTextToFile>
-		    <file>${base_scripts_root_directory}/build-setenv.sh</file>
-		    <text>
+CXXFLAGS="${CXXFLAGS}"
+export CXXFLAGS
+            </text>
+        </writeFile>
+        <addTextToFile>
+            <file>${base_scripts_root_directory}/build-setenv.sh</file>
+            <text>
 PKG_CONFIG_PATH="${common_root_directory}/lib/pkgconfig"
 export PKG_CONFIG_PATH
 </text>
                     <ruleList>
-                        <fileExists path="${common_root_directory}/lib/pkgconfig"/>
-                    </ruleList>
-                </addTextToFile>
-            </actionList>
-            <ruleList>
-                <isTrue value="${include_build_script}"/>
-                <platformTest type="unix"/>
+            <fileExists path="${common_root_directory}/lib/pkgconfig" />
             </ruleList>
-        </actionGroup>
+        </addTextToFile>
+        </actionList>
+        <ruleList>
+        <isTrue value="${include_build_script}" />
+        <platformTest type="unix" />
+        </ruleList>
+    </actionGroup>
         <substitute>
             <files>${SET_ENVIRONMENT_SCRIPT}</files>
             <type>regexp</type>
@@ -251,14 +262,15 @@ export PKG_CONFIG_PATH
                 </substitution>
             </substitutionList>
             <ruleList>
-                <platformTest type="aix"/>
+        <platformTest type="aix" />
             </ruleList>
         </substitute>
         <writeFile>
             <path>${SET_ENVIRONMENT_SCRIPT}</path>
             <text>set PATH=${PATH_WIN}
 
-${ENV_VAR}</text>
+${ENV_VAR}
+</text>
             <ruleList>
                 <platformTest type="windows"/>
             </ruleList>
@@ -271,12 +283,16 @@ ${ENV_VAR}</text>
                     <pattern>@@BITROCK_SET_ENVIRONMENT_SCRIPT@@</pattern>
                     <value>${SET_ENVIRONMENT_SCRIPT}</value>
                 </substitution>
+                <substitution>
+                    <pattern>@@BITROCK_COMMON_ROOTDIR@@</pattern>
+                    <value>${common_root_directory}</value>
+                </substitution>
             </substitutionList>
             <ruleList>
-                <compareText logic="does_not_equal" text="1" value="${WRAPPER_BINARY}"/>
+                <compareText value="${WRAPPER_BINARY}" logic="does_not_equal" text="1"/>
             </ruleList>
         </substitute>
-        <setInstallerVariableFromRegEx name="WRAPPERS_CONFIGS" pattern="/([a-zA-Z0-9/./-/_]+);" substitution="/.\1.setenv;" text="${WRAPPERS}"/>
+        <setInstallerVariableFromRegEx text="${WRAPPERS}" substitution="/.\1.setenv;" name="WRAPPERS_CONFIGS" pattern="/([a-zA-Z0-9/./-/_]+);"/>
         <substitute>
             <files>${WRAPPERS_CONFIGS}</files>
             <type>exact</type>
@@ -287,9 +303,11 @@ ${ENV_VAR}</text>
                 </substitution>
             </substitutionList>
             <ruleList>
-                <compareText logic="does_not_equal" text="0" value="${WRAPPER_BINARY}"/>
+                <compareText value="${WRAPPER_BINARY}" logic="does_not_equal" text="0"/>
             </ruleList>
         </substitute>
+
         <addFilesToUninstaller files="${SET_ENVIRONMENT_SCRIPT};${base_scripts_root_directory}"/>
-    </postInstallationActionList>
+        </postInstallationActionList>
 </component>
+

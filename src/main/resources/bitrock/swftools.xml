@@ -21,20 +21,20 @@
     <readyToInstallActionList>
         <setInstallerVariable name="swftools_root_directory" value="${installdir}/common"/>
                  <setInstallerVariable name="SWFTOOLS_WRAPPERS">
-            <value>			${swftools_root_directory}/bin/as3compile
-			${swftools_root_directory}/bin/font2swf
-			${swftools_root_directory}/bin/jpeg2swf 
-			${swftools_root_directory}/bin/pdf2swf
-			${swftools_root_directory}/bin/png2swf 
-			${swftools_root_directory}/bin/swfbbox 
-			${swftools_root_directory}/bin/swfc 
-			${swftools_root_directory}/bin/swfcombine 
-			${swftools_root_directory}/bin/swfdump
-			${swftools_root_directory}/bin/swfextract 
-			${swftools_root_directory}/bin/swfrender
+            <value>         ${swftools_root_directory}/bin/as3compile
+            ${swftools_root_directory}/bin/font2swf
+            ${swftools_root_directory}/bin/jpeg2swf 
+            ${swftools_root_directory}/bin/pdf2swf
+            ${swftools_root_directory}/bin/png2swf 
+            ${swftools_root_directory}/bin/swfbbox 
+            ${swftools_root_directory}/bin/swfc 
+            ${swftools_root_directory}/bin/swfcombine 
+            ${swftools_root_directory}/bin/swfdump
+            ${swftools_root_directory}/bin/swfextract 
+            ${swftools_root_directory}/bin/swfrender
                         ${swftools_root_directory}/bin/swfstrings 
-			${swftools_root_directory}/bin/wav2swf
-		    </value>
+            ${swftools_root_directory}/bin/wav2swf
+            </value>
         </setInstallerVariable>
         <setInstallerVariable name="WRAPPERS" value="${SWFTOOLS_WRAPPERS};${WRAPPERS}"/>
     </readyToInstallActionList>

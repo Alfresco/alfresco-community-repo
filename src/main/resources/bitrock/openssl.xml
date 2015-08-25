@@ -1,3 +1,4 @@
+
 <!-- openssl 1.0
 Componentname: openssl
 
@@ -17,47 +18,51 @@ Copyrighted by BitRock
     <show>0</show>
     <selected>1</selected>
     <preBuildActionList>
-        <setInstallerVariable name="component(openssl).parameter(curl_environment_wrapped).value" value="1">
+        <setInstallerVariable name="component(openssl).parameter(curl_environment_wrapped).value" value="1" >
             <ruleList>
-                <fileTest condition="exists" path="${build_project_directory}/common/bin/curl"/>
-                <fileTest condition="exists" path="${build_project_directory}/common/bin/curl.bin"/>
-                <fileTest condition="exists" path="${build_project_directory}/common/openssl/certs/curl-ca-bundle.crt"/>
+                <fileTest path="${build_project_directory}/common/bin/curl" condition="exists" />
+                <fileTest path="${build_project_directory}/common/bin/curl.bin" condition="exists" />
+                <fileTest path="${build_project_directory}/common/openssl/certs/curl-ca-bundle.crt" condition="exists" />
             </ruleList>
         </setInstallerVariable>
     </preBuildActionList>
     <parameterList>
-        <booleanParameter ask="0" name="curl_environment_wrapped" value="0"/>
+        <booleanParameter name="curl_environment_wrapped" value="0" ask="0" />
     </parameterList>
     <readyToInstallActionList>
         <setInstallerVariable name="OPENSSL_COMMON_FILE_LIST">
-            <value>${common_root_directory}/bin/openssl
-                                                ${common_root_directory}/openssl/openssl.cnf</value>
+            <value>             ${common_root_directory}/bin/openssl
+                                                ${common_root_directory}/openssl/openssl.cnf
+            </value>
         </setInstallerVariable>
         <setInstallerVariable name="CURL_COMMON_FILE_LIST">
-            <value>${common_root_directory}/lib/libcurl.la
+            <value>             ${common_root_directory}/lib/libcurl.la
                         ${common_root_directory}/lib/pkgconfig/libcurl.pc
-                        ${common_root_directory}/bin/curl-config</value>
-        </setInstallerVariable>
+                        ${common_root_directory}/bin/curl-config
+                    </value>
+        </setInstallerVariable>  
         <setInstallerVariable name="CURL_COMMON_FILE_LIST">
             <value>${CURL_COMMON_FILE_LIST}             
-                        ${common_root_directory}/bin/curl</value>
+                        ${common_root_directory}/bin/curl
+                    </value>
             <ruleList>
-                <isTrue value="${curl_environment_wrapped}"/>
+                <isTrue value="${curl_environment_wrapped}" />
             </ruleList>
-        </setInstallerVariable>
+        </setInstallerVariable>  
         <setInstallerVariable name="COMMON_FILE_LIST" value="${OPENSSL_COMMON_FILE_LIST};${CURL_COMMON_FILE_LIST};${COMMON_FILE_LIST}"/>
         <actionGroup>
             <actionList>
                 <setInstallerVariable name="CURL_ENV_VAR">
                     <value>##### CURL ENV #####
 CURL_CA_BUNDLE=${common_root_directory}/openssl/certs/curl-ca-bundle.crt
-export CURL_CA_BUNDLE</value>
+export CURL_CA_BUNDLE
+</value>
                 </setInstallerVariable>
-                <setInstallerVariable name="ENV_VAR" value="${ENV_VAR}${CURL_ENV_VAR}"/>
+                <setInstallerVariable name="ENV_VAR" value="${ENV_VAR}${CURL_ENV_VAR}" />
             </actionList>
             <ruleList>
-                <platformTest type="unix"/>
-                <isTrue value="${curl_environment_wrapped}"/>
+                <platformTest type="unix" />
+                <isTrue value="${curl_environment_wrapped}" />
             </ruleList>
         </actionGroup>
         <actionGroup>
@@ -67,19 +72,23 @@ export CURL_CA_BUNDLE</value>
 SSL_CERT_FILE=${common_root_directory}/openssl/certs/curl-ca-bundle.crt
 export SSL_CERT_FILE
 OPENSSL_CONF=${common_root_directory}/openssl/openssl.cnf
-export OPENSSL_CONF</value>
+export OPENSSL_CONF
+OPENSSL_ENGINES=${common_root_directory}/lib/engines
+export OPENSSL_ENGINES
+</value>
                 </setInstallerVariable>
                 <setInstallerVariable name="ENV_VAR" value="${ENV_VAR}${SSL_ENV_VAR}"/>
             </actionList>
             <ruleList>
-                <platformTest type="unix"/>
+                <platformTest type="unix" />
             </ruleList>
         </actionGroup>
         <actionGroup>
             <actionList>
                 <setInstallerVariable name="SSL_ENV_VAR">
                     <value>rem ##### SSL ENV #####
-set OPENSSL_CONF=${apache_configuration_directory.dos}\openssl.cnf</value>
+set OPENSSL_CONF=${apache_configuration_directory.dos}\openssl.cnf
+</value>
                 </setInstallerVariable>
                 <setInstallerVariable name="ENV_VAR" value="${ENV_VAR}${SSL_ENV_VAR}"/>
             </actionList>
@@ -90,18 +99,18 @@ set OPENSSL_CONF=${apache_configuration_directory.dos}\openssl.cnf</value>
         </actionGroup>
     </readyToInstallActionList>
     <postInstallationActionList>
-	<addTextToFile>
-	    <file>${php_configuration_directory}/php.ini</file>
-	    <text>
+    <addTextToFile>
+        <file>${php_configuration_directory}/php.ini</file>
+        <text>
 ;Curl ca bundle certificate
 curl.cainfo="${common_root_directory}/openssl/certs/curl-ca-bundle.crt"
 </text>
-	    <ruleList>
-		<componentTest name="php" logic="exists" />
-		<platformTest type="unix" />
-		<fileExists path="${php_configuration_directory}/php.ini" />
-	    </ruleList>
-	</addTextToFile>
+        <ruleList>
+        <componentTest name="php" logic="exists" />
+        <platformTest type="unix" />
+        <fileExists path="${php_configuration_directory}/php.ini" />
+        </ruleList>
+    </addTextToFile>
     <addTextToFile>
         <file>${apache_configuration_directory.dos}\httpd.conf</file>
         <text>SetEnv OPENSSL_CONF "${apache_configuration_directory}/openssl.cnf"
@@ -114,3 +123,4 @@ SetEnv PATH "${'${PATH}'};${apache_server_directory}/bin;"
     </addTextToFile>
     </postInstallationActionList>
 </component>
+

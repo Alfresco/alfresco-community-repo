@@ -27,6 +27,8 @@ import static org.mockito.Mockito.mock;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
 import static org.junit.Assert.assertEquals;
 
+import static java.util.Arrays.asList;
+
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -97,9 +99,15 @@ public class CoreServicesExtrasUnitTest
         final NodeService       mockNS = mock(NodeService.class);
 
         final AspectDefinition mockAspect = mock(AspectDefinition.class);
+        when(mockAspect.getName()).thenReturn(testAspect);
+
         final Map<QName, PropertyDefinition> props = new HashMap<>();
         final PropertyDefinition mockProp1 = mock(PropertyDefinition.class);
         final PropertyDefinition mockProp2 = mock(PropertyDefinition.class);
+        for (PropertyDefinition p : asList(mockProp1, mockProp2))
+        {
+            when(p.getContainerClass()).thenReturn(mockAspect);
+        }
         props.put(testProp1, mockProp1);
         props.put(testProp2, mockProp2);
         when(mockAspect.getProperties()).thenReturn(props);

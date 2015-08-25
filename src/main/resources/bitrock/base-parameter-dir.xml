@@ -50,14 +50,14 @@
     <initializationActionList>
         <setInstallerVariable>
             <name>installdir</name>
-            <value>${platform_install_prefix}/${product_shortname}-${product_version}</value>
+            <value>${platform_install_prefix}/${product_fullname}-${product_version}</value>
             <ruleList>
                 <platformTest type="unix"/>
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariable>
             <name>installdir</name>
-            <value>${platform_install_prefix}/${product_fullname}</value>
+            <value>${platform_install_prefix}/${product_fullname-${product_version}</value>
             <ruleList>
                 <platformTest type="windows"/>
             </ruleList>

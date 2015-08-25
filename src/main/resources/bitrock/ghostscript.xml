@@ -59,7 +59,7 @@ export GS_LIB
             <name>ghostscript</name>
             <destination>${ghostscript_root_directory}</destination>
             <distributionFileList>
-                <distributionDirectory allowWildcards="1" origin="ghostscript/*"/>
+                <distributionDirectory allowWildcards="1" origin="${ghostscript_distribution_folder}/*"/>
             </distributionFileList>
         </folder>
     </folderList>

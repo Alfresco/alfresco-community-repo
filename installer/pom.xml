@@ -184,8 +184,8 @@
         <dependency>
             <groupId>com.ghostscript</groupId>
             <artifactId>ghostscript-distribution</artifactId>
-            <version>8.64</version>
-            <classifier>${installer.ghostscript.version}</classifier>
+            <version>${installer.ghostscript.version}</version>
+            <classifier>win64</classifier>
             <type>tgz</type>
         </dependency>
         

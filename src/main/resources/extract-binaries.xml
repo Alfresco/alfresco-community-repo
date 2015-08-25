@@ -69,12 +69,6 @@
                 <arg value="${maven.localrepo}/org/alfresco/installer-common/${installer.common.version}/installer-common-${installer.common.version}-@{targetPlatform}.tgz" />
             </exec>
 
-            <echo>  Extracting GhostScript...</echo>
-            <exec failonerror="true" executable="tar" dir="${bin.folder}">
-                <arg value="xf" />
-                <arg value="${maven.localrepo}/com/ghostscript/ghostscript-distribution/${installer.ghostscript.version}/ghostscript-distribution-${installer.ghostscript.version}-@{targetPlatform}.tgz" />
-            </exec>
-
             <echo>  Extracting Tomcat...</echo>
             <exec failonerror="true" executable="tar" dir="${bin.folder}">
                 <arg value="xf" />
@@ -145,6 +139,11 @@
             <exec failonerror="true" executable="tar" dir="${bin.folder}">
                 <arg value="xf" />
                 <arg value="${maven.localrepo}/org/libreoffice/libreoffice-dist/${installer.libreoffice.version}/libreoffice-dist-${installer.libreoffice.version}-${libreoffice.platform}.tgz" />
+            </exec>
+            <echo>  Extracting GhostScript...</echo>
+            <exec failonerror="true" executable="tar" dir="${bin.folder}">
+                <arg value="xf" />
+                <arg value="${maven.localrepo}/com/ghostscript/ghostscript-distribution/${installer.ghostscript.version}/ghostscript-distribution-${installer.ghostscript.version}-@{targetPlatform}.tgz" />
             </exec>
         </sequential>
     </macrodef>

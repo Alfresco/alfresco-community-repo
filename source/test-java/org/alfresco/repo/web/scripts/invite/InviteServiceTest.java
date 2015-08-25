@@ -998,6 +998,10 @@ public class InviteServiceTest extends BaseWebScriptTest
         }, AuthenticationUtil.getSystemUserName());
         
         assertEquals(true, inviteePersonExists);
+        
+        // Reset back to default
+        this.invitationServiceImpl.setNominatedInvitationWorkflowId(
+                WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT);
     }
     
     /**

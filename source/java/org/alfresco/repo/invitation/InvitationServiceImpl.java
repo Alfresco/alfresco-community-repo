@@ -1424,6 +1424,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
                 created ? InvitationWorkflowType.NOMINATED_EXTERNAL : InvitationWorkflowType.NOMINATED;
         WorkflowDefinition wfDefinition = getWorkflowDefinition(type);
 
+        if (logger.isDebugEnabled())
+        {
+           logger.debug("Using workflow definition " + wfDefinition.getId());
+        }
+        
         // Get invitee person NodeRef to add as assignee
         NodeRef inviteeNodeRef = personService.getPerson(inviteeUserName);
         SiteInfo siteInfo = this.siteService.getSite(siteShortName);

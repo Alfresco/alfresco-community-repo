@@ -8,16 +8,15 @@
 
       <startEvent id="start" activiti:formKey="inwf:inviteToSiteTask" />
 
-      <!-- TODO: SHA-944: Change Order of Email Send to Be After Adding Site -->
-      <sequenceFlow id="flow1" sourceRef="start" targetRef="sendInvite" />
+      <sequenceFlow id="flow1" sourceRef="start" targetRef="accepted" />
+      
+      <serviceTask id="accepted" name="Accepted" activiti:delegateExpression="${AcceptNominatedInviteDelegate}" />
+      <sequenceFlow id="flow2" sourceRef="accepted" targetRef="sendInvite" />
       
       <serviceTask id="sendInvite" name="Send Invite" activiti:delegateExpression="${SendNominatedInviteAddDirectDelegate}" />
       
-      <sequenceFlow id="flow2" sourceRef="sendInvite" targetRef="accepted" />
+      <sequenceFlow id="flow3" sourceRef="sendInvite" targetRef="inviteAccepted" />
       
-      <serviceTask id="accepted" name="Accepted" activiti:delegateExpression="${AcceptNominatedInviteDelegate}" />
-      <sequenceFlow id="flow3" sourceRef="accepted" targetRef="inviteAccepted" />
-
        <userTask id="inviteAccepted" name="Invitation Accepted"
             activiti:formKey="inwf:acceptInviteTask" >
             <extensionElements>

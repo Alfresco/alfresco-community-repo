@@ -26,6 +26,7 @@ import java.util.Set;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.invitation.InvitationServiceImpl;
 import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.invitation.script.ScriptInvitationService;
 import org.alfresco.repo.invitation.site.InviteInfo;
@@ -89,6 +90,7 @@ public class InviteServiceTest extends BaseWebScriptTest
     private NamespaceService namespaceService;
     private TransactionService transactionService;
     private NodeArchiveService nodeArchiveService;
+    private InvitationServiceImpl invitationServiceImpl;
 
     // stores invitee email addresses, one entry for each "start invite" operation
     // invoked, so that resources created for each invitee for each test
@@ -143,6 +145,7 @@ public class InviteServiceTest extends BaseWebScriptTest
         this.transactionService = (TransactionService) getServer().getApplicationContext()
                 .getBean("TransactionService");
         this.nodeArchiveService = (NodeArchiveService)getServer().getApplicationContext().getBean("nodeArchiveService");
+        this.invitationServiceImpl = (InvitationServiceImpl) getServer().getApplicationContext().getBean("invitationService");
         ScriptInvitationService scriptInvitationService = (ScriptInvitationService) getServer().getApplicationContext().getBean("invitationServiceScript");
         scriptInvitationService.setSiteService(this.siteService);
         Invite invite = (Invite) getServer().getApplicationContext().getBean("webscript.org.alfresco.repository.invite.invite.get");
@@ -935,6 +938,10 @@ public class InviteServiceTest extends BaseWebScriptTest
     
     public void testInviteeResourcesNotDeletedUponRejectWhenInvitesPending() throws Exception
     {
+        // Test only applies to legacy invite workflow
+        this.invitationServiceImpl.setNominatedInvitationWorkflowId(
+                WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_INVITE);
+        
         // Create invitee person
         final String inviteeEmail = INVITEE_EMAIL_PREFIX + RandomStringUtils.randomAlphanumeric(6) + "@" + INVITEE_EMAIL_DOMAIN;
         AuthenticationUtil.runAs(new RunAsWork<Object>()

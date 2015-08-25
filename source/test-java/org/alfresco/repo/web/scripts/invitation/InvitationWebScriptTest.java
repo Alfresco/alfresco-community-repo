@@ -24,6 +24,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.invitation.InvitationServiceImpl;
+import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
@@ -65,6 +67,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
     private PersonService personService;
     private NodeService nodeService;
     private TransactionService transactionService;
+    private InvitationServiceImpl invitationServiceImpl;
 
     private String userOne = "InvitationTestOne" + GUID.generate();
     private String userTwo = "InvitationTestTwo" + GUID.generate();
@@ -102,7 +105,8 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         this.personService = (PersonService) getServer().getApplicationContext().getBean("PersonService");
         this.nodeService = (NodeService) getServer().getApplicationContext().getBean("NodeService");
         this.transactionService = (TransactionService) getServer().getApplicationContext().getBean("TransactionService");
-
+        this.invitationServiceImpl = (InvitationServiceImpl) getServer().getApplicationContext().getBean("invitationService");
+        
         // turn off email sending to prevent errors during unit testing 
         // (or sending out email by accident from tests)
         InviteServiceTest.configureMailExecutorForTestMode(this.getServer());
@@ -189,9 +193,10 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
      * Detailed Test of List Invitation Web Script. 
      * Using URL: /api/invitations
      * 
+     * @param requireAcceptance true if a workflow requiring acceptance is being used
      * @throws Exception
      */
-    public void testInvitationsGet() throws Exception
+    protected void testInvitationsGet(boolean requireAcceptance) throws Exception
     {
         // Create two sites.
         String shortNameSiteA = GUID.generate();
@@ -241,7 +246,10 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
             JSONObject moderatedBInv = getInvitation(moderatedIdBUSER_TWO, data);
             assertNotNull("Moderated invitation to Site B not present!", moderatedBInv);
             JSONObject nominatedInv = getInvitation(nominatedId, data);
-            assertNotNull("Nominated invitation to Site A not present!", nominatedInv);
+            if (requireAcceptance)
+            {
+                assertNotNull("Nominated invitation to Site A not present!", nominatedInv);
+            }
 
             checkJSONInvitations(data);
         }
@@ -284,14 +292,42 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
             assertNotNull(top.getString("message"));
         }
     }
+    
+    /**
+     * Detailed Test of List Invitation Web Script. 
+     * Using URL: /api/invitations
+     * 
+     * @throws Exception
+     */
+    public void testInvitationsGet() throws Exception
+    {
+        testInvitationsGet(false);
+    }
+    
+    /**
+     * Detailed Test of List Invitation Web Script using legacy workflow which requires user acceptance
+     * Using URL: /api/invitations
+     * 
+     * @throws Exception
+     */
+    public void testInvitationsGetRequireNominatedAcceptance() throws Exception
+    {
+        this.invitationServiceImpl.setNominatedInvitationWorkflowId(
+                WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_INVITE);
+        testInvitationsGet(true);
+        // Reset back to default
+        this.invitationServiceImpl.setNominatedInvitationWorkflowId(
+                WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT);
+    }
 
     /**
      * Detailed Test of List Invitation Web Script. 
      * Using URL: /api/sites/{shortname}/invitations
      * 
+     * @param requireAcceptance true if a workflow requiring acceptance is being used
      * @throws Exception
      */
-    public void testSiteInvitationsGet() throws Exception
+    protected void testSiteInvitationsGet(boolean requireAcceptance) throws Exception
     {
         // Create two sites.
         String shortNameSiteA = GUID.generate();
@@ -336,12 +372,15 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
             JSONObject top = new JSONObject(response.getContentAsString());
             // System.out.println(response.getContentAsString());
             JSONArray data = top.getJSONArray("data");
-            assertEquals("Wrong number of invitations!", 2, data.length());
+            assertEquals("Wrong number of invitations!", requireAcceptance ? 2 : 1, data.length());
             
             JSONObject moderatedAInv = getInvitation(moderatedIdAUSER_TWO, data);
             assertNotNull("Moderated invitation to Site A not present!", moderatedAInv);
             JSONObject nominatedInv = getInvitation(nominatedId, data);
-            assertNotNull("Nominated invitation to Site A not present!", nominatedInv);
+            if (requireAcceptance)
+            {
+                assertNotNull("Nominated invitation to Site A not present!", nominatedInv);
+            }
             checkJSONInvitations(data);
         }
 
@@ -376,7 +415,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         }
         
         // search SiteA by type Nominated: One Nominated User2
-        {
+        if (requireAcceptance) {
             String siteANominatedUrl = URL_SITES + "/" +shortNameSiteA + "/invitations?invitationType=NOMINATED";
             Response response = sendRequest(new GetRequest(siteANominatedUrl), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
@@ -425,6 +464,33 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
             JSONObject top = new JSONObject(response.getContentAsString());
             assertNotNull(top.getString("message"));
         }
+    }
+    
+    /**
+     * Detailed Test of List Invitation Web Script. 
+     * Using URL: /api/sites/{shortname}/invitations
+     * 
+     * @throws Exception
+     */
+    public void testSiteInvitationsGet() throws Exception
+    {
+        testSiteInvitationsGet(false);
+    }
+    
+    /**
+     * Detailed Test of List Invitation Web Script using legacy workflow which requires user acceptance.
+     * Using URL: /api/sites/{shortname}/invitations
+     * 
+     * @throws Exception
+     */
+    public void testSiteInvitationsGetRequireNominatedAcceptance() throws Exception
+    {
+        this.invitationServiceImpl.setNominatedInvitationWorkflowId(
+                WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_INVITE);
+        testSiteInvitationsGet(true);
+        // Reset back to default
+        this.invitationServiceImpl.setNominatedInvitationWorkflowId(
+                WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT);
     }
 
     private void checkJSONInvitations(JSONArray data) throws JSONException

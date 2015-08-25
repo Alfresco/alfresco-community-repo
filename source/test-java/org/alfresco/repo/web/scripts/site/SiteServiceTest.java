@@ -867,12 +867,6 @@ public class SiteServiceTest extends BaseWebScriptTest
         String acceptURL = "page/accept-invite";
         String rejectURL = "page/reject-invite";
         
-        // Create a nominated invitation
-        String nominatedId = createNominatedInvitation(shortName, inviteeFirstName, inviteeLastName, inviteeEmail, inviteeUserName, roleName, serverPath, acceptURL, rejectURL, 201);
-        
-        // Get the nominated invitation
-        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + nominatedId), 200);  
-        
         //Create a new moderated invitation
         String moderatedId = createModeratedInvitation(shortName, inviteComments, userName, roleName);
         
@@ -881,12 +875,12 @@ public class SiteServiceTest extends BaseWebScriptTest
         
         // search for the moderated invitation 
         sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=" + userName), 200);
-          
+        
+        // Create a nominated invitation
+        String nominatedId = createNominatedInvitation(shortName, inviteeFirstName, inviteeLastName, inviteeEmail, inviteeUserName, roleName, serverPath, acceptURL, rejectURL, 201);
+        
         // Search for all invitations on this site
         sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations"), 200);
-        
-        // cancel the nominated invitation
-        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + "/invitations/" + nominatedId), 200);
         
         // cancel the moderated invitation
         sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + "/invitations/" + moderatedId), 200);   
@@ -1076,18 +1070,16 @@ public class SiteServiceTest extends BaseWebScriptTest
             
         }
         /**
-         * search by user - find USER_TWO's two invitations 
+         * search by user - find USER_TWO's invitation
          */
         {
             Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=" + USER_TWO), 200);
             JSONObject top = new JSONObject(response.getContentAsString());
             //System.out.println(response.getContentAsString());
             JSONArray data = top.getJSONArray("data");
-            assertEquals("user two invitation not found", data.length(), 2);
+            assertEquals("user two invitation not found", 1, data.length());
             JSONObject first = data.getJSONObject(0);
-            assertEquals("first userid is wrong", first.getString("inviteeUserName"), USER_TWO);
-            JSONObject second = data.getJSONObject(0);
-            assertEquals("second userid is wrong", second.getString("inviteeUserName"), USER_TWO);
+            assertEquals("userid is wrong", first.getString("inviteeUserName"), USER_TWO);
             
         }
         
@@ -1101,14 +1093,6 @@ public class SiteServiceTest extends BaseWebScriptTest
             //System.out.println(response.getContentAsString());
             JSONArray data = top.getJSONArray("data");
             assertEquals("two moderated invitations not found", data.length(), 2);
-        }
-        
-        {
-            Response response = sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?invitationType=NOMINATED"), 200);
-            JSONObject top = new JSONObject(response.getContentAsString());
-            //System.out.println(response.getContentAsString());
-            JSONArray data = top.getJSONArray("data");
-            assertEquals("one nominated invitation not found", data.length(), 1);
         }
         
         // negative test - unknown invitationType

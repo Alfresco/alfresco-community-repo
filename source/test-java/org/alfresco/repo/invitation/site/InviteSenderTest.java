@@ -113,7 +113,8 @@ public class InviteSenderTest extends TestCase
             String emailTemplateXpath, String emailSubjectKey, boolean requireAcceptance) throws Exception
     {
         String rolePropertyName = "invitation.invitesender.email.role.Role";
-        String subjectPropertyName = "invitation.invitesender.email.subject";
+        String subjectPropertyName = 
+                requireAcceptance ? "invitation.invitesender.email.subject" : "invitation.invitesender.emailAddDirect.subject";
 
         String subjectMsg = "Subject message";
 

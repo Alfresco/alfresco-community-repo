@@ -23,6 +23,7 @@ import static org.alfresco.util.collections.CollectionUtils.filterKeys;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -30,7 +31,6 @@ import org.alfresco.util.collections.Function;
 
 import java.io.Serializable;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Provides additional methods of general use that could (in principle) be moved to the core services.
@@ -55,29 +55,31 @@ public class CoreServicesExtras
 
     /**
      * This method copies the property values for the specified aspect from one node to another.
-     * All associations are ignored.
+     * All associations are ignored. Inherited properties are not copied.
      *
      * @param from the node whose property values are to be read.
      * @param to   the node to which the property values are to be written.
      * @return a Map of the property values which were copied.
      */
-    public Map<QName, Serializable> copyAspect(NodeRef from, NodeRef to, QName aspectQName)
+    public Map<QName, Serializable> copyAspect(final NodeRef from, final NodeRef to, final QName aspectQName)
     {
         final AspectDefinition aspectDefn = dictionaryService.getAspect(aspectQName);
 
         if (aspectDefn == null) { throw new DictionaryException("Unknown aspect: " + aspectQName); }
 
-        final Set<QName> aspectProperties = aspectDefn.getProperties().keySet();
+        final Map<QName, PropertyDefinition> aspectProperties = aspectDefn.getProperties();
 
         final Map<QName, Serializable> nodeProperties = nodeService.getProperties(from);
         final Map<QName, Serializable> relevantPropVals = filterKeys(nodeProperties, new Function<QName, Boolean>()
         {
             @Override public Boolean apply(QName value)
             {
-                return aspectProperties.contains(value);
+                // Only copy property values that are defined on the provided aspect.
+                final PropertyDefinition propDef = aspectProperties.get(value);
+                return propDef != null && propDef.getContainerClass().getName().equals(aspectQName);
             }
         });
-        nodeService.setProperties(to, relevantPropVals);
+        nodeService.addProperties(to, relevantPropVals);
         return relevantPropVals;
     }
 }

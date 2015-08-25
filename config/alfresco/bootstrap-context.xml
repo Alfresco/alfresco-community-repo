@@ -201,6 +201,14 @@
                     <prop key="mimetype">text/xml</prop>
                     <prop key="redeploy">false</prop>
                 </props>
+                
+                <!-- Activiti add site users service workflow definition -->
+                <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/invitation-add-direct.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+                    <prop key="redeploy">false</prop>
+                </props>
             </list>
         </property>
         <property name="models">

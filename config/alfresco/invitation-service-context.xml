@@ -21,6 +21,9 @@
             <ref bean="policyComponent" />
         </property>
         <property name="sysAdminParams" ref="sysAdminParams"/>
+        <property name="nominatedInvitationWorkflowId" value="${site.invite.nominated.workflowId}"/>
+        <property name="nominatedInvitationExternalWorkflowId" value="${site.invite.nominatedExternal.workflowId}"/>
+        <property name="moderatedInvitationWorkflowId" value="${site.invite.moderated.workflowId}"/>
      </bean>
      
     <!-- Site service security bean -->

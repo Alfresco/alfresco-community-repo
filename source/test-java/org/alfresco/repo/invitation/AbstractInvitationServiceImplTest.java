@@ -704,12 +704,28 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
     }
 
     /**
-     * Create a Nominated Invitation (for existing user, USER_ONE) read it.
-     * search for it cancel it search for it again (and fail to find it) Create
-     * a Nominated Invitation read it. search for it reject it Create a
-     * Nominated Invitation read it. accept it
+     * If requireAcceptance=true skip to C1
+     * 
+     * A1. Create a Nominated Invitation (for existing user, USER_ONE)
+     * A2. Read it
+     * A3. Search for it.
+     * A4. Cancel it
+     * A5. Search for it again (and fail to find it)
+     * 
+     * B1. Create a Nominated Invitation
+     * B2. Read it
+     * B3. Search for it
+     * B4. Reject it
+     * 
+     * C1. Create a Nominated Invitation
+     * C2. Read it
+     * C3. Accept it
+     * C4. Verify ACL
+     * 
+     * @param requireAcceptance true if a workflow requiring acceptance is being used
+     * @throws Exception
      */
-    public void testNominatedInvitationExistingUser() throws Exception
+    protected void testNominatedInvitationExistingUser(boolean requireAcceptance) throws Exception
     {
         String inviteeUserName = USER_ONE;
         String inviteeEmail = USER_ONE_EMAIL;
@@ -725,98 +741,103 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
 
         authenticationComponent.setCurrentUser(USER_MANAGER);
 
-        NominatedInvitation nominatedInvitation = invitationService.inviteNominated(inviteeUserName, resourceType,
-                    resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
-
-        assertNotNull("nominated invitation is null", nominatedInvitation);
-        String inviteId = nominatedInvitation.getInviteId();
-        assertEquals("user name wrong", inviteeUserName, nominatedInvitation.getInviteeUserName());
-        assertEquals("resource type name wrong", resourceType, nominatedInvitation.getResourceType());
-        assertEquals("resource name wrong", resourceName, nominatedInvitation.getResourceName());
-        assertEquals("role  name wrong", inviteeRole, nominatedInvitation.getRoleName());
-        assertEquals("server path wrong", serverPath, nominatedInvitation.getServerPath());
-        assertEquals("accept URL wrong", acceptUrl, nominatedInvitation.getAcceptUrl());
-        assertEquals("reject URL wrong", rejectUrl, nominatedInvitation.getRejectUrl());
-
-        // These values should be read from the person record
-        assertEquals("first name wrong", inviteeFirstName, nominatedInvitation.getInviteeFirstName());
-        assertEquals("last name wrong", inviteeLastName, nominatedInvitation.getInviteeLastName());
-        assertEquals("email name wrong", inviteeEmail, nominatedInvitation.getInviteeEmail());
-
-        /**
-         * Now we have an invitation get it and check the details have been
-         * returned correctly.
-         */
-        NominatedInvitation invitation = (NominatedInvitation) invitationService.getInvitation(inviteId);
-
-        assertNotNull("invitation is null", invitation);
-        assertEquals("invite id wrong", inviteId, invitation.getInviteId());
-        assertEquals("user name wrong", inviteeUserName, nominatedInvitation.getInviteeUserName());
-        assertEquals("resource type name wrong", resourceType, invitation.getResourceType());
-        assertEquals("resource name wrong", resourceName, invitation.getResourceName());
-        assertEquals("role  name wrong", inviteeRole, invitation.getRoleName());
-        assertEquals("server path wrong", serverPath, invitation.getServerPath());
-        assertEquals("accept URL wrong", acceptUrl, invitation.getAcceptUrl());
-        assertEquals("reject URL wrong", rejectUrl, invitation.getRejectUrl());
-
-        // These values should have been read from the DB
-        assertEquals("first name wrong", inviteeFirstName, invitation.getInviteeFirstName());
-        assertEquals("last name wrong", inviteeLastName, invitation.getInviteeLastName());
-        assertEquals("email name wrong", inviteeEmail, invitation.getInviteeEmail());
-
-        /**
-         * Search for the new invitation
-         */
-        List<Invitation> invitations = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
-        assertTrue("invitations is empty", !invitations.isEmpty());
-
-        NominatedInvitation firstInvite = (NominatedInvitation) invitations.get(0);
-        assertEquals("invite id wrong", inviteId, firstInvite.getInviteId());
-        assertEquals("first name wrong", inviteeFirstName, firstInvite.getInviteeFirstName());
-        assertEquals("last name wrong", inviteeLastName, firstInvite.getInviteeLastName());
-        assertEquals("user name wrong", inviteeUserName, firstInvite.getInviteeUserName());
-
-        /**
-         * Now cancel the invitation
-         */
-        NominatedInvitation canceledInvitation = (NominatedInvitation) invitationService.cancel(inviteId);
-        assertEquals("invite id wrong", inviteId, canceledInvitation.getInviteId());
-        assertEquals("first name wrong", inviteeFirstName, canceledInvitation.getInviteeFirstName());
-        assertEquals("last name wrong", inviteeLastName, canceledInvitation.getInviteeLastName());
-        assertEquals("user name wrong", inviteeUserName, canceledInvitation.getInviteeUserName());
-
-        /**
-         * Do the query again - should no longer find anything
-         */
-        List<Invitation> it2 = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
-        assertTrue("invitations is not empty", it2.isEmpty());
-
-        /**
-         * Now invite and reject
-         */
-        NominatedInvitation secondInvite = invitationService.inviteNominated(inviteeUserName, resourceType,
-                    resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
-
-        NominatedInvitation rejectedInvitation = (NominatedInvitation) invitationService.cancel(secondInvite
-                    .getInviteId());
-        assertEquals("invite id wrong", secondInvite.getInviteId(), rejectedInvitation.getInviteId());
-        assertEquals("user name wrong", inviteeUserName, rejectedInvitation.getInviteeUserName());
-
-        List<Invitation> it3 = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
-        assertTrue("invitations is not empty", it3.isEmpty());
+        if (requireAcceptance)
+        {
+            NominatedInvitation nominatedInvitation = invitationService.inviteNominated(inviteeUserName, resourceType,
+                        resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
+    
+            assertNotNull("nominated invitation is null", nominatedInvitation);
+            String inviteId = nominatedInvitation.getInviteId();
+            assertEquals("user name wrong", inviteeUserName, nominatedInvitation.getInviteeUserName());
+            assertEquals("resource type name wrong", resourceType, nominatedInvitation.getResourceType());
+            assertEquals("resource name wrong", resourceName, nominatedInvitation.getResourceName());
+            assertEquals("role  name wrong", inviteeRole, nominatedInvitation.getRoleName());
+            assertEquals("server path wrong", serverPath, nominatedInvitation.getServerPath());
+            assertEquals("accept URL wrong", acceptUrl, nominatedInvitation.getAcceptUrl());
+            assertEquals("reject URL wrong", rejectUrl, nominatedInvitation.getRejectUrl());
+    
+            // These values should be read from the person record
+            assertEquals("first name wrong", inviteeFirstName, nominatedInvitation.getInviteeFirstName());
+            assertEquals("last name wrong", inviteeLastName, nominatedInvitation.getInviteeLastName());
+            assertEquals("email name wrong", inviteeEmail, nominatedInvitation.getInviteeEmail());
+    
+            /**
+             * Now we have an invitation get it and check the details have been
+             * returned correctly.
+             */
+            NominatedInvitation invitation = (NominatedInvitation) invitationService.getInvitation(inviteId);
+    
+            assertNotNull("invitation is null", invitation);
+            assertEquals("invite id wrong", inviteId, invitation.getInviteId());
+            assertEquals("user name wrong", inviteeUserName, nominatedInvitation.getInviteeUserName());
+            assertEquals("resource type name wrong", resourceType, invitation.getResourceType());
+            assertEquals("resource name wrong", resourceName, invitation.getResourceName());
+            assertEquals("role  name wrong", inviteeRole, invitation.getRoleName());
+            assertEquals("server path wrong", serverPath, invitation.getServerPath());
+            assertEquals("accept URL wrong", acceptUrl, invitation.getAcceptUrl());
+            assertEquals("reject URL wrong", rejectUrl, invitation.getRejectUrl());
+    
+            // These values should have been read from the DB
+            assertEquals("first name wrong", inviteeFirstName, invitation.getInviteeFirstName());
+            assertEquals("last name wrong", inviteeLastName, invitation.getInviteeLastName());
+            assertEquals("email name wrong", inviteeEmail, invitation.getInviteeEmail());
+    
+            /**
+             * Search for the new invitation
+             */
+            List<Invitation> invitations = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
+            assertTrue("invitations is empty", !invitations.isEmpty());
+    
+            NominatedInvitation firstInvite = (NominatedInvitation) invitations.get(0);
+            assertEquals("invite id wrong", inviteId, firstInvite.getInviteId());
+            assertEquals("first name wrong", inviteeFirstName, firstInvite.getInviteeFirstName());
+            assertEquals("last name wrong", inviteeLastName, firstInvite.getInviteeLastName());
+            assertEquals("user name wrong", inviteeUserName, firstInvite.getInviteeUserName());
+    
+            /**
+             * Now cancel the invitation
+             */
+            NominatedInvitation canceledInvitation = (NominatedInvitation) invitationService.cancel(inviteId);
+            assertEquals("invite id wrong", inviteId, canceledInvitation.getInviteId());
+            assertEquals("first name wrong", inviteeFirstName, canceledInvitation.getInviteeFirstName());
+            assertEquals("last name wrong", inviteeLastName, canceledInvitation.getInviteeLastName());
+            assertEquals("user name wrong", inviteeUserName, canceledInvitation.getInviteeUserName());
+    
+            /**
+             * Do the query again - should no longer find anything
+             */
+            List<Invitation> it2 = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
+            assertTrue("invitations is not empty", it2.isEmpty());
+    
+            /**
+             * Now invite and reject
+             */
+            NominatedInvitation secondInvite = invitationService.inviteNominated(inviteeUserName, resourceType,
+                        resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
+    
+            NominatedInvitation rejectedInvitation = (NominatedInvitation) invitationService.cancel(secondInvite
+                        .getInviteId());
+            assertEquals("invite id wrong", secondInvite.getInviteId(), rejectedInvitation.getInviteId());
+            assertEquals("user name wrong", inviteeUserName, rejectedInvitation.getInviteeUserName());
+    
+            List<Invitation> it3 = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
+            assertTrue("invitations is not empty", it3.isEmpty());
+        }
 
         /**
          * Now invite and accept
          */
         NominatedInvitation thirdInvite = invitationService.inviteNominated(inviteeUserName, resourceType,
                     resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
-
-        NominatedInvitation acceptedInvitation = (NominatedInvitation) invitationService.accept(thirdInvite
-                    .getInviteId(), thirdInvite.getTicket());
-        assertEquals("invite id wrong", thirdInvite.getInviteId(), acceptedInvitation.getInviteId());
-        assertEquals("first name wrong", inviteeFirstName, acceptedInvitation.getInviteeFirstName());
-        assertEquals("last name wrong", inviteeLastName, acceptedInvitation.getInviteeLastName());
-        assertEquals("user name wrong", inviteeUserName, acceptedInvitation.getInviteeUserName());
+        if (requireAcceptance)
+        {
+            NominatedInvitation acceptedInvitation = (NominatedInvitation) invitationService.accept(thirdInvite
+                        .getInviteId(), thirdInvite.getTicket());
+            assertEquals("invite id wrong", thirdInvite.getInviteId(), acceptedInvitation.getInviteId());
+            assertEquals("first name wrong", inviteeFirstName, acceptedInvitation.getInviteeFirstName());
+            assertEquals("last name wrong", inviteeLastName, acceptedInvitation.getInviteeLastName());
+            assertEquals("user name wrong", inviteeUserName, acceptedInvitation.getInviteeUserName());
+        }
 
         List<Invitation> it4 = invitationService.listPendingInvitationsForResource(resourceType, resourceName);
         assertTrue("invitations is not empty", it4.isEmpty());
@@ -827,6 +848,13 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         String roleName = siteService.getMembersRole(resourceName, inviteeUserName);
         assertEquals("role name wrong", inviteeRole, roleName);
         siteService.removeMembership(resourceName, inviteeUserName);
+    }
+    
+    public void testNominatedInvitationExistingUser() throws Exception
+    {
+        this.invitationServiceImpl.setNominatedInvitationWorkflowId(
+                WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_INVITE);
+        testNominatedInvitationExistingUser(true);
     }
 
     /**

@@ -116,4 +116,11 @@ public class ActivitiInvitationServiceImplTests extends AbstractInvitationServic
         // Disable Jbpm and enable Activiti
         workflowAdminService.setEnabledEngines(Arrays.asList(ActivitiConstants.ENGINE_ID));
     }
+    
+    public void testAddExistingUser() throws Exception
+    {
+        this.invitationServiceImpl.setNominatedInvitationWorkflowId(
+                WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT);
+        testNominatedInvitationExistingUser(false);
+    }
 }

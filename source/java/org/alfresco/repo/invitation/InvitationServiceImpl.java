@@ -126,6 +126,19 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     // Property determining whether emails should be sent.
     private boolean sendEmails = true;
+    
+    private enum InvitationWorkflowType { NOMINATED, NOMINATED_EXTERNAL, MODERATED };
+    
+    // The nominated invite workflow definition to use for internal users
+    private String nominatedInvitationWorkflowId = 
+            WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT;
+    // The nominated invite workflow definition to use for external users
+    private String nominatedInvitationExternalWorkflowId = 
+            WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_INVITE;
+    // The nominated invite workflow definition to use for internal users
+    private String moderatedInvitationWorkflowId = 
+            WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
+    
     /**
      * Set the policy component
      * 
@@ -134,6 +147,36 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
+    }
+
+    /**
+     * Sets the nominated invite activiti workflow definition for internal users
+     * 
+     * @param nominatedInvitationWorkflowId
+     */
+    public void setNominatedInvitationWorkflowId(String nominatedInvitationWorkflowId)
+    {
+        this.nominatedInvitationWorkflowId = nominatedInvitationWorkflowId;
+    }
+
+    /**
+     * Sets the nominated invite activiti workflow definition for external users
+     * 
+     * @param nominatedInvitationExternalWorkflowId
+     */
+    public void setNominatedInvitationExternalWorkflowId(String nominatedInvitationExternalWorkflowId)
+    {
+        this.nominatedInvitationExternalWorkflowId = nominatedInvitationExternalWorkflowId;
+    }
+
+    /**
+     * Sets the moderated invite activiti workflow definition
+     * 
+     * @param moderatedInvitationWorkflowId
+     */
+    public void setModeratedInvitationWorkflowId(String moderatedInvitationWorkflowId)
+    {
+        this.moderatedInvitationWorkflowId = moderatedInvitationWorkflowId;
     }
 
     /**
@@ -170,7 +213,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     {
         List<String> ret = new ArrayList<String>(3);
         ret.add(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME);
-        ret.add(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI);
+        ret.add(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT);
+        ret.add(WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_INVITE);
         ret.add(WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME);
         ret.add(WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI);
         // old deprecated invitation workflow.
@@ -1214,7 +1258,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
         // get the moderated workflow
 
-        WorkflowDefinition wfDefinition = getWorkflowDefinition(false);
+        WorkflowDefinition wfDefinition = getWorkflowDefinition(InvitationWorkflowType.MODERATED);
         return (ModeratedInvitation) startWorkflow(wfDefinition, workflowProps);
     }
 
@@ -1375,8 +1419,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         //
         // Start the invite workflow with inviter, invitee and site properties
         //
-
-        WorkflowDefinition wfDefinition = getWorkflowDefinition(true);
+        
+        InvitationWorkflowType type = 
+                created ? InvitationWorkflowType.NOMINATED_EXTERNAL : InvitationWorkflowType.NOMINATED;
+        WorkflowDefinition wfDefinition = getWorkflowDefinition(type);
 
         // Get invitee person NodeRef to add as assignee
         NodeRef inviteeNodeRef = personService.getPerson(inviteeUserName);
@@ -1489,12 +1535,24 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
 
     /**
      * Return Activiti workflow definition unless Activiti engine is disabled.
-     * @param isNominated TODO
+     * @param type the workflow type
      * @return WorkflowDefinition
      */
-    private WorkflowDefinition getWorkflowDefinition(boolean isNominated)
+    private WorkflowDefinition getWorkflowDefinition(InvitationWorkflowType type)
     {
-        String workflowName = isNominated ? getNominatedDefinitionName() : getModeratedDefinitionName();
+        String workflowName = null;
+        if (type == InvitationWorkflowType.MODERATED)
+        {
+            workflowName = getModeratedDefinitionName();
+        }
+        else if (type == InvitationWorkflowType.NOMINATED_EXTERNAL)
+        {
+            workflowName = getNominatedExternalDefinitionName();
+        }
+        else
+        {
+            workflowName = getNominatedDefinitionName();
+        }
         WorkflowDefinition definition = workflowService.getDefinitionByName(workflowName);
         if (definition == null)
         {
@@ -1509,26 +1567,39 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     {
         if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
         {
-            return WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
+            return nominatedInvitationWorkflowId;
         }
         else if(workflowAdminService.isEngineEnabled(JBPMEngine.ENGINE_ID))
         {
             return WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME;
         }
-        throw new IllegalStateException("None of the Workflow engines supported by teh InvitationService are currently enabled!");
+        throw new IllegalStateException("None of the Workflow engines supported by the InvitationService are currently enabled!");
+    }
+    
+    private String getNominatedExternalDefinitionName()
+    {
+        if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
+        {
+            return nominatedInvitationExternalWorkflowId;
+        }
+        else if(workflowAdminService.isEngineEnabled(JBPMEngine.ENGINE_ID))
+        {
+            return WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME;
+        }
+        throw new IllegalStateException("None of the Workflow engines supported by the InvitationService are currently enabled!");
     }
     
     private String getModeratedDefinitionName()
     {
         if(workflowAdminService.isEngineEnabled(ActivitiConstants.ENGINE_ID))
         {
-            return WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI;
+            return moderatedInvitationWorkflowId;
         }
         else if(workflowAdminService.isEngineEnabled(JBPMEngine.ENGINE_ID))
         {
             return WorkflowModelModeratedInvitation.WORKFLOW_DEFINITION_NAME;
         }
-        throw new IllegalStateException("None of the Workflow engines supported by teh InvitationService are currently enabled!");
+        throw new IllegalStateException("None of the Workflow engines supported by the InvitationService are currently enabled!");
     }
 
     /**

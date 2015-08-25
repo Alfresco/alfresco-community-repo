@@ -162,6 +162,36 @@
             <classifier>windows</classifier>
             <type>tgz</type>
         </dependency>
+
+        <!-- Ghostscript -->
+        <dependency>
+            <groupId>com.ghostscript</groupId>
+            <artifactId>ghostscript-distribution</artifactId>
+            <version>8.64</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>com.ghostscript</groupId>
+            <artifactId>ghostscript-distribution</artifactId>
+            <version>8.64</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>com.ghostscript</groupId>
+            <artifactId>ghostscript-distribution</artifactId>
+            <version>8.64</version>
+            <classifier>win32</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>com.ghostscript</groupId>
+            <artifactId>ghostscript-distribution</artifactId>
+            <version>8.64</version>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
         
         <!-- Installbuilder -->
         <dependency>

@@ -96,6 +96,7 @@ public class InviteSenderTest extends TestCase
 
     private static final String acceptUrl = "/accpet";
     private static final String rejectUrl = "/reject";
+    private static final String dashboardUrl = "/dashboard";
     private static final String role = "Role";
     private static final String password = "password";
     private static final String ticket = "Ticket";
@@ -169,6 +170,12 @@ public class InviteSenderTest extends TestCase
             assertEquals(
                         "test://test/path/reject?inviteId=InstanceId&inviteeUserName=invitee&siteShortName=Full Site Name&inviteTicket=Ticket",
                         argsMap.get("rejectLink"));
+        }
+        else
+        {
+            assertEquals(
+                    "test://test/path/page/site/Full Site Name" + dashboardUrl,
+                    argsMap.get("siteDashboardLink"));
         }
 
         

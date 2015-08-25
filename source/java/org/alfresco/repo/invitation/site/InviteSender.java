@@ -30,6 +30,7 @@ import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVa
 import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarServerPath;
 
 import java.io.Serializable;
+import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -70,6 +71,7 @@ public class InviteSender
 {
     public static final String WF_INSTANCE_ID = "wf_instanceId";
     public static final String WF_PACKAGE = "wf_package";
+    private static final String SITE_DASHBOARD_ENDPOINT_PATTERN =  "/page/site/{0}/dashboard";
 
     private static final List<String> expectedProperties = Arrays.asList(wfVarInviteeUserName,//
                 wfVarResourceName,//
@@ -185,7 +187,11 @@ public class InviteSender
         String params = buildUrlParamString(properties);
         String acceptLink = makeLink(properties.get(wfVarServerPath), properties.get(wfVarAcceptUrl), params);
         String rejectLink = makeLink(properties.get(wfVarServerPath), properties.get(wfVarRejectUrl), params);
-
+        
+        String siteDashboardEndpoint = getSiteDashboardEndpoint(properties);
+        String siteDashboardLink = makeLink(properties.get(wfVarServerPath), 
+                siteDashboardEndpoint, null);
+        
         Map<String, String> args = new HashMap<String, String>();
         args.put("inviteePersonRef", invitee.toString());
         args.put("inviterPersonRef", inviter.toString());
@@ -195,6 +201,7 @@ public class InviteSender
         args.put("inviteeGenPassword", properties.get(wfVarInviteeGenPassword));
         args.put("acceptLink", acceptLink);
         args.put("rejectLink", rejectLink);
+        args.put("siteDashboardLink", siteDashboardLink);
         return args;
     }
 
@@ -202,7 +209,14 @@ public class InviteSender
     {
         location = location.endsWith("/") ? location : location + "/";
         endpoint = endpoint.startsWith("/") ? endpoint.substring(1) : endpoint;
-        queryParams = queryParams.startsWith("?") ? queryParams : "?" + queryParams;
+        if (queryParams != null)
+        {
+            queryParams = queryParams.startsWith("?") ? queryParams : "?" + queryParams;
+        }
+        else
+        {
+            queryParams = "";
+        }
         return location + endpoint + queryParams;
     }
 
@@ -274,5 +288,11 @@ public class InviteSender
             siteName = siteTitle;
         }
         return siteName;
+    }
+    
+    private String getSiteDashboardEndpoint(Map<String, String> properties)
+    {
+        String siteName = properties.get(wfVarResourceName);
+        return MessageFormat.format(SITE_DASHBOARD_ENDPOINT_PATTERN, siteName);
     }
 }

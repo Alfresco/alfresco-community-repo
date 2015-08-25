@@ -54,7 +54,7 @@
                                              <p>${inviterPerson.properties["cm:firstName"]!""} ${inviterPerson.properties["cm:lastName"]!""} 
                                              has added you to the <b>${args["siteName"]}</b> site with the role of ${args["inviteeSiteRole"]}.</p>
                                              
-                                             <p><a href="${args["siteDashboardLink"]}">Go to ${args["siteName"]}</a>
+                                             <p><a href="${args["siteDashboardLink"]}">Go to ${args["siteName"]}</a></p>
                                              
                                              <p>Sincerely,<br />
                                              Alfresco ${productName!""}</p>

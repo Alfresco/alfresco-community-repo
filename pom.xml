@@ -297,6 +297,18 @@
                     <contextFile>${runtime.tomcat.conf.folder}/alfresco-context.xml</contextFile>
                     <tomcatUsers>${runtime.tomcat.conf.folder}/tomcat-users.xml</tomcatUsers>
                     <webapps>
+                        <!-- Run ROOT.war -->
+                        <webapp>
+                            <groupId>org.alfresco</groupId>
+                            <artifactId>alfresco-server-root</artifactId>
+                            <version>${project.version}</version>
+                            <contextPath>/</contextPath>
+                            <type>war</type>
+                            <asWebapp>true</asWebapp>
+                            <!-- Workaround for https://issues.apache.org/jira/browse/MTOMCAT-269 -->
+                            <!-- tomcat7-maven-plugin does not pick up the context.xml file from META-INF -->
+                            <contextFile>${project.build.directory}/tomcat/webapps/alfresco-server-root/META-INF/context.xml</contextFile>
+                        </webapp>
                         <!-- Run solr4 alongside the repo -->
                         <webapp>
                             <groupId>org.alfresco</groupId>

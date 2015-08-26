@@ -154,7 +154,7 @@
     </dependencies>
 
     <build>
-        <finalName>alfresco-enterprise-ear-${project.version}</finalName>
+        <finalName>${project.artifactId}-${installer.version.name}</finalName>
         <plugins>
             <!-- Build EAR -->
             <plugin>

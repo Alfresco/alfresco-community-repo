@@ -218,7 +218,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
             ((ActionDefinitionImpl)this.actionDefinition).setTrackStatus(getTrackStatus());
             ((ActionDefinitionImpl)this.actionDefinition).setAdhocPropertiesAllowed(getAdhocPropertiesAllowed());
             ((ActionDefinitionImpl)this.actionDefinition).setRuleActionExecutor(this.name);
-            ((ActionDefinitionImpl)this.actionDefinition).setParameterDefinitions(getParameterDefintions());
+            ((ActionDefinitionImpl)this.actionDefinition).setLocalizedParameterDefinitions(getLocalizedParameterDefinitions());
             ((ActionDefinitionImpl)this.actionDefinition).setApplicableTypes(this.applicableTypes);
         }
         return this.actionDefinition;

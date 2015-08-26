@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,12 @@
  */
 package org.alfresco.repo.action;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.rule.RuleServiceException;
 
 
@@ -34,10 +40,12 @@ public class ActionConditionDefinitionImplTest extends BaseParameterizedItemDefi
     protected ParameterizedItemDefinitionImpl create()
     {    
         // Test duplicate param name
+        Map<Locale, List<ParameterDefinition>> localizedParams = new HashMap<Locale, List<ParameterDefinition>>();
         try
         {
             ActionConditionDefinitionImpl temp = new ActionConditionDefinitionImpl(NAME);
-            temp.setParameterDefinitions(this.duplicateParamDefs);
+            localizedParams.put(Locale.ROOT, duplicateParamDefs);
+            temp.setLocalizedParameterDefinitions((localizedParams));
             fail("Duplicate param names are not allowed.");
         }
         catch (RuleServiceException exception)
@@ -50,7 +58,8 @@ public class ActionConditionDefinitionImplTest extends BaseParameterizedItemDefi
         assertNotNull(temp);
         //temp.setTitle(TITLE);
         //temp.setDescription(DESCRIPTION);
-        temp.setParameterDefinitions(this.paramDefs);
+        localizedParams.put(Locale.ROOT, paramDefs);
+        temp.setLocalizedParameterDefinitions(localizedParams);
         temp.setConditionEvaluator(CONDITION_EVALUATOR);
         return temp;
     }

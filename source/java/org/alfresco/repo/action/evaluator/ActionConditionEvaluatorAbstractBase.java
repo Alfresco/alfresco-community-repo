@@ -77,7 +77,7 @@ public abstract class ActionConditionEvaluatorAbstractBase extends Parameterized
 			((ActionConditionDefinitionImpl)this.actionConditionDefinition).setDescriptionKey(getDescriptionKey());
 			((ActionConditionDefinitionImpl)this.actionConditionDefinition).setAdhocPropertiesAllowed(getAdhocPropertiesAllowed());
 			((ActionConditionDefinitionImpl)this.actionConditionDefinition).setConditionEvaluator(this.name);
-			((ActionConditionDefinitionImpl)this.actionConditionDefinition).setParameterDefinitions(getParameterDefintions());
+			((ActionConditionDefinitionImpl)this.actionConditionDefinition).setLocalizedParameterDefinitions(getLocalizedParameterDefinitions());
 		}
 		return this.actionConditionDefinition;
 	}

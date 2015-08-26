@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,10 +19,10 @@
 package org.alfresco.repo.action;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -60,12 +60,12 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
     /**
      * The list of parameters associated with the rule item
      */
-    private List<ParameterDefinition> parameterDefinitions = new ArrayList<ParameterDefinition>();
+    private Map<Locale, List<ParameterDefinition>> parameterDefinitions = new HashMap<Locale, List<ParameterDefinition>>();
     
     /**
      * A map of the parameter definitions by name
      */
-    private Map<String, ParameterDefinition> paramDefinitionsByName;
+    private Map<Locale, Map<String, ParameterDefinition>> paramDefinitionsByName;
 
     /**
      * Error messages
@@ -145,30 +145,84 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
 	{
 		this.adhocPropertiesAllowed = adhocPropertiesAllowed;
 	}
-    
+
     /**
-     * Set the parameter definitions for the rule item
-     * 
+     * Set the parameter definitions for the rule item with the locale specified
+     *
      * @param parameterDefinitions  the parameter definitions
      */
-    public void setParameterDefinitions(
-            List<ParameterDefinition> parameterDefinitions)
+    public void setLocalizedParameterDefinitions(Map<Locale, List<ParameterDefinition>> parameterDefinitions)
     {
         if (hasDuplicateNames(parameterDefinitions) == true)
         {
             throw new RuleServiceException(ERR_NAME_DUPLICATION);
         }
-        
         this.parameterDefinitions = parameterDefinitions;
-        
-        // Create a map of the definitions to use for subsequent calls
-        this.paramDefinitionsByName = new HashMap<String, ParameterDefinition>(this.parameterDefinitions.size());
-        for (ParameterDefinition definition : this.parameterDefinitions)
+        createParamDefinitionsByName();
+    }
+
+    /**
+     * Set the parameter definitions for the rule item
+     * 
+     * @param parameterDefinitions  the parameter definitions
+     */
+    public void setParameterDefinitions(List<ParameterDefinition> parameterDefinitions)
+    {
+        Locale currentLocale = I18NUtil.getLocale();
+        new HashMap<Locale, Map<String, ParameterDefinition>>();
+        if (hasDuplicateNames(parameterDefinitions) == true)
         {
-            this.paramDefinitionsByName.put(definition.getName(), definition);
+            throw new RuleServiceException(ERR_NAME_DUPLICATION);
+        }
+        this.parameterDefinitions.put(currentLocale, parameterDefinitions);
+        createParamDefinitionsByName();
+    }
+
+    /**
+     * Create a map of the definitions to use for subsequent calls
+     */
+    private void createParamDefinitionsByName()
+    {
+        this.paramDefinitionsByName = new HashMap<Locale, Map<String, ParameterDefinition>>();
+        for (Locale locale : this.parameterDefinitions.keySet())
+        {
+            Map<String, ParameterDefinition> namedDefinitions = new HashMap<String, ParameterDefinition>();
+            this.paramDefinitionsByName.put(locale, namedDefinitions);
+
+            List<ParameterDefinition> localizedDefinitions = this.parameterDefinitions.get(locale);
+
+            for (ParameterDefinition definition : localizedDefinitions)
+            {
+                namedDefinitions.put(definition.getName(), definition);
+            }
         }
     }
-    
+
+    /**
+     * Determines whether the list of parameter definitions contains duplicate
+     * names of not.
+     *
+     * @param parameterDefinitions  a list of parameter definitions
+     * @return                      true if there are name duplications, false
+     *                              otherwise
+     */
+    private boolean hasDuplicateNames(Map<Locale, List<ParameterDefinition>> parameterDefinitions)
+    {
+        boolean result = false;
+        if (parameterDefinitions != null)
+        {
+            for (List<ParameterDefinition> localizedDefinitions : parameterDefinitions.values())
+            {
+                result = hasDuplicateNames(localizedDefinitions);
+                if (result)
+                {
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+
     /**
      * Determines whether the list of parameter defintions contains duplicate
      * names of not.
@@ -197,7 +251,13 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
      */
     public boolean hasParameterDefinitions()
     {
-        return (this.parameterDefinitions.isEmpty() == false);
+        List<ParameterDefinition> localizedDefinitions = parameterDefinitions.get(I18NUtil.getLocale());
+        if (null == localizedDefinitions)
+        {
+            localizedDefinitions = parameterDefinitions.get(Locale.ROOT);
+        }
+
+        return (null != localizedDefinitions) && !localizedDefinitions.isEmpty();
     }
     
     /**
@@ -205,7 +265,14 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
      */
     public List<ParameterDefinition> getParameterDefinitions()
     {
-        return this.parameterDefinitions;
+        List<ParameterDefinition> result = parameterDefinitions.get(I18NUtil.getLocale());
+
+        if (null == result)
+        {
+            result = parameterDefinitions.get(Locale.ROOT);
+        }
+
+        return result;
     }
     
     /**
@@ -214,10 +281,19 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
     public ParameterDefinition getParameterDefintion(String name)
     {
         ParameterDefinition result = null;
-        if (paramDefinitionsByName != null)
+
+        if (null != paramDefinitionsByName)
         {
-            result = this.paramDefinitionsByName.get(name);
+            Map<String, ParameterDefinition> localizedDefinitionsByName = paramDefinitionsByName.get(I18NUtil.getLocale());
+
+            if (null == localizedDefinitionsByName)
+            {
+                localizedDefinitionsByName = paramDefinitionsByName.get(Locale.ROOT);
+            }
+
+            result = (null == localizedDefinitionsByName) ? (null) : (localizedDefinitionsByName.get(name));
         }
+
         return result;
     }
 }

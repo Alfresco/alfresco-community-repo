@@ -322,10 +322,42 @@
         <property name="mlAwareNodeService">
             <ref bean="mlAwareNodeService"/>
         </property>
-	    <property name="dictionaryService">
-		    <ref bean="dictionaryService" />
-	    </property>
+	<property name="dictionaryService">
+		<ref bean="dictionaryService" />
+	</property>
         <property name="trackStatus" value="false" />
+        <property name="locales">
+            <set>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="de" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="es" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="fr" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="it" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="ja" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="nb" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="nl" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="ru" />
+                </bean>
+                <bean class="java.util.Locale">
+                    <constructor-arg value="zh" />
+                    <constructor-arg value="CN" />
+                </bean>
+            </set>
+        </property>
     </bean>
     
     <bean id="composite-action" class="org.alfresco.repo.action.executer.CompositeActionExecuter" parent="action-executer">

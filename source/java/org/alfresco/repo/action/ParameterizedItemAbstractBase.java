@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,8 +19,7 @@
 package org.alfresco.repo.action;
 
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.alfresco.service.cmr.action.ParameterDefinition;
@@ -50,15 +49,17 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
 	protected static final String DISPLAY_LABEL = "display-label";
 	
 	/**
-	 * Action service
-	 */
-	protected RuntimeActionService runtimeActionService;
-    
-	/**
 	 * Indicates whether or not ad-hoc properties can be provided. Default so false. 
 	 */
 	protected boolean adhocPropertiesAllowed = false;
 	
+    /**
+     * Action service
+     */
+    protected RuntimeActionService runtimeActionService;
+
+    private Set<Locale> locales = new HashSet<Locale>();
+
     /**
      * @return Return a short title and description string
      */
@@ -71,35 +72,80 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
           .append("]");
         return sb.toString();
     }
-	
-	/**
-	 * Gets a list containing the parameter definitions for this rule item.
-	 * 
-	 * @return  the list of parameter definitions
-	 */
-	protected List<ParameterDefinition> getParameterDefintions() 
-	{
-		List<ParameterDefinition> result = new ArrayList<ParameterDefinition>();		
-		addParameterDefinitions(result);
-		return result;
-	}
-	
-	/**
-	 * Adds the parameter definitions to the list
-	 * 
-	 * @param paramList		the parameter definitions list
-	 */
-	protected abstract void addParameterDefinitions(List<ParameterDefinition> paramList);
 
-	/**
-	 * Sets the action service 
-	 * 
+    public void setLocales(Set<Locale> locales)
+    {
+        this.locales = locales;
+    }
+
+    /**
+     * Gets a list containing the parameter definitions for this rule item.
+     * 
+     * @return  the list of parameter definitions
+     */
+    protected List<ParameterDefinition> getParameterDefintions()
+    {
+        List<ParameterDefinition> result = new ArrayList<ParameterDefinition>();
+        addParameterDefinitions(result);
+        return result;
+    }
+    
+    /**
+     * Adds the parameter definitions to the list
+     * 
+     * @param paramList     the parameter definitions list
+     */
+    protected abstract void addParameterDefinitions(List<ParameterDefinition> paramList);
+
+    /**
+     * Gets a list containing the parameter definitions for this rule item.
+     *
+     * @return  the map of parameter definitions with locales
+     */
+    protected Map<Locale, List<ParameterDefinition>> getLocalizedParameterDefinitions()
+    {
+        List<ParameterDefinition> paramList = new LinkedList<ParameterDefinition>();
+        addParameterDefinitions(paramList);
+        Map<Locale, List<ParameterDefinition>> result = new HashMap<Locale, List<ParameterDefinition>>();
+        result.put(Locale.ROOT, paramList);
+        Locale currentLocale = Locale.getDefault();
+        try
+        {
+            for (Locale locale : locales)
+            {
+                Locale.setDefault(locale);
+                List<ParameterDefinition> definitions = new LinkedList<ParameterDefinition>();
+                result.put(locale, definitions);
+                for (ParameterDefinition definition : paramList)
+                {
+                    String paramDisplayLabel = getParamDisplayLabel(definition.getName());
+                    definitions.add(
+                            new ParameterDefinitionImpl(
+                                    definition.getName(),
+                                    definition.getType(),
+                                    definition.isMandatory(),
+                                    paramDisplayLabel,
+                                    definition.isMultiValued()
+                            ));
+                }
+            }
+        }
+        finally
+        {
+            Locale.setDefault(currentLocale);
+        }
+        return result;
+    }
+
+    /**
+     * Sets the action service 
+     * 
 	 * @param runtimeActionService the action service
-	 */
-	public void setRuntimeActionService(RuntimeActionService runtimeActionService)
-	{
-		this.runtimeActionService = runtimeActionService;
-	}
+     */
+    public void setRuntimeActionService(RuntimeActionService runtimeActionService)
+    {
+        this.runtimeActionService = runtimeActionService;
+    }
 
 	/**
 	 * Gets the title I18N key

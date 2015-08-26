@@ -7,7 +7,7 @@
         <version>6</version>
     </parent>
     <artifactId>alfresco-full-installation</artifactId>
-    <version>2015-1-EA-SNAPSHOT</version>
+    <version>2015-SNAPSHOT</version>
     <packaging>pom</packaging>
     <name>Alfresco Full Installation</name>
 
@@ -33,8 +33,28 @@
         <installer.ghostscript.version>8.64</installer.ghostscript.version>
         <installer.imagemagick.version>6.9.1</installer.imagemagick.version>
 
+        <!-- Build timestamp for installer file name -->
+        <installer.build.timestamp>${maven.build.timestamp}</installer.build.timestamp>
+        <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
+
         <!-- Install builder version -->
         <installer.installbuilder.version>15.1.0</installer.installbuilder.version>
+
+        <!-- 
+            Build number (Default value is used unless overridden by command line)
+            Default value: SNAPSHOT
+        -->
+        <installer.build.number>SNAPSHOT</installer.build.number>
+
+        <!-- 
+            Installer version that will be used in the final name.
+
+            Lifecycle:
+                - ${installer.build.timestamp}-${installer.build.number}    (SNAPSHOT version)
+                - ${installer.build.timestamp}-EA   (Early Access release version)
+                - ${installer.build.timestamp}      (Release version)
+        -->
+        <installer.version.name>${installer.build.timestamp}-${installer.build.number}</installer.version.name>
 
         <alfresco.package.name>alfresco-community</alfresco.package.name>
         <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>

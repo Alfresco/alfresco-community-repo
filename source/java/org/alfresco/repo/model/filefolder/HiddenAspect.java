@@ -165,7 +165,7 @@ public class HiddenAspect
     {
         for(HiddenFileFilter filter : filters)
         {
-            this.filters.add(new HiddenFileInfoImpl(filter.getFilter(), filter.getVisibility(), filter.getHiddenAttribute(), filter.cascadeHiddenAspect(), filter.cascadeIndexControlAspect()));
+            this.filters.add(new HiddenFileInfoImpl(filter.getFilter(), filter.getVisibility(), filter.getHiddenAttribute(), filter.cascadeHiddenAspect(), filter.cascadeIndexControlAspect(), filter.isCmisDisableHideConfig()));
         }
     }
     
@@ -527,6 +527,13 @@ public class HiddenAspect
 
         OUTER: for(HiddenFileInfo filter : filters)
         {
+            if (Client.cmis.equals(FileFilterMode.getClient()) && filter instanceof ConfigurableHiddenFileInfo)
+            {
+                if (((ConfigurableHiddenFileInfo) filter).isCmisDisableHideConfig())
+                {
+                    continue;
+                }
+            }
         	if(filter.cascadeHiddenAspect() || filter.cascadeIndexControlAspect())
         	{
         		if(path == null)
@@ -943,7 +950,7 @@ public class HiddenAspect
         return ret;
     }
 
-    private class HiddenFileInfoImpl implements HiddenFileInfo
+    private class HiddenFileInfoImpl implements ConfigurableHiddenFileInfo
     {
         private Pattern filter;
         private Set<Client> clientVisibility = new HashSet<Client>(10);
@@ -951,6 +958,7 @@ public class HiddenAspect
         private int visibilityMask;
         private boolean cascadeHiddenAspect;
         private boolean cascadeIndexControlAspect;
+        private boolean cmisDisableHideConfig;
 
         public HiddenFileInfoImpl(String regexp, String visibility, String hiddenAttribute, boolean cascadeHiddenAspect, boolean cascadeIndexControlAspect)
         {
@@ -960,6 +968,12 @@ public class HiddenAspect
             setVisibility(visibility);
             setHiddenAttribute(hiddenAttribute);
             calculateVisibilityMask();
+        }
+        
+        public HiddenFileInfoImpl(String regexp, String visibility, String hiddenAttribute, boolean cascadeHiddenAspect, boolean cascadeIndexControlAspect, boolean cmisDisableHideConfig)
+        {
+            this(regexp,visibility,hiddenAttribute, cascadeHiddenAspect, cascadeIndexControlAspect);
+            this.cmisDisableHideConfig = cmisDisableHideConfig;
         }
 
         private void setVisibility(String visibility)
@@ -1036,5 +1050,15 @@ public class HiddenAspect
 		{
 			return false;
 		}
+		
+        public boolean isCmisDisableHideConfig()
+        {
+            return cmisDisableHideConfig;
+        }
+
+        public void setCmisDisableHideConfig(boolean cmisDisableHideConfig)
+        {
+            this.cmisDisableHideConfig = cmisDisableHideConfig;
+        }
     }
 }

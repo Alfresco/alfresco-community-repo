@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.transaction.NotSupportedException;
 import javax.transaction.Status;
@@ -71,7 +72,7 @@ public class HiddenAspectTest
     
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
-    private HiddenAspect hiddenAspect;
+    protected HiddenAspect hiddenAspect;
     private TransactionService transactionService;
     private NodeDAO nodeDAO;
     private NodeService nodeService;
@@ -97,6 +98,8 @@ public class HiddenAspectTest
     private final String MAILBOX_NAME_B = ".mailbox_a";
     private String username;
     private AlfrescoImapUser user;
+    
+    protected boolean cmisDisableHide;
 
     @Before
     public void setup() throws SystemException, NotSupportedException
@@ -117,6 +120,8 @@ public class HiddenAspectTest
         imapEnabled = serviceRegistry.getImapService().getImapServerEnabled();
         
         nodeDAO = (NodeDAO)ctx.getBean("nodeDAO");
+        Properties properties = (Properties) ctx.getBean("global-properties");
+        cmisDisableHide = Boolean.getBoolean(properties.getProperty("cmis.disable.hidden.leading.period.files"));
         
         // start the transaction
         txn = transactionService.getUserTransaction();
@@ -417,13 +422,13 @@ public class HiddenAspectTest
                 FileFilterMode.setClient(saveClient);
             }
 
-            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN));
-            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL));
-            assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_HIDDEN));
-            assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_INDEX_CONTROL));
+            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN) != cmisDisableHide );
+            assertTrue(nodeService.hasAspect(child, ContentModel.ASPECT_INDEX_CONTROL ) != cmisDisableHide);
+            assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_HIDDEN) != cmisDisableHide);
+            assertTrue(nodeService.hasAspect(child1, ContentModel.ASPECT_INDEX_CONTROL) != cmisDisableHide);
 
             List<FileInfo> children = fileFolderService.list(parent);
-            assertEquals(0, children.size());
+            assertEquals(cmisDisableHide ? 1: 0, children.size());
 
             saveClient = FileFilterMode.setClient(Client.script);
             try
@@ -434,7 +439,7 @@ public class HiddenAspectTest
             {
                 FileFilterMode.setClient(saveClient);
             }
-            assertEquals(0, children.size());
+            assertEquals(cmisDisableHide ? 1: 0, children.size());
 
             saveClient = FileFilterMode.setClient(Client.cmis);
             try
@@ -445,7 +450,7 @@ public class HiddenAspectTest
             {
                 FileFilterMode.setClient(saveClient);
             }
-            assertEquals(0, children.size());
+            assertEquals(cmisDisableHide ? 1: 0, children.size());
         }
     }
 

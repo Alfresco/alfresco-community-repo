@@ -28,6 +28,7 @@
                 <property name="filter" value="\..*" />
                 <property name="visibility" value="webdav,nfs,ftp" />
                 <property name="hiddenAttribute" value="cifs" />
+                <property name="cmisDisableHideConfig" value="${cmis.disable.hidden.leading.period.files}" />
             </bean>
             <bean class="org.alfresco.repo.model.filefolder.HiddenFileFilter">
                 <property name="filter" value="Thumbs\.db" />

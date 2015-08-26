@@ -23,6 +23,7 @@ import org.alfresco.repo.model.filefolder.FileFolderLoaderTest;
 import org.alfresco.repo.model.filefolder.FileFolderPerformanceTester;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImplTest;
 import org.alfresco.repo.model.filefolder.FileFolderServicePropagationTest;
+import org.alfresco.repo.model.filefolder.HiddenAspectCmisConfigTest;
 import org.alfresco.repo.model.filefolder.HiddenAspectTest;
 import org.alfresco.repo.model.ml.tools.ContentFilterLanguagesMapTest;
 import org.alfresco.repo.model.ml.tools.EditionServiceImplTest;
@@ -47,9 +48,8 @@ import org.junit.runners.Suite.SuiteClasses;
     MultilingualDocumentAspectTest.class,
     EditionServiceImplTest.class,
     LanguagesTest.class,
-    
-	HiddenAspectTest.class,
-	
+    HiddenAspectTest.class,
+    HiddenAspectCmisConfigTest.class,
     FileFolderLoaderTest.class,
     FileFolderPerformanceTester.class,
     

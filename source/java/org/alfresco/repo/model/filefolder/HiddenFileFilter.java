@@ -16,6 +16,7 @@ public class HiddenFileFilter implements InitializingBean
     private String hiddenAttribute;
     private boolean cascadeHiddenAspect = true;
     private boolean cascadeIndexControlAspect = true;
+    private boolean cmisDisableHideConfig;
 
     public HiddenFileFilter()
     {
@@ -70,7 +71,16 @@ public class HiddenFileFilter implements InitializingBean
     {
 		return cascadeIndexControlAspect;
 	}
+	
+    public void setCmisDisableHideConfig(boolean cmisDisableHideConfig)
+    {
+        this.cmisDisableHideConfig = cmisDisableHideConfig;
+    }
 
+    public boolean isCmisDisableHideConfig()
+    {
+        return cmisDisableHideConfig;
+    }
 	/*
      * (non-Javadoc)
      * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()

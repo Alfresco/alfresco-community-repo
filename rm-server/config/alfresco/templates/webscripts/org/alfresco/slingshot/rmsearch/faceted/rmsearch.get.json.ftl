@@ -59,10 +59,11 @@
             </#list>
         </#if>
     ],
-    "tags": [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>],
-    <#--Add in full node details-->
-    "node": <#noescape>${item.nodeJSON}</#noescape>
-
+    "tags": [<#list item.tags as tag>"${tag}"<#if tag_has_next>,</#if></#list>]
+    <#--Add in full node details, if they exist-->
+    <#if item.nodeJSON??>
+    ,"node": <#noescape>${item.nodeJSON}</#noescape>
+    </#if>
     }<#if item_has_next>,</#if>
     </#list>
 ],

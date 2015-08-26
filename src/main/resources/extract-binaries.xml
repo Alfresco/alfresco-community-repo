@@ -140,10 +140,17 @@
                 <arg value="xf" />
                 <arg value="${maven.localrepo}/org/libreoffice/libreoffice-dist/${installer.libreoffice.version}/libreoffice-dist-${installer.libreoffice.version}-${libreoffice.platform}.tgz" />
             </exec>
+            
             <echo>  Extracting GhostScript...</echo>
             <exec failonerror="true" executable="tar" dir="${bin.folder}">
                 <arg value="xf" />
                 <arg value="${maven.localrepo}/com/ghostscript/ghostscript-distribution/${installer.ghostscript.version}/ghostscript-distribution-${installer.ghostscript.version}-@{targetPlatform}.tgz" />
+            </exec>
+            
+            <echo>  Extracting ImageMagick...</echo>
+            <exec failonerror="true" executable="tar" dir="${bin.folder}">
+                <arg value="xf" />
+                <arg value="${maven.localrepo}/org/imagemagick/imagemagick-distribution/${installer.imagemagick.version}/imagemagick-distribution-${installer.imagemagick.version}-@{targetPlatform}.tgz" />
             </exec>
         </sequential>
     </macrodef>

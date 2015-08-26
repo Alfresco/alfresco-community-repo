@@ -34,8 +34,8 @@
                 <setInstallerVariable name="manager_distribution_folder" value="${binaries_folder}/manager"/>
                 <setInstallerVariable name="common_distribution_folder" value="${local_binaries_folder}/common"/>
                 <setInstallerVariable name="postgres_distribution_folder" value="${local_binaries_folder}/postgresql"/>
-                <setInstallerVariable name="imagemagick_distribution_folder_windows" value="${binaries_folder}/ImageMagick-6.8.6-gs8.64"/>
-                <setInstallerVariable name="imagemagick_distribution_folder_unix" value="${binaries_folder}/ImageMagick-6.8.6-gs8.64"/>
+                <setInstallerVariable name="imagemagick_distribution_folder_windows" value="${local_binaries_folder}/ImageMagick"/>
+                <setInstallerVariable name="imagemagick_distribution_folder_unix" value="${local_binaries_folder}/ImageMagick"/>
                 <setInstallerVariable name="java_distribution_folder" value="${local_binaries_folder}/java"/>
                 <setInstallerVariable name="libreoffice_distribution_folder" value="${local_binaries_folder}/libreoffice"/>
                 <setInstallerVariable name="swftools_distribution_folder" value="${binaries_folder}/swftools-0.9.2"/>

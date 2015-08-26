@@ -206,7 +206,7 @@
                         <configuration>
                             <includeArtifactIds>alfresco-platform-enterprise-distributionzip</includeArtifactIds>
                             <excludeTransitive>true</excludeTransitive>
-                            <excludes>alfresco-enterprise-${project.version}/solr4/,alfresco-enterprise-${project.version}/web-server/webapps/</excludes>
+                            <excludes>alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/solr4/,alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/web-server/webapps/</excludes>
                         </configuration>
                     </execution>
 
@@ -224,7 +224,7 @@
                                     <version>1.0.1</version>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${project.build.directory}/dependency/alfresco-enterprise-${project.version}/web-server/lib</outputDirectory>
+                            <outputDirectory>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/web-server/lib</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -243,7 +243,7 @@
                             <descriptors>
                                 <descriptor>src/assembly/myfaces-websphere.xml</descriptor>
                             </descriptors>
-                            <finalName>myfaces1_1-websphere-shared-lib-${project.version}</finalName>
+                            <finalName>myfaces1_1-websphere-shared-lib-${installer.version.name}</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                         </configuration>
                     </execution>

@@ -282,7 +282,7 @@
                                     <artifactId>alfresco-solr1-distribution</artifactId>
                                     <version>${alfresco.platform.version}</version>
                                     <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.distribution.name}-${project.version}/alf_data/solr</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/distribution/${alfresco.distribution.name}-${installer.version.name}/alf_data/solr</outputDirectory>
                                 </artifactItem>
                                 <!-- WCMQS Distribution -->
                                 <artifactItem>

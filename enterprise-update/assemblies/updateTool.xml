@@ -13,7 +13,7 @@
 	
 	<files>
 	    <file>
-			<source>${project.basedir}/target/update-contents-${version}.zip</source>
+			<source>${project.basedir}/target/update-contents-${installer.version.name}.zip</source>
 			<outputDirectory>update</outputDirectory>
 		</file>
 	</files>

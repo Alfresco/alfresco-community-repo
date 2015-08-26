@@ -175,6 +175,7 @@
         <include file="java-properties.xml" />
         <include file="postgres-properties.xml" />
         <include file="tomcat-properties.xml" />
+        <include file="libreoffice.xml"/>
         
         <include file="alfrescodm.xml" />
         <include file="alfresco-solr.xml" />
@@ -188,7 +189,6 @@
         <include file="alfresco-googledocs.xml" />
         <include file="base-unix-service.xml" />
 
-        <include file="libreoffice.xml"/>
         <include file="imagemagick.xml"/>
         <include file="ghostscript.xml"/>
         <include file="swftools.xml"/>

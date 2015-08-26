@@ -131,8 +131,7 @@
             </ruleList>
         </substitute>
                 <substitute>
-                    <!--files>${libreoffice_directory}/Contents/MacOS/bootstraprc;${libreoffice_directory}/program/bootstraprc;${libreoffice_directory}/Contents/MacOS/soffice.bin;${libreoffice_directory}/program/soffice.bin</files-->
-                    <files>${libreoffice_directory}/Contents/MacOS/bootstraprc;${libreoffice_directory}/program/bootstraprc</files>
+                    <files>${libreoffice_directory}/Contents/MacOS/bootstraprc;${libreoffice_directory}/Contents/Resources/bootstraprc;${libreoffice_directory}/program/bootstraprc</files>
                     <substitutionList>
                         <substitution>
                             <pattern>@@BITROCK_LO_ROOTDIR@@</pattern>

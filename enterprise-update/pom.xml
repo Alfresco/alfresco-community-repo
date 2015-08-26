@@ -68,7 +68,7 @@
                             <descriptors>
                                 <descriptor>assemblies/update.xml</descriptor>
                             </descriptors>
-                            <finalName>update-contents-${project.version}</finalName>
+                            <finalName>update-contents-${installer.version.name}</finalName>
                         </configuration>
                     </execution>
                     <execution>
@@ -112,8 +112,8 @@
                             <redirectTestOutputToFile>false</redirectTestOutputToFile>
                             <runOrder>alphabetical</runOrder>
                             <systemPropertyVariables>
-                                <alfresco.update.package>${project.artifactId}-${project.version}.zip</alfresco.update.package>
-                                <alfresco.contents.package>update-contents-${project.version}.zip</alfresco.contents.package>
+                                <alfresco.update.package>${project.artifactId}-${installer.version.name}.zip</alfresco.update.package>
+                                <alfresco.contents.package>update-contents-${installer.version.name}.zip</alfresco.contents.package>
                             </systemPropertyVariables>
                             <excludes>
                                 <exclude>none</exclude>

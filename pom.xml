@@ -192,6 +192,36 @@
             <classifier>win64</classifier>
             <type>tgz</type>
         </dependency>
+
+        <!-- ImageMagick -->
+        <dependency>
+            <groupId>org.imagemagick</groupId>
+            <artifactId>imagemagick-distribution</artifactId>
+            <version>${installer.imagemagick.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.imagemagick</groupId>
+            <artifactId>imagemagick-distribution</artifactId>
+            <version>${installer.imagemagick.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.imagemagick</groupId>
+            <artifactId>imagemagick-distribution</artifactId>
+            <version>${installer.imagemagick.version}</version>
+            <classifier>win32</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.imagemagick</groupId>
+            <artifactId>imagemagick-distribution</artifactId>
+            <version>${installer.imagemagick.version}</version>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
         
         <!-- Installbuilder -->
         <dependency>

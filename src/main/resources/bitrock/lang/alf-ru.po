@@ -646,3 +646,6 @@ msgstr "Вы выбрали использованию существующей 
 msgid "You need to select at least one of the Solr components"
 msgstr "Необходимо выбрать как минимум один из компонентов Solr"
 
+
+msgid "You need to use ASCII characters only when setting the password here. You can reset it after installation and use non-ASCII characters."
+msgstr "При установке пароля в данном поле необходимо использовать только символы ASCII. После установки можно выполнить сброс и использовать символы, отличные от символов ASCII."

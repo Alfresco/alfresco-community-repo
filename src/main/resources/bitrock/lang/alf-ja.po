@@ -645,3 +645,6 @@ msgstr "Tomcatを既存のソフトウェアとして選択しました。新た
 
 msgid "You need to select at least one of the Solr components"
 msgstr "Solr コンポーネントの少なくとも 1 つを選択する必要があります"
+
+msgid "You need to use ASCII characters only when setting the password here. You can reset it after installation and use non-ASCII characters."
+msgstr "ここでパスワードを設定するときは、ASCII 文字を使用してください。 インストール後にパスワードをリセットして非 ASCII 文字を使用できます。"

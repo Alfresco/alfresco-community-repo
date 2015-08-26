@@ -646,3 +646,6 @@ msgstr "Du har valgt Tomcat som den eksisterende installasjonen. For å bruke de
 msgid "You need to select at least one of the Solr components"
 msgstr "Minst én av Solr-komponentene må velges"
 
+
+msgid "You need to use ASCII characters only when setting the password here. You can reset it after installation and use non-ASCII characters."
+msgstr "Du må bruke ASCII-tegn kun når passordet stilles inn her. Det kan stilles inn på nytt etter installasjonen, og ikke-ASCII-tegn kan brukes."

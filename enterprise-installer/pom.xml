@@ -50,6 +50,13 @@
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
+                    <!-- Force dowload of dependencies -->
+                    <execution>
+                        <id>download-dependencies</id>
+                        <goals>
+                            <goal>resolve</goal>
+                        </goals>
+                    </execution>
                     <execution>
                         <id>get-distribution</id>
                         <phase>prepare-package</phase>

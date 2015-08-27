@@ -176,7 +176,11 @@
               <distributionFile origin="${alfresco_distribution_folder.unix}/amps/alfresco-share-services.amp*" allowWildcards="1"/>
             </distributionFileList>
             <actionList>
-                <setInstallerVariable name="alfresco_apply_amps" value="1"/>
+                <setInstallerVariable name="alfresco_apply_amps" value="1">
+                    <ruleList>
+                        <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco Share"/>
+                    </ruleList>
+                </setInstallerVariable>
             </actionList>
         </folder>
         <folder>

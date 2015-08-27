@@ -323,6 +323,10 @@
             <distributionFileList>
                 <distributionDirectory origin="alfresco/*" includeFiles="*/bnconfig;*/bnconfig.app;*/bnconfig.exe" allowWildcards="1"/>
             </distributionFileList>
+            <!-- bnconfig is not used in Alfresco Custom Stack -->
+            <shouldPackRuleList>
+                <stringTest text="${alfresco_distribution_folder}" type="empty"/>
+            </shouldPackRuleList>
         </folder>
         <folder>
             <name>licenses</name>

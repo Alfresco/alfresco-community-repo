@@ -202,6 +202,7 @@
 
     <parameterList>
         <stringParameter name="reserved_ports" ask="0" value="" />
+        <stringParameter name="alfresco_package" ask="0" value="" />
     </parameterList>
 
     <postInstallationActionList>

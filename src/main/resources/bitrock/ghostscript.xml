@@ -4,19 +4,34 @@
     <canBeEdited>0</canBeEdited>
     <show>0</show>
     <selected>1</selected>
-        
+
     <parameterList>
         <directoryParameter>
             <ask>0</ask>
             <name>ghostscript_root_directory</name>
             <cliOptionName>ghostscript_root_directory</cliOptionName>
         </directoryParameter>
-    </parameterList>        
+    </parameterList>
     <readyToInstallActionList>
-        <setInstallerVariable name="ghostscript_root_directory" value="${installdir}/common" />
-        
-        <setInstallerVariable name="GHOSTSCRIPT_PATH" value="${ghostscript_root_directory}/bin"/>
+        <setInstallerVariable name="ghostscript_root_directory" value="${installdir}/common">
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="ghostscript_root_directory" value="${installdir}/imagemagick">
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </setInstallerVariable>
+
+        <setInstallerVariable name="GHOSTSCRIPT_PATH" value="${ghostscript_root_directory}/bin">
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
+        </setInstallerVariable>
+
         <setInstallerVariable name="GHOSTSCRIPT_PATH_WIN" value="${ghostscript_root_directory.dos}\bin"/>
+
         <setInstallerVariable name="PATH" value="${GHOSTSCRIPT_PATH}:${PATH}">
             <ruleList>
                 <compareText text="${PATH}" value="${GHOSTSCRIPT_PATH}" nocase="1" logic="does_not_contain"/>
@@ -31,7 +46,7 @@
         <setInstallerVariable name="GHOSTSCRIPT_ENV_VAR">
             <value>##### GHOSTSCRIPT ENV #####
 set GS_LIB=${ghostscript_root_directory.dos}\lib
-</value>
+            </value>
             <ruleList>
                 <platformTest type="windows"/>
             </ruleList>
@@ -40,7 +55,7 @@ set GS_LIB=${ghostscript_root_directory.dos}\lib
             <value>##### GHOSTSCRIPT ENV #####
 GS_LIB="${ghostscript_root_directory}/share/ghostscript/fonts"
 export GS_LIB
-</value>
+            </value>
             <ruleList>
                 <platformTest type="unix"/>
             </ruleList>
@@ -49,7 +64,16 @@ export GS_LIB
             <value>${GHOSTSCRIPT_ENV_VAR}${ENV_VAR}</value>
         </setInstallerVariable>
         <setInstallerVariable name="GHOSTSCRIPT_WRAPPERS">
+            <value>${ghostscript_root_directory.dos}\bin\gs</value>
+            <ruleList>
+                <platformTest type="windows"/>
+            </ruleList>
+        </setInstallerVariable>
+        <setInstallerVariable name="GHOSTSCRIPT_WRAPPERS">
             <value>${ghostscript_root_directory}/bin/gs</value>
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
         </setInstallerVariable>
         <setInstallerVariable name="WRAPPERS" value="${GHOSTSCRIPT_WRAPPERS};${WRAPPERS}"/>
     </readyToInstallActionList>

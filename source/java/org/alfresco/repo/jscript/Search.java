@@ -578,6 +578,7 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                 List<Map<Serializable, Serializable>> sort = (List<Map<Serializable, Serializable>>)def.get("sort");
                 Map<Serializable, Serializable> page = (Map<Serializable, Serializable>)def.get("page");
                 List<String> facets = (List<String>)def.get("fieldFacets");
+                List<String> filterQueries = (List<String>)def.get("filterQueries");
                 String namespace = (String)def.get("namespace");
                 String onerror = (String)def.get("onerror");
                 String defaultField = (String)def.get("defaultField");
@@ -737,6 +738,13 @@ public class Search extends BaseScopableProcessorExtension implements Initializi
                             }
                             sp.addFieldFacet(fieldFacet);
                         }
+                    }
+                }
+                if (filterQueries != null)
+                {
+                    for (String filter: filterQueries)
+                    {
+                        sp.addFilterQuery(filter);
                     }
                 }
 

@@ -490,6 +490,13 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
                     url.append("&facet.query=").append(encoder.encode("{!afts}"+facetQuery, "UTF-8"));
                 }                
             }
+            // filter queries
+            
+            for(String filterQuery : searchParameters.getFilterQueries())
+            {
+                url.append("&fq=").append(encoder.encode("{!afts}"+filterQuery, "UTF-8"));
+            }   
+            
             // end of field facets
 
             final String searchTerm = searchParameters.getSearchTerm();

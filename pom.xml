@@ -42,9 +42,9 @@
 
         <!-- 
             Build number (Default value is used unless overridden by command line)
-            Default value: SNAPSHOT
+            Default value: SNAPSHOT-0
         -->
-        <installer.build.number>SNAPSHOT</installer.build.number>
+        <installer.build.number>SNAPSHOT-0</installer.build.number>
 
         <!-- 
             Installer version that will be used in the final name.

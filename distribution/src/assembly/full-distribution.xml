@@ -40,15 +40,9 @@
             <outputDirectory/>
             <includes>
                 <include>web-server/**</include>
-                <include>modules/**</include>
+		<include>modules/**</include>
+		<include>amps/**</include>
             </includes>
-        </fileSet>
-        <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}</directory>
-            <includes>
-                <include>*.amp</include>
-            </includes>
-            <outputDirectory>amps</outputDirectory>
         </fileSet>
         <fileSet>
             <directory>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}/web-extension-samples</directory>

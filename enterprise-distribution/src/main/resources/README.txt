@@ -1,8 +1,10 @@
-Alfresco Enterprise Edition ${project.version}
+Alfresco One (Build: ${installer.version.name})
 ===============================
 
-For Enterprise subscribers, refer to http://support.alfresco.com for release notes and detailed information on this release.
+Contains:
+	- Alfresco Platform:	${alfresco.platform.version}
+	- Alfresco Share:	${alfresco.share.version}
 
-For Community members, refer to the Alfresco wiki for more information on this release.
+Please refer to http://support.alfresco.com for release notes and detailed information on this release.
 
 

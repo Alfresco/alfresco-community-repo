@@ -1,6 +1,4 @@
 <?xml version='1.0' encoding='utf-8'?>
-<Context>
-    <Resources>
-        <JarResources className="org.apache.catalina.webresources.DirResourceSet" base="${catalina.base}/../modules/platform/" webAppMount="/WEB-INF/lib" />
-    </Resources>
+<Context crossContext="true">
+  <Loader className="org.apache.catalina.loader.VirtualWebappLoader" virtualClasspath="${catalina.base}/../modules/platform/*.jar" /> 
 </Context>

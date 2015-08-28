@@ -7,7 +7,7 @@
     <parent>
         <artifactId>alfresco-share-parent</artifactId>
         <groupId>org.alfresco</groupId>
-        <version>5.1-SNAPSHOT</version>
+        <version>5.1.a-EA-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -118,7 +118,7 @@
                      <!-- No unit tests in this project - all tests are integration tests -->
                      <configuration>
                           <includes>
-                              <include/>
+                              <include />
                           </includes>
                      </configuration>
                   </execution>

@@ -1022,6 +1022,8 @@ function getSearchResults(params)
 
    if (ftsQuery.length !== 0)
    {
+      // Filter queries
+	  var fqs = [];
       if (params.filters != null)
       {
          // comma separated list of filter pairs - filter|value|value|...
@@ -1059,7 +1061,7 @@ function getSearchResults(params)
       // ensure a TYPE is specified - if no add one to remove system objects from result sets
       if (ftsQuery.indexOf("TYPE:\"") === -1 && ftsQuery.indexOf("TYPE:'") === -1)
       {
-         ftsQuery += ' AND (+TYPE:"cm:content" OR +TYPE:"cm:folder")';
+    	 fqs.push('+TYPE:"cm:content" OR +TYPE:"cm:folder"');
       }
 
       // we processed the search terms, so suffix the PATH query
@@ -1106,14 +1108,16 @@ function getSearchResults(params)
       }
       else if (path !== null)
       {
-         ftsQuery = 'PATH:"' + path + '/*" AND (' + ftsQuery + ')';
+    	 fqs.push('PATH:"' + path + '/*"');
       }
       else if (site !== null)
       {
-         ftsQuery = site + ' AND (' + ftsQuery + ')';
+    	 fqs.push(site);
       }
-      ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -TYPE:"st:site"' +
-                                   ' AND -ASPECT:"st:siteContainer" AND -ASPECT:"sys:hidden" AND -cm:creator:system AND -QNAME:comment\\-*';
+      
+      fqs.push('-TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -TYPE:"st:site"' +
+               ' AND -ASPECT:"st:siteContainer" AND -ASPECT:"sys:hidden" AND -cm:creator:system AND -QNAME:comment\\-*');
+      
       
       // sort field - expecting field to in one of the following formats:
       //  - short QName form such as: cm:name
@@ -1171,6 +1175,7 @@ function getSearchResults(params)
          onerror: "no-results",
          sort: sortColumns,
          fieldFacets: params.facetFields != null ? params.facetFields.split(",") : null,
+         filterQueries: fqs,
          searchTerm: params.term,
          spellCheck: params.spell
       };

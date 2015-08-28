@@ -46,7 +46,8 @@
    <!-- Aspects -->
    <aspects>
       <!--  Classified aspect -->
-      <aspect name="clf:classified">
+      <aspect name="clf:classified">      
+         <archive>false</archive>
          <properties>
             <property name="clf:initialClassification">
                <title>Initial Classification</title>

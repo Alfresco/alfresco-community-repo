@@ -16,7 +16,7 @@
         <signing.key.location>${binaries.folder}/build-classpath/code-signing</signing.key.location>
         <license.file.location>${binaries.folder}/build-classpath/license.xml</license.file.location>
         <bitrock.arguments>
-           project.version=${project.version} 
+           project.version=${installer.version.name} 
            project.fullName='Alfresco One' 
            project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
            project.osxSigningPkcs12Password=${p12Password} 

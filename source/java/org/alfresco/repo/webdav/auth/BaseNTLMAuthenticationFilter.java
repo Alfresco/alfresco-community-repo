@@ -1052,8 +1052,9 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             clearSession(session);
         }
         
+        // check for "chrome" since Chrome user-agent contains a Safari version
         String userAgent = req.getHeader("user-agent");
-        if (userAgent != null && userAgent.indexOf("Safari") != -1)
+        if (userAgent != null && userAgent.indexOf("Safari") != -1 && userAgent.indexOf("Chrome") == -1)
         {
             final PrintWriter out = res.getWriter();
             out.println("<html><head></head>");

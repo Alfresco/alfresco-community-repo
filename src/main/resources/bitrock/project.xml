@@ -159,6 +159,7 @@
             </folderList>
         </component>
         <include file="tomcat-java.xml" />
+        <include file="tomcat-imagemagick.xml" />
         <include file="postgres.xml" />
         <include file="postgres_initdb.xml"/>
 

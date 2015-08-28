@@ -1,0 +1,22 @@
+<!-- Needed to make ImageMagick (version 6.9.1+) work with Tomcat on Windows -->
+<component>
+    <name>tomcatimagemagick</name>
+    <description>//Tomcat settings for ImageMagick</description>
+    <detailedDescription>//Makes Apache Tomcat able to install use ImageMagick functions.</detailedDescription>
+    <canBeEdited>1</canBeEdited>
+    <show>0</show>
+    <selected>1</selected>
+    <postInstallationActionList>
+        <addTextToFile>
+            <file>${application_server_directory}/bin/setenv.bat</file>
+            <text>rem ##### IMAGEMAGICK ENV #####
+set JAVA_OPTS=%JAVA_OPTS% --Environment "PATH='${PATH_WIN}'#MAGICK_HOME=${imagemagick_root_directory.dos}#MAGICK_CODER_MODULE_PATH=${imagemagick_root_directory.dos}\modules\coders#MAGICK_CONFIGURE_PATH=${imagemagick_root_directory.dos}#"
+</text>
+            <ruleList>
+                <platformTest type="windows"/>
+                <componentTest logic="exists" name="imagemagick"/>
+                <componentTest logic="selected" name="imagemagick"/>
+            </ruleList>
+        </addTextToFile>
+    </postInstallationActionList>
+</component>

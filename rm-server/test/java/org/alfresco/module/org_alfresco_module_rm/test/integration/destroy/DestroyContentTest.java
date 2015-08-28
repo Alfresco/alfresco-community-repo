@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test.AlfrescoTest;
 import org.alfresco.util.GUID;
@@ -121,7 +122,7 @@ public class DestroyContentTest extends BaseRMTestCase
                 
                 // assert things are as we expect
                 assertEquals(DestroyAction.NAME, dispositionService.getNextDispositionAction(destroyableFolder).getName());
-                assertTrue(dispositionService.isNextDispositionActionEligible(destroyableFolder));
+                assertTrue(dispositionService.isNextDispositionActionEligible(destroyableFolder));                
                 
                 // reset test content cleanser
                 contentCleanser.reset();
@@ -148,6 +149,10 @@ public class DestroyContentTest extends BaseRMTestCase
                 
                 // content cleansing hasn't taken place
                 assertFalse(contentCleanser.hasCleansed());
+                
+                // ensure the record isn't in the archive store
+                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, subRecord.getId());
+                assertFalse(nodeService.exists(archiveNodeRef));
             }
         });
     }
@@ -210,7 +215,12 @@ public class DestroyContentTest extends BaseRMTestCase
                 assertNull(reader);        
                 
                 // content cleansing hasn't taken place
-                assertFalse(contentCleanser.hasCleansed());            
+                assertFalse(contentCleanser.hasCleansed());    
+                
+                // ensure the record isn't in the archive store
+                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, destroyableRecord.getId());
+                assertFalse(nodeService.exists(archiveNodeRef));
+                        
             }
         });
     }
@@ -276,7 +286,11 @@ public class DestroyContentTest extends BaseRMTestCase
                 assertNull(reader);        
                 
                 // content cleansing has taken place
-                assertTrue(contentCleanser.hasCleansed());            
+                assertTrue(contentCleanser.hasCleansed());       
+                
+                // ensure the record isn't in the archive store
+                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, destroyableRecord.getId());
+                assertFalse(nodeService.exists(archiveNodeRef));     
             }
             
             public void after() throws Exception
@@ -331,7 +345,11 @@ public class DestroyContentTest extends BaseRMTestCase
                 assertFalse(contentStore.exists(contentData.getContentUrl()));         
                 
                 // content cleansing hasn't taken place
-                assertFalse(contentCleanser.hasCleansed());         
+                assertFalse(contentCleanser.hasCleansed());   
+                
+                // ensure the record isn't in the archive store
+                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableRecord.getId());
+                assertFalse(nodeService.exists(archiveNodeRef));
             }
         });
     }
@@ -383,7 +401,11 @@ public class DestroyContentTest extends BaseRMTestCase
                 assertFalse(contentStore.exists(contentData.getContentUrl()));         
                 
                 // content cleansing has taken place
-                assertTrue(contentCleanser.hasCleansed());             
+                assertTrue(contentCleanser.hasCleansed());  
+                
+                // ensure the record isn't in the archive store
+                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableRecord.getId());
+                assertFalse(nodeService.exists(archiveNodeRef));           
             }
             
             public void after() throws Exception
@@ -448,7 +470,11 @@ public class DestroyContentTest extends BaseRMTestCase
                 assertFalse(contentStore.exists(contentData.getContentUrl()));      
                 
                 // content cleansing hasn't taken place
-                assertFalse(contentCleanser.hasCleansed());            
+                assertFalse(contentCleanser.hasCleansed());  
+                
+                // ensure the record isn't in the archive store
+                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableContent.getId());
+                assertFalse(nodeService.exists(archiveNodeRef));          
             }
         });
     }
@@ -510,7 +536,11 @@ public class DestroyContentTest extends BaseRMTestCase
                 assertFalse(contentStore.exists(contentData.getContentUrl()));           
                 
                 // content cleansing has taken place
-                assertTrue(contentCleanser.hasCleansed());             
+                assertTrue(contentCleanser.hasCleansed());      
+                
+                // ensure the record isn't in the archive store
+                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableContent.getId());
+                assertFalse(nodeService.exists(archiveNodeRef));  
             }
             
             public void after() throws Exception
@@ -567,7 +597,11 @@ public class DestroyContentTest extends BaseRMTestCase
                 assertTrue(contentStore.exists(contentData.getContentUrl()));       
                 
                 // content cleansing hasn't taken place
-                assertFalse(contentCleanser.hasCleansed());           
+                assertFalse(contentCleanser.hasCleansed());    
+                
+                // ensure the content is in the archive store
+                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableContent.getId());
+                assertTrue(nodeService.exists(archiveNodeRef));  
             }
         });
     }

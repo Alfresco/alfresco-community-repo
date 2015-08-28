@@ -6,7 +6,10 @@ function main()
       filter = (args.filter != null) ? args.filter : (args.shortNameFilter != null) ? args.shortNameFilter : "",
       maxResults = (args.maxResults == null) ? 10 : parseInt(args.maxResults, 10),
       authorityType = args.authorityType,
-      zone = args.zone;
+      zone = args.zone,
+      sortBy = args.sortBy,
+      sortAsc = args.dir != "desc";
+
 
    if (authorityType != null)
    {
@@ -26,7 +29,7 @@ function main()
    if (authorityType == null || authorityType == "USER")
    {
       // Get the collection of people
-      peopleFound = people.getPeople(filter, maxResults);
+      peopleFound = sortBy != null ? people.getPeople(filter, maxResults, sortBy, sortAsc) : people.getPeople(filter, maxResults);
 
       var criteria = {
               resourceName: siteShortName

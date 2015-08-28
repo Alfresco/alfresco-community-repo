@@ -101,7 +101,6 @@
         <property name="authorityBridgeDAO" ref="authorityBridgeDAO" />
         <property name="authorityBridgeTableCache" ref="authorityBridgeTableCache" />
         <property name="useBridgeTable" value="${authority.useBridgeTable}" />
-        <property name="zoneAuthoritySampleSize" value="${authority.zoneAuthoritySampleSize}" />
     </bean>
     
     <bean name="authorityBridgeDAO" class="org.alfresco.repo.security.authority.AuthorityBridgeDAOImpl">

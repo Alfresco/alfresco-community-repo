@@ -145,11 +145,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         super();
     }
 
-    public int getZoneAuthoritySampleSize()
-	{
-		return zoneAuthoritySampleSize;
-	}
-
+    
     /**
      * Sets number of authorities in a zone to pre-cache, allowing quick generation of 'first n' results and adaption of
      * search technique based on hit rate.
@@ -536,7 +532,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
         }
         
         final PagingResults<PersonInfo> ppr = personService.getPeople(filter, true, sort, pagingRequest);
-
+        
         List<PersonInfo> result = ppr.getPage();
         final List<String> auths = new ArrayList<String>(result.size());
         
@@ -915,9 +911,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             }, tenantService.getDomainUser(AuthenticationUtil.getSystemUserName(), currentUserDomain));
             zoneAuthorityCache.put(cacheKey, zoneAuthorities);
         }
-
-        int numAuthorities = zoneAuthorities.size();
-
+        
         // Now search each for the required authority. If the number of results is greater than or close to the size
         // limit, then this will be the most efficient route
         Set<String> result = new TreeSet<String>();
@@ -956,8 +950,7 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
             }
 
             // If this top down search is not providing an adequate hit count then resort to a naiive unlimited search
-            // we need to compare to the actual number of authorities cached or newly fetched from the database
-            if (processed >= numAuthorities)
+            if (processed >= maxToProcess)
             {
                 Set<String> unfilteredResult;
                 boolean filterZone;

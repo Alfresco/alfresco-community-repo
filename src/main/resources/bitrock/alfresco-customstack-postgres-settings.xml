@@ -95,7 +95,7 @@
         </actionGroup>
 
         <!-- Install dir adaptation if Windows -->
-        <setInstallerVariable name="installdir" value="${env(SYSTEMDRIVE)}\Alfresco">
+        <setInstallerVariable name="installdir" value="${env(SYSTEMDRIVE)}\${alfresco_package}">
             <ruleList>
                 <platformTest type="windows"/>
             </ruleList>

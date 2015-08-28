@@ -40,6 +40,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
+import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.model.AuditApplication;
@@ -61,6 +62,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -98,6 +100,8 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordsManagementAuditServiceImpl.class);
 
+    private static final String ACCESS_AUDIT_CAPABILITY = "AccessAudit";
+    
     private static final String KEY_RM_AUDIT_NODE_RECORDS = "RMAUditNodeRecords";
 
     protected static final String RM_AUDIT_EVENT_LOGIN_SUCCESS = "Login.Success";
@@ -179,6 +183,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     private RecordsManagementActionService rmActionService;
     private FilePlanService filePlanService;
     private NamespaceService namespaceService;
+    protected CapabilityService capabilityService;
 
     private boolean shutdown = false;
 
@@ -270,6 +275,17 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
     {
         this.namespaceService = namespaceService;
     }
+    
+    /**
+     * @param capabilityService capability service
+     */
+    public void setCapabilityService(CapabilityService capabilityService)
+    {
+        this.capabilityService = capabilityService;
+    }
+    
+    
+    
 
     /**
      * @param ignoredAuditProperties
@@ -902,6 +918,13 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                             "   Entry: " + entryId + "\n" +
                             "   Data:  " + values);
                     // Skip it
+                    return true;
+                }
+                
+                if( nodeRef != null &&
+                    !AccessStatus.ALLOWED.equals(
+                        capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY)))
+                {
                     return true;
                 }
 

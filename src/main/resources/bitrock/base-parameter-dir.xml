@@ -53,7 +53,7 @@
             <value>${platform_install_prefix}/${product_shortname}-${product_version}</value>
             <ruleList>
                 <platformTest type="unix"/>
-                <stringTest text="${alfresco_distribution_folder}" type="empty"/>
+                <stringTest text="${alfresco_package}" type="empty"/>
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariable>
@@ -61,7 +61,7 @@
             <value>${platform_install_prefix}/${product_fullname}</value>
             <ruleList>
                 <platformTest type="windows"/>
-                <stringTest text="${alfresco_distribution_folder}" type="empty"/>
+                <stringTest text="${alfresco_package}" type="empty"/>
             </ruleList>
         </setInstallerVariable>
         <!-- If Alfresco Custom stack use pretty name-->
@@ -69,7 +69,7 @@
             <name>installdir</name>
             <value>${platform_install_prefix}/${alfresco_package}</value>
             <ruleList>
-                <stringTest text="${alfresco_distribution_folder}" type="empty" negate="yes"/>
+                <stringTest text="${alfresco_package}" type="empty" negate="yes"/>
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariableFromRegEx>

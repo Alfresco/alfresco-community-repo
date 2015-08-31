@@ -177,6 +177,7 @@
         <include file="postgres-properties.xml" />
         <include file="tomcat-properties.xml" />
         <include file="libreoffice.xml"/>
+        <include file="alfresco-libreoffice.xml"/>
         
         <include file="alfrescodm.xml" />
         <include file="alfresco-solr.xml" />

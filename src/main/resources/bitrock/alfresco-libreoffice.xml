@@ -1,0 +1,41 @@
+<component>
+    <name>alfrescolibreoffice</name>
+    <description>//AlfrescoLibreOffice</description>
+    <canBeEdited>0</canBeEdited>
+    <selected>1</selected>
+    <show>0</show>
+
+    <postInstallationActionList>
+        <actionGroup>
+            <actionList>
+                <writeFile>
+                    <path>${alfresco_base_application_directory}/libreoffice-envdata.sh</path>
+                    <text>#!/bin/sh
+# Libre Office                                                                                                                                      
+SOFFICE_PATH="${libreoffice_directory}/program"
+SOFFICE_PORT="${libreoffice_port}"
+SOFFICEBIN=${libreoffice_directory}/program/.soffice.bin
+SOFFICEWRAPPER=${libreoffice_directory}/program/soffice.bin
+SOFFICE_ENVDATA="-env:UserInstallation=file://${alfresco_data_directory}/oouser"
+SOFFICE="$SOFFICEWRAPPER --nofirststartwizard --nologo --headless $SOFFICE_ENVDATA --accept=socket,host=localhost,port=$SOFFICE_PORT\;urp\;StarOffice.ServiceManager"
+
+$SOFFICE >/dev/null 2>&amp;1 &amp;
+sleep 5
+pids=`ps ax | grep $SOFFICEBIN | grep -v grep | awk {'print $1'}`
+if kill $pids ; then
+    echo "libreoffice stopped"
+fi
+</text>
+                </writeFile>
+                <changePermissions files="${alfresco_base_application_directory}/libreoffice-envdata.sh" permissions="755" />
+                <runProgram abortOnError="0" showMessageOnError="0">
+                    <program>${alfresco_base_application_directory}/libreoffice-envdata.sh</program>
+                </runProgram>
+                <deleteFile path="${alfresco_base_application_directory}/libreoffice-envdata.sh" />
+            </actionList>
+            <ruleList>
+                <platformTest type="linux"/>
+            </ruleList>
+        </actionGroup>
+    </postInstallationActionList>
+</component>

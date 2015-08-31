@@ -132,7 +132,7 @@ public interface VersionServicePolicies
 
 
     /**
-     * After create version policy interface
+     * After revert version policy interface
      *
      */
     public interface AfterVersionRevertPolicy extends ClassPolicy

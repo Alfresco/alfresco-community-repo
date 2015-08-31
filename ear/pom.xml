@@ -45,7 +45,7 @@
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-enterprise-server-root</artifactId>
+            <artifactId>alfresco-server-root</artifactId>
             <version>${alfresco.platform.version}</version>
             <type>war</type>
         </dependency>
@@ -187,7 +187,7 @@
                         </webModule>
                         <webModule>
                             <groupId>org.alfresco</groupId>
-                            <artifactId>alfresco-enterprise-server-root</artifactId>
+                            <artifactId>alfresco-server-root</artifactId>
                             <bundleFileName>ROOT.war</bundleFileName>
                         </webModule>
                     </modules>

@@ -31,7 +31,8 @@ import org.alfresco.service.namespace.QName;
  * @author David Caruana
  *
  */
-/*package*/ @AlfrescoPublicApi class ClassFeatureBehaviourBinding extends ClassBehaviourBinding
+@AlfrescoPublicApi 
+public class ClassFeatureBehaviourBinding extends ClassBehaviourBinding
 {
     // The feature qualified name (property or association)
     private QName featureQName;

@@ -38,7 +38,8 @@ import org.apache.commons.logging.LogFactory;
  * @param <B>  the type of Binding
  * @param <P>  the type of Policy
  */
-/*package*/ @AlfrescoPublicApi class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> extends PolicyFactory<B, P> 
+@AlfrescoPublicApi
+public class CachedPolicyFactory<B extends BehaviourBinding, P extends Policy> extends PolicyFactory<B, P>
 {
     // Logger
     private static final Log logger = LogFactory.getLog(PolicyComponentImpl.class);

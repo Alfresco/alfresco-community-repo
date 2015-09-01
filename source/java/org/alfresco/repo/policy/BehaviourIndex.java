@@ -29,7 +29,8 @@ import org.alfresco.api.AlfrescoPublicApi;
  *
  * @param <B>  the type of Binding.
  */
-/*package*/ @AlfrescoPublicApi interface BehaviourIndex<B extends BehaviourBinding>
+@AlfrescoPublicApi
+public interface BehaviourIndex<B extends BehaviourBinding>
 {
     /**
      * Gets all bound behaviours

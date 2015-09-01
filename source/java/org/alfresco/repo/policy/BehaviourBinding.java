@@ -27,7 +27,8 @@ import org.alfresco.api.AlfrescoPublicApi;
  * @author David Caruana
  *
  */
-/*package*/ @AlfrescoPublicApi interface BehaviourBinding
+@AlfrescoPublicApi
+public interface BehaviourBinding
 {
     /**
      * Gets a generalised form of the Binding.

@@ -21,6 +21,7 @@ package org.alfresco.repo.action.executer;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.action.ActionDefinitionImpl;
 import org.alfresco.repo.action.ParameterizedItemAbstractBase;
 import org.alfresco.repo.lock.LockUtils;
@@ -41,6 +42,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstractBase implements ActionExecuter, LoggingAwareExecuter
 {
     private static Log logger = LogFactory.getLog(ActionExecuterAbstractBase.class);

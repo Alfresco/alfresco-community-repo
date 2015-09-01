@@ -20,6 +20,7 @@ package org.alfresco.repo.content;
 
 import java.util.Date;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.content.ContentLimitProvider.NoLimitProvider;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -44,6 +45,7 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public abstract class AbstractContentStore implements ContentStore
 {
     private static Log logger = LogFactory.getLog(AbstractContentStore.class);

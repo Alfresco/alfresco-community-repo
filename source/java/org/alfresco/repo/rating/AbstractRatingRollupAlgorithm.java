@@ -21,6 +21,7 @@ package org.alfresco.repo.rating;
 
 import java.io.Serializable;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rating.RatingServiceException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -40,6 +41,7 @@ import org.springframework.beans.factory.InitializingBean;
  * @author Neil McErlean
  * @since 3.5
  */
+@AlfrescoPublicApi
 public abstract class AbstractRatingRollupAlgorithm implements InitializingBean
 {
     protected String ratingSchemeName;

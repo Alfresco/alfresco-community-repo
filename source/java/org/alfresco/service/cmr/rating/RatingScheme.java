@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.rating;
 
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.rating.AbstractRatingRollupAlgorithm;
 import org.alfresco.repo.rating.RatingNamingConventionsUtil;
 import org.alfresco.repo.rating.RatingSchemeRegistry;
@@ -35,6 +36,7 @@ import org.alfresco.repo.rating.RatingSchemeRegistry;
  * @author Neil McErlean
  * @since 3.4
  */
+@AlfrescoPublicApi
 public interface RatingScheme extends Comparable<RatingScheme>
 {
     /**

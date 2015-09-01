@@ -27,6 +27,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractContentStore;
 import org.alfresco.repo.content.ContentContext;
@@ -64,6 +65,7 @@ import org.springframework.context.event.ContextRefreshedEvent;
  * 
  * @author Derek Hulley
  */
+@AlfrescoPublicApi
 public class FileContentStore
         extends AbstractContentStore
         implements ApplicationContextAware, ApplicationListener<ApplicationEvent>

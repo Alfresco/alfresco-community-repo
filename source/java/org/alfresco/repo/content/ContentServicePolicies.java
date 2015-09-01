@@ -62,6 +62,7 @@ public interface ContentServicePolicies
      * 
      * @since 3.2
      */
+    @AlfrescoPublicApi
     public interface OnContentPropertyUpdatePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentPropertyUpdate");
@@ -90,6 +91,7 @@ public interface ContentServicePolicies
      * 
      * This policy is fired when a content reader is requested for a node that has content.
      */
+    @AlfrescoPublicApi
     public interface OnContentReadPolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onContentRead");

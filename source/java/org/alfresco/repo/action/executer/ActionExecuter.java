@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.action.executer;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -27,6 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * 
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface ActionExecuter
 {
 	/** Standard action result parameter name */

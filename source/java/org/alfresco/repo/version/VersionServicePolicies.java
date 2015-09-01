@@ -72,6 +72,7 @@ public interface VersionServicePolicies
 	/**
 	 * On create version policy interface
 	 */
+	@AlfrescoPublicApi
 	public interface OnCreateVersionPolicy extends ClassPolicy
 	{
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "onCreateVersion");
@@ -96,8 +97,8 @@ public interface VersionServicePolicies
 				Map<String, Serializable> versionProperties,
 				PolicyScope nodeDetails);
 	}
-	
 
+	@AlfrescoPublicApi
 	public interface OnRevertVersionPolicy extends ClassPolicy
 	{
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "getRevertVersionCallback");
@@ -121,6 +122,7 @@ public interface VersionServicePolicies
 	/**
 	 * Calculate version lable policy interface
 	 */
+	@AlfrescoPublicApi
 	public interface CalculateVersionLabelPolicy extends ClassPolicy
 	{
 		public String calculateVersionLabel(
@@ -135,6 +137,7 @@ public interface VersionServicePolicies
      * After revert version policy interface
      *
      */
+	@AlfrescoPublicApi
     public interface AfterVersionRevertPolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "afterVersionRevert");

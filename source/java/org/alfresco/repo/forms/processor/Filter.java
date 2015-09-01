@@ -21,6 +21,7 @@ package org.alfresco.repo.forms.processor;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.forms.Form;
 import org.alfresco.repo.forms.FormData;
 
@@ -30,6 +31,7 @@ import org.alfresco.repo.forms.FormData;
  *
  * @author Gavin Cornwell
  */
+@AlfrescoPublicApi
 public interface Filter<ItemType, PersistType>
 {
     /**

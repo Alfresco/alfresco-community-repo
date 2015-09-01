@@ -97,6 +97,7 @@ public interface CopyServicePolicies
      * <p>
      * <b>Note: </b> A 'class' is either a type or an aspect.
      */
+    @AlfrescoPublicApi
     public interface OnCopyNodePolicy extends ClassPolicy
     {
         public static final QName QNAME = QName.createQName(NamespaceService.ALFRESCO_URI, "getCopyCallback");

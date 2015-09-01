@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.template;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.processor.BaseProcessorExtension;
 import org.alfresco.service.cmr.repository.TemplateProcessorExtension;
 import org.alfresco.service.cmr.repository.TemplateImageResolver;
@@ -27,6 +28,7 @@ import org.alfresco.service.cmr.repository.TemplateImageResolver;
  * 
  * @author Kevin Roast
  */
+@AlfrescoPublicApi
 public abstract class BaseTemplateProcessorExtension extends BaseProcessorExtension implements TemplateProcessorExtension
 {   
     /** The TemplateImageResolver for the current template execution thread */

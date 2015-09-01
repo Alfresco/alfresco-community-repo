@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -87,11 +88,39 @@ public class RestApiUtil
      */
     public static <T> T parseRestApiEntry(JSONObject jsonObject, Class<T> clazz) throws Exception
     {
+        return parsePojo("entry",jsonObject, clazz);
+    }
+
+    /**
+     * Parses the alfresco REST API response object and extracts the paging information.
+     * @param jsonObject the {@code JSONObject} derived from the response
+     * @return ExpectedPaging the paging
+     * @throws Exception
+     */
+    public static PublicApiClient.ExpectedPaging parsePaging(JSONObject jsonObject) throws Exception
+    {
+        assertNotNull(jsonObject);
+        JSONObject jsonList = (JSONObject) jsonObject.get("list");
+        assertNotNull(jsonList);
+        return parsePojo("pagination", jsonList, PublicApiClient.ExpectedPaging.class);
+    }
+
+    /**
+     * Parses the alfresco REST API response, uses {@literal Jackson}
+     * to convert it to its corresponding POJO based on the given {@code clazz}.
+     *
+     * @param jsonObject the {@code JSONObject} derived from the response
+     * @param clazz the class which represents the JSON payload
+     * @return the POJO of the given {@code clazz} type
+     * @throws Exception
+     */
+    public static <T> T parsePojo(String key, JSONObject jsonObject, Class<T> clazz) throws Exception
+    {
         assertNotNull(jsonObject);
         assertNotNull(clazz);
 
-        JSONObject entry = (JSONObject) jsonObject.get("entry");
-        T pojoModel = OBJECT_MAPPER.readValue(entry.toJSONString(), clazz);
+        JSONObject pojo = (JSONObject) jsonObject.get(key);
+        T pojoModel = OBJECT_MAPPER.readValue(pojo.toJSONString(), clazz);
         assertNotNull(pojoModel);
 
         return pojoModel;

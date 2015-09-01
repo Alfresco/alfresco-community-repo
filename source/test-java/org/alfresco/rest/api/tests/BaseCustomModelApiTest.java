@@ -20,14 +20,6 @@
 package org.alfresco.rest.api.tests;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.dictionary.CustomModelServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -36,15 +28,13 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.rest.api.model.AbstractClassModel;
 import org.alfresco.rest.api.model.CustomAspect;
 import org.alfresco.rest.api.model.CustomModel;
+import org.alfresco.rest.api.model.CustomModel.ModelStatus;
 import org.alfresco.rest.api.model.CustomModelConstraint;
 import org.alfresco.rest.api.model.CustomModelNamedValue;
 import org.alfresco.rest.api.model.CustomModelProperty;
 import org.alfresco.rest.api.model.CustomType;
-import org.alfresco.rest.api.model.CustomModel.ModelStatus;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.client.HttpResponse;
-import org.alfresco.rest.api.tests.client.RequestContext;
-import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.dictionary.CustomModelDefinition;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
@@ -57,12 +47,18 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.junit.After;
 import org.junit.Before;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Base class for CMM API tests
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class BaseCustomModelApiTest extends EnterpriseTestApi
+public class BaseCustomModelApiTest extends AbstractBaseApiTest
 {
     public static final String CMM_SCOPE = "private";
     public static final String SELECT_PROPS_QS = "?select=props";
@@ -123,88 +119,6 @@ public class BaseCustomModelApiTest extends EnterpriseTestApi
         }
         users.clear();
         AuthenticationUtil.clearCurrentSecurityContext();
-    }
-
-    protected String createUser(String username)
-    {
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
-        TestPerson person = repoService.createUser(personInfo, username, null);
-        return person.getId();
-    }
-
-    protected HttpResponse post(String url, String runAsUser, String body, int expectedStatus) throws Exception
-    {
-        publicApiClient.setRequestContext(new RequestContext(runAsUser));
-
-        HttpResponse response = publicApiClient.post(CMM_SCOPE, url, null, null, null, body);
-        checkStatus(expectedStatus, response.getStatusCode());
-
-        return response;
-    }
-
-    protected HttpResponse post(String url, String runAsUser, String body,  String queryString, int expectedStatus) throws Exception
-    {
-        publicApiClient.setRequestContext(new RequestContext(runAsUser));
-        if (queryString != null)
-        {
-            url += queryString;
-        }
-        HttpResponse response = publicApiClient.post(CMM_SCOPE, url, null, null, null, body);
-        checkStatus(expectedStatus, response.getStatusCode());
-
-        return response;
-    }
-
-    protected HttpResponse getAll(String url, String runAsUser, Paging paging, int expectedStatus) throws Exception
-    {
-        publicApiClient.setRequestContext(new RequestContext(runAsUser));
-        Map<String, String> params = (paging == null) ? null : createParams(paging, null);
-
-        HttpResponse response = publicApiClient.get(CMM_SCOPE, url, null, null, null, params);
-        checkStatus(expectedStatus, response.getStatusCode());
-
-        return response;
-    }
-
-    protected HttpResponse getSingle(String url, String runAsUser, String entityId, int expectedStatus) throws Exception
-    {
-        publicApiClient.setRequestContext(new RequestContext(runAsUser));
-
-        HttpResponse response = publicApiClient.get(CMM_SCOPE, url, entityId, null, null, null);
-        checkStatus(expectedStatus, response.getStatusCode());
-
-        return response;
-    }
-
-    protected HttpResponse put(String url, String runAsUser, String entityId, String body, String queryString, int expectedStatus) throws Exception
-    {
-        publicApiClient.setRequestContext(new RequestContext(runAsUser));
-        if (queryString != null)
-        {
-            entityId += queryString;
-        }
-        HttpResponse response = publicApiClient.put(CMM_SCOPE, url, entityId, null, null, body, null);
-        checkStatus(expectedStatus, response.getStatusCode());
-
-        return response;
-    }
-
-    protected HttpResponse delete(String url, String runAsUser, String entityId, int expectedStatus) throws Exception
-    {
-        publicApiClient.setRequestContext(new RequestContext(runAsUser));
-
-        HttpResponse response = publicApiClient.delete(CMM_SCOPE, url, entityId, null, null);
-        checkStatus(expectedStatus, response.getStatusCode());
-
-        return response;
-    }
-
-    protected void checkStatus(int expectedStatus, int actualStatus)
-    {
-        if (expectedStatus > 0 && expectedStatus != actualStatus)
-        {
-            fail("Status code " + actualStatus + " returned, but expected " + expectedStatus);
-        }
     }
 
     protected CustomModel createCustomModel(String modelName, Pair<String, String> namespacePair, ModelStatus status) throws Exception
@@ -428,5 +342,11 @@ public class BaseCustomModelApiTest extends EnterpriseTestApi
             }
         }
         return null;
+    }
+
+    @Override
+    public String getScope()
+    {
+        return CMM_SCOPE;
     }
 }

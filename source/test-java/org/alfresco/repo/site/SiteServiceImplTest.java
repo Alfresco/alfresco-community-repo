@@ -43,6 +43,8 @@ import org.alfresco.repo.dictionary.M2Type;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.archive.NodeArchiveService;
+import org.alfresco.repo.node.getchildren.FilterProp;
+import org.alfresco.repo.node.getchildren.FilterPropString;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -500,6 +502,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(preexistingSitesCount + 5, sites.size());
         List<SiteInfo> sitesFromFind = this.siteService.findSites(null, null, 100);
         assertEquals(preexistingSitesCount + 5, sitesFromFind.size());
+        sitesFromFind = this.siteService.findSites(null, 100);
+        assertEquals(preexistingSitesCount + 5, sitesFromFind.size());
         List<SiteInfo> siteFromFind = this.siteService.findSites(null, null, 1);
         assertEquals("SiteService.findSites did not limit results", (sites.isEmpty() ? 0 : 1), siteFromFind.size());
         
@@ -510,7 +514,15 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // However 'findSites' allows CONTAINS matching.
         sitesFromFind = this.siteService.findSites("One", null, 100);
         assertEquals("Matched wrong number of sites named 'One'", 1, sitesFromFind.size());
-        
+
+        List<FilterProp> filterProps = new ArrayList<FilterProp>();
+        filterProps.add(new FilterPropString(ContentModel.PROP_NAME, "mySiteO", FilterPropString.FilterTypeString.STARTSWITH_IGNORECASE));
+        PagingResults<SiteInfo> pageSite = this.siteService.listSites(filterProps, null, new PagingRequest(100));
+        assertNotNull(pageSite);
+        assertNotNull(pageSite.getQueryExecutionId());
+        assertNotNull(pageSite.getTotalResultCount());
+        assertFalse(pageSite.hasMoreItems());
+
         // Get sites by matching title
         sites = this.siteService.listSites(testTitlePrefix, null);
         assertNotNull(sites);
@@ -526,7 +538,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals("Matched wrong number of sites named 'description'", 5, sitesFromFind.size());
         
         // Get sites by matching sitePreset - see ALF-5620
-        // SiteService.findSites does not support finding by sitePreset and so is not tested here.
+        sites = this.siteService.findSites(null, TEST_SITE_PRESET, 100);
+        assertNotNull(sites);
         sites = this.siteService.listSites(null, TEST_SITE_PRESET);
         assertNotNull(sites);
         assertEquals("Matched wrong number of sites with PRESET", 2, sites.size());

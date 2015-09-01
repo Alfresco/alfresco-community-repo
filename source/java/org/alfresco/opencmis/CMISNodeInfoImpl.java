@@ -955,6 +955,10 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             try
             {
                 VersionHistory versionHistory = getVersionHistory();
+                if (versionHistory == null)         // Avoid unnecessary NPE
+                {
+                    return null;
+                }
                 version = versionHistory.getVersion(versionLabel);
             } catch (Exception e)
             {

@@ -117,7 +117,7 @@ public class PersonTest extends TestCase
         RepoUsage r = repoUsageComponent.getRestrictions();
         repoUsageComponent.setRestrictions(
                 new RepoUsage(r.getLastUpdate(),
-                        20l,
+                        10000l,
                         r.getDocuments(),
                         r.getLicenseMode(),
                         r.getLicenseExpiryDate(),

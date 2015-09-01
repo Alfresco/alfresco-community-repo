@@ -32,14 +32,18 @@ import java.util.Date;
  */
 public class ModulePackage
 {
-    private final String id;
-    private final String title;
-    private final String description;
-    private final String version;
-    private final Date installDate;
-    private final ModuleInstallState installState;
-    private final String versionMin;
-    private final String versionMax;
+    private String id;
+    private String title;
+    private String description;
+    private String version;
+    private Date installDate;
+    private ModuleInstallState installState;
+    private String versionMin;
+    private String versionMax;
+
+    public ModulePackage()
+    {
+    }
 
     private ModulePackage(ModuleDetails moduleDetails)
     {

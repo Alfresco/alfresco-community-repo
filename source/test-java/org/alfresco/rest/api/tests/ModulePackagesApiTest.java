@@ -41,6 +41,7 @@ import java.util.List;
  */
 public class ModulePackagesApiTest extends AbstractBaseApiTest
 {
+    public static final String MODULEPACKAGES = "modulepackages";
     protected String nonAdminUserName;
 
     @Before
@@ -52,7 +53,7 @@ public class ModulePackagesApiTest extends AbstractBaseApiTest
     @Test
     public void testAllModulePackages() throws Exception
     {
-        HttpResponse response = getAll("modulepackages", nonAdminUserName, null, HttpStatus.SC_OK);
+        HttpResponse response = getAll(MODULEPACKAGES, nonAdminUserName, null, HttpStatus.SC_OK);
         assertNotNull(response);
 
         PublicApiClient.ExpectedPaging paging = parsePaging(response.getJsonResponse());
@@ -70,10 +71,10 @@ public class ModulePackagesApiTest extends AbstractBaseApiTest
     @Test
     public void testSingleModulePackage() throws Exception
     {
-        HttpResponse response = getSingle("modulepackages", nonAdminUserName, "NonSENSE_NOTFOUND", HttpStatus.SC_NOT_FOUND);
+        HttpResponse response = getSingle(MODULEPACKAGES, nonAdminUserName, "NonSENSE_NOTFOUND", HttpStatus.SC_NOT_FOUND);
         assertNotNull(response);
 
-        response = getSingle("modulepackages", nonAdminUserName, "alfresco-simple-module", HttpStatus.SC_OK);
+        response = getSingle(MODULEPACKAGES, nonAdminUserName, "alfresco-simple-module", HttpStatus.SC_OK);
         assertNotNull(response);
 
         ModulePackage simpleModule = parseRestApiEntry(response.getJsonResponse(),ModulePackage.class);

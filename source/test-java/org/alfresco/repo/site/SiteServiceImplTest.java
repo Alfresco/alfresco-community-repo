@@ -31,6 +31,8 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.admin.SysAdminParamsImpl;
 import org.alfresco.repo.dictionary.DictionaryDAO;
@@ -45,6 +47,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.repo.security.person.UserNameMatcherImpl;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -218,7 +221,8 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, "mySiteTest", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);     
         
         String name = "!Â£$%^&*()_+=-[]{}";
-        siteInfo = this.siteService.createSite(TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+        //Calls deprecated method (still creates a public Site)
+        siteInfo = this.siteService.createSite(TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, true);
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC); 
         siteInfo = this.siteService.getSite(name);
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC); 
@@ -229,9 +233,11 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
         siteInfo = this.siteService.getSite(name);
         checkSiteInfo(siteInfo, TEST_SITE_PRESET, name, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC); 
-        
-        // Localize the title and description
+
         NodeRef siteNodeRef = siteInfo.getNodeRef();
+        assertEquals(siteInfo.getShortName(), this.siteService.getSiteShortName(siteNodeRef));
+
+        // Localize the title and description
         Locale locale = Locale.getDefault();
         try
         {
@@ -254,6 +260,17 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             fail("Shouldn't allow duplicate site short names.");
         }
         catch (AlfrescoRuntimeException exception)
+        {
+            // Expected
+        }
+
+        try
+        {
+            //Create a site with an invalid site type
+            this.siteService.createSite(TEST_SITE_PRESET, "InvalidSiteType", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC, ServiceRegistry.CMIS_SERVICE);
+            fail("Shouldn't allow invalid site type.");
+        }
+        catch (SiteServiceException ssexception)
         {
             // Expected
         }
@@ -546,7 +563,14 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 fail("The shortname " + shortName + " is not recognised");
             }
         }
-        
+
+        //Test the public method on the implmentation.
+        Set<String> sitesSet = new HashSet<>(2);
+        sitesSet.add("mySiteOne");
+        sitesSet.add("mySiteTwo");
+        sites = siteServiceImpl.listSites(sitesSet);
+        assertEquals(2, sites.size());
+
         /**
          * Test list sites for a user
          */
@@ -917,7 +941,13 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         
         // Get the site from the lower-level child node.
         siteInfo = siteService.getSite(content);
-        checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testGetSite", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC); 
+        checkSiteInfo(siteInfo, TEST_SITE_PRESET, "testGetSite", TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PUBLIC);
+
+        NodeRef siteContainer = siteServiceImpl.getSiteContainer(siteInfo.getShortName(), "folder.component", false, siteService, transactionService, taggingService);
+        assertEquals(container.getId(), siteContainer.getId());
+
+        PagingResults<FileInfo> containers = siteService.listContainers(siteInfo.getShortName(), new PagingRequest(1000));
+        assertNotNull(containers);
     }
        
     public void testUpdateSite()
@@ -1039,6 +1069,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         // related site groups should remain after site delete but should be deleted on site purge from trashcan.
         // Such case is tested in SiteServiceImplMoreTest.deleteSiteAndRestoreEnsuringSiteGroupsAreRecovered
         assertTrue(authorityService.authorityExists(((SiteServiceImpl)smallSiteService).getSiteGroup(siteShortName, true)));
+        assertTrue(authorityService.authorityExists(((SiteServiceImpl) smallSiteService).getSiteGroup(siteShortName)));
         Set<String> permissions = permissionService.getSettablePermissions(SiteModel.TYPE_SITE);
         for (String permission : permissions)
         {
@@ -1139,6 +1170,28 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_TWO));
         assertTrue(members.containsKey(USER_THREE));
         assertEquals(SiteModel.SITE_COLLABORATOR, members.get(USER_THREE));
+
+        //Check other listMember calls
+        this.siteService.listMembers("testMembership", null, null, false, new SiteService.SiteMembersCallback(){
+
+            List<String> USERS = Arrays.asList(USER_ONE, USER_TWO, USER_THREE);
+            int userCount = 0;
+
+            @Override
+            public void siteMember(String authority, String permission)
+            {
+                if (USERS.contains(authority)) userCount++;
+
+            }
+
+            @Override
+            public boolean isDone()
+            {
+                return userCount==USERS.size();
+            }
+        });
+
+
         
         // Remove user two's membership
         this.siteService.removeMembership("testMembership", USER_TWO);
@@ -1626,7 +1679,9 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", USER_TWO));
         assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", USER_THREE));
         assertEquals(SiteModel.SITE_CONSUMER, this.siteService.getMembersRole("testMembership", this.groupTwo));
-        
+
+        //Uses Members role info
+        assertEquals(SiteModel.SITE_MANAGER, this.siteService.getMembersRoleInfo("testMembership", USER_ONE).getMemberRole());
         /** 
          * Check we can filter this list by name and role correctly 
          */

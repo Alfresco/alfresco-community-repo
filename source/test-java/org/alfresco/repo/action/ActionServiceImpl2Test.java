@@ -27,6 +27,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -41,6 +42,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.action.ParameterConstraint;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -53,6 +55,7 @@ import org.alfresco.util.test.junitrules.TemporaryNodes;
 import org.alfresco.util.test.junitrules.TemporarySites;
 import org.alfresco.util.test.junitrules.TemporarySites.TestSiteAndMemberInfo;
 import org.alfresco.util.test.junitrules.WellKnownNodes;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.ClassRule;
@@ -199,6 +202,19 @@ public class ActionServiceImpl2Test
                 return null;
             }
         });
+    }
+
+    @Test
+    public void testParameterConstraints() throws Exception
+    {
+        List<ParameterConstraint> constraints = actionService.getParameterConstraints();
+        assertNotNull(constraints);
+        if (constraints.size() > 0)
+        {
+            ParameterConstraint parameterConstraint = constraints.get(0);
+            ParameterConstraint pConstraintAgain = actionService.getParameterConstraint(parameterConstraint.getName());
+            Assert.assertEquals(parameterConstraint, pConstraintAgain);
+        }
     }
 
     @Test

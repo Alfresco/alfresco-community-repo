@@ -199,6 +199,12 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
         ActionCondition condition = this.actionService.createActionCondition(NoConditionEvaluator.NAME);
         assertNotNull(condition);
         assertEquals(NoConditionEvaluator.NAME, condition.getActionConditionDefinitionName());
+
+        Map<String, Serializable> params = new HashMap<>(0);
+        condition = this.actionService.createActionCondition(NoConditionEvaluator.NAME, params);
+        assertNotNull(condition);
+        assertEquals(NoConditionEvaluator.NAME, condition.getActionConditionDefinitionName());
+
     }
 
       /**
@@ -217,6 +223,11 @@ public class ActionServiceImplTest extends BaseAlfrescoSpringTest
     public void testCreateAction()
     {
         Action action = this.actionService.createAction(AddFeaturesActionExecuter.NAME);
+        assertNotNull(action);
+        assertEquals(AddFeaturesActionExecuter.NAME, action.getActionDefinitionName());
+
+        Map<String, Serializable> params = new HashMap<>(0);
+        action = this.actionService.createAction(AddFeaturesActionExecuter.NAME, params);
         assertNotNull(action);
         assertEquals(AddFeaturesActionExecuter.NAME, action.getActionDefinitionName());
     }

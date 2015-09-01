@@ -1050,4 +1050,14 @@ public class HomeFolderProviderSynchronizerTest
         assertHomeFolderLocation("Tess", "TE/Tess-1");
         assertHomeFolderLocation("aBBY", "Ab/aBBY-1");
     }
+
+    @Test
+    public void test27UpdateTenancy() throws Exception
+    {
+        NodeRef blogz = createUser("", "Bloggz");
+        String tUser = personService.updateUsernameForTenancy("Bloggz", tenantService);
+        assertEquals("Bloggz", tUser);
+        personService.deletePerson(blogz, true);
+    }
+
 }

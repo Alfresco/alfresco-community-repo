@@ -1702,23 +1702,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         {
             throw new SiteDoesNotExistException(shortName);
         }
-        
-        // Build an array of name filter tokens pre lowercased to test against person properties
-        // We require that matching people have at least one match against one of these on
-        //  either their firstname or last name
-        String nameFilterLower = null;
-        String[] nameFilters = new String[0];
-        if (nameFilter != null && nameFilter.length() != 0)
-        {
-            StringTokenizer t = new StringTokenizer(nameFilter, " ");
-            nameFilters = new String[t.countTokens()];
-            for (int i=0; t.hasMoreTokens(); i++)
-            {
-                nameFilters[i] = t.nextToken().toLowerCase();
-            }
-            nameFilterLower = nameFilter.toLowerCase();
-        }
-        
+
+        String[] nameFilters = tokenizeFilterLowercase(nameFilter);
+        String nameFilterLower = nameFilters.length>0?nameFilter.toLowerCase():null;
+
         QName siteType = directNodeService.getType(siteNodeRef);
         Set<String> permissions = this.permissionService.getSettablePermissions(siteType);
         Map<String, String> groupsToExpand = new HashMap<String, String>(32);
@@ -1825,6 +1812,26 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 }
             }         
         }
+    }
+
+    /*
+    * Build an array of name filter tokens pre lowercased to test against person properties
+    * We require that matching people have at least one match against one of these on
+    * either their firstname or last name
+    */
+    static String[] tokenizeFilterLowercase(String nameFilter)
+    {
+        String[] nameFilters = new String[0];
+        if (nameFilter != null && nameFilter.length() != 0)
+        {
+            String[] tokens = nameFilter.split(" ");
+            nameFilters = new String[tokens.length];
+            for (int i = 0; i <tokens.length ; i++)
+            {
+                nameFilters[i] = tokens[i].toLowerCase();
+            }
+        }
+        return nameFilters;
     }
 
     public PagingResults<SiteMembership> listMembersPaged(String shortName, boolean collapseGroups, List<Pair<SiteService.SortFields, Boolean>> sortProps, PagingRequest pagingRequest)
@@ -1960,23 +1967,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         {
             size = Integer.MAX_VALUE;
         }
-        
-        // Build an array of name filter tokens pre lowercased to test against person properties
-        // We require that matching people have at least one match against one of these on
-        // either their firstname or last name
-        String nameFilterLower = null;
-        String[] nameFilters = new String[0];
-        if (nameFilter != null && nameFilter.length() != 0)
-        {
-            StringTokenizer t = new StringTokenizer(nameFilter, " ");
-            nameFilters = new String[t.countTokens()];
-            for (int i = 0; t.hasMoreTokens(); i++)
-            {
-                nameFilters[i] = t.nextToken().toLowerCase();
-            }
-            nameFilterLower = nameFilter.toLowerCase();
-        }
 
+        String[] nameFilters = tokenizeFilterLowercase(nameFilter);
+        String nameFilterLower = nameFilters.length>0?nameFilter.toLowerCase():null;
+        
         List<SiteMemberInfo> members = new ArrayList<SiteMemberInfo>(32);
 
         QName siteType = directNodeService.getType(siteNodeRef);

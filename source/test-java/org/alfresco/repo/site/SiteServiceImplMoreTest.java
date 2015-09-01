@@ -21,6 +21,7 @@ package org.alfresco.repo.site;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
@@ -499,7 +500,32 @@ public class SiteServiceImplMoreTest
         });
         
     }
-    
+
+    @Test public void testTokenizer()
+    {
+        String[] res = SiteServiceImpl.tokenizeFilterLowercase("Fred");
+        assertNotNull(res);
+        assertEquals(1, res.length);
+        assertEquals("fred", res[0]);
+
+        res = SiteServiceImpl.tokenizeFilterLowercase("king kong lives");
+        assertNotNull(res);
+        assertEquals(3, res.length);
+        assertEquals("king", res[0]);
+        assertEquals("kong", res[1]);
+        assertEquals("lives", res[2]);
+
+        res = SiteServiceImpl.tokenizeFilterLowercase("KING Kong livES");
+        assertNotNull(res);
+        assertEquals(3, res.length);
+        assertEquals("king", res[0]);
+        assertEquals("kong", res[1]);
+        assertEquals("lives", res[2]);
+
+        res = SiteServiceImpl.tokenizeFilterLowercase(null);
+        assertNotNull(res);
+        assertEquals(0, res.length);
+    }
     private void assertThatArchivedNodeExists(NodeRef originalNodeRef, String failureMsg)
     {
         final NodeRef archivedNodeRef = NODE_ARCHIVE_SERVICE.getArchivedNode(originalNodeRef);

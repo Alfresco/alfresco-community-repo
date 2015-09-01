@@ -949,6 +949,18 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
 
         PagingResults<FileInfo> containers = siteService.listContainers(siteInfo.getShortName(), new PagingRequest(1000));
         assertNotNull(containers);
+
+        try
+        {
+            siteServiceImpl.getSiteContainer("NON_SENSE", "folder.component", true, siteService, transactionService, taggingService);
+            fail("Shouldn't get here");
+        }
+        catch (AlfrescoRuntimeException exception)
+        {
+            // Expected
+            assertTrue(exception.getMessage().contains("Unable to create the"));
+
+        }
     }
        
     public void testUpdateSite()
@@ -1303,7 +1315,11 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         assertEquals(1, members.size());
         assertEquals(USER_ONE, members.get(0).getPersonId());
         assertEquals(SiteModel.SITE_MANAGER, members.get(0).getRole());
-     
+        
+        PagingResults<SiteMembership> siteM = this.siteService.listSitesPaged(USER_ONE, null, new PagingRequest(1000));
+        assertNotNull(siteM);
+        assertFalse(siteM.hasMoreItems());
+
         // Create a site as user two and add user one
         this.authenticationComponent.setCurrentUser(USER_TWO);
         this.siteService.createSite(TEST_SITE_PRESET, siteName2, TEST_TITLE, TEST_DESCRIPTION, SiteVisibility.PRIVATE);
@@ -1450,6 +1466,16 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         container8 = this.siteService.createContainer(siteInfo.getShortName(), "folder.component4", ForumModel.TYPE_FORUM, null);
         assertNotNull(container8);
         assertEquals(ForumModel.TYPE_FORUM, nodeService.getType(container8));
+
+        try
+        {
+            boolean noItDoesnt = this.siteService.hasContainer("IDONT_EXISTS", "folder.component2");
+            fail("Shouldn't get here");
+        }
+        catch (SiteDoesNotExistException exception)
+        {
+            // Expected
+        }
     }
     
     public void testSiteGetRoles()

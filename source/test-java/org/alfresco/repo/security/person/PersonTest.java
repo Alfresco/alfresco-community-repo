@@ -595,6 +595,26 @@ public class PersonTest extends TestCase
         assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_EMAIL, "gj@email.com", 10).size());
         assertEquals(0, personService.getPeopleFilteredByProperty(ContentModel.PROP_ORGID, "microsoft", 10).size());
 
+        try
+        {
+            personService.getPeopleFilteredByProperty(ContentModel.PROP_USERNAME, "derek", 1001);
+            fail("Should throw IllegalArgumentException, max is 1000");
+        }
+        catch (IllegalArgumentException iae)
+        {
+
+        }
+
+        try
+        {
+            personService.getPeopleFilteredByProperty(ContentModel.PROP_MODEL_AUTHOR, "derek", 10);
+            fail("Should throw AlfrescoRuntimeException,property must be in 'cm:person'");
+        }
+        catch (AlfrescoRuntimeException iae)
+        {
+
+        }
+
         personService.deletePerson("derek");
         assertEquals(2, getPeopleCount());
         try
@@ -1737,6 +1757,17 @@ public class PersonTest extends TestCase
         assertEquals(1, result.size());
         assertEquals(jjFirstname, result.get(0).getFirstName());
         assertEquals(jjLastname, result.get(0).getLastName());
+
+        // test different firstname and lastname
+        filters.clear();
+        searchTerm = jjFirstname + " " + jjLastname;
+        filters.add(new Pair<QName, String>(ContentModel.PROP_USERNAME, searchTerm));
+        filters.add(new Pair<QName, String>(ContentModel.PROP_FIRSTNAME, jjFirstname));
+        filters.add(new Pair<QName, String>(ContentModel.PROP_LASTNAME, jjLastname));
+        result = personService.getPeople(filters, true, null, pr).getPage();
+        assertEquals(1, result.size());
+        assertEquals(jjFirstname, result.get(0).getFirstName());
+        assertEquals(jjLastname, result.get(0).getLastName());
     }
-    
+
 }

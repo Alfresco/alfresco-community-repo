@@ -49,7 +49,6 @@ import org.junit.runners.Suite.SuiteClasses;
     ActionConditionImplTest.class,
     CompositeActionImplTest.class,
     ActionServiceImplTest.class,
-    ActionServiceImpl2Test.class,
     CompositeActionConditionImplTest.class,
     
     // Test evaluators
@@ -66,7 +65,8 @@ import org.junit.runners.Suite.SuiteClasses;
     SpecialiseTypeActionExecuterTest.class,
     RemoveFeaturesActionExecuterTest.class,
     ActionTrackingServiceImplTest.class, // intermittent - pending ALF-9773 & ALF-9774
-	MailActionExecuterTest.class	
+	MailActionExecuterTest.class,
+    ActionServiceImpl2Test.class,
 })
 public class ActionTestSuite
 {

@@ -20,12 +20,15 @@
 package org.alfresco.repo.site;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -53,6 +56,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
+import org.alfresco.util.Pair;
 import org.alfresco.util.test.junitrules.AlfrescoPerson;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
 import org.alfresco.util.test.junitrules.RunAsFullyAuthenticatedRule;
@@ -297,7 +301,10 @@ public class SiteServiceImplMoreTest
                     assertTrue("Site group for role " + role + " did not exist after site restoration",
                                AUTHORITY_SERVICE.authorityExists(siteGroup));
                 }
-                
+
+
+
+
                 Set<String> currentManagers = 
                 		AUTHORITY_SERVICE.getContainedAuthorities(AuthorityType.USER, siteServiceImpl.getSiteRoleGroup(siteShortName, SiteModel.SITE_MANAGER, true), false);
                 // ensure that there is at least one site manager
@@ -499,6 +506,33 @@ public class SiteServiceImplMoreTest
             }
         });
         
+    }
+
+    @Test public void testSiteMembersPaged()
+    {
+        // Choose a site name that will link back to this test case...
+        final String siteShortName = testName.getMethodName();
+        log.debug("Creating test site called: " + siteShortName);
+
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // ...and create the site
+                final TestSiteAndMemberInfo testSiteAndMemberInfo = perMethodTestSites.createTestSiteWithUserPerRole(siteShortName, "sitePreset", SiteVisibility.PUBLIC, AuthenticationUtil.getAdminUserName());
+
+                List<Pair<SiteService.SortFields, Boolean>> sortProps = new ArrayList<Pair<SiteService.SortFields, Boolean>>(1);
+                sortProps.add(new Pair<SiteService.SortFields, Boolean>(SiteService.SortFields.FirstName, true));
+                PagingResults<SiteMembership> pagedMembers = SITE_SERVICE.listMembersPaged(siteShortName, true, sortProps, new PagingRequest(100));
+                assertNotNull(pagedMembers);
+                assertNotNull(pagedMembers.getPage());
+                assertNotNull(pagedMembers.getQueryExecutionId());
+                assertFalse(pagedMembers.hasMoreItems());
+                log.debug("About to delete site completely.");
+                SITE_SERVICE.deleteSite(siteShortName);
+                return null;
+            }
+        });
     }
 
     @Test public void testTokenizer()

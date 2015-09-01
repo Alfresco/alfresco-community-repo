@@ -520,7 +520,6 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         PagingResults<SiteInfo> pageSite = this.siteService.listSites(filterProps, null, new PagingRequest(100));
         assertNotNull(pageSite);
         assertNotNull(pageSite.getQueryExecutionId());
-        assertNotNull(pageSite.getTotalResultCount());
         assertFalse(pageSite.hasMoreItems());
 
         // Get sites by matching title

@@ -29,7 +29,8 @@ import org.junit.runners.Suite;
     TestFavourites.class,
     TestRemovePermissions.class,
     TestPublicApi128.class,
-    TestPublicApiCaching.class
+    TestPublicApiCaching.class,
+    ModulePackagesApiTest.class
 })
 public class ApiTest
 {

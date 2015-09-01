@@ -21,6 +21,7 @@ package org.alfresco.repo.site;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -1279,7 +1280,15 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
             //exception.printStackTrace();
         }
     }
-    
+
+    public void testDefaults()
+    {
+        assertFalse(this.siteService.isSiteAdmin(null));
+        assertTrue(this.siteService.hasCreateSitePermissions());
+        Comparator<String> comparator = siteServiceImpl.getRoleComparator();
+        assertNotNull(comparator);
+    }
+
     public void testListSiteMemberships()
     {
         String siteName1 = "testMembership1";

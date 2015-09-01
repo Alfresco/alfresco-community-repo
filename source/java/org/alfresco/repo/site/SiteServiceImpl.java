@@ -150,7 +150,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     // note: caches are tenant-aware (if using EhCacheAdapter shared cache)
     
     private SimpleCache<String, Object> singletonCache; // eg. for siteHomeNodeRef
-    private final String KEY_SITEHOME_NODEREF = "key.sitehome.noderef";
+    private static final String KEY_SITEHOME_NODEREF = "key.sitehome.noderef";
     
     private SimpleCache<String, NodeRef> siteNodeRefCache; // for site shortname to nodeRef lookup
     

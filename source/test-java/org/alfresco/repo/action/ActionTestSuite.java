@@ -49,6 +49,7 @@ import org.junit.runners.Suite.SuiteClasses;
     ActionConditionImplTest.class,
     CompositeActionImplTest.class,
     ActionServiceImplTest.class,
+    ActionServiceImpl2Test.class,
     CompositeActionConditionImplTest.class,
     
     // Test evaluators

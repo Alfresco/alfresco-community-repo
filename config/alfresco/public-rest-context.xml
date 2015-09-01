@@ -147,6 +147,8 @@
 		/> <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" 
 		/> -->
 
+    <context:component-scan base-package="org.alfresco.rest.api.modules"/>
+
     <bean id="apiWebScriptParent" abstract="true" parent="webscript" init-method="init">
         <property name="resolver" ref="simpleMappingExceptionResolver" />
         <property name="jsonHelper" ref="jsonHelper" />

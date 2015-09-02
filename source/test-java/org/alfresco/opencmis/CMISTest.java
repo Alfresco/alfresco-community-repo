@@ -60,11 +60,17 @@ import org.alfresco.repo.domain.audit.AuditDAO;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.archive.NodeArchiveService;
+import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionableAspectTest;
+import org.alfresco.repo.workflow.WorkflowDeployer;
 import org.alfresco.service.cmr.action.ActionCondition;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -82,6 +88,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
 import org.alfresco.service.cmr.rule.RuleType;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
@@ -90,6 +97,8 @@ import org.alfresco.service.cmr.tagging.TaggingService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.service.cmr.workflow.WorkflowAdminService;
+import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -109,6 +118,7 @@ import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
 import org.apache.chemistry.opencmis.commons.definitions.PropertyDefinition;
 import org.apache.chemistry.opencmis.commons.definitions.TypeDefinition;
+import org.apache.chemistry.opencmis.commons.definitions.TypeDefinitionContainer;
 import org.apache.chemistry.opencmis.commons.enums.AclPropagation;
 import org.apache.chemistry.opencmis.commons.enums.Action;
 import org.apache.chemistry.opencmis.commons.enums.ChangeType;
@@ -147,6 +157,9 @@ import org.springframework.extensions.webscripts.GUID;
  */
 public class CMISTest
 {
+    private static final QName TEST_START_TASK = QName.createQName("http://www.alfresco.org/model/workflow/test/1.0", "startTaskVarScriptAssign");
+    private static final QName TEST_WORKFLOW_TASK = QName.createQName("http://www.alfresco.org/model/workflow/test/1.0", "assignVarTask");
+    
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(new String[]{ApplicationContextHelper.CONFIG_LOCATIONS[0],"classpath:test-cmisinteger_modell-context.xml"});
 
     private FileFolderService fileFolderService;
@@ -168,6 +181,13 @@ public class CMISTest
     private RuleService ruleService;
     private NodeArchiveService nodeArchiveService;
     private DictionaryService dictionaryService;
+    private WorkflowService workflowService;
+    private WorkflowAdminService workflowAdminService;
+    private AuthenticationContext authenticationContext;
+    private DictionaryDAO dictionaryDAO;
+    private TenantAdminService tenantAdminService;
+    private TenantService tenantService;
+    private SearchService searchService;
     private java.util.Properties globalProperties;
 
     private AlfrescoCmisServiceFactory factory;
@@ -341,6 +361,13 @@ public class CMISTest
         this.auditDAO = (AuditDAO) ctx.getBean("auditDAO");
         this.nodeArchiveService = (NodeArchiveService) ctx.getBean("nodeArchiveService");
         this.dictionaryService = (DictionaryService) ctx.getBean("dictionaryService");
+        this.workflowService = (WorkflowService) ctx.getBean("WorkflowService");
+        this.workflowAdminService = (WorkflowAdminService) ctx.getBean("workflowAdminService");
+        this.authenticationContext = (AuthenticationContext) ctx.getBean("authenticationContext");
+        this.dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
+        this.tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
+        this.tenantService = (TenantService) ctx.getBean("tenantService");
+        this.searchService = (SearchService) ctx.getBean("SearchService");
         
         this.globalProperties = (java.util.Properties) ctx.getBean("global-properties");
         this.globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "true");
@@ -543,6 +570,86 @@ public class CMISTest
         finally
         {
             AuthenticationUtil.popAuthentication();
+        }
+    }
+
+    /**
+     * Test for MNT-10537.
+     */
+    @Test
+    public void testModelAvailability() throws Exception
+    {
+        final WorkflowDeployer testWorkflowDeployer = new WorkflowDeployer();
+
+        // setup dependencies
+        testWorkflowDeployer.setTransactionService(transactionService);
+        testWorkflowDeployer.setWorkflowService(workflowService);
+        testWorkflowDeployer.setWorkflowAdminService(workflowAdminService);
+        testWorkflowDeployer.setAuthenticationContext(authenticationContext);
+        testWorkflowDeployer.setDictionaryDAO(dictionaryDAO);
+        testWorkflowDeployer.setTenantAdminService(tenantAdminService);
+        testWorkflowDeployer.setTenantService(tenantService);
+        testWorkflowDeployer.setNodeService(nodeService);
+        testWorkflowDeployer.setNamespaceService(namespaceService);
+        testWorkflowDeployer.setSearchService(searchService);
+
+        // populate workflow parameters
+        java.util.Properties props = new java.util.Properties();
+        props.setProperty(WorkflowDeployer.ENGINE_ID, "jbpm");
+        props.setProperty(WorkflowDeployer.LOCATION, "jbpmresources/test_taskVarScriptAssign.xml");
+        props.setProperty(WorkflowDeployer.MIMETYPE, "text/xml");
+        props.setProperty(WorkflowDeployer.REDEPLOY, Boolean.FALSE.toString());
+
+        List<java.util.Properties> definitions = new ArrayList<java.util.Properties>(1);
+        definitions.add(props);
+
+        testWorkflowDeployer.setWorkflowDefinitions(definitions);
+
+        List<String> models = new ArrayList<String>(1);
+        models.add("jbpmresources/testWorkflowModel.xml");
+
+        testWorkflowDeployer.setModels(models);
+
+        // deploy test workflow
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        txnHelper.setForceWritable(true);
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            @Override
+            public Object execute() throws Throwable
+            {
+                return AuthenticationUtil.runAs(new RunAsWork<Object>()
+                {
+                    public Object doWork()
+                    {
+                        testWorkflowDeployer.init();
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+            }
+
+        }, false, true);
+
+        org.alfresco.service.cmr.dictionary.TypeDefinition startTaskTypeDefinition = this.dictionaryService.getType(TEST_START_TASK);
+        org.alfresco.service.cmr.dictionary.TypeDefinition workflowTaskTypeDefinition = this.dictionaryService.getType(TEST_WORKFLOW_TASK);
+
+        // check that workflow types were correctly bootstrapped
+        assertNotNull(startTaskTypeDefinition);
+        assertNotNull(workflowTaskTypeDefinition);
+
+        // check that loaded model is available via CMIS API
+        CallContext context = new SimpleCallContext("admin", "admin", CmisVersion.CMIS_1_1);
+        CmisService service = factory.getService(context);
+        try
+        {
+            List<RepositoryInfo> repositories = service.getRepositoryInfos(null);
+            assertTrue(repositories.size() > 0);
+            List<TypeDefinitionContainer> container = service.getTypeDescendants(repositories.get(0).getId(), null, new BigInteger("-1"), true, null);
+            assertTrue("Workflow model haven't been loaded", container.toString().contains("testwf:startTaskVarScriptAssign"));
+        }
+        finally
+        {
+            service.close();
         }
     }
 

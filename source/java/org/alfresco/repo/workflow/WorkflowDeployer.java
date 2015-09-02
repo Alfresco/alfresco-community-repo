@@ -40,6 +40,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -93,6 +94,8 @@ public class WorkflowDeployer extends AbstractLifecycleBean
     private NamespaceService namespaceService;
     private SearchService searchService;
     private RepositoryLocation repoWorkflowDefsLocation;
+
+    private WorkflowDeployerTransactionListener workflowDeployerTransactionListener = new WorkflowDeployerTransactionListener();
 
     public final static String CRITERIA_ALL = "/*"; // immediate children only
     public final static String defaultSubtypeOfWorkflowDefinitionType = "subtypeOf('bpm:workflowDefinition')";
@@ -261,6 +264,9 @@ public class WorkflowDeployer extends AbstractLifecycleBean
                 dictionaryBootstrap.setModels(models);
                 dictionaryBootstrap.setLabels(resourceBundles);
                 dictionaryBootstrap.bootstrap(); // also registers with dictionary
+                
+                // MNT-10537 fix, since new model was deployed we need to destroy dictionary to force lazy re-init 
+                AlfrescoTransactionSupport.bindListener(this.workflowDeployerTransactionListener);
             }
             
             // bootstrap the workflow definitions (from classpath)
@@ -520,4 +526,40 @@ public class WorkflowDeployer extends AbstractLifecycleBean
         // NOOP
     }
 
+    
+    /**
+     * Workflow deployer transaction listener class.
+     */
+    public class WorkflowDeployerTransactionListener extends TransactionListenerAdapter
+    {
+        @Override
+        public void afterCommit()
+        {
+            RetryingTransactionCallback<Void> work = new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    AuthenticationUtil.runAs(new RunAsWork<Object>()
+                            {
+                                public Object doWork()
+                                {
+                                    // invalidate - to force lazy re-init
+                                    dictionaryDAO.destroy();
+                                    
+                                    if (logger.isTraceEnabled())
+                                    {
+                                        logger.trace("Workflow deployer afterCommit: Dictionary destroyed ["+AlfrescoTransactionSupport.getTransactionId()+"]");
+                                    }
+                                    
+                                    return null; 
+                                }
+                            }, AuthenticationUtil.getSystemUserName());
+                    
+                    return null;
+                }
+            };
+            
+            transactionService.getRetryingTransactionHelper().doInTransaction(work, true, true);
+        }
+    }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2014 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -53,6 +53,7 @@ import org.alfresco.repo.security.authentication.InMemoryTicketComponentImpl.Tic
 import org.alfresco.repo.security.authentication.RepositoryAuthenticationDao.CacheEntry;
 import org.alfresco.repo.tenant.TenantAdminService;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -114,6 +115,11 @@ public class AuthenticationTest extends TestCase
 
     private SimpleCache<String, CacheEntry> authenticationCache;    
     private SimpleCache<String, NodeRef> immutableSingletonCache;
+
+    private static final String TEST_RUN = System.currentTimeMillis()+"";
+    private static final String TEST_TENANT_DOMAIN = TEST_RUN+".my.test";
+    private static final String DEFAULT_ADMIN_PW = "admin";
+    private static final String TENANT_ADMIN_PW = DEFAULT_ADMIN_PW + TEST_TENANT_DOMAIN;
 
     public AuthenticationTest()
     {
@@ -442,6 +448,37 @@ public class AuthenticationTest extends TestCase
         dao.setAuthenticationCache(authenticationCache);
         dao.setSingletonCache(immutableSingletonCache);
         return dao;
+    }
+
+    /**
+     * Test for ALF-20680
+     * Test of the {@link RepositoryAuthenticationDao#getUserFolderLocation(String)} in multitenancy
+     */
+    public void testAuthenticateMultiTenant()
+    {
+        // Create a tenant domain
+        TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Object>() {
+            public Object doWork() throws Exception {
+                if (!tenantAdminService.existsTenant(TEST_TENANT_DOMAIN)) {
+                    tenantAdminService.createTenant(TEST_TENANT_DOMAIN, TENANT_ADMIN_PW.toCharArray(), null);
+                }
+                return null;
+            }
+        }, TenantService.DEFAULT_DOMAIN);
+
+        // Use default admin
+        authenticateMultiTenantWork(AuthenticationUtil.getAdminUserName(), DEFAULT_ADMIN_PW);
+
+        // Use tenant admin
+        authenticateMultiTenantWork(AuthenticationUtil.getAdminUserName() + TenantService.SEPARATOR + TEST_TENANT_DOMAIN, TENANT_ADMIN_PW);
+    }
+
+    private void authenticateMultiTenantWork(String userName, String password)
+    {
+        String hashedPassword = dao.getMD4HashedPassword(userName);
+        assertNotNull(hashedPassword);
+        UserDetails userDetails = (UserDetails) dao.loadUserByUsername(userName);
+        assertEquals(passwordEncoder.encodePassword(password, dao.getSalt(userDetails)), hashedPassword);
     }
 
     public void testCreateAndyUserAndOtherCRUD() throws NoSuchAlgorithmException, UnsupportedEncodingException

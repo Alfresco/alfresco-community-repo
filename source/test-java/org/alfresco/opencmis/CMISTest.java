@@ -174,7 +174,7 @@ public class CMISTest
     private AuthorityService authorityService;
     private AuditModelRegistryImpl auditSubsystem;
     private PermissionService permissionService;
-	private DictionaryDAO dictionaryDAO;
+    private DictionaryDAO dictionaryDAO;
     private CMISDictionaryService cmisDictionaryService;
     private AuditDAO auditDAO;
     private ActionService actionService;
@@ -184,7 +184,6 @@ public class CMISTest
     private WorkflowService workflowService;
     private WorkflowAdminService workflowAdminService;
     private AuthenticationContext authenticationContext;
-    private DictionaryDAO dictionaryDAO;
     private TenantAdminService tenantAdminService;
     private TenantService tenantService;
     private SearchService searchService;
@@ -364,7 +363,6 @@ public class CMISTest
         this.workflowService = (WorkflowService) ctx.getBean("WorkflowService");
         this.workflowAdminService = (WorkflowAdminService) ctx.getBean("workflowAdminService");
         this.authenticationContext = (AuthenticationContext) ctx.getBean("authenticationContext");
-        this.dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         this.tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
         this.tenantService = (TenantService) ctx.getBean("tenantService");
         this.searchService = (SearchService) ctx.getBean("SearchService");

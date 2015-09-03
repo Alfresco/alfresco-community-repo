@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -80,7 +80,7 @@ public class SolrCategoryServiceImpl extends LuceneCategoryServiceImpl
         sp.addStore(storeRef);
         sp.setQuery(catProperty+":*");
         FieldFacet ff = new FieldFacet(field);
-        ff.setLimit(count);
+        ff.setLimitOrNull(count);
         sp.addFieldFacet(ff);
         
         ResultSet resultSet = null;

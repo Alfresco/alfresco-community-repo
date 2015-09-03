@@ -447,7 +447,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
                         url.append("&").append(encoder.encode("f."+facet.getField()+".facet.enum.cache.minDf", "UTF-8")).append("=").append(encoder.encode(""+facet.getEnumMethodCacheMinDF(), "UTF-8"));
                     }
                     int facetLimit;
-                    if(facet.getLimit() == null)
+                    if(facet.getLimitOrNull() == null)
                     {
                         if(mapping.isSharded())
                         {
@@ -460,7 +460,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
                     }
                     else
                     {
-                        facetLimit = facet.getLimit().intValue();
+                        facetLimit = facet.getLimitOrNull().intValue();
                     }
                     url.append("&").append(encoder.encode("f."+facet.getField()+".facet.limit", "UTF-8")).append("=").append(encoder.encode(""+facetLimit, "UTF-8"));
                     if(facet.getMethod() != null)

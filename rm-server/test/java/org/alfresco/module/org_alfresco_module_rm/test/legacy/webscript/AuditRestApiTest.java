@@ -1,5 +1,7 @@
 package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 
+import static org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService.DEFAULT_RM_SITE_ID;
+
 import java.io.IOException;
 import java.text.MessageFormat;
 
@@ -12,25 +14,25 @@ import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 
 
-public class AuditRestApiTest extends BaseRMWebScriptTestCase 
+public class AuditRestApiTest extends BaseRMWebScriptTestCase
 {
     /** URL for the REST APIs */
     protected static final String GET_NODE_AUDITLOG_URL_FORMAT = "/api/node/{0}/rmauditlog";
-    
+
     private static final String USER_WITHOUT_AUDIT_CAPABILITY = GUID.generate();
-    
-    private NodeRef record; 
-    
+
+    private NodeRef record;
+
     public void testAuditAccessCapability() throws IOException
     {
-        
+
         String recordAuditUrl = MessageFormat.format(GET_NODE_AUDITLOG_URL_FORMAT,record.toString().replace("://", "/"));
 
         sendRequest(new GetRequest(recordAuditUrl), Status.STATUS_OK, AuthenticationUtil.getAdminUserName() );
 
         sendRequest(new GetRequest(recordAuditUrl), Status.STATUS_FORBIDDEN, USER_WITHOUT_AUDIT_CAPABILITY );
     }
-    
+
     @Override
     protected void setupTestData()
     {
@@ -41,20 +43,20 @@ public class AuditRestApiTest extends BaseRMWebScriptTestCase
             @Override
             public Object execute() throws Throwable
             {
-               
+
                 AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil
                         .getSystemUserName());
-                
+
                 createUser(USER_WITHOUT_AUDIT_CAPABILITY);
-                 
+
                 record = utils.createRecord(recordFolder, GUID.generate());
-                
-                
+
+
                 return null;
             }
         });
     }
-    
+
     @Override
     protected void tearDownImpl()
     {
@@ -62,10 +64,10 @@ public class AuditRestApiTest extends BaseRMWebScriptTestCase
 
         deleteUser(USER_WITHOUT_AUDIT_CAPABILITY);
     }
-    
+
     protected String getRMSiteId()
     {
-    	return filePlanService.DEFAULT_RM_SITE_ID;
+    	return DEFAULT_RM_SITE_ID;
     }
 
 

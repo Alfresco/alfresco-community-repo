@@ -27,7 +27,7 @@ import java.util.List;
  * The initial classification level is allowed to be any level, regardless of the clearance of the current user.
  *
  * @author tpage
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class InitialClassificationLevelConstraint extends ClassificationSchemeEntityConstraint
 {

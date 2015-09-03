@@ -45,7 +45,7 @@ public class AlfrescoTransactionSupport
 
     /**
      * @see org.alfresco.repo.transaction.AlfrescoTransactionSupport#getResource(Object)
-     * @since 3.0.a
+     * @since 2.4.a
      */
     public Object getResource(Object key)
     {

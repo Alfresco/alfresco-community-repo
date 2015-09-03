@@ -27,7 +27,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * This class is a POJO data type for a classification reason.
  *
  * @author Tom Page
- * @since 3.0.a
+ * @since 2.4.a
  */
 public final class ClassificationReason implements ClassificationSchemeEntity
 {

@@ -31,7 +31,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * Integration test for RM-2260
  *
  * @author Tuna Aksoy
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class RM2260Test extends BaseRMTestCase
 {

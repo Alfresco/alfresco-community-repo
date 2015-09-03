@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.security.NoSuchPersonException;
  *
  * @author Neil Mc Erlean
  * @author David Webster
- * @since 3.0.a
+ * @since 2.4.a
  */
 public interface SecurityClearanceService
 {

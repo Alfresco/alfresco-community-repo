@@ -45,7 +45,7 @@ import com.google.gson.JsonSyntaxException;
  * Exemption categories property decorator unit test
  *
  * @author Tuna Aksoy
- * @since 3.0.a
+ * @since 2.4.a
  */
 @RunWith(MockitoJUnitRunner.class)
 public class ExemptionCategoriesPropertyDecoratorUnitTest

@@ -31,7 +31,7 @@ import java.util.Map;
  * Implementation for Java backed webscript to get the clearance levels.
  *
  * @author David Webster
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClearanceLevelsGet extends AbstractRmWebScript
 {

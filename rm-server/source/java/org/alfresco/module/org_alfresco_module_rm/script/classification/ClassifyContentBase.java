@@ -50,7 +50,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * Base class for classify content actions
  *
  * @author Tuna Aksoy
- * @since 3.0.a
+ * @since 2.4.a
  */
 public abstract class ClassifyContentBase extends AbstractRmWebScript
 {

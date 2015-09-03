@@ -20,9 +20,10 @@ package org.alfresco.module.org_alfresco_module_rm.bootstrap;
 
 import java.io.Serializable;
 
+import org.alfresco.module.org_alfresco_module_rm.patch.v24.RMv24ClearanceForAdmin;
+
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceBootstrap;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
-import org.alfresco.module.org_alfresco_module_rm.patch.v30.RMv30ClearanceForAdmin;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -30,7 +31,7 @@ import org.alfresco.service.cmr.security.PersonService;
 
 /**
  * Provide the highest clearance to the admin user. This needs to be run once (either bootstrapped into a
- * fresh system, or as part of an upgrade in {@link RMv30ClearanceForAdmin}) per installation.
+ * fresh system, or as part of an upgrade in {@link RMv24ClearanceForAdmin}) per installation.
  *
  * @author tpage
  */

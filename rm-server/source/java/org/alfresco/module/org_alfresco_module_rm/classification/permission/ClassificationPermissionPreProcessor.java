@@ -34,7 +34,7 @@ import org.alfresco.util.Triple;
  * Classification permission pre-processor implementation.
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassificationPermissionPreProcessor extends PermissionPreProcessorBaseImpl 
 {

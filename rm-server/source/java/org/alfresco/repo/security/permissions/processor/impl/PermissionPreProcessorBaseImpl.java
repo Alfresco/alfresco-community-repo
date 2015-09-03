@@ -27,7 +27,7 @@ import org.alfresco.repo.security.permissions.processor.PermissionPreProcessor;
  * pre-processor implementation.
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public abstract class PermissionPreProcessorBaseImpl extends PermissionProcessorBaseImpl
 													 implements PermissionPreProcessor 

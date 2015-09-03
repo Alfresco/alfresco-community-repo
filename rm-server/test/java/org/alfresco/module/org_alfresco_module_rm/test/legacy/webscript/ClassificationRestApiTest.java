@@ -71,7 +71,7 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * REST API tests for classification of a content and editing content
  *
  * @author Tuna Aksoy
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassificationRestApiTest extends BaseRMWebScriptTestCase
 {

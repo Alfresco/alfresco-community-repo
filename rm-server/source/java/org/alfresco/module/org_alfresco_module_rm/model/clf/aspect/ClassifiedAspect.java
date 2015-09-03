@@ -47,7 +47,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * clf:classification behaviour bean
  *
- * @since 3.0.a
+ * @since 2.4.a
  */
 @BehaviourBean
 (

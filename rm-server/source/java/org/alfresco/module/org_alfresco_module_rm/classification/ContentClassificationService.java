@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * A service to handle the classification of content.
  *
  * @author tpage
- * @since 3.0.a
+ * @since 2.4.a
  */
 public interface ContentClassificationService
 {

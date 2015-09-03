@@ -32,7 +32,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * Base class for classification enforcement tests for the search action
  *
  * @author Tuna Aksoy
- * @since 3.0.a
+ * @since 2.4.a
  */
 public abstract class SearchClassificationEnforcementTestBase extends BaseRMTestCase
 {

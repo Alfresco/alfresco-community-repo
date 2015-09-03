@@ -31,7 +31,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * Tests for enforcement of classification when browsing documents in the document library
  *
  * @author Tuna Aksoy
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class DocumentBrowseClassificationEnforcementTest extends BrowseClassificationEnforcementTestBase
 {

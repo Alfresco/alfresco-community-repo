@@ -25,7 +25,7 @@ import java.util.function.Supplier;
  * Utility class to help with Java exceptions, particularly in test code.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ExceptionUtils
 {

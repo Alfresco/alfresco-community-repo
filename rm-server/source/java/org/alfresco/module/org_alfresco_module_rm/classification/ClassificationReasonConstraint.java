@@ -26,7 +26,7 @@ import java.util.List;
  * Check that a value is a valid {@link ClassificationReason} by checking the {@link ClassificationSchemeService}.
  *
  * @author tpage
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassificationReasonConstraint extends ClassificationSchemeEntityConstraint
 {

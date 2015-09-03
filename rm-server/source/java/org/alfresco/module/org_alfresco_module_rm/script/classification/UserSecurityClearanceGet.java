@@ -47,7 +47,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * Implementation for Java backed webscript to get users security clearance.
  *
  * @author Tuna Aksoy
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class UserSecurityClearanceGet extends AbstractRmWebScript
 {

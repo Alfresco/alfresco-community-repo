@@ -36,7 +36,7 @@ import java.util.Map;
  * Provides additional methods of general use that could (in principle) be moved to the core services.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class CoreServicesExtras
 {

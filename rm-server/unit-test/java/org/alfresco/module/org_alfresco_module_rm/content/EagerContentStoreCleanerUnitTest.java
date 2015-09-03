@@ -41,7 +41,7 @@ import org.mockito.Mock;
  * Eager content store cleaner unit test.
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class EagerContentStoreCleanerUnitTest extends BaseUnitTest
 {

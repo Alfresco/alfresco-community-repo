@@ -44,7 +44,7 @@ import com.google.common.collect.Sets;
  * Classification permission pre-processor unit test
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassificationPermissionPreProcessorUnitTest extends BaseUnitTest 
 {

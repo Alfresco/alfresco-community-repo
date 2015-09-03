@@ -40,7 +40,7 @@ import org.mockito.Mock;
  *
  * @author Neil Mc Erlean
  * @author tpage
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassificationSchemeEntityValidatorUnitTest
 {

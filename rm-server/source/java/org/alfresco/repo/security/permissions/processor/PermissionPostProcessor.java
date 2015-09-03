@@ -27,7 +27,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
  * Permission Post Processor.
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public interface PermissionPostProcessor
 {

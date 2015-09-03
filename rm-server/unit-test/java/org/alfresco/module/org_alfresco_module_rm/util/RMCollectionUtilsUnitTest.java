@@ -41,7 +41,7 @@ import java.util.Map;
  * Unit tests for {@link RMCollectionUtils}.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class RMCollectionUtilsUnitTest
 {

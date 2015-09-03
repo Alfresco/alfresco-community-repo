@@ -26,7 +26,7 @@ import org.alfresco.module.org_alfresco_module_rm.content.cleanser.ContentCleans
  * Test Content Cleanser
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class TestContentCleanser extends ContentCleanser522022M
 {

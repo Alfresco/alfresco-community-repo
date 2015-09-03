@@ -28,7 +28,7 @@ import org.alfresco.service.namespace.QName;
  * Helper containing reusable information about the classified content model.
  *
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public interface ClassifiedContentModel
 {

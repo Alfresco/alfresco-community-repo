@@ -34,7 +34,7 @@ import org.apache.commons.logging.LogFactory;
  * destruction.
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class EagerContentStoreCleaner extends org.alfresco.repo.content.cleanup.EagerContentStoreCleaner
 {

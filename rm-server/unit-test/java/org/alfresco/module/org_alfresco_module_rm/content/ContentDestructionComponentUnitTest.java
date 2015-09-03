@@ -43,7 +43,7 @@ import org.mockito.Mock;
  * Content destruction component unit test.
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ContentDestructionComponentUnitTest extends BaseUnitTest
 {

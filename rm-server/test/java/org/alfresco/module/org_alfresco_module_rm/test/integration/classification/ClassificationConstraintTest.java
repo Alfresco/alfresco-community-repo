@@ -60,7 +60,7 @@ import org.springframework.context.ApplicationContext;
  * Integration tests that require the constraints to be executed by a user other than Admin.
  *
  * @author Tom Page
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassificationConstraintTest implements RMPermissionModel
 {

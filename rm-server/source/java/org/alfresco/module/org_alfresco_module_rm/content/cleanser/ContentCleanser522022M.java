@@ -26,7 +26,7 @@ import org.alfresco.service.cmr.repository.ContentIOException;
  * DoD 5220-22M data cleansing implementation.
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ContentCleanser522022M extends ContentCleanser
 {

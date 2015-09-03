@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,8 +22,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.repo.index.shard.ShardMethodEnum;
+import org.alfresco.repo.index.shard.ShardState;
+import org.alfresco.repo.index.shard.ShardStateBuilder;
 import org.alfresco.repo.solr.SOLRTrackingComponent;
 import org.alfresco.repo.solr.Transaction;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
@@ -53,6 +57,49 @@ public class TransactionsGet extends DeclarativeWebScript
         String maxTxnIdParam = req.getParameter("maxTxnId");
         String toCommitTimeParam = req.getParameter("toCommitTime");
         String maxResultsParam = req.getParameter("maxResults");
+        
+        String baseUrl = req.getParameter("baseUrl");
+        String hostName = req.getParameter("hostName");
+        String template = req.getParameter("template");
+        String instance = req.getParameter("instance");
+        String numberOfShards = req.getParameter("numberOfShards");
+        String port = req.getParameter("port");
+        String stores = req.getParameter("stores");
+        String isMaster = req.getParameter("isMaster");
+        String hasContent = req.getParameter("hasContent");
+        String shardMethod = req.getParameter("shardMethod");
+        
+      
+        
+        if(baseUrl != null)
+        {
+            ShardState shardState =  ShardStateBuilder.shardState()
+                    .withMaster(Boolean.valueOf(isMaster))
+                    .withShardInstance()
+                        .withBaseUrl(baseUrl)
+                        .withPort(Integer.valueOf(port))
+                        .withHostName(hostName)
+                        .withShard()
+                            .withInstance(Integer.valueOf(instance))
+                            .withFloc()
+                                .withNumberOfShards(Integer.valueOf(numberOfShards))
+                                .withTemplate(template)
+                                .withHasContent(Boolean.valueOf(hasContent))
+                                .withShardMethod(ShardMethodEnum.getShardMethod(shardMethod))
+                                .endFloc()
+                            .endShard()
+                         .endShardInstance()
+                    .build();
+            
+            for(String store : stores.split(","))
+            {
+                shardState.getShardInstance().getShard().getFloc().getStoreRefs().add(new StoreRef(store));
+            }
+            
+            solrTrackingComponent.registerShardState(shardState);
+   
+        }
+        
 
         Long minTxnId = (minTxnIdParam == null ? null : Long.valueOf(minTxnIdParam));
         Long fromCommitTime = (fromCommitTimeParam == null ? null : Long.valueOf(fromCommitTimeParam));
@@ -84,5 +131,4 @@ public class TransactionsGet extends DeclarativeWebScript
         
         return model;
     }
-
 }

@@ -5,7 +5,8 @@
   <format default="json">argument</format>
   <!-- Solr api is protected by a solr-specific authentication mechanism -->
   <authentication>none</authentication>
-  <transaction allow="readonly">required</transaction>
+  <!-- Must be readwrite as it updates shard state -->
+  <transaction allow="readwrite">required</transaction>
   <lifecycle>internal</lifecycle>
   <family>SOLR</family>
 </webscript>

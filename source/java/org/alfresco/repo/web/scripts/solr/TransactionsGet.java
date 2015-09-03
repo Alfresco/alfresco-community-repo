@@ -69,12 +69,21 @@ public class TransactionsGet extends DeclarativeWebScript
         String hasContent = req.getParameter("hasContent");
         String shardMethod = req.getParameter("shardMethod");
         
-      
+        String lastUpdated =  req.getParameter("lastUpdated");
+        String lastIndexedChangeSetCommitTime =  req.getParameter("lastIndexedChangeSetCommitTime");
+        String lastIndexedChangeSetId =  req.getParameter("lastIndexedChangeSetId");
+        String lastIndexedTxCommitTime =  req.getParameter("lastIndexedTxCommitTime");
+        String lastIndexedTxId =  req.getParameter("lastIndexedTxId");
         
         if(baseUrl != null)
         {
             ShardState shardState =  ShardStateBuilder.shardState()
                     .withMaster(Boolean.valueOf(isMaster))
+                    .withLastUpdated(Long.valueOf(lastUpdated))
+                    .withLastIndexedChangeSetCommitTime(Long.valueOf(lastIndexedChangeSetCommitTime))
+                    .withLastIndexedChangeSetId(Long.valueOf(lastIndexedChangeSetId))
+                    .withLastIndexedTxCommitTime(Long.valueOf(lastIndexedTxCommitTime))
+                    .withLastIndexedTxId(Long.valueOf(lastIndexedTxId))
                     .withShardInstance()
                         .withBaseUrl(baseUrl)
                         .withPort(Integer.valueOf(port))
@@ -94,6 +103,22 @@ public class TransactionsGet extends DeclarativeWebScript
             for(String store : stores.split(","))
             {
                 shardState.getShardInstance().getShard().getFloc().getStoreRefs().add(new StoreRef(store));
+            }
+            
+            for(String pName : req.getParameterNames())
+            {
+                if(pName.startsWith("floc.property."))
+                {
+                    String key = pName.substring("floc.property.".length());
+                    String value = req.getParameter(pName);
+                    shardState.getShardInstance().getShard().getFloc().getPropertyBag().put(key, value);
+                }
+                else  if(pName.startsWith("state.property."))
+                {
+                    String key = pName.substring("state.property.".length());
+                    String value = req.getParameter(pName);
+                    shardState.getPropertyBag().put(key, value);
+                }
             }
             
             solrTrackingComponent.registerShardState(shardState);

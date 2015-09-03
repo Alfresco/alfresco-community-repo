@@ -46,7 +46,7 @@ public class SolrStoreMappingWrapperTest
 {
     SolrStoreMapping mapping;
     
-    SolrStoreMappingWrapper wrapper;
+    ExplicitSolrStoreMappingWrapper wrapper;
     
     @Mock
     HttpClientFactory httpClientFactory;
@@ -113,7 +113,7 @@ public class SolrStoreMappingWrapperTest
 
     private SolrStoreMapping unsharded;
     
-    private SolrStoreMappingWrapper unshardedWrapper;
+    private ExplicitSolrStoreMappingWrapper unshardedWrapper;
 
     @Mock
     private BeanFactory beanFactory;
@@ -190,7 +190,7 @@ public class SolrStoreMappingWrapperTest
         mapping.setNumShards(24);
         mapping.setProtocol(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getProtocol());
         mapping.setReplicationFactor(3);
-        wrapper = new SolrStoreMappingWrapper(mapping, beanFactory);
+        wrapper = new ExplicitSolrStoreMappingWrapper(mapping, beanFactory);
    
         
         
@@ -199,7 +199,7 @@ public class SolrStoreMappingWrapperTest
         unsharded.setHttpClientFactory("httpClientFactory");
         unsharded.setIdentifier(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier());
         unsharded.setProtocol(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getProtocol());
-        unshardedWrapper =  new SolrStoreMappingWrapper(unsharded, beanFactory);
+        unshardedWrapper =  new ExplicitSolrStoreMappingWrapper(unsharded, beanFactory);
     }
     
 

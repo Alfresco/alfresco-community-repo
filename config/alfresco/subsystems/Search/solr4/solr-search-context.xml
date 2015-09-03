@@ -43,6 +43,9 @@
         <property name="tenantService">
             <ref bean="tenantService" />
         </property>
+        <property name="shardRegistry">
+            <ref bean="search.SolrShardRegistry" />
+        </property>
         <property name="repositoryState">
             <ref bean="repositoryState" />
         </property>
@@ -69,6 +72,7 @@
         <property name="anyDenyDenies" value="${security.anyDenyDenies}"/>
         <property name="defaultUnshardedFacetLimit" value="${solr.defaultUnshardedFacetLimit}"/>
         <property name="defaultShardedFacetLimit" value="${solr.defaultShardedFacetLimit}"/>
+        <property name="useDynamicShardRegistration" value="${solr.useDynamicShardRegistration}"/>
     </bean>
     
     

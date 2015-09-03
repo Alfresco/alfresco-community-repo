@@ -690,5 +690,37 @@
       <property name="cacheStatsEnabled" value="${cache.solrFacetNodeRefSharedCache.tx.statsEnabled}"/>
    </bean>
    
+    <!-- The transactional cache for index shard states -->
+   
+   <bean name="shardStateCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="shardStateSharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.shardStateTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="${cache.shardStateSharedCache.tx.maxItems}" />
+      <property name="mutable" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
+      <property name="cacheStats" ref="cacheStatistics"/>
+      <property name="cacheStatsEnabled" value="${cache.shardStateSharedCache.tx.statsEnabled}"/>
+   </bean>
+   
+   <!-- The transactional cache for index shard instance guids -->
+   
+   <bean name="shardToGuidCache" class="org.alfresco.repo.cache.TransactionalCache">
+      <property name="sharedCache">
+         <ref bean="shardToGuidSharedCache" />
+      </property>
+      <property name="name">
+         <value>org.alfresco.cache.shardToGuidTransactionalCache</value>
+      </property>
+      <property name="maxCacheSize" value="${cache.shardToGuidSharedCache.tx.maxItems}" />
+      <property name="mutable" value="false" />
+      <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
+      <property name="cacheStats" ref="cacheStatistics"/>
+      <property name="cacheStatsEnabled" value="${cache.shardToGuidSharedCache.tx.statsEnabled}"/>
+   </bean>
+   
 </beans>
 

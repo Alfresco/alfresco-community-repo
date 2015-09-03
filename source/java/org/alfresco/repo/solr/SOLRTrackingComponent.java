@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.domain.node.Node;
+import org.alfresco.repo.index.shard.ShardRegistry;
+import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -166,4 +168,17 @@ public interface SOLRTrackingComponent
      * @return Long
      */
     public Long getMaxChangeSetId();
+    
+    /**
+     * Register and update a shard state 
+     * @param shardState
+     */
+    public void registerShardState(ShardState shardState); 
+    
+    /**
+     * Get the shard registry
+     * @return the shard registry or null if one is not registered.
+     * This is an optional feature.
+     */
+    public ShardRegistry getShardRegistry();
 }

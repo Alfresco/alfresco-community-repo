@@ -21,6 +21,46 @@
         </property>
         <property name="typeIndexFilter" ref="search.TypeIndexFilter" />
         <property name="aspectIndexFilter" ref="search.AspectIndexFilter" />
+        <property name="shardRegistry" ref="search.SolrShardRegistry" />
+    </bean>
+
+
+    <bean id="search.SolrShardRegistry" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.repo.index.shard.ShardRegistry</value>
+            </list>
+        </property>
+        <property name="target">
+            <ref bean="search.solrShardRegistry"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="serach.solrShardRegistryTxInterceptor"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="serach.solrShardRegistryTxInterceptor" class="org.alfresco.repo.transaction.RetryingTransactionInterceptor">
+        <property name="transactionService">
+            <ref bean="TransactionService"/>
+        </property>
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="get*">${server.transaction.mode.readOnly}</prop>
+                <prop key="is*">${server.transaction.mode.readOnly}</prop>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="search.solrShardRegistry" class = "org.alfresco.repo.index.shard.ShardRegistryImpl" >
+        <property name="attributeService" ref="attributeService"/>
+        <property name="shardStateCache" ref="shardStateCache"/>
+        <property name="shardToGuidCache" ref="shardToGuidCache"/>
     </bean>
 
     <!--  Ignore indexing by node type or by node aspects  -->

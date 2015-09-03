@@ -42,6 +42,9 @@ import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.solr.SOLRDAO;
+import org.alfresco.repo.index.shard.ShardRegistry;
+import org.alfresco.repo.index.shard.ShardRegistryImpl;
+import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.repo.search.AspectIndexFilter;
 import org.alfresco.repo.search.TypeIndexFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -85,6 +88,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     private boolean cacheAncestors =true;
     private TypeIndexFilter typeIndexFilter;
     private AspectIndexFilter aspectIndexFilter;
+    private ShardRegistry shardRegistry;
     
     
     @Override
@@ -160,6 +164,11 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     public void setAspectIndexFilter(AspectIndexFilter aspectIndexFilter)
     {
         this.aspectIndexFilter = aspectIndexFilter;
+    }
+
+    public void setShardRegistry(ShardRegistry shardRegistry)
+    {
+        this.shardRegistry = shardRegistry;
     }
 
     /**
@@ -1224,5 +1233,26 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     {
         long maxCommitTime = System.currentTimeMillis()+1L;
         return aclDAO.getMaxChangeSetIdByCommitTime(maxCommitTime);
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.solr.SOLRTrackingComponent#registerShardState(org.alfresco.repo.index.ShardState)
+     */
+    @Override
+    public void registerShardState(ShardState shardState)
+    {
+       if(shardRegistry != null)
+       {
+           shardRegistry.registerShardState(shardState);
+       }
+    }
+
+    /* (non-Javadoc)
+     * @see org.alfresco.repo.solr.SOLRTrackingComponent#getShardRegistry()
+     */
+    @Override
+    public ShardRegistry getShardRegistry()
+    {
+        return this.shardRegistry;
     }
 }

@@ -470,10 +470,20 @@
       <constructor-arg value="cache.deletePseudoFileCache"/>
    </bean>
 
-      <!-- The cross-transaction shared cache for solr Facets NodeRefs -->
+   <!-- The cross-transaction shared cache for solr Facets NodeRefs -->
    
    <bean name="solrFacetNodeRefSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.solrFacetNodeRefSharedCache"/>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for shard states -->
+   <bean name="shardStateSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.shardStateSharedCache"/>
+   </bean>
+   
+   <!-- The cross-transaction shared cache for shard instances to guids -->
+   <bean name="shardToGuidSharedCache" factory-bean="cacheFactory" factory-method="createCache">
+      <constructor-arg value="cache.shardToGuidSharedCache"/>
    </bean>
    
 </beans>

@@ -38,6 +38,8 @@ import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.index.shard.ShardInstance;
+import org.alfresco.repo.index.shard.ShardRegistry;
 import org.alfresco.repo.search.impl.lucene.JSONResult;
 import org.alfresco.repo.search.impl.lucene.LuceneQueryParserException;
 import org.alfresco.repo.search.impl.lucene.SolrJSONResultSet;
@@ -100,6 +102,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     private NodeDAO nodeDAO;
     
     private TenantService tenantService;
+    
+    private ShardRegistry shardRegistry;
 
     private Map<String, String> languageMappings;
 
@@ -118,6 +122,8 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     private int maximumResultsFromUnlimitedQuery = Integer.MAX_VALUE;
 
     private boolean anyDenyDenies;
+    
+    private boolean useDynamicShardRegistration = false;
 	
     public static final int DEFAULT_SAVEPOST_BUFFER = 4096;
     
@@ -140,7 +146,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
 
         for(SolrStoreMapping mapping : storeMappings)
         {
-            mappingLookup.put(mapping.getStoreRef(), new SolrStoreMappingWrapper(mapping, beanFactory));
+            mappingLookup.put(mapping.getStoreRef(), new ExplicitSolrStoreMappingWrapper(mapping, beanFactory));
         }
     }
 
@@ -178,6 +184,16 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     public void setTenantService(TenantService tenantService)
     {
         this.tenantService = tenantService;
+    }
+
+    public void setShardRegistry(ShardRegistry shardRegistry)
+    {
+        this.shardRegistry = shardRegistry;
+    }
+
+    public void setUseDynamicShardRegistration(boolean useDynamicShardRegistration)
+    {
+        this.useDynamicShardRegistration = useDynamicShardRegistration;
     }
 
     public void setLanguageMappings(Map<String, String> languageMappings)
@@ -765,13 +781,23 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
 
     private SolrStoreMappingWrapper extractMapping(StoreRef store)
     {
-        SolrStoreMappingWrapper mappings = mappingLookup.get(store);
-        
-        if (mappings == null)
+        if(useDynamicShardRegistration)
         {
-            throw new AlfrescoRuntimeException("No solr query support for store " + store);
+            SearchParameters sp = new SearchParameters();
+            sp.addStore(store);
+            List<ShardInstance> slice = shardRegistry.getIndexSlice(sp);
+            return DynamicSolrStoreMappingWrapperFactory.wrap(slice, beanFactory);
         }
-        return mappings;
+        else
+        {
+            SolrStoreMappingWrapper mappings = mappingLookup.get(store);
+
+            if (mappings == null)
+            {
+                throw new AlfrescoRuntimeException("No solr query support for store " + store);
+            }
+            return mappings;
+        }
     }
 
     private StoreRef extractStoreRef(BasicSearchParameters searchParameters)

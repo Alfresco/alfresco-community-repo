@@ -421,7 +421,15 @@ public class MultiTServiceImplTest
         createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
         createTenant(DOMAIN);
         createUser(USER2, DOMAIN, PASS);
-        createUser(USER3, nonExistentDomain, PASS);
+        try
+        {
+            createUser(USER3, nonExistentDomain, PASS);
+            fail("The string has a domain, but there is no such tenant");
+        }
+        catch (Exception e)
+        {
+            // Expected
+        }
         String username3WithDomain = USER3 + TenantService.SEPARATOR + nonExistentDomain;
         try
         {
@@ -458,7 +466,15 @@ public class MultiTServiceImplTest
         createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
         createTenant(DOMAIN);
         createUser(USER2, DOMAIN, PASS);
-        createUser(USER3, STRING, PASS);
+        try
+        {
+            createUser(USER3, STRING, PASS);
+            fail("The string has a domain, but there is no such tenant");
+        }
+        catch (Exception e)
+        {
+            // Expected
+        }
         try
         {
             checkDomainWork(STRING_WITH_EXISTENT_DOMAIN, TenantService.DEFAULT_DOMAIN, USER1);

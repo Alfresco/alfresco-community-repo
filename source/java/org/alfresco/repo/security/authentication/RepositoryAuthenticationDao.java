@@ -40,6 +40,7 @@ import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidStoreRefException;
@@ -313,8 +314,16 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         {
             QName qnameAssocSystem = QName.createQName("sys", "system", namespacePrefixResolver);
             QName qnameAssocUsers = QName.createQName("sys", "people", namespacePrefixResolver);
-            
-            StoreRef userStoreRef = tenantService.getName(caseSensitiveUserName, new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier()));
+
+            StoreRef userStoreRef = null;
+            if(TenantUtil.isCurrentDomainDefault())
+            {
+                userStoreRef = tenantService.getName(caseSensitiveUserName, new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier()));
+            }
+            else
+            {
+                userStoreRef = new StoreRef(STOREREF_USERS.getProtocol(), STOREREF_USERS.getIdentifier());
+            }
 
             // AR-527
             NodeRef rootNode = nodeService.getRootNode(userStoreRef);

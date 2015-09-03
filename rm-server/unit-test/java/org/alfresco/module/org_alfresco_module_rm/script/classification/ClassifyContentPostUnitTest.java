@@ -22,11 +22,16 @@ import static org.alfresco.module.org_alfresco_module_rm.script.classification.C
 import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase.CLASSIFICATION_LEVEL_ID;
 import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase.CLASSIFICATION_REASONS;
 import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase.CLASSIFIED_BY;
+import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase.LAST_RECLASSIFY_BY;
+import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase.LAST_RECLASSIFY_REASON;
+import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase.RECLASSIFY_BY;
+import static org.alfresco.module.org_alfresco_module_rm.script.classification.ClassifyContentBase.RECLASSIFY_REASON;
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
 import static org.alfresco.util.WebScriptUtils.is4xxError;
 import static org.alfresco.util.WebScriptUtils.putValuetoJSONObject;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.times;
@@ -34,6 +39,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Map;
 
+import com.google.common.collect.Sets;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevelManager;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationReasonManager;
@@ -49,8 +55,6 @@ import org.mockito.Mock;
 import org.mockito.Spy;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.WebScriptException;
-
-import com.google.common.collect.Sets;
 
 /**
  * Classify content REST API POST implementation unit test.
@@ -108,12 +112,7 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
     public void testClassifyContent() throws Exception
     {
         // Setup web script parameters
-        Map<String, String> parameters = buildParameters
-        (
-            STORE_TYPE,       record.getStoreRef().getProtocol(),
-            STORE_ID,         record.getStoreRef().getIdentifier(),
-            ID,               record.getId()
-        );
+        Map<String, String> parameters = buildClassifyRecordParams();
 
         // Build JSON to send to server
         String content = buildContent().toString();
@@ -139,12 +138,7 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
     public void classifyingWithBlankClassifiedByShouldReturn4xxResponse() throws Exception
     {
         // Setup web script parameters
-        Map<String, String> parameters = buildParameters
-        (
-            STORE_TYPE,       record.getStoreRef().getProtocol(),
-            STORE_ID,         record.getStoreRef().getIdentifier(),
-            ID,               record.getId()
-        );
+        Map<String, String> parameters = buildClassifyRecordParams();
 
         final String whitespace = "  \t  ";
 
@@ -166,6 +160,87 @@ public class ClassifyContentPostUnitTest extends BaseWebScriptUnitTest
         }
 
         assertTrue("Expected exception was not thrown", exceptionThrown);
+    }
+
+    /**
+     * Check that no error is thrown if both the "Reclassify" and "Last Reclassify" sets of fields are blank (as would
+     * be the case for the initial classification). Check that null is used for the last reclassification data.
+     */
+    @Test
+    public void testClassifyContent_lastReclassifyNullForFirstClassification() throws Exception
+    {
+        Map<String, String> parameters = buildClassifyRecordParams();
+
+        // Build JSON to send to server with no previous classification data.
+        JSONObject jsonContent = buildContent();
+
+        // Execute web script
+        executeJSONWebScript(parameters, jsonContent.toString());
+
+        // Check the last classification event data.
+        verify(mockedContentClassificationService).classifyContent(propertiesDTOCaptor.capture(), eq(record));
+        ClassificationAspectProperties propertiesDTO = propertiesDTOCaptor.getValue();
+        assertNull("Expected last reclassfied by to be null.", propertiesDTO.getLastReclassifyBy());
+        assertNull("Expected last reclassfied reason to be null.", propertiesDTO.getLastReclassifyReason());
+    }
+
+    /**
+     * Check that if the "Last Reclassify" fields are set (and the "Reclassify" fields aren't) then they are used for the
+     * last reclassification data. This simulates editing the classification data (without changing the level).
+     */
+    @Test
+    public void testClassifyContent_lastReclassifyWhenEditingClassification() throws Exception
+    {
+        Map<String, String> parameters = buildClassifyRecordParams();
+        JSONObject jsonContent = buildContent();
+
+        // Set the last reclassification data (as would be set if changing anything other than the level).
+        putValuetoJSONObject(jsonContent, LAST_RECLASSIFY_BY, "user 1");
+        putValuetoJSONObject(jsonContent, LAST_RECLASSIFY_REASON, "reason 1");
+
+        // Execute web script
+        executeJSONWebScript(parameters, jsonContent.toString());
+
+        // Check the "Last Reclassify" values are used.
+        verify(mockedContentClassificationService).classifyContent(propertiesDTOCaptor.capture(), eq(record));
+        ClassificationAspectProperties propertiesDTO = propertiesDTOCaptor.getValue();
+        assertEquals("user 1", propertiesDTO.getLastReclassifyBy());
+        assertEquals("reason 1", propertiesDTO.getLastReclassifyReason());
+    }
+
+    /**
+     * Check that if the "Reclassify" fields are set then they are used for the last reclassification data, even if the
+     * "Last Reclassify" fields are set too. This simulates changing the classification level.
+     */
+    @Test
+    public void testClassifyContent_lastReclassifyForReclassification() throws Exception
+    {
+        Map<String, String> parameters = buildClassifyRecordParams();
+        JSONObject jsonContent = buildContent();
+
+        // Set the reclassification data (as if we've classified once and are reclassifying).
+        putValuetoJSONObject(jsonContent, LAST_RECLASSIFY_BY, "user 1");
+        putValuetoJSONObject(jsonContent, LAST_RECLASSIFY_REASON, "reason 1");
+        putValuetoJSONObject(jsonContent, RECLASSIFY_BY, "user 2");
+        putValuetoJSONObject(jsonContent, RECLASSIFY_REASON, "reason 2");
+
+        executeJSONWebScript(parameters, jsonContent.toString());
+
+        verify(mockedContentClassificationService).classifyContent(propertiesDTOCaptor.capture(), eq(record));
+        ClassificationAspectProperties propertiesDTO = propertiesDTOCaptor.getValue();
+        assertEquals("user 2", propertiesDTO.getLastReclassifyBy());
+        assertEquals("reason 2", propertiesDTO.getLastReclassifyReason());
+    }
+
+    /** Build the parameters map that is used when classifying a record. */
+    private Map<String, String> buildClassifyRecordParams()
+    {
+        return buildParameters
+        (
+            STORE_TYPE,       record.getStoreRef().getProtocol(),
+            STORE_ID,         record.getStoreRef().getIdentifier(),
+            ID,               record.getId()
+        );
     }
 
     /** Helper method to build the request content. */

@@ -50,7 +50,7 @@ import org.mockito.Mock;
  * Unit tests for the {@link ClassifiedAspect}.
  *
  * @author Tom Page
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassifiedAspectUnitTest implements ClassifiedContentModel
 {

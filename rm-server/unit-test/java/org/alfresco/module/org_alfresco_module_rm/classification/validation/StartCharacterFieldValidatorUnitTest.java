@@ -25,7 +25,7 @@ import org.junit.Test;
  * Unit tests for the {@link StartCharacterFieldValidator}.
  *
  * @author tpage
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class StartCharacterFieldValidatorUnitTest
 {

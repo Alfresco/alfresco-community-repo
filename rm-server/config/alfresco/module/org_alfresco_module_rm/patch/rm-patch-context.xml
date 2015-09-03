@@ -32,7 +32,7 @@
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v21-context.xml"/>
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v22-context.xml"/>
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v23-context.xml"/>
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v30-context.xml"/>
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v24-context.xml"/>
 
    <!-- compatibility beans -->
 

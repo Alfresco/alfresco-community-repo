@@ -25,7 +25,7 @@ import java.util.List;
  * Permission Processor Registry
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class PermissionProcessorRegistry 
 {

@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.patch.v30;
+package org.alfresco.module.org_alfresco_module_rm.patch.v24;
 
 import org.alfresco.module.org_alfresco_module_rm.bootstrap.ClearanceForAdminBootstrapComponent;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
@@ -26,7 +26,7 @@ import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
  *
  * @author tpage
  */
-public class RMv30ClearanceForAdmin extends AbstractModulePatch
+public class RMv24ClearanceForAdmin extends AbstractModulePatch
 {
     private ClearanceForAdminBootstrapComponent bootstrapComponent;
 

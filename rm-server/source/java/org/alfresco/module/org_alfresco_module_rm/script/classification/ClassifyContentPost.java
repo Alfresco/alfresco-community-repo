@@ -25,7 +25,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * Implementation for Java backed webscript to classify a content.
  *
  * @author Tuna Aksoy
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassifyContentPost extends ClassifyContentBase
 {

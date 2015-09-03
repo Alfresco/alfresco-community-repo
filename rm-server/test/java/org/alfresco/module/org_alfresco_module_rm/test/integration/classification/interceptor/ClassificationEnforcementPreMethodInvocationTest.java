@@ -36,7 +36,7 @@ import org.alfresco.service.namespace.QName;
  * Classification enforcement pre method invocation test
  *
  * @author Tuna Aksoy
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTestCase
 {

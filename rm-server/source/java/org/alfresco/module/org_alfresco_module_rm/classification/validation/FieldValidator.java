@@ -24,7 +24,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationE
  * Validate a field.
  *
  * @author tpage
- * @since 3.0.a
+ * @since 2.4.a
  */
 public interface FieldValidator<T>
 {

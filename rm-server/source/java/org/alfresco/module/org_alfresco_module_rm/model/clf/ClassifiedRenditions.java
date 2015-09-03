@@ -34,7 +34,7 @@ import org.alfresco.service.namespace.QName;
 /**
  * Behaviour bean for classified rendition nodes.
  *
- * @since 3.0.a
+ * @since 2.4.a
  */
 @BehaviourBean
 (

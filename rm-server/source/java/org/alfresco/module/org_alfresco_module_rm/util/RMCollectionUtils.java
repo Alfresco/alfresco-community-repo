@@ -31,7 +31,7 @@ import java.util.Set;
  * small collections as it has not been optimised for dealing with large collections.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
 // This class should all be moved to core Alfresco whenever possible and reused from there.
 public final class RMCollectionUtils

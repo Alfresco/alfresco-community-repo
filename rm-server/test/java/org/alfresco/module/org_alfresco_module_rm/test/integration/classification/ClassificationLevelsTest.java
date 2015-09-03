@@ -29,7 +29,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
  * Classification level integration test
  *
  * @author Tuna Aksoy
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassificationLevelsTest extends BaseRMTestCase
 {

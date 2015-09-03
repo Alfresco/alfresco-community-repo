@@ -29,7 +29,7 @@ import java.util.Random;
  * Content cleanser base implementation.
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public abstract class ContentCleanser
 {    

@@ -38,7 +38,7 @@ import com.google.gson.Gson;
  * Exemption categories property decorator
  *
  * @author Tuna Aksoy
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ExemptionsCategoriesPropertyDecorator extends BasePropertyDecorator
 {

@@ -31,7 +31,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationE
  * clearance.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
 public interface ClassificationSchemeService
 {

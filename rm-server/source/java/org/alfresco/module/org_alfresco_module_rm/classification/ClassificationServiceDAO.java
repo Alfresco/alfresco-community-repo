@@ -38,7 +38,7 @@ import org.json.JSONTokener;
  * and classification reasons, dealing with JSON schema as part of that.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
 class ClassificationServiceDAO
 {

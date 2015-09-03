@@ -49,7 +49,7 @@ import org.alfresco.service.namespace.QName;
  * If enabled, the content is also cleansed before destruction.
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 @BehaviourBean
 public class ContentDestructionComponent implements NodeServicePolicies.BeforeDeleteNodePolicy

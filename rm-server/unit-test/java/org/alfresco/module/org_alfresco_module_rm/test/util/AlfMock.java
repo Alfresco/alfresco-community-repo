@@ -35,7 +35,7 @@ import org.alfresco.util.GUID;
  * Utilities helpful when mocking Alfresco constructs.
  *
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class AlfMock
 {

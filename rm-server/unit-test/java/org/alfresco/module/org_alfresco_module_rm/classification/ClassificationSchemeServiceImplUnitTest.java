@@ -46,7 +46,7 @@ import org.mockito.MockitoAnnotations;
  * Unit tests for {@link ClassificationSchemeServiceImpl}.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassificationSchemeServiceImplUnitTest
 {

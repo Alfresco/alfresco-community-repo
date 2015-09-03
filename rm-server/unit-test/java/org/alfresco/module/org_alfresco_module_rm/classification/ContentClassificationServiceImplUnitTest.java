@@ -65,7 +65,7 @@ import org.mockito.MockitoAnnotations;
  * Unit tests for {@link ContentClassificationServiceImpl}.
  *
  * @author tpage
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ContentClassificationServiceImplUnitTest implements ClassifiedContentModel
 {

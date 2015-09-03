@@ -24,7 +24,7 @@ import org.alfresco.repo.security.permissions.processor.PermissionProcessorRegis
  * Commonality found in both pre and post permission processor implementations.
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 /*package*/ abstract class PermissionProcessorBaseImpl 
 {

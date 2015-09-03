@@ -24,7 +24,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationS
  * A validator for all the fields of a classification POJO.
  *
  * @author tpage
- * @since 3.0.a
+ * @since 2.4.a
  */
 public interface EntityFieldsValidator<T extends ClassificationSchemeEntity>
 {

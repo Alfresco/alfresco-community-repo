@@ -31,7 +31,7 @@ import java.util.Set;
  * Check that a {@link ClassifiedContentModel#PROP_LAST_RECLASSIFICATION_ACTION reclassifiction action }value is valid.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ReclassificationValueConstraint extends ClassificationSchemeEntityConstraint
 {

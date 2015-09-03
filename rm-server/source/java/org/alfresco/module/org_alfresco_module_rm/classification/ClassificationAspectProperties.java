@@ -28,7 +28,7 @@ import com.google.common.collect.ImmutableSet;
  * A data transfer object for properties from the classification aspect.
  *
  * @author Tom Page
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassificationAspectProperties
 {

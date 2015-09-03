@@ -80,7 +80,7 @@ public class RMActionProxyFactoryBean extends ProxyFactoryBean
 
     /**
      * @param transactionService    transaction service
-     * @since 3.0.a
+     * @since 2.4.a
      */
     public void setTransactionService(TransactionService transactionService)
     {

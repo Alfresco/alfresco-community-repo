@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.security.PermissionService;
  * Records management permission post processor.
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class RecordsManagementPermissionPostProcessor extends PermissionPostProcessorBaseImpl 
 {

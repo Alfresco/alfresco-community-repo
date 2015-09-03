@@ -32,7 +32,7 @@ import org.junit.Test;
  * Unit tests for {@link ClassificationServiceDAO}.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ClassificationServiceDAOUnitTest
 {

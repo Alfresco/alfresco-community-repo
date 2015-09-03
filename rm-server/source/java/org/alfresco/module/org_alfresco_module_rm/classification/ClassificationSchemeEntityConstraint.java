@@ -32,7 +32,7 @@ import org.alfresco.service.cmr.repository.datatype.TypeConversionException;
  * {@link ClassificationSchemeService}.
  *
  * @author tpage
- * @since 3.0.a
+ * @since 2.4.a
  */
 public abstract class ClassificationSchemeEntityConstraint extends AbstractConstraint
 {

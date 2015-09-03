@@ -35,7 +35,7 @@ import org.mockito.Spy;
  * Eager content store cleaner unit test.
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ContentCleanser522022MUnitTest extends BaseUnitTest
 {

@@ -31,7 +31,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * Implementation for Java backed webscript to get the exemption categories.
  *
  * @author tpage
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ExemptionCategoriesGet extends AbstractRmWebScript
 {

@@ -40,7 +40,7 @@ import org.mockito.Spy;
  * Extended permission service implementation unit test
  * 
  * @author Roy Wetherall
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class ExtendedPermissionServiceImplUnitTest extends BaseUnitTest 
 {

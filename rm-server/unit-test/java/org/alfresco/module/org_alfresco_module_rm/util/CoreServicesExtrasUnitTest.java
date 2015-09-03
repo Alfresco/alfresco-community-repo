@@ -49,7 +49,7 @@ import java.util.Map;
  * Unit tests for {@link CoreServicesExtras}.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class CoreServicesExtrasUnitTest
 {

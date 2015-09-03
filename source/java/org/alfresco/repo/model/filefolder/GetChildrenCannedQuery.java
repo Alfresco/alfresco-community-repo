@@ -145,11 +145,11 @@ public class GetChildrenCannedQuery extends org.alfresco.repo.node.getchildren.G
 
     private class FileFolderUnsortedChildQueryCallback extends DefaultUnsortedChildQueryCallback
     {
-		public FileFolderUnsortedChildQueryCallback(List<NodeRef> rawResult,int requestedCount, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
+        public FileFolderUnsortedChildQueryCallback(List<NodeRef> rawResult,int requestedCount, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
         {
-			super(rawResult, requestedCount, inclusiveAspects, exclusiveAspects);
+            super(rawResult, requestedCount, inclusiveAspects, exclusiveAspects);
         }
-		
+        
         @Override
         protected boolean include(NodeRef nodeRef)
         {

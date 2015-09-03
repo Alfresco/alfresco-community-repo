@@ -625,11 +625,11 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
 
         public DefaultFilterSortChildQueryCallback(final List<FilterSortNode> children, final List<FilterProp> filterProps)
         {
-    	    this(children, filterProps, null, null);
-    	}
+            this(children, filterProps, null, null);
+        }
 
-    	public DefaultFilterSortChildQueryCallback(final List<FilterSortNode> children, final List<FilterProp> filterProps, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
-    	{
+        public DefaultFilterSortChildQueryCallback(final List<FilterSortNode> children, final List<FilterProp> filterProps, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
+        {
             this.children = children;
             this.filterProps = filterProps;
             this.applyFilter = (filterProps.size() > 0);
@@ -652,7 +652,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         protected boolean include(FilterSortNode node)
         {
             // filter, if needed
-        	return(!applyFilter || includeFilter(node.getPropVals(), filterProps)) && includeAspects(node.getNodeRef(), inclusiveAspects, exclusiveAspects);
+            return(!applyFilter || includeFilter(node.getPropVals(), filterProps)) && includeAspects(node.getNodeRef(), inclusiveAspects, exclusiveAspects);
         }
     }
     
@@ -663,12 +663,12 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         private Set<QName> inclusiveAspects;
         private Set<QName> exclusiveAspects;
         
-    	public DefaultUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
+        public DefaultUnsortedChildQueryCallback(final List<NodeRef> rawResult, final int requestedCount, Set<QName> inclusiveAspects, Set<QName> exclusiveAspects)
         {
             this.rawResult = rawResult;
             this.requestedCount = requestedCount;
-    		this.inclusiveAspects = inclusiveAspects;
-    		this.exclusiveAspects = exclusiveAspects;
+            this.inclusiveAspects = inclusiveAspects;
+            this.exclusiveAspects = exclusiveAspects;
         }
 
         @Override

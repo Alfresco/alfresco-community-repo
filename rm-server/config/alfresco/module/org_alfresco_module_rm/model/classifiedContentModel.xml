@@ -38,11 +38,6 @@
                   type="org.alfresco.module.org_alfresco_module_rm.classification.ReclassificationValueConstraint" />
    </constraints>
 
-   <!-- Types -->
-   <types>
-
-   </types>
-
    <!-- Aspects -->
    <aspects>
       <!--  Classified aspect -->
@@ -177,6 +172,22 @@
                </constraints>
             </property>
          </properties>
+      </aspect>
+      
+      <aspect name="clf:classifiedRendition">
+         <associations>
+            <association name="clf:classifiedRendition">
+                <source>
+                    <mandatory>true</mandatory>
+                    <many>true</many>
+                </source>
+                <target>
+                    <class>cm:content</class>
+                    <mandatory>true</mandatory>
+                    <many>true</many>
+                </target>
+            </association>
+         </associations>
       </aspect>
    </aspects>
 </model>

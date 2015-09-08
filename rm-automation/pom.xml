@@ -120,6 +120,11 @@
             <artifactId>wiremock</artifactId>
             <version>1.56</version>
         </dependency>
+        <dependency>
+            <groupId>org.apache.chemistry.opencmis</groupId>
+            <artifactId>chemistry-opencmis-client-bindings</artifactId>
+            <version>0.10.0</version>
+        </dependency>
     </dependencies>
     <profiles>
         <profile>

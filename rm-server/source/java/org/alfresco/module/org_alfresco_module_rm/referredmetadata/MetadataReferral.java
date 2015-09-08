@@ -16,9 +16,9 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.metadatadelegation;
+package org.alfresco.module.org_alfresco_module_rm.referredmetadata;
 
-import org.alfresco.module.org_alfresco_module_rm.metadatadelegation.DelegationException.InvalidDelegation;
+import org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataException.InvalidMetadataReferral;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.QName;
 
@@ -27,27 +27,29 @@ import java.util.Objects;
 import java.util.Set;
 
 /**
- * A Delegation is a definition of a {@link #aspects set of aspects} whose metadata are to be delegated.
- * Using a Delegation, you can attach a delegate node to any node and {@code hasAspect} and
- * {@code getPropert[y|ies]} calls can be delegated to the delegate node.
+ * A {@link MetadataReferral} is a definition of a {@link #aspects set of metadata} which are, in effect, shared
+ * between multiple nodes.
+ * Using a {@link MetadataReferral}, you can link two NodeRefs such that {@code hasAspect} and
+ * {@code getPropert[y|ies]} calls on one node can can be delegated to the other. In this way a defined set of
+ * metadata on one node can be made available for read access via another node.
  * <p/>
  * The connection between the nodes is made with a specified {@link #assocType peer association}.
  *<p/>
- * Note that a Delegation is not an instance of a link between two nodes, but the definition of such a link.
+ * Note that a {@link MetadataReferral} is not an instance of a link between two nodes, but the definition of such a link.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
-public class Delegation
+public class MetadataReferral
 {
     private DictionaryService  dictionaryService;
-    private DelegationRegistry delegationRegistry;
+    private ReferralRegistry referralRegistry;
     private Set<QName> aspects;
     private QName      assocType;
 
-    public Delegation()
+    public MetadataReferral()
     {
-        // Intentionally empty
+        // Intentionally empty.
     }
 
     public void setDictionaryService(DictionaryService service)
@@ -55,9 +57,9 @@ public class Delegation
         this.dictionaryService = service;
     }
 
-    public void setDelegationRegistry(DelegationRegistry registry)
+    public void setReferralRegistry(ReferralRegistry registry)
     {
-        this.delegationRegistry = registry;
+        this.referralRegistry = registry;
     }
 
     public void setAssocType(QName assocType)
@@ -74,25 +76,25 @@ public class Delegation
     {
         if (this.assocType == null)
         {
-            throw new InvalidDelegation("Illegal null assocType");
+            throw new InvalidMetadataReferral("Illegal null assocType");
         }
         if (aspects == null || aspects.isEmpty())
         {
-            throw new InvalidDelegation("Illegal null or empty aspects set");
+            throw new InvalidMetadataReferral("Illegal null or empty aspects set");
         }
         if (dictionaryService.getAssociation(assocType) == null)
         {
-            throw new InvalidDelegation("Association not found: " + assocType);
+            throw new InvalidMetadataReferral("Association not found: " + assocType);
         }
         for (QName aspect : aspects)
         {
             if (dictionaryService.getAspect(aspect) == null)
             {
-                throw new InvalidDelegation("Aspect not found: " + aspect);
+                throw new InvalidMetadataReferral("Aspect not found: " + aspect);
             }
         }
 
-        this.delegationRegistry.register(this);
+        this.referralRegistry.register(this);
     }
 
     /** Gets the type of the peer association linking the node to its delegate. */
@@ -101,7 +103,7 @@ public class Delegation
         return assocType;
     }
 
-    /** Gets the set of aspects which are being delegated. */
+    /** Gets the set of aspects which are being referred. */
     public Set<QName> getAspects()
     {
         return Collections.unmodifiableSet(aspects);
@@ -115,9 +117,9 @@ public class Delegation
     @Override public boolean equals(Object other)
     {
         boolean result = false;
-        if (other instanceof Delegation)
+        if (other instanceof MetadataReferral)
         {
-            Delegation that = (Delegation)other;
+            MetadataReferral that = (MetadataReferral)other;
             result = this.aspects.equals(that.aspects) &&
                      this.assocType.equals(that.assocType);
         }

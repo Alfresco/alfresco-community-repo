@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.metadatadelegation;
+package org.alfresco.module.org_alfresco_module_rm.referredmetadata;
 
 import static java.util.Arrays.asList;
-import static org.alfresco.module.org_alfresco_module_rm.metadatadelegation.DelegationException.ChainedDelegationUnsupported;
+import static org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataException.ChainedMetadataReferralUnsupported;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.FPUtils.asSet;
 import static org.junit.Assert.assertEquals;
@@ -40,37 +40,37 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
 /**
- * Unit tests for {@link DelegationAdminServiceImpl}.
+ * Unit tests for {@link ReferralAdminServiceImpl}.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
-public class DelegationAdminServiceImplUnitTest
+public class ReferralAdminServiceImplUnitTest
 {
-    @InjectMocks private final DelegationAdminServiceImpl delegationAdminService = new DelegationAdminServiceImpl();
+    @InjectMocks private final ReferralAdminServiceImpl referralAdminService = new ReferralAdminServiceImpl();
 
-    @Mock DictionaryService     mockDictionaryService;
-    @Mock NodeService           mockNodeService;
-    @Mock DelegationRegistry    mockRegistry;
-    @Mock DelegationServiceImpl mockDelegationService;
+    @Mock DictionaryService           mockDictionaryService;
+    @Mock NodeService                 mockNodeService;
+    @Mock ReferralRegistry            mockRegistry;
+    @Mock ReferredMetadataServiceImpl mockReferredMetadataService;
 
     private final NodeRef node1 = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "node1");
     private final NodeRef node2 = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "node2");
     private final NodeRef node3 = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "node3");
 
     private final QName assoc1 = QName.createQName("test", "assoc1");
-    private final QName assoc2 = QName.createQName("test", "assoc2");
-
     private final QName aspect1 = QName.createQName("test", "aspect1");
     private final QName aspect2 = QName.createQName("test", "aspect2");
+
+    private final QName assoc2 = QName.createQName("test", "assoc2");
     private final QName aspect3 = QName.createQName("test", "aspect3");
 
-    private final Delegation delegate1 = new Delegation()
+    private final MetadataReferral referral1 = new MetadataReferral()
                                            {{
                                                this.setAssocType(assoc1);
                                                this.setAspects(asSet(aspect1, aspect2));
                                            }};
-    private final Delegation delegate2 = new Delegation()
+    private final MetadataReferral referral2 = new MetadataReferral()
                                            {{
                                                this.setAssocType(assoc2);
                                                this.setAspects(asSet(aspect3));
@@ -80,61 +80,61 @@ public class DelegationAdminServiceImplUnitTest
     {
         MockitoAnnotations.initMocks(this);
 
-        when(mockRegistry.getDelegations()).thenReturn(asSet(delegate1, delegate2));
+        when(mockRegistry.getMetadataReferrals()).thenReturn(asSet(referral1, referral2));
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void attachingDelegateWithNoAssociationConfiguredShouldFail()
+    public void attachingReferrerWithNoAssociationConfiguredShouldFail()
     {
-        delegationAdminService.attachDelegate(node1, node2, assoc1);
+        referralAdminService.attachReferrer(node2, node1, assoc1);
     }
 
     @Test public void attachDetach()
     {
-        when(mockRegistry.getDelegateForAssociation(assoc1)).thenReturn(delegate1);
+        when(mockRegistry.getReferralForAssociation(assoc1)).thenReturn(referral1);
 
         // attach
-        Delegation d = attachDelegate(node1, node2, assoc1);
+        MetadataReferral d = attachReferrer(node1, node2, assoc1);
 
         // validate
         assertEquals(assoc1, d.getAssocType());
         assertEquals(asSet(aspect1, aspect2), d.getAspects());
-        assertTrue(mockDelegationService.hasDelegateForAspect(node1, aspect1));
-        assertFalse(mockDelegationService.hasDelegateForAspect(node1, aspect3));
+        assertTrue(mockReferredMetadataService.isReferringMetadata(node1, aspect1));
+        assertFalse(mockReferredMetadataService.isReferringMetadata(node1, aspect3));
 
         // detach
-        assertEquals(d, delegationAdminService.detachDelegate(node1, assoc1));
+        assertEquals(d, referralAdminService.detachReferrer(node1, assoc1));
     }
 
-    private Delegation attachDelegate(NodeRef from, NodeRef to, QName assocType)
+    private MetadataReferral attachReferrer(NodeRef referrer, NodeRef referent, QName assocType)
     {
-        Delegation d = delegationAdminService.attachDelegate(from, to, assocType);
-        when(mockNodeService.getSourceAssocs(to, assocType)).thenReturn(asList(new AssociationRef(from, assocType, to)));
-        when(mockNodeService.getTargetAssocs(from, assocType)).thenReturn(asList(new AssociationRef(from, assocType, to)));
+        MetadataReferral d = referralAdminService.attachReferrer(referrer, referent, assocType);
+        when(mockNodeService.getSourceAssocs(referent, assocType)).thenReturn(asList(new AssociationRef(referrer, assocType, referent)));
+        when(mockNodeService.getTargetAssocs(referrer, assocType)).thenReturn(asList(new AssociationRef(referrer, assocType, referent)));
         for (QName aspect : d.getAspects())
         {
-            when(mockDelegationService.hasDelegateForAspect(from, aspect)).thenReturn(true);
+            when(mockReferredMetadataService.isReferringMetadata(referrer, aspect)).thenReturn(true);
         }
         return d;
     }
 
     @Test public void chainsOfDelegationShouldBePrevented()
     {
-        when(mockRegistry.getDelegateForAssociation(assoc1)).thenReturn(delegate1);
+        when(mockRegistry.getReferralForAssociation(assoc1)).thenReturn(referral1);
 
         // The node already has a delegation in place: node1 -> node2. We're trying to add to the
         // end of the chain: node2 -> node3
         when(mockNodeService.getSourceAssocs(node2, assoc1)).thenReturn(asList(new AssociationRef(node1, assoc1, node2)));
         when(mockNodeService.getTargetAssocs(node1, assoc1)).thenReturn(asList(new AssociationRef(node1, assoc1, node2)));
 
-        expectedException(ChainedDelegationUnsupported.class, () -> {
-            delegationAdminService.attachDelegate(node2, node3, assoc1);
+        expectedException(ChainedMetadataReferralUnsupported.class, () -> {
+            referralAdminService.attachReferrer(node2, node3, assoc1);
             return null;
         });
 
         // Now try to add to the start of the chain: node3 -> node1
-        expectedException(ChainedDelegationUnsupported.class, () -> {
-            delegationAdminService.attachDelegate(node3, node1, assoc1);
+        expectedException(ChainedMetadataReferralUnsupported.class, () -> {
+            referralAdminService.attachReferrer(node3, node1, assoc1);
             return null;
         });
     }

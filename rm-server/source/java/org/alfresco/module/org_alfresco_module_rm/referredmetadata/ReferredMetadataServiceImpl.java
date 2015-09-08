@@ -16,10 +16,11 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.metadatadelegation;
+package org.alfresco.module.org_alfresco_module_rm.referredmetadata;
 
-import static org.alfresco.module.org_alfresco_module_rm.metadatadelegation.DelegationException.DelegateNotFound;
-import static org.alfresco.module.org_alfresco_module_rm.metadatadelegation.DelegationException.DelegationNotFound;
+import static org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataException.MetadataReferralNotFound;
+import static org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataException.ReferentNodeNotFound;
+import static org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataException.TypeMetadataReferralUnsupported;
 import static org.alfresco.util.collections.CollectionUtils.filterKeys;
 
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
@@ -40,17 +41,17 @@ import java.util.Set;
 
 /**
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
-public class DelegationServiceImpl implements DelegationService
+public class ReferredMetadataServiceImpl implements ReferredMetadataService
 {
-    private DelegationAdminService delegationAdminService;
-    private DictionaryService      dictionaryService;
-    private NodeService            nodeService;
+    private ReferralAdminService referralAdminService;
+    private DictionaryService    dictionaryService;
+    private NodeService          nodeService;
 
-    public void setDelegationAdminService(DelegationAdminService service)
+    public void setReferralAdminService(ReferralAdminService service)
     {
-        this.delegationAdminService = service;
+        this.referralAdminService = service;
     }
 
     public void setDictionaryService(DictionaryService service)
@@ -63,54 +64,60 @@ public class DelegationServiceImpl implements DelegationService
         this.nodeService = service;
     }
 
-    @Override public boolean hasDelegateForAspect(NodeRef nodeRef, QName aspectName)
+    @Override public boolean isReferringMetadata(NodeRef potentialReferrer, QName aspectName)
     {
-        final Delegation delegation = delegationAdminService.getDelegationFor(aspectName);
-
-        if ( !nodeService.exists(nodeRef))
+        if ( !nodeService.exists(potentialReferrer))
         {
-            throw new InvalidNodeRefException(nodeRef);
+            throw new InvalidNodeRefException(potentialReferrer);
         }
-        else if (delegation == null)
+
+        final MetadataReferral metadataReferral = referralAdminService.getReferralFor(aspectName);
+
+        if (metadataReferral == null)
         {
-            throw new DelegationNotFound("No delegation found for aspect: " + aspectName);
+            throw new MetadataReferralNotFound("No defined referral found for aspect: " + aspectName);
         }
         else
         {
-            final List<AssociationRef> targetAssocs = nodeService.getTargetAssocs(nodeRef, delegation.getAssocType());
+            final List<AssociationRef> targetAssocs = nodeService.getTargetAssocs(potentialReferrer, metadataReferral.getAssocType());
             return !targetAssocs.isEmpty();
         }
     }
 
-    @Override public NodeRef getDelegateFor(NodeRef nodeRef, QName aspectName)
+    @Override public NodeRef getReferentNode(NodeRef referrer, QName aspectName)
     {
-        final Delegation d = delegationAdminService.getDelegationFor(aspectName);
+        if ( !nodeService.exists(referrer))
+        {
+            throw new InvalidNodeRefException(referrer);
+        }
+
+        final MetadataReferral d = referralAdminService.getReferralFor(aspectName);
 
         if (d == null)
         {
-            throw new DelegationNotFound("No delegation found for aspect: " + aspectName);
+            throw new MetadataReferralNotFound("No defined referral found for aspect: " + aspectName);
         }
         else
         {
             final QName assocType = d.getAssocType();
-            final List<AssociationRef> assocs = nodeService.getTargetAssocs(nodeRef, assocType);
+            final List<AssociationRef> assocs = nodeService.getTargetAssocs(referrer, assocType);
 
             return assocs.isEmpty() ? null : assocs.get(0).getTargetRef();
         }
     }
 
-    @Override public Map<QName, Serializable> getDelegateProperties(NodeRef nodeRef, final QName aspectName)
+    @Override public Map<QName, Serializable> getReferredProperties(NodeRef referrer, final QName aspectName)
     {
-        final NodeRef delegateNode = getDelegateFor(nodeRef, aspectName);
+        final NodeRef referentNode = getReferentNode(referrer, aspectName);
 
-        if (delegateNode == null)
+        if (referentNode == null)
         {
-            throw new DelegateNotFound("No delegate node found for " + nodeRef + " " + aspectName);
+            throw new ReferentNodeNotFound("No referent node found for " + referrer + " " + aspectName);
         }
         else
         {
-            Map<QName, Serializable> allProps = nodeService.getProperties(delegateNode);
-            Map<QName, Serializable> aspectProps = filterKeys(allProps,
+            final Map<QName, Serializable> allProps = nodeService.getProperties(referentNode);
+            final Map<QName, Serializable> aspectProps = filterKeys(allProps,
                                       new Function<QName, Boolean>()
                                         {
                                             @Override public Boolean apply(QName propName)
@@ -125,7 +132,7 @@ public class DelegationServiceImpl implements DelegationService
         }
     }
 
-    @Override public Serializable getDelegateProperty(NodeRef nodeRef, QName propertyName)
+    @Override public Serializable getReferredProperty(NodeRef referrer, QName propertyName)
     {
         final PropertyDefinition propDefn = dictionaryService.getProperty(propertyName);
 
@@ -141,38 +148,38 @@ public class DelegationServiceImpl implements DelegationService
             msg.append("Property '").append(propertyName).append("' is not defined on an aspect: ")
                .append(aspectDefn.getName());
 
-            throw new IllegalArgumentException(msg.toString());
+            throw new TypeMetadataReferralUnsupported(msg.toString());
         }
 
-        Map<QName, Serializable> allPropValues = getDelegateProperties(nodeRef, aspectDefn.getName());
+        final Map<QName, Serializable> allPropValues = getReferredProperties(referrer, aspectDefn.getName());
         return allPropValues.get(propertyName);
     }
 
-    @Override public boolean hasAspectOnDelegate(NodeRef nodeRef, QName aspectName)
+    @Override public boolean hasReferredAspect(NodeRef referrer, QName aspectName)
     {
-        final NodeRef delegateNode = getDelegateFor(nodeRef, aspectName);
+        final NodeRef referentNode = getReferentNode(referrer, aspectName);
 
-        if (delegateNode == null)
+        if (referentNode == null)
         {
-            throw new DelegateNotFound("No delegate node found for " + nodeRef + " " + aspectName);
+            throw new ReferentNodeNotFound("No referent node found for " + referrer + " " + aspectName);
         }
         else
         {
-            return nodeService.hasAspect(delegateNode, aspectName);
+            return nodeService.hasAspect(referentNode, aspectName);
         }
     }
 
-    @Override public Map<Delegation, NodeRef> getDelegations(NodeRef nodeRef)
+    @Override public Map<MetadataReferral, NodeRef> getAttachedReferrals(NodeRef potentialReferrer)
     {
-        Set<Delegation> delegations = delegationAdminService.getDelegationsFrom(nodeRef);
+        Set<MetadataReferral> metadataReferrals = referralAdminService.getAttachedReferralsFrom(potentialReferrer);
 
-        Map<Delegation, NodeRef> result = new HashMap<>();
-        for (Delegation d : delegations)
+        Map<MetadataReferral, NodeRef> result = new HashMap<>();
+        for (MetadataReferral mr : metadataReferrals)
         {
-            // We need only use the first aspect to get the Delegation object
-            if (!d.getAspects().isEmpty())
+            // We need only use the first aspect to get the MetadataReferral object
+            if (!mr.getAspects().isEmpty())
             {
-                result.put(d, getDelegateFor(nodeRef, d.getAspects().iterator().next()));
+                result.put(mr, getReferentNode(potentialReferrer, mr.getAspects().iterator().next()));
             }
         }
 

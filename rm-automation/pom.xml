@@ -13,6 +13,17 @@
         <!-- Within the rm-automation project only, we want source code to be Java 8. -->
         <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
     </properties>
+   <dependencyManagement>
+      <dependencies>
+         <dependency>
+            <groupId>${alfresco.groupId}</groupId>
+            <artifactId>alfresco-platform-distribution</artifactId>
+            <version>${alfresco.version}</version>
+            <type>pom</type>
+            <scope>import</scope>
+         </dependency>
+      </dependencies>
+   </dependencyManagement>
     <build>
         <plugins>
             <!-- Additional source folder to be added: source/compatibility -->
@@ -119,11 +130,6 @@
             <groupId>com.github.tomakehurst</groupId>
             <artifactId>wiremock</artifactId>
             <version>1.56</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.chemistry.opencmis</groupId>
-            <artifactId>chemistry-opencmis-client-bindings</artifactId>
-            <version>0.11.0</version>
         </dependency>
     </dependencies>
     <profiles>

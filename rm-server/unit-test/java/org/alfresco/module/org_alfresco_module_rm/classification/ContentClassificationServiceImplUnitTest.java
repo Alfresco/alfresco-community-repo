@@ -45,6 +45,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationE
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
+import org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -80,6 +81,7 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
     @Mock FreezeService mockFreezeService;
     @Mock SecurityClearanceService mockSecurityClearanceService;
     @Mock AuthenticationUtil mockAuthenticationUtil;
+    @Mock ReferredMetadataService mockReferredMetadataService;
     @Mock ClassificationAspectProperties mockPropertiesDTO;
     @Captor ArgumentCaptor<Map<QName, Serializable>> propertiesCaptor;
 

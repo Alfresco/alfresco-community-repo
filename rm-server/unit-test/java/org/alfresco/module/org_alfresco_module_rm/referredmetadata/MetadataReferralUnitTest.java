@@ -29,16 +29,12 @@ import static org.mockito.Mockito.when;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.util.List;
 
 /**
  * Unit tests for {@link MetadataReferral}.
@@ -53,8 +49,6 @@ public class MetadataReferralUnitTest
 
     private final ReferralAdminServiceImpl referralAdminService = new ReferralAdminServiceImpl();
 
-    private final NodeRef node1 = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "node1");
-    private final NodeRef node2 = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "node2");
     private final QName aspect1 = QName.createQName("test", "aspect1");
     private final QName aspect2 = QName.createQName("test", "aspect2");
     private final QName assoc1  = QName.createQName("test", "assoc1");
@@ -68,35 +62,33 @@ public class MetadataReferralUnitTest
 
     @Test public void nullOrEmptyReferralsAreForbidden()
     {
-        List<MetadataReferral> invalidMetadataReferrals = asListFrom(() -> new MetadataReferral(),
-                                                               () -> {
-                                                                   MetadataReferral mr = new MetadataReferral();
-                                                                   mr.setAssocType(assoc1);
-                                                                   mr.setAspects(null);
-                                                                   mr.setDictionaryService(mockDictionaryService);
-                                                                   return mr;
-                                                               },
-                                                               () -> {
-                                                                   MetadataReferral mr = new MetadataReferral();
-                                                                   mr.setAssocType(assoc1);
-                                                                   mr.setAspects(emptySet());
-                                                                   mr.setDictionaryService(mockDictionaryService);
-                                                                   return mr;
-                                                               },
-                                                               () -> {
-                                                                   MetadataReferral mr = new MetadataReferral();
-                                                                   mr.setAssocType(null);
-                                                                   mr.setAspects(asSet(aspect1, aspect2));
-                                                                   mr.setDictionaryService(mockDictionaryService);
-                                                                   return mr;
-                                                               });
-
-        invalidMetadataReferrals.stream()
-                        .forEach(mr -> expectedException(InvalidMetadataReferral.class, () -> {
-                                    mr.validateAndRegister();
-                                    return null;
-                                }
-                        ));
+        asListFrom(() -> new MetadataReferral(),
+                   () -> {
+                       MetadataReferral mr = new MetadataReferral();
+                       mr.setAssocType(assoc1);
+                       mr.setAspects(null);
+                       mr.setDictionaryService(mockDictionaryService);
+                       return mr;
+                   },
+                   () -> {
+                       MetadataReferral mr = new MetadataReferral();
+                       mr.setAssocType(assoc1);
+                       mr.setAspects(emptySet());
+                       mr.setDictionaryService(mockDictionaryService);
+                       return mr;
+                   },
+                   () -> {
+                       MetadataReferral mr = new MetadataReferral();
+                       mr.setAssocType(null);
+                       mr.setAspects(asSet(aspect1, aspect2));
+                       mr.setDictionaryService(mockDictionaryService);
+                       return mr;
+                   })
+                .forEach(mr -> expectedException(InvalidMetadataReferral.class, () -> {
+                            mr.validateAndRegister();
+                            return null;
+                        })
+                );
     }
 
     @Test(expected=InvalidMetadataReferral.class)

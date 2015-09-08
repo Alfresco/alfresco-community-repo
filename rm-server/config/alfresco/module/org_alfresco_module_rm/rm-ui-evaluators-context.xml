@@ -342,6 +342,7 @@
       <property name="kinds">
          <set>
             <value>FILE_PLAN</value>
+            <value>RECORD</value>
             <value>RECORD_CATEGORY</value>
             <value>RECORD_FOLDER</value>
             <value>UNFILED_RECORD_CONTAINER</value>
@@ -759,7 +760,7 @@
          </set>
       </property>
    </bean>
-   
+
    <bean id="jsonConversionComponent.endRetention"
          parent="jsonConversionComponent.baseAction">
       <property name="name" value="endRetention"/>

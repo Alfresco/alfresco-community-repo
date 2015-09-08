@@ -796,7 +796,7 @@ public class DispositionServiceImpl implements
     private NodeRef getNextDispositionActionNodeRef(NodeRef nodeRef)
     {
         NodeRef result = null;
-        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, RegexQNamePattern.MATCH_ALL);
+        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION, 1, true);
         if (assocs.size() != 0)
         {
             result = assocs.get(0).getChildRef();

@@ -29,6 +29,7 @@ import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.apache.cxf.common.util.StringUtils;
 import org.springframework.extensions.webscripts.DeclarativeWebScript;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -172,7 +173,11 @@ public class RoleDeclarativeWebScript extends DeclarativeWebScript
 
         for (String authority : authorities)
         {
-            String displayLabel = authorityService.getAuthorityDisplayName(authority);
+            String displayLabel = authority;
+            if (!AuthorityType.getAuthorityType(authority).equals(AuthorityType.USER))
+            {
+                displayLabel = authorityService.getAuthorityDisplayName(authority);
+            }
             result.add(new AuthorityItem(authority, displayLabel));
         }
 

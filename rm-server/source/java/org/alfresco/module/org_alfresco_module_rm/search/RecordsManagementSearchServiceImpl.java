@@ -30,6 +30,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -41,6 +42,7 @@ import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
+import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -173,7 +175,7 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
 	 * @see org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchService#search(java.lang.String, java.lang.String, org.alfresco.module.org_alfresco_module_rm.search.RecordsManagementSearchParameters)
 	 */
     @Override
-    public List<NodeRef> search(String siteId, String query, RecordsManagementSearchParameters rmSearchParameters)
+    public List<Pair<NodeRef, NodeRef>> search(String siteId, String query, RecordsManagementSearchParameters rmSearchParameters)
     {
         // build the full RM query
         StringBuilder fullQuery = new StringBuilder(1024);
@@ -206,9 +208,16 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
 
         // execute query
         ResultSet resultSet = searchService.query(searchParameters);
+        
+        // process results
+        List<Pair<NodeRef, NodeRef>> result = new ArrayList<Pair<NodeRef, NodeRef>>(resultSet.length());
+        for (ChildAssociationRef childAssoc : resultSet.getChildAssocRefs())
+        {
+        	result.add(new Pair<NodeRef, NodeRef>(childAssoc.getParentRef(), childAssoc.getChildRef()));        	
+        }
 
         // return results
-        return resultSet.getNodeRefs();
+        return result;
     }
 
     /**

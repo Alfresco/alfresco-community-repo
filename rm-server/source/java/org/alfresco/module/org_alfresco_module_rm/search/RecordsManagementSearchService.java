@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.search;
 import java.util.List;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.Pair;
 
 /**
  * Records management search service.
@@ -33,10 +34,10 @@ public interface RecordsManagementSearchService
 	 * Execute a records management search
 	 * @param siteId           the id of the rm site to query
 	 * @param query	           search query string
-	 * @param searchParameters search parameters
-	 * @return {@link List}<{@link NodeRef}> search results 
+	 * @param searchParameters search parameters 
+	 * @return {@link List}<{@link Pair}<{@link NodeRef}, {@link NodeRef}> search results as pairs for parent and child nodes 
 	 */
-	List<NodeRef> search(String siteId, String query, RecordsManagementSearchParameters searchParameters);	
+	List<Pair<NodeRef, NodeRef>> search(String siteId, String query, RecordsManagementSearchParameters searchParameters);	
 	
 	/**
 	 * Get all the searches saved on the given records management site.

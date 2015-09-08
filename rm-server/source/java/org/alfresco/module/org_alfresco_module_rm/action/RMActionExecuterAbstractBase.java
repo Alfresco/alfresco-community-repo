@@ -57,7 +57,6 @@ import org.alfresco.service.cmr.repository.Period;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.BeanNameAware;
@@ -489,7 +488,7 @@ public abstract class RMActionExecuterAbstractBase  extends PropertySubActionExe
             NodeRef currentDispositionAction = null;
             if (this.nodeService.hasAspect(nodeRef, ASPECT_DISPOSITION_LIFECYCLE) == true)
             {
-                List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, RegexQNamePattern.MATCH_ALL);
+                List<ChildAssociationRef> assocs = this.nodeService.getChildAssocs(nodeRef, ASSOC_NEXT_DISPOSITION_ACTION, ASSOC_NEXT_DISPOSITION_ACTION);
                 if (assocs.size() > 0)
                 {
                     currentDispositionAction = assocs.get(0).getChildRef();

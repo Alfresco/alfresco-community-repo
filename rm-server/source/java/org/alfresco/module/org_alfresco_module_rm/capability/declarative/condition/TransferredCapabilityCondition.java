@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class TransferredCapabilityCondition extends AbstractCapabilityCondition
 {
     @Override
-    public boolean evaluate(NodeRef nodeRef)
+    public boolean evaluateImpl(NodeRef nodeRef)
     {
         return nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_TRANSFERRED);
     }

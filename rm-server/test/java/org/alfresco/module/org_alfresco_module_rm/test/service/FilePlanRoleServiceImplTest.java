@@ -107,9 +107,9 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
         {
             public Void run()
             {
-                Role role = filePlanRoleService.getRole(filePlan, ROLE_NAME_POWER_USER);
+                Role role = filePlanRoleService.getRole(filePlan, FilePlanRoleService.ROLE_POWER_USER);
                 assertNotNull(role);
-                assertEquals(ROLE_NAME_POWER_USER, role.getName());
+                assertEquals(FilePlanRoleService.ROLE_POWER_USER, role.getName());
 
                 role = filePlanRoleService.getRole(filePlan, "donkey");
                 assertNull(role);
@@ -125,7 +125,7 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
         {
             public Void run()
             {
-                assertTrue(filePlanRoleService.existsRole(filePlan, ROLE_NAME_POWER_USER));
+                assertTrue(filePlanRoleService.existsRole(filePlan, FilePlanRoleService.ROLE_POWER_USER));
                 assertFalse(filePlanRoleService.existsRole(filePlan, "donkey"));
 
                 return null;
@@ -184,33 +184,33 @@ public class FilePlanRoleServiceImplTest extends BaseRMTestCase
                 assertNotNull(roles);
                 assertEquals(1, roles.size());
 
-                Set<String> authorities = filePlanRoleService.getUsersAssignedToRole(filePlan, ROLE_NAME_RECORDS_MANAGER);
+                Set<String> authorities = filePlanRoleService.getUsersAssignedToRole(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER);
                 assertNotNull(authorities);
                 assertEquals(1, authorities.size());
 
-                authorities = filePlanRoleService.getGroupsAssignedToRole(filePlan, ROLE_NAME_RECORDS_MANAGER);
+                authorities = filePlanRoleService.getGroupsAssignedToRole(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER);
                 assertNotNull(authorities);
                 assertEquals(0, authorities.size());
 
-                authorities = filePlanRoleService.getAllAssignedToRole(filePlan, ROLE_NAME_RECORDS_MANAGER);
+                authorities = filePlanRoleService.getAllAssignedToRole(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER);
                 assertNotNull(authorities);
                 assertEquals(1, authorities.size());
 
-                filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_NAME_RECORDS_MANAGER, rmUserName);
+                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, rmUserName);
 
                 roles = filePlanRoleService.getRolesByUser(filePlan, rmUserName);
                 assertNotNull(roles);
                 assertEquals(2, roles.size());
 
-                authorities = filePlanRoleService.getUsersAssignedToRole(filePlan, ROLE_NAME_RECORDS_MANAGER);
+                authorities = filePlanRoleService.getUsersAssignedToRole(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER);
                 assertNotNull(authorities);
                 assertEquals(2, authorities.size());
 
-                authorities = filePlanRoleService.getGroupsAssignedToRole(filePlan, ROLE_NAME_RECORDS_MANAGER);
+                authorities = filePlanRoleService.getGroupsAssignedToRole(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER);
                 assertNotNull(authorities);
                 assertEquals(0, authorities.size());
 
-                authorities = filePlanRoleService.getAllAssignedToRole(filePlan, ROLE_NAME_RECORDS_MANAGER);
+                authorities = filePlanRoleService.getAllAssignedToRole(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER);
                 assertNotNull(authorities);
                 assertEquals(2, authorities.size());
 

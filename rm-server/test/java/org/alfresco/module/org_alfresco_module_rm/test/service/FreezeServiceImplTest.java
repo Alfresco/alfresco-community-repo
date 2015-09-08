@@ -62,7 +62,6 @@ public class FreezeServiceImplTest extends BaseRMTestCase
 
             // Freeze a record
             freezeService.freeze("FreezeReason", recordOne);
-            assertTrue(freezeService.hasFrozenChildren(rmFolder));
 
             // Check the hold exists
             Set<NodeRef> holdAssocs = freezeService.getHolds(filePlan);
@@ -192,7 +191,6 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertFalse(freezeService.isFrozen(recordTwo));
             assertFalse(freezeService.isFrozen(recordThree));
             assertFalse(freezeService.isFrozen(recordFour));
-            assertFalse(freezeService.hasFrozenChildren(rmFolder));
 
             // Test freezing nodes, adding them to an existing hold
             NodeRef hold = freezeService.freeze("AnotherFreezeReason", recordFour);
@@ -201,7 +199,6 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             nodes.add(recordTwo);
             nodes.add(recordThree);
             freezeService.freeze(hold, nodes);
-            assertTrue(freezeService.hasFrozenChildren(rmFolder));
 
             // Check the hold
             holdAssocs = freezeService.getHolds(filePlan);
@@ -216,7 +213,6 @@ public class FreezeServiceImplTest extends BaseRMTestCase
             assertFalse(freezeService.isFrozen(recordTwo));
             assertFalse(freezeService.isFrozen(recordThree));
             assertFalse(freezeService.isFrozen(recordFour));
-            assertFalse(freezeService.hasFrozenChildren(rmFolder));
 
             return null;
          }

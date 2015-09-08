@@ -30,7 +30,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public class FailCapabilityCondition extends AbstractCapabilityCondition
 {
     @Override
-    public boolean evaluate(NodeRef nodeRef)
+    public boolean evaluateImpl(NodeRef nodeRef)
     {
         return false;
     }

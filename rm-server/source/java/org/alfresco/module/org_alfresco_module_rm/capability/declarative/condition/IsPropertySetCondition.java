@@ -34,6 +34,7 @@ public class IsPropertySetCondition extends AbstractCapabilityCondition
 {
     /** property name (eg: rma:location) */
     private String propertyName;
+    private QName propertyQName;
     
     /** namespace service */
     private NamespaceService namespaceService;
@@ -59,14 +60,18 @@ public class IsPropertySetCondition extends AbstractCapabilityCondition
      */
     protected QName getPropertyQName()
     {
-        return QName.createQName(propertyName, namespaceService);
+    	if (propertyQName == null)
+    	{
+    		propertyQName = QName.createQName(propertyName, namespaceService);
+    	}
+    	return propertyQName;
     }
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public boolean evaluate(NodeRef nodeRef)
+    public boolean evaluateImpl(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 

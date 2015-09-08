@@ -18,11 +18,11 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.security;
 
+import static org.apache.commons.lang.BooleanUtils.isTrue;
+
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -34,6 +34,7 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -41,20 +42,20 @@ import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
  * File plan permission service.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
 public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                                            implements FilePlanPermissionService,
-                                                      RecordsManagementModel
+                                                      RecordsManagementModel,
+                                                      NodeServicePolicies.OnMoveNodePolicy
 {
     /** Permission service */
     protected PermissionService permissionService;
@@ -64,16 +65,16 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
     /** Records management service */
     protected RecordsManagementService recordsManagementService;
-    
+
     /** File plan service */
     protected FilePlanService filePlanService;
-    
+
     /** Record service */
     protected RecordService recordService;
 
     /** Logger */
     protected static Log logger = LogFactory.getLog(FilePlanPermissionServiceImpl.class);
-    
+
     /**
      * Initialisation method
      */
@@ -84,27 +85,31 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 TYPE_RECORD_CATEGORY,
                 new JavaBehaviour(this, "onCreateRMContainer", NotificationFrequency.TRANSACTION_COMMIT));
         policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnMoveNodePolicy.QNAME,
+                TYPE_RECORD_CATEGORY,
+                new JavaBehaviour(this, "onMoveNode", NotificationFrequency.TRANSACTION_COMMIT));
+        policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnCreateNodePolicy.QNAME,
                 TYPE_RECORD_FOLDER,
                 new JavaBehaviour(this, "onCreateRecordFolder", NotificationFrequency.TRANSACTION_COMMIT));
         policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnAddAspectPolicy.QNAME, 
-                ASPECT_RECORD, 
+                NodeServicePolicies.OnAddAspectPolicy.QNAME,
+                ASPECT_RECORD,
                 new JavaBehaviour(this, "onAddRecord", NotificationFrequency.TRANSACTION_COMMIT));
         policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnMoveNodePolicy.QNAME, 
-                ASPECT_RECORD, 
+                NodeServicePolicies.OnMoveNodePolicy.QNAME,
+                ASPECT_RECORD,
                 new JavaBehaviour(this, "onMoveRecord", NotificationFrequency.TRANSACTION_COMMIT));
         policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnCreateNodePolicy.QNAME, 
-                TYPE_HOLD, 
+                NodeServicePolicies.OnCreateNodePolicy.QNAME,
+                TYPE_HOLD,
                 new JavaBehaviour(this, "onCreateHoldTransfer", NotificationFrequency.TRANSACTION_COMMIT));
         policyComponent.bindClassBehaviour(
-                NodeServicePolicies.OnCreateNodePolicy.QNAME, 
-                TYPE_TRANSFER, 
+                NodeServicePolicies.OnCreateNodePolicy.QNAME,
+                TYPE_TRANSFER,
                 new JavaBehaviour(this, "onCreateHoldTransfer", NotificationFrequency.TRANSACTION_COMMIT));
     }
-    
+
     /**
      * @param permissionService permission service
      */
@@ -112,7 +117,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         this.permissionService = permissionService;
     }
-    
+
     /**
      * @param nodeService   node service
      */
@@ -120,7 +125,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         this.nodeService = nodeService;
     }
-    
+
     /**
      * @param policyComponent   policy component
      */
@@ -128,7 +133,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         this.policyComponent = policyComponent;
     }
-    
+
     /**
      * @param recordsManagementService  records management service
      */
@@ -136,7 +141,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         this.recordsManagementService = recordsManagementService;
     }
-    
+
     /**
      * @param filePlanService   file plan service
      */
@@ -144,7 +149,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * @param recordService record service
      */
@@ -156,48 +161,46 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     /**
      * @param childAssocRef
      */
-    public void onCreateRMContainer(ChildAssociationRef childAssocRef)
+    public void onCreateRMContainer(final ChildAssociationRef childAssocRef)
     {
-        final NodeRef recordCategory = childAssocRef.getChildRef();
-        setUpPermissions(recordCategory);
-
         // Pull any permissions found on the parent (ie the record category)
         final NodeRef parentNodeRef = childAssocRef.getParentRef();
-        if (parentNodeRef != null && nodeService.exists(parentNodeRef) == true)
+        if (parentNodeRef != null && nodeService.exists(parentNodeRef))
         {
             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
                 public Object doWork()
                 {
-                    boolean fillingOnly = false;
-                    if (filePlanService.isFilePlan(parentNodeRef) == true)
-                    {
-                        fillingOnly = true;
-                    }
+                    NodeRef recordCategory = childAssocRef.getChildRef();
+                    boolean isParentNodeFilePlan = filePlanService.isFilePlan(parentNodeRef);
+                    setUpPermissions(recordCategory, isParentNodeFilePlan);
 
                     // since this is not a root category, inherit from parent
-                    Set<AccessPermission> perms = permissionService.getAllSetPermissions(parentNodeRef);
-                    for (AccessPermission perm : perms)
+                    if (isParentNodeFilePlan)
                     {
-                        if (fillingOnly == false ||
-                            RMPermissionModel.FILING.equals(perm.getPermission()) == true)
+                        Set<AccessPermission> perms = permissionService.getAllSetPermissions(parentNodeRef);
+                        for (AccessPermission perm : perms)
                         {
-                            AccessStatus accessStatus = perm.getAccessStatus();
-                            boolean allow = false;
-                            if (AccessStatus.ALLOWED.equals(accessStatus) == true)
+                            if (RMPermissionModel.FILING.equals(perm.getPermission()))
                             {
-                                allow = true;
+                                AccessStatus accessStatus = perm.getAccessStatus();
+                                boolean allow = false;
+                                if (AccessStatus.ALLOWED.equals(accessStatus))
+                                {
+                                    allow = true;
+                                }
+                                permissionService.setPermission(
+                                        recordCategory,
+                                        perm.getAuthority(),
+                                        perm.getPermission(),
+                                        allow);
                             }
-                            permissionService.setPermission(
-                                    recordCategory,
-                                    perm.getAuthority(),
-                                    perm.getPermission(),
-                                    allow);
                         }
                     }
 
                     return null;
                 }
+
             }, AuthenticationUtil.getSystemUserName());
         }
     }
@@ -208,13 +211,14 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     public void onCreateRecordFolder(ChildAssociationRef childAssocRef)
     {
         final NodeRef folderNodeRef = childAssocRef.getChildRef();
-        
+
         // initialise the permissions
         setUpPermissions(folderNodeRef);
 
         // Pull any permissions found on the parent (ie the record category)
         final NodeRef catNodeRef = childAssocRef.getParentRef();
-        if (nodeService.exists(catNodeRef) == true)
+        if (!permissionService.getInheritParentPermissions(folderNodeRef) &&
+                nodeService.exists(catNodeRef))
         {
             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
@@ -223,8 +227,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     Set<AccessPermission> perms = permissionService.getAllSetPermissions(catNodeRef);
                     for (AccessPermission perm : perms)
                     {
-                        if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false &&
-                            ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()) == false)
+                        if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
+                            !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
                         {
                             AccessStatus accessStatus = perm.getAccessStatus();
                             boolean allow = false;
@@ -245,12 +249,12 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             }, AuthenticationUtil.getSystemUserName());
         }
     }
-    
+
     /**
      * Sets ups records permission when aspect is added.
-     * 
+     *
      * @see NodeServicePolicies.OnAddAspectPolicy#onAddAspect(NodeRef, QName)
-     * 
+     *
      * @param record
      * @param aspectTypeQName
      */
@@ -262,18 +266,18 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             {
                 if (nodeService.exists(record) == true && nodeService.hasAspect(record, aspectTypeQName) == true)
                 {
-                    NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();                    
+                    NodeRef recordFolder = nodeService.getPrimaryParent(record).getParentRef();
                     initialiseRecordPermissions(record, recordFolder);
                 }
 
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName());       
+        }, AuthenticationUtil.getSystemUserName());
     }
-    
+
     /**
      * Sets up permissions for transfer and hold objects
-     * 
+     *
      * @param childAssocRef
      */
     public void onCreateHoldTransfer(final ChildAssociationRef childAssocRef)
@@ -286,7 +290,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                 if (nodeService.exists(nodeRef) == true)
                 {
                     setUpPermissions(nodeRef);
-                    
+
                     NodeRef parent = childAssocRef.getParentRef();
                     Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
                     for (AccessPermission perm : perms)
@@ -308,49 +312,98 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                         }
                     }
                 }
-                
+
                 return null;
             }
         });
     }
-    
+
+    /**
+     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
+     */
+    @Override
+    public void onMoveNode(final ChildAssociationRef oldChildAssocRef, final ChildAssociationRef newChildAssocRef)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                NodeRef sourceCategory = oldChildAssocRef.getChildRef();
+                boolean inheritParentPermissions = permissionService.getInheritParentPermissions(sourceCategory);
+
+                Set<AccessPermission> keepPerms = new HashSet<AccessPermission>(5);
+                Set<AccessPermission> origionalCategoryPerms= permissionService.getAllSetPermissions(sourceCategory);
+
+                for (AccessPermission categoryPermission : origionalCategoryPerms)
+                {
+                    String permission = categoryPermission.getPermission();
+                    String authority = categoryPermission.getAuthority();
+                    if ((RMPermissionModel.FILING.equals(permission) || RMPermissionModel.READ_RECORDS.equals(permission)) &&
+                            categoryPermission.isSetDirectly() &&
+                            !ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(authority) &&
+                            !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(authority))
+                    {
+                        // then we can assume this is a permission we want to preserve
+                        keepPerms.add(categoryPermission);
+                    }
+                }
+
+                // clear all existing permissions and start again
+                permissionService.deletePermissions(sourceCategory);
+
+                // re-add keep'er permissions
+                for (AccessPermission keeper : keepPerms)
+                {
+                    setPermission(sourceCategory, keeper.getAuthority(), keeper.getPermission());
+                }
+
+                permissionService.setInheritParentPermissions(sourceCategory, isFilePlan(newChildAssocRef.getParentRef()) ? false : inheritParentPermissions);
+
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+
     /**
      * Initialise the record permissions for the given parent.
-     * 
+     *
      * NOTE: method is public so it can be accessed via the associated patch bean.
-     * 
-     * @param record        record 
+     *
+     * @param record        record
      * @param parent        records permission parent
      */
     public void initialiseRecordPermissions(NodeRef record, NodeRef parent)
     {
         setUpPermissions(record);
-        
-        Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
-        for (AccessPermission perm : perms)
+
+        if (!permissionService.getInheritParentPermissions(record))
         {
-            if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false &&
-                ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()) == false)
+            Set<AccessPermission> perms = permissionService.getAllSetPermissions(parent);
+            for (AccessPermission perm : perms)
             {
-                AccessStatus accessStatus = perm.getAccessStatus();
-                boolean allow = false;
-                if (AccessStatus.ALLOWED.equals(accessStatus) == true)
+                if (!ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) &&
+                        !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()))
                 {
-                    allow = true;
+                    AccessStatus accessStatus = perm.getAccessStatus();
+                    boolean allow = false;
+                    if (AccessStatus.ALLOWED.equals(accessStatus) == true)
+                    {
+                        allow = true;
+                    }
+                    permissionService.setPermission(
+                            record,
+                            perm.getAuthority(),
+                            perm.getPermission(),
+                            allow);
                 }
-                permissionService.setPermission(
-                        record,
-                        perm.getAuthority(),
-                        perm.getPermission(),
-                        allow);
             }
         }
-        
     }
-    
+
     /**
      * onMoveRecord behaviour
-     * 
+     *
      * @param sourceAssocRef        source association reference
      * @param destinationAssocRef   destination association reference
      */
@@ -361,70 +414,81 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
             public Void doWork()
             {
                 NodeRef record = sourceAssocRef.getChildRef();
-                if (nodeService.exists(record) == true && nodeService.hasAspect(record, ASPECT_RECORD) == true)
+                if (nodeService.exists(record) && nodeService.hasAspect(record, ASPECT_RECORD))
                 {
+                    boolean inheritParentPermissions = permissionService.getInheritParentPermissions(record);
+
                     Set<AccessPermission> keepPerms = new HashSet<AccessPermission>(5);
-                    
-                    // record any permissions specifically set on the record (ie any filling or record_file permisions not on the parent)
-                    Set<AccessPermission> origionalParentPerms = permissionService.getAllSetPermissions(sourceAssocRef.getParentRef());
                     Set<AccessPermission> origionalRecordPerms= permissionService.getAllSetPermissions(record);
-                    for (AccessPermission perm : origionalRecordPerms)
+
+                    for (AccessPermission recordPermission : origionalRecordPerms)
                     {
-                        if (ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(perm.getAuthority()) == false &&
-                            ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(perm.getAuthority()) == false)
+                        String permission = recordPermission.getPermission();
+                        String authority = recordPermission.getAuthority();
+                        if ((RMPermissionModel.FILING.equals(permission) || RMPermissionModel.READ_RECORDS.equals(permission)) &&
+                                recordPermission.isSetDirectly() &&
+                                !ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(authority) &&
+                                !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(authority))
                         {
-                            if ((perm.getPermission().equals(RMPermissionModel.FILING) == true ||
-                                 perm.getPermission().equals(RMPermissionModel.FILE_RECORDS) == true) &&    
-                                origionalParentPerms.contains(perm) == false)
-                            {
-                                // then we can assume this is a permission we want to preserve
-                                keepPerms.add(perm);
-                            }
+                            // then we can assume this is a permission we want to preserve
+                            keepPerms.add(recordPermission);
                         }
                     }
-                    
+
                     // clear all existing permissions and start again
                     permissionService.deletePermissions(record);
-                    
+
                     // re-setup the records permissions
                     initialiseRecordPermissions(record, destinationAssocRef.getParentRef());
-                    
+
                     // re-add keep'er permissions
                     for (AccessPermission keeper : keepPerms)
                     {
                         setPermission(record, keeper.getAuthority(), keeper.getPermission());
                     }
+
+                    permissionService.setInheritParentPermissions(record, inheritParentPermissions);
                 }
-                
+
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    /**
-     *
-     * @param nodeRef
-     */
-    public void setUpPermissions(final NodeRef nodeRef)
+    private void setUpPermissions(final NodeRef nodeRef)
     {
-        if (nodeService.exists(nodeRef) == true)
+        setUpPermissions(nodeRef, null);
+    }
+
+    private void setUpPermissions(final NodeRef nodeRef, final Boolean isParentNodeFilePlan)
+    {
+        if (nodeService.exists(nodeRef))
         {
             AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
             {
                 public Object doWork()
                 {
-                    // break inheritance
-                    permissionService.setInheritParentPermissions(nodeRef, false);
+                    // set inheritance
+                    boolean inheritanceAllowed = isInheritanceAllowed(nodeRef, isParentNodeFilePlan);
+                    permissionService.setInheritParentPermissions(nodeRef, inheritanceAllowed);
 
-                    // set extended reader permissions
-                    permissionService.setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-                    permissionService.setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+                    if (!inheritanceAllowed)
+                    {
+                        // set extended reader permissions
+                        permissionService.setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
+                        permissionService.setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
+                    }
 
                     return null;
                 }
             }, AuthenticationUtil.getSystemUserName());
         }
-    } 
+    }
+
+    private boolean isInheritanceAllowed(NodeRef nodeRef, Boolean isParentNodeFilePlan)
+    {
+        return !(isFilePlan(nodeRef) || isTransfer(nodeRef) || isHold(nodeRef) || isUnfiledRecordsContainer(nodeRef) || (isRecordCategory(nodeRef) && isTrue(isParentNodeFilePlan)));
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#setPermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String, boolean)
@@ -439,20 +503,14 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         {
             public Boolean doWork() throws Exception
             {
-                if (filePlanService.isFilePlan(nodeRef) == true)
+                if (canPerformPermissionAction(nodeRef))
                 {
-                   setPermissionDown(nodeRef, authority, permission);
-                }
-                else if (filePlanService.isFilePlanContainer(nodeRef) == true || 
-                         recordsManagementService.isRecordFolder(nodeRef) == true ||
-                         recordService.isRecord(nodeRef) == true)
-                {
-                    setReadPermissionUp(nodeRef, authority);
-                    setPermissionDown(nodeRef, authority, permission);
+                    // Set the permission on the node
+                    permissionService.setPermission(nodeRef, authority, permission, true);
                 }
                 else
                 {
-                    if (logger.isWarnEnabled() == true)
+                    if (logger.isWarnEnabled())
                     {
                         logger.warn("Setting permissions for this node is not supported.  (nodeRef=" + nodeRef + ", authority=" + authority + ", permission=" + permission + ")");
                     }
@@ -464,91 +522,6 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
     }
 
     /**
-     * Helper method to set the read permission up the hierarchy
-     *
-     * @param nodeRef       node reference
-     * @param authority     authority
-     */
-    private void setReadPermissionUp(NodeRef nodeRef, String authority)
-    {
-        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-        if (parent != null && filePlanService.isFilePlanComponent(parent) == true)
-        {
-            setReadPermissionUpImpl(parent, authority);
-        }
-    }
-    
-    /**
-     * Helper method used to set the read permission up the hierarchy
-     * 
-     * @param nodeRef   node reference
-     * @param authority authority
-     */
-    private void setReadPermissionUpImpl(NodeRef nodeRef, String authority)
-    {
-        setPermissionImpl(nodeRef, authority, RMPermissionModel.READ_RECORDS);
-        
-        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-        if (parent != null && filePlanService.isFilePlanComponent(parent) == true)
-        {
-            setReadPermissionUpImpl(parent, authority);
-        }
-    }
-
-    /**
-     * Helper method to set the permission down the hierarchy
-     *
-     * @param nodeRef       node reference
-     * @param authority     authority
-     * @param permission    permission
-     */
-    private void setPermissionDown(NodeRef nodeRef, String authority, String permission)
-    {
-        // skip out node's that inherit (for example hold and transfer)
-        if (permissionService.getInheritParentPermissions(nodeRef) == false)
-        {
-            // set permissions
-            setPermissionImpl(nodeRef, authority, permission);
-            
-            if (filePlanService.isFilePlanContainer(nodeRef) == true ||
-                recordsManagementService.isRecordFolder(nodeRef) == true)
-            {                            
-                List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-                for (ChildAssociationRef assoc : assocs)
-                {
-                    NodeRef child = assoc.getChildRef();
-                    if (filePlanService.isFilePlanContainer(child) == true ||
-                        recordsManagementService.isRecordFolder(child) == true ||
-                        recordService.isRecord(child) == true ||
-                        instanceOf(child, TYPE_HOLD) == true ||
-                        instanceOf(child, TYPE_TRANSFER) == true)
-                    {
-                        setPermissionDown(child, authority, permission);
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Set the permission, taking into account that filing is a superset of read
-     *
-     * @param nodeRef
-     * @param authority
-     * @param permission
-     */
-    private void setPermissionImpl(NodeRef nodeRef, String authority, String permission)
-    {
-        if (RMPermissionModel.FILING.equals(permission) == true)
-        {
-            // Remove record read permission before adding filing permission
-            permissionService.deletePermission(nodeRef, authority, RMPermissionModel.READ_RECORDS);
-        }
-
-        permissionService.setPermission(nodeRef, authority, permission, true);
-    }
-
-    /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#deletePermission(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
      */
     public void deletePermission(final NodeRef nodeRef, final String authority, final String permission)
@@ -557,33 +530,26 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         {
             public Boolean doWork() throws Exception
             {
-                // can't delete permissions if inherited (eg hold and transfer containers)
-                if (permissionService.getInheritParentPermissions(nodeRef) == false)
+                if (canPerformPermissionAction(nodeRef))
                 {
                     // Delete permission on this node
                     permissionService.deletePermission(nodeRef, authority, permission);
-    
-                    if (filePlanService.isFilePlanContainer(nodeRef) == true ||
-                        recordsManagementService.isRecordFolder(nodeRef) == true)
+                }
+                else
+                {
+                    if (logger.isWarnEnabled())
                     {
-                        List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, ContentModel.ASSOC_CONTAINS, RegexQNamePattern.MATCH_ALL);
-                        for (ChildAssociationRef assoc : assocs)
-                        {
-                            NodeRef child = assoc.getChildRef();
-                            if (filePlanService.isFilePlanContainer(child) == true ||
-                                recordsManagementService.isRecordFolder(child) == true ||
-                                recordService.isRecord(child) == true||
-                                instanceOf(child, TYPE_HOLD) == true ||
-                                instanceOf(child, TYPE_TRANSFER) == true)
-                            {
-                                deletePermission(child, authority, permission);
-                            }
-                        }
+                        logger.warn("Deleting permissions for this node is not supported.  (nodeRef=" + nodeRef + ", authority=" + authority + ", permission=" + permission + ")");
                     }
                 }
 
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
+    }
+
+    private boolean canPerformPermissionAction(NodeRef nodeRef)
+    {
+        return filePlanService.isFilePlanContainer(nodeRef) || recordsManagementService.isRecordFolder(nodeRef) || recordService.isRecord(nodeRef);
     }
 }

@@ -160,12 +160,17 @@ public class RM1039Test extends BaseRMTestCase
                 
                 // cutoff folder
                 actionService.executeRecordsManagementAction(testFolder, CutOffAction.NAME);
-                
-                // take a look at the move capability
-                Capability moveCapability = capabilityService.getCapability("Move");
-                assertEquals(AccessDecisionVoter.ACCESS_DENIED, moveCapability.evaluate(testFolder, destination));
                                
                 return testFolder;                
+            }
+            
+            @Override
+            public void test(NodeRef result) throws Exception 
+            {	
+                // take a look at the move capability
+                Capability moveCapability = capabilityService.getCapability("Move");
+                assertEquals(AccessDecisionVoter.ACCESS_DENIED, moveCapability.evaluate(result, destination));
+            	
             }
         });
         

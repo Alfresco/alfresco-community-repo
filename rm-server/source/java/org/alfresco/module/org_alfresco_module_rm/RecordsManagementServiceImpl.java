@@ -48,9 +48,6 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -62,8 +59,7 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
                                           implements RecordsManagementService,
                                                      RecordsManagementModel,
                                                      RecordsManagementPolicies.OnCreateReference,
-                                                     RecordsManagementPolicies.OnRemoveReference,
-                                                     ApplicationContextAware
+                                                     RecordsManagementPolicies.OnRemoveReference
 {
     /** I18N */
     private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
@@ -90,18 +86,6 @@ public class RecordsManagementServiceImpl extends ServiceBaseImpl
 
     /** Java behaviour */
     private JavaBehaviour onChangeToDispositionActionDefinition;
-
-    /** Application context */
-    private ApplicationContext applicationContext;
-
-    /**
-     * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
-     */
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-    {
-        this.applicationContext = applicationContext;
-    }
 
     /**
      * Set the service registry service

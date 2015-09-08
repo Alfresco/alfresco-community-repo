@@ -34,7 +34,7 @@ public class IsRecordFolderCondition extends AbstractCapabilityCondition
      * @see org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition#evaluate(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public boolean evaluate(NodeRef nodeRef)
+    public boolean evaluateImpl(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
 

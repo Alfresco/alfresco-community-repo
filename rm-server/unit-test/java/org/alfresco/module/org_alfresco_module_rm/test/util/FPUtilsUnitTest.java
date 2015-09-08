@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import static org.alfresco.module.org_alfresco_module_rm.test.util.FPUtils.asListFrom;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.FPUtils.asSet;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.FPUtils.asSetFrom;
 import static org.junit.Assert.assertEquals;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
@@ -57,10 +58,20 @@ public class FPUtilsUnitTest
 
     @Test public void asSetShouldProduceSet()
     {
-        Set<String> expectedSet = new HashSet<>();
-        expectedSet.add("hello");
-        expectedSet.add("world");
+        assertEquals(new HashSet<>(asList("hello", "world")),
+                     asSet("hello", "hello", "world"));
+    }
 
-        assertEquals(expectedSet, asSet("hello", "hello", "world"));
+    @Test public void asSetFromShouldWork()
+    {
+        Set<String> s = asSetFrom(() -> "hello",
+                                  () -> "hello",
+                                  () -> "world",
+                                  () -> {
+                                      String s1 = "wo";
+                                      String s2 = "rld";
+                                      return s1 + s2;
+                                  });
+        assertEquals(new HashSet<>(asList("hello", "world")), s);
     }
 }

@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
+import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 
 import java.util.Collections;
@@ -31,7 +32,7 @@ import java.util.stream.Stream;
  * Utility class to help with Java 8 FP stuff.
  *
  * @author Neil Mc Erlean
- * @since 3.0.a
+ * @since 2.4.a
  */
 public class FPUtils
 {
@@ -41,7 +42,7 @@ public class FPUtils
      *
      * @param suppliers a vararg of {@link Supplier}s giving a sequence of values for the list.
      * @param <T> the type of elements in the list.
-     * @return the list with each element retrieved from a {@code Supplier}.
+     * @return the list with each element being the first retrieved from a {@code Supplier}.
      */
     public static <T> List<T> asListFrom(Supplier<T>... suppliers)
     {
@@ -57,12 +58,18 @@ public class FPUtils
         }
     }
 
+    /**
+     * This method is intended to work exactly like {@link #asSet(Object[])}} but it takes
+     * a vararg of {@code Supplier}s instead of actual objects.
+     *
+     * @param suppliers a vararg of {@link Supplier}s giving a sequence of values for the set.
+     * @param <T> the type of elements in the set.
+     * @return the set with each element being the first retrieved from a {@code Supplier} (duplicates removed).
+     */
     public static <T> Set<T> asSetFrom(Supplier<T>... suppliers)
     {
         List<T> l = asListFrom(suppliers);
-        Set<T> result = new HashSet<>();
-        result.addAll(l);
-        return result;
+        return new HashSet<>(l);
     }
 
     /**
@@ -73,12 +80,6 @@ public class FPUtils
      */
     public static <T> Set<T> asSet(T... objects)
     {
-        Set<T> result = new HashSet<>();
-        for (T obj : objects)
-        {
-            result.add(obj);
-        }
-
-        return result;
+        return new HashSet<>(asList(objects));
     }
 }

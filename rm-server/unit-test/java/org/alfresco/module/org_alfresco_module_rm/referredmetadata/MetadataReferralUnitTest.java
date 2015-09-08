@@ -16,10 +16,10 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-package org.alfresco.module.org_alfresco_module_rm.metadatadelegation;
+package org.alfresco.module.org_alfresco_module_rm.referredmetadata;
 
 import static java.util.Collections.emptySet;
-import static org.alfresco.module.org_alfresco_module_rm.metadatadelegation.DelegationException.InvalidDelegation;
+import static org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataException.InvalidMetadataReferral;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.FPUtils.asListFrom;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.FPUtils.asSet;
@@ -41,17 +41,17 @@ import org.mockito.MockitoAnnotations;
 import java.util.List;
 
 /**
- * Unit tests for {@link Delegation}.
+ * Unit tests for {@link MetadataReferral}.
  *
  * @author Neil Mc Erlean
  * @since 3.0.a
  */
-public class DelegationUnitTest
+public class MetadataReferralUnitTest
 {
     @Mock DictionaryService mockDictionaryService;
     @Mock NodeService       mockNodeService;
 
-    private final DelegationAdminServiceImpl metadataDelegationService = new DelegationAdminServiceImpl();
+    private final ReferralAdminServiceImpl referralAdminService = new ReferralAdminServiceImpl();
 
     private final NodeRef node1 = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "node1");
     private final NodeRef node2 = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "node2");
@@ -63,66 +63,66 @@ public class DelegationUnitTest
     {
         MockitoAnnotations.initMocks(this);
 
-        metadataDelegationService.setNodeService(mockNodeService);
+        referralAdminService.setNodeService(mockNodeService);
     }
 
-    @Test public void nullOrEmptyDelegatesAreForbidden()
+    @Test public void nullOrEmptyReferralsAreForbidden()
     {
-        List<Delegation> invalidDelegations = asListFrom(() -> new Delegation(),
+        List<MetadataReferral> invalidMetadataReferrals = asListFrom(() -> new MetadataReferral(),
                                                                () -> {
-                                                                   Delegation d = new Delegation();
-                                                                   d.setAssocType(assoc1);
-                                                                   d.setAspects(null);
-                                                                   d.setDictionaryService(mockDictionaryService);
-                                                                   return d;
+                                                                   MetadataReferral mr = new MetadataReferral();
+                                                                   mr.setAssocType(assoc1);
+                                                                   mr.setAspects(null);
+                                                                   mr.setDictionaryService(mockDictionaryService);
+                                                                   return mr;
                                                                },
                                                                () -> {
-                                                                   Delegation d = new Delegation();
-                                                                   d.setAssocType(assoc1);
-                                                                   d.setAspects(emptySet());
-                                                                   d.setDictionaryService(mockDictionaryService);
-                                                                   return d;
+                                                                   MetadataReferral mr = new MetadataReferral();
+                                                                   mr.setAssocType(assoc1);
+                                                                   mr.setAspects(emptySet());
+                                                                   mr.setDictionaryService(mockDictionaryService);
+                                                                   return mr;
                                                                },
                                                                () -> {
-                                                                   Delegation d = new Delegation();
-                                                                   d.setAssocType(null);
-                                                                   d.setAspects(asSet(aspect1, aspect2));
-                                                                   d.setDictionaryService(mockDictionaryService);
-                                                                   return d;
+                                                                   MetadataReferral mr = new MetadataReferral();
+                                                                   mr.setAssocType(null);
+                                                                   mr.setAspects(asSet(aspect1, aspect2));
+                                                                   mr.setDictionaryService(mockDictionaryService);
+                                                                   return mr;
                                                                });
 
-        invalidDelegations.stream()
-                        .forEach(d -> expectedException(InvalidDelegation.class, () -> {
-                                    d.validateAndRegister();
+        invalidMetadataReferrals.stream()
+                        .forEach(mr -> expectedException(InvalidMetadataReferral.class, () -> {
+                                    mr.validateAndRegister();
                                     return null;
                                 }
                         ));
     }
 
-    @Test(expected=InvalidDelegation.class)
-    public void delegateMustHaveAssocThatExists()
+    @Test(expected=InvalidMetadataReferral.class)
+    public void referralMustHaveAssocThatExists()
     {
         when(mockDictionaryService.getAssociation(assoc1)).thenReturn(null);
         when(mockDictionaryService.getAspect(aspect1)).thenReturn(mock(AspectDefinition.class));
 
-        Delegation d = new Delegation();
-        d.setAssocType(assoc1);
-        d.setAspects(asSet(aspect1));
-        d.setDictionaryService(mockDictionaryService);
-        d.validateAndRegister();
+        MetadataReferral mr = new MetadataReferral();
+        mr.setAssocType(assoc1);
+        mr.setAspects(asSet(aspect1));
+        mr.setDictionaryService(mockDictionaryService);
+        mr.validateAndRegister();
     }
 
-    @Test(expected=InvalidDelegation.class)
-    public void delegateMustHaveAspectsAllOfWhichExist()
+    @Test(expected=InvalidMetadataReferral.class)
+    public void referralMustHaveAspectsAllOfWhichExist()
     {
         when(mockDictionaryService.getAssociation(assoc1)).thenReturn(mock(AssociationDefinition.class));
         when(mockDictionaryService.getAspect(aspect1)).thenReturn(mock(AspectDefinition.class));
         when(mockDictionaryService.getAspect(aspect2)).thenReturn(null);
 
-        Delegation d = new Delegation();
-        d.setAssocType(assoc1);
-        d.setAspects(asSet(aspect1, aspect2));
-        d.setDictionaryService(mockDictionaryService);
-        d.validateAndRegister();
+        MetadataReferral mr = new MetadataReferral();
+        mr.setAssocType(assoc1);
+        mr.setAspects(asSet(aspect1, aspect2));
+        mr.setDictionaryService(mockDictionaryService);
+        mr.validateAndRegister();
     }
 }

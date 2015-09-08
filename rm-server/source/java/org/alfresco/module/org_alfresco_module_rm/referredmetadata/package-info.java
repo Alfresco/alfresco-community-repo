@@ -17,30 +17,31 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 /**
- * This package contains the types that deliver the Metadata Delegation feature.
- * Metadata delegation allows read-only <em>aspect</em> metadata for any given Alfresco node to
- * be sourced from another node, the delegate.
+ * This package contains the types that deliver the Metadata Referral feature.
+ * Metadata referral allows node metadata to be shared between multiple Alfresco nodes.
  * <p/>
  * In this way nodes can 'inherit' some of their metadata from another node which may
  * have benefits when more than one node is required to share some of the same metadata.
  * <p/>
- * Multiple nodes may share the same delegate node and one node may be linked to multiple
- * delegates.
+ * Only aspect metadata can be shared and it is only shared as read-only data to the other nodes.
+ * The node which contains the metadata values is the 'referent' node and any nodes which have been
+ * linked to the referent and share the metadata are known as referrers.
  * <p/>
- * The linking of nodes to their metadata delegates is done with Alfresco peer associations.
+ * Multiple nodes may share the same referent node and one node may be linked to multiple referrers.
+ * <p/>
+ * The linking of nodes to their metadata referents is done with Alfresco peer associations.
  * Association types must be declared in an Alfresco content model in the normal way.
  * Spring configuration is used to assign each association type a set of aspects which will
- * be available from the delegate via the association.
+ * be available from the referent via the association.
  * <p/>
- * See {@link org.alfresco.module.org_alfresco_module_rm.metadatadelegation.DelegationAdminService}
- * for details on how to create and destroy delegation links between nodes.
+ * See {@link org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService}
+ * for details on how to create and destroy metadata links between nodes.
  * <p/>
- * The read-only access to delegated metadat is made available via the
- * See {@link org.alfresco.module.org_alfresco_module_rm.metadatadelegation.DelegationService}
+ * See {@link org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService}
  * for details on how the data access is performed.
  * <p/>
- * See {@link org.alfresco.module.org_alfresco_module_rm.metadatadelegation.DelegationRegistry}
- * for details on what {@link org.alfresco.module.org_alfresco_module_rm.metadatadelegation.Delegation}s
+ * See {@link org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralRegistry}
+ * for details on what {@link org.alfresco.module.org_alfresco_module_rm.referredmetadata.MetadataReferral}s
  * are defined in the system.
  */
-package org.alfresco.module.org_alfresco_module_rm.metadatadelegation;
+package org.alfresco.module.org_alfresco_module_rm.referredmetadata;

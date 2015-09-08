@@ -267,8 +267,8 @@
    <!-- Import the RM webscript's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-webscript-context.xml"/>
 
-   <!-- Import the Metadata Delegation Services -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/metadata-delegation-context.xml"/>
+   <!-- Import the Metadata Referral Services -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/metadata-referral-context.xml"/>
 
    <!-- Import the Classified Content Services -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/classified-content-context.xml"/>

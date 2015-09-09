@@ -72,11 +72,11 @@ public class CustomEmailMappingServiceImpl extends AbstractLifecycleBean impleme
     /** Default custom mappings (TODO move to spring config) */
     private static final CustomMapping[] DEFAULT_MAPPINGS =
     {
-        new CustomMapping("Date", "rma:dateReceived"),
-        new CustomMapping("messageTo", "rma:address"),
-        new CustomMapping("messageFrom", "rma:originator"),
-        new CustomMapping("messageSent", "rma:publicationDate"),
-        new CustomMapping("messageCc", "rma:otherAddress")
+        new CustomMapping("Date", "dod:dateReceived"),
+        new CustomMapping("messageTo", "dod:address"),
+        new CustomMapping("messageFrom", "dod:originator"),
+        new CustomMapping("messageSent", "dod:publicationDate"),
+        new CustomMapping("messageCc", "dod:otherAddress")
     };
 
     /** Extractor */

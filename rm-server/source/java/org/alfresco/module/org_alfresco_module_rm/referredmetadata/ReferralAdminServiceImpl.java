@@ -37,6 +37,35 @@ import java.util.Set;
  */
 public class ReferralAdminServiceImpl implements ReferralAdminService
 {
+    // Author's implementation note
+    // ----------------------------
+    //
+    // I can imagine that these services would be potentially useful in core Alfresco.
+    // However they are not yet full services and couldn't be moved as is into core.
+    // They solve a very specific RM problem in a fairly generic way that should allow
+    // someone to use them as the basis for fuller services within core.
+    //
+    // The problem they solve is that of 'classified renditions' whereby the classification
+    // metadata on a node should appear to be on its renditions as well. This particular problem
+    // is simplified by the fact that renditions are not 'normal' nodes, as they are usually
+    // not accessed directly. This implementation also relies on the fact that RM already
+    // has interceptors for checking content classification and we can programmatically add
+    // the calls to metadata referral within the ContentClassificationService.
+    //
+    // To solve the problem of Metadata Referral in a general way would require the provision
+    // of 'MetadataReferral' interceptors that could sit in front of the NodeService. Only in this
+    // way could the services be used declaratively, thus minimising their impact on calling code.
+    // To add these to core would require careful assessment of their impact, not least in
+    // performance terms. This work is beyond RM's scope at this stage.
+    // The addition of such interceptors to the NodeService would also ensure that any metadata
+    // returned to e.g. Share for a particular node could automatically include 'linked' metadata
+    // which would be important.
+    //
+    // There are further enhancements that should be considered if these were developed into
+    // fuller services including the automatic registration of behaviours (onAddAspect, onRemoveAspect)
+    // for the aspect types which are linked. Currently these behaviours need to be hand-coded.
+    // See ClassifiedAspect.java for an example.
+
     private ReferralRegistry registry;
     private NodeService      nodeService;
 

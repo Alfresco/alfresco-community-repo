@@ -56,6 +56,7 @@ import java.util.Map;
 )
 public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePolicies.OnUpdatePropertiesPolicy,
                                                                    NodeServicePolicies.OnAddAspectPolicy,
+                                                                   NodeServicePolicies.OnRemoveAspectPolicy,
                                                                    ClassifiedContentModel
 {
     private ClassificationSchemeService classificationSchemeService;
@@ -123,7 +124,7 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
     }
 
     /**
-     * Behaviour associated with updating the classified aspect properties.
+     * Behaviour associated with adding the classified aspect.
      * <p>
      * Validates the consistency of the properties.
      */
@@ -151,6 +152,37 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
                     {
                         referralAdminService.attachReferrer(renditionNode, classifiedNode, ASSOC_CLASSIFIED_RENDITION);
                     }
+                }
+
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+
+    /**
+     * Behaviour associated with removing the classified aspect.
+     * <p>
+     * Validates the consistency of the properties.
+     */
+    @Override
+    @Behaviour
+    (
+        kind = BehaviourKind.CLASS,
+        notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
+    public void onRemoveAspect(final NodeRef classifiedNode, final QName aspectTypeQName)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            public Void doWork()
+            {
+                // If this node has any renditions, we should remove the metadata link
+                final List<ChildAssociationRef> renditions = renditionService.getRenditions(classifiedNode);
+                for (ChildAssociationRef chAssRef : renditions)
+                {
+                    // In RM, renditions are only attached to one metadata referent - the source node.
+                    // Therefore it is safe to (and we must) remove the aspect from the rendition node.
+                    nodeService.removeAspect(chAssRef.getChildRef(), ASPECT_CLASSIFIED_RENDITION);
                 }
 
                 return null;

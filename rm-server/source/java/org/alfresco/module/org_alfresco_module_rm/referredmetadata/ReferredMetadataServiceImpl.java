@@ -46,12 +46,18 @@ import java.util.Set;
 public class ReferredMetadataServiceImpl implements ReferredMetadataService
 {
     private ReferralAdminService referralAdminService;
+    private ReferralRegistry     referralRegistry;
     private DictionaryService    dictionaryService;
     private NodeService          nodeService;
 
     public void setReferralAdminService(ReferralAdminService service)
     {
         this.referralAdminService = service;
+    }
+
+    public void setReferralRegistry(ReferralRegistry registry)
+    {
+        this.referralRegistry = registry;
     }
 
     public void setDictionaryService(DictionaryService service)
@@ -71,7 +77,7 @@ public class ReferredMetadataServiceImpl implements ReferredMetadataService
             throw new InvalidNodeRefException(potentialReferrer);
         }
 
-        final MetadataReferral metadataReferral = referralAdminService.getReferralFor(aspectName);
+        final MetadataReferral metadataReferral = referralRegistry.getReferralForAspect(aspectName);
 
         if (metadataReferral == null)
         {
@@ -91,7 +97,7 @@ public class ReferredMetadataServiceImpl implements ReferredMetadataService
             throw new InvalidNodeRefException(referrer);
         }
 
-        final MetadataReferral d = referralAdminService.getReferralFor(aspectName);
+        final MetadataReferral d = referralRegistry.getReferralForAspect(aspectName);
 
         if (d == null)
         {

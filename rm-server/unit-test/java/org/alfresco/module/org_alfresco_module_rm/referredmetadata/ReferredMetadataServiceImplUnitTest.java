@@ -64,6 +64,7 @@ public class ReferredMetadataServiceImplUnitTest
     @Mock DictionaryService        mockDictionaryService;
     @Mock NodeService              mockNodeService;
     @Mock ReferralAdminServiceImpl mockReferralAdminService;
+    @Mock ReferralRegistry         mockReferralRegistry;
 
     /** This node has a referent node. */
     private final NodeRef referringNode = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, "referringNode");
@@ -116,7 +117,7 @@ public class ReferredMetadataServiceImplUnitTest
         when(mockReferralAdminService.getAttachedReferralsFrom(referringNode)).thenReturn(asSet(referral));
         for (QName referredAspect : asSet(referredAspect1, referredAspect2))
         {
-            when(mockReferralAdminService.getReferralFor(referredAspect)).thenReturn(referral);
+            when(mockReferralRegistry.getReferralForAspect(referredAspect)).thenReturn(referral);
             when(mockNodeService.hasAspect(referentNode, referredAspect)).thenReturn(true);
         }
         when(mockNodeService.getSourceAssocs(referentNode, referralAssocType)).thenReturn(asList(attachedReferralAssocRef));

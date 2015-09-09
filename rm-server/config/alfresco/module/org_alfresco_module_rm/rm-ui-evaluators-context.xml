@@ -15,6 +15,7 @@
       <property name="siteService" ref="SiteService" />
       <property name="policyComponent" ref="policyComponent" />
       <property name="jsonConversionComponentCache" ref="jsonConversionComponentCache" />
+      <property name="mimetypeService" ref="MimetypeService" />
    </bean>
 
    <!--  extends core bean with RM extensions -->

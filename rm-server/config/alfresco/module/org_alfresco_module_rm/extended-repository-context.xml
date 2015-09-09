@@ -3,38 +3,12 @@
 
 <beans>
 
-<<<<<<< .working
    <!-- extend node service security to report capability details on failure -->
    <bean id="rm.NodeService_security" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor"/>
    <bean class="org.alfresco.module.org_alfresco_module_rm.util.BeanExtender">
       <property name="beanName" value="NodeService_security" />
       <property name="extendingBeanName" value="rm.NodeService_security" />
    </bean>
-=======
-   <!-- AVM Remote Store to ADM Remote Store migration patch -->
-  <!-- <bean id="patch.avmToAdmRemoteStore" class="org.alfresco.repo.admin.patch.impl.AVMToADMRemoteStorePatch" parent="basePatch">
-        <property name="id"><value>patch.avmToAdmRemoteStore</value></property>
-        <property name="description"><value>patch.avmToAdmRemoteStore.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>5011</value></property>
-        <property name="targetSchema"><value>5012</value></property>
-        <property name="requiresTransaction"><value>false</value></property>
-        <property name="fileFolderService" ref="fileFolderService" />
-        <property name="contentService" ref="contentService" />
-        <property name="siteService" ref="SiteService" />
-        <property name="ruleService" ref="ruleService" />
-        <property name="avmService" ref="AVMService" />
-        <property name="hiddenAspect" ref="hiddenAspect" />
-        <property name="avmStore"><value>sitestore</value></property>
-        <property name="avmRootPath"><value>/alfresco/site-data</value></property>
-        <property name="dependsOn" >
-            <list>
-                <ref bean="patch.migrateTenantsFromAttrsToTable" />
-                <ref bean="patch.migrateAttrTenants" />
-            </list>
-        </property>
-    </bean> -->
->>>>>>> .merge-right.r111658
 
    <!-- extended file folder bean definition -->
    <bean id="rm.fileFolderService" abstract="true" class="org.alfresco.repo.model.filefolder.ExtendedFileFolderServiceImpl">
@@ -68,12 +42,7 @@
             </list>
         </property>
     </bean>
-<<<<<<< .working
     <bean id="ExtendedPermissionService_security" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor">
-=======
-
-    <bean id="ExtendedPermissionService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
->>>>>>> .merge-right.r111658
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
@@ -98,19 +67,11 @@
             </value>
         </property>
     </bean>
-<<<<<<< .working
 
    <bean name="writersSharedCache" factory-bean="cacheFactory" factory-method="createCache">
       <constructor-arg value="cache.writersSharedCache"/>
    </bean>
 
-=======
-
-    <bean name="writersSharedCache" class="org.alfresco.repo.cache.DefaultSimpleCache">
-      <property name="maxItems" value="${cache.writersSharedCache.maxItems}"/>
-    </bean>
-
->>>>>>> .merge-right.r111658
     <bean name="writersCache" class="org.alfresco.repo.cache.TransactionalCache">
       <property name="sharedCache">
          <ref bean="writersSharedCache" />
@@ -237,7 +198,6 @@
           <value>${rm.autocompletesuggestion.maxsuggestions.node}</value>
        </property>
     </bean>
-<<<<<<< .working
 
     <!-- Bootstrap node parameter processor  -->
     <bean id="nodeParameterSuggesterBootstrap" class="org.alfresco.repo.action.parameter.NodeParameterSuggesterBootstrap" init-method="init">
@@ -248,9 +208,6 @@
        </property>
     </bean>
 
-=======
-
->>>>>>> .merge-right.r111658
     <bean id="dateParameterProcessor" parent="baseParamenterProcessor" class="org.alfresco.repo.action.parameter.DateParameterProcessor">
        <property name="name" value="date" />
        <property name="maximumNumberSuggestions">
@@ -278,7 +235,6 @@
         <property name="rulesDisabled">
             <value>false</value>
         </property>
-<<<<<<< .working
         <!--  Since RM 2.1 -->
         <property name="filePlanService" ref="FilePlanService" />
         <property name="runAsAdmin">
@@ -288,19 +244,6 @@
     </bean>
 
     <bean id="FormService_security" class="org.alfresco.module.org_alfresco_module_rm.security.RMMethodSecurityInterceptor">
-=======
-
-    	<!--  Since RM 2.1 -->
-    	<property name="filePlanAuthenticationService" ref="FilePlanAuthenticationService"/>
-    	<property name="filePlanService" ref="FilePlanService" />
-    	<property name="runAsRmAdmin">
-    		<value>${rm.rule.runasrmadmin}</value>
-    	</property>
-
-   </bean>
-
-    <bean id="FormService_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
->>>>>>> .merge-right.r111658
         <property name="authenticationManager"><ref bean="authenticationManager"/></property>
         <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
         <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>

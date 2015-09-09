@@ -387,6 +387,7 @@
         <property name="nodeDAO" ref="nodeDAO" />
         <property name="siteService" ref="SiteService" />
         <property name="rootContainerCache" ref="rootContainerCache" />
+        <property name="rootContainerCache" ref="rootContainerCache" />
     </bean>
 
     <bean id="FilePlanService" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -50,9 +50,8 @@
             <value>
                 org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.attachReferrer=ACL_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.detachReferrer=ACL_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.getDefinedReferrals=ACL_ALLOW
-                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.getReferralFor=ACL_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.getAttachedReferralsFrom=ACL_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.getAttachedReferralFrom=ACL_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.*=ACL_DENY
             </value>
         </property>

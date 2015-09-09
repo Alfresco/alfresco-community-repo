@@ -142,7 +142,7 @@ public class ClassifiedAspectUnitTest implements ClassifiedContentModel
 
         for (NodeRef rendition : asList(RENDITION_1, RENDITION_2))
         {
-            verify(mockReferralAdminService).attachReferrer(rendition, NODE_REF, ASSOC_CLASSIFIED_RENDITION);
+            verify(mockReferralAdminService).attachReferrer(rendition, NODE_REF, ASPECT_CLASSIFIED);
         }
     }
 

@@ -29,8 +29,8 @@ import java.io.Serializable;
 import java.util.Map;
 
 /**
- * This service provides read-only access to linked metadata.
- * TODO complete! Include definition of referent etc or link to package.html
+ * This service provides read-only access to linked metadata. It is primarily concerned with data transfer.
+ * For an overview, see the package javadoc.
  *
  * @author Neil Mc Erlean
  * @since 2.4.a

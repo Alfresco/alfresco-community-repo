@@ -85,7 +85,7 @@ public class ClassifiedRenditions extends BaseBehaviourBean
                 if (contentClassificationService.isClassified(sourceNode) &&
                         referralAdminService.getAttachedReferralFrom(renditionNodeRef, ASPECT_CLASSIFIED) != null)
                 {
-                    referralAdminService.attachReferrer(renditionNodeRef, sourceNode, ASSOC_CLASSIFIED_RENDITION);
+                    referralAdminService.attachReferrer(renditionNodeRef, sourceNode, ASPECT_CLASSIFIED);
                 }
 
                 return null;

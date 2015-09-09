@@ -84,17 +84,17 @@ public class ReferralAdminServiceImplUnitTest
     }
 
     @Test(expected=IllegalArgumentException.class)
-    public void attachingReferrerWithNoAssociationConfiguredShouldFail()
+    public void attachingReferrerWithNoAspectConfiguredShouldFail()
     {
-        referralAdminService.attachReferrer(node2, node1, assoc1);
+        referralAdminService.attachReferrer(node2, node1, aspect1);
     }
 
     @Test public void attachDetach()
     {
-        when(mockRegistry.getReferralForAssociation(assoc1)).thenReturn(referral1);
+        when(mockRegistry.getReferralForAspect(aspect1)).thenReturn(referral1);
 
         // attach
-        MetadataReferral d = attachReferrer(node1, node2, assoc1);
+        MetadataReferral d = attachReferrer(node1, node2, aspect1);
 
         // validate
         assertEquals(assoc1, d.getAssocType());
@@ -103,24 +103,25 @@ public class ReferralAdminServiceImplUnitTest
         assertFalse(mockReferredMetadataService.isReferringMetadata(node1, aspect3));
 
         // detach
-        assertEquals(d, referralAdminService.detachReferrer(node1, assoc1));
+        assertEquals(d, referralAdminService.detachReferrer(node1, aspect1));
     }
 
-    private MetadataReferral attachReferrer(NodeRef referrer, NodeRef referent, QName assocType)
+    private MetadataReferral attachReferrer(NodeRef referrer, NodeRef referent, QName aspectName)
     {
-        MetadataReferral d = referralAdminService.attachReferrer(referrer, referent, assocType);
+        MetadataReferral mr = referralAdminService.attachReferrer(referrer, referent, aspectName);
+        final QName assocType = mr.getAssocType();
         when(mockNodeService.getSourceAssocs(referent, assocType)).thenReturn(asList(new AssociationRef(referrer, assocType, referent)));
         when(mockNodeService.getTargetAssocs(referrer, assocType)).thenReturn(asList(new AssociationRef(referrer, assocType, referent)));
-        for (QName aspect : d.getAspects())
+        for (QName aspect : mr.getAspects())
         {
             when(mockReferredMetadataService.isReferringMetadata(referrer, aspect)).thenReturn(true);
         }
-        return d;
+        return mr;
     }
 
     @Test public void chainsOfDelegationShouldBePrevented()
     {
-        when(mockRegistry.getReferralForAssociation(assoc1)).thenReturn(referral1);
+        when(mockRegistry.getReferralForAspect(aspect1)).thenReturn(referral1);
 
         // The node already has a delegation in place: node1 -> node2. We're trying to add to the
         // end of the chain: node2 -> node3
@@ -128,13 +129,13 @@ public class ReferralAdminServiceImplUnitTest
         when(mockNodeService.getTargetAssocs(node1, assoc1)).thenReturn(asList(new AssociationRef(node1, assoc1, node2)));
 
         expectedException(ChainedMetadataReferralUnsupported.class, () -> {
-            referralAdminService.attachReferrer(node2, node3, assoc1);
+            referralAdminService.attachReferrer(node2, node3, aspect1);
             return null;
         });
 
         // Now try to add to the start of the chain: node3 -> node1
         expectedException(ChainedMetadataReferralUnsupported.class, () -> {
-            referralAdminService.attachReferrer(node3, node1, assoc1);
+            referralAdminService.attachReferrer(node3, node1, aspect1);
             return null;
         });
     }

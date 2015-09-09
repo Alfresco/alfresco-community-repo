@@ -64,6 +64,7 @@
     <bean id="referredMetadataService"
           class="org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataServiceImpl" >
        <property name="referralAdminService" ref="ReferralAdminService" />
+       <property name="referralRegistry" ref="referralRegistry" />
        <property name="dictionaryService" ref="dictionaryService" />
        <property name="nodeService" ref="NodeService" />
     </bean>

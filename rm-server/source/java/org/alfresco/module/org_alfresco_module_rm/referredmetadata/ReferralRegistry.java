@@ -79,11 +79,29 @@ public class ReferralRegistry
      */
     public MetadataReferral getReferralForAssociation(QName assocType)
     {
-        for (MetadataReferral d : metadataReferrals)
+        for (MetadataReferral mr : metadataReferrals)
         {
-            if (d.getAssocType().equals(assocType))
+            if (mr.getAssocType().equals(assocType))
             {
-                return d;
+                return mr;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Gets the {@link MetadataReferral} which is defined to handle the specified aspect.
+     *
+     * @param aspectName the name of the aspect whose {@link MetadataReferral} is sought.
+     * @return the {@link MetadataReferral} handling the specified aspect if there is one, else {@code null}.
+     */
+    public MetadataReferral getReferralForAspect(QName aspectName)
+    {
+        for (MetadataReferral mr : metadataReferrals)
+        {
+            if (mr.getAspects().contains(aspectName))
+            {
+                return mr;
             }
         }
         return null;

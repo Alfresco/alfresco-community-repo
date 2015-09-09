@@ -79,9 +79,15 @@ public class ReferralAdminServiceImpl implements ReferralAdminService
         this.registry = registry;
     }
 
-    @Override public MetadataReferral attachReferrer(NodeRef referrer, NodeRef referent, QName assocType)
+    @Override public MetadataReferral attachReferrer(NodeRef referrer, NodeRef referent, QName aspectName)
     {
-        final MetadataReferral metadataReferral = getReferralForAssociation(assocType);
+        final MetadataReferral metadataReferral = registry.getReferralForAspect(aspectName);
+        if (metadataReferral == null)
+        {
+            throw new IllegalArgumentException("No defined " + MetadataReferral.class.getSimpleName() +
+                                               " for aspect " + aspectName);
+        }
+        final QName assocType = metadataReferral.getAssocType();
 
         // Prevent the creation of chains of metadata linking from node A to B to C.
 
@@ -135,8 +141,11 @@ public class ReferralAdminServiceImpl implements ReferralAdminService
         return metadataReferral;
     }
 
-    @Override public MetadataReferral detachReferrer(NodeRef referrer, QName assocType)
+    @Override public MetadataReferral detachReferrer(NodeRef referrer, QName aspectName)
     {
+        final MetadataReferral referral = registry.getReferralForAspect(aspectName);
+        final QName assocType = referral.getAssocType();
+
         // Is the association there?
         final List<AssociationRef> assocs = nodeService.getTargetAssocs(referrer, assocType);
 
@@ -146,36 +155,19 @@ public class ReferralAdminServiceImpl implements ReferralAdminService
         }
         else
         {
-            MetadataReferral result = getReferralForAssociation(assocType);
-
             // There should only be one such association... but we'll remove them all just in case
             for (AssociationRef assocRef : assocs)
             {
                 nodeService.removeAssociation(referrer, assocRef.getTargetRef(), assocType);
             }
 
-            return result;
+            return referral;
         }
-    }
-
-    @Override public MetadataReferral getReferralFor(QName aspectName)
-    {
-        MetadataReferral metadataReferral = null;
-
-        for (MetadataReferral d : getDefinedReferrals())
-        {
-            if (d.getAspects().contains(aspectName))
-            {
-                metadataReferral = d;
-                break;
-            }
-        }
-        return metadataReferral;
     }
 
     @Override public Set<MetadataReferral> getAttachedReferralsFrom(NodeRef referrer)
     {
-        final Set<MetadataReferral> allMetadataReferrals = getDefinedReferrals();
+        final Set<MetadataReferral> allMetadataReferrals = registry.getMetadataReferrals();
 
         final Set<MetadataReferral> result = new HashSet<>();
         for (MetadataReferral d : allMetadataReferrals)
@@ -199,10 +191,5 @@ public class ReferralAdminServiceImpl implements ReferralAdminService
             if (d.getAspects().contains(aspectName)) return d;
         }
         return null;
-    }
-
-    @Override public Set<MetadataReferral> getDefinedReferrals()
-    {
-        return registry.getMetadataReferrals();
     }
 }

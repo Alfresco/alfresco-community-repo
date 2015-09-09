@@ -148,9 +148,9 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
                 for (ChildAssociationRef chAssRef : renditions)
                 {
                     final NodeRef renditionNode = chAssRef.getChildRef();
-                    if (referralAdminService.getAttachedReferralFrom(renditionNode, ASPECT_CLASSIFIED_RENDITION) == null)
+                    if (referralAdminService.getAttachedReferralFrom(renditionNode, ASPECT_CLASSIFIED) == null)
                     {
-                        referralAdminService.attachReferrer(renditionNode, classifiedNode, ASSOC_CLASSIFIED_RENDITION);
+                        referralAdminService.attachReferrer(renditionNode, classifiedNode, ASPECT_CLASSIFIED);
                     }
                 }
 

@@ -32,7 +32,8 @@ import java.util.Set;
  * Then any read request for relevant metadata such as hasAspect or getProperties can be delegated to the
  * linked node.
  * <p/>
- * For a link to be made, there must be a {@link #getDefinedReferrals() defined MetadataReferral} already in the system.
+ * For a link to be made, there must be a {@link ReferralRegistry#getMetadataReferrals()} defined MetadataReferral}
+ * already in the system.
  * This means that a peer-association type will have to have been declared and that a spring bean will have to have
  * defined which aspects are to be handled by this {@link MetadataReferral}.
  *
@@ -45,41 +46,30 @@ public interface ReferralAdminService
      * Creates a link between two nodes such that the first {@code referrer} can 'inherit' or reuse some aspect
      * metadata from another node - the {@code referrer}.
      * <p/>
+     * Note that attaching a referrer for the specified aspect will also link the two nodes for
+     * all aspects defined in the {@link MetadataReferral}.
+     * <p/>
      * Note that links can currently only extend between two pairs of nodes and cannot be chained.
      *
      * @param referrer  the node which is to inherit additional metadata.
      * @param referent  the node which will provide the additional metadata.
-     * @param assocType the type of the peer association which will link the two nodes.
+     * @param aspectName the name of the aspect whose metadata is to be attached.
      * @return a {@link MetadataReferral} object which defines the link type.
      * @throws ChainedMetadataReferralUnsupported if an attempt is made to attach nodes such that a chain would be made.
      */
-    // FIXME Remove assocType entirely from the API
-    MetadataReferral attachReferrer(NodeRef referrer, NodeRef referent, QName assocType);
+    MetadataReferral attachReferrer(NodeRef referrer, NodeRef referent, QName aspectName);
 
     /**
      * Removes an existing metadata link between two nodes.
+     * <p/>
+     * Note that detaching a referrer for the specified aspect will also unlink the two nodes for
+     * all aspects defined in the {@link MetadataReferral}.
      *
      * @param referrer  the node which has been linked to a metadata source.
-     * @param assocType the type of the peer association forming the link.
+     * @param aspectName the name of the aspect whose metadata is to be detached.
      * @return the removed {@link MetadataReferral}.
      */
-    MetadataReferral detachReferrer(NodeRef referrer, QName assocType);
-
-    /**
-     * Gets the set of defined {@link MetadataReferral}s.
-     *
-     * @return the set of defined {@link MetadataReferral}.
-     */
-    Set<MetadataReferral> getDefinedReferrals();
-
-    /**
-     * Gets the {@link MetadataReferral} which contains the specified {@code aspectName} if there is one.
-     * Note that only one {@link MetadataReferral} may declare that it handles any particular aspect.
-     *
-     * @param aspectName the name of the aspect whose {@link MetadataReferral} is sought.
-     * @return the {@link MetadataReferral} which handles the specified aspect, if there is one.
-     */
-    MetadataReferral getReferralFor(QName aspectName);
+    MetadataReferral detachReferrer(NodeRef referrer, QName aspectName); // FIXME Chase all references
 
     /**
      * Gets the set of {@link MetadataReferral}s which are currently applied from the specified {@code referrer}.

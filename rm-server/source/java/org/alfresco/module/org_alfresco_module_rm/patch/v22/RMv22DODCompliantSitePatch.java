@@ -36,6 +36,9 @@ public class RMv22DODCompliantSitePatch extends AbstractModulePatch
 {
     /** QName DAO */
     private QNameDAO qnameDAO;
+    
+    /** indicates whether we convert to a standard file plan or not */
+    private boolean convertToStandardFilePlan = false;
 
     /**
      * @param qnameDAO  QName DAO
@@ -46,23 +49,34 @@ public class RMv22DODCompliantSitePatch extends AbstractModulePatch
     }
     
     /**
+     * @param convertToStandardFilePlan	convert to standard file if true, false otherwise
+     */
+    public void setConvertToStandardFilePlan(boolean convertToStandardFilePlan) 
+    {
+		this.convertToStandardFilePlan = convertToStandardFilePlan;
+	}
+    
+    /**
      * @see org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch#applyInternal()
      */
     @Override
     public void applyInternal()
     {
-        // ensure all existing sites are of the correct type
-        if (qnameDAO.getQName(RecordsManagementModel.TYPE_RM_SITE) != null &&
-            qnameDAO.getQName(DOD5015Model.TYPE_DOD_5015_SITE) == null)
-        {
-            qnameDAO.updateQName(RecordsManagementModel.TYPE_RM_SITE, DOD5015Model.TYPE_DOD_5015_SITE);
-        }
-        
-        // ensure all the existing file plans are of the correct type
-        if (qnameDAO.getQName(RecordsManagementModel.TYPE_FILE_PLAN) != null &&
-            qnameDAO.getQName(DOD5015Model.TYPE_DOD_5015_FILE_PLAN) == null)
-        {
-            qnameDAO.updateQName(RecordsManagementModel.TYPE_FILE_PLAN, DOD5015Model.TYPE_DOD_5015_FILE_PLAN);
-        }
+    	if (!convertToStandardFilePlan)
+    	{
+	        // ensure all existing sites are of the correct type
+	        if (qnameDAO.getQName(RecordsManagementModel.TYPE_RM_SITE) != null &&
+	            qnameDAO.getQName(DOD5015Model.TYPE_DOD_5015_SITE) == null)
+	        {
+	            qnameDAO.updateQName(RecordsManagementModel.TYPE_RM_SITE, DOD5015Model.TYPE_DOD_5015_SITE);
+	        }
+	        
+	        // ensure all the existing file plans are of the correct type
+	        if (qnameDAO.getQName(RecordsManagementModel.TYPE_FILE_PLAN) != null &&
+	            qnameDAO.getQName(DOD5015Model.TYPE_DOD_5015_FILE_PLAN) == null)
+	        {
+	            qnameDAO.updateQName(RecordsManagementModel.TYPE_FILE_PLAN, DOD5015Model.TYPE_DOD_5015_FILE_PLAN);
+	        }
+    	}
     }
 }

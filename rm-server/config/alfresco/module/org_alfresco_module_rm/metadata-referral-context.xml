@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xmlns:aop="http://www.springframework.org/schema/aop"
+   xmlns:context="http://www.springframework.org/schema/context"
+   xsi:schemaLocation="
+      http://www.springframework.org/schema/context
+      http://www.springframework.org/schema/context/spring-context-3.0.xsd
+      http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+      http://www.springframework.org/schema/aop
+      http://www.springframework.org/schema/aop/spring-aop-3.0.xsd ">
+
+    <!-- Metadata Referral Admin Service -->
+    <bean id="mr.referralAdminService"
+          class="org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminServiceImpl" >
+        <property name="referralRegistry" ref="mr.referralRegistry" />
+        <property name="nodeService" ref="NodeService" />
+    </bean>
+
+    <bean id="mr.ReferralAdminService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService</value>
+        </property>
+        <property name="target">
+            <ref bean="mr.referralAdminService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="mr.ReferralAdminService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="mr.ReferralAdminService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="mr.ReferralAdminService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="mr.ReferralAdminService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.attachReferrer=ACL_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.detachReferrer=ACL_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.getAttachedReferralsFrom=ACL_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.getAttachedReferralFrom=ACL_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.*=ACL_DENY
+            </value>
+        </property>
+    </bean>
+
+
+
+    <!-- Referred Metadata Service -->
+    <bean id="mr.referredMetadataService"
+          class="org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataServiceImpl" >
+       <property name="referralAdminService" ref="mr.ReferralAdminService" />
+       <property name="referralRegistry" ref="mr.referralRegistry" />
+       <property name="dictionaryService" ref="dictionaryService" />
+       <property name="nodeService" ref="NodeService" />
+    </bean>
+
+    <bean id="mr.ReferredMetadataService" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService</value>
+        </property>
+        <property name="target">
+            <ref bean="mr.referredMetadataService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref local="mr.ReferredMetadataService_transaction"/>
+                <idref bean="exceptionTranslator"/>
+                <idref local="mr.ReferredMetadataService_security"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="mr.ReferredMetadataService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <property name="transactionManager">
+            <ref bean="transactionManager"/>
+        </property>
+        <property name="transactionAttributes">
+            <props>
+                <prop key="*">${server.transaction.mode.default}</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="mr.ReferredMetadataService_security" parent="baseSecurity">
+        <property name="objectDefinitionSource">
+            <value>
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService.isReferringMetadata=ACL_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService.getReferentNode=ACL_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService.getReferredProperties=ACL_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService.getReferredProperty=ACL_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService.hasReferredAspect=ACL_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService.getAttachedReferrals=ACL_ALLOW
+                org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService.*=ACL_DENY
+            </value>
+        </property>
+    </bean>
+
+    <bean name="mr.referralRegistry"
+         class="org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralRegistry">
+   </bean>
+
+   <bean name="mr.baseReferralAssoc"
+         abstract="true"
+         class="org.alfresco.module.org_alfresco_module_rm.referredmetadata.MetadataReferral"
+         init-method="validateAndRegister">
+      <property name="referralRegistry" ref="mr.referralRegistry" />
+      <property name="dictionaryService" ref="dictionaryService" />
+   </bean>
+</beans>

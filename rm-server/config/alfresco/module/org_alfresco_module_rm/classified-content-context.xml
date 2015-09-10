@@ -58,7 +58,7 @@
         <property name="exemptionCategoryConfigLocation" value="${rm.classification.exemptionCategoriesFile}" />
    </bean>
 
-   <!-- Classification Scheme Service -->Cl
+   <!-- Classification Scheme Service -->
 
    <bean id="classificationSchemeService"
          class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeServiceImpl"

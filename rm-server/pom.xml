@@ -19,17 +19,6 @@
       <webapp.id.name>alfresco</webapp.id.name>
       <webapp.id>${webapp.id.name}</webapp.id>
    </properties>
-   <dependencyManagement>
-      <dependencies>
-         <dependency>
-            <groupId>${alfresco.groupId}</groupId>
-            <artifactId>alfresco-platform-distribution</artifactId>
-            <version>${alfresco.version}</version>
-            <type>pom</type>
-            <scope>import</scope>
-         </dependency>
-      </dependencies>
-   </dependencyManagement>
    <build>
       <sourceDirectory>source/java</sourceDirectory>
       <testSourceDirectory>test/java</testSourceDirectory>

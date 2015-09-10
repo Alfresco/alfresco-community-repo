@@ -125,7 +125,7 @@
        <constructor-arg ref="classificationServiceDAO"/>
    </bean>
 
-   <bean name="classifiedRenditionAssoc" parent="baseReferralAssoc">
+   <bean name="classifiedRenditionAssoc" parent="mr.baseReferralAssoc">
       <property name="assocType" value="clf:classifiedRendition" />
       <property name="aspects">
          <set>
@@ -195,7 +195,7 @@
       <property name="securityClearanceService" ref="SecurityClearanceService"/>
       <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
       <property name="freezeService" ref="FreezeService"/>
-      <property name="referredMetadataService" ref="ReferredMetadataService" />
+      <property name="referredMetadataService" ref="mr.ReferredMetadataService" />
    </bean>
 
    <bean id="ContentClassificationService" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -243,7 +243,7 @@
           class="org.alfresco.module.org_alfresco_module_rm.model.clf.aspect.ClassifiedAspect"
           parent="rm.baseBehaviour">
        <property name="classificationSchemeService" ref="ClassificationSchemeService" />
-       <property name="referralAdminService" ref="ReferralAdminService" />
+       <property name="referralAdminService" ref="mr.ReferralAdminService" />
        <property name="renditionService" ref="RenditionService" />
     </bean>
 
@@ -251,7 +251,7 @@
           class="org.alfresco.module.org_alfresco_module_rm.model.clf.ClassifiedRenditions"
           parent="rm.baseBehaviour">
         <property name="contentClassificationService" ref="ContentClassificationService" />
-        <property name="referralAdminService" ref="ReferralAdminService" />
+        <property name="referralAdminService" ref="mr.ReferralAdminService" />
         <property name="renditionService" ref="RenditionService" />
     </bean>
 </beans>

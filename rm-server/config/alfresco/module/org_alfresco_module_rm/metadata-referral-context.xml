@@ -12,29 +12,29 @@
       http://www.springframework.org/schema/aop/spring-aop-3.0.xsd ">
 
     <!-- Metadata Referral Admin Service -->
-    <bean id="referralAdminService"
+    <bean id="mr.referralAdminService"
           class="org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminServiceImpl" >
-        <property name="referralRegistry" ref="referralRegistry" />
+        <property name="referralRegistry" ref="mr.referralRegistry" />
         <property name="nodeService" ref="NodeService" />
     </bean>
 
-    <bean id="ReferralAdminService" class="org.springframework.aop.framework.ProxyFactoryBean">
+    <bean id="mr.ReferralAdminService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService</value>
         </property>
         <property name="target">
-            <ref bean="referralAdminService"/>
+            <ref bean="mr.referralAdminService"/>
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="ReferralAdminService_transaction"/>
+                <idref local="mr.ReferralAdminService_transaction"/>
                 <idref bean="exceptionTranslator"/>
-                <idref local="ReferralAdminService_security"/>
+                <idref local="mr.ReferralAdminService_security"/>
             </list>
         </property>
     </bean>
 
-    <bean id="ReferralAdminService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+    <bean id="mr.ReferralAdminService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
         </property>
@@ -45,7 +45,7 @@
         </property>
     </bean>
 
-    <bean id="ReferralAdminService_security" parent="baseSecurity">
+    <bean id="mr.ReferralAdminService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService.attachReferrer=ACL_ALLOW
@@ -60,31 +60,31 @@
 
 
     <!-- Referred Metadata Service -->
-    <bean id="referredMetadataService"
+    <bean id="mr.referredMetadataService"
           class="org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataServiceImpl" >
-       <property name="referralAdminService" ref="ReferralAdminService" />
-       <property name="referralRegistry" ref="referralRegistry" />
+       <property name="referralAdminService" ref="mr.ReferralAdminService" />
+       <property name="referralRegistry" ref="mr.referralRegistry" />
        <property name="dictionaryService" ref="dictionaryService" />
        <property name="nodeService" ref="NodeService" />
     </bean>
 
-    <bean id="ReferredMetadataService" class="org.springframework.aop.framework.ProxyFactoryBean">
+    <bean id="mr.ReferredMetadataService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService</value>
         </property>
         <property name="target">
-            <ref bean="referredMetadataService"/>
+            <ref bean="mr.referredMetadataService"/>
         </property>
         <property name="interceptorNames">
             <list>
-                <idref local="ReferredMetadataService_transaction"/>
+                <idref local="mr.ReferredMetadataService_transaction"/>
                 <idref bean="exceptionTranslator"/>
-                <idref local="ReferredMetadataService_security"/>
+                <idref local="mr.ReferredMetadataService_security"/>
             </list>
         </property>
     </bean>
 
-    <bean id="ReferredMetadataService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+    <bean id="mr.ReferredMetadataService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
         <property name="transactionManager">
             <ref bean="transactionManager"/>
         </property>
@@ -95,7 +95,7 @@
         </property>
     </bean>
 
-    <bean id="ReferredMetadataService_security" parent="baseSecurity">
+    <bean id="mr.ReferredMetadataService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
                 org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService.isReferringMetadata=ACL_ALLOW
@@ -109,15 +109,15 @@
         </property>
     </bean>
 
-    <bean name="referralRegistry"
+    <bean name="mr.referralRegistry"
          class="org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralRegistry">
    </bean>
 
-   <bean name="baseReferralAssoc"
+   <bean name="mr.baseReferralAssoc"
          abstract="true"
          class="org.alfresco.module.org_alfresco_module_rm.referredmetadata.MetadataReferral"
          init-method="validateAndRegister">
-      <property name="referralRegistry" ref="referralRegistry" />
+      <property name="referralRegistry" ref="mr.referralRegistry" />
       <property name="dictionaryService" ref="dictionaryService" />
    </bean>
 </beans>

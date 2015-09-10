@@ -84,6 +84,11 @@
        <property name="keyResourceLoader" ref="springKeyResourceLoader"/>
        <property name="validateKeyChanges" value="true"/>
        <property name="encryptionKeysRegistry" ref="encryptionKeysRegistry"/>
+       <property name="keysToValidate">
+         <set>
+            <value>metadata</value>
+         </set>	   
+       </property>	   
     </bean>
     
     <bean id="keyProvider" class="org.alfresco.encryption.KeystoreKeyProvider" init-method="init">

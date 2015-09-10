@@ -19,37 +19,32 @@
 package org.alfresco.module.org_alfresco_module_rm.model.clf.aspect;
 
 import static java.util.Arrays.asList;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingDowngradeInstructions;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
+import org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService;
 import org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 
+import java.util.Date;
+
 /**
  * Unit tests for the {@link ClassifiedAspect}.
  *
  * @author Tom Page
+ * @author Neil Mc Erlean
  * @since 2.4.a
  */
 public class ClassifiedAspectUnitTest implements ClassifiedContentModel
@@ -57,14 +52,13 @@ public class ClassifiedAspectUnitTest implements ClassifiedContentModel
     private static final NodeRef NODE_REF    = new NodeRef("node://Ref/");
     private static final NodeRef RENDITION_1 = new NodeRef("node://rendition1/");
     private static final NodeRef RENDITION_2 = new NodeRef("node://rendition2/");
-    private static final ClassificationLevel TOP_SECRET = new ClassificationLevel("Top Secret", "Top Secret");
-    private static final ClassificationLevel SECRET     = new ClassificationLevel("Secret", "Secret");
 
     @InjectMocks ClassifiedAspect classifiedAspect;
     @Mock ClassificationSchemeService mockClassificationSchemeService;
     @Mock CoreServicesExtras          mockCoreServicesExtras;
     @Mock NodeService                 mockNodeService;
     @Mock RenditionService            mockRenditionService;
+    @Mock ReferralAdminService        mockReferralAdminService;
 
     @Before
     public void setUp()
@@ -135,50 +129,20 @@ public class ClassifiedAspectUnitTest implements ClassifiedContentModel
         classifiedAspect.checkConsistencyOfProperties(NODE_REF);
     }
 
-    /** Check that when a node is classified, its renditions are also classified. */
-    @Test public void classificationOfNodeShouldClassifyRenditions()
+    @Test public void newlyClassifiedNodeShouldLinkItsMetadataToAllRenditions()
     {
-        for (NodeRef n : asList(NODE_REF, RENDITION_1, RENDITION_2))
-        {
-            when(mockNodeService.hasAspect(n, ASPECT_CLASSIFIED)).thenReturn(true);
-        }
-        when(mockClassificationSchemeService.getClassificationLevelById(eq("Top Secret"))).thenReturn(TOP_SECRET);
-        when(mockClassificationSchemeService.getClassificationLevelById(eq("Secret"))).thenReturn(SECRET);
-        when(mockClassificationSchemeService.getReclassification(any(), any())).thenReturn(ClassificationSchemeService.Reclassification.DOWNGRADE);
-        when(mockRenditionService.getRenditions(eq(NODE_REF)))
+        when(mockRenditionService.getRenditions(NODE_REF))
                 .thenReturn(asList(rendition(NODE_REF, RENDITION_1), rendition(NODE_REF, RENDITION_2)));
+        for (final NodeRef rendition : asList(RENDITION_1, RENDITION_2))
+        {
+            when(mockRenditionService.getSourceNode(rendition)).thenReturn(rendition(NODE_REF, rendition));
+        }
 
         classifiedAspect.onAddAspect(NODE_REF, ASPECT_CLASSIFIED);
 
         for (NodeRef rendition : asList(RENDITION_1, RENDITION_2))
         {
-            verify(mockCoreServicesExtras).copyAspect(NODE_REF, rendition, ClassifiedContentModel.ASPECT_CLASSIFIED);
-        }
-    }
-
-    @Test public void reclassificationOfNodeShouldReclassifyRenditions()
-    {
-        for (NodeRef n : asList(NODE_REF, RENDITION_1, RENDITION_2))
-        {
-            when(mockNodeService.hasAspect(n, ASPECT_CLASSIFIED)).thenReturn(true);
-        }
-        when(mockClassificationSchemeService.getClassificationLevelById("Top Secret")).thenReturn(TOP_SECRET);
-        when(mockClassificationSchemeService.getClassificationLevelById("Secret")).thenReturn(SECRET);
-        when(mockClassificationSchemeService.getReclassification(any(), any())).thenReturn(ClassificationSchemeService.Reclassification.DOWNGRADE);
-        when(mockRenditionService.getRenditions(eq(NODE_REF)))
-                .thenReturn(asList(rendition(NODE_REF, RENDITION_1), rendition(NODE_REF, RENDITION_2)));
-
-        Map<QName, Serializable> oldProps = new HashMap<>();
-        oldProps.put(PROP_CLASSIFIED_BY, "userone");
-        oldProps.put(PROP_CURRENT_CLASSIFICATION, "Top Secret");
-        Map<QName, Serializable> newProps = new HashMap<>(oldProps);
-        newProps.put(PROP_CURRENT_CLASSIFICATION, "Secret");
-
-        classifiedAspect.onUpdateProperties(NODE_REF, oldProps, newProps);
-
-        for (NodeRef rendition : asList(RENDITION_1, RENDITION_2))
-        {
-            verify(mockCoreServicesExtras).copyAspect(NODE_REF, rendition, ClassifiedContentModel.ASPECT_CLASSIFIED);
+            verify(mockReferralAdminService).attachReferrer(rendition, NODE_REF, ASPECT_CLASSIFIED);
         }
     }
 

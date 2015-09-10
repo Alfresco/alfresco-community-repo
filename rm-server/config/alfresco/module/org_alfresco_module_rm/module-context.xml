@@ -267,9 +267,12 @@
    <!-- Import the RM webscript's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-webscript-context.xml"/>
 
+   <!-- Import the Metadata Referral Services -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/metadata-referral-context.xml"/>
+
    <!-- Import the Classified Content Services -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/classified-content-context.xml"/>
-   
+
    <!-- Import the Content Services -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/content-context.xml"/>
 

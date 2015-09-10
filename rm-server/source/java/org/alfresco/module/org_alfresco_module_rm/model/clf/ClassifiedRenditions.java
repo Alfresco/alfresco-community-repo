@@ -20,14 +20,15 @@ package org.alfresco.module.org_alfresco_module_rm.model.clf;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
+import org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
-import org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.rendition.RenditionService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -45,7 +46,7 @@ public class ClassifiedRenditions extends BaseBehaviourBean
                                              ClassifiedContentModel
 {
     private ContentClassificationService contentClassificationService;
-    private CoreServicesExtras           servicesExtras;
+    private ReferralAdminService         referralAdminService;
     private RenditionService             renditionService;
 
     public void setContentClassificationService(ContentClassificationService service)
@@ -53,9 +54,9 @@ public class ClassifiedRenditions extends BaseBehaviourBean
         this.contentClassificationService = service;
     }
 
-    public void setCoreServicesExtras(CoreServicesExtras extras)
+    public void setReferralAdminService(ReferralAdminService service)
     {
-        this.servicesExtras = extras;
+        this.referralAdminService = service;
     }
 
     public void setRenditionService(RenditionService service)
@@ -74,16 +75,19 @@ public class ClassifiedRenditions extends BaseBehaviourBean
     )
     public void onAddAspect(final NodeRef renditionNodeRef, final QName aspectTypeQName)
     {
+        // When a rendition is created, set up a metadata link of its classification to the source node.
         authenticationUtil.runAs(new org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork<Void>()
         {
             public Void doWork()
             {
-                final NodeRef sourceNode = renditionService.getSourceNode(renditionNodeRef).getParentRef();
-                if (contentClassificationService.isClassified(sourceNode))
+                final ChildAssociationRef chAssRef = renditionService.getSourceNode(renditionNodeRef);
+                final NodeRef sourceNode = chAssRef.getParentRef();
+                if (contentClassificationService.isClassified(sourceNode) &&
+                        referralAdminService.getAttachedReferralFrom(renditionNodeRef, ASPECT_CLASSIFIED) != null)
                 {
-                    // All renditions should be given the same classification as their source node
-                    servicesExtras.copyAspect(sourceNode, renditionNodeRef, ASPECT_CLASSIFIED);
+                    referralAdminService.attachReferrer(renditionNodeRef, sourceNode, ASPECT_CLASSIFIED);
                 }
+
                 return null;
             }
         }, authenticationUtil.getSystemUserName());

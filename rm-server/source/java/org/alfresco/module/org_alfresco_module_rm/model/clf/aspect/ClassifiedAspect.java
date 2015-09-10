@@ -20,17 +20,13 @@ package org.alfresco.module.org_alfresco_module_rm.model.clf.aspect;
 
 import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.diffKey;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingDowngradeInstructions;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.Reclassification;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
+import org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
-import org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras;
 import org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.Difference;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -44,6 +40,11 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+
 /**
  * clf:classification behaviour bean
  *
@@ -55,15 +56,21 @@ import org.alfresco.service.namespace.QName;
 )
 public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePolicies.OnUpdatePropertiesPolicy,
                                                                    NodeServicePolicies.OnAddAspectPolicy,
+                                                                   NodeServicePolicies.OnRemoveAspectPolicy,
                                                                    ClassifiedContentModel
 {
     private ClassificationSchemeService classificationSchemeService;
+    private ReferralAdminService        referralAdminService;
     private RenditionService            renditionService;
-    private CoreServicesExtras          servicesExtras;
 
     public void setClassificationSchemeService(ClassificationSchemeService service)
     {
         this.classificationSchemeService = service;
+    }
+
+    public void setReferralAdminService(ReferralAdminService service)
+    {
+        this.referralAdminService = service;
     }
 
     public void setRenditionService(RenditionService service)
@@ -71,17 +78,8 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
         this.renditionService = service;
     }
 
-    public void setCoreServicesExtras(CoreServicesExtras extras)
-    {
-        this.servicesExtras = extras;
-    }
-
     /**
      * Behaviour associated with updating the classified aspect properties.
-     * <p>
-     * Ensures that on reclassification of content (in other words a change in the value of the
-     * {@link ClassifiedContentModel#PROP_CURRENT_CLASSIFICATION clf:currentClassification} property)
-     * that various metadata are correctly updated as a side-effect.
      * <p>
      * Validates the consistency of the properties.
      */
@@ -91,7 +89,7 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
        kind = BehaviourKind.CLASS,
        notificationFrequency = NotificationFrequency.EVERY_EVENT
     )
-    public void onUpdateProperties(final NodeRef nodeRef,
+    public void onUpdateProperties(final NodeRef classifiedNode,
                                    final Map<QName, Serializable> before,
                                    final Map<QName, Serializable> after)
     {
@@ -101,7 +99,7 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
             {
                 final Difference classificationChange = diffKey(before, after, PROP_CURRENT_CLASSIFICATION);
 
-                if (classificationChange == Difference.CHANGED && nodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED))
+                if (classificationChange == Difference.CHANGED && nodeService.hasAspect(classifiedNode, ASPECT_CLASSIFIED))
                 {
                     final String oldValue = (String)before.get(PROP_CURRENT_CLASSIFICATION);
                     final String newValue = (String)after.get(PROP_CURRENT_CLASSIFICATION);
@@ -113,14 +111,12 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
 
                     if (reclassification != null)
                     {
-                        nodeService.setProperty(nodeRef, PROP_LAST_RECLASSIFICATION_ACTION, reclassification.toModelString());
-                        nodeService.setProperty(nodeRef, PROP_LAST_RECLASSIFY_AT, new Date());
+                        nodeService.setProperty(classifiedNode, PROP_LAST_RECLASSIFICATION_ACTION, reclassification.toModelString());
+                        nodeService.setProperty(classifiedNode, PROP_LAST_RECLASSIFY_AT, new Date());
                     }
                 }
 
-                checkConsistencyOfProperties(nodeRef);
-
-                copyClassifiedPropertiesToRenditions(nodeRef);
+                checkConsistencyOfProperties(classifiedNode);
 
                 return null;
             }
@@ -128,7 +124,7 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
     }
 
     /**
-     * Behaviour associated with updating the classified aspect properties.
+     * Behaviour associated with adding the classified aspect.
      * <p>
      * Validates the consistency of the properties.
      */
@@ -136,31 +132,62 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
     @Behaviour
     (
        kind = BehaviourKind.CLASS,
-       notificationFrequency = NotificationFrequency.EVERY_EVENT
+       notificationFrequency = NotificationFrequency.FIRST_EVENT
     )
-    public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
+    public void onAddAspect(final NodeRef classifiedNode, final QName aspectTypeQName)
     {
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             public Void doWork()
             {
-                checkConsistencyOfProperties(nodeRef);
+                checkConsistencyOfProperties(classifiedNode);
 
-                copyClassifiedPropertiesToRenditions(nodeRef);
+                // If this node has any renditions, we must ensure that they inherit the classification
+                // from their source node.
+                final List<ChildAssociationRef> renditions = renditionService.getRenditions(classifiedNode);
+                for (ChildAssociationRef chAssRef : renditions)
+                {
+                    final NodeRef renditionNode = chAssRef.getChildRef();
+                    if (referralAdminService.getAttachedReferralFrom(renditionNode, ASPECT_CLASSIFIED) == null)
+                    {
+                        referralAdminService.attachReferrer(renditionNode, classifiedNode, ASPECT_CLASSIFIED);
+                    }
+                }
 
                 return null;
             }
         }, AuthenticationUtil.getSystemUserName());
     }
 
-    private void copyClassifiedPropertiesToRenditions(NodeRef nodeRef)
+    /**
+     * Behaviour associated with removing the classified aspect.
+     * <p>
+     * Validates the consistency of the properties.
+     */
+    @Override
+    @Behaviour
+    (
+        kind = BehaviourKind.CLASS,
+        notificationFrequency = NotificationFrequency.FIRST_EVENT
+    )
+    public void onRemoveAspect(final NodeRef classifiedNode, final QName aspectTypeQName)
     {
-        // All renditions should be given the same classification as their source node
-        for (final ChildAssociationRef chAssRef : renditionService.getRenditions(nodeRef))
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
-            final NodeRef renditionNode = chAssRef.getChildRef();
-            servicesExtras.copyAspect(nodeRef, renditionNode, ASPECT_CLASSIFIED);
-        }
+            public Void doWork()
+            {
+                // If this node has any renditions, we should remove the metadata link
+                final List<ChildAssociationRef> renditions = renditionService.getRenditions(classifiedNode);
+                for (ChildAssociationRef chAssRef : renditions)
+                {
+                    // In RM, renditions are only attached to one metadata referent - the source node.
+                    // Therefore it is safe to (and we must) remove the aspect from the rendition node.
+                    nodeService.removeAspect(chAssRef.getChildRef(), ASPECT_CLASSIFIED_RENDITION);
+                }
+
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
     }
 
     /**

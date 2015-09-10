@@ -62,4 +62,8 @@ public interface ClassifiedContentModel
     /** Security Clearance aspect. */
     QName ASPECT_SECURITY_CLEARANCE = QName.createQName(CLF_URI, "securityClearance");
     QName PROP_CLEARANCE_LEVEL = QName.createQName(CLF_URI, "clearanceLevel");
+
+    /** Classified Rendition aspect. */
+    QName ASPECT_CLASSIFIED_RENDITION = QName.createQName(CLF_URI, "classifiedRendition");
+    QName ASSOC_CLASSIFIED_RENDITION  = QName.createQName(CLF_URI, "classifiedRendition");
 }

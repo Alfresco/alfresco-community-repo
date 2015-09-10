@@ -23,11 +23,6 @@ import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.c
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.InvalidNode;
@@ -35,6 +30,7 @@ import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationE
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.ReasonIdNotFound;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.freeze.FreezeService;
+import org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -42,6 +38,11 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * A service to handle the classification of content.
@@ -57,12 +58,17 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
     private SecurityClearanceService securityClearanceService;
     private ClassificationServiceBootstrap classificationServiceBootstrap;
     private FreezeService freezeService;
+    private ReferredMetadataService referredMetadataService;
 
     public void setLevelManager(ClassificationLevelManager levelManager) { this.levelManager = levelManager; }
     public void setReasonManager(ClassificationReasonManager reasonManager) { this.reasonManager = reasonManager; }
     public void setSecurityClearanceService(SecurityClearanceService securityClearanceService) { this.securityClearanceService = securityClearanceService; }
     public void setClassificationServiceBootstrap(ClassificationServiceBootstrap classificationServiceBootstrap) { this.classificationServiceBootstrap = classificationServiceBootstrap; }
     public void setFreezeService(FreezeService service) { this.freezeService = service; }
+    public void setReferredMetadataService(ReferredMetadataService service)
+    {
+        this.referredMetadataService = service;
+    }
 
     public void init()
     {
@@ -80,16 +86,24 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
         {
             public ClassificationLevel doWork() throws Exception
             {
-                // by default everything is unclassified
-                ClassificationLevel result = ClassificationLevelManager.UNCLASSIFIED;
+                final String classificationId;
 
                 if (nodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED))
                 {
-                    String classificationId = (String)nodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION);
-                    result = levelManager.findLevelById(classificationId);
+                    classificationId = (String)nodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION);
+                }
+                else if (referredMetadataService.isReferringMetadata(nodeRef, ASPECT_CLASSIFIED))
+                {
+                    classificationId = (String) referredMetadataService.getReferredProperty(nodeRef, PROP_CURRENT_CLASSIFICATION);
+                    // Note that this property value could be null/missing.
+                }
+                else
+                {
+                    classificationId = null;
                 }
 
-                return result;
+                // by default everything is unclassified
+                return classificationId == null ? ClassificationLevelManager.UNCLASSIFIED : levelManager.findLevelById(classificationId);
             }
         });
     };
@@ -231,12 +245,19 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
         mandatory("nodeRef", nodeRef);
 
         boolean isClassified = false;
-        String currentClassification = (String) nodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION);
 
-        if (nodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED) &&
-                !(UNCLASSIFIED_ID).equals(currentClassification))
+        final String currentClassification;
+        if (nodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED))
         {
-            isClassified = true;
+            currentClassification = (String) nodeService.getProperty(nodeRef, PROP_CURRENT_CLASSIFICATION);
+            isClassified = currentClassification != null && ! UNCLASSIFIED_ID.equals(currentClassification);
+        }
+        else if (referredMetadataService.isReferringMetadata(nodeRef, ASPECT_CLASSIFIED))
+        {
+            currentClassification = (String) referredMetadataService.getReferredProperty(nodeRef, PROP_CURRENT_CLASSIFICATION);
+            // This could be a null/missing property.
+
+            isClassified = currentClassification != null && ! UNCLASSIFIED_ID.equals(currentClassification);
         }
 
         return isClassified;

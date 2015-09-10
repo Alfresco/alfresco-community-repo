@@ -95,7 +95,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
     private int defaultListMaxResults = 5000;
     private boolean honorHintUseCQ = true;
     
-    private static final String HINT_CQ_SUFFIX = " [hint:useCQ]";
+    protected static final String HINT_CQ_SUFFIX = " [hint:useCQ]";
     
     public void afterPropertiesSet() throws Exception
     {

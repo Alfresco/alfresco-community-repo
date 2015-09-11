@@ -4,7 +4,6 @@
 <beans>
 
    <!-- RM v2.2 Patches -->
-
    <bean id="org_alfresco_module_rm_RMv22ReportTemplatePatch"
          parent="rm.parentModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22ReportTemplatePatch">
@@ -32,9 +31,9 @@
       <property name="description" value="DOD model separation module patch"/>
       <property name="fixesToSchema" value="1002"/>
       <property name="targetSchema" value="1003"/>
-      <property name="qnameDAO" ref="qnameDAO"/>
       <property name="patchDAO" ref="patchDAO"/>
       <property name="nodeDAO" ref="nodeDAO"/>
+      <property name="convertToStandardFilePlan" value="${rm.patch.v22.convertToStandardFilePlan}"/>
    </bean>
 
    <bean id="rm.dodCompliantSitePatch"
@@ -44,6 +43,7 @@
       <property name="fixesToSchema" value="1003"/>
       <property name="targetSchema" value="1004"/>
       <property name="qnameDAO" ref="qnameDAO"/>
+      <property name="convertToStandardFilePlan" value="${rm.patch.v22.convertToStandardFilePlan}"/>
    </bean>
 
    <bean id="rm.ghostOnDestroyDispositionActionPatch"
@@ -91,7 +91,7 @@
       <property name="filePlanRoleService" ref="FilePlanRoleService"/>
       <property name="authorityService" ref="AuthorityService"/>
    </bean>
-
+   
    <bean id="rm.holdCapabilityPatch"
          parent="rm.parentModulePatch"
          class="org.alfresco.module.org_alfresco_module_rm.patch.v22.RMv22HoldCapabilityPatch">
@@ -101,6 +101,6 @@
       <property name="filePlanService" ref="FilePlanService"/>
       <property name="permissionService" ref="permissionService"/>
       <property name="authorityService" ref="authorityService"/>
-   </bean>
+   </bean> 
 
 </beans>

@@ -46,6 +46,8 @@ public interface DOD5015Model
     QName PROP_MEDIA_TYPE = QName.createQName(DOD_URI, "mediaType");
     QName PROP_FORMAT = QName.createQName(DOD_URI, "format");
     QName PROP_DATE_RECEIVED = QName.createQName(DOD_URI, "dateReceived");
+    QName PROP_ADDRESS = QName.createQName(DOD_URI, "address");
+    QName PROP_OTHER_ADDRESS = QName.createQName(DOD_URI, "otherAddress");
 
     // Scanned Record
     QName ASPECT_SCANNED_RECORD = QName.createQName(DOD_URI, "scannedRecord");

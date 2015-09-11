@@ -735,6 +735,73 @@
                <type>d:text</type>
                <protected>true</protected>
             </property>
+            
+            <!-- DEPREACTED RECORD PROPERTIES -->
+            <!-- Note that these properties where deprecated in RM 2.2 and remain present to allow -->
+            <!-- migration to a standard compliance site without any loss of data -->
+            
+            <property name="rma:publicationDate">
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="rma:originator">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+            <property name="rma:originatingOrganization">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+            <property name="rma:mediaType">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+            <property name="rma:format">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+            <property name="rma:dateReceived">
+               <type>d:date</type>
+               <mandatory>false</mandatory>
+            </property>
+            <property name="rma:address">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
+            <property name="rma:otherAddress">
+               <type>d:text</type>
+               <mandatory>false</mandatory>
+               <index enabled="true">
+		          <atomic>true</atomic>
+		          <stored>false</stored>
+		          <tokenised>false</tokenised>
+		       </index>
+            </property>
 
          </properties>
 

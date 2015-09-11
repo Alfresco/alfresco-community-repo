@@ -20,7 +20,6 @@ package org.alfresco.module.org_alfresco_module_rm.patch.v22;
 
 import java.io.Serializable;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
@@ -28,7 +27,8 @@ import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.patch.PatchDAO;
-import org.alfresco.repo.domain.qname.QNameDAO;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 
@@ -43,9 +43,9 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
 {
     /** query batch size */
     private static final long BATCH_SIZE = 100000L;
-
-    /** QName DAO */
-    private QNameDAO qnameDAO;
+    
+    /** indicates whether we convert to a standard file plan or not */
+    private boolean convertToStandardFilePlan = false;
 
     /** Patch DAO */
     private PatchDAO patchDAO;
@@ -61,16 +61,18 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
         DOD5015Model.PROP_PUBLICATION_DATE,
         DOD5015Model.PROP_MEDIA_TYPE,
         DOD5015Model.PROP_FORMAT,
-        DOD5015Model.PROP_DATE_RECEIVED
+        DOD5015Model.PROP_DATE_RECEIVED,
+        DOD5015Model.PROP_ADDRESS,
+        DOD5015Model.PROP_OTHER_ADDRESS
     };
-
+    
     /**
-     * @param qnameDAO  QName DAO
+     * @param convertToStandardFilePlan	convert to standard file if true, false otherwise
      */
-    public void setQnameDAO(QNameDAO qnameDAO)
+    public void setConvertToStandardFilePlan(boolean convertToStandardFilePlan) 
     {
-        this.qnameDAO = qnameDAO;
-    }
+		this.convertToStandardFilePlan = convertToStandardFilePlan;
+	}
 
     /**
      * @param patchDAO  patch DAO
@@ -94,50 +96,73 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
     @Override
     public void applyInternal()
     {
-        Long maxNodeId = patchDAO.getMaxAdmNodeID();
-        long recordCount = patchDAO.getCountNodesWithAspects(Collections.singleton(ASPECT_RECORD));
-        if (LOGGER.isDebugEnabled())
-        {
-            LOGGER.debug(" ... updating " + recordCount + " records");
-        }
+    	if (!convertToStandardFilePlan)
+    	{
+	        Long maxNodeId = patchDAO.getMaxAdmNodeID();
+	        long recordCount = patchDAO.getCountNodesWithAspects(Collections.singleton(ASPECT_RECORD));
+	        if (LOGGER.isDebugEnabled())
+	        {
+	            LOGGER.debug("   ... updating " + recordCount + " records in batches of " + BATCH_SIZE);
+	        }
+	
+	        // apply the DOD record aspect to all exiting records
+	        int completed = 0;
+	        for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
+	        {
+	        	final Long finali = i;
+	        	Integer batchCount = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Integer>()
+	            {
+	        		int batchCount = 0;
+	        		
+	        		public Integer execute() throws Throwable 
+					{
+						nodeDAO.getNodesWithAspects(Collections.singleton(ASPECT_RECORD), finali, finali + BATCH_SIZE, new NodeDAO.NodeRefQueryCallback()
+				        {	
+				            public boolean handle(Pair<Long, NodeRef> nodePair)
+				            {
+				            	 // get the records properties
+				            	 Map<QName, Serializable> properties = nodeDAO.getNodeProperties(nodePair.getFirst());
+				            	 boolean changed = false;
 
-        // apply the DOD record aspect to all exiting records
-        int completed = 0;
-        Pair<Long, QName> recordAspect = qnameDAO.getQName(ASPECT_RECORD);
-        if (recordAspect != null)
-        {
-            for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
-            {
-                List<Long> nodeIds = patchDAO.getNodesByAspectQNameId(recordAspect.getFirst(), i, i + BATCH_SIZE);
-                for (Long nodeId : nodeIds)
-                {
-                    // get the records properties
-                    Map<QName, Serializable> properties = nodeDAO.getNodeProperties(nodeId);
-                    
-                    for (QName qname : qnames)
-                    {
-                        // if the record has any of the moved properties
-                        QName origional = QName.createQName(RecordsManagementModel.RM_URI, qname.getLocalName());
-                        if (properties.containsKey(origional))
-                        {
-                            // move the property value
-                            Serializable value = properties.get(origional);
-                            properties.put(qname, value);
-                            properties.remove(origional);
-                        }
-                    }
-                    
-                    // set properties and add aspect
-                    nodeDAO.setNodeProperties(nodeId, properties);
-                    nodeDAO.addNodeAspects(nodeId, Collections.singleton(DOD5015Model.ASPECT_DOD_5015_RECORD));
-                }
+				            	 for (QName qname : qnames)
+				            	 {
+				            	     // if the record has any of the moved properties
+				            	     QName origional = QName.createQName(RecordsManagementModel.RM_URI, qname.getLocalName());
+				            	     if (properties.containsKey(origional))
+				            	     {
+				            	         // move the property value
+				            	         Serializable value = properties.get(origional);
+				            	         properties.put(qname, value);
+				            	         properties.remove(origional);
+				            	         changed = true;
+				            	     }
+				            	 }
 
-                completed += completed + nodeIds.size();
-                if (LOGGER.isDebugEnabled())
-                {
-                    LOGGER.debug("    ... completed " + completed + " of " + recordCount);
-                }
-            }
-        }
+				            	 // set properties and add aspect
+				            	 if (changed)
+				            	 {
+				            		 nodeDAO.setNodeProperties(nodePair.getFirst(), properties);
+				            	 }				            	
+				            	 nodeDAO.addNodeAspects(nodePair.getFirst(), Collections.singleton(DOD5015Model.ASPECT_DOD_5015_RECORD));
+				            	 batchCount ++;
+				                
+				            	 return true;
+				            }
+				        });
+				
+						return batchCount;
+					}           		
+	            } , false, true);    
+	        	
+	        	if (batchCount != 0)
+	        	{
+		        	completed = completed + batchCount;
+		            if (LOGGER.isDebugEnabled())
+		            {
+		                LOGGER.debug("   ... completed " + completed + " of " + recordCount);
+		            }
+	        	}
+	        }
+    	}
     }
 }

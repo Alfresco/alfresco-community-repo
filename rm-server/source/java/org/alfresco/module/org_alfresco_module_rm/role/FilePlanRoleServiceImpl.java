@@ -833,7 +833,8 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
         {
             public Void doWork()
             {
-                if (!getAllAssignedToRole(filePlan, role).contains(authorityName))
+                if (authorityService.authorityExists(authorityName) &&
+                    !getAllAssignedToRole(filePlan, role).contains(authorityName))
                 {
                     String roleAuthority = authorityService.getName(AuthorityType.GROUP, getFullRoleName(role, filePlan));
                     try

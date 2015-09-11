@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.patch;
 
+import java.util.concurrent.TimeUnit;
+
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.transaction.TransactionService;
 import org.apache.commons.logging.Log;
@@ -73,12 +75,12 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
         modulePatchExecuter.register(this);
     }
     
-    protected void  setTxnReadOnly(boolean txnReadOnly) 
+    public void setTxnReadOnly(boolean txnReadOnly) 
     {
         this.txnReadOnly = txnReadOnly;
     }
 
-    protected void setTxnRequiresNew(boolean txnRequiresNew) 
+    public void setTxnRequiresNew(boolean txnRequiresNew) 
     {
         this.txnRequiresNew = txnRequiresNew;
     }
@@ -229,15 +231,19 @@ public abstract class AbstractModulePatch implements ModulePatch, BeanNameAware
                                ",target=" + targetSchema);
         }
                
+        long startTime = System.nanoTime();
+        
         // do patch in transaction
         transactionService.getRetryingTransactionHelper().doInTransaction(
                 new ApplyCallback(),
                 txnReadOnly,
                 txnRequiresNew);
+
+        long elapsedTime = System.nanoTime() - startTime;
         
         if (LOGGER.isInfoEnabled())
         {
-            LOGGER.info("   ... module patch applied");
+            LOGGER.info("   ... module patch applied in " + TimeUnit.NANOSECONDS.toMillis(elapsedTime) + "ms");
         }
     }
 

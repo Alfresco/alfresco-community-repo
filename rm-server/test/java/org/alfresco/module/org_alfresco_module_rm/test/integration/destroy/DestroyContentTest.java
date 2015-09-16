@@ -49,33 +49,33 @@ import org.alfresco.util.GUID;
  * Acceptance criteria for content destruction and content cleansing.
  *
  * @author Roy Wetherall
- * @Author 3.0.a
+ * @since 2.4.a
  */
 public class DestroyContentTest extends BaseRMTestCase
 {
     private static final String BEAN_NAME_CONTENT_CLEANSER = "contentCleanser.test";
-    
+
     private ContentStore contentStore;
     private TestContentCleanser contentCleanser;
     private EagerContentStoreCleaner eagerContentStoreCleaner;
     private ContentDestructionComponent contentDestructionComponent;
     @SuppressWarnings("unused")
     private RenditionService renditionService;
-    
+
     @Override
     protected void initServices()
     {
-        super.initServices();        
+        super.initServices();
         contentStore = (ContentStore)applicationContext.getBean("fileContentStore");
         contentCleanser = (TestContentCleanser)applicationContext.getBean(BEAN_NAME_CONTENT_CLEANSER);
         eagerContentStoreCleaner = (EagerContentStoreCleaner)applicationContext.getBean("eagerContentStoreCleaner");
         contentDestructionComponent = (ContentDestructionComponent)applicationContext.getBean("contentDestructionComponent");
         renditionService = (RenditionService)applicationContext.getBean("renditionService");
-        
+
         // set the test content store cleaner
         eagerContentStoreCleaner.setContentCleanser(contentCleanser);
     }
-    
+
     /**
      * Given that a record folder is eligible for destruction
      * And record ghosting is applied
@@ -87,48 +87,48 @@ public class DestroyContentTest extends BaseRMTestCase
     public void testRecordFolderDestroy() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {    
+        {
             private NodeRef recordCategoryFolderLevel;
             private NodeRef destroyableFolder;
             private NodeRef subRecord;
-            
+
             public void given() throws Exception
             {
                 // create destroyable record folder that contains a record
                 recordCategoryFolderLevel = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 utils.createBasicDispositionSchedule(
-                            recordCategoryFolderLevel, 
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS, 
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, 
-                            false, 
+                            recordCategoryFolderLevel,
+                            CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
+                            CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
+                            false,
                             true);
                 destroyableFolder = recordFolderService.createRecordFolder(recordCategoryFolderLevel, GUID.generate());
-                
+
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_TITLE, GUID.generate());
-                InputStream is = System.class.getResourceAsStream("/alfresco/test/content/Image.jpg");  
-                
-                subRecord = utils.createRecord(destroyableFolder, GUID.generate(), props, MimetypeMap.MIMETYPE_IMAGE_JPEG, is);                
-                
+                InputStream is = System.class.getResourceAsStream("/alfresco/test/content/Image.jpg");
+
+                subRecord = utils.createRecord(destroyableFolder, GUID.generate(), props, MimetypeMap.MIMETYPE_IMAGE_JPEG, is);
+
                 // Commented out, because Bamboo doesn't currently support rendition creation
                 // TODO figure out a way to create renditions that is supported on Bamboo
                 /*
                 renditionService.render(subRecord, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "medium"));
                 */
-                
+
                 utils.completeRecord(subRecord);
                 utils.completeEvent(destroyableFolder, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(destroyableFolder, CutOffAction.NAME);
-                
+
                 // assert things are as we expect
                 assertEquals(DestroyAction.NAME, dispositionService.getNextDispositionAction(destroyableFolder).getName());
-                assertTrue(dispositionService.isNextDispositionActionEligible(destroyableFolder));                
-                
+                assertTrue(dispositionService.isNextDispositionActionEligible(destroyableFolder));
+
                 // reset test content cleanser
                 contentCleanser.reset();
                 assertFalse(contentDestructionComponent.isCleansingEnabled());
             }
-            
+
             public void when() throws Exception
             {
                 // destroy the folder
@@ -142,21 +142,21 @@ public class DestroyContentTest extends BaseRMTestCase
                 assertTrue(nodeService.hasAspect(destroyableFolder, ASPECT_GHOSTED));
                 assertTrue(nodeService.exists(subRecord));
                 assertTrue(nodeService.hasAspect(subRecord, ASPECT_GHOSTED));
-                
+
                 // record content is destroyed
                 ContentReader reader = contentService.getReader(subRecord, PROP_CONTENT);
-                assertNull(reader);    
-                
+                assertNull(reader);
+
                 // content cleansing hasn't taken place
                 assertFalse(contentCleanser.hasCleansed());
-                
+
                 // ensure the record isn't in the archive store
                 NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, subRecord.getId());
                 assertFalse(nodeService.exists(archiveNodeRef));
             }
         });
     }
-    
+
     /**
      * Given that a record is eligible for destruction
      * And record ghosting is applied
@@ -168,36 +168,36 @@ public class DestroyContentTest extends BaseRMTestCase
     public void testRecordDestroy() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {    
+        {
             private NodeRef recordCategoryRecordLevel;
             private NodeRef recordFolder;
             private NodeRef destroyableRecord;
-            
+
             public void given() throws Exception
             {
                 // create destroyable record
                 recordCategoryRecordLevel = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 utils.createBasicDispositionSchedule(
-                            recordCategoryRecordLevel, 
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS, 
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, 
-                            true, 
+                            recordCategoryRecordLevel,
+                            CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
+                            CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
+                            true,
                             true);
                 recordFolder = recordFolderService.createRecordFolder(recordCategoryRecordLevel, GUID.generate());
                 destroyableRecord = utils.createRecord(recordFolder, GUID.generate(), GUID.generate());
                 utils.completeRecord(destroyableRecord);
                 utils.completeEvent(destroyableRecord, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(destroyableRecord, CutOffAction.NAME);
-                
+
                 // assert things are as we expect
                 assertEquals(DestroyAction.NAME, dispositionService.getNextDispositionAction(destroyableRecord).getName());
                 assertTrue(dispositionService.isNextDispositionActionEligible(destroyableRecord));
-                
+
                 // reset test content cleanser
                 contentCleanser.reset();
                 assertFalse(contentDestructionComponent.isCleansingEnabled());
             }
-            
+
             public void when() throws Exception
             {
                 // destroy the folder
@@ -206,25 +206,25 @@ public class DestroyContentTest extends BaseRMTestCase
 
             public void then() throws Exception
             {
-                // show that record still exists and has the ghosted aspect applied 
+                // show that record still exists and has the ghosted aspect applied
                 assertTrue(nodeService.exists(destroyableRecord));
                 assertTrue(nodeService.hasAspect(destroyableRecord, ASPECT_GHOSTED));
-                
+
                 // record content is destroyed
                 ContentReader reader = contentService.getReader(destroyableRecord, PROP_CONTENT);
-                assertNull(reader);        
-                
+                assertNull(reader);
+
                 // content cleansing hasn't taken place
-                assertFalse(contentCleanser.hasCleansed());    
-                
+                assertFalse(contentCleanser.hasCleansed());
+
                 // ensure the record isn't in the archive store
                 NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, destroyableRecord.getId());
                 assertFalse(nodeService.exists(archiveNodeRef));
-                        
+
             }
         });
     }
-    
+
     /**
      * Given that a record is eligible for destruction
      * And record ghosting is applied
@@ -238,37 +238,37 @@ public class DestroyContentTest extends BaseRMTestCase
     public void testRecordDestroyAndCleanse() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {    
+        {
             private NodeRef recordCategoryRecordLevel;
             private NodeRef recordFolder;
             private NodeRef destroyableRecord;
-            
+
             public void given() throws Exception
             {
                 // create destroyable record
                 recordCategoryRecordLevel = filePlanService.createRecordCategory(filePlan, GUID.generate());
                 utils.createBasicDispositionSchedule(
-                            recordCategoryRecordLevel, 
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS, 
-                            CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY, 
-                            true, 
+                            recordCategoryRecordLevel,
+                            CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS,
+                            CommonRMTestUtils.DEFAULT_DISPOSITION_AUTHORITY,
+                            true,
                             true);
                 recordFolder = recordFolderService.createRecordFolder(recordCategoryRecordLevel, GUID.generate());
                 destroyableRecord = utils.createRecord(recordFolder, GUID.generate(), GUID.generate());
                 utils.completeRecord(destroyableRecord);
                 utils.completeEvent(destroyableRecord, CommonRMTestUtils.DEFAULT_EVENT_NAME);
                 rmActionService.executeRecordsManagementAction(destroyableRecord, CutOffAction.NAME);
-                
+
                 // assert things are as we expect
                 assertEquals(DestroyAction.NAME, dispositionService.getNextDispositionAction(destroyableRecord).getName());
                 assertTrue(dispositionService.isNextDispositionActionEligible(destroyableRecord));
-                
+
                 // reset test content cleanser and configure on
                 contentCleanser.reset();
                 contentDestructionComponent.setCleansingEnabled(true);
                 assertTrue(contentDestructionComponent.isCleansingEnabled());
             }
-            
+
             public void when() throws Exception
             {
                 // destroy the folder
@@ -277,30 +277,30 @@ public class DestroyContentTest extends BaseRMTestCase
 
             public void then() throws Exception
             {
-                // show that record still exists and has the ghosted aspect applied 
+                // show that record still exists and has the ghosted aspect applied
                 assertTrue(nodeService.exists(destroyableRecord));
                 assertTrue(nodeService.hasAspect(destroyableRecord, ASPECT_GHOSTED));
-                
+
                 // record content is destroyed
                 ContentReader reader = contentService.getReader(destroyableRecord, PROP_CONTENT);
-                assertNull(reader);        
-                
+                assertNull(reader);
+
                 // content cleansing has taken place
-                assertTrue(contentCleanser.hasCleansed());       
-                
+                assertTrue(contentCleanser.hasCleansed());
+
                 // ensure the record isn't in the archive store
                 NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, destroyableRecord.getId());
-                assertFalse(nodeService.exists(archiveNodeRef));     
+                assertFalse(nodeService.exists(archiveNodeRef));
             }
-            
+
             public void after() throws Exception
             {
-                // reset cleansing to default 
+                // reset cleansing to default
                 contentDestructionComponent.setCleansingEnabled(false);
             }
         });
     }
-    
+
     /**
      * When the a record is deleted
      * Then the content is destroyed
@@ -309,12 +309,12 @@ public class DestroyContentTest extends BaseRMTestCase
     public void testRecordDelete() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {    
+        {
             private NodeRef recordCategoryRecordLevel;
             private NodeRef recordFolder;
             private NodeRef deleteableRecord;
             private ContentData contentData;
-            
+
             public void given() throws Exception
             {
                 // create destroyable record
@@ -322,16 +322,16 @@ public class DestroyContentTest extends BaseRMTestCase
                 recordFolder = recordFolderService.createRecordFolder(recordCategoryRecordLevel, GUID.generate());
                 deleteableRecord = utils.createRecord(recordFolder, GUID.generate(), GUID.generate());
                 contentData = (ContentData)nodeService.getProperty(deleteableRecord, PROP_CONTENT);
-                
+
                 // assert things are as we expect
                 assertNotNull(contentData);
                 assertTrue(contentStore.exists(contentData.getContentUrl()));
-                
+
                 // reset test content cleanser
                 contentCleanser.reset();
                 assertFalse(contentDestructionComponent.isCleansingEnabled());
             }
-            
+
             public void when() throws Exception
             {
                 // delete the record
@@ -340,20 +340,20 @@ public class DestroyContentTest extends BaseRMTestCase
 
             public void then() throws Exception
             {
-                // record destroyed 
+                // record destroyed
                 assertFalse(nodeService.exists(deleteableRecord));
-                assertFalse(contentStore.exists(contentData.getContentUrl()));         
-                
+                assertFalse(contentStore.exists(contentData.getContentUrl()));
+
                 // content cleansing hasn't taken place
-                assertFalse(contentCleanser.hasCleansed());   
-                
+                assertFalse(contentCleanser.hasCleansed());
+
                 // ensure the record isn't in the archive store
                 NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableRecord.getId());
                 assertFalse(nodeService.exists(archiveNodeRef));
             }
         });
     }
-    
+
     /**
      * Given cleansing is configured on
      * When the a record is deleted
@@ -364,12 +364,12 @@ public class DestroyContentTest extends BaseRMTestCase
     public void testRecordDeleteAndCleanse() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {    
+        {
             private NodeRef recordCategoryRecordLevel;
             private NodeRef recordFolder;
             private NodeRef deleteableRecord;
             private ContentData contentData;
-            
+
             public void given() throws Exception
             {
                 // create destroyable record
@@ -377,17 +377,17 @@ public class DestroyContentTest extends BaseRMTestCase
                 recordFolder = recordFolderService.createRecordFolder(recordCategoryRecordLevel, GUID.generate());
                 deleteableRecord = utils.createRecord(recordFolder, GUID.generate(), GUID.generate());
                 contentData = (ContentData)nodeService.getProperty(deleteableRecord, PROP_CONTENT);
-                
+
                 // assert things are as we expect
                 assertNotNull(contentData);
                 assertTrue(contentStore.exists(contentData.getContentUrl()));
-                
+
                 // reset test content cleanser and configure on
                 contentCleanser.reset();
                 contentDestructionComponent.setCleansingEnabled(true);
                 assertTrue(contentDestructionComponent.isCleansingEnabled());
             }
-            
+
             public void when() throws Exception
             {
                 // delete the record
@@ -396,26 +396,26 @@ public class DestroyContentTest extends BaseRMTestCase
 
             public void then() throws Exception
             {
-                // record destroyed 
+                // record destroyed
                 assertFalse(nodeService.exists(deleteableRecord));
-                assertFalse(contentStore.exists(contentData.getContentUrl()));         
-                
+                assertFalse(contentStore.exists(contentData.getContentUrl()));
+
                 // content cleansing has taken place
-                assertTrue(contentCleanser.hasCleansed());  
-                
+                assertTrue(contentCleanser.hasCleansed());
+
                 // ensure the record isn't in the archive store
                 NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableRecord.getId());
-                assertFalse(nodeService.exists(archiveNodeRef));           
+                assertFalse(nodeService.exists(archiveNodeRef));
             }
-            
+
             public void after() throws Exception
             {
-                // reset cleansing to default 
+                // reset cleansing to default
                 contentDestructionComponent.setCleansingEnabled(false);
             }
         });
     }
-    
+
     /**
      * When classified content (non-record) is deleted
      * Then it is destroyed
@@ -424,10 +424,10 @@ public class DestroyContentTest extends BaseRMTestCase
     public void testClassifiedContentDelete() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {    
+        {
             private NodeRef deleteableContent;
             private ContentData contentData;
-            
+
             public void given() throws Exception
             {
                 // create deletable classified content
@@ -437,26 +437,26 @@ public class DestroyContentTest extends BaseRMTestCase
                 writer.setEncoding("UTF-8");
                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 writer.putContent(GUID.generate());
-                
+
                 // classify the content
                 ClassificationAspectProperties properties = new ClassificationAspectProperties();
                 properties.setClassificationLevelId("level1");
                 properties.setClassifiedBy("me");
                 properties.setClassificationReasonIds(Collections.singleton("Test Reason 1"));
                 contentClassificationService.classifyContent(properties, deleteableContent);
-                
+
                 // grab the content data
                 contentData = (ContentData)nodeService.getProperty(deleteableContent, PROP_CONTENT);
-                
+
                 // assert things are as we expect
                 assertNotNull(contentData);
                 assertTrue(contentStore.exists(contentData.getContentUrl()));
-                
+
                 // reset test content cleanser
                 contentCleanser.reset();
                 assertFalse(contentDestructionComponent.isCleansingEnabled());
             }
-            
+
             public void when() throws Exception
             {
                 // delete the content
@@ -465,20 +465,20 @@ public class DestroyContentTest extends BaseRMTestCase
 
             public void then() throws Exception
             {
-                // content destroyed 
+                // content destroyed
                 assertFalse(nodeService.exists(deleteableContent));
-                assertFalse(contentStore.exists(contentData.getContentUrl()));      
-                
+                assertFalse(contentStore.exists(contentData.getContentUrl()));
+
                 // content cleansing hasn't taken place
-                assertFalse(contentCleanser.hasCleansed());  
-                
+                assertFalse(contentCleanser.hasCleansed());
+
                 // ensure the record isn't in the archive store
                 NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableContent.getId());
-                assertFalse(nodeService.exists(archiveNodeRef));          
+                assertFalse(nodeService.exists(archiveNodeRef));
             }
         });
     }
-    
+
     /**
      * Given data cleansing is configured on
      * When classified content (non-record) is deleted
@@ -489,10 +489,10 @@ public class DestroyContentTest extends BaseRMTestCase
     public void testClassifiedContentDeleteAndCleanse() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {    
+        {
             private NodeRef deleteableContent;
             private ContentData contentData;
-            
+
             public void given() throws Exception
             {
                 // create deletable classified content
@@ -502,27 +502,27 @@ public class DestroyContentTest extends BaseRMTestCase
                 writer.setEncoding("UTF-8");
                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 writer.putContent(GUID.generate());
-                
+
                 // classify the content
                 ClassificationAspectProperties properties = new ClassificationAspectProperties();
                 properties.setClassificationLevelId("level1");
                 properties.setClassifiedBy("me");
                 properties.setClassificationReasonIds(Collections.singleton("Test Reason 1"));
                 contentClassificationService.classifyContent(properties, deleteableContent);
-                
+
                 // grab the content data
                 contentData = (ContentData)nodeService.getProperty(deleteableContent, PROP_CONTENT);
-                
+
                 // assert things are as we expect
                 assertNotNull(contentData);
                 assertTrue(contentStore.exists(contentData.getContentUrl()));
-                
+
                 // reset test content cleanser and configure on
                 contentCleanser.reset();
                 contentDestructionComponent.setCleansingEnabled(true);
                 assertTrue(contentDestructionComponent.isCleansingEnabled());
             }
-            
+
             public void when() throws Exception
             {
                 // delete the content
@@ -531,26 +531,26 @@ public class DestroyContentTest extends BaseRMTestCase
 
             public void then() throws Exception
             {
-                // content destroyed 
+                // content destroyed
                 assertFalse(nodeService.exists(deleteableContent));
-                assertFalse(contentStore.exists(contentData.getContentUrl()));           
-                
+                assertFalse(contentStore.exists(contentData.getContentUrl()));
+
                 // content cleansing has taken place
-                assertTrue(contentCleanser.hasCleansed());      
-                
+                assertTrue(contentCleanser.hasCleansed());
+
                 // ensure the record isn't in the archive store
                 NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableContent.getId());
-                assertFalse(nodeService.exists(archiveNodeRef));  
+                assertFalse(nodeService.exists(archiveNodeRef));
             }
-            
+
             public void after() throws Exception
             {
-                // reset cleansing to default 
+                // reset cleansing to default
                 contentDestructionComponent.setCleansingEnabled(false);
             }
         });
     }
-    
+
     /**
      * When a unclassified document (non-record) is deleted
      * Then it is deleted but the the content is not immediately destroyed
@@ -559,10 +559,10 @@ public class DestroyContentTest extends BaseRMTestCase
     public void testContentDelete() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {    
+        {
             private NodeRef deleteableContent;
             private ContentData contentData;
-            
+
             public void given() throws Exception
             {
                 // create deletable content
@@ -572,18 +572,18 @@ public class DestroyContentTest extends BaseRMTestCase
                 writer.setEncoding("UTF-8");
                 writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
                 writer.putContent(GUID.generate());
-                
+
                 contentData = (ContentData)nodeService.getProperty(deleteableContent, PROP_CONTENT);
-                
+
                 // assert things are as we expect
                 assertNotNull(contentData);
                 assertTrue(contentStore.exists(contentData.getContentUrl()));
-                
+
                 // reset test content cleanser
                 contentCleanser.reset();
                 assertFalse(contentDestructionComponent.isCleansingEnabled());
             }
-            
+
             public void when() throws Exception
             {
                 // delete the content
@@ -594,14 +594,14 @@ public class DestroyContentTest extends BaseRMTestCase
             {
                 // content deleted but not destroyed
                 assertFalse(nodeService.exists(deleteableContent));
-                assertTrue(contentStore.exists(contentData.getContentUrl()));       
-                
+                assertTrue(contentStore.exists(contentData.getContentUrl()));
+
                 // content cleansing hasn't taken place
-                assertFalse(contentCleanser.hasCleansed());    
-                
+                assertFalse(contentCleanser.hasCleansed());
+
                 // ensure the content is in the archive store
                 NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableContent.getId());
-                assertTrue(nodeService.exists(archiveNodeRef));  
+                assertTrue(nodeService.exists(archiveNodeRef));
             }
         });
     }

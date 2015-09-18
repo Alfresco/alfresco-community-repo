@@ -142,9 +142,24 @@ public interface JobLockService
     String getLock(QName lockQName, long timeToLive, long retryWait, int retryCount);    
     
     /**
+     * Take a manually-managed lock and provide a callback to refresh it periodically.
+     * A convenience wrapper around {@link #getLock(QName,long)}
+     * and {@link #refreshLock(String,QName,long,JobLockRefreshCallback)}.
+     * 
+     * @param lockQName             the name of the lock to acquire
+     * @param timeToLive            the time (in milliseconds) for the lock to remain valid.
+     *                              This value <b>must not</b> be larger than either the anticipated
+     *                              operation time or a server startup time.  Typically, it should be
+     *                              a few seconds.
+     * @param callback              the object that will be called at intervals of timeToLive/2 (about)
+     * @return                      Returns the newly-created lock token, or null if callback not active.
+     * @throws LockAcquisitionException if the lock could not be acquired
+     */
+    String getLock(QName lockQName, long timeToLive, JobLockRefreshCallback callback);
+
+    /**
      * Refresh the lock using a valid lock token.
      * 
-     * @param lockToken             the lock token returned when the lock was acquired
      * @param lockQName             the name of the previously-acquired lock
      * @param timeToLive            the time (in milliseconds) for the lock to remain valid
      * @throws LockAcquisitionException if the lock could not be refreshed or acquired
@@ -159,8 +174,9 @@ public interface JobLockService
      * Since the lock is not actually refreshed by this method, there will be no LockAcquisitionException.
      * <p/>
      * The TTL (time to live) will be divided by two and the result used to trigger a timer thread
-     * to initiate the callback.
-     * 
+     * to initiate the callback. The first refresh will occur after TTL/2 and no significant work
+     * should be done between acquiring a lock and calling this method, to prevent expiration.
+     *
      * @param lockToken             the lock token returned when the lock was acquired
      * @param lockQName             the name of the previously-acquired lock
      * @param timeToLive            the time (in milliseconds) for the lock to remain valid

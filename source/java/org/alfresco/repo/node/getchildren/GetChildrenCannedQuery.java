@@ -258,8 +258,15 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
             
             if (sortPairs.size() > 0)
             {
+            	Long startSort = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+            	
                 // sort
                 Collections.sort(children, new PropComparatorAsc(sortPairs));
+                
+                if (startSort != null)
+                {
+                    logger.debug("Post-query sort: "+children.size()+" in "+(System.currentTimeMillis()-startSort)+" msecs");
+                }
             }
             
             result = new ArrayList<NodeRef>(children.size());
@@ -699,9 +706,14 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         private final FilterSortChildQueryCallback resultsCallback;
         private boolean more = true;
         
+        private static final int BATCH_SIZE = 256 * 4;
+        private final List<FilterSortNodeEntity> results;
+        
         private FilterSortResultHandler(FilterSortChildQueryCallback resultsCallback)
         {
             this.resultsCallback = resultsCallback;
+            
+            results = new LinkedList<FilterSortNodeEntity>(); 
         }
         
         public boolean handleResult(FilterSortNodeEntity result)
@@ -712,86 +724,121 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 return false;
             }
             
-            Node node = result.getNode();
-            NodeRef nodeRef = node.getNodeRef();
-            
-            Map<NodePropertyKey, NodePropertyValue> propertyValues = new HashMap<NodePropertyKey, NodePropertyValue>(3);
-            
-            NodePropertyEntity prop1 = result.getProp1();
-            if (prop1 != null)
+            if (results.size() >= BATCH_SIZE)
             {
-                propertyValues.put(prop1.getKey(), prop1.getValue());
+                // batch
+                preloadFilterSort();
             }
             
-            NodePropertyEntity prop2 = result.getProp2();
-            if (prop2 != null)
-            {
-                propertyValues.put(prop2.getKey(), prop2.getValue());
-            }
-            
-            NodePropertyEntity prop3 = result.getProp3();
-            if (prop3 != null)
-            {
-                propertyValues.put(prop3.getKey(), prop3.getValue());
-            }
-            
-            Map<QName, Serializable> propVals = nodePropertyHelper.convertToPublicProperties(propertyValues);
-            
-            // Add referenceable / spoofed properties (including spoofed name if null)
-            ReferenceablePropertiesEntity.addReferenceableProperties(node, propVals);
-            
-            // special cases
-            
-            // MLText (eg. cm:title, cm:description, ...)
-            for (Map.Entry<QName, Serializable> entry : propVals.entrySet())
-            {
-                if (entry.getValue() instanceof MLText)
-                {
-                    propVals.put(entry.getKey(), DefaultTypeConverter.INSTANCE.convert(String.class, (MLText)entry.getValue()));
-                }
-            }
-            
-            // ContentData (eg. cm:content.size, cm:content.mimetype)
-            ContentData contentData = (ContentData)propVals.get(ContentModel.PROP_CONTENT);
-            if (contentData != null)
-            {
-                propVals.put(SORT_QNAME_CONTENT_SIZE, contentData.getSize());
-                propVals.put(SORT_QNAME_CONTENT_MIMETYPE, contentData.getMimetype());
-            }
-            
-            // Auditable props (eg. cm:creator, cm:created, cm:modifier, cm:modified, ...)
-            AuditablePropertiesEntity auditableProps = node.getAuditableProperties();
-            if (auditableProps != null)
-            {
-                for (Map.Entry<QName, Serializable> entry : auditableProps.getAuditableProperties().entrySet())
-                {
-                    propVals.put(entry.getKey(), entry.getValue());
-                }
-            }
-            
-            // Node type
-            Long nodeTypeQNameId = node.getTypeQNameId();
-            if (nodeTypeQNameId != null)
-            {
-                Pair<Long, QName> pair = qnameDAO.getQName(nodeTypeQNameId);
-                if (pair != null)
-                {
-                    propVals.put(SORT_QNAME_NODE_TYPE, pair.getSecond());
-                }
-            }
-            
-            // Call back
-            boolean more = resultsCallback.handle(new FilterSortNode(nodeRef, propVals));
-            if (!more)
-            {
-                this.more = false;
-            }
+            results.add(result);
             
             return more;
         }
         
         public void done()
         {
+            if (results.size() >= 0)
+            {
+                // finish batch
+                preloadFilterSort();
+            }
+        }
+        
+        private void preloadFilterSort()
+        {
+        	List<NodeRef> nodeRefs = new ArrayList<>(results.size());
+            for (FilterSortNodeEntity result : results)
+            {
+            	nodeRefs.add(result.getNode().getNodeRef());
+            }
+            
+            preload(nodeRefs);
+            
+            for (FilterSortNodeEntity result : results)
+            {
+                Node node = result.getNode();
+                NodeRef nodeRef = node.getNodeRef();
+                
+                Map<NodePropertyKey, NodePropertyValue> propertyValues = new HashMap<NodePropertyKey, NodePropertyValue>(3);
+                
+                NodePropertyEntity prop1 = result.getProp1();
+                if (prop1 != null)
+                {
+                    propertyValues.put(prop1.getKey(), prop1.getValue());
+                }
+                
+                NodePropertyEntity prop2 = result.getProp2();
+                if (prop2 != null)
+                {
+                    propertyValues.put(prop2.getKey(), prop2.getValue());
+                }
+                
+                NodePropertyEntity prop3 = result.getProp3();
+                if (prop3 != null)
+                {
+                    propertyValues.put(prop3.getKey(), prop3.getValue());
+                }
+                
+                Map<QName, Serializable> propVals = nodePropertyHelper.convertToPublicProperties(propertyValues);
+                
+                // Add referenceable / spoofed properties (including spoofed name if null)
+                ReferenceablePropertiesEntity.addReferenceableProperties(node, propVals);
+                
+                // special cases
+                
+                // MLText (eg. cm:title, cm:description, ...)
+                for (Map.Entry<QName, Serializable> entry : propVals.entrySet())
+                {
+                    if (entry.getValue() instanceof MLText)
+                    {
+                        propVals.put(entry.getKey(), DefaultTypeConverter.INSTANCE.convert(String.class, (MLText)entry.getValue()));
+                    }
+                }
+                
+                // ContentData (eg. cm:content.size, cm:content.mimetype)
+                ContentData contentData = (ContentData)propVals.get(ContentModel.PROP_CONTENT);
+                if (contentData != null)
+                {
+                    propVals.put(SORT_QNAME_CONTENT_SIZE, contentData.getSize());
+                    propVals.put(SORT_QNAME_CONTENT_MIMETYPE, contentData.getMimetype());
+                }
+                
+                // Auditable props (eg. cm:creator, cm:created, cm:modifier, cm:modified, ...)
+                AuditablePropertiesEntity auditableProps = node.getAuditableProperties();
+                if (auditableProps != null)
+                {
+                    for (Map.Entry<QName, Serializable> entry : auditableProps.getAuditableProperties().entrySet())
+                    {
+                        propVals.put(entry.getKey(), entry.getValue());
+                    }
+                }
+                
+                // Node type
+                Long nodeTypeQNameId = node.getTypeQNameId();
+                if (nodeTypeQNameId != null)
+                {
+                    Pair<Long, QName> pair = qnameDAO.getQName(nodeTypeQNameId);
+                    if (pair != null)
+                    {
+                        propVals.put(SORT_QNAME_NODE_TYPE, pair.getSecond());
+                    }
+                }
+                
+                // Call back
+                boolean more = resultsCallback.handle(new FilterSortNode(nodeRef, propVals));
+                if (!more)
+                {
+                    this.more = false;
+                    break;
+                }
+            }
+            
+            for (FilterSortNodeEntity result : results)
+            {
+            	nodeRefs.add(result.getNode().getNodeRef());
+            }
+            
+            results.clear();
         }
     }
     

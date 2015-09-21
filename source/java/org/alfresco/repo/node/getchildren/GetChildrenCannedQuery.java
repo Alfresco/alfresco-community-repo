@@ -833,11 +833,6 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
                 }
             }
             
-            for (FilterSortNodeEntity result : results)
-            {
-            	nodeRefs.add(result.getNode().getNodeRef());
-            }
-            
             results.clear();
         }
     }

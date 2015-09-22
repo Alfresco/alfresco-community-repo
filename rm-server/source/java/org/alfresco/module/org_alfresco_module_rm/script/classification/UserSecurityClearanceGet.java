@@ -22,6 +22,7 @@ import static java.lang.Boolean.parseBoolean;
 import static java.lang.Integer.parseInt;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
+import static org.springframework.extensions.surf.util.URLDecoder.decode;
 import static org.springframework.extensions.webscripts.Status.STATUS_INTERNAL_SERVER_ERROR;
 
 import java.util.ArrayList;
@@ -216,6 +217,7 @@ public class UserSecurityClearanceGet extends AbstractRmWebScript
         {
             return;
         }
+        sortFields = decode(sortFields);
         String sortAscendingFlags = req.getParameter(SORT_ASCENDING_FLAGS);
         sortAscendingFlags = (isBlank(sortAscendingFlags) ? "True" : sortAscendingFlags);
 

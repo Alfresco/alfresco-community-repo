@@ -20,6 +20,13 @@
            <value>sleep-action</value>
        </property>
    </bean>
+
+    <bean id="empty-action" class="org.alfresco.repo.action.executer.EmptyActionExecutor" parent="action-executer">
+        <property name="publicAction">
+            <value>false</value>
+        </property>
+    </bean>
+
    
    <bean id="transient-fail-action"
          class="org.alfresco.repo.action.ActionServiceImplTest$TransientFailActionExecuter"

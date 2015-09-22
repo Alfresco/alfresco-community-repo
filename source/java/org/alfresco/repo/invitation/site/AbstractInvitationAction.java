@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,8 +19,8 @@
 
 package org.alfresco.repo.invitation.site;
 
-import org.alfresco.repo.invitation.InviteHelper;
 import org.alfresco.repo.workflow.jbpm.JBPMSpringActionHandler;
+import org.alfresco.service.cmr.invitation.InvitationService;
 import org.springframework.beans.factory.BeanFactory;
 
 /**
@@ -31,7 +31,7 @@ import org.springframework.beans.factory.BeanFactory;
 public abstract class AbstractInvitationAction extends JBPMSpringActionHandler
 {
     private static final long serialVersionUID = -6497378327090711383L;
-    protected InviteHelper inviteHelper;
+    protected InvitationService invitationService;
 
     /**
     * {@inheritDoc}
@@ -39,6 +39,6 @@ public abstract class AbstractInvitationAction extends JBPMSpringActionHandler
     @Override
     protected void initialiseHandler(BeanFactory factory)
     {
-        this.inviteHelper= (InviteHelper)factory.getBean(InviteHelper.NAME);
+        this.invitationService = (InvitationService)factory.getBean("InvitationService");
     }
 }

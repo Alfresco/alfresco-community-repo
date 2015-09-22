@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,6 +20,7 @@ package org.alfresco.repo.invitation.site;
 
 import java.util.Map;
 
+import org.alfresco.repo.invitation.WorkflowModelNominatedInvitation;
 import org.jbpm.graph.exe.ExecutionContext;
 
 /**
@@ -41,6 +42,11 @@ public class AcceptInviteAction extends AbstractInvitationAction
     public void execute(final ExecutionContext executionContext) throws Exception
     {
         Map<String, Object> executionVariables = executionContext.getContextInstance().getVariables();
-        inviteHelper.acceptNominatedInvitation(executionVariables);
+        String invitee = (String) executionVariables.get(WorkflowModelNominatedInvitation.wfVarInviteeUserName);
+        String siteName = (String) executionVariables.get(WorkflowModelNominatedInvitation.wfVarResourceName);
+        String inviter = (String) executionVariables.get(WorkflowModelNominatedInvitation.wfVarInviterUserName);
+        String role = (String) executionVariables.get(WorkflowModelNominatedInvitation.wfVarRole);
+        
+        invitationService.acceptNominatedInvitation(siteName, invitee, role, inviter);
     }
 }

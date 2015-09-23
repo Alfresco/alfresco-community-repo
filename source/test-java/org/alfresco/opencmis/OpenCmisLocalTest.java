@@ -37,13 +37,9 @@ import org.alfresco.events.types.ContentReadRangeEvent;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.events.EventPublisherForTestingOnly;
-import org.alfresco.repo.security.authentication.AuthenticationComponent;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.FileFilterMode.Client;
@@ -60,7 +56,6 @@ import org.apache.chemistry.opencmis.client.runtime.SessionFactoryImpl;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
 import org.apache.chemistry.opencmis.commons.data.ContentStream;
-import org.apache.chemistry.opencmis.commons.enums.BaseTypeId;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.VersioningState;
 import org.apache.chemistry.opencmis.commons.exceptions.CmisStorageException;
@@ -88,8 +83,6 @@ public class OpenCmisLocalTest extends TestCase
     	"classpath:opencmis/opencmistest-context.xml"
     																};
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
-    private static final String BEAN_NAME_AUTHENTICATION_COMPONENT = "authenticationComponent";
-    private static final String MIME_PLAIN_TEXT = "text/plain";
     private ThresholdOutputStreamFactory streamFactory;
     private EventPublisherForTestingOnly eventPublisher;
     
@@ -442,54 +435,5 @@ public class OpenCmisLocalTest extends TestCase
     private interface TestStreamTarget
     {
         void methodA(ContentStream csa, String str, ContentStream csb, ContentStream csc, int i) throws Exception;
-    }
-
-
-    /**
-     * MNT-14687 - Creating a document as checkedout and then cancelling the
-     * checkout should delete the document.
-     * 
-     * This test would have fit better within CheckOutCheckInServiceImplTest but
-     * was added here to make use of existing methods
-     */
-    public void testCancelCheckoutWhileInCheckedOutState()
-    {
-        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        CheckOutCheckInService cociService = serviceRegistry.getCheckOutCheckInService();
-
-        // Authenticate as system
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent) ctx.getBean(BEAN_NAME_AUTHENTICATION_COMPONENT);
-        authenticationComponent.setSystemUserAsCurrentUser();
-
-        /* Create the document using openCmis services */
-        Repository repository = getRepository("admin", "admin");
-        Session session = repository.createSession();
-        Folder rootFolder = session.getRootFolder();
-
-        // Set file properties
-        String docname = "myDoc-" + GUID.generate() + ".txt";
-        Map<String, String> props = new HashMap<String, String>();
-        {
-            props.put(PropertyIds.OBJECT_TYPE_ID, BaseTypeId.CMIS_DOCUMENT.value());
-            props.put(PropertyIds.NAME, docname);
-        }
-
-        // Create some content
-        byte[] byteContent = "Some content".getBytes();
-        InputStream stream = new ByteArrayInputStream(byteContent);
-        ContentStream contentStream = new ContentStreamImpl(docname, BigInteger.valueOf(byteContent.length), MIME_PLAIN_TEXT, stream);
-
-        // Create the document
-        Document doc1 = rootFolder.createDocument(props, contentStream, VersioningState.CHECKEDOUT);
-        NodeRef doc1NodeRef = cmisIdToNodeRef(doc1.getId());
-        NodeRef doc1WorkingCopy = cociService.getWorkingCopy(doc1NodeRef);
-
-        /* Cancel Checkout */
-        cociService.cancelCheckout(doc1WorkingCopy);
-
-        /* Check if both the working copy and the document were deleted */
-        NodeService nodeService = serviceRegistry.getNodeService();
-        assertFalse(nodeService.exists(doc1NodeRef));
-        assertFalse(nodeService.exists(doc1WorkingCopy));
     }
 }

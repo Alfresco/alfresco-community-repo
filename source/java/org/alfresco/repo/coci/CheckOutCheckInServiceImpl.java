@@ -707,10 +707,6 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
 
             // Invoke policy
             invokeOnCancelCheckOut(nodeRef);
-
-            // If the node does not have an initial version checked out delete it
-            removeNodeIfInCheckedOutState(nodeRef);
-
         }
         catch (UnableToReleaseLockException exception)
         {
@@ -722,25 +718,6 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
         }
         
         return nodeRef;
-    }
-    
-    /**
-     * If the node does not have an initial version checked out delete it.
-     * MNT-14687 - Creating a document as checkedout and then cancelling the
-     * checkout should delete the document.
-     */
-    private void removeNodeIfInCheckedOutState(NodeRef nodeRef)
-    {
-        if (!nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
-        {
-            return;
-        }
-
-        Boolean initialVersion = (Boolean) nodeService.getProperty(nodeRef, ContentModel.PROP_INITIAL_VERSION);
-        if (initialVersion != null && initialVersion == false)
-        {
-            nodeService.deleteNode(nodeRef);
-        }
     }
     
     @Override

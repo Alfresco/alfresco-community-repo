@@ -118,6 +118,10 @@ public abstract class ClassifyContentBase extends AbstractRmWebScript
         String downgradeDate = getStringValueFromJSONObject(jsonObject, DOWNGRADE_DATE, false, false);
         String downgradeEvent = getStringValueFromJSONObject(jsonObject, DOWNGRADE_EVENT, false, false);
         String downgradeInstructions = getStringValueFromJSONObject(jsonObject, DOWNGRADE_INSTRUCTIONS, false, false);
+        if ((isNotBlank(downgradeDate) || isNotBlank(downgradeEvent)) && isBlank(downgradeInstructions))
+        {
+            throw new WebScriptException(STATUS_BAD_REQUEST, "Downgrade instructions cannot be empty if downgrade date and/or downgrade event has/have been set.");
+        }
         String declassificationDate = getStringValueFromJSONObject(jsonObject, DECLASSIFICATION_DATE, false, false);
         String declassificationEvent = getStringValueFromJSONObject(jsonObject, DECLASSIFICATION_EVENT, false, false);
         Set<String> exemptionCategoryIds = getExemptionCategoryIds(jsonObject);

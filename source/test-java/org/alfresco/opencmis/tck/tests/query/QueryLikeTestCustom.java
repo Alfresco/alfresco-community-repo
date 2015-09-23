@@ -19,35 +19,18 @@
 
 package org.alfresco.opencmis.tck.tests.query;
 
-import java.util.Map;
-
-import org.apache.chemistry.opencmis.commons.SessionParameter;
-import org.apache.chemistry.opencmis.tck.impl.TestParameters;
 import org.apache.chemistry.opencmis.tck.tests.query.QueryLikeTest;
 
 /**
- * Fix for MNT-14432 Create test folders with temporary aspect for QueryLikeTest
+ * Fix for MNT-14432 - skip deletion of test data
  * 
  * @author Andreea Dragoi
  * @since 4.2.5
  */
 
 public class QueryLikeTestCustom extends QueryLikeTest
-{
-
-    private static final String TEMPORARY_ASPECT = "P:sys:temporary";
-
-    public void init(Map<String, String> parameters)
-    {
-        parameters.put(SessionParameter.OBJECT_FACTORY_CLASS, "org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl");
-
-        String objectTypeId = parameters.get(TestParameters.DEFAULT_FOLDER_TYPE);
-        if (objectTypeId == null)
-        {
-            objectTypeId = TestParameters.DEFAULT_FOLDER_TYPE_VALUE;
-        }
-        objectTypeId = objectTypeId + "," + TEMPORARY_ASPECT;
-        parameters.put(TestParameters.DEFAULT_FOLDER_TYPE, objectTypeId);
-        super.init(parameters);
+{   
+    protected void deleteTestFolder() {
+    	//do nothing - skip deletion of test folder
     }
 }

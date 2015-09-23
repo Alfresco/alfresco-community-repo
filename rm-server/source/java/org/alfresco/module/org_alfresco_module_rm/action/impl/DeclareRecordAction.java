@@ -54,6 +54,17 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
 
     /** Logger */
     private static Log logger = LogFactory.getLog(DeclareRecordAction.class);
+    
+    /** check mandatory properties */
+    private boolean checkMandatoryPropertiesEnabled = true;
+    
+    /**
+     * @param checkMandatoryPropertiesEnabled true if check mandatory properties is enabled, false otherwise
+     */
+    public void setCheckMandatoryPropertiesEnabled(boolean checkMandatoryPropertiesEnabled) 
+    {
+		this.checkMandatoryPropertiesEnabled = checkMandatoryPropertiesEnabled;
+	}
 
     /**
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
@@ -69,7 +80,8 @@ public class DeclareRecordAction extends RMActionExecuterAbstractBase
             {
                 List<String> missingProperties = new ArrayList<String>(5);
                 // Aspect not already defined - check mandatory properties then add
-                if (mandatoryPropertiesSet(actionedUponNodeRef, missingProperties))
+                if (!checkMandatoryPropertiesEnabled || 
+                    mandatoryPropertiesSet(actionedUponNodeRef, missingProperties))
                 {
                     getRecordService().disablePropertyEditableCheck();
                     try

@@ -108,31 +108,23 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
         addParameterDefinitions(paramList);
         Map<Locale, List<ParameterDefinition>> result = new HashMap<Locale, List<ParameterDefinition>>();
         result.put(Locale.ROOT, paramList);
-        Locale currentLocale = Locale.getDefault();
-        try
+
+        for (Locale locale : locales)
         {
-            for (Locale locale : locales)
+            List<ParameterDefinition> definitions = new LinkedList<ParameterDefinition>();
+            result.put(locale, definitions);
+            for (ParameterDefinition definition : paramList)
             {
-                Locale.setDefault(locale);
-                List<ParameterDefinition> definitions = new LinkedList<ParameterDefinition>();
-                result.put(locale, definitions);
-                for (ParameterDefinition definition : paramList)
-                {
-                    String paramDisplayLabel = getParamDisplayLabel(definition.getName());
-                    definitions.add(
-                            new ParameterDefinitionImpl(
-                                    definition.getName(),
-                                    definition.getType(),
-                                    definition.isMandatory(),
-                                    paramDisplayLabel,
-                                    definition.isMultiValued()
-                            ));
-                }
+                String paramDisplayLabel = getParamDisplayLabel(definition.getName(), locale);
+                definitions.add(
+                        new ParameterDefinitionImpl(
+                                definition.getName(),
+                                definition.getType(),
+                                definition.isMandatory(),
+                                paramDisplayLabel,
+                                definition.isMultiValued()
+                        ));
             }
-        }
-        finally
-        {
-            Locale.setDefault(currentLocale);
         }
         return result;
     }
@@ -194,11 +186,22 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
 	 * @param paramName  the name of the parameter
 	 * @return			 the diaplay label of the parameter
 	 */
-	protected String getParamDisplayLabel(String paramName) 
+	protected String getParamDisplayLabel(String paramName)
 	{
 		return I18NUtil.getMessage(this.name + "." + paramName + "." + DISPLAY_LABEL);
 	}
-	
+
+    /**
+     * Gets the parameter definition display label from the properties file.
+     *
+     * @param paramName  the name of the parameter
+     * @param locale  the name of the locale
+     * @return	the display label of the parameter
+     */
+    protected String getParamDisplayLabel(String paramName, Locale locale)
+    {
+        return I18NUtil.getMessage(this.name + "." + paramName + "." + DISPLAY_LABEL, locale);
+    }
 	/**
 	 * Checked whether all the mandatory parameters for the rule item have been assigned.
 	 * 

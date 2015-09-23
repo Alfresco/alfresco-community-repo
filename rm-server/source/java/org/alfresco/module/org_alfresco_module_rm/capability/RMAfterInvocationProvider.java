@@ -412,8 +412,29 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
             return null;
         }
 
+        class RMFilteringResultSet extends FilteringResultSet
+        {
+            private long numberFound;
+
+            public RMFilteringResultSet(ResultSet unfiltered, BitSet inclusionMask)
+            {
+                super(unfiltered, inclusionMask);
+            }
+
+            @Override
+            public long getNumberFound()
+            {
+                return numberFound;
+            }
+
+            private void setNumberFound(long numberFound)
+            {
+                this.numberFound = numberFound;
+            }
+        }
+
         BitSet inclusionMask = new BitSet(returnedObject.length());
-        FilteringResultSet filteringResultSet = new FilteringResultSet(returnedObject, inclusionMask);
+        RMFilteringResultSet filteringResultSet = new RMFilteringResultSet(returnedObject, inclusionMask);
 
         List<ConfigAttributeDefintion> supportedDefinitions = extractSupportedDefinitions(config);
 
@@ -524,6 +545,9 @@ public class RMAfterInvocationProvider extends RMSecurityCommon
                 break;
             }
         }
+
+        filteringResultSet.setNumberFound(returnedObject.getNumberFound());
+
         return filteringResultSet;
     }
 

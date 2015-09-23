@@ -828,11 +828,10 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
     public void directActionExecution(Action action, NodeRef actionedUponNodeRef)
     {
         // Debug output
-        if (logger.isDebugEnabled() == true)
+        if (logger.isDebugEnabled())
         {
-            logger
-                        .debug("The action is being executed as the user: "
-                                    + this.authenticationContext.getCurrentUserName());
+            logger.debug("The action is being executed as the user: "
+                         + this.authenticationContext.getCurrentUserName());
         }
 
         // Get the action executer and execute

@@ -191,9 +191,12 @@ public abstract class ParameterizedItemDefinitionImpl implements ParameterizedIt
 
             List<ParameterDefinition> localizedDefinitions = this.parameterDefinitions.get(locale);
 
-            for (ParameterDefinition definition : localizedDefinitions)
+            if (localizedDefinitions!= null && localizedDefinitions.size()>0)
             {
-                namedDefinitions.put(definition.getName(), definition);
+                for (ParameterDefinition definition : localizedDefinitions)
+                {
+                    namedDefinitions.put(definition.getName(), definition);
+                }
             }
         }
     }

@@ -211,19 +211,23 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
 	protected void checkMandatoryProperties(ParameterizedItem ruleItem, ParameterizedItemDefinition ruleItemDefinition)
 	{
         List<ParameterDefinition> definitions = ruleItemDefinition.getParameterDefinitions();
-        for (ParameterDefinition definition : definitions)
+        if (definitions!= null && definitions.size()>0)
         {
-            if (definition.isMandatory() == true)
+            for (ParameterDefinition definition : definitions)
             {
-                // Check that a value has been set for the mandatory parameter
-                if (ruleItem.getParameterValue(definition.getName()) == null)
+                if (definition.isMandatory() == true)
                 {
-                    // Error since a mandatory parameter has a null value
-                   throw new RuleServiceException(
-                          MessageFormat.format(ERR_MAND_PROP, new Object[]{definition.getName(), ruleItemDefinition.getName()}));
+                    // Check that a value has been set for the mandatory parameter
+                    if (ruleItem.getParameterValue(definition.getName()) == null)
+                    {
+                        // Error since a mandatory parameter has a null value
+                        throw new RuleServiceException(
+                                MessageFormat.format(ERR_MAND_PROP, new Object[]{definition.getName(), ruleItemDefinition.getName()}));
+                    }
                 }
             }
         }
+
         
 	}
 }

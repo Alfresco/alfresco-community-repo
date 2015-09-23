@@ -347,6 +347,23 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
             rootJSONObject.put("originatingLocationPath", originatingLocationPath.toString());
         }
     }
+    
+    /**
+     * Helper method to get the display path.
+     * 
+     * @param nodeRef   node reference
+     * @return String   display path
+     */
+    private String getDisplayPath(final NodeRef nodeRef)
+    {
+        return AuthenticationUtil.runAs(new RunAsWork<String>()
+        {
+            public String doWork() throws Exception
+            {
+                return PathUtil.getDisplayPath(nodeService.getPath(nodeRef), true);
+            }
+        }, AuthenticationUtil.getAdminUserName());
+    }
 
     /**
      * Helper method to get the display path.

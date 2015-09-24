@@ -54,6 +54,15 @@
             </property>          
 		</properties>       
       </aspect>
+      
+      <aspect name="rmt:recordMetaDataWithProperty">      
+      	<properties>
+            <property name="rmt:customMandatoryProperty">
+               <type>d:text</type>
+               <mandatory>true</mandatory>               
+            </property>       
+		</properties>  
+      </aspect>
        
    </aspects>
    

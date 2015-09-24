@@ -22,7 +22,7 @@
       <property name="index" value="30" />
    </bean>
 
-   <!-- controls user and gropus role assignments -->
+   <!-- controls user and groups role assignments -->
    <bean id="rmManageAccessControlsCapability"
       parent="declarativeCapability">
       <property name="name" value="ManageAccessControls" />

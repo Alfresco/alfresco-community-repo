@@ -217,7 +217,14 @@
 	    	</map>
     	</property>
     </bean>
-
+    <bean id="testRecordMetadataWithPropertyAspectBootstrap" parent="recordMetadataAspectBootstrap">
+       <property name="recordMetadataAspects">
+	    	<map>
+	    		<entry key="rmt:recordMetaDataWithProperty" value="rma:filePlan" />
+	    	</map>
+    	</property>
+    </bean>
+    
    <bean id="Search" class="org.alfresco.repo.management.subsystems.SwitchableApplicationContextFactory" parent="abstractPropertyBackedBean">
       <property name="autoStart">
          <value>false</value>

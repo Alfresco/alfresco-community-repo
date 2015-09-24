@@ -108,7 +108,7 @@ public class RM1194ExcludeDoDRecordTypesTest extends BaseRMTestCase implements D
                 assertNotNull(record);           
                 Set<QName> aspects = recordService.getRecordMetadataAspects(record);
                 assertNotNull(aspects);
-                assertEquals(1, aspects.size());
+                assertEquals(2, aspects.size());
             }
         }); 
 	}

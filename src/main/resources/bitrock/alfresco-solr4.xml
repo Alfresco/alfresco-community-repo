@@ -39,25 +39,6 @@
         </copyFile>
       </actionList>
     </folder>
-    <folder>
-      <name>keystore</name>
-      <destination>${alfresco_data_directory}/keystore</destination>
-      <distributionFileList>
-        <distributionFile allowWildcards="1" origin="${alfresco_keystore_source_directory}/*"/>
-      </distributionFileList>
-    </folder>
-    <folder>
-      <destination>${tomcat_server_directory}/conf</destination>
-      <name>tomcatusers</name>
-      <platforms>all</platforms>
-      <distributionFileList>
-        <distributionFile allowWildcards="0" origin="${alfresco_on_install_settings_directory}/alfresco/shared/tomcat-users.xml"/>
-        <distributionFile allowWildcards="0" origin="${alfresco_on_install_settings_directory}/alfresco/shared/server.xml"/>
-      </distributionFileList>
-      <actionList>
-        <alfrescoConfigure alfrescoFiles="${tomcat_server_directory}/conf/server.xml"/>
-      </actionList>
-    </folder>
   </folderList>
   <postInstallationActionList>
     <alfrescoSetProperty property="index.subsystem.name" value="solr4"/>

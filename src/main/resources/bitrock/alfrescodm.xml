@@ -202,6 +202,15 @@
             </distributionFileList>
         </folder>
         <folder>
+            <description>//Default Keystore</description>
+            <destination>${alfresco_data_directory}/keystore</destination>
+            <name>keystore</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+                <distributionFile allowWildcards="1" origin="${alfresco_keystore_source_directory}/*"/>
+            </distributionFileList>
+        </folder>
+        <folder>
             <description>//Tomcat Conf Files</description>
             <destination>${application_server_conf_directory}</destination>
             <name>tomcatconffiles</name>
@@ -209,6 +218,18 @@
             <distributionFileList>
                 <distributionDirectory allowWildcards="1" origin="${alfresco_tomcat_conf_directory}/*"/>
             </distributionFileList>
+        </folder>
+        <folder>
+            <name>tomcatusers</name>
+            <destination>${tomcat_server_directory}/conf</destination>
+            <platforms>all</platforms>
+            <distributionFileList>
+                <distributionFile allowWildcards="0" origin="${alfresco_on_install_settings_directory}/alfresco/shared/tomcat-users.xml"/>
+                <distributionFile allowWildcards="0" origin="${alfresco_on_install_settings_directory}/alfresco/shared/server.xml"/>
+            </distributionFileList>
+            <actionList>
+                <alfrescoConfigure alfrescoFiles="${tomcat_server_directory}/conf/server.xml"/>
+            </actionList>
         </folder>
         <folder>
             <description>//Program Files</description>

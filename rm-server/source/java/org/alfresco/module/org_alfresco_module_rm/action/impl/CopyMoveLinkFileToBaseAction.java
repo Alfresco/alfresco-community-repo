@@ -170,21 +170,18 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
                 {
                     try
                     {
-        				synchronized (this)
-        				{
-	                        if(getMode() == CopyMoveLinkFileToActionMode.MOVE)
-	                        {
-	                            fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
-	                        }
-	                        else if(getMode() == CopyMoveLinkFileToActionMode.COPY)
-	                        {
-	                            fileFolderService.copy(actionedUponNodeRef, finalRecordFolder, null);
-	                        }
-	                        else if(getMode() == CopyMoveLinkFileToActionMode.LINK)
-	                        {
-	                            getRecordService().link(actionedUponNodeRef, finalRecordFolder);
-	                        }
-        				}
+                        if(getMode() == CopyMoveLinkFileToActionMode.MOVE)
+                        {
+                            fileFolderService.move(actionedUponNodeRef, finalRecordFolder, null);
+                        }
+                        else if(getMode() == CopyMoveLinkFileToActionMode.COPY)
+                        {
+                            fileFolderService.copy(actionedUponNodeRef, finalRecordFolder, null);
+                        }
+                        else if(getMode() == CopyMoveLinkFileToActionMode.LINK)
+                        {
+                            getRecordService().link(actionedUponNodeRef, finalRecordFolder);
+                        }
                     }
                     catch (FileNotFoundException fileNotFound)
                     {

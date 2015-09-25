@@ -39,12 +39,12 @@
          </list>
       </property>
    </bean>
-    
+
    <!-- Classification Permission Pre Processor -->
-   <bean id="classificationPermissionPreProcessor" 
-         class="org.alfresco.module.org_alfresco_module_rm.classification.permission.ClassificationPermissionPreProcessor" 
+   <bean id="classificationPermissionPreProcessor"
+         class="org.alfresco.module.org_alfresco_module_rm.classification.permission.ClassificationPermissionPreProcessor"
          parent="parentPermissionPreProcessor">
-      <property name="contentClassificationService" ref="contentClassificationService" />      
+      <property name="contentClassificationService" ref="contentClassificationService" />
       <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
       <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
       <property name="authenticationUtil" ref="rm.authenticationUtil" />
@@ -196,6 +196,7 @@
       <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
       <property name="freezeService" ref="FreezeService"/>
       <property name="referredMetadataService" ref="mr.ReferredMetadataService" />
+      <property name="versionService" ref="VersionService" />
    </bean>
 
    <bean id="ContentClassificationService" class="org.springframework.aop.framework.ProxyFactoryBean">

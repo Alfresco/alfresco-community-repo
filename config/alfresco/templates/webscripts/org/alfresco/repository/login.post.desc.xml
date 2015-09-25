@@ -18,7 +18,7 @@
   <url>/api/login</url>
   <format default="json"/>
   <authentication>none</authentication>
-  <transaction allow="readonly">required</transaction>
+  <transaction allow="readwrite">required</transaction>
   <lifecycle>limited_support</lifecycle>
   <family>Authentication</family>
   <requests>

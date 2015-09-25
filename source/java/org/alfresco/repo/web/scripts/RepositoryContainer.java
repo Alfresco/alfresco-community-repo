@@ -39,6 +39,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TooBusyException;
+import org.alfresco.repo.web.scripts.bean.LoginPost;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.security.AuthorityService;
@@ -570,7 +571,13 @@ public class RepositoryContainer extends AbstractRuntimeContainer
             
                 try
                 {
-                    transactionService.getRetryingTransactionHelper().doInTransaction(work, readonly, requiresNew);
+                    RetryingTransactionHelper transactionHelper = transactionService.getRetryingTransactionHelper();
+                    if(script instanceof LoginPost)
+                    {
+                        //login script requires read-write transaction because of authorization intercepter
+                        transactionHelper.setForceWritable(true);
+                    }
+                    transactionHelper.doInTransaction(work, readonly, requiresNew);
                 }
                 catch (TooBusyException e)
                 {

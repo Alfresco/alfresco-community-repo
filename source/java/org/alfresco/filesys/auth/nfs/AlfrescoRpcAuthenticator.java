@@ -372,6 +372,7 @@ public class AlfrescoRpcAuthenticator implements RpcAuthenticator, InitializingB
       {
         if ( logger.isErrorEnabled())
           logger.error( "Error in RPC authenticator setting current user", ex);
+          throw ex;
       }
     }
     

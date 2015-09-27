@@ -126,6 +126,12 @@ Copyrighted by BitRock
             <distributionFileList>
                 <distributionFile origin="${common_distribution_folder}/*" allowWildcards="1"/>
             </distributionFileList>
+            <shouldPackRuleList>
+                <compareText logic="does_not_equal" text="${platform_name}" value="windows"/>
+            </shouldPackRuleList>
+            <ruleList>
+                <platformTest type="unix"/>
+            </ruleList>
             <actionList>
                 <substitute>
                     <type>exact</type>

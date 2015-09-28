@@ -307,7 +307,7 @@ public class DeclarativeReportGenerator extends BaseReportGenerator
         String typePrefixName = reportType.getPrefixedQName(namespaceService).getPrefixString().replace(":", "_");
         String extension = mimetypeService.getExtension(mimetype);
 
-        StringBuffer sb = new StringBuffer(128)
+        StringBuilder sb = new StringBuilder(128)
                                 .append("report_")
                                 .append(typePrefixName)
                                 .append(".")

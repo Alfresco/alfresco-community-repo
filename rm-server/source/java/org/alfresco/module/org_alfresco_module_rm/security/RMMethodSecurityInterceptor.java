@@ -200,7 +200,7 @@ public class RMMethodSecurityInterceptor extends MethodSecurityInterceptor
 
             if (!capabilities.isEmpty())
             {
-                StringBuffer buffer = new StringBuffer("\n");
+                StringBuilder buffer = new StringBuilder("\n");
                 for (CapabilityReport capability : capabilities)
                 {
                     buffer.append("  ").append(capability.name).append(" (").append(capability.status).append(")\n");

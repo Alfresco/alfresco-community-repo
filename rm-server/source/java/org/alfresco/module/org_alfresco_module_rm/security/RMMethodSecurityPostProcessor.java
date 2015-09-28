@@ -189,7 +189,7 @@ public class RMMethodSecurityPostProcessor implements BeanFactoryPostProcessor
      */
     private String convertToString(Map<String, String> map)
     {
-        StringBuffer buffer = new StringBuffer(256);
+        StringBuilder buffer = new StringBuilder(256);
         for (Map.Entry<String, String> entry : map.entrySet())
         {
             buffer.append(entry.getKey()).append("=").append(entry.getValue()).append("\n");

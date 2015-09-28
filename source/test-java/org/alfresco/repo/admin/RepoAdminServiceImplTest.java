@@ -625,8 +625,8 @@ public class RepoAdminServiceImplTest extends TestCase
                     try
                     {
                         behaviourFilter.disableBehaviour(ContentModel.TYPE_DICTIONARY_MODEL);
+                        dictionaryDAO.removeModel(modelName);
                         nodeService.deleteNode(model1);
-                        dictionaryDAO.destroy();
                     } 
                     finally
                     {

@@ -27,10 +27,19 @@ package org.alfresco.repo.management.subsystems;
 public interface SubsystemEarlyPropertyChecker
 {
     /**
+     * Get the (optional) paired property name (e.g., if we want to check a port
+     * number we might want to do that together with a specific local address).
+     * 
+     * @return The paired property name.
+     */
+    String getPairedPropertyName();
+    
+    /**
      * Check if a subsystem property is valid.
      * @param propertyName
      * @param propertyValue
+     * @param pairedPropertyValue
      * @throws InvalidPropertyValueException 
      */
-    void checkPropertyValue(String propertyName, String propertyValue) throws InvalidPropertyValueException;
+    void checkPropertyValue(String propertyName, String propertyValue, String pairedPropertyValue) throws InvalidPropertyValueException;
 }

@@ -35,8 +35,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.admin.RepoAdminService;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -75,6 +77,7 @@ public class RepoAdminServiceImplTest extends TestCase
     private ContentService contentService;
     private SearchService searchService;
     private NamespaceService namespaceService;
+    private BehaviourFilter behaviourFilter;
     
     final String modelPrefix = "model-";
     final static String MKR = "{MKR}";
@@ -125,6 +128,7 @@ public class RepoAdminServiceImplTest extends TestCase
         contentService = (ContentService) ctx.getBean("ContentService");
         searchService = (SearchService) ctx.getBean("SearchService");
         namespaceService = (NamespaceService) ctx.getBean("NamespaceService");
+        behaviourFilter = (BehaviourFilter)ctx.getBean("policyBehaviourFilter");
         
         DbNodeServiceImpl dbNodeService = (DbNodeServiceImpl)ctx.getBean("dbNodeService");
         dbNodeService.setEnableTimestampPropagation(false);
@@ -532,6 +536,119 @@ public class RepoAdminServiceImplTest extends TestCase
             }
             
             assertNull(dictionaryService.getClass(typeName));
+        }
+    }
+    
+    public void testCreateAndDeleteModel() throws Exception
+    {
+        final String X = "C";
+        final String modelFileName = modelPrefix+X+".xml";
+        final QName typeName = QName.createQName("{http://www.alfresco.org/test/testmodel"+X+"/1.0}base");
+        final QName modelName = QName.createQName("{http://www.alfresco.org/test/testmodel"+X+"/1.0}testModel"+X);
+        
+        try
+        {
+            if (isModelDeployed(modelFileName))
+            {
+                // undeploy model
+                repoAdminService.undeployModel(modelFileName);
+            }
+            
+            StoreRef storeRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+            NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+            
+            assertNull(dictionaryService.getClass(typeName));
+            
+            final int defaultModelCnt = dictionaryService.getAllModels().size();
+            
+            // deploy custom model
+            String model = MODEL_MKR_XML.replace(MKR, X+"");
+            InputStream modelStream = new ByteArrayInputStream(model.getBytes("UTF-8"));
+            
+            List<NodeRef> nodeRefs = searchService.selectNodes(rootNodeRef, "/app:company_home/app:dictionary/app:models", null, namespaceService, false);
+            assertEquals(1, nodeRefs.size());
+            NodeRef modelsNodeRef = nodeRefs.get(0);
+            
+            // create model node
+            
+            Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+            contentProps.put(ContentModel.PROP_NAME, modelFileName);
+            
+            final NodeRef model1 = nodeService.createNode(
+                        modelsNodeRef,
+                        ContentModel.ASSOC_CONTAINS,
+                        modelName,
+                        ContentModel.TYPE_DICTIONARY_MODEL,
+                        contentProps).getChildRef();
+            
+            // add titled aspect (for Web Client display)
+            Map<QName, Serializable> titledProps = new HashMap<QName, Serializable>();
+            titledProps.put(ContentModel.PROP_TITLE, modelFileName);
+            titledProps.put(ContentModel.PROP_DESCRIPTION, modelFileName);
+            nodeService.addAspect(model1, ContentModel.ASPECT_TITLED, titledProps);
+            
+            ContentWriter writer = contentService.getWriter(model1, ContentModel.PROP_CONTENT, true);
+            
+            writer.setMimetype(MimetypeMap.MIMETYPE_XML);
+            writer.setEncoding("UTF-8");
+            
+            writer.putContent(modelStream); // also invokes policies for DictionaryModelType - e.g. onContentUpdate
+            modelStream.close();
+            
+            // activate the model
+            nodeService.setProperty(model1, ContentModel.PROP_MODEL_ACTIVE, new Boolean(true));
+            
+            assertEquals(defaultModelCnt+1, dictionaryService.getAllModels().size());
+            
+            ClassDefinition myType = dictionaryService.getClass(typeName);
+            assertNotNull(myType);
+            assertEquals(modelName, myType.getModel().getName());
+            
+            // create node with custom type
+            NodeRef node1 = nodeService.createNode(
+                        rootNodeRef,
+                        ContentModel.ASSOC_CHILDREN,
+                        QName.createQName("http://www.alfresco.org/model/system/1.0", "node1"),
+                        typeName,
+                        null).getChildRef();
+            
+            
+            
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+                    {
+                        public Object execute() throws Exception
+                        {
+                            // try to delete the model
+                            try
+                            {
+                            	behaviourFilter.disableBehaviour(model1, ContentModel.TYPE_DICTIONARY_MODEL);
+                                nodeService.deleteNode(model1);
+                                behaviourFilter.enableBehaviour(model1, ContentModel.TYPE_DICTIONARY_MODEL);
+                            } 
+                            catch (AlfrescoRuntimeException are)
+                            {
+                                // expected
+                                assertTrue(
+                                        "Incorrect exception message: " + are.getMessage(),
+                                        are.getMessage().contains("Failed to validate model delete"));
+                            }
+                            return null;
+                        };
+                    });
+            
+            assertFalse(nodeService.exists(model1));
+            
+            // ReadProperty permission.
+            nodeService.getProperties(node1);
+            
+            nodeService.deleteNode(node1);
+            assertFalse(nodeService.exists(node1));
+            
+            
+        }
+        finally
+        {
+            // NOOP
         }
     }
     

@@ -18,9 +18,9 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.WeakHashMap;
 
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
@@ -443,7 +443,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
         return instanceOf(className, ofClassName);
     }
 
-    private static Map<String, Boolean> instanceOfCache = new HashMap<String, Boolean>();
+    private static Map<String, Boolean> instanceOfCache = new WeakHashMap<>();
 
     /**
      * Utility method to quickly determine whether one class is equal to or sub of another.

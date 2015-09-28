@@ -22,6 +22,7 @@
     <sequence name="alf_audit_model_seq"/>
     <sequence name="alf_authority_alias_seq"/>
     <sequence name="alf_authority_seq"/>
+    <sequence name="alf_auth_status_seq"/>
     <sequence name="alf_child_assoc_seq"/>
     <sequence name="alf_content_data_seq"/>
     <sequence name="alf_content_url_seq"/>
@@ -905,6 +906,64 @@
         </index>
       </indexes>
     </table>
+  <table name="alf_auth_status">
+    <columns>
+      <column name="id" order="1">
+        <type>int8</type>
+        <nullable>false</nullable>
+        <autoincrement>false</autoincrement>
+      </column>
+      <column name="username" order="2">
+        <type>varchar(100)</type>
+        <nullable>false</nullable>
+        <autoincrement>false</autoincrement>
+      </column>
+      <column name="deleted" order="3">
+        <type>bool</type>
+        <nullable>false</nullable>
+        <autoincrement>false</autoincrement>
+      </column>
+      <column name="authorized" order="4">
+        <type>bool</type>
+        <nullable>false</nullable>
+        <autoincrement>false</autoincrement>
+      </column>
+      <column name="checksum" order="5">
+        <type>bytea</type>
+        <nullable>false</nullable>
+        <autoincrement>false</autoincrement>
+      </column>
+      <column name="authaction" order="6">
+        <type>varchar(10)</type>
+        <nullable>false</nullable>
+        <autoincrement>false</autoincrement>
+      </column>
+    </columns>
+    <primarykey name="alf_auth_status_pkey">
+      <columnnames>
+        <columnname order="1">id</columnname>
+      </columnnames>
+    </primarykey>
+    <indexes>
+        <index name="idx_alf_auth_usr_stat" unique="true">
+          <columnnames>
+            <columnname>username</columnname>
+            <columnname>authorized</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_auth_deleted" unique="false">
+          <columnnames>
+             <columnname>deleted</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_auth_action" unique="false">
+          <columnnames>
+            <columnname>authaction</columnname>
+          </columnnames>
+        </index>
+    </indexes>
+    <foreignkeys/>
+  </table>
     <table name="alf_child_assoc">
       <columns>
         <column name="id" order="1">

@@ -578,10 +578,10 @@ public class RecordsManagementSearchBehaviour implements RecordsManagementModel
                 // Apply the search aspect
                 applySearchAspect(record);
 
-                Collection<String> events = (List<String>)nodeService.getProperty(record, PROP_RS_DISPOSITION_EVENTS);
+                Collection<String> events = (Collection<String>)nodeService.getProperty(record, PROP_RS_DISPOSITION_EVENTS);
                 if (events == null)
                 {
-                    events = new ArrayList<String>(1);
+                    events = new ArrayList<>(1);
                 }
                 events.add((String)nodeService.getProperty(eventExecution, PROP_EVENT_EXECUTION_NAME));
                 nodeService.setProperty(record, PROP_RS_DISPOSITION_EVENTS, (Serializable)events);

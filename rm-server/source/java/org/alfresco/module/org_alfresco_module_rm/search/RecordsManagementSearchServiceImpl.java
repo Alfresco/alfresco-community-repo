@@ -116,54 +116,51 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
 	    try
 	    {
     	   JSONArray jsonArray = new JSONArray(reportsJSON);
-    	   if (jsonArray != null)
-    	   {
-    	       for (int i=0; i < jsonArray.length(); i++)
-    	       {
-    	           JSONObject report = jsonArray.getJSONObject(i);
+           for (int i=0; i < jsonArray.length(); i++)
+           {
+               JSONObject report = jsonArray.getJSONObject(i);
 
-    	           // Get the name
-    	           if (!report.has(SavedSearchDetails.NAME))
-    	           {
-    	               throw new AlfrescoRuntimeException("Unable to load report details because name has not been specified. \n" + reportsJSON);
-    	           }
-    	           String name = report.getString(SavedSearchDetails.NAME);
-    	           String translatedName = I18NUtil.getMessage(name);
-    	           if (translatedName != null)
-    	           {
-    	               name = translatedName;
-    	           }
+               // Get the name
+               if (!report.has(SavedSearchDetails.NAME))
+               {
+                   throw new AlfrescoRuntimeException("Unable to load report details because name has not been specified. \n" + reportsJSON);
+               }
+               String name = report.getString(SavedSearchDetails.NAME);
+               String translatedName = I18NUtil.getMessage(name);
+               if (translatedName != null)
+               {
+                   name = translatedName;
+               }
 
-    	           // Get the query
-    	           if (!report.has(SavedSearchDetails.SEARCH))
+               // Get the query
+               if (!report.has(SavedSearchDetails.SEARCH))
+               {
+                   throw new AlfrescoRuntimeException("Unable to load report details because search has not been specified for report " + name + ". \n" + reportsJSON);
+               }
+               String query = report.getString(SavedSearchDetails.SEARCH);
+
+               // Get the description
+               String description = "";
+               if (report.has(SavedSearchDetails.DESCRIPTION))
+               {
+                   description = report.getString(SavedSearchDetails.DESCRIPTION);
+                   String translatedDescription = I18NUtil.getMessage(description);
+                   if (translatedDescription != null)
                    {
-                       throw new AlfrescoRuntimeException("Unable to load report details because search has not been specified for report " + name + ". \n" + reportsJSON);
+                       description = translatedDescription;
                    }
-                   String query = report.getString(SavedSearchDetails.SEARCH);
+               }
 
-                   // Get the description
-                   String description = "";
-                   if (report.has(SavedSearchDetails.DESCRIPTION))
-                   {
-                       description = report.getString(SavedSearchDetails.DESCRIPTION);
-                       String translatedDescription = I18NUtil.getMessage(description);
-                       if (translatedDescription != null)
-                       {
-                           description = translatedDescription;
-                       }
-                   }
+               RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
+               if (report.has("searchparams"))
+               {
+                   searchParameters = RecordsManagementSearchParameters.createFromJSON(report.getJSONObject("searchparams"), namespaceService);
+               }
 
-                   RecordsManagementSearchParameters searchParameters = new RecordsManagementSearchParameters();
-                   if (report.has("searchparams"))
-                   {
-                       searchParameters = RecordsManagementSearchParameters.createFromJSON(report.getJSONObject("searchparams"), namespaceService);
-                   }
-
-                   // Create the report details and add to list
-    	           ReportDetails reportDetails = new ReportDetails(name, description, query, searchParameters);
-    	           reports.add(reportDetails);
-    	       }
-    	   }
+               // Create the report details and add to list
+               ReportDetails reportDetails = new ReportDetails(name, description, query, searchParameters);
+               reports.add(reportDetails);
+           }
 	    }
 	    catch (JSONException exception)
 	    {

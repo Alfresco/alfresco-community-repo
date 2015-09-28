@@ -153,7 +153,7 @@ public class RmActionPost extends DeclarativeWebScript
       }
 
       // Check that all the nodes provided exist and build report string
-      StringBuffer targetNodeRefsString = new StringBuffer(30);
+      StringBuilder targetNodeRefsString = new StringBuilder(30);
       boolean firstTime = true;
       for (NodeRef targetNodeRef : targetNodeRefs)
       {

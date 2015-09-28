@@ -374,7 +374,7 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
             String displayPath = getDisplayPath(originatingLocation);
             String[] displayPathElements = displayPath.split(pathSeparator);
             Object[] subPath = ArrayUtils.subarray(displayPathElements, 5, displayPathElements.length);
-            StringBuffer originatingLocationPath = new StringBuffer();
+            StringBuilder originatingLocationPath = new StringBuilder();
             for (int i = 0; i < subPath.length; i++)
             {
                 originatingLocationPath.append(pathSeparator).append(subPath[i]);

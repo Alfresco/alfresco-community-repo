@@ -334,7 +334,7 @@ public class RMSearchGet extends DeclarativeWebScript
                 NodeRef person = personService.getPerson(userName);
                 if (person != null)
                 {
-                    StringBuffer displayName = new StringBuffer(128);
+                    StringBuilder displayName = new StringBuilder(128);
                     displayName.append(nodeService.getProperty(person, ContentModel.PROP_FIRSTNAME))
                                .append(" ")
                                .append(nodeService.getProperty(person, ContentModel.PROP_LASTNAME));

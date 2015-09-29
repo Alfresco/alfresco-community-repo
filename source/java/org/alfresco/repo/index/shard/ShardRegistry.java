@@ -31,4 +31,6 @@ public interface ShardRegistry
     public void registerShardState(ShardState shardState);
     
     public List<ShardInstance> getIndexSlice(SearchParameters searchParameters);
+    
+    public void purge();
 }

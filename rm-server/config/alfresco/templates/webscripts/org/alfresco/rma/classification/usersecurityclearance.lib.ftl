@@ -9,7 +9,8 @@
         "firstName": <#if pi.firstName??>"${pi.firstName}"<#else>null</#if>,
         "lastName": <#if pi.lastName??>"${pi.lastName}"<#else>null</#if>,
         "fullName": <#if pi.firstName?? && pi.lastName??>"${pi.firstName} ${pi.lastName}"<#else>"${pi.userName}"</#if>,
-        "completeName": <#if pi.firstName?? && pi.lastName?? && pi.userName??>"${pi.firstName} ${pi.lastName} (${pi.userName})"<#else>"${pi.userName}"</#if>
+        "completeName": <#if pi.firstName?? && pi.lastName?? && pi.userName??>"${pi.firstName} ${pi.lastName} (${pi.userName})"<#else>"${pi.userName}"</#if>,
+        "isEditable": <#if people.isAdmin(people.getPerson(pi.userName))>false<#else>true</#if>
         </#escape>
     }
 </#macro>

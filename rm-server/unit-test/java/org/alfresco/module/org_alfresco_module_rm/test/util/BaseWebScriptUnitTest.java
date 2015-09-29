@@ -18,15 +18,21 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
+import static java.util.Collections.emptyMap;
+
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.jscript.People;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.json.JSONObject;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -125,7 +131,7 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
      */
     protected String executeWebScript(Map<String, String> parameters) throws Exception
     {
-        return executeWebScript( parameters, null);
+        return executeWebScript(parameters, null);
     }
     
     /**
@@ -240,10 +246,11 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
         doReturn(mockedScriptProcessorRegistry).when(mockedContainer).getScriptProcessorRegistry();
         doReturn(mockedTemplateProcessorRegistry).when(mockedContainer).getTemplateProcessorRegistry();
         
-        Map<String, Object> containerTemplateParameters = new HashMap<String, Object>(5);
+        Map<String, Object> containerTemplateParameters = new HashMap<>(5);
         containerTemplateParameters.put("jsonUtils", new JSONUtils());
+        containerTemplateParameters.put("people", getMockedPeopleObject());
         doReturn(containerTemplateParameters).when(mockedContainer).getTemplateParameters();
-        
+
         SearchPath mockedSearchPath = mock(SearchPath.class);
         doReturn(false).when(mockedSearchPath).hasDocument(anyString());
         doReturn(mockedSearchPath).when(mockedContainer).getSearchPath();
@@ -252,7 +259,28 @@ public abstract class BaseWebScriptUnitTest extends BaseUnitTest
         Description mockDescription = mock(Description.class);
         doReturn(mock(RequiredCache.class)).when(mockDescription).getRequiredCache();
         
-        return mockedContainer;        
+        return mockedContainer;
+    }
+
+    /**
+     * Creates a mock {@code people} object for use as a root object within FTL.
+     * This {@code people} object will return person nodes as specified in {@link #getMockedPeople()}.
+     */
+    protected People getMockedPeopleObject()
+    {
+        People p = mock(People.class);
+        getMockedPeople().forEach((name, person) -> when(p.getPerson(eq(name))).thenReturn(person) );
+        return p;
+    }
+
+    /**
+     * Creates a map of person ScriptNodes for use within FTL.
+     * The default implementation is an empty map, but this can be overridden by subclasses.
+     * @return a map of usernames to mocked ScriptNode objects representing person nodes.
+     */
+    protected Map<String, ScriptNode> getMockedPeople()
+    {
+        return emptyMap();
     }
     
     /**

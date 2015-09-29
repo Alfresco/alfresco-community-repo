@@ -321,9 +321,9 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
     /**
      * Check properties for invalid values using {@link SubsystemEarlyPropertyChecker}s
      * @param properties
-     * @throws InvalidPropertyValueException 
+     * @return The complete error message in case of exceptions or empty string otherwise
      */
-    public void performEarlyPropertyChecks(Map<String, String> properties) throws InvalidPropertyValueException
+    public String performEarlyPropertyChecks(Map<String, String> properties)
     {
         if (properties != null && !properties.isEmpty() && earlyPropertyCheckers != null)
         {
@@ -339,7 +339,16 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
 
                         if (propertyChecker != null)
                         {
-                            propertyChecker.checkPropertyValue(property, properties.get(property));
+                            if (propertyChecker.getPairedPropertyName() != null
+                                    && properties.containsKey(propertyChecker.getPairedPropertyName()))
+                            {
+                                propertyChecker.checkPropertyValue(property, properties.get(property),
+                                        properties.get(propertyChecker.getPairedPropertyName()));
+                            }
+                            else
+                            {
+                                propertyChecker.checkPropertyValue(property, properties.get(property), null);
+                            }
                         }
                     }
                     catch (InvalidPropertyValueException ipve)
@@ -363,9 +372,11 @@ public abstract class AbstractPropertyBackedBean implements PropertyBackedBean, 
                     allExceptionsMessages += ipve.getLocalizedMessage();
                 }
 
-                throw new InvalidPropertyValueException(allExceptionsMessages);
+                return allExceptionsMessages;
             }
         }
+        
+        return "";
     }
     
     /**

@@ -19,7 +19,9 @@
 package org.alfresco.util;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
+
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -35,20 +37,22 @@ public class PortUtil
     /**
      * Check if specified port is free.
      * @param port Port number to check.
-     * @return true if port is free or false if it's already in use.
+     * @param host A local address to bind to; if null, "" or "0.0.0.0" then all local addresses will be considered.
      */
-    public static boolean isPortFree(int port)
+    public static void checkPort(int port, String host) throws IOException
     {
-        boolean isFree = true;
         ServerSocket serverSocket = null;
         
         try
         {
-           serverSocket = new ServerSocket(port);
-        }
-        catch (IOException ioe)
-        {
-            isFree = false;
+            if (host != null && !host.equals("") && !"0.0.0.0".equals(host.trim()))
+            {
+                serverSocket = new ServerSocket(port, 0, InetAddress.getByName(host.trim()));
+            }
+            else
+            {
+                serverSocket = new ServerSocket(port);
+            }
         }
         finally
         {
@@ -67,7 +71,5 @@ public class PortUtil
                 }
             }
         }
-        
-        return isFree;
     }
 }

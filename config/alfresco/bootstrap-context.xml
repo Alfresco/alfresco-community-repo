@@ -494,11 +494,13 @@
     </bean>
     <bean id="imapPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
         <constructor-arg value="IMAP" />
+        <constructor-arg value="imap.server.host" />
         <constructor-arg value="false" />
         <constructor-arg value="true" />
     </bean>
     <bean id="imapsPortEarlyChecker" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
         <constructor-arg value="IMAPS" />
+        <constructor-arg value="imap.server.host" />
         <constructor-arg value="false" />
         <constructor-arg value="true" />
     </bean>

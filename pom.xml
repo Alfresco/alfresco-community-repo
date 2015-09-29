@@ -48,11 +48,7 @@
 
         <!-- 
             Installer version that will be used in the final name.
-
-            Lifecycle:
                 - ${installer.build.timestamp}-${installer.build.number}    (SNAPSHOT version)
-                - ${installer.build.timestamp}-EA   (Early Access release version)
-                - ${installer.build.timestamp}      (Release version)
         -->
         <installer.version.name>${installer.build.timestamp}-${installer.build.number}</installer.version.name>
 
@@ -83,6 +79,19 @@
                 <module>enterprise-update</module>
                 <module>enterprise-installer</module>
             </modules>
+        </profile>
+        <profile>
+            <id>release</id>
+            <properties>
+                <maven.build.timestamp.format>yyyyMM</maven.build.timestamp.format>
+                <!-- 
+                Installer version that will be used in the final name.
+                    - ${installer.build.timestamp}-EA   (Early Access release version)
+                    - ${installer.build.timestamp}-LA   (Limited Access release version)
+                    - ${installer.build.timestamp}-GA   (General Availability release version)
+                -->
+                <installer.version.name>${installer.build.timestamp}${release.availability}</installer.version.name>
+            </properties>
         </profile>
     </profiles>
 

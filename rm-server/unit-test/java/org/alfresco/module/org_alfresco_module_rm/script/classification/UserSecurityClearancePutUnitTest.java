@@ -94,7 +94,12 @@ public class UserSecurityClearancePutUnitTest extends BaseWebScriptUnitTest
 
         // check the JSON result using Jackson to allow easy equality testing.
         ObjectMapper mapper = new ObjectMapper();
-        String expectedJSONString = "{\"data\":{\"firstName\":\"Firstname\",\"lastName\":\"Lastname\",\"completeName\":\"Firstname Lastname (user1)\",\"fullName\":\"Firstname Lastname\",\"clearanceLabel\":\"Don't tell anyone\",\"userName\":\"user1\",\"classificationId\":\"Top Secret\"}}";
+        String expectedJSONString = "{\"data\":{\"firstName\":\"Firstname\",\"lastName\":\"Lastname\"," +
+                                    "\"clearanceLabel\":\"Don't tell anyone\"," +
+                                    "\"isEditable\":true," +
+                                    "\"userName\":\"user1\"," +
+                                    "\"completeName\":\"Firstname Lastname (user1)\",\"fullName\":\"Firstname Lastname\"," +
+                                    "\"classificationId\":\"Top Secret\"}}";
         JsonNode expected = mapper.readTree(expectedJSONString);
         assertEquals(expected, mapper.readTree(json.toString()));
     }

@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.script.classification;
 
+import static java.util.Collections.emptyMap;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
@@ -31,6 +32,7 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,12 +43,14 @@ import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearan
 import org.alfresco.module.org_alfresco_module_rm.classification.UserQueryParams;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseWebScriptUnitTest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -184,7 +188,7 @@ public class UserSecurityClearanceGetUnitTest extends BaseWebScriptUnitTest
             @Override
             public Pair<Integer, Integer> getTotalResultCount()
             {
-                return new Pair<Integer, Integer>(numberOfUsers, numberOfUsers);
+                return new Pair<>(numberOfUsers, numberOfUsers);
             }
 
             @Override
@@ -201,6 +205,14 @@ public class UserSecurityClearanceGetUnitTest extends BaseWebScriptUnitTest
         JsonNode expected = mapper.readTree(getExpectedResult(numberOfUsers, startIndex, pageSize, fromIndex, toIndex - 1, items.size()));
         assertEquals(expected, mapper.readTree(response.toString()));
     }
+
+    @Override protected Map<String, ScriptNode> getMockedPeople()
+    {
+        final Map<String, ScriptNode> people = super.getMockedPeople();
+
+        return people;
+    }
+
 
     /**
      * Check that when supplying a single field with no sort direction, the UserQueryParams are populated with the
@@ -285,9 +297,10 @@ public class UserSecurityClearanceGetUnitTest extends BaseWebScriptUnitTest
             items += "{" +
                     "\"firstName\": \"aFirstName" + fromIndex + "\"," +
                     "\"lastName\": \"aLastName" + fromIndex + "\"," +
+                    "\"clearanceLabel\": \"displayLabel" + fromIndex + "\"," +
+                    "\"isEditable\": true," +
                     "\"completeName\": \"aFirstName" + fromIndex + " aLastName" + fromIndex + " (aUserName" + fromIndex + ")\"," +
                     "\"fullName\": \"aFirstName" + fromIndex + " aLastName" + fromIndex + "\"," +
-                    "\"clearanceLabel\": \"displayLabel" + fromIndex + "\"," +
                     "\"userName\": \"aUserName" + fromIndex + "\"," +
                     "\"classificationId\": \"id" + fromIndex + "\"" +
                 "}";

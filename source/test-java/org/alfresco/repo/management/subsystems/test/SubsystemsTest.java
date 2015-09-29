@@ -19,10 +19,12 @@
 package org.alfresco.repo.management.subsystems.test;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
+
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.InvalidPropertyValueException;
@@ -106,7 +108,7 @@ public class SubsystemsTest extends BaseSpringTest
         assertEquals("Global Instance Default", testBeans[2].getAnotherStringProperty());
     }
     
-    private void blockPort(final int portNumber)
+    private void blockPort(final String host, final int portNumber)
     {
         shouldBlockPort = true;
         
@@ -118,7 +120,15 @@ public class SubsystemsTest extends BaseSpringTest
 
                 try
                 {
-                    serverSocket = new ServerSocket(portNumber);
+                    if (host != null && !host.equals("0.0.0.0"))
+                    {
+                        serverSocket = new ServerSocket(portNumber, 0, InetAddress.getByName(host));
+                    }
+                    else
+                    {
+                        serverSocket = new ServerSocket(portNumber);
+                    }
+                    
                     serverSocket.setSoTimeout(200);
                     
                     do
@@ -186,22 +196,35 @@ public class SubsystemsTest extends BaseSpringTest
 
         try
         {
-            blockPort(testPortNumber);
-            testBean.performEarlyPropertyChecks(testProperties);
-            fail("An InvalidPropertyValueException should have occured.");
-        }
-        catch (InvalidPropertyValueException ipve)
-        {
-            assertTrue(ipve.getMessage().contains("The value for TestSubsystem port property cannot be empty."));
-            assertTrue(ipve.getMessage().contains("Unable to parse value for TestSubsystem port property: 123xy."));
-            assertTrue(ipve.getMessage().contains("The port chosen for TestSubsystem is outside the required range (1, 65535): 0."));
-            assertTrue(ipve.getMessage().contains("The port chosen for TestSubsystem is outside the required range (1, 65535): 65536."));
-            assertTrue(ipve.getMessage().contains("The port chosen for TestSubsystem is already in use: " + testPortNumber + "."));
+            blockPort(null, testPortNumber);
+            
+            String errorMessage = testBean.performEarlyPropertyChecks(testProperties);
+            
+            assertTrue(errorMessage.contains("The value for TestSubsystem port property cannot be empty."));
+            assertTrue(errorMessage.contains("Unable to parse value for TestSubsystem port property: 123xy."));
+            assertTrue(errorMessage.contains("The port chosen for TestSubsystem is outside the required range (1, 65535): 0."));
+            assertTrue(errorMessage.contains("The port chosen for TestSubsystem is outside the required range (1, 65535): 65536."));
+            
+            assertTrue(errorMessage.contains(
+                    "The port chosen for TestSubsystem is already in use or you don't have permission to use it: " + testPortNumber + "."));
+            
         }
         finally
         {
             unblockPort();
         }
+        
+        testProperties.clear();
+
+        testProperties.put("test_with_host.port", "" + testPortNumber);
+        // Check for unknown host:
+        testProperties.put("test.subsystem.host", "The quick brown fox jumps over the lazy dog.");
+
+        String errorMessage = testBean.performEarlyPropertyChecks(testProperties);
+        
+        assertTrue(errorMessage.contains(
+                "The hostname chosen for TestSubsystem is unknown or misspelled: " + testProperties.get("test.subsystem.host") + "."));
+
     }
 
     public void testAbstractPropertyBackedBean_performEarlyPropertyChecks_CustomEarlyPropertyChecker()
@@ -211,17 +234,30 @@ public class SubsystemsTest extends BaseSpringTest
         SubsystemEarlyPropertyChecker testEarlyPropertyChecker = new SubsystemEarlyPropertyChecker()
         {
             @Override
-            public void checkPropertyValue(String propertyName, String propertyValue) throws InvalidPropertyValueException
+            public void checkPropertyValue(String propertyName, String propertyValue, String pairedPropertyValue) throws InvalidPropertyValueException
             {
                 if (propertyValue == null || propertyValue.isEmpty())
                 {
                     throw new InvalidPropertyValueException("Property value cannot be empty.");
                 }
 
-                if (propertyValue.equals("Bad value"))
+                if (pairedPropertyValue == null)
                 {
-                    throw new InvalidPropertyValueException("Property value cannot be a 'Bad value'.");
+                    if (propertyValue.equals("Bad value"))
+                    {
+                        throw new InvalidPropertyValueException("Property value cannot be a 'Bad value'.");
+                    }
                 }
+                else if ((propertyValue + pairedPropertyValue).contains("bad value"))
+                {
+                    throw new InvalidPropertyValueException("No 'bad value's allowed!");
+                }
+            }
+
+            @Override
+            public String getPairedPropertyName()
+            {
+                return "testPairedPropertyName";
             }
         };
 
@@ -239,15 +275,19 @@ public class SubsystemsTest extends BaseSpringTest
         // Test "Bad value" error:
         testProperties.put("test2.property", "Bad value");
 
-        try
-        {
-            testBean.performEarlyPropertyChecks(testProperties);
-            fail("An InvalidPropertyValueException should have occured.");
-        }
-        catch (InvalidPropertyValueException ipve)
-        {
-            assertTrue(ipve.getMessage().contains("Property value cannot be empty."));
-            assertTrue(ipve.getMessage().contains("Property value cannot be a 'Bad value'."));
-        }
+        String errorMessage = testBean.performEarlyPropertyChecks(testProperties);
+
+        assertTrue(errorMessage.contains("Property value cannot be empty."));
+        assertTrue(errorMessage.contains("Property value cannot be a 'Bad value'."));
+        
+        earlyPropertyCheckersMap.clear();
+        earlyPropertyCheckersMap.put("test3.property", testEarlyPropertyChecker);
+        
+        testProperties.clear();
+        testProperties.put("testPairedPropertyName", "Test paired property bad value");
+        testProperties.put("test3.property", "Test property value");
+        
+        errorMessage = testBean.performEarlyPropertyChecks(testProperties);
+        assertTrue(errorMessage.contains("No 'bad value's allowed!"));
     }
 }

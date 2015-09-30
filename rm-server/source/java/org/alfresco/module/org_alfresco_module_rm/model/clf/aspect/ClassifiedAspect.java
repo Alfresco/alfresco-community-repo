@@ -19,14 +19,20 @@
 package org.alfresco.module.org_alfresco_module_rm.model.clf.aspect;
 
 import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.diffKey;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingDowngradeInstructions;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService.Reclassification;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
-import org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
+import org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferralAdminService;
 import org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.Difference;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
@@ -39,11 +45,6 @@ import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
 
 /**
  * clf:classification behaviour bean
@@ -219,6 +220,17 @@ public class ClassifiedAspect extends BaseBehaviourBean implements NodeServicePo
      */
     private boolean isEmpty(Serializable value)
     {
-        return (value == null || value.equals(""));
+        boolean isEmpty;
+
+        if (value instanceof String)
+        {
+            isEmpty = isBlank((String) value);
+        }
+        else
+        {
+            isEmpty = (value == null || value.equals(""));
+        }
+
+        return isEmpty;
     }
 }

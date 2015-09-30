@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -31,14 +32,12 @@ import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
@@ -50,14 +49,10 @@ import org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetad
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.PersonService.PersonInfo;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionHistory;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
@@ -87,7 +82,6 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
     @Mock SecurityClearanceService mockSecurityClearanceService;
     @Mock AuthenticationUtil mockAuthenticationUtil;
     @Mock ReferredMetadataService mockReferredMetadataService;
-    @Mock VersionService mockVersionService;
     @Mock ClassificationAspectProperties mockPropertiesDTO;
     @Captor ArgumentCaptor<Map<QName, Serializable>> propertiesCaptor;
 
@@ -384,54 +378,5 @@ public class ContentClassificationServiceImplUnitTest implements ClassifiedConte
         when(mockNodeService.hasAspect(nodeRef, ASPECT_CLASSIFIED)).thenReturn(false);
 
         assertFalse(contentClassificationServiceImpl.isClassified(nodeRef));
-    }
-
-    /** Check that replacing the only version will use ensureVersioningEnabled. */
-    @Test public void replaceHeadOfVersionHistory_onlyOneVersion()
-    {
-        NodeRef content = new NodeRef("fake://content/");
-        VersionHistory mockVersionHistory = mock(VersionHistory.class);
-        when(mockVersionService.getVersionHistory(content)).thenReturn(mockVersionHistory);
-        Version mockVersion = mock(Version.class);
-        when(mockVersionHistory.getHeadVersion()).thenReturn(mockVersion);
-        when(mockVersionHistory.getRootVersion()).thenReturn(mockVersion);
-        NodeRef versionedNodeRef = new NodeRef("fake://versionedNodeRef/");
-        when(mockVersion.getVersionedNodeRef()).thenReturn(versionedNodeRef);
-        Map<QName, Serializable> properties = new HashMap<>();
-        when(mockNodeService.getProperties(versionedNodeRef)).thenReturn(properties);
-
-        // Call the method under test.
-        contentClassificationServiceImpl.replaceHeadOfVersionHistory(content);
-
-        verify(mockVersionService).deleteVersion(content, mockVersion);
-        verify(mockVersionService).ensureVersioningEnabled(content, properties);
-    }
-
-    /**
-     * Check that when replacing a later version than the initial one, the entry in the version history is deleted and
-     * recreated. Ensure that properties from {link VersionUtil.RESERVED_PROPERTY_NAMES} are removed from the properties
-     * before calling {@link VersionService.createVersion}.
-     */
-    @Test public void replaceHeadOfVersionHistory_twoVersions()
-    {
-        NodeRef content = new NodeRef("fake://content/");
-        VersionHistory mockVersionHistory = mock(VersionHistory.class);
-        when(mockVersionService.getVersionHistory(content)).thenReturn(mockVersionHistory);
-        Version mockHeadVersion = mock(Version.class);
-        when(mockVersionHistory.getHeadVersion()).thenReturn(mockHeadVersion);
-        Version mockRootVersion = mock(Version.class);
-        when(mockVersionHistory.getRootVersion()).thenReturn(mockRootVersion);
-        Map<String, Serializable> versionProperties = ImmutableMap.of("ClassificationKey", "ClassificationValue",
-                                                                      "VersionNumber", "1.1",
-                                                                      VersionBaseModel.PROP_CREATED_DATE, "DateToBeIgnored");
-        when(mockHeadVersion.getVersionProperties()).thenReturn(versionProperties);
-
-        // Call the method under test.
-        contentClassificationServiceImpl.replaceHeadOfVersionHistory(content);
-
-        verify(mockVersionService).deleteVersion(content, mockHeadVersion);
-        Map<String, Serializable> expectedVersionProperties = ImmutableMap.of("ClassificationKey", "ClassificationValue",
-                                                                              "VersionNumber", "1.1");
-        verify(mockVersionService).createVersion(content, expectedVersionProperties);
     }
 }

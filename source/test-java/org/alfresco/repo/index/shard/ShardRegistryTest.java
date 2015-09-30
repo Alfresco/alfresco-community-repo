@@ -19,11 +19,11 @@
 package org.alfresco.repo.index.shard;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.net.UnknownHostException;
@@ -32,6 +32,8 @@ import java.util.List;
 
 import org.alfresco.repo.cache.DefaultSimpleCache;
 import org.alfresco.repo.index.shard.ShardRegistryImpl.ShardStateCollector;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.attributes.AttributeService.AttributeQueryCallback;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -41,10 +43,12 @@ import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.mockito.stubbing.Answer;
+import org.mockito.Matchers;
 
 /**
  * @author Andy
@@ -62,6 +66,8 @@ public class ShardRegistryTest
     private @Mock AttributeService attributeService;
     
     private @Mock TransactionService transactionService;
+    
+    private @Mock RetryingTransactionHelper retryingTransactionHelper;
 
     /**
      * 
@@ -83,6 +89,26 @@ public class ShardRegistryTest
         shardRegistry.setShardInstanceTimeoutInSeconds(30);
         shardRegistry.setMaxAllowedReplicaTxCountDifference(10);
         shardRegistry.init();
+       
+        when(transactionService.getRetryingTransactionHelper()).thenReturn(retryingTransactionHelper);
+        
+        final ArgumentCaptor<RetryingTransactionCallback> argument = ArgumentCaptor.forClass(RetryingTransactionCallback.class);
+        when(retryingTransactionHelper.doInTransaction(argument.capture(), anyBoolean(), anyBoolean())).thenAnswer(
+                new Answer() {
+                    public Object answer(InvocationOnMock invocation) {
+                        try
+                        {
+                            argument.getValue().execute();
+                        }
+                        catch (Throwable e)
+                        {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                        return null;
+                    }
+                });
+        
     }
     
     @Test

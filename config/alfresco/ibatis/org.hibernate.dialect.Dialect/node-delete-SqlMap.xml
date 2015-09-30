@@ -13,6 +13,7 @@
             (
                 select max(txn.id) from alf_transaction txn
                 where
+                    txn.commit_time_ms >= #{minCommitTime} and
                     txn.commit_time_ms < #{maxCommitTime}
             )
         ]]>
@@ -30,7 +31,8 @@
             where
                 node.type_qname_id = #{typeQNameId} and
                 alf_node_properties.node_id = node.id and
-                txn.commit_time_ms < #{maxCommitTime}
+                (txn.commit_time_ms >= #{minCommitTime} and
+                 txn.commit_time_ms < #{maxCommitTime})
         )
         ]]>
     </delete>

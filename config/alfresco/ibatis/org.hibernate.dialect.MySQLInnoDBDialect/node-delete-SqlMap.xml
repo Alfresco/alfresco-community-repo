@@ -11,7 +11,8 @@
         join alf_transaction txn on (txn.id = n.transaction_id)
         where
             n.type_qname_id = #{typeQNameId} and
-            txn.commit_time_ms < #{maxCommitTime}
+            (txn.commit_time_ms >= #{minCommitTime} and
+             txn.commit_time_ms < #{maxCommitTime})
         ]]>
     </delete>
     
@@ -22,7 +23,8 @@
         join alf_transaction txn on (txn.id = n.transaction_id)
         where
             n.type_qname_id = #{typeQNameId} and
-            txn.commit_time_ms < #{maxCommitTime}
+            (txn.commit_time_ms >= #{minCommitTime} and
+             txn.commit_time_ms < #{maxCommitTime})
         ]]>
     </delete>
     

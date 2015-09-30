@@ -323,12 +323,13 @@ public interface NodeDAO extends NodeBulkLoader
     public void deleteNode(Long nodeId);
 
     /**
-     * Purge deleted nodes where their participating transactions are older than a given time.
+     * Purge deleted nodes where their participating transactions are in-between the given time interval.
      * 
-     * @param maxTxnCommitTimeMs                ignore transactions created <i>after</i> this time
-     * @return                                  Returns the number of deleted nodes purged
+     * @param fromTxnCommitTimeMs    from commit time
+     * @param toTxnCommitTimeMs      to commit time
+     * @return  Returns the number of deleted nodes purged
      */
-    public int purgeNodes(long maxTxnCommitTimeMs);
+    public int purgeNodes(long fromTxnCommitTimeMs, long toTxnCommitTimeMs);
     
     /*
      * Properties

@@ -127,12 +127,14 @@
                                     <groupId>org.alfresco.integrations</groupId>
                                     <artifactId>alfresco-googledocs-repo</artifactId>
                                     <version>${alfresco.googledocs.version}</version>
+                                    <classifier>enterprise</classifier>
                                     <type>amp</type>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco.integrations</groupId>
                                     <artifactId>alfresco-googledocs-share</artifactId>
                                     <version>${alfresco.googledocs.version}</version>
+                                    <classifier>enterprise</classifier>
                                     <type>amp</type>
                                 </artifactItem>
                             </artifactItems>

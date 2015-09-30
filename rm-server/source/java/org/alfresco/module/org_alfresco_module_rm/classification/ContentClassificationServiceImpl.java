@@ -23,13 +23,6 @@ import static org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck.c
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import com.google.common.collect.Sets;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.InvalidNode;
@@ -42,13 +35,14 @@ import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionHistory;
-import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 
 /**
  * A service to handle the classification of content.
@@ -59,24 +53,22 @@ import org.alfresco.service.namespace.QName;
 public class ContentClassificationServiceImpl extends ServiceBaseImpl
                                               implements ContentClassificationService, ClassifiedContentModel
 {
-    /** A set containing the property names reserved for use by the version service. */
-    private static final Set<String> RESERVED_PROPERTIES = Sets.newHashSet(VersionUtil.RESERVED_PROPERTY_NAMES);
-
     private ClassificationLevelManager levelManager;
     private ClassificationReasonManager reasonManager;
     private SecurityClearanceService securityClearanceService;
     private ClassificationServiceBootstrap classificationServiceBootstrap;
     private FreezeService freezeService;
     private ReferredMetadataService referredMetadataService;
-    private VersionService versionService;
 
     public void setLevelManager(ClassificationLevelManager levelManager) { this.levelManager = levelManager; }
     public void setReasonManager(ClassificationReasonManager reasonManager) { this.reasonManager = reasonManager; }
     public void setSecurityClearanceService(SecurityClearanceService securityClearanceService) { this.securityClearanceService = securityClearanceService; }
     public void setClassificationServiceBootstrap(ClassificationServiceBootstrap classificationServiceBootstrap) { this.classificationServiceBootstrap = classificationServiceBootstrap; }
     public void setFreezeService(FreezeService service) { this.freezeService = service; }
-    public void setReferredMetadataService(ReferredMetadataService service) { this.referredMetadataService = service; }
-    public void setVersionService(VersionService service) { this.versionService = service; }
+    public void setReferredMetadataService(ReferredMetadataService service)
+    {
+        this.referredMetadataService = service;
+    }
 
     public void init()
     {
@@ -138,53 +130,9 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
                 }
 
                 nodeService.addAspect(content, ASPECT_CLASSIFIED, properties);
-
-                // Classify the version history if one exists.
-                if (versionService.isVersioned(content))
-                {
-                    replaceHeadOfVersionHistory(content);
-                }
-
                 return null;
             }
         });
-    }
-
-    /**
-     * Ensure that the latest version in the version store is classified. This it to ensure that if someone
-     * tries to access the content from the version store directly then they are not able to download it.
-     *
-     * @param content The node being classified.
-     */
-    protected void replaceHeadOfVersionHistory(final NodeRef content)
-    {
-        VersionHistory versionHistory = versionService.getVersionHistory(content);
-        Version headVersion = versionHistory.getHeadVersion();
-        boolean onlyOneVersion = headVersion.equals(versionHistory.getRootVersion());
-        Map<QName, Serializable> headProperties = nodeService.getProperties(headVersion.getVersionedNodeRef());
-        Map<String, Serializable> versionProperties = headVersion.getVersionProperties();
-
-        // Delete the head version, as we cannot add aspects to historical content.
-        versionService.deleteVersion(content, headVersion);
-
-        if (onlyOneVersion)
-        {
-            // Recreate the initial entry in the version store.
-            versionService.ensureVersioningEnabled(content, headProperties);
-        }
-        else
-        {
-            // Recreate the version (without the reserved properties - which are added by the version service).
-            Map<String, Serializable> newProperties = new HashMap<String, Serializable>();
-            for (Map.Entry<String, Serializable> entry : versionProperties.entrySet())
-            {
-                if (!RESERVED_PROPERTIES.contains(entry.getKey()))
-                {
-                    newProperties.put(entry.getKey(), entry.getValue());
-                }
-            }
-            versionService.createVersion(content, newProperties);
-        }
     }
 
     /**
@@ -278,14 +226,14 @@ public class ContentClassificationServiceImpl extends ServiceBaseImpl
     @Override
     public boolean hasClearance(NodeRef nodeRef)
     {
-        boolean result = true;
-        if (nodeService.exists(nodeRef))
-        {
-            // Get the node's current classification
-            ClassificationLevel currentClassification = getCurrentClassification(nodeRef);
-            result = securityClearanceService.isCurrentUserClearedForClassification(currentClassification.getId());
-        }
-        return result;
+    	boolean result = true;
+    	if (nodeService.exists(nodeRef))
+    	{
+    		// Get the node's current classification
+    		ClassificationLevel currentClassification = getCurrentClassification(nodeRef);
+    		result = securityClearanceService.isCurrentUserClearedForClassification(currentClassification.getId());
+    	}
+    	return result;
     }
 
     /**

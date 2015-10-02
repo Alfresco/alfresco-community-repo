@@ -57,6 +57,9 @@
       <property name="remoteUserMapper">
          <ref bean="RemoteUserMapper" />
       </property>
+      <property name="fallback">
+         <ref bean="passthru_SSOFallbackBasicAuthenticationDriver"/>
+      </property>
    </bean>
 
    <bean id="webscriptAuthenticationFilter" class="org.alfresco.web.app.servlet.WebScriptSSOAuthenticationFilter">

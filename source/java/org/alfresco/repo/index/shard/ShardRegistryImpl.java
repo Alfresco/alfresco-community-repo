@@ -20,16 +20,22 @@ package org.alfresco.repo.index.shard;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.attributes.AttributeService.AttributeQueryCallback;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 
 import com.hazelcast.util.ConcurrentHashSet;
 
@@ -38,6 +44,47 @@ import com.hazelcast.util.ConcurrentHashSet;
  */
 public class ShardRegistryImpl implements ShardRegistry
 {
+    /**
+     * The best shard sould be at the top;
+     * @author Andy
+     *
+     */
+    public static class FlocComparator implements Comparator<Pair<Floc, HashMap<Shard, HashSet<ShardState>>>>
+    {
+        public FlocComparator()
+        {
+            
+        }
+
+        @Override
+        public int compare(Pair<Floc, HashMap<Shard, HashSet<ShardState>>> left, Pair<Floc, HashMap<Shard, HashSet<ShardState>>> right)
+        { 
+            double leftTxCount = 0;
+            for(HashSet<ShardState> states : left.getSecond().values())
+            {
+                long shardMaxTxCount = 0;
+                for(ShardState state : states)
+                {
+                    shardMaxTxCount = Math.max(shardMaxTxCount, state.getLastIndexedTxId());
+                }
+                leftTxCount += ((double)shardMaxTxCount)/left.getFirst().getNumberOfShards();
+            }
+            
+            double rightTxCount = 0;
+            for(HashSet<ShardState> states : right.getSecond().values())
+            {
+                long shardMaxTxCount = 0;
+                for(ShardState state : states)
+                {
+                    shardMaxTxCount = Math.max(shardMaxTxCount, state.getLastIndexedTxId());
+                }
+                rightTxCount += ((double)shardMaxTxCount)/right.getFirst().getNumberOfShards();
+            }
+            return (int)(rightTxCount - leftTxCount);
+        }
+
+    }
+
     private static String SHARD_STATE_KEY = ".SHARD_STATE";
 
     private AttributeService attributeService;
@@ -49,9 +96,35 @@ public class ShardRegistryImpl implements ShardRegistry
     private ConcurrentHashSet<Floc> knownFlocks = new ConcurrentHashSet<Floc>();
 
     private Random random = new Random(123);
+    
+    private boolean purgeOnInit = false;
+    
+    TransactionService transactionService;
+
+    private long shardInstanceTimeoutInSeconds = 300;
+
+    private long maxAllowedReplicaTxCountDifference = 1000;
 
     public ShardRegistryImpl()
     {
+    }
+    
+    public void init()
+    {
+        if(purgeOnInit && (transactionService != null))
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+            {
+
+                @Override
+                public Object execute() throws Throwable
+                {
+                    purge();
+                    return null;
+                }
+            }, false, true);
+            
+        }
     }
 
     public void setAttributeService(AttributeService attributeService)
@@ -68,50 +141,160 @@ public class ShardRegistryImpl implements ShardRegistry
     {
         this.shardToGuidCache = shardToGuidCache;
     }
+    
+    public void setPurgeOnInit(boolean purgeOnInit)
+    {
+        this.purgeOnInit = purgeOnInit;
+    }
 
+    public void setShardInstanceTimeoutInSeconds(int shardInstanceTimeoutInSeconds)
+    {
+        this.shardInstanceTimeoutInSeconds = shardInstanceTimeoutInSeconds;
+    }
+
+    
+    
+    /**
+     * @param maxAllowedReplicaTxCountDifference the maxAllowedReplicaTxCountDifference to set
+     */
+    public void setMaxAllowedReplicaTxCountDifference(long maxAllowedReplicaTxCountDifference)
+    {
+        this.maxAllowedReplicaTxCountDifference = maxAllowedReplicaTxCountDifference;
+    }
+
+    /**
+     * @param transactionService the transactionService to set
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+
+    public void purge()
+    {
+        ShardStateCollector shardStates = getPersistedShardStates();
+        for(String guid : shardStates.shardGuids.values())
+        {
+            DeleteCallBack dcb = new DeleteCallBack(attributeService, guid);
+            transactionService.getRetryingTransactionHelper().doInTransaction(dcb, false, true);
+        }
+    }
+    
+    private static class DeleteCallBack implements  RetryingTransactionCallback<Object>
+    {
+        AttributeService attributeService;
+        
+        String guid;
+
+        DeleteCallBack(AttributeService attributeService, String guid)
+        {
+            this.attributeService = attributeService;
+            this.guid = guid;
+        }
+
+        /* (non-Javadoc)
+         * @see org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback#execute()
+         */
+        @Override
+        public Object execute() throws Throwable
+        {
+            attributeService.removeAttributes(SHARD_STATE_KEY,  guid);
+            return null;
+        }
+        
+    }
+    
     /**
      * @param shardState
      */
-    public void registerShardState(ShardState shardState)
+    public void registerShardState(final ShardState shardState)
     {
 
-        String guid = getPersistedShardStatusGuid(shardState.getShardInstance());
-        attributeService.setAttribute(shardState, SHARD_STATE_KEY, guid);
-        shardStateCache.put(shardState.getShardInstance(), shardState);
-        knownFlocks.add(shardState.getShardInstance().getShard().getFloc());
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+                {
+
+                    @Override
+                    public Object execute() throws Throwable
+                    {
+                        String guid = getPersistedShardStatusGuid(shardState.getShardInstance());
+                        attributeService.setAttribute(shardState, SHARD_STATE_KEY, guid);
+                        shardStateCache.put(shardState.getShardInstance(), shardState);
+                        knownFlocks.add(shardState.getShardInstance().getShard().getFloc());
+                        return null;
+                    }
+                }, false, true);
+        
+        
     }
 
     public List<ShardInstance> getIndexSlice(SearchParameters searchParameters)
     {
-        Floc floc = findFlocFromKnown(searchParameters);
-        if (floc == null)
+        Set<Floc> flocs = findFlocsFromKnown(searchParameters);
+        if (flocs.size() == 0)
         {
             updateKnownFlocs();
-            floc = findFlocFromKnown(searchParameters);
+            flocs = findFlocsFromKnown(searchParameters);
         }
-        return selectShardInstancesForFlock(floc);
+        return selectShardInstancesForBestFlock(flocs);
 
     }
 
-    private List<ShardInstance> selectShardInstancesForFlock(Floc floc)
+    private List<ShardInstance> selectShardInstancesForBestFlock(Set<Floc> flocs)
     {
-        HashMap<Shard, HashSet<ShardInstance>> index = new HashMap<Shard, HashSet<ShardInstance>>();
-
-        getShardInstancesFromCache(floc, index);
-        if (index.size() < floc.getNumberOfShards())
+        ArrayList<Pair<Floc, HashMap<Shard, HashSet<ShardState>>>> indexes = new ArrayList<Pair<Floc, HashMap<Shard, HashSet<ShardState>>>>  ();
+        
+        for(Floc floc : flocs)
         {
-            updateShardStateCache(floc);
+            HashMap<Shard, HashSet<ShardState>> index = new  HashMap<Shard, HashSet<ShardState>>();
+            getShardStatesFromCache(floc, index);
+            if (index.size() < floc.getNumberOfShards())
+            {
+                updateShardStateCache(floc);
+                getShardStatesFromCache(floc, index);
+            }
+            indexes.add(new Pair<Floc, HashMap<Shard, HashSet<ShardState>>>(floc,  index));
         }
-        getShardInstancesFromCache(floc, index);
 
-        ArrayList<ShardInstance> slice = new ArrayList<ShardInstance>(floc.getNumberOfShards());
-        for (Shard shard : index.keySet())
+        Collections.sort(indexes, new FlocComparator());
+          
+        Pair<Floc, HashMap<Shard, HashSet<ShardState>>> best = indexes.get(0);
+        ArrayList<ShardInstance> slice = new ArrayList<ShardInstance>(best.getFirst().getNumberOfShards());
+        for (Shard shard : best.getSecond().keySet())
         {
-            int position = random.nextInt(index.get(shard).size());
-            ShardInstance instance = index.get(shard).toArray(new ShardInstance[] {})[position];
+            // Only allow replicas within some fraction of the  max TxId
+            ShardState[] allowedInstances = getAllowedInstances(best.getSecond().get(shard));
+            int position = random.nextInt(allowedInstances.length);
+            ShardInstance instance = allowedInstances[position].getShardInstance();
             slice.add(instance);
         }
         return slice;
+    }
+
+
+    /**
+     * @param hashSet
+     * @return
+     */
+    private ShardState[] getAllowedInstances(HashSet<ShardState> states)
+    {
+        HashSet<ShardState> allowed = new  HashSet<ShardState>();
+        
+        long maxTxId = 0;
+        for(ShardState state :states)
+        {
+            maxTxId = Math.max(maxTxId, state.getLastIndexedTxId());
+        }
+        
+        for(ShardState state :states)
+        {
+            if( (maxTxId - state.getLastIndexedTxId()) <= maxAllowedReplicaTxCountDifference)
+            {
+                allowed.add(state);
+            }
+        }
+        
+        
+        return allowed.toArray(new ShardState[] {});
     }
 
     /**
@@ -121,11 +304,14 @@ public class ShardRegistryImpl implements ShardRegistry
     {
         ShardStateCollector shardStates = getPersistedShardStates();
         HashMap<Shard, HashMap<ShardInstance, ShardState>> shards = shardStates.getIndexes().get(floc);
-        for (HashMap<ShardInstance, ShardState> map : shards.values())
+        if(shards != null)
         {
-            for (ShardInstance instance : map.keySet())
+            for (HashMap<ShardInstance, ShardState> map : shards.values())
             {
-                shardStateCache.put(instance, map.get(instance));
+                for (ShardInstance instance : map.keySet())
+                {
+                    shardStateCache.put(instance, map.get(instance));
+                }
             }
         }
     }
@@ -134,19 +320,26 @@ public class ShardRegistryImpl implements ShardRegistry
      * @param floc
      * @param index
      */
-    private void getShardInstancesFromCache(Floc floc, HashMap<Shard, HashSet<ShardInstance>> index)
+    private void getShardStatesFromCache(Floc floc, HashMap<Shard, HashSet<ShardState>> index)
     {
+        long now = System.currentTimeMillis();
         for (ShardInstance instance : shardStateCache.getKeys())
         {
+            ShardState state = shardStateCache.get(instance);
+            if( (now - state.getLastUpdated()) > (shardInstanceTimeoutInSeconds * 1000) )
+            {
+                continue;
+            }
+            
             if (instance.getShard().getFloc().equals(floc))
             {
-                HashSet<ShardInstance> replicas = index.get(instance.getShard());
+                HashSet<ShardState> replicas = index.get(instance.getShard());
                 if (replicas == null)
                 {
-                    replicas = new HashSet<ShardInstance>();
+                    replicas = new HashSet<ShardState>();
                     index.put(instance.getShard(), replicas);
                 }
-                replicas.add(instance);
+                replicas.add(state);
             }
         }
     }
@@ -157,17 +350,17 @@ public class ShardRegistryImpl implements ShardRegistry
         knownFlocks.addAll(shardStates.getIndexes().keySet());
     }
 
-    private Floc findFlocFromKnown(SearchParameters searchParameters)
+    private HashSet<Floc> findFlocsFromKnown(SearchParameters searchParameters)
     {
-        Floc best = null;
+        HashSet<Floc> flocs = new HashSet<Floc>();
         for (Floc floc : knownFlocks)
         {
             if (floc.getStoreRefs().containsAll(searchParameters.getStores()))
             {
-                best = getBestFloc(best, floc);
+                flocs.add(floc);
             }
         }
-        return best;
+        return flocs;
     }
 
     private Floc getBestFloc(Floc best, Floc floc)
@@ -176,6 +369,8 @@ public class ShardRegistryImpl implements ShardRegistry
         {
             return floc;
         }
+        
+        
         if (best.getNumberOfShards() >= floc.getNumberOfShards())
         {
             return best;
@@ -230,6 +425,11 @@ public class ShardRegistryImpl implements ShardRegistry
         @Override
         public boolean handleAttribute(Long id, Serializable value, Serializable[] keys)
         {
+            if(value == null)
+            {
+                return true;
+            }
+            
             
             String shardInstanceGuid = (String) keys[1];
 

@@ -1918,7 +1918,7 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
                 assertEquals(SiteModel.SITE_CONSUMER, siteService.getMembersRole("testGroupMembership", groupTwo));
 
                 //Uses Members role info
-                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRoleInfo("testMembership", USER_ONE).getMemberRole());
+                assertEquals(SiteModel.SITE_MANAGER, siteService.getMembersRoleInfo("testGroupMembership", USER_ONE).getMemberRole());
                 /** 
                  * Check we can filter this list by name and role correctly 
                  */

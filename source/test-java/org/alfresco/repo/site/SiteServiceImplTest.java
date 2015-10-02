@@ -2051,15 +2051,23 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
 
                 // Set a membership with an illegal role. See ALF-619.
                 // I'm checking that the exception type thrown is what it should be.
+                boolean failed = false;
                 try
                 {
                     siteService.setMembership("testGroupMembership", groupThree, "rubbish");
                 }
                 catch (UnknownAuthorityException expected)
                 {
-                    return null;
+                    failed = true;
                 }
-                fail("Expected exception not thrown.");
+                
+                authenticationComponent.setSystemUserAsCurrentUser();
+                siteService.deleteSite("testGroupMembership");
+                
+                if (!failed)
+                {
+                    fail("Expected exception not thrown.");
+                }
                 
                 return null;
             }

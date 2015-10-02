@@ -146,6 +146,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String DELETE_TXNS_UNUSED = "alfresco.node.delete_Txns_Unused";
     private static final String SELECT_TXN_MIN_COMMIT_TIME = "alfresco.node.select_TxnMinCommitTime";
     private static final String SELECT_TXN_MAX_COMMIT_TIME = "alfresco.node.select_TxnMaxCommitTime";
+    private static final String SELECT_TXN_MIN_COMMIT_TIME_FOR_NODE_TYPE = "alfresco.node.select_TxnMinCommitTimeForNodeType";
     private static final String SELECT_TXN_MIN_ID = "alfresco.node.select_TxnMinId";
     private static final String SELECT_TXN_MAX_ID = "alfresco.node.select_TxnMaxId";
     private static final String SELECT_TXN_UNUSED_MIN_COMMIT_TIME = "alfresco.node.select_TxnMinUnusedCommitTime";
@@ -1574,6 +1575,21 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     protected Long selectMaxTxnCommitTime()
     {
         return template.selectOne(SELECT_TXN_MAX_COMMIT_TIME);
+    }
+    
+    @Override
+    protected Long selectMinTxnCommitTimeForDeletedNodes()
+    {
+        // Get the deleted nodes
+        Pair<Long, QName> deletedTypePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
+        if (deletedTypePair == null)
+        {
+            // Nothing to do
+            return 0L;
+        }
+        TransactionQueryEntity txnQuery = new TransactionQueryEntity();
+        txnQuery.setTypeQNameId(deletedTypePair.getFirst());
+        return (Long) template.selectOne(SELECT_TXN_MIN_COMMIT_TIME_FOR_NODE_TYPE, txnQuery);
     }
     
     @Override

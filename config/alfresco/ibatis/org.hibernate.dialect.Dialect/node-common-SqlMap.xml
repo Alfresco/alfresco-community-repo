@@ -1316,6 +1316,16 @@
         from
             alf_transaction
     </select>
+    
+    <select id="select_TxnMinCommitTimeForNodeType" parameterType="TransactionQuery" resultType="java.lang.Long">
+        select 
+            min(txn.commit_time_ms)
+        from
+            alf_transaction txn
+            join alf_node node on (node.transaction_id = txn.id)
+        where
+            node.type_qname_id = #{typeQNameId}
+    </select>
 
     <select id="select_OneTxnsByCommitTimeDescending" parameterType="TransactionQuery" resultMap="result_Transaction">
         <include refid="alfresco.node.select_Transaction_Results"/>

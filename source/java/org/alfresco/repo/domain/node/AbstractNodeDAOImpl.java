@@ -4800,6 +4800,13 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         Long time = selectMaxTxnCommitTime();
         return (time == null ? LONG_ZERO : time);
     }
+
+    public Long getMinTxnCommitTimeForDeletedNodes()
+    {
+        Long time = selectMinTxnCommitTimeForDeletedNodes();
+        return (time == null ? LONG_ZERO : time);
+    }
+    
     
     @Override
     public Long getMinTxnId()
@@ -4985,6 +4992,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract List<Long> selectTxnsUnused(Long minTxnId, Long maxCommitTime, Integer count);
     protected abstract Long selectMinTxnCommitTime();
     protected abstract Long selectMaxTxnCommitTime();
+    protected abstract Long selectMinTxnCommitTimeForDeletedNodes();
     protected abstract Long selectMinTxnId();
     protected abstract Long selectMaxTxnId();
     protected abstract Long selectMinUnusedTxnCommitTime();

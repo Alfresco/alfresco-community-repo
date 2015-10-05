@@ -564,9 +564,21 @@ public abstract class AbstractEventsService extends TransactionListenerAdapter
     {
         // TODO use fileFolderService.getNamePath instead?
         List<String> stringPaths = new ArrayList<String>(nodePaths.size());
-        for(Path path : nodePaths)
+        for(final Path path : nodePaths)
         {
-            StringBuilder pathStr = new StringBuilder(path.toDisplayPath(nodeService, permissionService));
+            // run as system because the events system is a system service
+            String displayPath = AuthenticationUtil.runAsSystem(new RunAsWork<String>()
+            {
+                @Override
+                public String doWork() throws Exception
+                {
+                    String displayPath = path.toDisplayPath(nodeService, permissionService);
+                    return displayPath;
+                }
+                
+            });
+
+            StringBuilder pathStr = new StringBuilder(displayPath);
             if(toAppend != null && toAppend.size() > 0)
             {
                 for(String elem : toAppend)

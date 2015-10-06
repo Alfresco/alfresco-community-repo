@@ -762,7 +762,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return selectNodeAssocsBySourceAndPropertyValue(sourceNodeId, typeQNameId, null, null);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<NodeAssocEntity> selectNodeAssocsBySourceAndPropertyValue(Long sourceNodeId, Long typeQNameId, Long propertyQNameId, NodePropertyValue nodeValue)
     {
@@ -778,7 +777,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setPropertyQNameId(propertyQNameId);
         assoc.setPropertyValue(nodeValue);
 
-        return (List<NodeAssocEntity>) template.selectList(SELECT_NODE_ASSOCS_BY_SOURCE_AND_PROPERTY_VALUE, assoc);
+        return template.selectList(SELECT_NODE_ASSOCS_BY_SOURCE_AND_PROPERTY_VALUE, assoc);
     }
 
     @SuppressWarnings("unchecked")

@@ -263,7 +263,31 @@ public class NodeServiceImplTest extends BaseVersionStoreTest
         assertNotNull(assocs);
         assertEquals(origAssocs.size(), assocs.size());
     }
-    
+
+    /**
+     * Tests get target associations by property value.</p>
+     * See <b>MNT-14504</b> for more details.
+     */
+    public void testGetTargetAssocsByPropertyValue()
+    {
+        // Create a new versionable node
+        NodeRef versionableNode = createNewVersionableNode();
+
+        QName propertyQName = PROP_1;
+        Serializable propertyValue = VALUE_1;
+        // Store the current details of the target associations
+        List<AssociationRef> origAssocs = this.dbNodeService.getTargetAssocsByPropertyValue(versionableNode, RegexQNamePattern.MATCH_ALL,
+                propertyQName, propertyValue);
+
+        // Create a new version
+        Version version = createVersion(versionableNode, this.versionProperties);
+
+        List<AssociationRef> assocs = this.versionStoreNodeService.getTargetAssocsByPropertyValue(version.getFrozenStateNodeRef(),
+                RegexQNamePattern.MATCH_ALL, propertyQName, propertyValue);
+        assertNotNull(assocs);
+        assertEquals(origAssocs.size(), assocs.size());
+    }
+
     /**
      * Test hasAspect
      */

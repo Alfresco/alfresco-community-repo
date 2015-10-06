@@ -69,6 +69,8 @@ public class NodeServiceImpl implements NodeService, VersionModel
      */
     protected final static String MSG_UNSUPPORTED =
         "This operation is not supported by a version store implementation of the node service.";
+    
+    private final static String MSG_UNSUPPORTED_V1 = "Versioning V1 is not implemented or supported. Patches exist to upgrade your data to use Versioning V2. Please contact support.";
 
     /**
      * The name of the spoofed root association
@@ -689,6 +691,16 @@ public class NodeServiceImpl implements NodeService, VersionModel
         }
 
         return result;
+    }
+
+    /**
+     * @throws UnsupportedOperationException always
+     */
+    @Override
+    public List<AssociationRef> getTargetAssocsByPropertyValue(NodeRef sourceRef, QNamePattern qnamePattern, QName propertyQName, Serializable propertyValue)
+    {
+        // This operation is not supported for versioning V1
+        throw new UnsupportedOperationException(MSG_UNSUPPORTED_V1);
     }
 
     /**

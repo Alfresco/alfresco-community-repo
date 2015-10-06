@@ -823,10 +823,24 @@
             targetNode.id = #{id}
     </select>
 
-    <select id="select_NodeAssocsBySource" parameterType="NodeAssoc" resultMap="result_NodeAssoc">
+    <select id="select_NodeAssocsBySourceAndPropertyValue" parameterType="NodeAssoc" resultMap="result_NodeAssoc">
         <include refid="alfresco.node.select_NodeAssoc_Results"/>
+        
+        <if test="propertyQNameId != null">
+            join alf_node_properties prop on (targetNode.id = prop.node_id)
+        </if>
         where
             sourceNode.id = #{sourceNode.id}
+            
+            <if test="propertyQNameId != null">
+                and prop.qname_id = #{propertyQNameId}
+            
+                <if test="propertyValue.persistedType == 6">and prop.string_value = #{propertyValue.stringValue}</if>
+                <if test="propertyValue.persistedType == 5">and prop.double_value = #{propertyValue.doubleValue}</if>
+                <if test="propertyValue.persistedType == 3">and prop.long_value = #{propertyValue.longValue}</if>
+                <if test="propertyValue.persistedType == 1">and prop.boolean_value = #{propertyValue.booleanValue}</if> 
+            </if>
+            
             <if test="typeQNameId != null">
                 <![CDATA[and assoc.type_qname_id = #{typeQNameId}]]>
                 <include refid="alfresco.node.select_NodeAssoc_OrderBy"/>

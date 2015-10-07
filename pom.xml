@@ -239,6 +239,13 @@
             <classifier>osx</classifier>
             <type>tgz</type>
         </dependency>
+        <dependency>
+            <groupId>com.bitnami</groupId>
+            <artifactId>installbuilder</artifactId>
+            <version>${installer.installbuilder.version}</version>
+            <classifier>win</classifier>
+            <type>tgz</type>
+        </dependency>
     </dependencies>
 
     <build>

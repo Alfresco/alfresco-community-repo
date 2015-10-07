@@ -1525,7 +1525,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             logger.debug("Transitioning Invite workflow task...");
         try
         {
-            workflowService.endTask(startTask.getId(), null);
+            if (startTask != null && startTask.getState() != WorkflowTaskState.COMPLETED)
+            {
+                workflowService.endTask(startTask.getId(), null);
+            }
         }
         catch (RuntimeException err)
         {

@@ -15,28 +15,8 @@
       
       <serviceTask id="sendInvite" name="Send Invite" activiti:delegateExpression="${SendNominatedInviteAddDirectDelegate}" />
       
-      <sequenceFlow id="flow3" sourceRef="sendInvite" targetRef="inviteAccepted" />
-      
-       <userTask id="inviteAccepted" name="Invitation Accepted"
-            activiti:formKey="inwf:acceptInviteTask" >
-            <extensionElements>
-               <activiti:taskListener event="create" class="org.alfresco.repo.workflow.activiti.tasklistener.ScriptTaskListener">
-                  <activiti:field name="script">
-                     <activiti:string>
-                        if (typeof bpm_workflowPriority != 'undefined') task.priority = bpm_workflowPriority;
-                     </activiti:string>
-                  </activiti:field>
-               </activiti:taskListener>
-            </extensionElements>
-            <humanPerformer>
-                <resourceAssignmentExpression>
-                    <formalExpression>${initiator.exists() ? initiator.properties.userName : 'admin'}</formalExpression>
-                </resourceAssignmentExpression>
-            </humanPerformer>
-        </userTask>
+      <sequenceFlow id="flow3" sourceRef="sendInvite" targetRef="end" />
 
-      <sequenceFlow id="flow4" sourceRef="inviteAccepted" targetRef="end" />
-        
       <endEvent id="end" />
    </process>
 

@@ -38,7 +38,7 @@
         <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
 
         <!-- Install builder version -->
-        <installer.installbuilder.version>15.1.0</installer.installbuilder.version>
+        <installer.installbuilder.version>15.9.0</installer.installbuilder.version>
 
         <!-- 
             Build number (Default value is used unless overridden by command line)

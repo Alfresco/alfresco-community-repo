@@ -32,11 +32,11 @@
         <!-- Repository URL for Alfresco Share Installer -->
         <stringParameter>
             <name>repository_url_port</name>
-            <title>Connect Alfresco Share to Alfresco Platform</title>
-            <explanation>Please enter your Alfresco Platform Url, Port and context.</explanation>
+            <title>Connect Alfresco Share to the repository</title>
+            <explanation>Enter the location of your Alfresco repository.</explanation>
             <default>http://localhost:8080/alfresco</default>
             <ask>0</ask>
-            <description>Alfresco Platform location: </description>
+            <description>Repository location: </description>
         </stringParameter>
 
         <!-- Ports: FTP, RMI -->

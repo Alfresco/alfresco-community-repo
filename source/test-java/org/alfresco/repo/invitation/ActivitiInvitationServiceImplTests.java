@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.invitation.NominatedInvitation;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.cmr.workflow.WorkflowTaskState;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -122,5 +123,9 @@ public class ActivitiInvitationServiceImplTests extends AbstractInvitationServic
         this.invitationServiceImpl.setNominatedInvitationWorkflowId(
                 WorkflowModelNominatedInvitation.WORKFLOW_DEFINITION_NAME_ACTIVITI_ADD_DIRECT);
         testNominatedInvitationExistingUser(false);
+        
+        List<WorkflowTask> initiatorTasks = 
+                this.workflowService.getAssignedTasks(USER_MANAGER, WorkflowTaskState.IN_PROGRESS);
+        assertEquals(0, initiatorTasks.size());
     }
 }

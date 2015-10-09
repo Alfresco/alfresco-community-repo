@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.opencmis.OpenCMISClientContext;
+import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
 import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
@@ -16,7 +17,6 @@ import org.apache.chemistry.opencmis.tck.tests.control.ControlTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.crud.CRUDTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.filing.FilingTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.query.ContentChangesSmokeTest;
-import org.apache.chemistry.opencmis.tck.tests.query.QueryForObject;
 import org.apache.chemistry.opencmis.tck.tests.versioning.CheckedOutTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersionDeleteTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningSmokeTest;
@@ -131,7 +131,7 @@ public class TestPublicApiAtomPub10TCK extends AbstractEnterpriseOpenCMIS10TCKTe
 //            addTest(new QuerySmokeTest());
             // The test fails on Lucene see MNT-11223
 //            addTest(new QueryRootFolderTest());
-            addTest(new QueryForObject());
+            addTest(new QueryForObjectCustom());
             addTest(new QueryLikeTestCustom());
             addTest(new ContentChangesSmokeTest());
         }

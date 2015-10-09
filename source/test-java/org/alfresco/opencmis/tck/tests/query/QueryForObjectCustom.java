@@ -19,7 +19,7 @@
 
 package org.alfresco.opencmis.tck.tests.query;
 
-import org.apache.chemistry.opencmis.tck.tests.query.QueryLikeTest;
+import org.apache.chemistry.opencmis.tck.tests.query.QueryForObject;
 
 /**
  * Fix for MNT-14432 - skip deletion of test data
@@ -28,7 +28,7 @@ import org.apache.chemistry.opencmis.tck.tests.query.QueryLikeTest;
  * @since 4.2.5
  */
 
-public class QueryLikeTestCustom extends QueryLikeTest
+public class QueryForObjectCustom extends QueryForObject
 {
     protected void deleteTestFolder()
     {

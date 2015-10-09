@@ -399,6 +399,9 @@
               from your proxy between Share and Alfresco. Note that this is also faster because Share
               will no longer call the /touch REST API before every remote call to the repository.
    -->
+
+   <!-- Security warning -->
+   <!-- For production environment set verify-hostname to true.-->
    <!--
    <config evaluator="string-compare" condition="Remote">
       <remote>
@@ -406,6 +409,7 @@
              <path>alfresco/web-extension/alfresco-system.p12</path>
              <type>pkcs12</type>
              <password>alfresco-system</password>
+             <verify-hostname>true</verify-hostname>
          </keystore>
          
          <connector>

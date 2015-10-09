@@ -173,7 +173,7 @@ public class RepoUsageComponentTest extends TestCase
         RepoUsage restrictions = new RepoUsage(
                 System.currentTimeMillis(),
                 getUsage().getUsers(),
-                10000L,
+                getUsage().getDocuments(),
                 LicenseMode.TEAM,
                 System.currentTimeMillis() + 24*3600000,
                 false);

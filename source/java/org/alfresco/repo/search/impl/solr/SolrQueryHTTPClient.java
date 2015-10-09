@@ -86,12 +86,17 @@ import org.json.JSONTokener;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
+import org.springframework.beans.factory.config.ListFactoryBean;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @author Andy
  */
-public class SolrQueryHTTPClient implements BeanFactoryAware
+public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
 {
     static Log s_logger = LogFactory.getLog(SolrQueryHTTPClient.class);
 
@@ -144,10 +149,6 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
         PropertyCheck.mandatory(this, "StoreMappings", storeMappings);
         PropertyCheck.mandatory(this, "RepositoryState", repositoryState);
 
-        for(SolrStoreMapping mapping : storeMappings)
-        {
-            mappingLookup.put(mapping.getStoreRef(), new ExplicitSolrStoreMappingWrapper(mapping, beanFactory));
-        }
     }
 
     public void setAlternativeDictionary(String alternativeDictionary)
@@ -781,7 +782,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
 
     private SolrStoreMappingWrapper extractMapping(StoreRef store)
     {
-        if(useDynamicShardRegistration)
+        if((shardRegistry != null) && useDynamicShardRegistration)
         {
             SearchParameters sp = new SearchParameters();
             sp.addStore(store);
@@ -818,6 +819,19 @@ public class SolrQueryHTTPClient implements BeanFactoryAware
     public void setBeanFactory(BeanFactory beanFactory) throws BeansException
     {
         this.beanFactory = beanFactory;
+    }
+
+    /* (non-Javadoc)
+     * @see org.springframework.beans.factory.InitializingBean#afterPropertiesSet()
+     */
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        mappingLookup.clear();
+        for(SolrStoreMapping mapping : storeMappings)
+        {
+            mappingLookup.put(mapping.getStoreRef(), new ExplicitSolrStoreMappingWrapper(mapping, beanFactory));
+        }
     }
 
 }

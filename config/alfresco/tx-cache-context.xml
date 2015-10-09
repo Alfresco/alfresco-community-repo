@@ -700,7 +700,7 @@
          <value>org.alfresco.cache.shardStateTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="${cache.shardStateSharedCache.tx.maxItems}" />
-      <property name="mutable" value="false" />
+      <property name="mutable" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
       <property name="cacheStats" ref="cacheStatistics"/>
       <property name="cacheStatsEnabled" value="${cache.shardStateSharedCache.tx.statsEnabled}"/>
@@ -716,7 +716,7 @@
          <value>org.alfresco.cache.shardToGuidTransactionalCache</value>
       </property>
       <property name="maxCacheSize" value="${cache.shardToGuidSharedCache.tx.maxItems}" />
-      <property name="mutable" value="false" />
+      <property name="mutable" value="true" />
       <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
       <property name="cacheStats" ref="cacheStatistics"/>
       <property name="cacheStatsEnabled" value="${cache.shardToGuidSharedCache.tx.statsEnabled}"/>

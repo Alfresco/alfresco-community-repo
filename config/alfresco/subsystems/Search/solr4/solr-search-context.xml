@@ -43,9 +43,6 @@
         <property name="tenantService">
             <ref bean="tenantService" />
         </property>
-        <property name="shardRegistry">
-            <ref bean="search.SolrShardRegistry" />
-        </property>
         <property name="repositoryState">
             <ref bean="repositoryState" />
         </property>
@@ -78,6 +75,7 @@
     
     <!--The configurable RPC user mappings - actually a post-processed composite property! -->
     <bean id="solr4.store.mappings" class="org.springframework.beans.factory.config.ListFactoryBean">
+        <property name="singleton" value="false"/>
         <property name="sourceList">
             <list>
                 <bean class="org.alfresco.repo.search.impl.solr.SolrStoreMapping">

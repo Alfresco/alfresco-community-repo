@@ -648,3 +648,12 @@ msgstr "You need to select at least one of the Solr components"
 
 msgid "You need to use ASCII characters only when setting the password here. You can reset it after installation and use non-ASCII characters."
 msgstr "You need to use ASCII characters only when setting the password here. You can reset it after installation and use non-ASCII characters."
+
+msgid "Connect Alfresco Share to Alfresco Platform"
+msgstr "Connect Alfresco Share to Alfresco Platform"
+
+msgid "Enter the location of your Alfresco repository."
+msgstr "Enter the location of your Alfresco repository."
+
+msgid "Repository location: "
+msgstr "Repository location: "

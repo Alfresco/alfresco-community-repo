@@ -66,7 +66,7 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
     private static final Logger LOGGER = LoggerFactory.getLogger(CaveatDAOFromJSON.class);
 
     /** The location of the configuration file relative to the classpath. */
-    String configLocation;
+    private String configLocation;
 
     /** Set the location of the configuration file relative to the classpath. */
     public void setConfigLocation(String configLocation)

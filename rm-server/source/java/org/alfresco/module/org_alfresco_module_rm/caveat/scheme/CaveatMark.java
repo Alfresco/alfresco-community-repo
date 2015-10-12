@@ -19,6 +19,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.caveat.scheme;
 
+import java.io.Serializable;
+
 import org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras;
 
 /**
@@ -28,8 +30,10 @@ import org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras;
  * @author Tom Page
  * @since 2.4.a
  */
-public class CaveatMark
+public class CaveatMark implements Serializable
 {
+    /** Generated serial version id. */
+    private static final long serialVersionUID = 2805846540946220526L;
     /** The id of the group that this mark belongs to. */
     private String groupId;
     /** The id for this mark. */

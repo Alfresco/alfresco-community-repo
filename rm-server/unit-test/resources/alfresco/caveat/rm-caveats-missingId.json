@@ -1,0 +1,28 @@
+[
+   {
+      "id"           : "classification",
+      "displayLabel" : "rm.caveat.classification.group",
+      "description"  : "rm.caveat.classification.description",
+      "type"         : "HIERARCHICAL",
+      "marks" :
+      [
+         {
+            "id"           : "TS",
+            "displayLabel" : "rm.caveat.classification.mark.ts"
+         }
+      ]
+   },
+   {
+      "id"           : "classification",
+      "displayLabel" : "rm.caveat.classification.group",
+      "description"  : "rm.caveat.classification.description",
+      "type"         : "HIERARCHICAL",
+      "marks" :
+      [
+         {
+            "id"           : "TS",
+            "displayLabel" : "rm.caveat.classification.mark.ts"
+         }
+      ]
+   }
+]

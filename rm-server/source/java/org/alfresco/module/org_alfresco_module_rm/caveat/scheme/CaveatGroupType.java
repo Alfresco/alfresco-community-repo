@@ -28,9 +28,9 @@ package org.alfresco.module.org_alfresco_module_rm.caveat.scheme;
 public enum CaveatGroupType
 {
     /** Each mark in the group implies all earlier marks also apply. */
-    HIERACHICAL,
-    /** Each mark in the group implies that no other mark applies. */
-    EXCLUSIVE,
-    /** Each mark in the group has no bearing on the applicability of any other mark. */
-    INDEPENDENT
+    HIERARCHICAL,
+    /** Many marks may be applied to content, and users need all marks to access it. */
+    CUMULATIVE_SECURITY,
+    /** Many marks may be applied to content, and users can access it with any one mark. */
+    CUMULATIVE_AVAILABILITY
 }

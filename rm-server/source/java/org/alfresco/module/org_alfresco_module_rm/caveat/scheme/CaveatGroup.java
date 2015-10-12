@@ -19,6 +19,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.caveat.scheme;
 
+import java.io.Serializable;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
@@ -31,8 +32,10 @@ import org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras;
  * @author Tom Page
  * @since 2.4.a
  */
-public class CaveatGroup
+public class CaveatGroup implements Serializable
 {
+    /** Generated serial version id. */
+    private static final long serialVersionUID = -8909291192015016370L;
     /** The unique id of the caveat group. */
     private String id;
     /** The key to retrieve the I18n'ed display label for the caveat group. */

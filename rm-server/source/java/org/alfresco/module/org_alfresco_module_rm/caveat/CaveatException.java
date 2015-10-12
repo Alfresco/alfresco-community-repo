@@ -53,4 +53,21 @@ public class CaveatException extends AlfrescoRuntimeException
             super("Could not find caveat mark with id " + caveatMarkId);
         }
     }
+
+    /** The caveat configuration file contains errors. */
+    public static class MalformedConfiguration extends CaveatException
+    {
+        /** serial version uid */
+        private static final long serialVersionUID = -4486048933410071424L;
+
+        public MalformedConfiguration(String message)
+        {
+            super(message);
+        }
+
+        public MalformedConfiguration(String message, Throwable cause)
+        {
+            super(message, cause);
+        }
+    }
 }

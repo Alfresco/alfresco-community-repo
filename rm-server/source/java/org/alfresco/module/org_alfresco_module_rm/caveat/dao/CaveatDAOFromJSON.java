@@ -23,8 +23,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.MalformedConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
@@ -35,6 +37,8 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * An object that provides access to the configured caveat groups and marks, which it retrieves from JSON files.
@@ -58,6 +62,8 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
     private static final String MARK_ID_JSON_KEY = "id";
     /** JSON key for the mark display label key. */
     private static final String MARK_DISPLAY_LABEL_JSON_KEY = "displayLabel";
+    /** Logging utility for the class. */
+    private static final Logger LOGGER = LoggerFactory.getLogger(CaveatDAOFromJSON.class);
 
     /** The location of the configuration file relative to the classpath. */
     String configLocation;
@@ -94,11 +100,14 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
                     result.put(caveatGroupId, caveatGroup);
                 }
             }
+            else
+            {
+                LOGGER.warn("Could not find caveat configuration file: " + configLocation);
+            }
         }
         catch (IOException | JSONException e)
         {
-            String message = "Could not read caveat configuration: " + configLocation;
-            throw new MalformedConfiguration(message, e);
+            throw new MalformedConfiguration("Could not read caveat configuration: " + configLocation, e);
         }
         return result;
     }
@@ -110,7 +119,7 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
      * @return The created group.
      * @throws JSONException If there is an issue reading the JSON.
      */
-    private CaveatGroup createGroup(JSONObject jsonGroup) throws JSONException
+    protected CaveatGroup createGroup(JSONObject jsonGroup) throws JSONException
     {
         String id = jsonGroup.getString(GROUP_ID_JSON_KEY);
         String displayLabelKey = jsonGroup.getString(GROUP_DISPLAY_LABEL_JSON_KEY);
@@ -128,11 +137,21 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
 
         // Create a list of the configured caveat marks.
         List<CaveatMark> caveatMarks = new ArrayList<>();
+        Set<String> markIds = new HashSet<>();
         JSONArray jsonMarks = jsonGroup.getJSONArray(MARKS_JSON_KEY);
         for (int i = 0; i < jsonMarks.length(); i++)
         {
             JSONObject jsonMark = jsonMarks.getJSONObject(i);
-            caveatMarks.add(createMark(jsonMark));
+            CaveatMark caveatMark = createMark(jsonMark);
+            caveatMarks.add(caveatMark);
+            if (!markIds.contains(caveatMark.getId()))
+            {
+                markIds.add(caveatMark.getId());
+            }
+            else
+            {
+                throw new MalformedConfiguration("Duplicate caveat mark id " + caveatMark.getId() + " within a group.");
+            }
         }
 
         // Instantiate the group (and associate the marks with the group).

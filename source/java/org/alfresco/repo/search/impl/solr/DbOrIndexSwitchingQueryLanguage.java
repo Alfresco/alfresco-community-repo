@@ -144,14 +144,14 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
             }
         case TRANSACTIONAL:
             if(dbQueryLanguage != null)
-            {
+            { 
                 if(logger.isDebugEnabled())
                 {
                     logger.debug("Trying db query for "+dbQueryLanguage.getName()+" for "+searchParameters);
                 }
                 StopWatch stopWatch = new StopWatch("database only");
                 stopWatch.start();
-                ResultSet results = dbQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                ResultSet results = dbQueryLanguage.executeQuery(flattenDBQuery(searchParameters), admLuceneSearcher);
                 stopWatch.stop();
                 if (logger.isDebugEnabled())
                 {
@@ -183,7 +183,7 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
                         logger.debug("Trying db query for "+dbQueryLanguage.getName()+" for "+searchParameters);
                     }
                     stopWatch.start();
-                    ResultSet results = dbQueryLanguage.executeQuery(searchParameters, admLuceneSearcher);
+                    ResultSet results = dbQueryLanguage.executeQuery(flattenDBQuery(searchParameters), admLuceneSearcher);
                     stopWatch.stop();
                     if (logger.isDebugEnabled())
                     {
@@ -247,6 +247,27 @@ public class DbOrIndexSwitchingQueryLanguage extends AbstractLuceneQueryLanguage
         
     }
 
+    private SearchParameters flattenDBQuery(SearchParameters sp)
+    {
+        if (sp.getFilterQueries().size() == 0)
+        {
+            return sp;
+        }
+        else
+        {
+            SearchParameters flatten = sp.copy();
+            StringBuilder queryBuilder = new StringBuilder();
+            
+            queryBuilder.append("( ").append(sp.getQuery()).append(" )");
+            for(String filter : sp.getFilterQueries())
+            {
+                queryBuilder.append("AND ( ").append(filter).append(" )");
+            }
+            flatten.setQuery(queryBuilder.toString());
+            // the filter can be left and will be ignored by the DB query
+            return flatten;
+        }
+    }
 
     private ResultSet executeHybridQuery(SearchParameters searchParameters,
                                          ADMLuceneSearcherImpl admLuceneSearcher)

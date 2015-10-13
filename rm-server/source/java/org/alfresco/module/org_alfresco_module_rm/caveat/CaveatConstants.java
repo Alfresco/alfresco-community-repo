@@ -33,4 +33,6 @@ public class CaveatConstants
 
     /** Key for accessing the persisted caveat groups and marks in the attribute service. */
     public static final Serializable[] CAVEAT_ATTRIBUTE_KEY = new String[] { "org.alfresco", "module.org_alfresco_module_rm", "caveat.groups" };
+    /** The default prefix of caveat-related properties. */
+    public static final String DEFAULT_CAVEAT_PREFIX = "rm.caveat.";
 }

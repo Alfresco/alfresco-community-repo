@@ -30,7 +30,7 @@ public enum CaveatGroupType
     /** Each mark in the group implies all earlier marks also apply. */
     HIERARCHICAL,
     /** Many marks may be applied to content, and users need all marks to access it. */
-    CUMULATIVE_SECURITY,
+    USER_REQUIRES_ALL,
     /** Many marks may be applied to content, and users can access it with any one mark. */
-    CUMULATIVE_AVAILABILITY
+    USER_REQUIRES_ANY
 }

@@ -24,7 +24,7 @@
       "id"           : "nationality",
       "displayLabel" : "rm.caveat.nationality.label",
       "description"  : "rm.caveat.nationality.description",
-      "type"         : "CUMULATIVE_AVAILABILITY",
+      "type"         : "USER_REQUIRES_ANY",
       "marks" :
       [
          {
@@ -45,7 +45,7 @@
       "id"           : "training",
       "displayLabel" : "rm.caveat.training.label",
       "description"  : "rm.caveat.training.description",
-      "type"         : "CUMULATIVE_SECURITY",
+      "type"         : "USER_REQUIRES_ALL",
       "marks" :
       [
          {

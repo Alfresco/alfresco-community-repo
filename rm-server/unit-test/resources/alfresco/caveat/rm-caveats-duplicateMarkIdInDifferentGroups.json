@@ -16,7 +16,7 @@
       "id"           : "nationality",
       "displayLabel" : "rm.caveat.nationality.group",
       "description"  : "rm.caveat.nationality.description",
-      "type"         : "CUMULATIVE_AVAILABILITY",
+      "type"         : "USER_REQUIRES_ANY",
       "marks" :
       [
          {

@@ -37,7 +37,8 @@ import org.junit.Test;
 public class CaveatDAOFromJSONUnitTest
 {
     /** The class under test. */
-    CaveatDAOFromJSON caveatDAOFromJSON = new CaveatDAOFromJSON();
+    @SuppressWarnings("rawtypes")
+    CaveatDAOFromJSON<?> caveatDAOFromJSON = new CaveatDAOFromJSON();
 
     /** Test that loading the default caveat configuration file doesn't throw any exceptions. */
     @Test
@@ -90,6 +91,7 @@ public class CaveatDAOFromJSONUnitTest
     }
 
     /** Test that a duplicate mark id (in different groups) doesn't cause an exception. */
+    @Test
     public void testGetCaveatGroups_duplicateMarkIdInDifferentGroups()
     {
         caveatDAOFromJSON.setConfigLocation("/alfresco/caveat/rm-caveats-duplicateMarkIdInDifferentGroups.json");

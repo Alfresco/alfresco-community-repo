@@ -19,6 +19,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.caveat.dao;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
@@ -29,10 +30,10 @@ import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
  * @author Tom Page
  * @since 2.4.a
  */
-public interface CaveatDAOInterface
+public interface CaveatDAOInterface<SMAP extends Map<String, CaveatGroup> & Serializable>
 {
     /**
      * Gets a map of all the available caveat groups keyed by id.
      */
-    Map<String, CaveatGroup> getCaveatGroups();
+    SMAP getCaveatGroups();
 }

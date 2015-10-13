@@ -24,7 +24,9 @@ import static org.alfresco.module.org_alfresco_module_rm.caveat.CaveatConstants.
 import java.io.Serializable;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableCollection;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.CaveatMarkNotFound;
 import org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras;
 import org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck;
@@ -49,8 +51,8 @@ public class CaveatGroup implements Serializable
     private final String descriptionKey;
     /** The relationship between marks in the group. */
     private final CaveatGroupType caveatGroupType;
-    /** The marks that are contained in this group. */
-    private final ImmutableList<CaveatMark> caveatMarks;
+    /** The marks that are contained in this group, ordered according to the list supplied in the constructor. */
+    private final ImmutableMap<String, CaveatMark> caveatMarks;
 
     /**
      * Constructor for the caveat group.
@@ -100,11 +102,27 @@ public class CaveatGroup implements Serializable
         this.displayLabelKey = displayLabelKey;
         this.descriptionKey = descriptionKey;
         this.caveatGroupType = caveatGroupType;
-        this.caveatMarks = ImmutableList.copyOf(caveatMarks);
         for (CaveatMark caveatMark : caveatMarks)
         {
             caveatMark.setGroupId(id);
         }
+        this.caveatMarks = immutableMapOf(caveatMarks);
+    }
+
+    /**
+     * Create an immutable map from the supplied caveat marks.
+     *
+     * @param caveatMarks A list of the marks.
+     * @return An map from group id to caveat group, with keys in the same order as the list.
+     */
+    private ImmutableMap<String, CaveatMark> immutableMapOf(List<CaveatMark> caveatMarks)
+    {
+        Builder<String, CaveatMark> builder = ImmutableMap.builder();
+        for (CaveatMark caveatMark : caveatMarks)
+        {
+            builder.put(caveatMark.getId(), caveatMark);
+        }
+        return builder.build();
     }
 
     /**
@@ -140,11 +158,11 @@ public class CaveatGroup implements Serializable
     }
 
     /**
-     * Get caveat marks in ordered list with first being the most inclusive.
+     * Get the caveat marks in the order they were supplied.
      */
-    public ImmutableList<CaveatMark> getCaveatMarks()
+    public ImmutableCollection<CaveatMark> getCaveatMarks()
     {
-        return caveatMarks;
+        return caveatMarks.values();
     }
 
     /**
@@ -154,11 +172,7 @@ public class CaveatGroup implements Serializable
      */
     public boolean hasCaveatMark(String markId)
     {
-        for (CaveatMark caveatMark : caveatMarks)
-        {
-            if (caveatMark.getId().equals(markId)) { return true; }
-        }
-        return false;
+        return caveatMarks.containsKey(markId);
     }
 
     /**
@@ -169,11 +183,11 @@ public class CaveatGroup implements Serializable
      */
     public CaveatMark getCaveatMark(String markId)
     {
-        for (CaveatMark caveatMark : caveatMarks)
+        if (!hasCaveatMark(markId))
         {
-            if (caveatMark.getId().equals(markId)) { return caveatMark; }
+            throw new CaveatMarkNotFound(markId);
         }
-        throw new CaveatMarkNotFound(markId);
+        return caveatMarks.get(markId);
     }
 
     @Override

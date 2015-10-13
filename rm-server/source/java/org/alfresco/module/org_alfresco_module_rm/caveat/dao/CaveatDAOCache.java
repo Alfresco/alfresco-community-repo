@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.caveat.dao;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
@@ -28,18 +29,18 @@ import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
  * @author Tom Page
  * @since 2.4.a
  */
-public class CaveatDAOCache implements CaveatDAOInterface
+public class CaveatDAOCache<SMAP extends Map<String, CaveatGroup> & Serializable> implements CaveatDAOInterface<SMAP>
 {
     /** The wrapped caveat DAO. */
-    private CaveatDAOInterface caveatDAO;
+    private CaveatDAOInterface<SMAP> caveatDAO;
     /** A cache of the system caveat groups. */
-    private Map<String, CaveatGroup> caveatGroups;
+    private SMAP caveatGroups;
 
     /**
      * {@inheritDoc} The first call to this method will be cached and returned for every successive call.
      */
     @Override
-    public Map<String, CaveatGroup> getCaveatGroups()
+    public SMAP getCaveatGroups()
     {
         if (caveatGroups == null)
         {
@@ -53,7 +54,7 @@ public class CaveatDAOCache implements CaveatDAOInterface
      *
      * @param caveatDAO The caveat DAO to be wrapped.
      */
-    public void setCaveatDAO(CaveatDAOInterface caveatDAO)
+    public void setCaveatDAO(CaveatDAOInterface<SMAP> caveatDAO)
     {
         this.caveatDAO = caveatDAO;
     }

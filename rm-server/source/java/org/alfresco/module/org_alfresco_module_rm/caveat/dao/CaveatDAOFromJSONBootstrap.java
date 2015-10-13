@@ -25,7 +25,6 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.MalformedConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
-import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -42,7 +41,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * @author Tom Page
  * @since 2.4.a
  */
-public class CaveatDAOFromJSONBootstrap extends AbstractLifecycleBean implements ClassifiedContentModel
+public class CaveatDAOFromJSONBootstrap<SMAP extends Map<String, CaveatGroup> & Serializable> extends AbstractLifecycleBean
 {
     /** Logging utility for the class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(CaveatDAOFromJSONBootstrap.class);
@@ -50,14 +49,14 @@ public class CaveatDAOFromJSONBootstrap extends AbstractLifecycleBean implements
     private final AuthenticationUtil authenticationUtil;
     private final TransactionService transactionService;
     private AttributeService attributeService;
-    private CaveatDAOInterface caveatDAO;
+    private CaveatDAOInterface<SMAP> caveatDAO;
 
     private boolean isInitialised = false;
 
     public CaveatDAOFromJSONBootstrap(AuthenticationUtil authUtil,
                                       TransactionService txService,
                                       AttributeService attributeService,
-                                      CaveatDAOInterface caveatDAO)
+                                      CaveatDAOInterface<SMAP> caveatDAO)
     {
         this.authenticationUtil = authUtil;
         this.transactionService = txService;
@@ -66,7 +65,7 @@ public class CaveatDAOFromJSONBootstrap extends AbstractLifecycleBean implements
     }
 
     /** Set the object from which configuration options will be read. */
-    public void setClassificationServiceDAO(CaveatDAOInterface caveatDAO) { this.caveatDAO = caveatDAO; }
+    public void setClassificationServiceDAO(CaveatDAOInterface<SMAP> caveatDAO) { this.caveatDAO = caveatDAO; }
     public void setAttributeService(AttributeService attributeService) { this.attributeService = attributeService; }
 
     public boolean isInitialised()
@@ -100,15 +99,15 @@ public class CaveatDAOFromJSONBootstrap extends AbstractLifecycleBean implements
      *
      * @return the persisted caveat groups if they have been persisted, else {@code null}.
      */
-    private Map<String, CaveatGroup> getPersistedValues(final Serializable[] key)
+    private SMAP getPersistedCaveatGroups(final Serializable[] key)
     {
-        return authenticationUtil.runAsSystem(new RunAsWork<Map<String, CaveatGroup>>()
+        return authenticationUtil.runAsSystem(new RunAsWork<SMAP>()
         {
             @Override
             @SuppressWarnings("unchecked")
-            public Map<String, CaveatGroup> doWork() throws Exception
+            public SMAP doWork() throws Exception
             {
-                return (Map<String, CaveatGroup>) attributeService.getAttribute(key);
+                return (SMAP) attributeService.getAttribute(key);
             }
         });
     }
@@ -134,24 +133,24 @@ public class CaveatDAOFromJSONBootstrap extends AbstractLifecycleBean implements
      */
     protected void initialiseConfiguredCaveatGroups(Serializable[] key)
     {
-        final Map<String, CaveatGroup> persistedValues = getPersistedValues(key);
-        final Map<String, CaveatGroup> classpathValues = caveatDAO.getCaveatGroups();
+        final SMAP persistedGroups = getPersistedCaveatGroups(key);
+        final SMAP classpathGroups = caveatDAO.getCaveatGroups();
 
         // Note! We cannot log the entities or even the size of these lists for security reasons.
-        LOGGER.debug("Persisted CaveatGroup: {}", loggableStatusOf(persistedValues));
-        LOGGER.debug("Classpath CaveatGroup: {}", loggableStatusOf(classpathValues));
+        LOGGER.debug("Persisted CaveatGroup: {}", loggableStatusOf(persistedGroups));
+        LOGGER.debug("Classpath CaveatGroup: {}", loggableStatusOf(classpathGroups));
 
-        if (isEmpty(classpathValues))
+        if (isEmpty(classpathGroups))
         {
             throw new MalformedConfiguration("CaveatGroup configuration is missing.");
         }
-        if (!classpathValues.equals(persistedValues))
+        if (!classpathGroups.equals(persistedGroups))
         {
-            if (!isEmpty(persistedValues))
+            if (!isEmpty(persistedGroups))
             {
                 LOGGER.warn("CaveatGroup configuration changed. This may result in unpredictable results if the caveat scheme is already in use.");
             }
-            attributeService.setAttribute((Serializable) classpathValues, key);
+            attributeService.setAttribute(classpathGroups, key);
         }
     }
 

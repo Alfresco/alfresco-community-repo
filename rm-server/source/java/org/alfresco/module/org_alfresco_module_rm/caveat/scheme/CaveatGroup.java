@@ -168,7 +168,7 @@ public class CaveatGroup implements Serializable
     /**
      * Indicates whether a mark exists in this caveat group or not.
      *
-     * @param The identifier of the mark.
+     * @param markId The identifier of the mark.
      */
     public boolean hasCaveatMark(String markId)
     {

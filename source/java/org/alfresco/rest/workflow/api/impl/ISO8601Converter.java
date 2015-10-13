@@ -34,14 +34,14 @@ public class ISO8601Converter implements Converter
             	else if (value instanceof java.sql.Date) 
             	{
             		java.sql.Date valueX = (java.sql.Date)value;
-            		return new Date(valueX.getTime());        
+            		result = new Date(valueX.getTime());        
                 }
             	else if (value instanceof java.sql.Time) 
             	{
             		java.sql.Time valueX = (java.sql.Time)value;
-            		return new Date(valueX.getTime());        
+            		result = new Date(valueX.getTime());        
                 }
-            	if(value instanceof Calendar)
+            	else if(value instanceof Calendar)
             	{
             		result = ((Calendar)value).getTime();
             	}

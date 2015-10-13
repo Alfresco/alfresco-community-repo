@@ -40,5 +40,26 @@
             "displayLabel" : "rm.caveat.nationality.mark.aus"
          }
       ]
+   },
+   {
+      "id"           : "training",
+      "displayLabel" : "rm.caveat.training.group",
+      "description"  : "rm.caveat.training.description",
+      "type"         : "CUMULATIVE_SECURITY",
+      "marks" :
+      [
+         {
+            "id"           : "SA",
+            "displayLabel" : "rm.caveat.training.mark.securityAwareness"
+         },
+         {
+            "id"           : "DPT",
+            "displayLabel" : "rm.caveat.training.mark.dataProtectionTraining"
+         },
+         {
+            "id"           : "IFP",
+            "displayLabel" : "rm.caveat.training.mark.interprettingFinancialPredictions"
+         }
+      ]
    }
 ]

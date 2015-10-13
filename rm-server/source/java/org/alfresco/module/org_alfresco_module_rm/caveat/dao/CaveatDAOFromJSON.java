@@ -105,7 +105,7 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
                 LOGGER.warn("Could not find caveat configuration file: " + configLocation);
             }
         }
-        catch (IOException | JSONException e)
+        catch (IOException | JSONException | IllegalArgumentException e)
         {
             throw new MalformedConfiguration("Could not read caveat configuration: " + configLocation, e);
         }

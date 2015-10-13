@@ -1,64 +1,64 @@
 [
    {
       "id"           : "classification",
-      "displayLabel" : "rm.caveat.classification.group",
+      "displayLabel" : "rm.caveat.classification.label",
       "description"  : "rm.caveat.classification.description",
       "type"         : "HIERARCHICAL",
       "marks" :
       [
          {
             "id"           : "TS",
-            "displayLabel" : "rm.caveat.classification.mark.ts"
+            "displayLabel" : "rm.caveat.classification.mark.ts.label"
          },
          {
             "id"           : "S",
-            "displayLabel" : "rm.caveat.classification.mark.s"
+            "displayLabel" : "rm.caveat.classification.mark.s.label"
          },
          {
             "id"           : "C",
-            "displayLabel" : "rm.caveat.classification.mark.c"
+            "displayLabel" : "rm.caveat.classification.mark.c.label"
          }
       ]
    },
    {
       "id"           : "nationality",
-      "displayLabel" : "rm.caveat.nationality.group",
+      "displayLabel" : "rm.caveat.nationality.label",
       "description"  : "rm.caveat.nationality.description",
       "type"         : "CUMULATIVE_AVAILABILITY",
       "marks" :
       [
          {
             "id"           : "GBR",
-            "displayLabel" : "rm.caveat.nationality.mark.gbr"
+            "displayLabel" : "rm.caveat.nationality.mark.gbr.label"
          },
          {
             "id"           : "CAN",
-            "displayLabel" : "rm.caveat.nationality.mark.can"
+            "displayLabel" : "rm.caveat.nationality.mark.can.label"
          },
          {
             "id"           : "AUS",
-            "displayLabel" : "rm.caveat.nationality.mark.aus"
+            "displayLabel" : "rm.caveat.nationality.mark.aus.label"
          }
       ]
    },
    {
       "id"           : "training",
-      "displayLabel" : "rm.caveat.training.group",
+      "displayLabel" : "rm.caveat.training.label",
       "description"  : "rm.caveat.training.description",
       "type"         : "CUMULATIVE_SECURITY",
       "marks" :
       [
          {
             "id"           : "SA",
-            "displayLabel" : "rm.caveat.training.mark.securityAwareness"
+            "displayLabel" : "rm.caveat.training.mark.securityAwareness.label"
          },
          {
             "id"           : "DPT",
-            "displayLabel" : "rm.caveat.training.mark.dataProtectionTraining"
+            "displayLabel" : "rm.caveat.training.mark.dataProtectionTraining.label"
          },
          {
             "id"           : "IFP",
-            "displayLabel" : "rm.caveat.training.mark.interprettingFinancialPredictions"
+            "displayLabel" : "rm.caveat.training.mark.interprettingFinancialPredictions.label"
          }
       ]
    }

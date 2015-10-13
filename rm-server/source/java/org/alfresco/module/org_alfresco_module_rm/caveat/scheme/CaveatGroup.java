@@ -19,12 +19,17 @@
 
 package org.alfresco.module.org_alfresco_module_rm.caveat.scheme;
 
+import static org.alfresco.module.org_alfresco_module_rm.caveat.CaveatConstants.DEFAULT_CAVEAT_PREFIX;
+
 import java.io.Serializable;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.CaveatMarkNotFound;
 import org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras;
+import org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.extensions.surf.util.ParameterCheck;
 
 /**
  * A group of related caveat marks and metadata describing how they are related.
@@ -37,28 +42,60 @@ public class CaveatGroup implements Serializable
     /** Generated serial version id. */
     private static final long serialVersionUID = -8909291192015016370L;
     /** The unique id of the caveat group. */
-    private String id;
+    private final String id;
     /** The key to retrieve the I18n'ed display label for the caveat group. */
-    private String displayLabelKey;
+    private final String displayLabelKey;
     /** The key to retrieve the I18n'ed description of the caveat group. */
-    private String descriptionKey;
+    private final String descriptionKey;
     /** The relationship between marks in the group. */
-    private CaveatGroupType caveatGroupType;
+    private final CaveatGroupType caveatGroupType;
     /** The marks that are contained in this group. */
-    private ImmutableList<CaveatMark> caveatMarks;
+    private final ImmutableList<CaveatMark> caveatMarks;
 
     /**
-     * Constructor for the caveat group. This sets the group id of all the caveat marks that are supplied.
+     * Constructor for the caveat group.
+     * <p>
+     * This sets the group id of all the caveat marks that are supplied. It uses the
+     * default keys for the display label and description.
      *
      * @param id The unique id of the caveat group.
-     * @param displayLabelKey The key to retrieve the I18n'ed display label for the caveat group.
-     * @param descriptionKey The key to retrieve the I18n'ed description of the caveat group.
+     * @param caveatGroupType The relationship between marks in the group.
+     * @param caveatMarks The marks that are contained in this group.
+     */
+    public CaveatGroup(String id, CaveatGroupType caveatGroupType, List<CaveatMark> caveatMarks)
+    {
+        this(id, null, null, caveatGroupType, caveatMarks);
+    }
+
+    /**
+     * Constructor for the caveat group.
+     * <p>
+     * This sets the group id of all the caveat marks that are supplied.
+     *
+     * @param id The unique id of the caveat group.
+     * @param displayLabelKey The key to retrieve the I18n'ed display label for the caveat group. If null then use the
+     *            default label key.
+     * @param descriptionKey The key to retrieve the I18n'ed description of the caveat group. If null then use the
+     *            default description key.
      * @param caveatGroupType The relationship between marks in the group.
      * @param caveatMarks The marks that are contained in this group.
      */
     public CaveatGroup(String id, String displayLabelKey, String descriptionKey, CaveatGroupType caveatGroupType,
                 List<CaveatMark> caveatMarks)
     {
+        RMParameterCheck.checkNotBlank("id", id);
+        ParameterCheck.mandatory("caveatGroupType", caveatGroupType);
+        ParameterCheck.mandatoryCollection("caveatMarks", caveatMarks);
+
+        if (StringUtils.isBlank(displayLabelKey))
+        {
+            displayLabelKey = DEFAULT_CAVEAT_PREFIX + id + ".label";
+        }
+        if (StringUtils.isBlank(descriptionKey))
+        {
+            descriptionKey = DEFAULT_CAVEAT_PREFIX + id + ".description";
+        }
+
         this.id = id;
         this.displayLabelKey = displayLabelKey;
         this.descriptionKey = descriptionKey;
@@ -137,5 +174,32 @@ public class CaveatGroup implements Serializable
             if (caveatMark.getId().equals(markId)) { return caveatMark; }
         }
         throw new CaveatMarkNotFound(markId);
+    }
+
+    @Override
+    public String toString()
+    {
+        StringBuilder msg = new StringBuilder();
+        msg.append(this.getClass().getSimpleName())
+           .append(":").append(id);
+
+        return  msg.toString();
+    }
+
+    @Override
+    public boolean equals(Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        CaveatGroup that = (CaveatGroup) o;
+
+        return this.id.equals(that.id);
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return id.hashCode();
     }
 }

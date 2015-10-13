@@ -41,7 +41,7 @@ public class CaveatDAOFromJSONUnitTest
 
     /** Test that loading the default caveat configuration file doesn't throw any exceptions. */
     @Test
-    public void testGetCaveatGroups()
+    public void testGetCaveatGroups_defaultConfiguration()
     {
         caveatDAOFromJSON.setConfigLocation("/alfresco/module/org_alfresco_module_rm/caveat/rm-caveats.json");
         Map<String, CaveatGroup> caveatGroups = caveatDAOFromJSON.getCaveatGroups();

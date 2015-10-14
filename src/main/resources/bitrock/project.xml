@@ -1,7 +1,7 @@
 <project>
     <vendor>Alfresco Software, Inc.</vendor>
     <compressionAlgorithm>zip</compressionAlgorithm>
-    <fullName>Alfresco Community Edition Stack</fullName>
+    <fullName>Alfresco Community Edition</fullName>
     <!--readmeFile>README.txt</readmeFile-->
     <shortName>alfresco</shortName>
     <version>4.2.e-0</version>
@@ -287,7 +287,7 @@
             <actionList>
             <setInstallerVariable name="finalpage_start_servers" value="1" />
             <runProgram>
-                <progressText>Starting servers. Please be patient.</progressText>
+                <progressText>Starting servers...</progressText>
                 <program>${installdir}/${ctlscript_unix}</program>
                 <programArguments>start &amp;</programArguments>
                 <ruleList>
@@ -295,7 +295,7 @@
                 </ruleList>
             </runProgram>
             <runProgram>
-                <progressText>Starting servers. Please be patient.</progressText>
+                <progressText>Starting servers...</progressText>
                 <program>${installdir}/servicerun.bat</program>
                 <programArguments>START</programArguments>
                 <ruleList>
@@ -319,7 +319,7 @@
 
     <actionGroup show="0">
         <actionList>
-        <showProgressDialog title="Starting servers ..." >
+        <showProgressDialog title="Starting servers..." >
             <actionList>
             <waitForPort port="${application_server_port}" timeout="10000" />
             <findFile baseDirectory="${application_server_directory}/logs" variable="windowsTomcatLogFile" pattern="*stderr*" >
@@ -328,7 +328,7 @@
                 </ruleList>
             </findFile>
             <logMessage text="Tomcat log file ${windowsTomcatLogFile}" />
-            <foreach values="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20" variables="iteration" progressText="Deploying Alfresco. Please be patient.">
+            <foreach values="1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20" variables="iteration" progressText="Deploying Alfresco...">
                 <actionList>
                 <actionGroup>
                     <actionList>
@@ -388,7 +388,7 @@
         </actionGroup>
         
     <showInfo>
-            <text>You have chosen Tomcat as the existing installation. To use new installed applications you must restart Tomcat.</text>
+            <text>You have chosen Tomcat as the existing installation. Restart Tomcat to use any newly installed applications.</text>
             <ruleList>
                 <compareText text="${application_server_installation_type}" logic="equals" value="existing" />
         </ruleList>

@@ -1,7 +1,7 @@
 <component>
     <name>alfresco</name>
     <description>${product_fullname}</description>
-    <detailedDescription>Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management and Image Management.</detailedDescription>
+    <detailedDescription>Alfresco Enterprise Content Management (ECM) system featuring Document Management, Collaboration Management, and Image Management.</detailedDescription>
     <canBeEdited>0</canBeEdited>
     <selected>1</selected>
     <show>1</show>
@@ -43,7 +43,7 @@
         <stringParameter>
             <name>alfresco_ftp_port</name>
             <title>Alfresco FTP Port</title>
-            <explanation>Please choose a port number to use for the integrated Alfresco FTP server.</explanation>
+            <explanation>Choose a port number for the integrated Alfresco FTP server.</explanation>
             <default>21</default>
             <value/>
             <ask>1</ask>
@@ -55,7 +55,7 @@
             </ruleList>
             <validationActionList>
                 <throwError>
-                    <text>Unable to bind to the given port number. Please select another FTP Port.</text>
+                    <text>Couldn’t bind to the given port number. Select another FTP Port.</text>
                     <ruleList>
                         <portTest port="${alfresco_ftp_port}" condition="cannot_bind"/>
                     </ruleList>
@@ -65,7 +65,7 @@
         <stringParameter>
             <name>alfresco_rmi_port</name>
             <title>Alfresco RMI Port</title>
-            <explanation>Please choose a port number for Alfresco to use to execute remote commands.</explanation>
+            <explanation>Choose a port number for Alfresco to use to execute remote commands.</explanation>
             <default>50500</default>
             <value/>
             <ask>1</ask>
@@ -77,7 +77,7 @@
             </ruleList>
             <validationActionList>
                 <throwError>
-                    <text>Unable to bind to the given port number. Please select another RMI Port.</text>
+                    <text>Couldn’t bind to the given port number. Select another RMI Port.</text>
                     <ruleList>
                         <portTest port="${alfresco_rmi_port}" condition="cannot_bind"/>
                     </ruleList>
@@ -86,10 +86,9 @@
         </stringParameter>
         <directoryParameter>
             <name>alfresco_data_directory</name>
-            <title>Alfresco data directory</title>
-            <description>Select a folder</description>
-            <explanation>The Alfresco data directory tends to grow in size. Please choose where do you want to store it.</explanation>
-            <!--default>${alfresco_base_application_directory}/data</default-->
+            <title>Alfresco Data Directory</title>
+            <description>Select a folder:</description>
+            <explanation>The Alfresco data directory increases in size over time. Choose where you want to store it.</explanation>
             <value>${installdir}/alf_data</value>
             <mustBeWritable>1</mustBeWritable>
             <mustExist>0</mustExist>
@@ -101,16 +100,16 @@
         <stringParameter ask="0" name="alfresco_admin_username" value="admin"/>
         <passwordParameter allowEmptyValue="0" description="Admin Password:" descriptionRetype="Repeat Password:" name="alfresco_admin_password">
             <title>Admin Password</title>
-            <explanation>Please give a password to use for the Alfresco administrator account.</explanation>
+            <explanation>Specify a password for the Alfresco administrator account.</explanation>
             <validationActionList>
                 <throwError>
-                    <text>The length of the password must be greater than 3 characters</text>
+                    <text>The password must be longer than 3 characters.</text>
                     <ruleList>
                         <compareTextLength length="3" logic="less" text="${alfresco_admin_password}"/>
                     </ruleList>
                 </throwError>
                 <throwError>
-                    <text>Password must not contain leading or trailing spaces</text>
+                    <text>Password must not contain leading or trailing spaces.</text>
                     <ruleList>
                         <regExMatch logic="matches" text="${alfresco_admin_password}">
                             <pattern>^\s|\s$</pattern>
@@ -118,7 +117,7 @@
                     </ruleList>
                 </throwError>
                 <throwError>
-                    <text>You need to use ASCII characters only when setting the password here. You can reset it after installation and use non-ASCII characters.</text>
+                    <text>Use ASCII characters only when setting the password in the installer. If you want to use non-ASCII characters, you can do this by resetting the password after installation.</text>
                     <ruleList>
                         <stringTest text="${alfresco_admin_password}" type="not_ascii"/>
                     </ruleList>

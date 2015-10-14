@@ -14,7 +14,7 @@
                     <variable>java_home_directory</variable>
                 </iniFileGet>
                 <throwError>
-                    <text>Java is not installed in your Stack. This module requires to have Java installed.</text>
+                    <text>This module requires Java, and no Java instance can be found.</text>
                     <ruleList>
                         <compareText text="${java_home_directory}" logic="equals" value=""/>
                     </ruleList>
@@ -34,4 +34,3 @@
         </iniFileSet>
     </postInstallationActionList>
 </component>
-

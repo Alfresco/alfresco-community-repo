@@ -21,7 +21,7 @@ Copyrighted by BitRock
                 <autodetectJava>
                     <abortOnError>0</abortOnError>
                     <showMessageOnError>0</showMessageOnError>
-                    <customErrorMessage>This release was packaged to run on J2SE ${java_min_version}. Please install a compatible Java version and try again.</customErrorMessage>
+                    <customErrorMessage>This release was packaged to run on J2SE ${java_min_version}. Install a compatible Java version and try again.</customErrorMessage>
                     <promptUser>0</promptUser>
                     <validVersionList>
                         <validVersion>
@@ -38,7 +38,7 @@ Copyrighted by BitRock
                 <autodetectJava>
                     <abortOnError>1</abortOnError>
                     <showMessageOnError>1</showMessageOnError>
-                    <customErrorMessage>This release was packaged to run on J2SE ${java_min_version}. Please install a compatible Java version and try again.</customErrorMessage>
+                    <customErrorMessage>This release was packaged to run on J2SE ${java_min_version}. Install a compatible Java version and try again.</customErrorMessage>
                     <promptUser>0</promptUser>
                     <validVersionList>
                         <validVersion>
@@ -55,7 +55,7 @@ Copyrighted by BitRock
 
 <!-- Compatible java version -->
 <autodetectJava>
-                    <customErrorMessage>This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again.</customErrorMessage>
+                    <customErrorMessage>This release was packaged to run on J2SE ${java_min_version} or later. Install a compatible Java version and try again.</customErrorMessage>
                     <validVersionList>
                         <validVersion>
                             <maxVersion/>
@@ -157,11 +157,11 @@ Copyrighted by BitRock
             <value/>
             <ask>0</ask>
             <title>JDK configuration</title>
-            <explanation>We have not been able to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later.</explanation>
-            <description>JDK installation directory:</description>
+            <explanation>Unable to find a suitable JDK installation in your system. ${product_fullname} requires JDK ${java_min_version} or later.</explanation>
+            <description>JDK Installation Directory:</description>
             <validationActionList>
                 <throwError>
-                    <text>The directory you selected does not seem to be a valid JDK directory. Please try again.</text>
+                    <text>The directory you selected is not a valid JDK directory. Choose another directory.</text>
                     <ruleEvaluationLogic>or</ruleEvaluationLogic>
                     <ruleList>
                         <fileTest path="${java_home_directory}/jre" condition="not_exists"/>
@@ -275,4 +275,3 @@ set JAVA_HOME=${java_home_directory}
     </installationAbortedActionList>
 
 </component>
-

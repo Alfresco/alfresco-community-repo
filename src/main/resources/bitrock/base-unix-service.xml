@@ -51,7 +51,7 @@ Dependencies: ctlscript.xml
             <name>baseunixservice_install_as_service</name>
             <title>Install as a service</title>
             <description>Install ${product_fullname} as a service?</description>
-            <explanation>You can optionally register ${product_fullname} as a service. This way it will automatically be started every time the machine is started.</explanation>
+            <explanation>If you register ${product_fullname} as a service it will automatically start ${product_fullname} on machine startup.</explanation>
             <value>1</value>
             <default>1</default>
             <ask>1</ask>
@@ -78,14 +78,14 @@ Dependencies: ctlscript.xml
         <stringParameter>
             <name>baseunixservice_script_name</name>
             <title>Service script name</title>
-            <explanation>The ${product_shortname} service script file exists. Please insert a different name for the service script.</explanation>
+            <explanation>The ${product_shortname} service script file exists. Use a different name for the service script.</explanation>
             <description>Service script name</description>
             <value/>
             <default>${product_shortname}</default>
             <ask>1</ask>
             <validationActionList>
                 <throwError>
-                    <text>The service script file exists. Please insert a different name for the service script.</text>
+                    <text>The service script file exists. Insert a different name for the service script.</text>
                     <ruleEvaluationLogic>or</ruleEvaluationLogic>
                     <ruleList>
                         <ruleGroup>
@@ -649,4 +649,3 @@ exit $RETVAL
     </actionGroup>
     </postUninstallationActionList>
 </component>
-

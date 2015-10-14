@@ -8,7 +8,7 @@
         <actionDefinition name="alfrescoComponentsValidations">
             <actionList>
                 <throwError>
-                    <text>You need to select at least one of the Solr components</text>
+                    <text>Select at least one of the Solr components.</text>
                     <ruleList>
                         <ruleGroup ruleEvaluationLogic="and">
                             <ruleList>
@@ -31,18 +31,18 @@
             <actionList>
                 <setInstallerVariable name="reportValue" value=""/>
                 <setInstallerVariable name="msgArchitectureWarning" value="${tr('64bit architecture recommended')}&#xA;"/>
-                <setInstallerVariable name="msgWindows32" value="${tr('32bit Microsoft Windows® is only supported for evaluation use.')}&#xA;"/>
-                <setInstallerVariable name="msgMacOSX" value="${tr('Mac OS X® is only supported for evaluation use.')}&#xA;"/>
-                <setInstallerVariable name="msgCpuSpeed" value="${tr('Insufficient CPU clock speed')}&#xA;"/>
-                <setInstallerVariable name="msgCpuCores" value="${tr('Insufficient CPUs (cores)')}&#xA;"/>
-                <setInstallerVariable name="msgRam" value="${tr('Insufficient system RAM')}&#xA;"/>
+                <setInstallerVariable name="msgWindows32" value="${tr('32-bit Microsoft Windows® is supported for evaluation use only.')}&#xA;"/>
+                <setInstallerVariable name="msgMacOSX" value="${tr('Mac OS X® is supported for evaluation use only.')}&#xA;"/>
+                <setInstallerVariable name="msgCpuSpeed" value="${tr('CPU clock speed is too slow')}&#xA;"/>
+                <setInstallerVariable name="msgCpuCores" value="${tr('Not enough CPUs (cores) available')}&#xA;"/>
+                <setInstallerVariable name="msgRam" value="${tr('Not enough system RAM available')}&#xA;"/>
                 <setInstallerVariable name="msgFileDescriptors" value="${tr('Insufficent file descriptors')}&#xA;"/>
                 <setInstallerVariable name="msgCifsUdp" value="${tr('CIFS UDP ports in use')}&#xA;"/>
                 <setInstallerVariable name="msgCifsTcp" value="${tr('CIFS TCP ports in use')}&#xA;"/>
                 <setInstallerVariable name="msgSmtpTcp" value="${tr('SMTP TCP port in use')}&#xA;"/>
-                <setInstallerVariable name="msgImapTcp" value="${tr('IMAP TCP port in use')}&#xA;"/>
+                <setInstallerVariable name="msgImapTcp" value="${tr('IMAP TCP port in use.')}&#xA;"/>
                 <throwError>
-                    <text>This installer is for Windows 64 bit.  Please download the Windows 32 bit version.</text>
+                    <text>This installer is for Windows 64 bit. Download the Windows 32 bit version.</text>
                     <ruleList>
                         <compareText text="${project.installerFilename}" logic="contains" value="win-x64"/>
                         <platformTest type="windows"/>
@@ -109,7 +109,7 @@
                     </actionList>
                 </foreach>
                 <throwError>
-                    <text>${machine_total_memoryGB} GB of RAM is not enough to run Alfresco for test or production purposes. Alfresco may not function correctly and if it does, it will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM (preferably at least ${recommended_ramGB} GB).</text>
+                    <text>${machine_total_memoryGB} GB of RAM is not enough to run Alfresco for test or production purposes. Alfresco might not work correctly and if it does, will not perform well. Upgrade the server to have at least ${minimum_ramGB} GB of RAM, and optimally ${recommended_ramGB} GB of RAM.</text>
                     <ruleList>
                         <compareValues>
                             <logic>less</logic>
@@ -219,7 +219,7 @@
         <parameterGroup>
             <name>netbd_ports</name>
             <title>CIFS protocol ports configuration</title>
-            <explanation>Please, enter CIFS ports configuration</explanation>
+            <explanation>Enter CIFS ports configuration.</explanation>
             <ask>0</ask>
             <parameterList>
                 <stringParameter name="netbd_port" default="137" ask="0">
@@ -232,22 +232,20 @@
                     <title>CIFS server port 2</title>
                 </stringParameter>
                 <stringParameter name="smb_port" value="445" ask="0">
-                    <title>SMB port</title>
+                    <title>SMB Port</title>
                 </stringParameter>
             </parameterList>
         </parameterGroup>
         <stringParameter name="smtp_port" value="25" ask="0">
-            <description>SMTP port</description>
+            <description>SMTP Port</description>
         </stringParameter>
         <stringParameter name="imap_port" value="143" ask="0">
-            <description>IMAP port</description>
+            <description>IMAP Port</description>
         </stringParameter>
         <infoParameter>
             <name>alfresco_report</name>
-            <title>Warning!</title>
-            <explanation>This environment is not configured optimally for Alfresco - please carefully review this list before continuing.
-
-While these issues will not prevent Alfresco from functioning, some product features may be unavailable, or the system may not perform optimally.</explanation>
+            <title>Warning</title>
+            <explanation>This environment is not configured optimally for Alfresco - review this list before continuing.\n\nWhile these issues won’t prevent Alfresco from functioning, some product features might not be available, or the system might not perform optimally.</explanation>
             <value></value>
             <insertBefore>readytoinstall</insertBefore>
         </infoParameter>
@@ -262,4 +260,3 @@ While these issues will not prevent Alfresco from functioning, some product feat
         </alfrescoComponentsValidations>
     </preInstallationActionList>
 </component>
-

@@ -46,7 +46,7 @@
             </distributionFileList>
         </folder>
         <folder>
-            <description>Config Files</description>
+            <description>Configuration Files</description>
             <destination>${alfresco_shared_directory}/alfresco/web-extension</destination>
             <name>awecustomwebextension</name>
             <platforms>all</platforms>

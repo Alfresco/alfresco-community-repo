@@ -360,7 +360,7 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                         <autodetectJava>
                             <abortOnError>0</abortOnError>
                             <showMessageOnError>1</showMessageOnError>
-                            <customErrorMessage>This release was packaged to run on J2SE ${java_min_version} or later. Please install a compatible Java version and try again.</customErrorMessage>
+                            <customErrorMessage>This release was packaged to run on J2SE ${java_min_version} or later. Install a compatible Java version and try again.</customErrorMessage>
                             <promptUser>0</promptUser>
                             <validVersionList>
                                 <validVersion>
@@ -389,7 +389,7 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                         <throwError>
                             <abortOnError>0</abortOnError>
                             <showMessageOnError>1</showMessageOnError>
-                            <text>The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco. Please install a 64bit version of Java before continuing, or go back and ensure the “Java” component is selected.</text>
+                            <text>The version of Java you have selected is 32 bit, but this is a 64 bit installation of Alfresco. Install a 64 bit version of Java before continuing, or go back and ensure the “Java” component is selected.</text>
                             <ruleList>
                                 <compareText text="${alfrescoInstallerBitness}" logic="equals" value="64"/>
                                 <compareText text="${java_bitness}" value="32"/>
@@ -464,7 +464,7 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                             </ruleList>
                         </setInstallerVariable>
                         <showWarning>
-                            <text>Java Home path contains spaces. Alfresco may not function properly, as the JVM itself has bugs when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces.</text>
+                            <text>Java Home path contains spaces. Alfresco might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces.</text>
                             <ruleList>
                                 <compareText>
                                     <text>${java_home_directory}</text>

@@ -23,7 +23,7 @@
         <setInstallerVariable name="component(java).parameter(java_required_or_abort).value" value="1"/>
         <setInstallerVariable name="component(tomcat).parameter(tomcat_dirname).value" value="tomcat"/>
         <setInstallerVariable name="component(baseparamdir).parameter(installdir).title" value="Installation Folder"/>
-        <setInstallerVariable name="component(baseparamdir).parameter(installdir).explanation" value="${'${tr('Please choose a folder to install ${product_fullname}')}'}"/>
+        <setInstallerVariable name="component(baseparamdir).parameter(installdir).explanation" value="${'${tr('Choose a folder to install ${product_fullname}.')}'}"/>
 
         <!-- PostgreSQL specifics -->
         <actionGroup>
@@ -205,8 +205,8 @@
             <displayType>radiobuttons</displayType>
             <insertBefore>components</insertBefore>
             <optionList>
-                <option text="Easy - Installs servers with the default configuration" value="easy"/>
-                <option description="Also choose optional components to install." text="Advanced - Configures server ports and service properties." value="advanced"/>
+                <option text="Easy - Install using the default configuration" value="easy"/>
+                <option description="Choose optional components to install." text="Advanced - Configure server ports and service properties." value="advanced"/>
             </optionList>
             <validationActionList>
                 <actionGroup>
@@ -275,7 +275,7 @@
             <name>alfrescocustomstack_services_startup</name>
             <title>Service Startup Configuration</title>
             <default>demand</default>
-            <explanation>Please select services startup type</explanation>
+            <explanation>Select services startup type.</explanation>
             <displayType>radiobuttons</displayType>
             <insertBefore>readytoinstall</insertBefore>
             <optionList>

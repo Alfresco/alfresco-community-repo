@@ -13,7 +13,7 @@
         <stringParameter>
             <name>alfresco_sharepoint_port</name>
             <title>Alfresco SharePoint Port</title>
-            <explanation>Please choose a port number for the SharePoint protocol.</explanation>
+            <explanation>Choose a port number for the SharePoint protocol.</explanation>
             <default>7070</default>
             <value/>
             <ask>1</ask>
@@ -25,7 +25,7 @@
             </ruleList>
             <validationActionList>
                 <throwError>
-                    <text>Unable to bind to the given port number. Please select another port for the SharePoint Protocol.</text>
+                    <text>Couldn’t bind to the given port number. Select another port for the SharePoint Protocol.</text>
                     <ruleList>
                         <portTest port="${alfresco_sharepoint_port}" condition="cannot_bind"/>
                     </ruleList>

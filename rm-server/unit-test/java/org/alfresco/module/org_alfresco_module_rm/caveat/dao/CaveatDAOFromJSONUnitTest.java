@@ -37,8 +37,7 @@ import org.junit.Test;
 public class CaveatDAOFromJSONUnitTest
 {
     /** The class under test. */
-    @SuppressWarnings("rawtypes")
-    CaveatDAOFromJSON<?> caveatDAOFromJSON = new CaveatDAOFromJSON();
+    CaveatDAOFromJSON caveatDAOFromJSON = new CaveatDAOFromJSON();
 
     /** Test that loading the default caveat configuration file doesn't throw any exceptions. */
     @Test

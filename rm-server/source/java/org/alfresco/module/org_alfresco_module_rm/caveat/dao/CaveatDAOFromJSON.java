@@ -21,14 +21,13 @@ package org.alfresco.module.org_alfresco_module_rm.caveat.dao;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
 import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.MalformedConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroupType;
@@ -47,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * @author Tom Page
  * @since 2.4.a
  */
-public class CaveatDAOFromJSON<SMAP extends Map<String, CaveatGroup> & Serializable> implements CaveatDAOInterface<SMAP>
+public class CaveatDAOFromJSON implements CaveatDAOInterface
 {
     /** JSON key for the group id. */
     private static final String GROUP_ID_JSON_KEY = "id";
@@ -81,10 +80,9 @@ public class CaveatDAOFromJSON<SMAP extends Map<String, CaveatGroup> & Serializa
      * @throws MalformedConfiguration If the configuration file cannot be interpreted.
      */
     @Override
-    public SMAP getCaveatGroups()
+    public ImmutableMap<String, CaveatGroup> getCaveatGroups()
     {
-        @SuppressWarnings("unchecked")
-        SMAP result = (SMAP) new HashMap<String, CaveatGroup>();
+        Builder<String, CaveatGroup> builder = ImmutableMap.builder();
         try (final InputStream in = this.getClass().getResourceAsStream(configLocation))
         {
             if (in != null)
@@ -97,9 +95,7 @@ public class CaveatDAOFromJSON<SMAP extends Map<String, CaveatGroup> & Serializa
                     final JSONObject nextObj = jsonArray.getJSONObject(i);
                     CaveatGroup caveatGroup = createGroup(nextObj);
                     String caveatGroupId = caveatGroup.getId();
-                    if (result.containsKey(caveatGroupId)) { throw new MalformedConfiguration(
-                                "Configuration contains two caveat groups with id " + caveatGroupId); }
-                    result.put(caveatGroupId, caveatGroup);
+                    builder.put(caveatGroupId, caveatGroup);
                 }
             }
             else
@@ -111,7 +107,17 @@ public class CaveatDAOFromJSON<SMAP extends Map<String, CaveatGroup> & Serializa
         {
             throw new MalformedConfiguration("Could not read caveat configuration: " + configLocation, e);
         }
-        return result;
+
+        ImmutableMap<String, CaveatGroup> map;
+        try
+        {
+            map = builder.build();
+        }
+        catch (IllegalArgumentException e)
+        {
+            throw new MalformedConfiguration("Configuration contains two caveat groups with the same id.", e);
+        }
+        return map;
     }
 
     /**

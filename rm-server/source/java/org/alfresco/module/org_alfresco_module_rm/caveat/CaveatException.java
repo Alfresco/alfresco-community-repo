@@ -42,6 +42,18 @@ public class CaveatException extends AlfrescoRuntimeException
         super(msgId, cause);
     }
 
+    /** The supplied caveat group id was not found in the configured list. */
+    public static class CaveatGroupNotFound extends CaveatException
+    {
+        /** serial version uid */
+        private static final long serialVersionUID = -3547790332616121911L;
+
+        public CaveatGroupNotFound(String caveatGroupId)
+        {
+            super("Could not find caveat group with id " + caveatGroupId);
+        }
+    }
+
     /** The supplied caveat mark id was not found in the configured list. */
     public static class CaveatMarkNotFound extends CaveatException
     {

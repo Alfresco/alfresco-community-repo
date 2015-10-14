@@ -28,6 +28,7 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.CaveatGroupNotFound;
 import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.MalformedConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroupType;
@@ -118,6 +119,22 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
             throw new MalformedConfiguration("Configuration contains two caveat groups with the same id.", e);
         }
         return map;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * This method loads all caveat groups just to return a single group.
+     */
+    @Override
+    public CaveatGroup getGroupById(String groupId)
+    {
+        CaveatGroup caveatGroup = getCaveatGroups().get(groupId);
+        if (caveatGroup == null)
+        {
+            throw new CaveatGroupNotFound(groupId);
+        }
+        return caveatGroup;
     }
 
     /**

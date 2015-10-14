@@ -16,9 +16,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.module.org_alfresco_module_rm.caveat.dao;
 
 import com.google.common.collect.ImmutableMap;
+
+import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.CaveatGroupNotFound;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
 
 /**
@@ -40,11 +43,32 @@ public class CaveatDAOCache implements CaveatDAOInterface
     @Override
     public ImmutableMap<String, CaveatGroup> getCaveatGroups()
     {
+        ensureCachePopulated();
+        return caveatGroups;
+    }
+
+    /**
+     * {@inheritDoc} The first call to this method will populate the cache for future calls.
+     */
+    @Override
+    public CaveatGroup getGroupById(String groupId) throws CaveatGroupNotFound
+    {
+        ensureCachePopulated();
+        CaveatGroup caveatGroup = caveatGroups.get(groupId);
+        if (caveatGroup == null)
+        {
+            throw new CaveatGroupNotFound(groupId);
+        }
+        return caveatGroup;
+    }
+
+    /** The first call to this method will populate the cache, subsequent calls will do nothing. */
+    private void ensureCachePopulated()
+    {
         if (caveatGroups == null)
         {
             caveatGroups = caveatDAO.getCaveatGroups();
         }
-        return caveatGroups;
     }
 
     /**

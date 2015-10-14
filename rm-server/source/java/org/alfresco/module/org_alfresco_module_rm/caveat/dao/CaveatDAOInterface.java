@@ -20,8 +20,8 @@
 package org.alfresco.module.org_alfresco_module_rm.caveat.dao;
 
 import com.google.common.collect.ImmutableMap;
+import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.CaveatGroupNotFound;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
-
 
 /**
  * An object responsible for providing access to the configured caveat groups and marks.
@@ -35,4 +35,13 @@ public interface CaveatDAOInterface
      * Gets a map of all the available caveat groups keyed by id.
      */
     ImmutableMap<String, CaveatGroup> getCaveatGroups();
+
+    /**
+     * Gets the caveat group for a given id.
+     *
+     * @param groupId The group id to look up.
+     * @return The caveat group.
+     * @throws CaveatGroupNotFound if the caveat group is not found.
+     */
+    CaveatGroup getGroupById(String groupId) throws CaveatGroupNotFound;
 }

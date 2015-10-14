@@ -140,6 +140,9 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
 
     /** The suffix to the context file search path. */
     private static final String CONTEXT_SUFFIX = "/*-context.xml";
+    
+    /** The suffix to the enterprise context file search path. */
+    private static final String ENTERPRISE_CONTEXT_SUFFIX = "/*-enterprise-context.xml";
 
     /** The prefix to default file search paths. */
     private static final String CLASSPATH_PREFIX = "classpath*:alfresco/subsystems/";
@@ -448,6 +451,8 @@ public class ChildApplicationContextFactory extends AbstractPropertyBackedBean i
         {
             ChildApplicationContextFactory.CLASSPATH_PREFIX + getCategory() + '/' + getTypeName()
                     + ChildApplicationContextFactory.CONTEXT_SUFFIX,
+            ChildApplicationContextFactory.CLASSPATH_PREFIX + getCategory() + '/' + getTypeName()
+                    + ChildApplicationContextFactory.ENTERPRISE_CONTEXT_SUFFIX,
             ChildApplicationContextFactory.EXTENSION_CLASSPATH_PREFIX
                     + getCategory()
                     + '/'

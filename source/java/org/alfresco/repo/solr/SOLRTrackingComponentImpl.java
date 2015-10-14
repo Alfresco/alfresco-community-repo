@@ -43,7 +43,6 @@ import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.solr.SOLRDAO;
 import org.alfresco.repo.index.shard.ShardRegistry;
-import org.alfresco.repo.index.shard.ShardRegistryImpl;
 import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.repo.search.AspectIndexFilter;
 import org.alfresco.repo.search.TypeIndexFilter;

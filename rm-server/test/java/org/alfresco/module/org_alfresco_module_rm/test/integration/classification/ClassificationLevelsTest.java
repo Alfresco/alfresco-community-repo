@@ -46,9 +46,9 @@ public class ClassificationLevelsTest extends BaseRMTestCase
             {
                 List<ClassificationLevel> levels = classificationSchemeService.getClassificationLevels();
                 List<ClassificationLevel> expectedLevels = Arrays.asList(
-                            new ClassificationLevel("TS", "rm.caveat.classification.mark.ts.label"),
-                            new ClassificationLevel("S", "rm.caveat.classification.mark.s.label"),
-                            new ClassificationLevel("C", "rm.caveat.classification.mark.c.label"),
+                            new ClassificationLevel("TS", "rm.caveat.classification.mark.ts.label.label"),
+                            new ClassificationLevel("S", "rm.caveat.classification.mark.s.label.label"),
+                            new ClassificationLevel("C", "rm.caveat.classification.mark.c.label.label"),
                             ClassificationLevelManager.UNCLASSIFIED);
                 assertEquals(levels, expectedLevels);
             }

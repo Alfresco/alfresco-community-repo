@@ -193,8 +193,8 @@ msgstr "Installing PostgreSQL as a Windows service with name ${postgres_unique_s
 msgid "Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}"
 msgstr "Installing Tomcat as a Windows service with name ${tomcat_unique_service_name}"
 
-msgid "Insufficent file descriptors"
-msgstr "Insufficent file descriptors"
+msgid "Insufficient file descriptors"
+msgstr "Insufficient file descriptors"
 
 msgid "Insufficient CPU clock speed"
 msgstr "Insufficient CPU clock speed"
@@ -301,8 +301,8 @@ msgstr "Please enter the Tomcat configuration parameters you wish to use."
 msgid "Please enter the port of your database."
 msgstr "Please enter the port of your database."
 
-msgid "Please enter the port that the Libreoffice Server will listen to by default."
-msgstr "Please enter the port that the Libreoffice Server will listen to by default."
+msgid "Please enter the port that the LibreOffice Server will listen to by default."
+msgstr "Please enter the port that the LibreOffice Server will listen to by default."
 
 msgid "Please enter your database 'postgres' user password."
 msgstr "Please enter your database 'postgres' user password."

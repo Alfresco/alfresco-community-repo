@@ -60,9 +60,9 @@ import org.mockito.MockitoAnnotations;
 public class ClassificationServiceBootstrapUnitTest implements ClassifiedContentModel
 {
     private static final List<ClassificationLevel> DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS =
-            asLevelList("TS", "rm.classification.topSecret",
-                        "S",  "rm.classification.secret",
-                        "C",  "rm.classification.confidential");
+            asLevelList("TS", "rm.caveat.classification.mark.ts.label",
+                        "S",  "rm.caveat.classification.mark.s.label",
+                        "C",  "rm.caveat.classification.mark.c.label");
     @SuppressWarnings("unchecked")
     private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS =
                                                     union(DEFAULT_CONFIGURED_CLASSIFICATION_LEVELS,

@@ -18,10 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.classification;
 
-import static org.apache.commons.lang.StringUtils.isNotBlank;
-
+import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatMark;
+import org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras;
 import org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck;
-import org.springframework.extensions.surf.util.I18NUtil;
+import org.alfresco.util.ParameterCheck;
 
 /**
  * This class is a POJO data type for a Classification Level.
@@ -34,8 +34,15 @@ public final class ClassificationLevel implements ClassificationSchemeEntity
     /** serial version uid */
     private static final long serialVersionUID = -3375064867090476422L;
 
-    private final String id;
-    private final String displayLabelKey;
+    private CaveatMark caveatMark;
+    private String id;
+    private String displayLabelKey;
+
+    public ClassificationLevel(final CaveatMark caveatMark)
+    {
+        ParameterCheck.mandatory("caveatMark", caveatMark);
+        this.caveatMark = caveatMark;
+    }
 
     public ClassificationLevel(final String id, final String displayLabelKey)
     {
@@ -46,10 +53,24 @@ public final class ClassificationLevel implements ClassificationSchemeEntity
     }
 
     /** Returns the unique identifier for this classification level. */
-    public String getId() { return this.id; }
+    public String getId()
+    {
+        if (caveatMark == null)
+        {
+            return this.id;
+        }
+        return caveatMark.getId();
+    }
 
     /** Returns the key for the display label. */
-    public String getDisplayLabelKey() { return displayLabelKey; }
+    public String getDisplayLabelKey()
+    {
+        if (caveatMark == null)
+        {
+            return displayLabelKey;
+        }
+        return caveatMark.getDisplayLabelKey();
+    }
 
     /**
      * Returns the localised (current locale) display label for this classification level. If no translation is found
@@ -57,17 +78,20 @@ public final class ClassificationLevel implements ClassificationSchemeEntity
      */
     public String getDisplayLabel()
     {
-        String message = I18NUtil.getMessage(displayLabelKey);
-        return (isNotBlank(message) ? message : displayLabelKey);
+        if (caveatMark == null)
+        {
+            return CoreServicesExtras.getI18NMessageOrKey(displayLabelKey);
+        }
+        return caveatMark.getDisplayLabel();
     }
 
     @Override public String toString()
     {
         StringBuilder msg = new StringBuilder();
         msg.append(ClassificationLevel.class.getSimpleName())
-           .append(":").append(id);
+           .append(":").append(getId());
 
-        return  msg.toString();
+        return msg.toString();
     }
 
     @Override public boolean equals(Object o)
@@ -77,8 +101,8 @@ public final class ClassificationLevel implements ClassificationSchemeEntity
 
         ClassificationLevel that = (ClassificationLevel) o;
 
-        return this.id.equals(that.id);
+        return this.getId().equals(that.getId());
     }
 
-    @Override public int hashCode() { return id.hashCode(); }
+    @Override public int hashCode() { return getId().hashCode(); }
 }

@@ -197,7 +197,7 @@ public class CaveatGroup implements Serializable
         msg.append(this.getClass().getSimpleName())
            .append(":").append(id);
 
-        return  msg.toString();
+        return msg.toString();
     }
 
     @Override

@@ -69,7 +69,7 @@ public class CaveatDAOFromJSONUnitTest
     @Test(expected = MalformedConfiguration.class)
     public void testGetCaveatGroups_missingId()
     {
-        caveatDAOFromJSON.setConfigLocation("/alfresco/caveat/rm-caveats-missingId.json");
+        caveatDAOFromJSON.setConfigLocation("/alfresco/caveat/rm-caveats-missingMarkId.json");
         caveatDAOFromJSON.getCaveatGroups();
     }
 

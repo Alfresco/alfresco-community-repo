@@ -20,7 +20,6 @@ package org.alfresco.repo.policy;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -162,16 +161,28 @@ import org.alfresco.util.LockHelper;
         {
             List<BehaviourDefinition> behaviours = new ArrayList<BehaviourDefinition>();
 
-            // Find class behaviour by scanning up the class hierarchy
-            List<BehaviourDefinition<B>> behaviour = null;
-            while (binding != null)
+            // Determine if behaviour has been disabled
+            boolean isEnabled = true;
+            if (filter != null)
             {
-                behaviour = classMap.get(binding);
-                if (behaviour != null && isEnabled(binding))
+                NodeRef nodeRef = binding.getNodeRef();
+                QName className = binding.getClassQName();
+                isEnabled = (nodeRef == null) ? filter.isEnabled(className) : filter.isEnabled(nodeRef, className);
+            }
+            
+            if (isEnabled)
+            {
+                // Find class behaviour by scanning up the class hierarchy
+                List<BehaviourDefinition<B>> behaviour = null;
+                while (binding != null)
                 {
-                    behaviours.addAll(0, behaviour); // note: list base/generalised before extended/specific
+                    behaviour = classMap.get(binding);
+                    if (behaviour != null)
+                    {
+                        behaviours.addAll(0, behaviour); // note: list base/generalised before extended/specific
+                    }
+                    binding = (B)binding.generaliseBinding();
                 }
-                binding = (B)binding.generaliseBinding();
             }
             
             // Append all service-level behaviours
@@ -255,17 +266,4 @@ import org.alfresco.util.LockHelper;
         }
     } 
 
-    private boolean isEnabled(B binding)
-    {
-        // Determine if behaviour has been disabled
-        boolean isEnabled = true;
-        if (filter != null)
-        {
-            NodeRef nodeRef = binding.getNodeRef();
-            QName className = binding.getClassQName();
-            isEnabled = (nodeRef == null) ? filter.isEnabled(className) : filter.isEnabled(nodeRef, className);
-        }
-
-        return isEnabled;
-    }
 }

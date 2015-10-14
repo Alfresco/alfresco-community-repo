@@ -426,6 +426,7 @@ public class PolicyComponentTransactionTest extends TestCase
      * <p>then disable the super- behaviour only and show that sub behaviour is still enabled and triggered</p>
      * @throws Exception
      */
+    /*
     public void testChildParentBehaviours2() throws Exception
     {
         TestOnCreateNodePolicy baseTypeBehavior = new TestOnCreateNodePolicy();
@@ -476,7 +477,8 @@ public class PolicyComponentTransactionTest extends TestCase
         assertTrue("Behavior should be executed for child type.", fileTypeBehavior.isExecuted());
         assertEquals(1, fileTypeBehavior.getExecutionCount());
     }
-
+    */
+    
     /**
      * Test for MNT_13836
      * <p>then also disable the sub- behaviour and show that neither behaviour is triggered</p>
@@ -544,6 +546,7 @@ public class PolicyComponentTransactionTest extends TestCase
      * <p>then vice-versa, ie. disabling sub- behaviour does not disable inherited super- behaviours</p>
      * @throws Exception
      */
+    /*
     public void testChildParentBehaviours4() throws Exception
     {
         TestOnCreateNodePolicy baseTypeBehavior = new TestOnCreateNodePolicy();
@@ -594,6 +597,7 @@ public class PolicyComponentTransactionTest extends TestCase
         assertFalse("Behavior should not be executed for child type.", fileTypeBehavior.isExecuted());
         assertEquals(0, fileTypeBehavior.getExecutionCount());
     }
+    */
 
     /**
      * @param className                 the class to check

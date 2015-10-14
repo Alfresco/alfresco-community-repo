@@ -1,6 +1,7 @@
 <component>
   <name>alfrescosolr4</name>
   <description>Solr4</description>
+  <detailedDescription>Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1.</detailedDescription>
   <canBeEdited>1</canBeEdited>
   <selected>1</selected>
   <show>1</show>

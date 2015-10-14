@@ -9,13 +9,19 @@
          {
             "id"           : "TS",
             "displayLabel" : "rm.caveat.classification.mark.ts"
-         },
+         }
+      ]
+   },
+   {
+      "id"           : "classification",
+      "displayLabel" : "rm.caveat.classification.group",
+      "description"  : "rm.caveat.classification.description",
+      "type"         : "HIERARCHICAL",
+      "marks" :
+      [
          {
-            "displayLabel" : "rm.caveat.classification.mark.s"
-         },
-         {
-            "id"           : "C",
-            "displayLabel" : "rm.caveat.classification.mark.c"
+            "id"           : "XYZ",
+            "displayLabel" : "rm.caveat.classification.mark.ts"
          }
       ]
    }

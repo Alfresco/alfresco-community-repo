@@ -130,6 +130,14 @@ public class CaveatMark implements Serializable
         return CoreServicesExtras.getI18NMessageOrKey(displayLabelKey);
     }
 
+    /**
+     * Get the display label key for the mark.
+     */
+    public String getDisplayLabelKey()
+    {
+        return displayLabelKey;
+    }
+
     @Override
     public String toString()
     {
@@ -137,7 +145,7 @@ public class CaveatMark implements Serializable
         msg.append(this.getClass().getSimpleName())
            .append(":").append(id);
 
-        return  msg.toString();
+        return msg.toString();
     }
 
     @Override

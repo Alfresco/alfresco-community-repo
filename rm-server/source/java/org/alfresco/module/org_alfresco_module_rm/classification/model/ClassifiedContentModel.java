@@ -36,6 +36,8 @@ public interface ClassifiedContentModel
     String CLF_URI = "http://www.alfresco.org/model/classifiedcontent/1.0";
     String CLF_PREFIX = "clf";
 
+    String CLASSIFICATION_LEVEL_CAVEAT = "classification";
+
     Serializable[] LEVELS_KEY = new String[] { "org.alfresco", "module.org_alfresco_module_rm", "classification.levels" };
     Serializable[] REASONS_KEY = new String[] { "org.alfresco", "module.org_alfresco_module_rm", "classification.reasons" };
     Serializable[] EXEMPTION_CATEGORIES_KEY = new String[] { "org.alfresco", "module.org_alfresco_module_rm", "classification.exemptionCategories" };

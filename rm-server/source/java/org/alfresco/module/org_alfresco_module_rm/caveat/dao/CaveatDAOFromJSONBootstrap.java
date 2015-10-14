@@ -108,7 +108,14 @@ public class CaveatDAOFromJSONBootstrap extends AbstractLifecycleBean
             @SuppressWarnings("unchecked")
             public ImmutableMap<String, CaveatGroup> doWork() throws Exception
             {
-                return (ImmutableMap<String, CaveatGroup>) attributeService.getAttribute(key);
+                // TODO: Although an ImmutableMap is stored, after restarting the server, a HashMap is returned.
+                // Investigate why this is, and whether we can avoid creating a new copy of the map here.
+                Map<String, CaveatGroup> persistedMap = (Map<String, CaveatGroup>) attributeService.getAttribute(key);
+                if (persistedMap == null)
+                {
+                    return null;
+                }
+                return ImmutableMap.copyOf(persistedMap);
             }
         });
     }

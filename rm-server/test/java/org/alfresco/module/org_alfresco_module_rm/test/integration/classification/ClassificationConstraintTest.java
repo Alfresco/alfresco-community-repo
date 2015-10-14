@@ -179,29 +179,29 @@ public class ClassificationConstraintTest implements RMPermissionModel
      * Mid-level user further downgrading a downgraded record.
      * <p>
      * <a href="https://issues.alfresco.com/jira/browse/RM-2502">RM-2502</a><pre>
-     * Given I have "level2" clearance
-     * And a record has an initial classification of "level1"
-     * And the record has a current classification of "level2"
-     * When I try to downgrade the record to "level3"
+     * Given I have secret clearance
+     * And a record has an initial classification of top secret
+     * And the record has a current classification of secret
+     * When I try to downgrade the record to confidential
      * Then I am successful.
      * </pre>
      */
     @Test
     public void testInitialClassificationConstraint()
     {
-        // Given I set up some test data (admin at level 1, midLevelUser at level 2 and a new record).
+        // Given I set up some test data (admin at TS, midLevelUser at S and a new record).
         final String midLevelUser = GUID.generate();
         final NodeRef record = AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
         {
             public NodeRef doWork()
             {
-                // Ensure admin is level 1 cleared.
-                securityClearanceService.setUserSecurityClearance(AuthenticationUtil.getAdminUserName(), "level1");
-                // Create user with level 2 clearance.
+                // Ensure admin is TS cleared.
+                securityClearanceService.setUserSecurityClearance(AuthenticationUtil.getAdminUserName(), "TS");
+                // Create user with S clearance.
                 createPerson(midLevelUser, true);
                 filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, midLevelUser);
                 filePlanPermissionService.setPermission(rmContainer, midLevelUser, FILING);
-                securityClearanceService.setUserSecurityClearance(midLevelUser, "level2");
+                securityClearanceService.setUserSecurityClearance(midLevelUser, "S");
                 // Create a record to be classified during the test.
                 return utils.createRecord(rmFolder, RECORD_NAME);
             }
@@ -212,42 +212,42 @@ public class ClassificationConstraintTest implements RMPermissionModel
         {
             public Void doWork()
             {
-                // Create a level 1 record and downgrade it to level 2.
-                classifyAs(record, "level1");
-                classifyAs(record, "level2");
+                // Create a TS record and downgrade it to S.
+                classifyAs(record, "TS");
+                classifyAs(record, "S");
 
                 assertTrue("Record should have been classified.",
                             nodeService.hasAspect(record, ClassifiedContentModel.ASPECT_CLASSIFIED));
-                assertEquals("Record have initial classification of 'level1'.", "level1",
+                assertEquals("Record have initial classification of 'TS'.", "TS",
                             nodeService.getProperty(record, ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION));
-                assertEquals("Record should be 'level2' classified.", "level2",
+                assertEquals("Record should be 'S' classified.", "S",
                             nodeService.getProperty(record, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
                 return null;
             }
         }, AuthenticationUtil.getAdminUserName());
 
-        // When the mid-level user downgrades the record to level 3.
+        // When the mid-level user downgrades the record to C.
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             public Void doWork()
             {
                 // Check that the mid-clearance user can further downgrade the classification (even though the initial
                 // classification was above their clearance).
-                classifyAs(record, "level3");
+                classifyAs(record, "C");
                 return null;
             }
         }, midLevelUser);
 
-        // Then the record is classified at level 3 (with initial classification level 1).
+        // Then the record is classified at C (with initial classification TS).
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             public Void doWork()
             {
                 assertTrue("Record should still be classified.",
                             nodeService.hasAspect(record, ClassifiedContentModel.ASPECT_CLASSIFIED));
-                assertEquals("Record have initial classification of 'level1'.", "level1",
+                assertEquals("Record have initial classification of 'TS'.", "TS",
                             nodeService.getProperty(record, ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION));
-                assertEquals("Record should be 'level3' classified.", "level3",
+                assertEquals("Record should be 'C' classified.", "C",
                             nodeService.getProperty(record, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
                 return null;
             }

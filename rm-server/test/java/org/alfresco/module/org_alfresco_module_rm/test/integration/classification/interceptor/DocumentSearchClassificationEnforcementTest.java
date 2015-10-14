@@ -166,7 +166,7 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                 testUser = generate();
                 createPerson(testUser);
                 siteService.setMembership(collabSiteId, testUser, SITE_MANAGER);
-                securityClearanceService.setUserSecurityClearance(testUser, LEVEL2);
+                securityClearanceService.setUserSecurityClearance(testUser, SECRET_ID);
 
                 folder = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
                 doc1 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();
@@ -258,7 +258,7 @@ public class DocumentSearchClassificationEnforcementTest extends SearchClassific
                 testUser = generate();
                 createPerson(testUser);
                 siteService.setMembership(collabSiteId, testUser, SITE_MANAGER);
-                securityClearanceService.setUserSecurityClearance(testUser, LEVEL1);
+                securityClearanceService.setUserSecurityClearance(testUser, TOP_SECRET_ID);
 
                 folder = fileFolderService.create(documentLibrary, generate(), TYPE_FOLDER).getNodeRef();
                 doc1 = fileFolderService.create(folder, searchQuery + generate(), TYPE_CONTENT).getNodeRef();

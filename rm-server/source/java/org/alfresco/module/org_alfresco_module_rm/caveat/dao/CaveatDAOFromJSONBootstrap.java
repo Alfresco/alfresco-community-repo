@@ -23,6 +23,7 @@ import static org.alfresco.module.org_alfresco_module_rm.caveat.CaveatConstants.
 import java.io.Serializable;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableMap;
 import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.MalformedConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
@@ -41,7 +42,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * @author Tom Page
  * @since 2.4.a
  */
-public class CaveatDAOFromJSONBootstrap<SMAP extends Map<String, CaveatGroup> & Serializable> extends AbstractLifecycleBean
+public class CaveatDAOFromJSONBootstrap extends AbstractLifecycleBean
 {
     /** Logging utility for the class. */
     private static final Logger LOGGER = LoggerFactory.getLogger(CaveatDAOFromJSONBootstrap.class);
@@ -49,14 +50,14 @@ public class CaveatDAOFromJSONBootstrap<SMAP extends Map<String, CaveatGroup> & 
     private final AuthenticationUtil authenticationUtil;
     private final TransactionService transactionService;
     private AttributeService attributeService;
-    private CaveatDAOInterface<SMAP> caveatDAO;
+    private CaveatDAOInterface caveatDAO;
 
     private boolean isInitialised = false;
 
     public CaveatDAOFromJSONBootstrap(AuthenticationUtil authUtil,
                                       TransactionService txService,
                                       AttributeService attributeService,
-                                      CaveatDAOInterface<SMAP> caveatDAO)
+                                      CaveatDAOInterface caveatDAO)
     {
         this.authenticationUtil = authUtil;
         this.transactionService = txService;
@@ -65,7 +66,7 @@ public class CaveatDAOFromJSONBootstrap<SMAP extends Map<String, CaveatGroup> & 
     }
 
     /** Set the object from which configuration options will be read. */
-    public void setClassificationServiceDAO(CaveatDAOInterface<SMAP> caveatDAO) { this.caveatDAO = caveatDAO; }
+    public void setClassificationServiceDAO(CaveatDAOInterface caveatDAO) { this.caveatDAO = caveatDAO; }
     public void setAttributeService(AttributeService attributeService) { this.attributeService = attributeService; }
 
     public boolean isInitialised()
@@ -99,15 +100,15 @@ public class CaveatDAOFromJSONBootstrap<SMAP extends Map<String, CaveatGroup> & 
      *
      * @return the persisted caveat groups if they have been persisted, else {@code null}.
      */
-    private SMAP getPersistedCaveatGroups(final Serializable[] key)
+    private ImmutableMap<String, CaveatGroup> getPersistedCaveatGroups(final Serializable[] key)
     {
-        return authenticationUtil.runAsSystem(new RunAsWork<SMAP>()
+        return authenticationUtil.runAsSystem(new RunAsWork<ImmutableMap<String, CaveatGroup>>()
         {
             @Override
             @SuppressWarnings("unchecked")
-            public SMAP doWork() throws Exception
+            public ImmutableMap<String, CaveatGroup> doWork() throws Exception
             {
-                return (SMAP) attributeService.getAttribute(key);
+                return (ImmutableMap<String, CaveatGroup>) attributeService.getAttribute(key);
             }
         });
     }
@@ -133,8 +134,8 @@ public class CaveatDAOFromJSONBootstrap<SMAP extends Map<String, CaveatGroup> & 
      */
     protected void initialiseConfiguredCaveatGroups(Serializable[] key)
     {
-        final SMAP persistedGroups = getPersistedCaveatGroups(key);
-        final SMAP classpathGroups = caveatDAO.getCaveatGroups();
+        final ImmutableMap<String, CaveatGroup> persistedGroups = getPersistedCaveatGroups(key);
+        final ImmutableMap<String, CaveatGroup> classpathGroups = caveatDAO.getCaveatGroups();
 
         // Note! We cannot log the entities or even the size of these lists for security reasons.
         LOGGER.debug("Persisted CaveatGroup: {}", loggableStatusOf(persistedGroups));

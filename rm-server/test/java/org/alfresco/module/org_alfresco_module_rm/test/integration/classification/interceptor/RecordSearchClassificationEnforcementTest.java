@@ -256,7 +256,7 @@ public class RecordSearchClassificationEnforcementTest extends SearchClassificat
                 testUser = generate();
                 createPerson(testUser);
                 filePlanRoleService.assignRoleToAuthority(filePlan, ROLE_ADMIN, testUser);
-                securityClearanceService.setUserSecurityClearance(testUser, LEVEL1);
+                securityClearanceService.setUserSecurityClearance(testUser, TOP_SECRET_ID);
 
                 category = filePlanService.createRecordCategory(filePlan, generate());
                 folder = recordFolderService.createRecordFolder(category, generate());

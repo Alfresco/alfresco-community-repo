@@ -34,8 +34,8 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 
 /**
- * This class is responsible for providing the configured classification levels
- * and classification reasons, dealing with JSON schema as part of that.
+ * This class is responsible for providing the configured classification scheme entities, dealing with JSON schema as
+ * part of that.
  *
  * @author Neil Mc Erlean
  * @since 2.4.a
@@ -47,11 +47,6 @@ class ClassificationServiceDAO
 
     private ClassificationSchemeEntityFactory classificationSchemeEntityFactory = new ClassificationSchemeEntityFactory();
 
-    /** Set the location of the level configuration file relative to the classpath. */
-    public void setLevelConfigLocation(String levelConfigLocation)
-    {
-        configLocations.put(ClassificationLevel.class.getSimpleName(), levelConfigLocation);
-    }
     /** Set the location of the reasons configuration file relative to the classpath. */
     public void setReasonConfigLocation(String reasonConfigLocation)
     {

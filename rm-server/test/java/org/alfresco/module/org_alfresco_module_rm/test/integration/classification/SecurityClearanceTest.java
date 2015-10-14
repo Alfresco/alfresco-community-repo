@@ -18,8 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification;
 
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.LevelIdNotFound;
+import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClearanceLevel;
 import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearance;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -50,21 +50,21 @@ public class SecurityClearanceTest extends BaseRMTestCase
 
             public void when() throws Exception
             {
-                securityClearance = securityClearanceService.setUserSecurityClearance(userName, "level1");
+                securityClearance = securityClearanceService.setUserSecurityClearance(userName, "TS");
             }
 
             public void then() throws Exception
             {
                 ClearanceLevel clearanceLevel = securityClearance.getClearanceLevel();
                 ClassificationLevel highestClassificationLevel = clearanceLevel.getHighestClassificationLevel();
-                assertEquals("level1", highestClassificationLevel.getId());
+                assertEquals("TS", highestClassificationLevel.getId());
             }
         });
     }
 
     /**
-     * Given I am a user with level2 access
-     * And I try to give another user level1 access
+     * Given I am a user with S access
+     * And I try to give another user TS access
      * Then an exception is thrown.
      */
     public void testCantGiveClearance() throws Exception
@@ -73,7 +73,7 @@ public class SecurityClearanceTest extends BaseRMTestCase
         {
             public void given() throws Exception
             {
-                securityClearanceService.setUserSecurityClearance(userName, "level2");
+                securityClearanceService.setUserSecurityClearance(userName, "S");
             }
 
             public void when() throws Exception
@@ -83,7 +83,7 @@ public class SecurityClearanceTest extends BaseRMTestCase
                     @Override
                     public Void run()
                     {
-                        securityClearanceService.setUserSecurityClearance(rmUserName, "level1");
+                        securityClearanceService.setUserSecurityClearance(rmUserName, "TS");
                         return null;
                     }
                 }, userName);

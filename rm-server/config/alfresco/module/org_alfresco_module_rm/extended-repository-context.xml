@@ -145,7 +145,8 @@
    <!-- Action Service -->
    <bean id="actionService" class="org.alfresco.repo.action.ExtendedActionServiceImpl" init-method="init">
 
-   		<property name="filePlanService" ref="FilePlanService" />
+        <!-- The following reference injection has been commented out to address MNT-14900; dependency is resolved internally. -->
+        <!-- <property name="filePlanService" ref="FilePlanService" /> -->
 
         <property name="policyComponent">
             <ref bean="policyComponent" />

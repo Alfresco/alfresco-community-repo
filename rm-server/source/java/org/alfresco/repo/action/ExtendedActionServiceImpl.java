@@ -46,6 +46,16 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
     /** Application context */
     private ApplicationContext extendedApplicationContext;
 
+    protected FilePlanService getFilePlanService()
+    {
+        if (filePlanService == null)
+        {
+            filePlanService = (FilePlanService) extendedApplicationContext.getBean("FilePlanService");
+        }
+
+        return filePlanService;
+    }
+    
     /**
      * @see org.alfresco.repo.action.ActionServiceImpl#setApplicationContext(org.springframework.context.ApplicationContext)
      */
@@ -98,7 +108,7 @@ public class ExtendedActionServiceImpl extends ActionServiceImpl implements Appl
         else
         {
             // get the file component kind of the node reference
-            FilePlanComponentKind kind = filePlanService.getFilePlanComponentKind(nodeRef);
+            FilePlanComponentKind kind = getFilePlanService().getFilePlanComponentKind(nodeRef);
             result = new ArrayList<ActionDefinition>(actionDefinitions.size());
 
             // check each action definition

@@ -53,6 +53,9 @@ import org.apache.commons.lang.StringUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -62,7 +65,8 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @since 2.1
  */
 public class FilePlanRoleServiceImpl implements FilePlanRoleService,
-                                                RecordsManagementModel
+                                                RecordsManagementModel,
+                                                ApplicationContextAware
 {
     /** I18N */
     private static final String MSG_ALL_ROLES = "rm.role.all";
@@ -92,6 +96,8 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     private NodeService nodeService;
 
     private BootstrapImporterModuleComponent bootstrapImporterModule;
+
+    private ApplicationContext applicationContext;
 
     /** Records management role zone */
     public static final String RM_ROLE_ZONE_PREFIX = "rmRoleZone";
@@ -147,6 +153,16 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     {
         this.bootstrapImporterModule = bootstrapImporterModuleComponent;
     }
+    
+    protected FilePlanService getFilePlanService()
+    {
+        if (filePlanService == null)
+        {
+            filePlanService = (FilePlanService) applicationContext.getBean("FilePlanService");
+        }
+
+        return filePlanService;
+    }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService#initialiseFilePlan(org.alfresco.service.cmr.repository.NodeRef)
@@ -190,11 +206,11 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     permissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
 
                     // Create the transfer and hold containers
-                    systemContainers.add(filePlanService.createHoldContainer(filePlan));
-                    systemContainers.add(filePlanService.createTransferContainer(filePlan));
+                    systemContainers.add(getFilePlanService().createHoldContainer(filePlan));
+                    systemContainers.add(getFilePlanService().createTransferContainer(filePlan));
 
                     // Create the unfiled record container
-                    systemContainers.add(filePlanService.createUnfiledContainer(filePlan));
+                    systemContainers.add(getFilePlanService().createUnfiledContainer(filePlan));
 
                     return systemContainers;
                 }
@@ -876,5 +892,11 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
     public String getAllRolesContainerGroup(NodeRef filePlan)
     {
         return authorityService.getName(AuthorityType.GROUP, getAllRolesGroupShortName(filePlan));
+    }
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
+    {
+        this.applicationContext = applicationContext;
     }
 }

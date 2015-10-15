@@ -30,4 +30,48 @@
       <constructor-arg ref="attributeService"/>
       <constructor-arg ref="caveatDAO"/>
    </bean>
+   
+   <bean id="caveatSchemeService"
+         class="org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatSchemeServiceImpl"
+         parent="baseService">
+      <property name="caveatDAO" ref="caveatDAOFromJSON"/>
+   </bean>
+
+   <bean id="CaveatSchemeService" class="org.springframework.aop.framework.ProxyFactoryBean">
+      <property name="proxyInterfaces">
+         <value>org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatSchemeService</value>
+      </property>
+      <property name="target">
+         <ref bean="caveatSchemeService"/>
+      </property>
+      <property name="interceptorNames">
+         <list>
+            <idref local="CaveatSchemeService_transaction"/>
+            <idref bean="exceptionTranslator"/>
+            <idref local="CaveatSchemeService_security"/>
+         </list>
+      </property>
+   </bean>
+
+   <bean id="CaveatSchemeService_transaction" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+      <property name="transactionManager">
+         <ref bean="transactionManager"/>
+      </property>
+      <property name="transactionAttributes">
+         <props>
+            <prop key="*">${server.transaction.mode.default}</prop>
+         </props>
+      </property>
+   </bean>
+
+   <bean id="CaveatSchemeService_security" parent="baseSecurity">
+      <property name="objectDefinitionSource">
+         <value>
+             org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatSchemeService.existsCaveatGroup=ACL_ALLOW
+             org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatSchemeService.getCaveatGroup=ACL_ALLOW
+             org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatSchemeService.getCaveatGroups=ACL_ALLOW
+             org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatSchemeService.*=ACL_DENY
+         </value>
+      </property>
+   </bean>
 </beans>

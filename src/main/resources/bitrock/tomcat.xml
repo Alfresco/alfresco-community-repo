@@ -84,9 +84,9 @@ System variables provided by this component:
         <!-- Installation type -->
         <choiceParameter>
             <name>tomcat_installation_type</name>
-            <title>Please select the Tomcat configuration you wish to use</title>
+            <title>Select a Tomcat configuration</title>
             <description/>
-            <explanation>Tomcat installation:</explanation>
+            <explanation>Tomcat Installation:</explanation>
             <optionList/>
             <displayType>radiobuttons</displayType>
             <preShowPageActionList>
@@ -97,7 +97,7 @@ System variables provided by this component:
                     <name>tomcat_installation_type</name>
                     <optionList>
                         <option>
-                            <text>I wish to use the bundled Tomcat</text>
+                            <text>I want to use the bundled Tomcat instance.</text>
                             <value>bundled</value>
                         </option>
                     </optionList>
@@ -109,7 +109,7 @@ System variables provided by this component:
                     <name>tomcat_installation_type</name>
                     <optionList>
                         <option>
-                            <text>I wish to use an existing Tomcat</text>
+                            <text>I want to use an existing Tomcat instance.</text>
                             <value>existing</value>
                         </option>
                     </optionList>
@@ -121,11 +121,11 @@ System variables provided by this component:
                     <name>tomcat_installation_type</name>
                     <optionList>
                         <option>
-                            <text>I wish to use the bundled Tomcat</text>
+                            <text>I want to use the bundled Tomcat instance.</text>
                             <value>bundled</value>
                         </option>
                         <option>
-                            <text>I wish to use an existing Tomcat</text>
+                            <text>I want to use an existing Tomcat instance.</text>
                             <value>existing</value>
                         </option>
                     </optionList>
@@ -142,9 +142,9 @@ System variables provided by this component:
         <directoryParameter>
             <name>tomcat_server_directory</name>
             <title>Tomcat Directory</title>
-            <description>Tomcat directory:</description>
+            <description>Tomcat Directory:</description>
             <!-- Actually it is looking for the tomcat instance -->
-            <explanation>Please specify the directory where Tomcat is located.</explanation>
+            <explanation>Specify the directory where Tomcat is located.</explanation>
             <allowEmptyValue>0</allowEmptyValue>
             <ask>yes</ask>
             <cliOptionShow>0</cliOptionShow>
@@ -155,7 +155,7 @@ System variables provided by this component:
             <width>40</width>
             <validationActionList>
                 <throwError>
-                    <text>The directory you selected does not seem to be a valid Tomcat directory. Please try again.</text>
+                    <text>The directory you selected is not a valid Tomcat directory. Choose another directory.</text>
                     <ruleList>
                         <fileTest path="${tomcat_server_directory}/conf/server.xml" condition="not_exists"/>
                     </ruleList>
@@ -230,7 +230,7 @@ System variables provided by this component:
             <ask>yes</ask>
             <validationActionList>
                 <throwError>
-                    <text>The directory you selected does not seem to be a valid Tomcat directory. Please try again.</text>
+                    <text>The directory you selected is not a valid Tomcat directory. Choose another directory.</text>
                     <ruleEvaluationLogic>or</ruleEvaluationLogic>
                     <ruleList>
                         <fileTest path="${tomcat_home_directory}/bin" condition="not_exists"/>
@@ -248,12 +248,12 @@ System variables provided by this component:
         <parameterGroup>
             <name>tomcat_ports</name>
             <title>Tomcat Port Configuration</title>
-            <explanation>Please enter the Tomcat configuration parameters you wish to use.</explanation>
+            <explanation>Enter your Tomcat configuration parameters.</explanation>
             <parameterList>
                 <stringParameter>
                     <name>tomcat_server_domain</name>
                     <title>Web Server</title>
-                    <description>Web Server domain:</description>
+                    <description>Web Server Domain:</description>
                     <value/>
                     <default>127.0.0.1</default>
                     <allowEmptyValue>1</allowEmptyValue>
@@ -262,7 +262,7 @@ System variables provided by this component:
                     <width>40</width>
                     <validationActionList>
                         <throwError>
-                            <text>Please enter a valid hostname or IP address</text>
+                            <text>Enter a valid IP address or hostname.</text>
                             <ruleEvaluationLogic>and</ruleEvaluationLogic>
                             <ruleList>
                                 <regExMatch text="${tomcat_server_domain}" logic="does_not_match" pattern="^(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$"/>
@@ -289,13 +289,13 @@ System variables provided by this component:
                     <description>Tomcat Shutdown Port:</description>
             <validationActionList>
                         <throwError>
-                            <text>Unable to bind to the given port number. Please select another Tomcat Shutdown Port.</text>
+                            <text>Couldn’t bind to the given port number. Select another Tomcat Shutdown Port.</text>
                             <ruleList>
                                 <portTest port="${tomcat_server_shutdown_port}" condition="cannot_bind"/>
                             </ruleList>
                         </throwError>
                         <throwError>
-                            <text>Tomcat Server Port and Tomcat Shutdown Port cannot be the same port. Please select another Tomcat Shutdown Port.</text>
+                            <text>Tomcat Server Port and Tomcat Shutdown Port cannot be the same port. Select another Tomcat Shutdown Port."</text>
                             <ruleList>
                                 <compareText text="${tomcat_server_shutdown_port}" logic="equals" value="${tomcat_server_port}"/>
                             </ruleList>
@@ -310,10 +310,10 @@ System variables provided by this component:
                     <default>8443</default>
                     <value/>
                     <ask>1</ask>
-                    <description>Tomcat SSL Port</description>
+                    <description>Tomcat SSL Port:</description>
                     <validationActionList>
                         <throwError>
-                            <text>Unable to bind to the given port number. Please select another Tomcat SSL Port.</text>
+                            <text>Couldn’t bind to the given port number. Select another Tomcat SSL Port.</text>
                             <ruleList>
                                 <portTest port="${tomcat_server_ssl_port}" condition="cannot_bind"/>
                             </ruleList>
@@ -331,7 +331,7 @@ System variables provided by this component:
                     <description>Tomcat AJP Port:</description>
             <validationActionList>
                         <throwError>
-                            <text>Unable to bind to the given port number. Please select another Tomcat AJP Port.</text>
+                            <text>Couldn’t bind to the given port number. Select another Tomcat AJP Port.</text>
                             <ruleList>
                                 <portTest port="${tomcat_server_ajp_port}" condition="cannot_bind"/>
                             </ruleList>
@@ -349,7 +349,7 @@ System variables provided by this component:
                     <description>Tomcat JMX Port:</description>
                     <validationActionList>
                         <throwError>
-                            <text>Unable to bind to the given port number. Please select another Tomcat JMX Port.</text>
+                            <text>Couldn’t bind to the given port number. Select another Tomcat JMX Port.</text>
                             <ruleList>
                                 <portTest port="${tomcat_server_jmx_port}" condition="cannot_bind"/>
                             </ruleList>
@@ -661,4 +661,3 @@ export JAVA_OPTS
         </actionGroup>
     </installationAbortedActionList>
 </component>
-

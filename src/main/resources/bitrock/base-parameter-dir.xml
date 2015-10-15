@@ -120,7 +120,7 @@
             <exec>umask</exec>
         </setInstallerVariableFromScriptOutput>
         <throwError>
-            <text>The installation has detected that the current umask is set to permissions of ${base_umask}, the installation is now exiting. You should modify your umask to at least 0022 before launching the installer. After the installation has completed, reset the umask permissions to your original values.</text>
+            <text>The installation has not completed because the current umask is set to permissions of ${base_umask}. Modify your umask setting to at least 0022 before relaunching the installer. After the installation has completed, reset the umask permissions to your original values.</text>
             <ruleList>
             <compareValues value1="${base_umask}" logic="greater" value2="0022" />
             </ruleList>
@@ -159,7 +159,7 @@
         <directoryParameter>
             <name>installdir</name>
             <title>Installation folder</title>
-            <description>Select a folder</description>
+            <description>Select a folder:</description>
             <explanation>Please, choose a folder to install ${product_fullname}</explanation>
             <default/>
             <mustBeWritable>1</mustBeWritable>
@@ -222,7 +222,7 @@
                 <actionList>
                 <throwError>
 <!-- Require installdir to be empty. #2489 -->
-<text>The selected folder is not empty. Please select a different folder</text>
+<text>The selected folder is not empty. Specify a different folder.</text>
                     <ruleList>
                         <compareText text="${base_installdir_should_be_empty}" value="1"/>
                         <fileTest path="${installdir}" condition="is_not_empty"/>
@@ -257,7 +257,7 @@
                     </ruleList>
                 </throwError>
                 <throwError>
-                    <text>The installation directory must be a path containing only letters, numbers and the characters '/', '.', '-' and '_'.</text>
+                    <text>The installation directory must be a path containing letters, numbers, and '/', '.', ‘-‘, and '_' characters only.</text>
                     <ruleList>
             <platformTest type="windows" />
             <regExMatch text="${installdir}" logic="does_not_match" pattern="^([a-zA-Z]:)\\([0-9a-zA-Z_\\\s\.\-\(\)]*)$" />
@@ -272,7 +272,7 @@
                 </throwError>
                 <getFreeDiskSpace>
                     <abortOnError>0</abortOnError>
-                    <customErrorMessage>Unable to get free disk space.</customErrorMessage>
+                    <customErrorMessage>Couldn’t get free disk space.</customErrorMessage>
                     <onErrorActionList>
                         <setInstallerVariable name="freeSpace" value="10000" />
                     </onErrorActionList>
@@ -288,7 +288,7 @@
                     </ruleList>
                 </throwError>
         <showWarning>
-            <text>The installer could not get the current free space on ${installdir}. Please check that there is free space enough to install ${product_fullname}</text>
+            <text>The installer could not access the current free space on ${installdir}. Check that there is enough free space to install ${product_fullname}</text>
             <ruleList>
             <compareValues value1="${freeSpace}" logic="equals" value2="-1" />
             </ruleList>
@@ -296,7 +296,7 @@
         <actionGroup>
             <actionList>
             <checkDirectoryTraversableRecursively directory="${installdir}" variable="is_not_traversable" />
-            <throwError text="The current installation directory could not be accessed by non-root users. Please select a different installation directory or change the permissions to 755 for this folder." >
+            <throwError text="The current installation directory cannot be accessed by non-root users. Select a different installation directory or change the permissions to 755 for this folder." >
                 <ruleList>
                 <isTrue value="${is_not_traversable}" />
                 </ruleList>
@@ -314,7 +314,7 @@
                         <platformTest type="windows" />
                     </ruleList>
                 </checkForSymlinkRecursively>
-                <throwError text="Please select a different installation directory. The installation directory cannot contain symbolic links" >
+                <throwError text="Select a different installation directory. The installation directory cannot contain symbolic links." >
                     <ruleList>
                         <platformTest type="windows" />
                         <isTrue value="${contains_symlink}" />
@@ -399,4 +399,3 @@
         </actionGroup>
     </readyToInstallActionList>
 </component>
-

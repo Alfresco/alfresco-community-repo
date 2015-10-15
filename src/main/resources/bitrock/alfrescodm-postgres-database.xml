@@ -9,7 +9,7 @@
     <postInstallationActionList>
         <actionGroup>
             <actionList>
-		<waitForPort port="${database_port}" timeout="30000" progressText="Waiting PostgreSQL to start."/>
+		<waitForPort port="${database_port}" timeout="30000" progressText="Waiting for PostgreSQL to start."/>
 		<runProgram>
                     <program>${database_binary_directory}/createuser</program>
                     <programArguments>-p ${database_port} -U postgres --no-superuser --no-createdb --no-createrole ${alfresco_database_user}</programArguments>
@@ -37,4 +37,3 @@
         </substitute>
     </postInstallationActionList>
 </component>
-

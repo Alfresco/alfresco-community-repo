@@ -26,7 +26,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
 <component>
     <name>postgres</name>
     <description>PostgreSQL</description>
-    <detailedDescription>PostgreSQL is a powerful, open source object-relational database system.</detailedDescription>
+    <detailedDescription>PostgreSQL is a powerful, open source, object-relational database system.</detailedDescription>
     <canBeEdited>1</canBeEdited>
     <selected>1</selected>
     <shouldPackRuleList>
@@ -37,7 +37,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
             <name>postgres_installation_type</name>
             <optionList>
                 <option>
-                    <text>I wish to use the bundled PostgreSQL database</text>
+                    <text>I want to use the bundled PostgreSQL database.</text>
                     <value>bundled</value>
                 </option>
             </optionList>
@@ -49,7 +49,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
             <name>postgres_installation_type</name>
             <optionList>
                 <option>
-                    <text>I wish to use an existing PostgreSQL database</text>
+                    <text>I want to use an existing PostgreSQL database.</text>
                     <value>existing</value>
                 </option>
             </optionList>
@@ -61,11 +61,11 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
             <name>postgres_installation_type</name>
             <optionList>
                 <option>
-                    <text>I wish to use the bundled PostgreSQL database</text>
+                    <text>I want to use the bundled PostgreSQL database.</text>
                     <value>bundled</value>
                 </option>
                 <option>
-                    <text>I wish to use an existing PostgreSQL database</text>
+                    <text>I want to use an existing PostgreSQL database.</text>
                     <value>existing</value>
                 </option>
             </optionList>
@@ -112,7 +112,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
             <validationActionList>
                 <showQuestion>
                     <variable>continue</variable>
-                    <text>Setup will try to install new databases and will overwrite any existing duplicate. Do you wish you continue?</text>
+                    <text>Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?</text>
                     <ruleList>
                         <compareText logic="equals" text="${postgres_installation_type}" value="existing"/>
                     </ruleList>
@@ -142,7 +142,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
         <directoryParameter>
             <name>postgres_binary_directory</name>
             <description>PostgreSQL Binary Directory</description>
-            <explanation>Please specify the directory where the psql, pg_restore and vacuumdb binaries are located</explanation>
+            <explanation>Specify the directory where the psql, pg_restore, and vacuumdb binaries are located.</explanation>
             <value/>
             <default>${postgres_root_directory}/bin</default>
             <allowEmptyValue>0</allowEmptyValue>
@@ -157,21 +157,21 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
             </ruleList>
             <validationActionList>
                 <throwError>
-                    <text>The path ${postgres_binary_directory} seems to be invalid. Please check if the directory contains the required binaries.</text>
+                    <text>The path ${postgres_binary_directory} is not valid. Check if the directory contains the required binaries.</text>
                     <ruleList>
                         <fileTest condition="not_exists" path="${postgres_binary_directory}/psql.exe"/>
                         <fileTest condition="not_exists" path="${postgres_binary_directory}/psql"/>
                     </ruleList>
                 </throwError>
                 <throwError>
-                    <text>The path ${postgres_binary_directory} does not seem to contain a pg_restore executable.</text>
+                    <text>The path ${postgres_binary_directory} does not contain a pg_restore executable.</text>
                     <ruleList>
                         <fileTest condition="not_exists" path="${postgres_binary_directory}/pg_restore.exe"/>
                         <fileTest condition="not_exists" path="${postgres_binary_directory}/pg_restore"/>
                     </ruleList>
                 </throwError>
                 <throwError>
-                    <text>The path ${postgres_binary_directory} does not seem to contain a pg_vacuumdb executable.</text>
+                    <text>The path ${postgres_binary_directory} does not contain a pg_vacuumdb executable.</text>
                     <ruleList>
                         <fileTest condition="not_exists" path="${postgres_binary_directory}/vacuumdb.exe"/>
                         <fileTest condition="not_exists" path="${postgres_binary_directory}/vacuumdb"/>
@@ -183,7 +183,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                     <execArgs>--version</execArgs>
                 </setInstallerVariableFromScriptOutput>
                 <showInfo>
-                    <text>Not a PostgreSQL version 8.1.4 installation. PostgreSQL 8.1.4 recommended.</text>
+                    <text>Not a PostgreSQL version 9.4.4 installation. PostgreSQL 9.4.4 is recommended.</text>
                     <ruleList>
                         <compareText logic="does_not_equal" text="psql (PostgreSQL) 8.1.4" value="${postgres_version}"/>
                         <compareText logic="equals" text="yes" value="${postgres_check_version}"/>
@@ -226,7 +226,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                 <stringParameter>
                     <name>postgres_hostname</name>
                     <description>IP / Hostname</description>
-                    <explanation>Please enter the IP address or hostname for your database</explanation>
+                    <explanation>Enter the IP address or hostname for your database.</explanation>
                     <!-- localhost != 127.0.0.1 on Unix (127.0.0.1 means listen on TCP, localhost in socket) -->
                     <value>localhost</value>
                     <default>localhost</default>
@@ -236,7 +236,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                     <width>20</width>
                     <validationActionList>
                         <throwError>
-                            <text>Please enter a valid IP address or hostname</text>
+                            <text>Enter a valid IP address or hostname.</text>
                             <ruleList>
                                 <regExMatch logic="does_not_match" pattern="^(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])\.(\d|[1-9]\d|1\d\d|2[0-4]\d|25[0-5])$" text="${postgres_hostname}"/>
                                 <regExMatch logic="does_not_match" pattern="^([a-zA-Z]([a-zA-Z0-9\-]*[a-zA-Z0-9])*\.)*[a-zA-Z]([a-zA-Z0-9\-]*[a-zA-Z0-9])*$" text="${postgres_hostname}"/>
@@ -246,8 +246,8 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                 </stringParameter>
                 <stringParameter>
                     <name>postgres_port</name>
-                    <description>Database Server port</description>
-                    <explanation>Please enter the port of your database.</explanation>
+                    <description>Database Server Port:</description>
+                    <explanation>Enter the port of your database.</explanation>
                     <value>5432</value>
                     <default>5432</default>
                     <allowEmptyValue>1</allowEmptyValue>
@@ -255,7 +255,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                     <width>10</width>
                     <validationActionList>
                         <throwError>
-                            <text>It seems you do not have enough permissions to bind to the port or the port is already taken by another application. Please select another one.</text>
+                            <text>You do not have the right permissions to bind to the port or the port is already taken by another application. Select another port.</text>
                             <ruleList>
                                 <!-- DO NOT MODIDY THIS LINE -->
                                 <portTest condition="cannot_bind" port="${postgres_port}"/>
@@ -263,7 +263,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                             </ruleList>
                         </throwError>
                         <throwError>
-                            <text>Unable to find any server running at port ${postgres_port}. Please start your database server.</text>
+                            <text>Couldn’t find a server running at port ${postgres_port}. Start your database server.</text>
                             <ruleList>
                                 <portTest condition="can_bind" port="${postgres_port}"/>
                                 <compareText logic="equals" text="${postgres_installation_type}" value="existing"/>
@@ -289,19 +289,19 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
         </parameterGroup>
         <booleanParameter>
             <name>postgres_install_service</name>
-            <description>Install PostgreSQL as service?</description>
+            <description>Install PostgreSQL as a service?</description>
             <explanation>Do you want to install PostgreSQL as a Windows service?</explanation>
             <value>1</value>
             <ask>0</ask>
             <validationActionList>
                 <throwError>
-                    <text>Sorry, you need to be administrator.</text>
+                    <text>You need to be an administrator.</text>
                     <ruleList>
                         <compareText logic="does_not_equal" text="${installer_root_install}" value="1"/>
                     </ruleList>
                 </throwError>
                 <throwError>
-                    <text>Sorry, we only support PostgreSQL as service.</text>
+                    <text>We support PostgreSQL as service only.</text>
                     <ruleList>
                         <compareText logic="does_not_equal" text="${postgres_install_service}" value="1"/>
                     </ruleList>
@@ -315,7 +315,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
         <!-- Database Credentials -->
         <passwordParameter>
             <name>postgres_root_password</name>
-            <explanation>Please enter your database 'postgres' user password.</explanation>
+            <explanation>Enter your database 'postgres' user password.</explanation>
             <description>PostgreSQL postgres user password</description>
             <cliOptionName>postgres_password</cliOptionName>
             <allowEmptyValue>0</allowEmptyValue>
@@ -352,7 +352,7 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
                 </actionGroup>
                 <throwError>
                     <abortOnError>0</abortOnError>
-                    <text>Unable to connect to database. Please check your configuration.</text>
+                    <text>Couldn’t connect to database. Check your configuration.</text>
                     <ruleList>
                         <compareText logic="does_not_equal" text="${next_page}" value=""/>
                     </ruleList>
@@ -1152,4 +1152,3 @@ When installing bundled postgres on windows, add in <postUninstallationActionLis
   </preUninstallationActionList>
 
 </component>
-

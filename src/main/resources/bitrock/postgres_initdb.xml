@@ -35,7 +35,7 @@ System variables provided by this component:
         <stringParameter>
             <title>Database Configuration</title>
             <name>database_name</name>
-            <explanation>Set the database name for the database that will be created.</explanation>
+            <explanation>Specify the name of the database.</explanation>
             <description>Database name</description>
             <ask>0</ask>
             <value/>
@@ -44,7 +44,7 @@ System variables provided by this component:
         <stringParameter>
             <name>database_user</name>
             <title>Database Configuration</title>
-            <explanation>Set the user that will use the database.</explanation>
+            <explanation>Set the database user.</explanation>
             <description>User</description>
             <ask>0</ask>
             <value/>
@@ -52,7 +52,7 @@ System variables provided by this component:
         <passwordParameter>
             <name>database_user_password</name>
             <title>Database Configuration</title>
-            <explanation>Set the password for the user that will use the database.</explanation>
+            <explanation>Specify the password for the database user.</explanation>
             <description>Password</description>
             <descriptionRetype>Re-enter password</descriptionRetype>
             <ask>0</ask>
@@ -106,4 +106,3 @@ System variables provided by this component:
         </actionGroup>
     </postInstallationActionList>
 </component>
-

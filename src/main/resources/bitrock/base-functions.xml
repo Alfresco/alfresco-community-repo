@@ -446,7 +446,7 @@ Copyrighted by BitRock
                 <foreach variables="forbidden_username" values="${forbiddenUsernames}"> 
                     <actionList>
                         <throwError>
-                            <text>Username '${username}' is reserved. Please use a different user name.</text>
+                            <text>Username '${username}' is reserved. Use a different user name.</text>
                             <ruleList>
                                 <compareText logic="does_not_equal" text="${forbidden_username}" value=""/>
                                 <compareText logic="equals" text="${username}" value="${forbidden_username}"/>
@@ -1323,7 +1323,7 @@ rem RUBY_APPLICATION_STOP</value>
             <stringParameter name="rubyVersion" value="2.0.0"/>
         </parameterList>
         <actionList>
-            <throwError text="You are trying to install a Ruby ${rubyVersion} based application in a Bitnami stack that is not supported. Please download and install Ruby Stack ${rubyVersion} version at bitnami.com site" >
+            <throwError text="You are trying to install a Ruby ${rubyVersion} based application in a Bitnami stack that is not supported. Download and install Ruby Stack ${rubyVersion} version from bitnami.com" >
                 <ruleEvaluationLogic>and</ruleEvaluationLogic>
                 <ruleList>
                     <fileTest path="${installdir}/ruby/lib/ruby/gems/${rubyVersion}" condition="not_exists" />
@@ -1706,7 +1706,7 @@ rem RUBY_APPLICATION_STOP</value>
                 </ruleList>
             </throwError>
             <throwError>
-                <text>Unable to find a server running at given port number. Please select another one.</text>
+                <text>Couldn’t find a server running at this port number. Select another port.</text>
                 <ruleList>
                     <portTest port="${serverPort}" condition="can_bind"/>
                     <compareText text="${serverType}" logic="equals" value="existing"/>
@@ -1714,7 +1714,7 @@ rem RUBY_APPLICATION_STOP</value>
                 </ruleList>
             </throwError>
             <throwError>
-                <text>Unable to bind to the server port. Please make sure that ${serverName} is not running.</text>
+                <text>Couldn’t bind to the server port. Make sure that ${serverName} is not running.</text>
                 <ruleList>
                     <portTest port="${serverPort}" condition="cannot_bind"/>
                     <compareText text="${serverType}" logic="equals" value="existing"/>

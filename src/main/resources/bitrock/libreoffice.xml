@@ -22,8 +22,8 @@
         <stringParameter>
             <name>libreoffice_port</name>
             <title>LibreOffice Server Port</title>
-            <description>LibreOffice Server Port</description>
-            <explanation>Please enter the port that the Libreoffice Server will listen to by default.</explanation>
+            <description>LibreOffice Server Port:</description>
+            <explanation>Enter the port that the LibreOffice Server will listen to.</explanation>
             <value>8100</value>
             <default>8100</default>
             <allowEmptyValue>1</allowEmptyValue>
@@ -291,4 +291,3 @@
         <deleteFile path="${libreoffice_directory}"/>
     </postUninstallationActionList>
 </component>
-

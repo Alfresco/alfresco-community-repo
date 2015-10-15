@@ -501,7 +501,8 @@
         <property name="authorityService" ref="AuthorityService"/>
         <property name="permissionService" ref="PermissionService"/>
         <property name="nodeService" ref="NodeService"/>
-        <property name="filePlanService" ref="FilePlanService" />
+        <!-- The following reference injection has been commented out to address MNT-14900; dependency is resolved internally. -->
+        <!-- <property name="filePlanService" ref="FilePlanService" /> -->
         <!-- init repo for when a tenant is created -->
         <property name="bootstrapImporterModuleComponent" ref="org_alfresco_module_rm_bootstrapData"/>
 

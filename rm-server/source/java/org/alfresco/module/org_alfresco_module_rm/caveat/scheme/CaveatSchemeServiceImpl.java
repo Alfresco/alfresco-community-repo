@@ -19,12 +19,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.caveat.scheme;
 
-import org.alfresco.module.org_alfresco_module_rm.caveat.dao.CaveatDAOInterface;
-
 import java.util.HashSet;
 import java.util.Set;
 
-public class CaveatSchemeServiceImpl implements CaveatSchemeService
+import org.alfresco.module.org_alfresco_module_rm.caveat.dao.CaveatDAOInterface;
+import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+
+public class CaveatSchemeServiceImpl extends ServiceBaseImpl implements CaveatSchemeService
 {
     private CaveatDAOInterface caveatDAO;
 
@@ -45,6 +46,6 @@ public class CaveatSchemeServiceImpl implements CaveatSchemeService
 
     @Override public CaveatGroup getCaveatGroup(String id)
     {
-        return caveatDAO.getCaveatGroups().get(id);
+        return caveatDAO.getGroupById(id);
     }
 }

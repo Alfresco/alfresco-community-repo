@@ -223,8 +223,8 @@ msgstr "JDK Installation Directory:"
 msgid "Java"
 msgstr "Java"
 
-msgid "Java Component required to run the Alfresco server."
-msgstr "Java Component required to run the Alfresco server."
+msgid "Java Component required to run ${product_fullname}."
+msgstr "Java Component required to run ${product_fullname}."
 
 msgid "Java Home path contains spaces. Alfresco might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
 msgstr "Java Home path contains spaces. Alfresco might not work properly, as the JVM has problems when the installation path contains spaces. Reinstall the JVM in a path that does not contain spaces."
@@ -232,8 +232,8 @@ msgstr "Java Home path contains spaces. Alfresco might not work properly, as the
 msgid "This module requires Java, and no Java instance can be found."
 msgstr "This module requires Java, and no Java instance can be found."
 
-msgid "Launch ${product_fullname} Share"
-msgstr "Launch ${product_fullname} Share"
+msgid "Launch ${product_fullname}"
+msgstr "Launch ${product_fullname}"
 
 msgid "LibreOffice"
 msgstr "LibreOffice"
@@ -646,8 +646,8 @@ msgstr "Select at least one of the Solr components."
 msgid "Use ASCII characters only when setting the password in the installer. If you want to use non-ASCII characters, you can do this by resetting the password after installation."
 msgstr "Use ASCII characters only when setting the password in the installer. If you want to use non-ASCII characters, you can do this by resetting the password after installation."
 
-msgid "Connect Alfresco Share to Alfresco Platform"
-msgstr "Connect Alfresco Share to Alfresco Platform"
+msgid "Connect Alfresco Share to the repository"
+msgstr "Connect Alfresco Share to the repository"
 
 msgid "Enter the location of your Alfresco repository."
 msgstr "Enter the location of your Alfresco repository."

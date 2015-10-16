@@ -17,7 +17,11 @@
         <actionList>
         <setInstallerVariable name="continue_installation" value="yes" />
         <showQuestion>
-            <text>Some or all of the libraries needed to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext\nYou are strongly advised to stop this installation and install the libraries.\nFor more information, see the LibreOffice documentation at http://docs.alfresco.com\n\nDo you want to continue with the installation?</text>
+            <text>Some or all of the libraries needed to support LibreOffice were not found on your system: fontconfig libSM libICE libXrender libXext libcups libGLU
+You are strongly advised to stop this installation and install the libraries.
+For more information, see the LibreOffice documentation at http://docs.alfresco.com
+
+Do you want to continue with the installation?</text>
             <variable>continue_installation</variable>
             <default>no</default>
             <ruleEvaluationLogic>or</ruleEvaluationLogic>

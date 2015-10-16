@@ -124,7 +124,7 @@ public class TestEnterpriseAtomPubTCK extends AbstractEnterpriseOpenCMIS10TCKTes
     	cmisParameters.put(TestParameters.DEFAULT_RELATIONSHIP_TYPE, "R:cm:replaces");
     	cmisParameters.put(TestParameters.DEFAULT_TEST_FOLDER_PARENT, "/" + name);
     	clientContext = new OpenCMISClientContext(BindingType.ATOMPUB,
-    			MessageFormat.format(CMIS_URL, "localhost", String.valueOf(port), "alfresco"), "admin", "admin", cmisParameters);
+    			MessageFormat.format(CMIS_URL, "localhost", String.valueOf(port), "alfresco"), "admin", "admin", cmisParameters, jetty.getApplicationContext());
 
         overrideVersionableAspectProperties(jetty.getApplicationContext());
 	}

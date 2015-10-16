@@ -1,5 +1,6 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
+
  *
  * This file is part of Alfresco
  *
@@ -1329,7 +1330,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     }
                     continue;
                 }
-				// Handle looping control
+                // Handle looping control
                 else if (sql.startsWith("--FOREACH"))
                 {
                     // --FOREACH table.column batch.size.property
@@ -1338,13 +1339,13 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     if (args.length == 3 && (sepIndex = args[1].indexOf('.')) != -1)
                     {
                         doBatch = true;
-						// Select the upper bound of the table column
+                        // Select the upper bound of the table column
                         String stmt = "SELECT MAX(" + args[1].substring(sepIndex+1) + ") AS upper_limit FROM " + args[1].substring(0, sepIndex);
                         Object fetchedVal = executeStatement(connection, stmt, "upper_limit", false, line, scriptFile);                        
                         if (fetchedVal instanceof Number)
                         {
                             batchUpperLimit = ((Number)fetchedVal).intValue();
-							// Read the batch size from the named property
+                            // Read the batch size from the named property
                             String batchSizeString = globalProperties.getProperty(args[2]);
                             // Fall back to the default property
                             if (batchSizeString == null)
@@ -1473,7 +1474,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                         
                         if (this.dialect != null && this.dialect instanceof MySQLInnoDBDialect)
                         {
-                        	// note: enable bootstrap on MySQL 5.5 (eg. for auto-generated SQL, such as JBPM)
+                            // note: enable bootstrap on MySQL 5.5 (eg. for auto-generated SQL, such as JBPM)
                             sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=InnoDB");
                         }
                         
@@ -2121,20 +2122,20 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     @Override
     protected void onShutdown(ApplicationEvent event)
     {
-		// Shut down DB, if required
-		Class<?> dialectClazz = this.dialect.getClass();
-		if (dialectClazz.equals(DerbyDialect.class))
-		{
-			try
-			{
-				DriverManager.getConnection("jdbc:derby:;shutdown=true");
-			}
-			// Derby shutdown always triggers an exception, even when clean
-			catch (Throwable e) 
-			{
-			}
-		}
-	}
+        // Shut down DB, if required
+        Class<?> dialectClazz = this.dialect.getClass();
+        if (dialectClazz.equals(DerbyDialect.class))
+        {
+            try
+            {
+                DriverManager.getConnection("jdbc:derby:;shutdown=true");
+            }
+            // Derby shutdown always triggers an exception, even when clean
+            catch (Throwable e) 
+            {
+            }
+        }
+    }
     
     /**
      * This is a workaround for the odd Spring-Hibernate interaction during configuration.

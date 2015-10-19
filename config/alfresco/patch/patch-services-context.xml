@@ -1081,6 +1081,9 @@
       <property name="siteService">
          <ref bean="siteService" />
       </property>
+      <property name="behaviourFilter" >
+         <ref bean="policyBehaviourFilter"/>
+      </property>
    </bean>
 
    <bean id="patch.deleteClassifibleAspectForFailedThumbnail" class="org.alfresco.repo.admin.patch.impl.GenericDeleteAspectForTypePatch"

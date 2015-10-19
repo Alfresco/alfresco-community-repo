@@ -18,12 +18,17 @@
  */
 package org.alfresco.repo.admin.patch.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -49,10 +54,16 @@ public class AddUnmovableAspectToSitesPatch extends AbstractPatch
     private final int BATCH_SIZE = 200;
 
     private SiteService siteService; 
+    private BehaviourFilter behaviourFilter;
 
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
+    }
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
 
     @Override
@@ -112,7 +123,15 @@ public class AddUnmovableAspectToSitesPatch extends AbstractPatch
 
             public void process(ChildAssociationRef child) throws Throwable
             {
-                nodeService.addAspect(child.getChildRef(), ContentModel.ASPECT_UNMOVABLE, null);
+                try
+                {
+                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                    nodeService.addAspect(child.getChildRef(), ContentModel.ASPECT_UNMOVABLE, null);
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                }
             }
         };
 

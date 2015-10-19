@@ -980,11 +980,12 @@ public class NodeServiceTest
                 props.put(ContentModel.PROP_TITLE, "some title");
                 nodeService.addAspect(nodeRef, ContentModel.ASPECT_TITLED, props);
                 nodeService.setProperty(nodeRef, ContentModel.PROP_DESCRIPTION, "Some description");
-                nodeService.addChild(
-                        Collections.singletonList(workspaceRootNodeRef),
-                        nodeRef,
-                        ContentModel.ASSOC_CHILDREN,
-                        QName.createQName(TEST_PREFIX, "secondary"));
+                // Adding a child node now triggers behaviour to update a CRC property
+//                nodeService.addChild(
+//                        Collections.singletonList(workspaceRootNodeRef),
+//                        nodeRef,
+//                        ContentModel.ASSOC_CHILDREN,
+//                        QName.createQName(TEST_PREFIX, "secondary"));
                 return null;
             }
         };
@@ -1781,4 +1782,118 @@ public class NodeServiceTest
         assertEquals(nodes[1], nodesParentFirst.get(0).sourceAssocs.get(0).getSecond().getSourceRef());
         assertEquals(0, nodesParentFirst.get(1).sourceAssocs.size());
     }
+    
+    @Test public void testCascadeUpdate()
+    {   
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        NodeRef nodeRef1 = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.getClass().getName()),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        assertFalse(nodeService.getAspects(nodeRef1).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        
+        
+
+        Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>();
+        ArrayList<NodeRef> cats = new   ArrayList<NodeRef>();
+        cats.add(nodeRef1);
+        aspectProps.put(ContentModel.PROP_CATEGORIES, cats);
+        nodeService.addAspect(nodeRef1, ContentModel.ASPECT_GEN_CLASSIFIABLE, aspectProps);
+        assertTrue(nodeService.getAspects(nodeRef1).contains(ContentModel.ASPECT_GEN_CLASSIFIABLE));
+        assertFalse(nodeService.getAspects(nodeRef1).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+      
+        
+        NodeRef nodeRef2 = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.getClass().getName()),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        NodeRef nodeRef3 = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.getClass().getName()),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        NodeRef nodeRef4 = nodeService.createNode(
+                nodeRef2,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.getClass().getName()),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        assertFalse(nodeService.getAspects(nodeRef2).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        assertFalse(nodeService.getAspects(nodeRef3).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        assertFalse(nodeService.getAspects(nodeRef4).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        
+        nodeService.moveNode(nodeRef4, nodeRef3, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.getClass().getName()));
+        
+        
+        assertFalse(nodeService.getAspects(nodeRef2).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        assertFalse(nodeService.getAspects(nodeRef3).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        assertTrue(nodeService.getAspects(nodeRef4).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        Status status = nodeService.getNodeStatus(nodeRef4);
+        Long lastCascadeTx = (Long)nodeService.getProperty(nodeRef4, ContentModel.PROP_CASCADE_TX);
+        assertTrue(status.getDbTxnId().equals(lastCascadeTx));
+        assertTrue(nodeService.getProperty(nodeRef4, ContentModel.PROP_CASCADE_CRC) != null);
+        Long crcIn3 = (Long)nodeService.getProperty(nodeRef4, ContentModel.PROP_CASCADE_CRC);
+        
+        nodeService.moveNode(nodeRef4, nodeRef2, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.getClass().getName()));
+        Long crcIn2 = (Long)nodeService.getProperty(nodeRef4, ContentModel.PROP_CASCADE_CRC);
+           
+        assertFalse(crcIn2.equals(crcIn3));
+        
+        
+        NodeRef nodeRef5 = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "5"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        NodeRef nodeRef6 = nodeService.createNode(
+                rootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "6"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        NodeRef nodeRef7 = nodeService.createNode(
+                nodeRef5,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "7"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        NodeRef nodeRef8 = nodeService.createNode(
+                nodeRef5,
+                ContentModel.ASSOC_CHILDREN,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "8"),
+                ContentModel.TYPE_CONTAINER).getChildRef();
+        
+        
+        assertFalse(nodeService.getAspects(nodeRef5).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        assertFalse(nodeService.getAspects(nodeRef6).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        assertFalse(nodeService.getAspects(nodeRef7).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        assertFalse(nodeService.getAspects(nodeRef8).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        
+        nodeService.addChild(nodeRef6, nodeRef7, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.getClass().getName()));
+        assertFalse(nodeService.getAspects(nodeRef5).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        assertFalse(nodeService.getAspects(nodeRef6).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        assertTrue(nodeService.getAspects(nodeRef7).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        assertFalse(nodeService.getAspects(nodeRef8).contains(ContentModel.ASPECT_CASCADE_UPDATE));
+        
+        Long doubleLinkCRC = (Long)nodeService.getProperty(nodeRef7, ContentModel.PROP_CASCADE_CRC);
+        
+        nodeService.removeChild(nodeRef6, nodeRef7);
+        Long singleLinkCRC = (Long)nodeService.getProperty(nodeRef7, ContentModel.PROP_CASCADE_CRC);
+        assertFalse(doubleLinkCRC.equals(singleLinkCRC));
+        
+        nodeService.addChild(nodeRef6, nodeRef7, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.getClass().getName()));
+        Long doubleLinkCRC2 = (Long)nodeService.getProperty(nodeRef7, ContentModel.PROP_CASCADE_CRC);
+        assertTrue(doubleLinkCRC.equals(doubleLinkCRC2));
+        
+        nodeService.removeChild(nodeRef6, nodeRef7);
+        Long singleLinkCRC2 = (Long)nodeService.getProperty(nodeRef7, ContentModel.PROP_CASCADE_CRC);
+        assertTrue(singleLinkCRC2.equals(singleLinkCRC));
+        
+;    }
 }

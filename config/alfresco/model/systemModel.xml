@@ -373,6 +373,25 @@
             </property>
          </properties>
       </aspect>
+      
+      <!-- Aspect to record the last transaction that requires a cascade update to index children (like move, rename, link and unlink) -->
+      <aspect name="sys:cascadeUpdate">
+         <title>Cascade update</title>
+         <properties>
+            <property name="sys:cascadeCRC">
+               <title>Cascade CRC</title>
+               <type>d:long</type>
+               <mandatory>false</mandatory>
+               <multiple>false</multiple>
+            </property>
+            <property name="sys:cascadeTx">
+               <title>Cascade Tx</title>
+               <type>d:long</type>
+               <mandatory>false</mandatory>
+               <multiple>false</multiple>
+            </property>
+         </properties>
+      </aspect>
    </aspects>
 
 </model>

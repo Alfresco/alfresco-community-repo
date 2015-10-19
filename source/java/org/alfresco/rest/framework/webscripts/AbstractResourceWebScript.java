@@ -72,7 +72,14 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 {
                     respons.put("toSerialize", result); 
                     respons.put("contentInfo", contentInfo);
-                    setSuccessResponseStatus(res);
+                    if (params.getStatus().getRedirect())
+                    {
+                        res.setStatus(params.getStatus().getCode());
+                    }
+                    else
+                    {
+                        setSuccessResponseStatus(res);
+                    }
                 }
             });
             

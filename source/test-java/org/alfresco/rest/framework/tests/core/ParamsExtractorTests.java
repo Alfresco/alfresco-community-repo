@@ -9,13 +9,18 @@ import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
@@ -30,12 +35,16 @@ import org.alfresco.rest.framework.webscripts.ResourceWebScriptDelete;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptGet;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptPost;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptPut;
+import org.alfresco.util.TempFileProvider;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.Match;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.servlet.FormData;
 import org.springframework.http.HttpMethod;
+import org.springframework.mock.web.MockHttpServletRequest;
+
 
 /**
  * Tests extracting of params from req
@@ -119,7 +128,7 @@ public class ParamsExtractorTests
         
         assertNotNull(params.getFilter());
         assertTrue("Default filter is BeanPropertiesFilter.AllProperties", BeanPropertiesFilter.AllProperties.class.equals(params.getFilter().getClass()));
-               
+        
         Object passed =  params.getPassedIn();
         assertNotNull(passed);
         
@@ -176,6 +185,65 @@ public class ParamsExtractorTests
         {
             assertNotNull(uoe);  //Must throw this exception
         }
+    }
+
+    @Test
+    public void testMultiPartPostExtractor() throws Exception
+    {
+        ResourceWebScriptPost extractor = new ResourceWebScriptPost();
+        extractor.setJsonHelper(jsonHelper);
+        Map<String, String> templateVars = new HashMap<String, String>();
+
+        WebScriptRequest request = mock(WebScriptRequest.class);
+        when(request.getServiceMatch()).thenReturn(new Match(null, templateVars, null));
+
+        File file = TempFileProvider.createTempFile("ParamsExtractorTests-", ".txt");
+        PrintWriter writer = new PrintWriter(file);
+        writer.println("Multipart Mock test.");
+        writer.close();
+
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+                    .setFileData(new FileData(file.getName(), file, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .build();
+
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest("POST", "");
+        mockRequest.setContent(reqBody.getBody());
+        mockRequest.setContentType(reqBody.getContentType());
+
+        when(request.getContentType()).thenReturn("multipart/form-data");
+        when(request.parseContent()).thenReturn(new FormData(mockRequest));
+
+        Params params = extractor.extractParams(mockEntity(), request);
+        assertNotNull(params);
+        Object passed = params.getPassedIn();
+        assertNotNull(passed);
+        assertTrue(FormData.class.isAssignableFrom(passed.getClass()));
+        FormData formData = (FormData) passed;
+        assertTrue(formData.getIsMultiPart());
+
+        assertNotNull(params.getStatus());
+        assertFalse(params.getStatus().getRedirect());
+
+        // No entity id for POST
+        templateVars.put(ResourceLocator.ENTITY_ID, "1234");
+        try
+        {
+            params = extractor.extractParams(mockEntity(), request);
+            fail("Should not get here. No entity id for POST");
+        }
+        catch (UnsupportedResourceOperationException uoe)
+        {
+            assertNotNull(uoe);
+        }
+
+        params = extractor.extractParams(mockRelationship(), request);
+        assertNotNull(params);
+        assertEquals("1234", params.getEntityId());
+        passed = params.getPassedIn();
+        assertNotNull(passed);
+        assertTrue(FormData.class.isAssignableFrom(passed.getClass()));
+        formData = (FormData) passed;
+        assertTrue(formData.getIsMultiPart());
     }
 
     @Test

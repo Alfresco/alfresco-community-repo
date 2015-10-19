@@ -59,7 +59,7 @@ public class WriterTests
         ResourceDictionary resourceDic = locator.getDictionary();
         Map<String, ResourceWithMetadata> apiResources = resourceDic.getAllResources().get(api);
         String writtenOut = testWriter(defaultMetaWriter, apiResources.get("/sheep"), apiResources);
-        assertTrue(writtenOut.startsWith("{\"list\":{\"pagination\":{\"count\":4"));
+        assertTrue(writtenOut.startsWith("{\"list\":{\"pagination\":{\"count\":5"));
         
 //        ResourceMetaDataWriter wadlWriter = new WebScriptOptionsMetaData();
 //        writtenOut = testWriter(wadlWriter, apiResources.get("/sheep"), apiResources);

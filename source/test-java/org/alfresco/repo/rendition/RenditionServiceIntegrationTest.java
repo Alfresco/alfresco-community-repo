@@ -34,6 +34,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.imageio.ImageIO;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
 import org.alfresco.repo.action.RuntimeActionService;
@@ -419,12 +420,8 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                         return null;
                     }
                 });
-        // Sleep to let the asynchronous action queue perform the updates to the renditions.
-        // TODO Is there a better way?
-        Thread.sleep(30000);
-        
-        // Get the renditions and check their content for the new title
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+
+        RetryingTransactionCallback<Void> checkRenditionCallback = new RetryingTransactionCallback<Void>()
                 {
                     public Void execute() throws Throwable
                     {
@@ -440,7 +437,29 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
 
                         return null;
                     }
-                });
+                };
+        // Sleep to let the asynchronous action queue perform the updates to the renditions.
+        int count = 0;
+        while (count < 60)
+        {
+            count++;
+            Thread.sleep(1000L);
+            // Get the renditions and check their content for the new title
+            try
+            {
+                transactionHelper.doInTransaction(checkRenditionCallback);
+                // Success
+                break;
+            }
+            catch (Exception e)
+            {
+                // Failure
+                if (count > 60)
+                {
+                    throw e;
+                }
+            }
+        }
     }
 
     private void assertRenditionContainsTitle(final String titleValue, String output)

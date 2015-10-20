@@ -170,6 +170,7 @@
        <property name="tenantService" ref="tenantService"/>
        <property name="singletonCache" ref="immutableSingletonCache"/>
        <property name="siteNodeRefCache" ref="siteNodeRefCache"/>
+       <property name="nodeDAO" ref="nodeDAO"/>
        <property name="eventPublisher" ref="eventPublisher" />
     </bean>
     

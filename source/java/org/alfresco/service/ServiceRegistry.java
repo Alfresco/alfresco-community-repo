@@ -29,6 +29,7 @@ import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
 import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandlerRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -52,7 +53,6 @@ import org.alfresco.service.cmr.rating.RatingService;
 import org.alfresco.service.cmr.rendition.RenditionService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.CopyService;
-import org.alfresco.service.cmr.repository.CrossRepositoryCopyService;
 import org.alfresco.service.cmr.repository.DocumentLinkService;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -156,6 +156,8 @@ public interface ServiceRegistry
     static final QName WEBDAV_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "webdavService");
     
     static final QName MODULE_SERVICE = QName.createQName(NamespaceService.ALFRESCO_URI, "ModuleService");
+    
+    static final QName POLICY_COMPONENT = QName.createQName(NamespaceService.ALFRESCO_URI, "policyComponent");
 
     /**
      * Get the list of services provided by the Repository
@@ -531,9 +533,16 @@ public interface ServiceRegistry
     MessageService getMessageService();
 
     /**
-     *  Get the document link service
+     * Get the document link service
      * @return the document link service
      */
     @NotAuditable
     DocumentLinkService getDocumentLinkService();
+    
+    /**
+     * Get the policy component
+     * @return The policy component
+     */
+    @NotAuditable
+    PolicyComponent getPolicyComponent();
 }

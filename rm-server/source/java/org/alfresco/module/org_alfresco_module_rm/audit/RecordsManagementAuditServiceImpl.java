@@ -921,7 +921,7 @@ public class RecordsManagementAuditServiceImpl extends AbstractLifecycleBean
                     return true;
                 }
                 
-                if( nodeRef != null &&
+                if(nodeRef != null && nodeService.exists(nodeRef) &&
                     !AccessStatus.ALLOWED.equals(
                         capabilityService.getCapabilityAccessState(nodeRef, ACCESS_AUDIT_CAPABILITY)))
                 {

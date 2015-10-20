@@ -15,7 +15,7 @@
       <alfresco.client.contextPath>/alfresco</alfresco.client.contextPath>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <alfresco.mysql.version>5.1.31</alfresco.mysql.version>
-      <alfresco.spring.webscripts>5.1.2</alfresco.spring.webscripts>
+      <alfresco.spring.webscripts>${alfresco.version}</alfresco.spring.webscripts>
       <webapp.id.name>alfresco</webapp.id.name>
       <webapp.id>${webapp.id.name}</webapp.id>
    </properties>

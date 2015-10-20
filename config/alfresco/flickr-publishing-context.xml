@@ -23,6 +23,7 @@
         <property name="taggingService" ref="TaggingService" />
         <property name="contentService" ref="ContentService" />
         <property name="flickrHelper" ref="flickrPublishingHelper" />
+        <property name="hidden" value="true"/>
     </bean>
 
     <bean id="flickrPublishingHelper" class="org.alfresco.repo.publishing.flickr.FlickrPublishingHelper">

@@ -53,7 +53,7 @@ public interface ChannelService
     ChannelType getChannelType(String id);
     
     /**
-     * Retrieve all the registered channel types
+     * Retrieve all the registered channel types, excluding any that are hidden
      * @return A list of ChannelType objects, each representing a channel type registered with this channel service
      */
     @NotAuditable

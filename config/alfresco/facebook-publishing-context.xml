@@ -20,6 +20,7 @@
 
    <bean id="facebookDeliveryChannelType" class="org.alfresco.repo.publishing.facebook.FacebookChannelType" parent="baseChannelType">
       <property name="publishingHelper" ref="facebookPublishingHelper" />
+      <property name="hidden" value="true"/>
    </bean>
 
    <bean id="facebookPublishingHelper" class="org.alfresco.repo.publishing.facebook.FacebookPublishingHelper">

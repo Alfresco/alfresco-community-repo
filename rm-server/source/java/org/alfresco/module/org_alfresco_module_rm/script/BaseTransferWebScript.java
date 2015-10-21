@@ -104,7 +104,7 @@ public abstract class BaseTransferWebScript extends StreamACP
             }
 
             // ensure the node is a filePlan object
-            if (!TYPE_FILE_PLAN.equals(this.nodeService.getType(filePlan)))
+            if (!filePlanService.isFilePlan(filePlan))
             {
                 status.setCode(HttpServletResponse.SC_BAD_REQUEST,
                             "Node " + filePlan.toString() + " is not a file plan");

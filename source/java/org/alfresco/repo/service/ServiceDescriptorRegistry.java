@@ -28,6 +28,7 @@ import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.imap.ImapService;
 import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.nodelocator.NodeLocatorService;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetHelper;
 import org.alfresco.repo.search.impl.solr.facet.handler.FacetLabelDisplayHandlerRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -468,13 +469,19 @@ public class ServiceDescriptorRegistry
     }
 
     @Override
-    public MessageService getMessageService() {
+    public MessageService getMessageService() 
+    {
         return (MessageService)getService(MESSAGE_SERVICE);
     }
-
-
+    
     @Override
-    public DocumentLinkService getDocumentLinkService() {
+    public DocumentLinkService getDocumentLinkService() 
+    {
         return (DocumentLinkService)getService(DOCUMENT_LINK_SERVICE);
+    }
+    
+    public PolicyComponent getPolicyComponent()
+    {
+        return (PolicyComponent)beanFactory.getBean(POLICY_COMPONENT.getLocalName());
     }
 }

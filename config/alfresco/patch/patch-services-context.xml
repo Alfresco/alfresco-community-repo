@@ -1234,6 +1234,9 @@
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}/cm:invite-email-add-direct.html.ftl</value>
+        </property>
         <property name="bootstrapView">
             <props>
                 <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>

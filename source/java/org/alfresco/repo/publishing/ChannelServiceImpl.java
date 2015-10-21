@@ -118,7 +118,15 @@ public class ChannelServiceImpl implements ChannelService
      */
     public List<ChannelType> getChannelTypes()
     {
-        return new ArrayList<ChannelType>(channelTypes.values());
+        List<ChannelType> result = new ArrayList<ChannelType>();
+        for (ChannelType channelType : channelTypes.values())
+        {
+            if (!channelType.isHidden())
+            {
+                result.add(channelType);
+            }
+        }
+        return result;
     }
 
     /**

@@ -26,5 +26,6 @@
         <property name="taggingService" ref="TaggingService" />
         <property name="contentService" ref="ContentService" />
         <property name="youTubeHelper" ref="youtubePublishingHelper" />
+        <property name="hidden" value="true"/>
     </bean>
 </beans>

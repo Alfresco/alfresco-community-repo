@@ -46,6 +46,7 @@ public abstract class AbstractChannelType implements ChannelType, ChannelTypePub
     private NodeService nodeService;
     private ChannelService channelService;
     private MetadataEncryptor encryptor;
+    private boolean hidden = false;
 
     public void setChannelService(ChannelService channelService)
     {
@@ -197,4 +198,15 @@ public abstract class AbstractChannelType implements ChannelType, ChannelTypePub
         return url;
     }
 
+    @Override
+    public boolean isHidden()
+    {
+        return hidden;
+    }
+
+    @Override
+    public void setHidden(boolean hidden)
+    {
+        this.hidden = hidden;
+    }
 }

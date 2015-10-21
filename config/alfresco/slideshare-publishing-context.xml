@@ -32,6 +32,7 @@
         <property name="publishingHelper" ref="slidesharePublishingHelper" />
         <property name="taggingService" ref="TaggingService" />
         <property name="contentService" ref="ContentService" />
+        <property name="hidden" value="true"/>
     </bean>
 
 

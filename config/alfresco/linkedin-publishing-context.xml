@@ -21,6 +21,7 @@
    <bean id="linkedInDeliveryChannelType" class="org.alfresco.repo.publishing.linkedin.LinkedInChannelType" parent="baseChannelType">
       <property name="nodeService" ref="NodeService" />
       <property name="connectionFactory" ref="linkedinConnectionFactory" />
+      <property name="hidden" value="true" />
    </bean>
 
    <bean id="linkedinConnectionFactory" class="org.alfresco.repo.publishing.linkedin.springsocial.connect.LinkedInConnectionFactory">

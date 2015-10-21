@@ -160,4 +160,16 @@ public interface ChannelType
      * @return The resource that represents the requested icon if available. <code>null</code> otherwise.
      */
     Resource getIcon(String size);
+
+    /**
+     * If a channel type is hidden then it doesn't appear in the list returned by {@link ChannelService#getChannelTypes()}
+     * @param hidden
+     */
+    void setHidden(boolean hidden);
+
+    /**
+     * If a channel type is hidden then it doesn't appear in the list returned by {@link ChannelService#getChannelTypes()}
+     * @param hidden
+     */
+    boolean isHidden();
 }

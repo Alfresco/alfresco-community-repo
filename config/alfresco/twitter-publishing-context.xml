@@ -26,6 +26,7 @@
                 <constructor-arg value="IdJ8j5Bx8MKYWWVNl4T98rNECSEDbqnBPIoAw1sIPyc" />
             </bean>
         </property>
+        <property name="hidden" value="true"/>
     </bean>
 
 </beans>

@@ -1818,6 +1818,7 @@ public class AuthenticationTest extends TestCase
             {
                 authenticationService.createAuthentication(user1, "password".toCharArray());
                 authenticationService.createAuthentication(user2, "password".toCharArray());
+                ticketComponent.invalidateTickets(false);
                 return null;
             }
         });

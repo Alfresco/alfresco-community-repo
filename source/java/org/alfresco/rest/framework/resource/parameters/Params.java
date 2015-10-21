@@ -14,6 +14,7 @@ import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryImpl;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.poi.ss.formula.functions.T;
+import org.springframework.extensions.webscripts.Status;
 
 /**
  * Parameters passed in from a Rest client for use in calls to the rest api.
@@ -29,7 +30,8 @@ public class Params implements Parameters
     private final RecognizedParams recognizedParams;
     private final String addressedProperty;
     private final BasicContentInfo contentInfo;
-    
+    private final Status status;
+
     //Constants
     private static final RecognizedParams NULL_PARAMS = new RecognizedParams(null, null, null, null, null, null, null);
     private static final BasicContentInfo DEFAULT_CONTENT_INFO = new ContentInfoImpl(MimetypeMap.MIMETYPE_BINARY, "UTF-8", -1, null);
@@ -44,6 +46,7 @@ public class Params implements Parameters
         this.recognizedParams = recognizedParams;
         this.addressedProperty = addressedProperty;
         this.contentInfo = contentInfo==null?DEFAULT_CONTENT_INFO:contentInfo;
+        this.status = new Status();
     }
 
     public static Params valueOf(BeanPropertiesFilter paramFilter, String entityId)
@@ -196,10 +199,17 @@ public class Params implements Parameters
     }
     
     @Override
-	public BasicContentInfo getContentInfo() {
-		return contentInfo;
-	}
-	
+    public BasicContentInfo getContentInfo()
+    {
+        return contentInfo;
+    }
+
+    @Override
+    public Status getStatus()
+    {
+        return status;
+    }
+
     /**
      * A formal set of params that any rest service could potentially have passed in as request params
      */

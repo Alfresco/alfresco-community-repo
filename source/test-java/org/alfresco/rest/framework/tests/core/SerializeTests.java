@@ -11,7 +11,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,8 +21,12 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.ResourceDictionaryBuilder;
 import org.alfresco.rest.framework.core.ResourceLookupDictionary;
@@ -34,6 +40,7 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor.ExecutionCallback;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.Read;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.ReadById;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
@@ -52,6 +59,7 @@ import org.alfresco.rest.framework.tests.api.mocks3.SlimGoat;
 import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
@@ -69,7 +77,9 @@ import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Format;
+import org.springframework.extensions.webscripts.servlet.FormData;
 import org.springframework.http.HttpMethod;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -133,6 +143,31 @@ public class SerializeTests
         out = writeResponse(helper.postProcessResponse(api,null, Params.valueOf("notUsed", null), resources));
         assertTrue("There must be json output as List", StringUtils.startsWith(out, "{\"list\":"));
     }
+
+    @Test
+    public void testInvokeMultiPartEntity() throws IOException
+    {
+        ResourceWithMetadata entityResource = locator.locateEntityResource(api,"multiparttest", HttpMethod.POST);
+        assertNotNull(entityResource);
+        MultiPartResourceAction.Create<?> resource = (MultiPartResourceAction.Create<?>) entityResource.getResource();
+
+        File file = TempFileProvider.createTempFile("ParamsExtractorTests-", ".txt");
+        PrintWriter writer = new PrintWriter(file);
+        writer.println("Multipart Mock test2.");
+        writer.close();
+
+        MultiPartRequest reqBody = MultiPartBuilder.create()
+                    .setFileData(new FileData(file.getName(), file, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .build();
+
+        MockHttpServletRequest mockRequest = new MockHttpServletRequest("POST", "");
+        mockRequest.setContent(reqBody.getBody());
+        mockRequest.setContentType(reqBody.getContentType());
+
+        String out = writeResponse(helper.postProcessResponse(api,null, NOT_USED, resource.create(new FormData(mockRequest), NOT_USED)));
+        assertTrue("There must be json output", StringUtils.startsWith(out, "{\"entry\":"));
+    }
+
     @Test
     public void testSerializeResponse() throws IOException
     {

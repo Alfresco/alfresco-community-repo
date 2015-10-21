@@ -7,6 +7,7 @@ import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.apache.poi.ss.formula.functions.T;
+import org.springframework.extensions.webscripts.Status;
 
 
 /**
@@ -90,5 +91,12 @@ public interface Parameters
      * Gets the basic information about content, typically taken from a HTTPServletRequest.
      * @return BasicContentInfo the content info
      */
-	BasicContentInfo getContentInfo();
+    BasicContentInfo getContentInfo();
+
+    /**
+     * Gets Web Script status
+     * 
+     * @return {@link Status}
+     */
+    public Status getStatus();
 }

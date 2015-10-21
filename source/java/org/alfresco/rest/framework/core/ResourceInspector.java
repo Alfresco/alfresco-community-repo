@@ -27,6 +27,8 @@ import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
 import org.alfresco.util.Pair;
@@ -58,13 +60,15 @@ public class ResourceInspector
         ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.Update.class);
         ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.Delete.class);
         ALL_ENTITY_RESOURCE_INTERFACES.add(BinaryResourceAction.Read.class);
-        
+        ALL_ENTITY_RESOURCE_INTERFACES.add(MultiPartResourceAction.Create.class);
+
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Create.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Read.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.ReadById.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Update.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Delete.class);
-        
+        ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(MultiPartRelationshipResourceAction.Create.class);
+
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.Read.class);
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.Delete.class);
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.Update.class);
@@ -90,6 +94,7 @@ public class ResourceInspector
         findOperation(EntityResourceAction.ReadById.class, HttpMethod.GET, helper);
         findOperation(EntityResourceAction.Update.class,   HttpMethod.PUT, helper);  
         findOperation(EntityResourceAction.Delete.class,   HttpMethod.DELETE, helper);
+        findOperation(MultiPartResourceAction.Create.class,   HttpMethod.POST, helper);
 
         if (resource.isAnnotationPresent(WebApiDeleted.class))
         {
@@ -189,7 +194,8 @@ public class ResourceInspector
         findOperation(RelationshipResourceAction.Read.class,     HttpMethod.GET, helper);
         findOperation(RelationshipResourceAction.ReadById.class, HttpMethod.GET, helper);
         findOperation(RelationshipResourceAction.Update.class,   HttpMethod.PUT, helper);  
-        findOperation(RelationshipResourceAction.Delete.class,   HttpMethod.DELETE, helper);   
+        findOperation(RelationshipResourceAction.Delete.class,   HttpMethod.DELETE, helper);
+        findOperation(MultiPartRelationshipResourceAction.Create.class, HttpMethod.POST, helper);
         
         if (resource.isAnnotationPresent(WebApiDeleted.class))
         {

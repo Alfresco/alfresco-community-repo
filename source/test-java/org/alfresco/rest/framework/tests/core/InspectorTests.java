@@ -26,6 +26,9 @@ import org.alfresco.rest.framework.tests.api.mocks.Farmer;
 import org.alfresco.rest.framework.tests.api.mocks.GoatEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks.Grass;
 import org.alfresco.rest.framework.tests.api.mocks.GrassEntityResource;
+import org.alfresco.rest.framework.tests.api.mocks.MultiPartTestEntityResource;
+import org.alfresco.rest.framework.tests.api.mocks.MultiPartTestRelationshipResource;
+import org.alfresco.rest.framework.tests.api.mocks.MultiPartTestResponse;
 import org.alfresco.rest.framework.tests.api.mocks.Sheep;
 import org.alfresco.rest.framework.tests.api.mocks.SheepBlackSheepResource;
 import org.alfresco.rest.framework.tests.api.mocks.SheepEntityResource;
@@ -83,7 +86,17 @@ public class InspectorTests
         assertTrue("FlockEntityResource supports PUT", metaData.supports(HttpMethod.PUT));
         assertTrue("FlockEntityResource supports DELETE", metaData.supports(HttpMethod.DELETE));
         assertTrue("FlockEntityResource does not support POST", !metaData.supports(HttpMethod.POST));
-        
+
+        metainfo = ResourceInspector.inspect(MultiPartTestEntityResource.class);
+        assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
+        metaData = metainfo.get(0);
+        assertNotNull(metaData);
+        assertTrue("MultiPartTestEntityResource support POST", metaData.supports(HttpMethod.POST));
+        assertFalse("MultiPartTestEntityResource does not supports GET", metaData.supports(HttpMethod.GET));
+        assertFalse("MultiPartTestEntityResource does not supports PUT", metaData.supports(HttpMethod.PUT));
+        assertFalse("MultiPartTestEntityResource does not supports DELETE", metaData.supports(HttpMethod.DELETE));
+        assertTrue("MultiPartTestEntityResource must support MultiPartTestResponse", MultiPartTestResponse.class.equals(metaData.getObjectType(HttpMethod.POST)));
+
     }
 
     @Test
@@ -114,9 +127,18 @@ public class InspectorTests
         assertTrue("SheepBlackSheepResource supports DELETE", metaData.supports(HttpMethod.DELETE));
         params = metaData.getParameters(HttpMethod.DELETE);
         assertTrue("DELETE method on a relations should have 2 url params.", params.size() == 2);
-
+        
+        metainfo = ResourceInspector.inspect(MultiPartTestRelationshipResource.class);
+        assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
+        metaData = metainfo.get(0);
+        assertNotNull(metaData);
+        assertTrue("MultiPartTestRelationshipResource support POST", metaData.supports(HttpMethod.POST));
+        assertFalse("MultiPartTestRelationshipResource does not supports GET", metaData.supports(HttpMethod.GET));
+        assertFalse("MultiPartTestRelationshipResource does not supports PUT", metaData.supports(HttpMethod.PUT));
+        assertFalse("MultiPartTestRelationshipResource does not supports DELETE", metaData.supports(HttpMethod.DELETE));
+        assertTrue("MultiPartTestRelationshipResource must support MultiPartTestResponse", MultiPartTestResponse.class.equals(metaData.getObjectType(HttpMethod.POST)));
     }
-    
+
     @Test
     public void testInspectApi()
     {

@@ -450,20 +450,33 @@ public class PublicApiHttpClient
 		PatchMethod req = new PatchMethod(url.toString());
     	return submitRequest(req, rq);
 	}
-	
-	public HttpResponse post(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId, final String relationCollectionName, final Object relationshipEntityId, final String body) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, null);
-		String url = endpoint.getUrl();
-		
-		PostMethod req = new PostMethod(url.toString());
-		if(body != null)
-		{
-			StringRequestEntity requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
-			req.setRequestEntity(requestEntity);
-		}
-    	return submitRequest(req, rq);
-	}
+
+    public HttpResponse post(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
+                final String relationCollectionName, final Object relationshipEntityId, final String body) throws IOException
+    {
+        return post(rq, scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, body, "application/json");
+    }
+
+    public HttpResponse post(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
+                final String relationCollectionName, final Object relationshipEntityId, final String body, String contentType) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, entityCollectionName, entityId, relationCollectionName,
+                    relationshipEntityId, null);
+        String url = endpoint.getUrl();
+
+        PostMethod req = new PostMethod(url.toString());
+        if (body != null)
+        {
+            if (contentType == null || contentType.isEmpty())
+            {
+                contentType = "application/json";
+            }
+            StringRequestEntity requestEntity = new StringRequestEntity(body, contentType, "UTF-8");
+            req.setRequestEntity(requestEntity);
+        }
+        return submitRequest(req, rq);
+    }
+
 
 	public HttpResponse delete(final Class<?> c, final RequestContext rq, final Object entityId, final Object relationshipEntityId) throws IOException
 	{

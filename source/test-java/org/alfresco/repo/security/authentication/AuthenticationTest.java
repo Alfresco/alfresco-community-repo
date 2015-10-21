@@ -43,7 +43,9 @@ import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.admin.SysAdminParamsImpl;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.management.subsystems.ChildApplicationContextManager;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -100,6 +102,7 @@ public class AuthenticationTest extends TestCase
     private TransactionService transactionService;
     private PersonService pubPersonService;
     private PersonService personService;
+    private SysAdminParamsImpl sysAdminParams;
 
     private UserTransaction userTransaction;
     private NodeRef rootNodeRef;
@@ -141,7 +144,6 @@ public class AuthenticationTest extends TestCase
         }
         
         dialect = (Dialect) ctx.getBean("dialect");
-        
         nodeService = (NodeService) ctx.getBean("nodeService");
         authorityService = (AuthorityService) ctx.getBean("authorityService");
         tenantService = (TenantService) ctx.getBean("tenantService");
@@ -162,6 +164,11 @@ public class AuthenticationTest extends TestCase
         // permissionServiceSPI = (PermissionServiceSPI)
         // ctx.getBean("permissionService");
         ticketsCache = (SimpleCache<String, Ticket>) ctx.getBean("ticketsCache");
+
+        ChildApplicationContextFactory sysAdminSubsystem = (ChildApplicationContextFactory) ctx.getBean("sysAdmin");
+        assertNotNull("sysAdminSubsystem", sysAdminSubsystem);
+        ApplicationContext sysAdminCtx  = sysAdminSubsystem.getApplicationContext();
+        sysAdminParams = (SysAdminParamsImpl) sysAdminCtx.getBean("sysAdminParams");
 
         dao = (MutableAuthenticationDao) ctx.getBean("authenticationDao");
         
@@ -1795,7 +1802,50 @@ public class AuthenticationTest extends TestCase
             AuthenticationUtil.setMtEnabled(wasEnabled);
         }
     }
-    
+
+    /**
+     * ACE-3542: test that "server.maxusers" setting limits the number of unique logins to that number.
+     */
+    public void testMaxUsers()
+    {
+        final String user1 = GUID.generate();
+        final String user2 = GUID.generate();
+
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                authenticationService.createAuthentication(user1, "password".toCharArray());
+                authenticationService.createAuthentication(user2, "password".toCharArray());
+                return null;
+            }
+        });
+
+        int maxUsers = sysAdminParams.getMaxUsers();
+
+        try
+        {
+            sysAdminParams.setMaxUsers(1);
+
+            authenticationService.authenticate(user1, "password".toCharArray());
+
+            try
+            {
+                authenticationService.authenticate(user2, "password".toCharArray());
+                fail("Number of logins should not exceed maxUsers setting");
+            }
+            catch (AuthenticationException e)
+            {
+                // it is expected exception
+            }
+        }
+        finally
+        {
+            sysAdminParams.setMaxUsers(maxUsers);
+        }
+    }
+
     private String getUserName(Authentication authentication)
     {
         String username = authentication.getPrincipal().toString();

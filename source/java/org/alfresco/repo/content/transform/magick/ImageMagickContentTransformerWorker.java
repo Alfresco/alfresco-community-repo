@@ -200,7 +200,7 @@ public class ImageMagickContentTransformerWorker extends AbstractImageMagickCont
         // success
         if (logger.isDebugEnabled())
         {
-            logger.debug("ImageMagic executed successfully: \n" + executer);
+            logger.debug("ImageMagick executed successfully: \n" + executer);
         }
     }
     

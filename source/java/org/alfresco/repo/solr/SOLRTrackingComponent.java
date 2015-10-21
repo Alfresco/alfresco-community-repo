@@ -181,4 +181,12 @@ public interface SOLRTrackingComponent
      * This is an optional feature.
      */
     public ShardRegistry getShardRegistry();
+    
+    /**
+     * Compute the CRC for the parent associations to this node that can cause its PATH to change
+     * - primary & secondary associations and virtual associations from categories.
+     * @param nodeId
+     * @return
+     */
+    public long getCRC(Long nodeId);
 }

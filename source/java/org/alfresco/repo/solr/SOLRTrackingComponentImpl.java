@@ -650,6 +650,66 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         return props;
     }
 
+    public long getCRC(Long nodeId)
+    {
+        Status status = nodeDAO.getNodeIdStatus(nodeId);
+        Set<QName> aspects = getNodeAspects(nodeId);
+        Map<QName, Serializable> props = getProperties(nodeId);
+        
+        //Category membership does not cascade to children - only the node needs reindexing, not its children
+        //This was producing cascade updates that were not required
+        ////CategoryPaths categoryPaths = new CategoryPaths(new ArrayList<Pair<Path, QName>>(), new ArrayList<ChildAssociationRef>());
+        ////categoryPaths = getCategoryPaths(status.getNodeRef(), aspects, props);
+
+        final List<ChildAssociationRef> parentAssocs = new ArrayList<ChildAssociationRef>(100);
+        nodeDAO.getParentAssocs(nodeId, null, null, null, new ChildAssocRefQueryCallback()
+        {
+            @Override
+            public boolean preLoadNodes()
+            {
+                return false;
+            }
+
+            @Override
+            public boolean orderResults()
+            {
+                return false;
+            }
+
+            @Override
+            public boolean handle(Pair<Long, ChildAssociationRef> childAssocPair,
+                    Pair<Long, NodeRef> parentNodePair, Pair<Long, NodeRef> childNodePair)
+            {
+                parentAssocs.add(tenantService.getBaseName(childAssocPair.getSecond(), true));
+                return true;
+            }
+
+            @Override
+            public void done()
+            {
+            }
+        });
+//        for(ChildAssociationRef ref : categoryPaths.getCategoryParents())
+//        {
+//            parentAssocs.add(tenantService.getBaseName(ref, true));
+//        }
+
+        CRC32 crc = new CRC32();
+        for(ChildAssociationRef car : parentAssocs)
+        {
+            try
+            {
+                crc.update(car.toString().getBytes("UTF-8"));
+            }
+            catch (UnsupportedEncodingException e)
+            {
+                throw new RuntimeException("UTF-8 encoding is not supported");
+            }
+        }
+        return crc.getValue();
+
+    }
+    
     /**
      * {@inheritDoc}
      */

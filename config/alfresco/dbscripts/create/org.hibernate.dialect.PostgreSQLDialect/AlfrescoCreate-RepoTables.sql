@@ -330,3 +330,6 @@ CREATE INDEX fk_alf_nprop_qn ON alf_node_properties (qname_id);
 CREATE INDEX fk_alf_nprop_loc ON alf_node_properties (locale_id);
 CREATE INDEX idx_alf_nprop_s ON alf_node_properties (qname_id, string_value, node_id);
 CREATE INDEX idx_alf_nprop_l ON alf_node_properties (qname_id, long_value, node_id);
+CREATE INDEX idx_alf_nprop_b ON alf_node_properties (qname_id, boolean_value, node_id);
+CREATE INDEX idx_alf_nprop_f ON alf_node_properties (qname_id, float_value, node_id);
+CREATE INDEX idx_alf_nprop_d ON alf_node_properties (qname_id, double_value, node_id);

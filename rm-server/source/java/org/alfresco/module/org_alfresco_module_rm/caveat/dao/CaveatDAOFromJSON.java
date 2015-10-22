@@ -36,6 +36,7 @@ import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.Malform
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroupType;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatMark;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.io.IOUtils;
@@ -78,6 +79,7 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
     /** The location of the configuration file relative to the classpath. */
     private String configLocation;
 
+    private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
 
     /** Set the location of the configuration file relative to the classpath. */
@@ -89,6 +91,10 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
     public void setNamespaceService(NamespaceService service)
     {
         this.namespaceService = service;
+    }
+    public void setDictionaryService(DictionaryService service)
+    {
+        this.dictionaryService = service;
     }
 
     /**
@@ -224,10 +230,38 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
 
         // Instantiate the group (and associate the marks with the group).
         CaveatGroup caveatGroup = new CaveatGroup(id, displayLabelKey, descriptionKey,
-                                                  modelProperty == null ? null : createQName(modelProperty, namespaceService),
+                                                  validatedPropertyName(modelProperty),
                                                   caveatGroupType, caveatMarks);
 
         return caveatGroup;
+    }
+
+    /**
+     * Validates that the provided qname string is a valid model property.
+     * @param qnameString the short form qname string e.g. {@code cm:content} or {@code null}.
+     * @return the valid {@link QName} or {@code null} if the qnameString was {@code null}.
+     * @throws MalformedConfiguration if the provided qnameString was not {@code null} and was not a valid property name.
+     */
+    private QName validatedPropertyName(String qnameString)
+    {
+        if (qnameString == null)
+        {
+            return null;
+        }
+        else
+        {
+            final QName qname = createQName(qnameString, namespaceService);
+            final boolean isProperty = dictionaryService.getProperty(qname) != null;
+
+            if (isProperty)
+            {
+                return qname;
+            }
+            else
+            {
+                throw new MalformedConfiguration("Property name not recognised: '" + qnameString + "'");
+            }
+        }
     }
 
     /**

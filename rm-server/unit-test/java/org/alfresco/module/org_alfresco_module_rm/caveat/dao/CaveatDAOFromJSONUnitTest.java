@@ -21,11 +21,16 @@ package org.alfresco.module.org_alfresco_module_rm.caveat.dao;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.MalformedConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
+import org.alfresco.service.namespace.NamespaceService;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
@@ -38,6 +43,14 @@ public class CaveatDAOFromJSONUnitTest
 {
     /** The class under test. */
     CaveatDAOFromJSON caveatDAOFromJSON = new CaveatDAOFromJSON();
+
+    @Before public void initClassUnderTest()
+    {
+        NamespaceService namespaceService = mock(NamespaceService.class);
+        when(namespaceService.getNamespaceURI(anyString())).thenReturn("{mockedNamespace}");
+
+        caveatDAOFromJSON.setNamespaceService(namespaceService);
+    }
 
     /** Test that loading the default caveat configuration file doesn't throw any exceptions. */
     @Test

@@ -30,6 +30,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.CaveatMarkNotFound;
 import org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras;
 import org.alfresco.module.org_alfresco_module_rm.util.RMParameterCheck;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
@@ -49,6 +50,8 @@ public class CaveatGroup implements Serializable
     private final String displayLabelKey;
     /** The key to retrieve the I18n'ed description of the caveat group. */
     private final String descriptionKey;
+    /** The model property in which this caveat group will store marks on objects. */
+    private final QName modelProperty;
     /** The relationship between marks in the group. */
     private final CaveatGroupType caveatGroupType;
     /** The marks that are contained in this group, ordered according to the list supplied in the constructor. */
@@ -64,9 +67,9 @@ public class CaveatGroup implements Serializable
      * @param caveatGroupType The relationship between marks in the group.
      * @param caveatMarks The marks that are contained in this group.
      */
-    public CaveatGroup(String id, CaveatGroupType caveatGroupType, List<CaveatMark> caveatMarks)
+    public CaveatGroup(String id, QName modelProperty, CaveatGroupType caveatGroupType, List<CaveatMark> caveatMarks)
     {
-        this(id, null, null, caveatGroupType, caveatMarks);
+        this(id, null, null, modelProperty, caveatGroupType, caveatMarks);
     }
 
     /**
@@ -82,8 +85,9 @@ public class CaveatGroup implements Serializable
      * @param caveatGroupType The relationship between marks in the group.
      * @param caveatMarks The marks that are contained in this group.
      */
-    public CaveatGroup(String id, String displayLabelKey, String descriptionKey, CaveatGroupType caveatGroupType,
-                List<CaveatMark> caveatMarks)
+    public CaveatGroup(String id, String displayLabelKey, String descriptionKey,
+                       QName modelProperty, CaveatGroupType caveatGroupType,
+                       List<CaveatMark> caveatMarks)
     {
         RMParameterCheck.checkNotBlank("id", id);
         ParameterCheck.mandatory("caveatGroupType", caveatGroupType);
@@ -101,6 +105,7 @@ public class CaveatGroup implements Serializable
         this.id = id;
         this.displayLabelKey = displayLabelKey;
         this.descriptionKey = descriptionKey;
+        this.modelProperty = modelProperty;
         this.caveatGroupType = caveatGroupType;
         for (CaveatMark caveatMark : caveatMarks)
         {
@@ -147,6 +152,12 @@ public class CaveatGroup implements Serializable
     public String getDescription()
     {
         return CoreServicesExtras.getI18NMessageOrKey(descriptionKey);
+    }
+
+    /** Gets the content model property in which the caveat marks will be recorded. */
+    public QName getModelProperty()
+    {
+        return modelProperty;
     }
 
     /**

@@ -23,6 +23,9 @@ import com.google.common.collect.ImmutableMap;
 
 import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.CaveatGroupNotFound;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
+import org.alfresco.service.namespace.QName;
+
+import java.util.Map;
 
 /**
  * A cache that ensures the underlying caveat DAO is only executed once per query.
@@ -60,6 +63,37 @@ public class CaveatDAOCache implements CaveatDAOInterface
             throw new CaveatGroupNotFound(groupId);
         }
         return caveatGroup;
+    }
+
+    @Override public QName getCaveatGroupProperty(String caveatGroupId)
+    {
+        ensureCachePopulated();
+
+        return getGroupById(caveatGroupId).getModelProperty();
+    }
+
+    @Override public CaveatGroup getCaveatGroupFromProperty(QName propertyName)
+    {
+        ensureCachePopulated();
+
+        CaveatGroup matchingGroup = null;
+        for (Map.Entry<String, CaveatGroup> entry : caveatGroups.entrySet())
+        {
+            final CaveatGroup potentialMatch = entry.getValue();
+            if (propertyName.equals(getCaveatGroupProperty(potentialMatch.getId())))
+            {
+                matchingGroup = potentialMatch;
+                break;
+            }
+        }
+        if (matchingGroup == null)
+        {
+            throw new CaveatGroupNotFound("No group found for property '" + propertyName + "'");
+        }
+        else
+        {
+            return matchingGroup;
+        }
     }
 
     /** The first call to this method will populate the cache, subsequent calls will do nothing. */

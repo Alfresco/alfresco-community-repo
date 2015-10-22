@@ -19,11 +19,14 @@
 
 package org.alfresco.module.org_alfresco_module_rm.caveat.dao;
 
+import static org.alfresco.service.namespace.QName.createQName;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableMap;
@@ -33,6 +36,8 @@ import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.Malform
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroupType;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatMark;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -57,6 +62,10 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
     private static final String DESCRIPTION_JSON_KEY = "description";
     /** JSON key for the group type. */
     private static final String TYPE_JSON_KEY = "type";
+    /** JSON key for the model object. */
+    private static final String MODEL_JSON_KEY = "model";
+    /** JSON key for the property field. */
+    private static final String PROPERTY_JSON_KEY = "property";
     /** JSON key for the caveat marks array. */
     private static final String MARKS_JSON_KEY = "marks";
     /** JSON key for the mark id. */
@@ -69,10 +78,17 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
     /** The location of the configuration file relative to the classpath. */
     private String configLocation;
 
+    private NamespaceService namespaceService;
+
     /** Set the location of the configuration file relative to the classpath. */
     public void setConfigLocation(String configLocation)
     {
         this.configLocation = configLocation;
+    }
+
+    public void setNamespaceService(NamespaceService service)
+    {
+        this.namespaceService = service;
     }
 
     /**
@@ -137,6 +153,24 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
         return caveatGroup;
     }
 
+    @Override public QName getCaveatGroupProperty(String caveatGroupId)
+    {
+        return getGroupById(caveatGroupId).getModelProperty();
+    }
+
+    @Override public CaveatGroup getCaveatGroupFromProperty(QName propertyName)
+    {
+        // FIXME Do we need any validation to ensure that multiple caveat groups don't reuse the same property?
+        for (Map.Entry<String, CaveatGroup> entry : getCaveatGroups().entrySet())
+        {
+            if (propertyName.equals(entry.getValue().getModelProperty()))
+            {
+                return entry.getValue();
+            }
+        }
+        throw new CaveatGroupNotFound("Caveat Group not found for property '" + propertyName + "'");
+    }
+
     /**
      * Create a caveat group from the supplied JSON.
      *
@@ -149,6 +183,15 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
         String id = jsonGroup.getString(GROUP_ID_JSON_KEY);
         String displayLabelKey = jsonGroup.getString(GROUP_DISPLAY_LABEL_JSON_KEY);
         String descriptionKey = jsonGroup.getString(DESCRIPTION_JSON_KEY);
+        String modelProperty = null;
+        if (jsonGroup.has(MODEL_JSON_KEY))
+        {
+            JSONObject modelObj = jsonGroup.getJSONObject(MODEL_JSON_KEY);
+            if (modelObj.has(PROPERTY_JSON_KEY))
+            {
+                modelProperty = modelObj.getString(PROPERTY_JSON_KEY);
+            }
+        }
         String caveatGroupTypeString = jsonGroup.getString(TYPE_JSON_KEY);
         CaveatGroupType caveatGroupType;
         try
@@ -180,7 +223,9 @@ public class CaveatDAOFromJSON implements CaveatDAOInterface
         }
 
         // Instantiate the group (and associate the marks with the group).
-        CaveatGroup caveatGroup = new CaveatGroup(id, displayLabelKey, descriptionKey, caveatGroupType, caveatMarks);
+        CaveatGroup caveatGroup = new CaveatGroup(id, displayLabelKey, descriptionKey,
+                                                  modelProperty == null ? null : createQName(modelProperty, namespaceService),
+                                                  caveatGroupType, caveatMarks);
 
         return caveatGroup;
     }

@@ -17,7 +17,8 @@
 
    <bean id="caveatDAOFromJSON" class="org.alfresco.module.org_alfresco_module_rm.caveat.dao.CaveatDAOFromJSON">
       <property name="configLocation" value="${rm.caveat.configFile}" />
-      <property name="namespaceService" ref="namespaceService" />
+       <property name="namespaceService" ref="namespaceService" />
+       <property name="dictionaryService" ref="dictionaryService" />
    </bean>
 
    <bean id="caveatDAO" class="org.alfresco.module.org_alfresco_module_rm.caveat.dao.CaveatDAOCache">

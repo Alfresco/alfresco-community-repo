@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.caveat.dao;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -29,7 +30,10 @@ import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.caveat.CaveatException.MalformedConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -49,6 +53,11 @@ public class CaveatDAOFromJSONUnitTest
         NamespaceService namespaceService = mock(NamespaceService.class);
         when(namespaceService.getNamespaceURI(anyString())).thenReturn("{mockedNamespace}");
 
+        DictionaryService dictionaryService = mock(DictionaryService.class);
+        PropertyDefinition mockProperty = mock(PropertyDefinition.class);
+        when(dictionaryService.getProperty(any(QName.class))).thenReturn(mockProperty);
+
+        caveatDAOFromJSON.setDictionaryService(dictionaryService);
         caveatDAOFromJSON.setNamespaceService(namespaceService);
     }
 

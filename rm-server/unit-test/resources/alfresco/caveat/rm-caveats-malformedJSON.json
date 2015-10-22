@@ -4,6 +4,10 @@
       "displayLabel" : "rm.caveat.classification.group",
       "description"  : "rm.caveat.classification.description",
       "type"         : "HIERARCHICAL",
+      "model" :
+      {
+         "property" : "clf:classification"
+      },
       "marks" :
       [[
          {

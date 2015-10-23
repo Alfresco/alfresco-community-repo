@@ -1868,6 +1868,24 @@
             <columnname>long_value</columnname>
           </columnnames>
         </index>
+        <index name="idx_alf_nprop_b" unique="false">
+          <columnnames>
+            <columnname>qname_id</columnname>
+            <columnname>boolean_value</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_nprop_d" unique="false">
+          <columnnames>
+            <columnname>qname_id</columnname>
+            <columnname>double_value</columnname>
+          </columnnames>
+        </index>
+        <index name="idx_alf_nprop_f" unique="false">
+          <columnnames>
+            <columnname>qname_id</columnname>
+            <columnname>float_value</columnname>
+          </columnnames>
+        </index>
       </indexes>
     </table>
     <table name="alf_permission">

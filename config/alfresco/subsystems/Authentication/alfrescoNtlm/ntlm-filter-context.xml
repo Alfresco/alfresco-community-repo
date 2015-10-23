@@ -117,6 +117,9 @@
       <property name="remoteUserMapper">
          <ref bean="RemoteUserMapper" />
       </property>
+      <property name="fallbackEnabled">
+         <value>${ntlm.authentication.sso.fallback.enabled}</value>
+      </property>
       <property name="fallback">
          <ref bean="ntlm_SSOFallbackBasicAuthenticationDriver"/>
       </property>

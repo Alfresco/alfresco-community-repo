@@ -57,6 +57,9 @@
       <property name="remoteUserMapper">
          <ref bean="RemoteUserMapper" />
       </property>
+      <property name="fallbackEnabled">
+         <value>${ntlm.authentication.sso.fallback.enabled}</value>
+      </property>
       <property name="fallback">
          <ref bean="passthru_SSOFallbackBasicAuthenticationDriver"/>
       </property>
@@ -116,6 +119,9 @@
       </property>
       <property name="mapUnknownUserToGuest">
          <value>${ntlm.authentication.mapUnknownUserToGuest}</value>
+      </property>
+      <property name="fallbackEnabled">
+         <value>${ntlm.authentication.sso.fallback.enabled}</value>
       </property>
       <property name="fallback">
          <ref bean="passthru_SSOFallbackBasicAuthenticationDriver"/>

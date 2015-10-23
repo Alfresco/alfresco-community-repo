@@ -132,6 +132,7 @@
         <property name="jobDetail" 		ref="maxStringLengthJobDetail" />
         <property name="scheduler" 		ref="schedulerFactory" />
         <property name="cronExpression" value="${system.maximumStringLength.jobCronExpression}" />
+        <property name="startDelayMinutes" value="${system.cronJob.startDelayMinutes}" />
     </bean>
 
     <bean id="nodeServiceCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">

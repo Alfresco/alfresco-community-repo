@@ -41,44 +41,44 @@ public class EncryptionChecker extends AbstractLifecycleBean
     private TransactionService transactionService;
     private KeyStoreChecker keyStoreChecker;
 
-	public void setKeyStoreChecker(KeyStoreChecker keyStoreChecker)
-	{
-		this.keyStoreChecker = keyStoreChecker;
-	}
-	
-	public void setTransactionService(TransactionService transactionService)
-	{
-		this.transactionService = transactionService;
-	}
+    public void setKeyStoreChecker(KeyStoreChecker keyStoreChecker)
+    {
+        this.keyStoreChecker = keyStoreChecker;
+    }
+    
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
 
-	@Override
-	protected void onBootstrap(ApplicationEvent event)
-	{
-	    RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-	    txnHelper.setForceWritable(true);      // Force write in case server is read-only
-	    
-	    txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-		{
-			public Void execute() throws Throwable
-			{
-				try
-				{
-					keyStoreChecker.validateKeyStores();
-				}
-				catch(Throwable e)
-				{
-					// Just throw as a runtime exception
-					throw new AlfrescoRuntimeException("Keystores are invalid", e);
-				}
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+        txnHelper.setForceWritable(true);      // Force write in case server is read-only
+        
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                try
+                {
+                    keyStoreChecker.validateKeyStores();
+                }
+                catch(Throwable e)
+                {
+                    // Just throw as a runtime exception
+                    throw new AlfrescoRuntimeException("Keystores are invalid", e);
+                }
 
-				return null;
-			}
-		});
-	}
+                return null;
+            }
+        });
+    }
 
-	@Override
-	protected void onShutdown(ApplicationEvent event)
-	{
-		
-	}
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+        
+    }
 }

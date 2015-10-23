@@ -120,6 +120,20 @@
         </property>
     </bean>
 
+    <bean id="maxStringLengthJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass" value="org.alfresco.repo.node.db.NodeStringLengthWorker$NodeStringLengthJob" />
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="nodeStringLengthWorker" value-ref="nodeStringLengthWorker" />
+            </map>
+        </property>
+    </bean>
+    <bean id="maxStringLengthJobTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail" 		ref="maxStringLengthJobDetail" />
+        <property name="scheduler" 		ref="schedulerFactory" />
+        <property name="cronExpression" value="${system.maximumStringLength.jobCronExpression}" />
+    </bean>
+
     <bean id="nodeServiceCleanupJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass">
             <value>org.alfresco.repo.node.cleanup.NodeCleanupJob</value>

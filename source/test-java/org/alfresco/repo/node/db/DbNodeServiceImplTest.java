@@ -32,8 +32,10 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.node.Transaction;
+import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.cleanup.NodeCleanupRegistry;
+import org.alfresco.repo.node.db.NodeStringLengthWorker.NodeStringLengthWorkResult;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
@@ -48,6 +50,9 @@ import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.Pair;
 import org.junit.experimental.categories.Category;
+import org.hibernate.dialect.Dialect;
+import org.hibernate.dialect.MySQLInnoDBDialect;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
@@ -695,5 +700,89 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
         {
             // expect to go here
         }
+    }
+    
+    /**
+     * Check that the maximum string lengths can be adjusted up and down.
+     * Note that this test ONLY works for MySQL because the other databases cannot support more than 1024 characters
+     * in the string_value column and the value may not be set to less than 1024.
+     * 
+     * @see SchemaBootstrap#DEFAULT_MAX_STRING_LENGTH
+     */
+    @SuppressWarnings("deprecation")
+    public void testNodeStringLengthWorker() throws Exception
+    {
+        setComplete();
+        endTransaction();
+        
+        // Skip of the dialect is not MySQL
+        Dialect dialect = (Dialect) applicationContext.getBean("dialect");
+        if (!(dialect instanceof MySQLInnoDBDialect))
+        {
+            return;
+}
+        SchemaBootstrap schemaBootstrap = (SchemaBootstrap) applicationContext.getBean("schemaBootstrap");
+        assertEquals("Expected max string length to be MAX", Integer.MAX_VALUE, SchemaBootstrap.getMaxStringLength());
+        
+        NodeStringLengthWorker worker = (NodeStringLengthWorker) applicationContext.getBean("nodeStringLengthWorker");
+        
+        // If we run this worker just to get everything into the correct starting state.
+        // If it does not work, then that will be detected later anyway
+        NodeStringLengthWorkResult result = worker.execute();
+        assertTrue(result.getPropertiesProcessed() > 0);
+        assertEquals(0, result.getErrors());
+        
+        // Now set the max string length to DEFAULT_MAX_STRING_LENGTH characters
+        schemaBootstrap.setMaximumStringLength(SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH);
+        schemaBootstrap.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
+        // Move any values persisted before the test
+        result = worker.execute();
+        int firstPassChanged = result.getPropertiesChanged();
+        
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH + 1; i++)
+        {
+            sb.append("A");
+        }
+        final String longString = sb.toString();
+        // Persist the property using the default MAX_VALUE so that it does into the string_value
+        schemaBootstrap.setMaximumStringLength(Integer.MAX_VALUE);
+        schemaBootstrap.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
+        txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                nodeService.setProperty(rootNodeRef, PROP_QNAME_STRING_VALUE, longString);
+                return null;
+            }
+        });
+
+        // The worker should do nothing
+        result = worker.execute();
+        assertEquals(firstPassChanged, result.getPropertiesChanged());
+        
+        // Now bring the limit down to the match for other DBs
+        schemaBootstrap.setMaximumStringLength(SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH);
+        schemaBootstrap.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
+        result = worker.execute();
+        assertEquals(firstPassChanged + 1, result.getPropertiesChanged());
+        
+        // Put the limit back to the MySQL default and all the large values should go back into MySQL's TEXT field
+        schemaBootstrap.setMaximumStringLength(Integer.MAX_VALUE);
+        schemaBootstrap.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
+        result = worker.execute();
+        assertEquals(firstPassChanged + 1, result.getPropertiesChanged());
+        
+        // Check that our string is still OK
+        String checkLongString = txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<String>()
+        {
+            @Override
+            public String execute() throws Throwable
+            {
+                return (String) nodeService.getProperty(rootNodeRef, PROP_QNAME_STRING_VALUE);
+            }
+        });
+        assertEquals("String manipulation corrupted the long string value. ", longString, checkLongString);
     }
 }

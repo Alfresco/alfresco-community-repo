@@ -235,6 +235,17 @@
          <value>${index.tracking.purgeSize}</value>
       </property>
    </bean>
+   
+   <!-- String length adjustment -->
+   <bean id="nodeStringLengthWorker" class="org.alfresco.repo.node.db.NodeStringLengthWorker">
+      <constructor-arg index="0" ref="nodeDAO" />
+      <constructor-arg index="1" ref="jobLockService" />
+      <constructor-arg index="2" ref="transactionService" />
+      <constructor-arg index="3" ref="qnameDAO" />
+      <constructor-arg index="4" ref="policyBehaviourFilter" />
+      <constructor-arg index="5" value="${system.maximumStringLength.jobQueryRange}" />
+      <constructor-arg index="6" value="${system.maximumStringLength.jobThreadCount}" />
+   </bean>
 
    <bean id="storesToIgnorePolicies" class="org.springframework.beans.factory.config.SetFactoryBean">
       <property name="sourceSet">

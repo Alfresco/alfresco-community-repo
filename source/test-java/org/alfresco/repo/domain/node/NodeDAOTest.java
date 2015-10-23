@@ -19,9 +19,12 @@
 package org.alfresco.repo.domain.node;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import junit.framework.TestCase;
 
@@ -33,8 +36,10 @@ import org.alfresco.repo.domain.node.NodeDAO.NodeRefQueryCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
@@ -106,6 +111,80 @@ public class NodeDAOTest extends TestCase
         assertNotNull("Txn ID should be present by forcing it", txnId2);
     }
     
+    public void testSelectNodePropertiesByTypes() throws Exception
+    {
+        final Set<QName> qnames = Collections.singleton(ContentModel.PROP_NAME);
+        RetryingTransactionCallback<List<NodePropertyEntity>> callback = new RetryingTransactionCallback<List<NodePropertyEntity>>()
+        {
+            public List<NodePropertyEntity> execute() throws Throwable
+            {
+                return nodeDAO.selectNodePropertiesByTypes(qnames);
+            }
+        };
+        List<NodePropertyEntity> props = txnHelper.doInTransaction(callback, true);
+        if (props.size() == 0)
+        {
+            return;
+        }
+        NodePropertyEntity prop = props.get(0);
+        String value = prop.getValue().getStringValue();
+        assertNotNull(value);
+    }
+    
+    public void testSelectNodePropertiesByDataType() throws Exception
+    {
+        // Prepare the bits that repeat the actual query
+        final AtomicLong min = new AtomicLong(0L);
+        final AtomicLong max = new AtomicLong(0L);
+        RetryingTransactionCallback<List<NodePropertyEntity>> callback = new RetryingTransactionCallback<List<NodePropertyEntity>>()
+        {
+            public List<NodePropertyEntity> execute() throws Throwable
+            {
+                long minNodeId = min.get();
+                long maxNodeId = max.get();
+                return nodeDAO.selectNodePropertiesByDataType(DataTypeDefinition.TEXT, minNodeId, maxNodeId);
+            }
+        };
+        
+        // Get the current max node id
+        Long minNodeId = nodeDAO.getMinNodeId();
+        if (minNodeId == null)
+        {
+            return;                 // there are no nodes!
+        }
+        Long maxNodeId = nodeDAO.getMaxNodeId();            // won't be null at this point as we have a min
+        min.set(minNodeId.longValue());
+        
+        // Iterate across all nodes in the system
+        while (min.longValue() <= maxNodeId.longValue())
+        {
+            max.set(min.get() + 1000L);                     // 1K increments
+            
+            // Get the properties
+            List<NodePropertyEntity> props = txnHelper.doInTransaction(callback, true);
+            for (NodePropertyEntity prop : props)
+            {
+                // Check the property
+                Long nodeId = prop.getNodeId();
+                assertNotNull(nodeId);
+                assertTrue("the min should be inclusive.", min.longValue() <= nodeId.longValue());
+                assertTrue("the max should be exclusive.", max.longValue() > nodeId.longValue());
+                NodePropertyValue propVal = prop.getValue();
+                assertNotNull(propVal);
+                assertEquals("STRING", propVal.getActualTypeString());
+                String valueStr = propVal.getStringValue();
+                Serializable valueSer = propVal.getSerializableValue();
+                assertTrue("Test is either TEXT or SERIALIZABLE", valueStr != null || valueSer != null);
+                String value = (String) propVal.getValue(DataTypeDefinition.TEXT);
+                assertNotNull(value);
+                // This all checks out
+            }
+            
+            // Shift the window up
+            min.set(max.get());
+        }
+    }
+    
     public void testGetNodesWithAspects() throws Throwable
     {
         final NodeRefQueryCallback callback = new NodeRefQueryCallback()
@@ -130,6 +209,16 @@ public class NodeDAOTest extends TestCase
         }, true);
     }
     
+    public void testGetMinMaxNodeId() throws Exception
+    {
+        Long minNodeId = nodeDAO.getMinNodeId();
+        assertNotNull(minNodeId);
+        assertTrue(minNodeId.longValue() > 0L);
+        Long maxNodeId = nodeDAO.getMaxNodeId();
+        assertNotNull(maxNodeId);
+        assertTrue(maxNodeId.longValue() > minNodeId.longValue());
+    }
+    
     public void testGetPrimaryChildAcls() throws Throwable
     {
         List<NodeIdAndAclId> acls = nodeDAO.getPrimaryChildrenAcls(1L);
@@ -148,6 +237,25 @@ public class NodeDAOTest extends TestCase
             Pair<Long, StoreRef> checkStorePair = nodeDAO.getStore(storeRef);
             assertEquals("Store pair did not match. ", storePair, checkStorePair);
         }
+    }
+    
+    public void testCacheNodes() throws Throwable
+    {
+        Long minNodeId = nodeDAO.getMinNodeId();
+        final List<Long> nodeIds = new ArrayList<Long>(10000);
+        for (long i = 0; i < 1000; i++)
+        {
+            nodeIds.add(Long.valueOf(minNodeId.longValue() + i));
+        }
+        RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                nodeDAO.cacheNodesById(nodeIds);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(callback, true);
     }
     
     /**

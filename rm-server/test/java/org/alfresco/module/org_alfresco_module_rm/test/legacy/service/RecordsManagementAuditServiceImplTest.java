@@ -142,6 +142,55 @@ public class RecordsManagementAuditServiceImplTest extends BaseRMTestCase
     }
 
     /**
+     * Test getAuditTrail method to check that deleted items always show in the audit.
+     * 
+     * @see RM-2391 (last addressed isue)
+     */
+    public void testGetAuditTrailForDeletedItem()
+    {
+        // We have only one entry for the event "audit.start":
+        List<RecordsManagementAuditEntry> entries = getAuditTrail(1, ADMIN_USER);
+
+        assertEquals(entries.get(0).getEvent(), "audit.start");
+
+        // Event "audit.view" was generated but will be visible on the next call to getAuditTrail().
+
+        // Make a change:
+        updateTitle(filePlan, ADMIN_USER); // event=Update RM Object
+
+        // Show the audit has been updated; at this point we have three entries for the three events up to now:
+        // "audit.start", "audit.view" and "Update RM Object";
+        entries = getAuditTrail(3, ADMIN_USER);
+
+        assertEquals(entries.get(0).getEvent(), "audit.start");
+        assertEquals(entries.get(1).getEvent(), "audit.view");
+        assertEquals(entries.get(2).getEvent(), "Update RM Object");
+
+        // New "audit.view" event was generated - will be visible on next getAuditTrail().
+
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                nodeService.deleteNode(record);
+                List<RecordsManagementAuditEntry> entries = getAuditTrail(5, ADMIN_USER);
+
+                assertEquals(entries.get(0).getEvent(), "audit.start");
+                assertEquals(entries.get(1).getEvent(), "audit.view");
+                assertEquals(entries.get(2).getEvent(), "Update RM Object");
+                assertEquals(entries.get(3).getEvent(), "audit.view");
+
+                // Show the audit contains a reference to the deleted item:
+                assertEquals(entries.get(4).getEvent(), "Delete RM Object");
+                assertEquals(entries.get(4).getNodeRef(), record);
+
+                return null;
+            }
+        });
+    }
+    
+    /**
      * Test getAuditTrail method and parameter filters.
      */
     public void testGetAuditTrail()

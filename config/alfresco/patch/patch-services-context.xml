@@ -1232,8 +1232,8 @@
         <property name="id"><value>patch.addInviteAddDirectEmailTemplates</value></property>
         <property name="description"><value>patch.addInviteAddDirectEmailTemplates.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>9009</value></property>
-        <property name="targetSchema"><value>9010</value></property>
+        <property name="fixesToSchema"><value>9021</value></property>
+        <property name="targetSchema"><value>9022</value></property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>

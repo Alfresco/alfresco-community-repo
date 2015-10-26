@@ -22,7 +22,6 @@
                 <setInstallerVariable name="alfresco_solr_source_directory" value="${alfresco_distribution_folder.unix}/alf_data/solr"/>
                 <setInstallerVariable name="alfresco_solr4_source_directory" value="${alfresco_distribution_folder.unix}/solr4"/>
                 <setInstallerVariable name="alfresco_keystore_source_directory" value="${alfresco_distribution_folder.unix}/alf_data/keystore"/>
-                <setInstallerVariable name="alfresco_sharepoint_source_file" value="${alfresco_distribution_folder.unix}/amps/alfresco-spp.amp"/>
                 <setInstallerVariable name="alfresco_sharepoint_on_install_settings_directory" value="${build_project_directory.unix}/bitrock/alfrescosharepoint"/>
                 <setInstallerVariable name="alfresco_wcmqs_source_file" value="${wcmqs_folder.unix}/alfresco-wcmqs.amp"/>
                 <setInstallerVariable name="alfresco_wcmqs_share_source_file" value="${wcmqs_folder.unix}/alfresco-wcmqs-share.amp"/>

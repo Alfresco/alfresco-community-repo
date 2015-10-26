@@ -30,6 +30,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.workflow.WorkflowModel;
+import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.cmr.workflow.WorkflowInstanceQuery;
 import org.alfresco.service.cmr.workflow.WorkflowInstanceQuery.DatePosition;
@@ -125,13 +126,6 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         if (workflowDefinitionId == null)
         {
             workflowDefinitionId = req.getParameter(PARAM_DEFINITION_ID);
-            if (workflowDefinitionId == null)
-            {
-                if (req.getParameter(PARAM_DEFINITION_NAME) != null)
-                {
-                    workflowDefinitionId = workflowService.getDefinitionByName(req.getParameter(PARAM_DEFINITION_NAME)).getId();
-                }
-            }
         }
                     
         // default workflow state to ACTIVE if not supplied
@@ -144,19 +138,67 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
         workflowInstanceQuery.setCustomProps(filters);
 
         List<WorkflowInstance> workflows = new ArrayList<WorkflowInstance>();
-
-        if (workflowDefinitionId != null)
-        {
-            workflowInstanceQuery.setWorkflowDefinitionId(workflowDefinitionId);
-        }
-
+        
+        int total = 0;
         // MNT-9074 My Tasks fails to render if tasks quantity is excessive
         int maxItems = getIntParameter(req, PARAM_MAX_ITEMS, DEFAULT_MAX_ITEMS);
         int skipCount = getIntParameter(req, PARAM_SKIP_COUNT, DEFAULT_SKIP_COUNT);
 
-        workflows.addAll(workflowService.getWorkflows(workflowInstanceQuery, maxItems, skipCount));
+        if (workflowDefinitionId == null && req.getParameter(PARAM_DEFINITION_NAME) != null)
+        {
+            /**
+             * If we are searching by workflow definition name then there may be many workflow definition instances.
+             */
+            int workingSkipCount = skipCount;
+            
+            /**
+             * Yes there could be multiple process definitions with that definition name
+             */
+            String definitionName = req.getParameter(PARAM_DEFINITION_NAME);
+  
+            List<WorkflowDefinition> defs = workflowService.getAllDefinitionsByName(definitionName);
+            
+            int itemsToQuery = maxItems;
+            
+            for(WorkflowDefinition def : defs)
+            {
+                workflowDefinitionId = def.getId();
+                workflowInstanceQuery.setWorkflowDefinitionId(workflowDefinitionId);
+                if(maxItems < 0 || itemsToQuery > 0)
+                {               
+                    workflows.addAll(workflowService.getWorkflows(workflowInstanceQuery, itemsToQuery, workingSkipCount));
+                }
+                if(maxItems > 0)
+                {
+                    itemsToQuery = maxItems - workflows.size();
+                }
+                
+                total += (int) workflowService.countWorkflows(workflowInstanceQuery);
+                
+                if(workingSkipCount > 0)
+                {
+                    workingSkipCount = skipCount - total;
+                    
+                    if(workingSkipCount < 0)
+                    {
+                        workingSkipCount = 0;
+                    }
+                }
+            }
+        }
+        else
+        {
+            /**
+             * This is the old single task implementation
+             */
+            if (workflowDefinitionId != null)
+            {
+                workflowInstanceQuery.setWorkflowDefinitionId(workflowDefinitionId);
+            }
+            workflows.addAll(workflowService.getWorkflows(workflowInstanceQuery, maxItems, skipCount));
         
-        int total = (int) workflowService.countWorkflows(workflowInstanceQuery);
+            total = (int) workflowService.countWorkflows(workflowInstanceQuery);
+        }
         
         List<Map<String, Object>> results = new ArrayList<Map<String, Object>>(total);
         
@@ -170,7 +212,7 @@ public class WorkflowInstancesGet extends AbstractWorkflowWebscript
             
             skipCount++;
         }
-
+        
         // create and return results, paginated if necessary
         return createResultModel(req, "workflowInstances", results);
     }

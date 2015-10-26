@@ -921,6 +921,7 @@
         <property name="recordsManagementActionService" ref="RecordsManagementActionService" />
         <property name="filePlanService" ref="FilePlanService" />
         <property name="namespaceService" ref="NamespaceService" />
+        <property name="capabilityService" ref="CapabilityService" />
         <property name="ignoredAuditProperties">
             <list>
                 <value>cm:lastThumbnailModification</value>

@@ -1877,6 +1877,7 @@ public class NodeServiceTest
         assertFalse(nodeService.getAspects(nodeRef8).contains(ContentModel.ASPECT_CASCADE_UPDATE));
         
         Long doubleLinkCRC = (Long)nodeService.getProperty(nodeRef7, ContentModel.PROP_CASCADE_CRC);
+        assertNotNull(doubleLinkCRC);
         
         nodeService.removeChild(nodeRef6, nodeRef7);
         Long singleLinkCRC = (Long)nodeService.getProperty(nodeRef7, ContentModel.PROP_CASCADE_CRC);
@@ -1884,11 +1885,11 @@ public class NodeServiceTest
         
         nodeService.addChild(nodeRef6, nodeRef7, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.getClass().getName()));
         Long doubleLinkCRC2 = (Long)nodeService.getProperty(nodeRef7, ContentModel.PROP_CASCADE_CRC);
-        assertTrue(doubleLinkCRC.equals(doubleLinkCRC2));
+        assertFalse(singleLinkCRC.equals(doubleLinkCRC2));
         
         nodeService.removeChild(nodeRef6, nodeRef7);
         Long singleLinkCRC2 = (Long)nodeService.getProperty(nodeRef7, ContentModel.PROP_CASCADE_CRC);
-        assertTrue(singleLinkCRC2.equals(singleLinkCRC));
+        assertFalse(doubleLinkCRC2.equals(singleLinkCRC2));
         
     }
 }

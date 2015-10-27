@@ -576,6 +576,12 @@ public class PatchServiceImpl implements PatchService
     		        Descriptor serverDescriptor = descriptorService.getServerDescriptor();
     		        String server = (serverDescriptor.getVersion() + " - " + serverDescriptor.getEdition());
 
+    		        if (server.length() > 64)
+    		        {
+    		            logger.error("Server version '" + server + "' is too long for the 'applied_to_server' column therefore patch '" + 
+    		                        patch.getId() + "' will not be registered.");
+    		        }
+    		        
     		        // create or update the record of execution
     		        boolean create = true;
     		        if (appliedPatch == null)

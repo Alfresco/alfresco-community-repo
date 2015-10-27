@@ -429,7 +429,7 @@ public class FileContentStore
 
     /**
      * This implementation requires that the URL start with
-     * {@link FileContentStore#STORE_PROTOCOL }.
+     * {@link FileContentStore#STORE_PROTOCOL } or {@link FileContentStore#SPOOF_PROTOCOL }
      */
     public ContentReader getReader(String contentUrl)
     {

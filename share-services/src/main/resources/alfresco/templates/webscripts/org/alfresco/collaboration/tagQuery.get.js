@@ -50,14 +50,41 @@ function tagQuery()
    //MNT-2118 Share inconsistencies when displaying locked files with tags
    query += " -ASPECT:\"{http://www.alfresco.org/model/content/1.0}workingcopy\"";
    
-   var taggedNodes = search.luceneSearch(query);
-
-   if (taggedNodes.length === 0)
+   if (search.searchSubsystem == "solr4")
    {
-      countMin = 0;
+      // MNT-11511: use facet search
+      var queryDef = {
+         query: query,
+         language: "lucene",
+         page: {
+            // query minimum rows because all usefull info will come with facets 
+            maxItems: 1,
+            skipCount: 0
+         },
+         fieldFacets: [ "TAG" ]
+      };
+      var rs = search.queryResultSet(queryDef);
+      var tagFacets = rs.meta.facets.TAG;
+      
+      for(var i=0; i < tagFacets.size(); i++)
+      {
+         var tagFacet = tagFacets.get(i);
+         tag =
+         {
+            name: tagFacet.facetValue,
+            count: tagFacet.hits,
+            toString: function()
+            {
+               return this.name;
+            }
+         };
+         tags.push(tag);
+      }
    }
    else
-   {   
+   {
+      var taggedNodes = search.luceneSearch(query);
+      
       /* Build a hashtable of tags and tag count */
       var tagHash = {},
          count, taggedNode, tag, key;
@@ -95,7 +122,14 @@ function tagQuery()
          };
          tags.push(tag);
       }
-   
+   }
+
+   if (tags.length === 0)
+   {
+      countMin = 0;
+   }
+   else
+   {
       /* Sort the results by count (descending) */
       tags.sort(sortByCountDesc);
    

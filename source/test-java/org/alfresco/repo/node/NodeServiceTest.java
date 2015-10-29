@@ -1783,9 +1783,9 @@ public class NodeServiceTest
         assertEquals(0, nodesParentFirst.get(1).sourceAssocs.size());
     }
     
-    @Test public void testCascadeUpdate()
-    {   
-        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+    @Test
+    public void testCascadeUpdate()
+    {
         NodeRef nodeRef1 = nodeService.createNode(
                 rootNodeRef,
                 ContentModel.ASSOC_CHILDREN,
@@ -1793,8 +1793,6 @@ public class NodeServiceTest
                 ContentModel.TYPE_CONTAINER).getChildRef();
         
         assertFalse(nodeService.getAspects(nodeRef1).contains(ContentModel.ASPECT_CASCADE_UPDATE));
-        
-        
 
         Map<QName, Serializable> aspectProps = new HashMap<QName, Serializable>();
         ArrayList<NodeRef> cats = new   ArrayList<NodeRef>();
@@ -1803,7 +1801,6 @@ public class NodeServiceTest
         nodeService.addAspect(nodeRef1, ContentModel.ASPECT_GEN_CLASSIFIABLE, aspectProps);
         assertTrue(nodeService.getAspects(nodeRef1).contains(ContentModel.ASPECT_GEN_CLASSIFIABLE));
         assertFalse(nodeService.getAspects(nodeRef1).contains(ContentModel.ASPECT_CASCADE_UPDATE));
-      
         
         NodeRef nodeRef2 = nodeService.createNode(
                 rootNodeRef,
@@ -1828,7 +1825,6 @@ public class NodeServiceTest
         assertFalse(nodeService.getAspects(nodeRef4).contains(ContentModel.ASPECT_CASCADE_UPDATE));
         
         nodeService.moveNode(nodeRef4, nodeRef3, ContentModel.ASSOC_CHILDREN, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, this.getClass().getName()));
-        
         
         assertFalse(nodeService.getAspects(nodeRef2).contains(ContentModel.ASPECT_CASCADE_UPDATE));
         assertFalse(nodeService.getAspects(nodeRef3).contains(ContentModel.ASPECT_CASCADE_UPDATE));
@@ -1869,7 +1865,6 @@ public class NodeServiceTest
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "8"),
                 ContentModel.TYPE_CONTAINER).getChildRef();
         
-        
         assertFalse(nodeService.getAspects(nodeRef5).contains(ContentModel.ASPECT_CASCADE_UPDATE));
         assertFalse(nodeService.getAspects(nodeRef6).contains(ContentModel.ASPECT_CASCADE_UPDATE));
         assertFalse(nodeService.getAspects(nodeRef7).contains(ContentModel.ASPECT_CASCADE_UPDATE));
@@ -1895,5 +1890,5 @@ public class NodeServiceTest
         Long singleLinkCRC2 = (Long)nodeService.getProperty(nodeRef7, ContentModel.PROP_CASCADE_CRC);
         assertTrue(singleLinkCRC2.equals(singleLinkCRC));
         
-;    }
+    }
 }

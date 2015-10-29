@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyLong;
 import static org.mockito.Matchers.anyString;
@@ -40,6 +41,7 @@ import org.alfresco.repo.content.ContentContext;
 import org.alfresco.repo.content.ContentStore;
 import org.alfresco.repo.content.caching.quota.QuotaManagerStrategy;
 import org.alfresco.repo.content.caching.quota.UnlimitedQuotaStrategy;
+import org.alfresco.repo.content.filestore.SpoofedTextContentReader;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentStreamListener;
@@ -369,6 +371,41 @@ public class CachingContentStoreTest
         verify(bsWriter).setEncoding("UTF-8");
         verify(bsWriter).setLocale(Locale.UK);
         verify(bsWriter).setMimetype("not/real/mimetype");
+    }
+    
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    // Tests for spoofed content follow...
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    @Test
+    public void spoofedGetReader()
+    {
+        cachingStore = new CachingContentStore(backingStore, cache, true);
+        String url = SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 0L, 1024L);
+        ContentReader reader = cachingStore.getReader(url);
+        assertTrue(reader.exists());
+        assertEquals(1024, reader.getSize());
+        verify(backingStore, never()).getReader(anyString());
+    }
+    
+    @Test
+    public void spoofedDelete()
+    {
+        cachingStore = new CachingContentStore(backingStore, cache, true);
+        String url = SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 0L, 1024L);
+        boolean deleted = cachingStore.delete(url);
+        assertFalse(deleted);
+        verify(backingStore, never()).delete(anyString());
+    }
+    
+    @Test
+    public void spoofedExists()
+    {
+        cachingStore = new CachingContentStore(backingStore, cache, true);
+        String url = SpoofedTextContentReader.createContentUrl(Locale.ENGLISH, 0L, 1024L);
+        boolean exists = cachingStore.exists(url);
+        assertTrue(exists);
+        verify(backingStore, never()).exists(anyString());
     }
     
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

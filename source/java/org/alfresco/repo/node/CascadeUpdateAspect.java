@@ -18,39 +18,28 @@
  */
 package org.alfresco.repo.node;
 
-import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Map;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnDeleteChildAssociationPolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy;
-import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.Behaviour;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.solr.SOLRTrackingComponent;
-import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
-import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeRef.Status;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.EqualsHelper;
 
 /**
  * @author Andy
- *
+ * @since 5.1
  */
 public class CascadeUpdateAspect implements OnCreateChildAssociationPolicy, OnDeleteChildAssociationPolicy, OnMoveNodePolicy
 {
     private PolicyComponent policyComponent;
     private NodeService nodeService;
     private SOLRTrackingComponent solrTrackingComponent;
-    private DictionaryService dictionaryService;
 
   
     public void setPolicyComponent(PolicyComponent policyComponent)
@@ -66,11 +55,6 @@ public class CascadeUpdateAspect implements OnCreateChildAssociationPolicy, OnDe
     public void setSolrTrackingComponent(SOLRTrackingComponent solrTrackingComponent)
     {
         this.solrTrackingComponent = solrTrackingComponent;
-    }
-
-    public void setDictionaryService(DictionaryService dictionaryService)
-    {
-        this.dictionaryService = dictionaryService;
     }
 
     /**
@@ -96,9 +80,6 @@ public class CascadeUpdateAspect implements OnCreateChildAssociationPolicy, OnDe
                 new JavaBehaviour(this, "onMoveNode", Behaviour.NotificationFrequency.EVERY_EVENT));
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnMoveNodePolicy#onMoveNode(org.alfresco.service.cmr.repository.ChildAssociationRef, org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
     @Override
     public void onMoveNode(ChildAssociationRef oldChildAssocRef, ChildAssociationRef newChildAssocRef)
     {
@@ -106,18 +87,12 @@ public class CascadeUpdateAspect implements OnCreateChildAssociationPolicy, OnDe
         markCascadeUpdate(newChildAssocRef.getChildRef());
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnDeleteChildAssociationPolicy#onDeleteChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef)
-     */
     @Override
     public void onDeleteChildAssociation(ChildAssociationRef childAssocRef)
     {
         markCascadeUpdate(childAssocRef.getChildRef());
     }
 
-    /* (non-Javadoc)
-     * @see org.alfresco.repo.node.NodeServicePolicies.OnCreateChildAssociationPolicy#onCreateChildAssociation(org.alfresco.service.cmr.repository.ChildAssociationRef, boolean)
-     */
     @Override
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean isNewNode)
     {
@@ -127,36 +102,10 @@ public class CascadeUpdateAspect implements OnCreateChildAssociationPolicy, OnDe
         }
     }
     
-    
     private void markCascadeUpdate(NodeRef nodeRef)
     {
         Status status = nodeService.getNodeStatus(nodeRef);
         nodeService.setProperty(status.getNodeRef(), ContentModel.PROP_CASCADE_CRC, solrTrackingComponent.getCRC(status.getDbId()));
         nodeService.setProperty(status.getNodeRef(), ContentModel.PROP_CASCADE_TX, status.getDbTxnId());   
     }
-//    /* (non-Javadoc)
-//     * @see org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy#onUpdateProperties(org.alfresco.service.cmr.repository.NodeRef, java.util.Map, java.util.Map)
-//     */
-//    @Override
-//    public void onUpdateProperties(NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
-//    {
-//        HashSet<QName> combinedPropertyNames = new HashSet<QName>(before.size() + 10);
-//        combinedPropertyNames.addAll(before.keySet());
-//        combinedPropertyNames.addAll(after.keySet());
-//        for(QName propertyQName : combinedPropertyNames)
-//        {
-//            PropertyDefinition propDef = dictionaryService.getProperty(propertyQName);
-//            if((propDef != null) && (propDef.getDataType().getName().equals(DataTypeDefinition.CATEGORY)))
-//            {
-//                Serializable beforeValue = before.get(propDef.getName());
-//                Serializable afterValue = after.get(propDef.getName());
-//                if(false == EqualsHelper.nullSafeEquals(beforeValue, afterValue))
-//                {
-//                    markCascadeUpdate(nodeRef);
-//                }
-//            }
-//                    
-//        }
-//        
-//    }
 }

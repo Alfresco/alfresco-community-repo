@@ -29,6 +29,8 @@ import org.alfresco.repo.admin.patch.AbstractPatch;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -106,6 +108,7 @@ public class AddUnmovableAspectToSitesPatch extends AbstractPatch
                 logger,
                 1000);
 
+        final String authenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
         BatchProcessor.BatchProcessWorker<ChildAssociationRef> worker = new BatchProcessor.BatchProcessWorker<ChildAssociationRef>()
         {
             public void afterProcess() throws Throwable
@@ -121,17 +124,30 @@ public class AddUnmovableAspectToSitesPatch extends AbstractPatch
                 return entry.toString();
             }
 
-            public void process(ChildAssociationRef child) throws Throwable
+            public void process(final ChildAssociationRef child) throws Throwable
             {
-                try
+                /*
+                 * Fix for MNT-15064.
+                 * Run as authenticated user to make sure the nodes are searched in the correct space store.
+                 */
+                RunAsWork<Void> work = new RunAsWork<Void>()
                 {
-                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
-                    nodeService.addAspect(child.getChildRef(), ContentModel.ASPECT_UNMOVABLE, null);
-                }
-                finally
-                {
-                    behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
-                }
+                    @Override
+                    public Void doWork() throws Exception
+                    {
+                        try
+                        {
+                            behaviourFilter.disableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                            nodeService.addAspect(child.getChildRef(), ContentModel.ASPECT_UNMOVABLE, null);
+                        }
+                        finally
+                        {
+                            behaviourFilter.enableBehaviour(ContentModel.ASPECT_AUDITABLE);
+                        }
+                        return null;
+                    }
+                };
+                AuthenticationUtil.runAs(work, authenticatedUser);
             }
         };
 

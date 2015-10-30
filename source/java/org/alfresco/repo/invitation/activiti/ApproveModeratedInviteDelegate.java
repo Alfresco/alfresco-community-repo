@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,12 +18,14 @@
  */
 package org.alfresco.repo.invitation.activiti;
 
+import java.util.Map;
+
 import org.activiti.engine.delegate.DelegateExecution;
+import org.alfresco.repo.invitation.WorkflowModelModeratedInvitation;
 
 /**
- * Activiti delegate that is executed when a invitation-moderated process is reviewed 
- * and approved.
- *
+ * Activiti delegate that is executed when a invitation-moderated process is reviewed and approved.
+ * 
  * @author Nick Smith
  * @author Frederik Heremans
  * @since 4.0
@@ -33,6 +35,12 @@ public class ApproveModeratedInviteDelegate extends AbstractInvitationDelegate
     @Override
     public void execute(DelegateExecution execution) throws Exception
     {
-        inviteHelper.approveModeratedInvitation(execution.getVariables());
+        Map<String, Object> variables = execution.getVariables();
+        String siteName = (String) variables.get(WorkflowModelModeratedInvitation.wfVarResourceName);
+        String invitee = (String) variables.get(WorkflowModelModeratedInvitation.wfVarInviteeUserName);
+        String role = (String) variables.get(WorkflowModelModeratedInvitation.wfVarInviteeRole);
+        String reviewer = (String) variables.get(WorkflowModelModeratedInvitation.wfVarReviewer);
+
+        invitationService.approveModeratedInvitation(siteName, invitee, role, reviewer);
     }
 }

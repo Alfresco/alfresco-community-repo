@@ -19,9 +19,20 @@
 
 package org.alfresco.repo.invitation;
 
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarAcceptUrl;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteTicket;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteeGenPassword;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteeUserName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviterUserName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarRejectUrl;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarResourceName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarRole;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarServerPath;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -31,7 +42,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.admin.SysAdminParams;
+import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.invitation.activiti.SendNominatedInviteDelegate;
+import org.alfresco.repo.invitation.site.InviteSender;
+import org.alfresco.repo.jscript.ScriptNode;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
@@ -47,6 +64,7 @@ import org.alfresco.repo.workflow.CancelWorkflowActionExecuter;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.jbpm.JBPMEngine;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -63,6 +81,7 @@ import org.alfresco.service.cmr.invitation.ModeratedInvitation;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -98,7 +117,21 @@ import org.springframework.extensions.surf.util.I18NUtil;
 public class InvitationServiceImpl implements InvitationService, NodeServicePolicies.BeforeDeleteNodePolicy
 {
     private static final Log logger = LogFactory.getLog(InvitationServiceImpl.class);
-
+    private static final String REJECT_TEMPLATE = "/alfresco/bootstrap/invite/moderated-reject-email.ftl";
+    private static final String MSG_NOT_SITE_MANAGER = "invitation.cancel.not_site_manager";
+    private static final Collection<String> sendInvitePropertyNames = Arrays.asList(wfVarInviteeUserName,//
+            wfVarResourceName,//
+            wfVarInviterUserName,//
+            wfVarInviteeUserName,//
+            wfVarRole,//
+            wfVarInviteeGenPassword,//
+            wfVarResourceName,//
+            wfVarInviteTicket,//
+            wfVarServerPath,//
+            wfVarAcceptUrl,//
+            wfVarRejectUrl,
+            InviteSender.WF_INSTANCE_ID);
+    
     /**
      * Services
      */
@@ -117,6 +150,11 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private PasswordGenerator passwordGenerator;
     private PolicyComponent policyComponent;
     private SysAdminParams sysAdminParams;
+    private TemplateService templateService;
+    private Repository repositoryHelper;
+    private ServiceRegistry serviceRegistry;
+    private MessageService messageService;
+    private InviteSender inviteSender;
 
     // maximum number of tries to generate a invitee user name which
     // does not already belong to an existing person
@@ -196,7 +234,10 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         PropertyCheck.mandatory(this, "UserNameGenerator", usernameGenerator);
         PropertyCheck.mandatory(this, "PasswordGenerator", passwordGenerator);
         PropertyCheck.mandatory(this, "PolicyComponent", policyComponent);
-
+        PropertyCheck.mandatory(this, "templateService", templateService);
+        
+        this.inviteSender = new InviteSender(serviceRegistry, repositoryHelper, messageService);
+        
         //
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
                     SiteModel.TYPE_SITE, new JavaBehaviour(this, "beforeDeleteNode"));
@@ -1762,5 +1803,222 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     public void setSysAdminParams(SysAdminParams sysAdminParams)
     {
         this.sysAdminParams = sysAdminParams;
+    }
+    
+    public void setTemplateService(TemplateService templateService)
+    {
+       this.templateService = templateService;
+    }
+
+    /**
+     * @param messageService the messageService to set
+     */
+    public void setMessageService(MessageService messageService)
+    {
+        this.messageService = messageService;
+    }
+    
+    /**
+     * @param repositoryHelper the repositoryHelper to set
+     */
+    public void setRepositoryHelper(Repository repositoryHelper)
+    {
+        this.repositoryHelper = repositoryHelper;
+    }
+    
+    /**
+     * @param serviceRegistry the serviceRegistry to set
+     */
+    public void setServiceRegistry(ServiceRegistry serviceRegistry)
+    {
+        this.serviceRegistry = serviceRegistry;
+    }
+    
+    @Override
+    public void acceptNominatedInvitation(String siteName, final String invitee, String role, String inviter)
+    {
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                if (authenticationService.isAuthenticationMutable(invitee))
+                {
+                    authenticationService.setAuthenticationEnabled(invitee, true);
+                }
+                return null;
+            }
+        });
+        addSiteMembership(invitee, siteName, role, inviter, false);
+    }
+    
+    @Override
+    public void approveModeratedInvitation(String siteName, String invitee, String role, String reviewer)
+    {
+        addSiteMembership(invitee, siteName, role, reviewer, false);
+    }
+	
+    /**
+     * Add Invitee to Site with the site role that the inviter "started" the invite process with
+     * @param invitee
+     * @param siteName
+     * @param role
+     * @param runAsUser
+     * @param siteService
+     * @param overrideExisting
+     */
+    public void addSiteMembership(final String invitee, final String siteName, final String role, final String runAsUser, final boolean overrideExisting)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                if (overrideExisting || !siteService.isMember(siteName, invitee))
+                {
+                    siteService.setMembership(siteName, invitee, role);
+                }
+                return null;
+            }
+            
+        }, runAsUser);
+    }
+
+    @Override
+    public void rejectModeratedInvitation(String siteName, String invitee, String role, String reviewer, String resourceType, String reviewComments)
+    {
+        // Do nothing if emails disabled.
+        if (isSendEmails() == false)
+        {
+            return;
+        }
+
+        // send email to the invitee if possible - but don't fail the rejection if email cannot be sent
+        try
+        {
+            // Build our model
+            Map<String, Serializable> model = new HashMap<String, Serializable>(8, 1.0f);
+            model.put("resourceName", siteName);
+            model.put("resourceType", resourceType);
+            model.put("inviteeRole", role);
+            model.put("reviewComments", reviewComments);
+            model.put("reviewer", reviewer);
+            model.put("inviteeUserName", invitee);
+
+            // Process the template
+            // Note - because we use a classpath template, rather than a Data Dictionary
+            // one, we can't have the MailActionExecutor do the template for us
+            String emailMsg = templateService.processTemplate("freemarker", REJECT_TEMPLATE, model);
+
+            // Send
+            Action emailAction = actionService.createAction("mail");
+            emailAction.setParameterValue(MailActionExecuter.PARAM_TO, nodeService.getProperty(personService.getPerson(invitee), ContentModel.PROP_EMAIL));
+            emailAction.setParameterValue(MailActionExecuter.PARAM_FROM, nodeService.getProperty(personService.getPerson(reviewer), ContentModel.PROP_EMAIL));
+            // TODO Localize this.
+            emailAction.setParameterValue(MailActionExecuter.PARAM_SUBJECT, "Rejected invitation to web site:" + siteName);
+            emailAction.setParameterValue(MailActionExecuter.PARAM_TEXT, emailMsg);
+            emailAction.setExecuteAsynchronously(true);
+            actionService.executeAction(emailAction, null);
+        }
+        catch (Exception e)
+        {
+            // Swallow exception
+            logger.error("unable to send reject email", e);
+        }
+    }
+
+    @Override
+    public void deleteAuthenticationIfUnused(final String invitee, final String currentInviteId)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                // see if there are any pending invites (invite workflow instances with invitePending task in-progress)
+                // outstanding for given invitee user name
+                List<Invitation> pendingInvites = listPendingInvitationsForInvitee(invitee);
+                boolean invitesPending = CollectionUtils.isEmpty(pendingInvites)==false;
+                if (invitesPending && pendingInvites.size() == 1)
+                {
+                    Invitation pendingInvite = pendingInvites.get(0);
+                    if (pendingInvite.getInviteId().equals(currentInviteId))
+                    {
+                        invitesPending = false;
+                    }
+                }
+                
+                NodeRef person = personService.getPersonOrNull(invitee);
+                
+                // if invitee's user account is still disabled and there are no pending invites outstanding
+                // for the invitee, then remove the account and delete the invitee's person node
+                if (person != null
+                        && (authenticationService.isAuthenticationMutable(invitee))
+                        && (authenticationService.getAuthenticationEnabled(invitee) == false)
+                        && (invitesPending == false)
+                        && nodeService.hasAspect(person, ContentModel.ASPECT_ANULLABLE))
+                {
+                    // delete the invitee's user account
+                    authenticationService.deleteAuthentication(invitee);
+                    
+                    // delete the invitee's person node if one exists
+                    if (personService.personExists(invitee))
+                    {
+                        personService.deletePerson(invitee);
+                    }
+                }
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+    
+    @Override
+    public void sendNominatedInvitation(String inviteId, Map<String, Object> executionVariables)
+    {
+        sendNominatedInvitation(
+                inviteId, SendNominatedInviteDelegate.EMAIL_TEMPLATE_XPATH, SendNominatedInviteDelegate.EMAIL_SUBJECT_KEY, executionVariables);
+    }
+    
+    @Override
+    public void sendNominatedInvitation(String inviteId, String emailTemplateXpath, 
+            String emailSubjectKey, Map<String, Object> executionVariables)
+    {
+        if (isSendEmails())
+        {
+            Map<String, String> properties = makePropertiesFromContextVariables(executionVariables, sendInvitePropertyNames);
+
+            String packageName = WorkflowModel.ASSOC_PACKAGE.toPrefixString(namespaceService).replace(":", "_");
+            ScriptNode packageNode = (ScriptNode) executionVariables.get(packageName);
+            String packageRef = packageNode.getNodeRef().toString();
+            properties.put(InviteSender.WF_PACKAGE, packageRef);
+            
+            properties.put(InviteSender.WF_INSTANCE_ID, inviteId);
+            
+            inviteSender.sendMail(emailTemplateXpath, emailSubjectKey, properties);
+        }
+	}
+    
+    @Override
+    public void cancelInvitation(String siteName, String invitee, String inviteId, String currentInviteId)
+    {
+        if (!AuthenticationUtil.isRunAsUserTheSystemUser())
+        {
+            String currentUserName = authenticationService.getCurrentUserName();
+            String currentUserSiteRole = siteService.getMembersRole(siteName, currentUserName);
+            if (SiteModel.SITE_MANAGER.equals(currentUserSiteRole)== false)
+            {
+                // The current user is not the site manager
+                Object[] args = {currentUserName, inviteId, siteName};
+                throw new InvitationExceptionForbidden(MSG_NOT_SITE_MANAGER, args);
+            }
+        }
+        
+        // Clean up invitee's user account and person node if they are not in use i.e.
+        // account is still disabled and there are no pending invites outstanding for the
+        // invitee
+        deleteAuthenticationIfUnused(invitee, currentInviteId);
+    }
+    
+    @SuppressWarnings("unchecked")
+    private Map<String, String> makePropertiesFromContextVariables(Map<?, ?> executionVariables, Collection<String> propertyNames)
+    {
+        return CollectionUtils.filterKeys((Map<String, String>) executionVariables, CollectionUtils.containsFilter(propertyNames));
     }
 }

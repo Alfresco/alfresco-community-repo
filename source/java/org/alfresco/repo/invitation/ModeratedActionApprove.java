@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,6 +35,11 @@ public class ModeratedActionApprove extends AbstractInvitationAction
     public void execute(ExecutionContext executionContext) throws Exception
     {
         Map<String, Object> variables = executionContext.getContextInstance().getVariables();
-        inviteHelper.approveModeratedInvitation(variables);
+        String siteName = (String) variables.get(WorkflowModelModeratedInvitation.wfVarResourceName);
+        String invitee = (String) variables.get(WorkflowModelModeratedInvitation.wfVarInviteeUserName);
+        String role = (String) variables.get(WorkflowModelModeratedInvitation.wfVarInviteeRole);
+        String reviewer = (String) variables.get(WorkflowModelModeratedInvitation.wfVarReviewer);
+
+        invitationService.approveModeratedInvitation(siteName, invitee, role, reviewer);
     }
 }

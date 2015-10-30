@@ -44,6 +44,6 @@ public class SendNominatedInviteAddDirectDelegate extends AbstractInvitationDele
     {
         String invitationId = ActivitiConstants.ENGINE_ID + "$" + execution.getProcessInstanceId();
         Map<String, Object> variables = execution.getVariables();
-        inviteHelper.sendNominatedInvitation(invitationId, EMAIL_TEMPLATE_XPATH, EMAIL_SUBJECT_KEY, variables);
+        invitationService.sendNominatedInvitation(invitationId, EMAIL_TEMPLATE_XPATH, EMAIL_SUBJECT_KEY, variables);
     }
 }

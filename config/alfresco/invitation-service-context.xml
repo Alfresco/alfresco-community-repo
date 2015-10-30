@@ -24,6 +24,10 @@
         <property name="nominatedInvitationWorkflowId" value="${site.invite.nominated.workflowId}"/>
         <property name="nominatedInvitationExternalWorkflowId" value="${site.invite.nominatedExternal.workflowId}"/>
         <property name="moderatedInvitationWorkflowId" value="${site.invite.moderated.workflowId}"/>
+        <property name="templateService" ref="templateService"/>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="repositoryHelper" ref="repositoryHelper"/>
+        <property name="messageService" ref="messageService"/>
      </bean>
      
     <!-- Site service security bean -->
@@ -78,16 +82,10 @@
         <property name="siteService" ref="SiteService"/>
     </bean>
    
-   <bean id="InviteHelper" class="org.alfresco.repo.invitation.InviteHelper">
-        <property name="serviceRegistry" ref="ServiceRegistry"/>
-        <property name="repositoryHelper" ref="repositoryHelper"/>
-        <property name="messageService" ref="messageService"/>
-    </bean>
-    
     <!--  Activiti Workflow Delegate beans -->
     <bean id="baseInvitationDelegate" parent="baseJavaDelegate"
             class="org.alfresco.repo.invitation.activiti.AbstractInvitationDelegate" abstract="true">
-        <property name="inviteHelper" ref="InviteHelper" />
+        <property name="invitationService" ref="InvitationService" />
     </bean>
     
     <bean id="AcceptNominatedInviteDelegate" parent="baseInvitationDelegate" 

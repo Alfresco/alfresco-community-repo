@@ -41,6 +41,6 @@ public class SendInviteAction extends AbstractInvitationAction
         long processId = contextInstance.getProcessInstance().getId();
         String inviteId = JBPMEngine.ENGINE_ID + "$" + processId;
         Map<String, Object> executionVariables = contextInstance.getVariables();
-        inviteHelper.sendNominatedInvitation(inviteId, EMAIL_TEMPLATE_XPATH, EMAIL_SUBJECT_KEY, executionVariables);
+        invitationService.sendNominatedInvitation(inviteId, EMAIL_TEMPLATE_XPATH, EMAIL_SUBJECT_KEY, executionVariables);
     }
 }

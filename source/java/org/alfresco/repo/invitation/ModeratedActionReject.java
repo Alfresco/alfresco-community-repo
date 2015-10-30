@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,7 +36,7 @@ import org.jbpm.graph.exe.ExecutionContext;
 public class ModeratedActionReject extends AbstractInvitationAction
 {
     private static final long serialVersionUID = 4377660284993206875L;
-    
+
     /**
      * {@inheritDoc}
      */
@@ -44,6 +44,13 @@ public class ModeratedActionReject extends AbstractInvitationAction
     public void execute(final ExecutionContext executionContext) throws Exception
     {
         Map<String, Object> vars = executionContext.getContextInstance().getVariables();
-        inviteHelper.rejectModeratedInvitation(vars);
+        String siteName = (String) vars.get(WorkflowModelModeratedInvitation.wfVarResourceName);
+        String invitee = (String) vars.get(WorkflowModelModeratedInvitation.wfVarInviteeUserName);
+        String role = (String) vars.get(WorkflowModelModeratedInvitation.wfVarInviteeRole);
+        String reviewer = (String) vars.get(WorkflowModelModeratedInvitation.wfVarReviewer);
+        String resourceType = (String) vars.get(WorkflowModelModeratedInvitation.wfVarResourceType);
+        String reviewComments = (String) vars.get(WorkflowModelModeratedInvitation.wfVarReviewComments);
+
+        invitationService.rejectModeratedInvitation(siteName, invitee, role, reviewer, resourceType, reviewComments);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,8 +19,8 @@
 
 package org.alfresco.repo.invitation.activiti;
 
-import org.alfresco.repo.invitation.InviteHelper;
 import org.alfresco.repo.workflow.activiti.BaseJavaDelegate;
+import org.alfresco.service.cmr.invitation.InvitationService;
 
 /**
  * @author Nick Smith
@@ -29,13 +29,13 @@ import org.alfresco.repo.workflow.activiti.BaseJavaDelegate;
  */
 public abstract class AbstractInvitationDelegate extends BaseJavaDelegate
 {
-    protected InviteHelper inviteHelper;
+    protected InvitationService invitationService;
     
     /**
-     * @param inviteHelper the inviteHelper to set
+     * @param invitationService the invitationService to set
      */
-    public void setInviteHelper(InviteHelper inviteHelper)
+    public void setInvitationService(InvitationService invitationService)
     {
-        this.inviteHelper = inviteHelper;
+        this.invitationService = invitationService;
     }
 }

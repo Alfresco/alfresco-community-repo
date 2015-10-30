@@ -39,8 +39,9 @@ public class RejectInviteAction extends AbstractInvitationAction
     public void execute(final ExecutionContext executionContext) throws Exception
     {
         // get the invitee user name
-        String inviteeUserName = (String) executionContext.getVariable(WorkflowModelNominatedInvitation.wfVarInviteeUserName);
+        String invitee = (String) executionContext.getVariable(WorkflowModelNominatedInvitation.wfVarInviteeUserName);
         String invitationId = JBPMEngine.ENGINE_ID + "$" + executionContext.getContextInstance().getProcessInstance().getId();
-        inviteHelper.deleteAuthenticationIfUnused(inviteeUserName, invitationId);
+        
+        invitationService.deleteAuthenticationIfUnused(invitee, invitationId);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -17,6 +17,10 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 package org.alfresco.repo.invitation.site;
+
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarInviteeUserName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarResourceName;
+import static org.alfresco.repo.invitation.WorkflowModelNominatedInvitation.wfVarWorkflowInstanceId;
 
 import java.util.Map;
 
@@ -41,7 +45,13 @@ public class CancelInviteAction extends AbstractInvitationAction
     public void execute(ExecutionContext executionContext) throws Exception
     {
         Map<String, Object> executionVariables = executionContext.getContextInstance().getVariables();
-        String invitationId = JBPMEngine.ENGINE_ID + "$" + executionContext.getContextInstance().getProcessInstance().getId();
-        inviteHelper.cancelInvitation(executionVariables, invitationId);
+        String currentInviteId = JBPMEngine.ENGINE_ID + "$" + executionContext.getContextInstance().getProcessInstance().getId();
+
+        // Get the invitee user name and site short name variables off the execution context
+        String invitee = (String) executionVariables.get(wfVarInviteeUserName);
+        String siteName = (String) executionVariables.get(wfVarResourceName);
+        String inviteId = (String) executionVariables.get(wfVarWorkflowInstanceId);
+
+        invitationService.cancelInvitation(siteName, invitee, inviteId, currentInviteId);
     }
 }

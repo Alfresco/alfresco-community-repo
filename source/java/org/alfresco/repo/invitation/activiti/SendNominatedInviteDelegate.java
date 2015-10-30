@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,9 +24,8 @@ import org.activiti.engine.delegate.DelegateExecution;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 
 /**
- * Activiti delegate that is executed when a invitation request has
- * been sent.
- *
+ * Activiti delegate that is executed when a invitation request has been sent.
+ * 
  * @author Nick Smith
  * @author Frederik Heremans
  * @since 4.0
@@ -43,6 +42,6 @@ public class SendNominatedInviteDelegate extends AbstractInvitationDelegate
     {
         String invitationId = ActivitiConstants.ENGINE_ID + "$" + execution.getProcessInstanceId();
         Map<String, Object> variables = execution.getVariables();
-        inviteHelper.sendNominatedInvitation(invitationId, EMAIL_TEMPLATE_XPATH, EMAIL_SUBJECT_KEY, variables);
+        invitationService.sendNominatedInvitation(invitationId, EMAIL_TEMPLATE_XPATH, EMAIL_SUBJECT_KEY, variables);
     }
 }

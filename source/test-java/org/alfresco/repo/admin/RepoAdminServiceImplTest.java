@@ -33,6 +33,7 @@ import junit.framework.TestCase;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.NamespaceDAO;
 import org.alfresco.repo.node.db.DbNodeServiceImpl;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -78,6 +79,7 @@ public class RepoAdminServiceImplTest extends TestCase
     private SearchService searchService;
     private NamespaceService namespaceService;
     private BehaviourFilter behaviourFilter;
+    private DictionaryDAO dictionaryDAO;
     
     final String modelPrefix = "model-";
     final static String MKR = "{MKR}";
@@ -129,6 +131,7 @@ public class RepoAdminServiceImplTest extends TestCase
         searchService = (SearchService) ctx.getBean("SearchService");
         namespaceService = (NamespaceService) ctx.getBean("NamespaceService");
         behaviourFilter = (BehaviourFilter)ctx.getBean("policyBehaviourFilter");
+        dictionaryDAO = (DictionaryDAO) ctx.getBean("dictionaryDAO");
         
         DbNodeServiceImpl dbNodeService = (DbNodeServiceImpl)ctx.getBean("dbNodeService");
         dbNodeService.setEnableTimestampPropagation(false);
@@ -615,26 +618,23 @@ public class RepoAdminServiceImplTest extends TestCase
             
             
             transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+            {
+                public Object execute() throws Exception
+                {
+                    // try to delete the model
+                    try
                     {
-                        public Object execute() throws Exception
-                        {
-                            // try to delete the model
-                            try
-                            {
-                            	behaviourFilter.disableBehaviour(model1, ContentModel.TYPE_DICTIONARY_MODEL);
-                                nodeService.deleteNode(model1);
-                                behaviourFilter.enableBehaviour(model1, ContentModel.TYPE_DICTIONARY_MODEL);
-                            } 
-                            catch (AlfrescoRuntimeException are)
-                            {
-                                // expected
-                                assertTrue(
-                                        "Incorrect exception message: " + are.getMessage(),
-                                        are.getMessage().contains("Failed to validate model delete"));
-                            }
-                            return null;
-                        };
-                    });
+                        behaviourFilter.disableBehaviour(ContentModel.TYPE_DICTIONARY_MODEL);
+                        nodeService.deleteNode(model1);
+                        dictionaryDAO.destroy();
+                    } 
+                    finally
+                    {
+                        behaviourFilter.enableBehaviour(ContentModel.TYPE_DICTIONARY_MODEL);
+                    }
+                    return null;
+                };
+            });
             
             assertFalse(nodeService.exists(model1));
             

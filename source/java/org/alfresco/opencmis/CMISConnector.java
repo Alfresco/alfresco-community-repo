@@ -4094,7 +4094,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     {
         ArrayList<PermissionDefinition> result = new ArrayList<PermissionDefinition>();
 
-        Set<PermissionReference> all = permissionModelDao.getAllExposedPermissions();
+        Set<PermissionReference> all = permissionModelDao.getAllPermissions();
         for (PermissionReference pr : all)
         {
             result.add(createPermissionDefinition(pr));

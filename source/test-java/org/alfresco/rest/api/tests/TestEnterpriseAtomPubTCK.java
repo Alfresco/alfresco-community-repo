@@ -26,6 +26,9 @@ import java.util.Map;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.OpenCMISClientContext;
+import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
+import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
+import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Aspect;
 import org.alfresco.repo.dictionary.M2Model;
@@ -50,9 +53,6 @@ import org.apache.chemistry.opencmis.tck.tests.control.ControlTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.crud.CRUDTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.filing.FilingTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.query.ContentChangesSmokeTest;
-import org.apache.chemistry.opencmis.tck.tests.query.QueryForObject;
-import org.apache.chemistry.opencmis.tck.tests.query.QueryInFolderTest;
-import org.apache.chemistry.opencmis.tck.tests.query.QueryLikeTest;
 import org.apache.chemistry.opencmis.tck.tests.query.QuerySmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.types.TypesTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.versioning.CheckedOutTest;
@@ -203,9 +203,9 @@ public class TestEnterpriseAtomPubTCK extends AbstractEnterpriseOpenCMIS10TCKTes
             addTest(new QuerySmokeTest());
             // The test fails on Lucene see MNT-11223
             // addTest(new QueryRootFolderTest());
-            addTest(new QueryForObject());
-            addTest(new QueryLikeTest());
-            addTest(new QueryInFolderTest());
+            addTest(new QueryForObjectCustom());
+            addTest(new QueryLikeTestCustom());
+            addTest(new QueryInFolderTestCustom());
             addTest(new ContentChangesSmokeTest());
         }
     }

@@ -2,6 +2,9 @@ package org.alfresco.rest.api.tests;
 
 import java.util.Map;
 
+import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
+import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
+import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
 import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
 import org.apache.chemistry.opencmis.tck.impl.JUnitHelper;
 import org.apache.chemistry.opencmis.tck.tests.basics.BasicsTestGroup;
@@ -23,9 +26,6 @@ import org.apache.chemistry.opencmis.tck.tests.crud.SetAndDeleteContentTest;
 import org.apache.chemistry.opencmis.tck.tests.crud.UpdateSmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.filing.FilingTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.query.ContentChangesSmokeTest;
-import org.apache.chemistry.opencmis.tck.tests.query.QueryForObject;
-import org.apache.chemistry.opencmis.tck.tests.query.QueryInFolderTest;
-import org.apache.chemistry.opencmis.tck.tests.query.QueryLikeTest;
 import org.apache.chemistry.opencmis.tck.tests.query.QuerySmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersionDeleteTest;
 import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningSmokeTest;
@@ -138,9 +138,9 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
             addTest(new QuerySmokeTest());
             // The test fails on Lucene see MNT-11223
 //            addTest(new QueryRootFolderTest());
-            addTest(new QueryForObject());
-            addTest(new QueryLikeTest());
-            addTest(new QueryInFolderTest());
+            addTest(new QueryForObjectCustom());
+            addTest(new QueryLikeTestCustom());
+            addTest(new QueryInFolderTestCustom());
             addTest(new ContentChangesSmokeTest());
         }
     }

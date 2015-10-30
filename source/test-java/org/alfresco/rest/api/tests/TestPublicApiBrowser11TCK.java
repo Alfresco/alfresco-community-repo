@@ -34,7 +34,7 @@ public class TestPublicApiBrowser11TCK extends AbstractEnterpriseOpenCMIS11TCKTe
         cmisParameters.put(TestParameters.DEFAULT_ITEM_TYPE, "I:cm:cmobject");
     	clientContext = new OpenCMISClientContext(BindingType.BROWSER,
     			MessageFormat.format(CMIS_URL, "localhost", String.valueOf(port), "alfresco", network.getId(), "public"),
-    			"admin@" + network.getId(), "admin", cmisParameters);
+    			"admin@" + network.getId(), "admin", cmisParameters, getTestFixture().getJettyComponent().getApplicationContext());
         overrideVersionableAspectProperties(getTestFixture().getJettyComponent().getApplicationContext());
 	}
 }

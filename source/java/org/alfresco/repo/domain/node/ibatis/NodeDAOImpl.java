@@ -51,7 +51,6 @@ import org.alfresco.repo.domain.node.TransactionEntity;
 import org.alfresco.repo.domain.node.TransactionQueryEntity;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -97,12 +96,15 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_NODES_BY_IDS = "alfresco.node.select_NodesByIds";
     private static final String SELECT_NODE_PROPERTIES = "alfresco.node.select_NodeProperties";
     private static final String SELECT_PROPERTIES_BY_TYPES = "alfresco.node.select_PropertiesByTypes";
+    private static final String SELECT_PROPERTIES_BY_ACTUAL_TYPE = "alfresco.node.select_PropertiesByActualType";
     private static final String SELECT_NODE_ASPECTS = "alfresco.node.select_NodeAspects";
     private static final String INSERT_NODE_PROPERTY = "alfresco.node.insert_NodeProperty";
     private static final String UPDATE_PRIMARY_CHILDREN_SHARED_ACL = "alfresco.node.update.update_PrimaryChildrenSharedAcl";
     private static final String INSERT_NODE_ASPECT = "alfresco.node.insert_NodeAspect";
     private static final String DELETE_NODE_ASPECTS = "alfresco.node.delete_NodeAspects";
     private static final String DELETE_NODE_PROPERTIES = "alfresco.node.delete_NodeProperties";
+    private static final String SELECT_NODE_MIN_ID = "alfresco.node.select_NodeMinId";
+    private static final String SELECT_NODE_MAX_ID = "alfresco.node.select_NodeMaxId";
     private static final String SELECT_NODES_WITH_ASPECT_IDS = "alfresco.node.select_NodesWithAspectIds";
     private static final String INSERT_NODE_ASSOC = "alfresco.node.insert.insert_NodeAssoc";
     private static final String UPDATE_NODE_ASSOC = "alfresco.node.update_NodeAssoc";
@@ -350,6 +352,18 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
 
     @Override
+    public Long getMinNodeId()
+    {
+        return (Long) template.selectOne(SELECT_NODE_MIN_ID);
+    }
+
+    @Override
+    public Long getMaxNodeId()
+    {
+        return (Long) template.selectOne(SELECT_NODE_MAX_ID);
+    }
+
+    @Override
     protected void updatePrimaryChildrenSharedAclId(
             Long txnId,
             Long primaryParentNodeId,
@@ -538,6 +552,54 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return makePersistentPropertiesMap(rows);
     }
 
+    @Override
+    public List<NodePropertyEntity> selectNodePropertiesByTypes(Set<QName> qnames)
+    {
+        final List<NodePropertyEntity> properties = new ArrayList<NodePropertyEntity>();
+
+        // qnames of properties that are encrypted
+        Set<Long> qnameIds = qnameDAO.convertQNamesToIds(qnames, false);
+        if(qnameIds.size() > 0)
+        {
+            IdsEntity param = new IdsEntity();
+            param.setIds(new ArrayList<Long>(qnameIds));
+            // TODO - use a callback approach
+            template.select(SELECT_PROPERTIES_BY_TYPES, param, new ResultHandler()
+            {
+                @Override
+                public void handleResult(ResultContext context)
+                {
+                    properties.add((NodePropertyEntity)context.getResultObject());
+                }
+            });
+        }
+
+        return properties;
+    }
+    
+    @Override
+    public List<NodePropertyEntity> selectNodePropertiesByDataType(QName dataType, long minNodeId, long maxNodeId)
+    {
+        int typeOrdinal = NodePropertyValue.convertToTypeOrdinal(dataType);
+        
+        IdsEntity ids = new IdsEntity();
+        ids.setIdOne((long)typeOrdinal);
+        ids.setIdTwo(minNodeId);
+        ids.setIdThree(maxNodeId);
+        final List<NodePropertyEntity> properties = new ArrayList<NodePropertyEntity>();
+        
+        template.select(SELECT_PROPERTIES_BY_ACTUAL_TYPE, ids, new ResultHandler()
+        {
+            @Override
+            public void handleResult(ResultContext context)
+            {
+                properties.add((NodePropertyEntity)context.getResultObject());
+            }
+        });
+        
+        return properties;
+    }
+    
     @Override
     protected int deleteNodeProperties(Long nodeId, Set<Long> qnameIds)
     {
@@ -1565,9 +1627,9 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     @Override
     public int deleteTxnsUnused(long fromCommitTime, long toCommitTime)
     {
-    	TransactionQueryEntity txnQuery = new TransactionQueryEntity();
-    	txnQuery.setMinCommitTime(fromCommitTime);
-    	txnQuery.setMaxCommitTime(toCommitTime);
+        TransactionQueryEntity txnQuery = new TransactionQueryEntity();
+        txnQuery.setMinCommitTime(fromCommitTime);
+        txnQuery.setMaxCommitTime(toCommitTime);
         int numDeleted = template.delete(DELETE_TXNS_UNUSED, txnQuery);
         return numDeleted;
     }
@@ -1602,37 +1664,6 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.selectOne(SELECT_TXN_MAX_ID);
     }
 
-    @Override
-    public List<NodePropertyEntity> selectProperties(Collection<PropertyDefinition> propertyDefs)
-    {
-		final List<NodePropertyEntity> properties = new ArrayList<NodePropertyEntity>();
-
-    	Set<QName> qnames = new HashSet<QName>();
-		for(PropertyDefinition propDef : propertyDefs)
-		{
-			qnames.add(propDef.getName());
-		}
-
-		// qnames of properties that are encrypted
-		Set<Long> qnameIds = qnameDAO.convertQNamesToIds(qnames, false);
-		if(qnameIds.size() > 0)
-		{
-	        IdsEntity param = new IdsEntity();
-	        param.setIds(new ArrayList<Long>(qnameIds));
-		    // TODO - use a callback approach
-	        template.select(SELECT_PROPERTIES_BY_TYPES, param, new ResultHandler()
-	        {
-				@Override
-				public void handleResult(ResultContext context)
-				{
-					properties.add((NodePropertyEntity)context.getResultObject());
-				}
-	        });
-		}
-
-		return properties;
-    }
-    
     public int countChildAssocsByParent(Long parentNodeId, boolean isPrimary)
     {
         NodeEntity parentNode = new NodeEntity();

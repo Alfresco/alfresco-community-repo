@@ -18,9 +18,6 @@
  */
 package org.alfresco.encryption;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
-
 /**
  * Checks the repository key stores.
  * 
@@ -29,8 +26,6 @@ import org.apache.commons.logging.LogFactory;
  */
 public class KeyStoreChecker
 {
-    private static final Log logger = LogFactory.getLog(KeyStoreChecker.class);
-    
     private AlfrescoKeyStore mainKeyStore;
 
     public KeyStoreChecker()
@@ -38,16 +33,16 @@ public class KeyStoreChecker
     }
         
     public void setMainKeyStore(AlfrescoKeyStore mainKeyStore)
-	{
-		this.mainKeyStore = mainKeyStore;
-	}
+    {
+        this.mainKeyStore = mainKeyStore;
+    }
 
-	public void validateKeyStores() throws InvalidKeystoreException, MissingKeyException
-	{
-		mainKeyStore.validateKeys();
-		if(!mainKeyStore.exists())
-		{
-			mainKeyStore.create();
-		}
-	}
+    public void validateKeyStores() throws InvalidKeystoreException, MissingKeyException
+    {
+        mainKeyStore.validateKeys();
+        if(!mainKeyStore.exists())
+        {
+            mainKeyStore.create();
+        }
+    }
 }

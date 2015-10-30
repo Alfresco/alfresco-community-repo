@@ -21,6 +21,8 @@ package org.alfresco.repo.domain.patch;
 import java.util.List;
 import java.util.Set;
 
+
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -36,6 +38,10 @@ public interface PatchDAO
 {
     // DM-related
     
+    /**
+     * @deprecated in 4.1: use {@link NodeDAO#getMaxNodeId()}
+     */
+    @Deprecated
     public long getMaxAdmNodeID();
     
     /**

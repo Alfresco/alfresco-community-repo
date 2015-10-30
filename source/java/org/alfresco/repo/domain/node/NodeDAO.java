@@ -29,8 +29,8 @@ import java.util.Set;
 
 import org.alfresco.repo.node.NodeBulkLoader;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
-import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
@@ -815,8 +815,8 @@ public interface NodeDAO extends NodeBulkLoader
     /**
      * Remove unused transactions from commit time 'fromCommitTime' to commit time 'toCommitTime'
      * 
-     * @param fromCommitTime	delete unused transactions from commit time
-     * @param toCommitTime		delete unused transactions to commit time
+     * @param fromCommitTime        delete unused transactions from commit time
+     * @param toCommitTime          delete unused transactions to commit time
      * 
      * @return int
      */
@@ -851,6 +851,16 @@ public interface NodeDAO extends NodeBulkLoader
     public Long getMaxTxnId();
     
     /**
+     * @return              Returns the minimum node id or <tt>0</tt> if there are no nodes
+     */
+    public Long getMinNodeId();
+    
+    /**
+     * @return              Returns the maximum node id or <tt>0</tt> if there are no nodes
+     */
+    public Long getMaxNodeId();
+    
+    /**
      * Select children by property values
      */
     public void getChildAssocsByPropertyValue(
@@ -862,7 +872,17 @@ public interface NodeDAO extends NodeBulkLoader
     /**
      * Used by the re-encryptor to re-encrypt encryptable properties with a new encryption key.
      */
-    public List<NodePropertyEntity> selectProperties(Collection<PropertyDefinition> propertyDefs);
+    public List<NodePropertyEntity> selectNodePropertiesByTypes(Set<QName> qnames);
+    
+    /**
+     * Select all node properties that are between two node IDs and of the given <b>actual</b> type
+     * 
+     * @param dataType      the actual, original type of the property, as given by one of the constants
+     *                      on {@link DataTypeDefinition#TEXT DataTypeDefinition}
+     * @param minNodeId     the minimum node ID (inclusive)
+     * @param maxNodeId     the maximum node ID (exclusive)
+     */
+    public List<NodePropertyEntity> selectNodePropertiesByDataType(QName dataType, long minNodeId, long maxNodeId);
     
     /**
      * Counts the number of child associations directly under parentNodeId.

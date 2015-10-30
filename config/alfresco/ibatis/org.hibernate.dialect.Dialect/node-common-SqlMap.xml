@@ -750,6 +750,17 @@
         </where>
     </select>
 
+    <select id="select_PropertiesByActualType" parameterType="Ids" resultMap="result_NodeProperty">
+        <include refid="alfresco.node.select_NodeProperty_Results"/>
+        from
+            alf_node node
+            join alf_node_properties prop on (prop.node_id = node.id)
+        where
+            actual_type_n = #{idOne} and
+            <![CDATA[node.id >= #{idTwo}]]> and
+            <![CDATA[node.id < #{idThree}]]> 
+    </select>
+
     <sql id="select_NodeAspects_Results">
         select
             node.id                    as node_id,
@@ -757,7 +768,7 @@
             aspects.qname_id           as qname_id
     </sql>
     
-    <select id="select_NodeAspects" parameterType="Ids" resultMap="result_NodeAspects">
+    <select id="select_NodeAspects" parameterType="NodeAspects" resultMap="result_NodeAspects">
         <include refid="alfresco.node.select_NodeAspects_Results"/>
         from
             alf_node node
@@ -1193,6 +1204,20 @@
             <if test="qnameNamespaceId != null">and assoc.qname_ns_id = #{qnameNamespaceId}</if>
             <if test="qnameLocalName != null">and assoc.qname_localname = #{qnameLocalName}</if>
             <if test="isPrimary != null">and assoc.is_primary = #{isPrimary}</if>
+    </select>
+
+    <select id="select_NodeMinId" resultType="java.lang.Long">
+        select
+            min(id)
+        from
+            alf_node
+    </select>
+    
+    <select id="select_NodeMaxId" resultType="java.lang.Long">
+        select
+            max(id)
+        from
+            alf_node
     </select>
     
     <sql id="select_Transaction_Results">

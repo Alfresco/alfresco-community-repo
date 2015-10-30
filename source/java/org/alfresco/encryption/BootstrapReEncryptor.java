@@ -33,47 +33,47 @@ public class BootstrapReEncryptor extends AbstractLifecycleBean
 {
     private static Log logger = LogFactory.getLog(BootstrapReEncryptor.class);
     
-	private boolean enabled;
-	private ReEncryptor reEncryptor;
-	
-	public void setEnabled(boolean enabled)
-	{
-		this.enabled = enabled;
-	}
+    private boolean enabled;
+    private ReEncryptor reEncryptor;
+    
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
 
-	public void setReEncryptor(ReEncryptor reEncryptor)
-	{
-		this.reEncryptor = reEncryptor;
-	}
+    public void setReEncryptor(ReEncryptor reEncryptor)
+    {
+        this.reEncryptor = reEncryptor;
+    }
 
-	public int reEncrypt()
-	{
-		try
-		{
-			return reEncryptor.bootstrapReEncrypt();
-		}
-		catch(MissingKeyException e)
-		{
-			throw new AlfrescoRuntimeException("Bootstrap re-encryption failed", e);
-		}
-	}
+    public int reEncrypt()
+    {
+        try
+        {
+            return reEncryptor.bootstrapReEncrypt();
+        }
+        catch(MissingKeyException e)
+        {
+            throw new AlfrescoRuntimeException("Bootstrap re-encryption failed", e);
+        }
+    }
 
     @Override
     protected void onBootstrap(ApplicationEvent event)
-	{
-    	if(enabled)
-    	{
-    		if(logger.isDebugEnabled())
-    		{
-    			logger.debug("Re-encrypting encryptable properties...");
-    		}
-    		int propertiesReEncrypted = reEncrypt();
-    		if(logger.isDebugEnabled())
-    		{
-    			logger.debug("...done, re-encrypted " + propertiesReEncrypted + " properties.");
-    		}
-    	}
-	}
+    {
+        if(enabled)
+        {
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("Re-encrypting encryptable properties...");
+            }
+            int propertiesReEncrypted = reEncrypt();
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("...done, re-encrypted " + propertiesReEncrypted + " properties.");
+            }
+        }
+    }
     
     @Override
     protected void onShutdown(ApplicationEvent event)

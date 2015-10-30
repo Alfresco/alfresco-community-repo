@@ -9,6 +9,11 @@
         <relativePath>../../pom.xml</relativePath>
     </parent>
 
+    <properties>
+        <build-number>0</build-number>
+        <scm-revision>123456</scm-revision>
+    </properties>
+    
     <dependencies>
         <dependency>
             <groupId>org.alfresco</groupId>

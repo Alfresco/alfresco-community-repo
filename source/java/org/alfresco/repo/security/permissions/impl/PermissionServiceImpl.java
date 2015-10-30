@@ -680,9 +680,20 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         }, AuthenticationUtil.getSystemUserName());
         available.add(getAllPermissionReference());
         available.add(OLD_ALL_PERMISSIONS_REFERENCE);
-
+        
         if (!(available.contains(permission)))
         {
+            Set<PermissionReference> permissionsSystemBase = AuthenticationUtil.runAsSystem(new RunAsWork<Set<PermissionReference>>()
+                    {
+                        public Set<PermissionReference> doWork() throws Exception
+                        {
+                            return modelDAO.getAllPermissions(ContentModel.TYPE_BASE, aspectQNames);
+                        }
+                    });
+            if(permissionsSystemBase.contains(permission) && authorisations.contains(AuthenticationUtil.getAdminRoleName()))
+            {
+                return AccessStatus.ALLOWED;
+            }
             return AccessStatus.DENIED;
         }
 

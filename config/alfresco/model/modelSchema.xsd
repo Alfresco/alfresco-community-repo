@@ -181,6 +181,8 @@
                            </xs:restriction>
                         </xs:simpleType>
                      </xs:element>
+                  <xs:element name="facetable" type="xs:boolean"
+                     maxOccurs="1" minOccurs="0" />
                </xs:sequence>
                <xs:attribute name="enabled" type="xs:boolean"
                   use="required" />

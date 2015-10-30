@@ -29,6 +29,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.junit.experimental.categories.Category;
@@ -49,6 +51,8 @@ import org.springframework.context.ApplicationContext;
 public class JobLockServiceTest extends TestCase
 {
     public static final String NAMESPACE = "http://www.alfresco.org/test/JobLockServiceTest";
+    
+    private static final Log logger = LogFactory.getLog(JobLockServiceTest.class);
     
     private ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
 
@@ -473,4 +477,128 @@ public class JobLockServiceTest extends TestCase
         assertEquals("Lock callback timer was not terminated", checkedCount, checked[0]);
         assertEquals("Lock callback timer was not terminated", releasedCount, released[0]);
     }
+    
+    public void testGetLockWithCallbackNullLock()       { runGetLockWithCallback(0); }
+    public void testGetLockWithCallbackNullCallback()   { runGetLockWithCallback(1); }
+    public void testGetLockWithCallbackShortTTL()       { runGetLockWithCallback(2); }
+    public void testGetLockWithCallbackLocked()         { runGetLockWithCallback(3); }
+    public void testGetLockWithCallbackNormal()         { runGetLockWithCallback(4); }
+    
+    public void runGetLockWithCallback(int t)
+    {        
+        logger.debug("runGetLockWithCallback "+t+
+            "\n----------------------------------------"+
+            "\n"+Thread.currentThread().getStackTrace()[2].getMethodName()+
+            "\n----------------------------------------");
+        
+        String token  = null;
+        String tokenB = null;
+        try 
+        { 
+            QName        lockName   = t==0 ? null : lockA;
+            TestCallback callback   = t==1 ? null : new TestCallback();
+            long         timeToLive = t==2 ? 1    : 50; 
+
+            if (t==3) 
+            {
+                long ttlLongerThanDefaultRetry = 300;
+                tokenB = jobLockService.getLock(lockA, ttlLongerThanDefaultRetry);
+            }                
+
+            token = jobLockService.getLock(lockName, timeToLive, callback);
+
+            if (t<4) fail("expected getLock to fail");
+            
+            if (callback == null) throw new IllegalStateException();
+            
+            assertEquals(false,callback.released);
+            assertEquals(0,callback.isActiveCount);
+            
+            Thread.sleep(40);
+            
+            assertEquals(false,callback.released);
+            assertEquals(1,callback.isActiveCount);
+            
+            callback.isActive = false;
+            
+            Thread.sleep(40);
+            
+            assertEquals(true,callback.released);
+            assertEquals(2,callback.isActiveCount);
+        }
+        catch (IllegalArgumentException e)
+        {            
+            switch (t)
+            {
+                case 0: logger.debug("null lock      => exception as expected: "+e); break;
+                case 1: logger.debug("null callback  => exception as expected: "+e); break;
+                case 2: logger.debug("short ttl      => exception as expected: "+e); break;
+                default: fail("exception not expected: "+e); break;
+            }
+        }
+        catch (LockAcquisitionException e)
+        {            
+            switch (t)
+            {
+                case 3: logger.debug("already locked => exception as expected: "+e); break;
+                default: fail("exception not expected: "+e); break;
+            }
+        }
+        catch (Exception e)
+        {
+            fail("exception not expected: "+e);
+        }
+        finally
+        {
+            if (token != null) 
+            {
+                logger.debug("token should have been released");
+                if (jobLockService.releaseLockVerify(token, lockA))
+                {
+                    fail("token not released");
+                }
+            }
+            
+            if (tokenB != null) 
+            {
+                logger.debug("tokenB should be released");
+                jobLockService.releaseLockVerify(tokenB, lockA);
+            }
+            
+            try
+            {
+                logger.debug("lock should have been released so check can acquire");
+                String tokenC = jobLockService.getLock(lockA, 50);
+                jobLockService.releaseLock(tokenC, lockA);
+            }
+            catch (LockAcquisitionException e)
+            {
+                fail("lock not released");
+            }
+            
+            logger.debug("runGetLockWithCallback\n----------------------------------------");
+        }
+    }
+    
+    private class TestCallback implements JobLockRefreshCallback
+    {
+        public volatile long isActiveCount;
+        public volatile boolean released;
+        public volatile boolean isActive = true;
+
+        @Override
+        public boolean isActive()
+        {
+            isActiveCount++;
+            logger.debug("TestCallback.isActive => "+isActive+" ("+isActiveCount+")");
+            return isActive;
+        }
+
+        @Override
+        public void lockReleased()
+        {
+            logger.debug("TestCallback.lockReleased");
+            released = true;
+        }
+    }    
 }

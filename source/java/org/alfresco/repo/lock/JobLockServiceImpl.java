@@ -222,7 +222,7 @@ public class JobLockServiceImpl implements JobLockService
         // Done
         return lockToken;
     }
-
+                                              
     /**
      * {@inheritDoc}
      * 
@@ -269,6 +269,28 @@ public class JobLockServiceImpl implements JobLockService
         }
     }
     
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public String getLock(QName lockQName, long timeToLive, JobLockRefreshCallback callback)
+    {
+        if (lockQName == null) throw new IllegalArgumentException("lock name null");
+        if (callback == null) throw new IllegalArgumentException("callback null");
+        
+        String lockToken = getLock(lockQName, timeToLive);
+        try
+        {
+            refreshLock(lockToken, lockQName, timeToLive, callback);
+            return lockToken;
+        }
+        catch (IllegalArgumentException|LockAcquisitionException e)
+        {
+            this.releaseLockVerify(lockToken, lockQName);
+            throw e;
+        }
+    }
+
     /**
      * {@inheritDoc}
      */

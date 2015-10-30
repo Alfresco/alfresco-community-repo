@@ -39,7 +39,11 @@ public class NodeAssocEntity
     private Long typeQNameId;
     private int assocIndex;
     private List<Long> typeQNameIds;
-    
+
+    // Supplemental query-related parameters
+    private Long propertyQNameId;
+    private NodePropertyValue propertyValue;
+
     /**
      * Required default constructor
      */
@@ -145,4 +149,25 @@ public class NodeAssocEntity
     {
         this.typeQNameIds = typeQNameIds;
     }
+
+    public Long getPropertyQNameId()
+    {
+        return propertyQNameId;
+    }
+
+    public void setPropertyQNameId(Long propertyQNameId)
+    {
+        this.propertyQNameId = propertyQNameId;
+    }
+
+    public NodePropertyValue getPropertyValue()
+    {
+        return propertyValue;
+    }
+
+    public void setPropertyValue(NodePropertyValue propertyValue)
+    {
+        this.propertyValue = propertyValue;
+    }
+
 }

@@ -109,7 +109,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String DELETE_NODE_ASSOC = "alfresco.node.delete_NodeAssoc";
     private static final String DELETE_NODE_ASSOCS = "alfresco.node.delete_NodeAssocs";
     private static final String SELECT_NODE_ASSOCS = "alfresco.node.select_NodeAssocs";
-    private static final String SELECT_NODE_ASSOCS_BY_SOURCE = "alfresco.node.select_NodeAssocsBySource";
+    private static final String SELECT_NODE_ASSOCS_BY_SOURCE_AND_PROPERTY_VALUE = "alfresco.node.select_NodeAssocsBySourceAndPropertyValue";
     private static final String SELECT_NODE_ASSOCS_BY_TARGET = "alfresco.node.select_NodeAssocsByTarget";
     private static final String SELECT_NODE_ASSOC_BY_ID = "alfresco.node.select_NodeAssocById";
     private static final String SELECT_NODE_ASSOCS_MAX_INDEX = "alfresco.node.select_NodeAssocsMaxId";
@@ -754,9 +754,15 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         return template.selectList(SELECT_NODE_ASSOCS, node);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected List<NodeAssocEntity> selectNodeAssocsBySource(Long sourceNodeId, Long typeQNameId)
+    {
+        return selectNodeAssocsBySourceAndPropertyValue(sourceNodeId, typeQNameId, null, null);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected List<NodeAssocEntity> selectNodeAssocsBySourceAndPropertyValue(Long sourceNodeId, Long typeQNameId, Long propertyQNameId, NodePropertyValue nodeValue)
     {
         NodeAssocEntity assoc = new NodeAssocEntity();
         // Source
@@ -765,8 +771,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         assoc.setSourceNode(sourceNode);
         // Type
         assoc.setTypeQNameId(typeQNameId);
-        
-        return template.selectList(SELECT_NODE_ASSOCS_BY_SOURCE, assoc);
+
+        // Property
+        assoc.setPropertyQNameId(propertyQNameId);
+        assoc.setPropertyValue(nodeValue);
+
+        return (List<NodeAssocEntity>) template.selectList(SELECT_NODE_ASSOCS_BY_SOURCE_AND_PROPERTY_VALUE, assoc);
     }
 
     @SuppressWarnings("unchecked")

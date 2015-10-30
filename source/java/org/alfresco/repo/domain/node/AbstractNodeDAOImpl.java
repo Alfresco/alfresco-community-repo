@@ -3004,6 +3004,67 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     }
 
     @Override
+    public Collection<Pair<Long, AssociationRef>> getTargetAssocsByPropertyValue(Long sourceNodeId, QName typeQName, QName propertyQName, Serializable propertyValue)
+    {
+        Long typeQNameId = null;
+        if (typeQName != null)
+        {
+            Pair<Long, QName> typeQNamePair = qnameDAO.getQName(typeQName);
+            if (typeQNamePair == null)
+            {
+                // No such QName
+                return Collections.emptyList();
+            }
+            typeQNameId = typeQNamePair.getFirst();
+        }
+
+        Long propertyQNameId = null;
+        NodePropertyValue nodeValue = null;
+        if (propertyQName != null)
+        {
+
+            Pair<Long, QName> propQNamePair = qnameDAO.getQName(propertyQName);
+            if (propQNamePair == null)
+            {
+                // No such QName
+                return Collections.emptyList();
+            }
+
+            propertyQNameId = propQNamePair.getFirst();
+
+            PropertyDefinition propertyDef = dictionaryService.getProperty(propertyQName);
+
+            nodeValue = nodePropertyHelper.makeNodePropertyValue(propertyDef, propertyValue);
+            if (nodeValue != null)
+            {
+                switch (nodeValue.getPersistedType())
+                {
+                case 1: // Boolean
+                case 3: // long
+                case 5: // double
+                case 6: // string
+                    // no floats due to the range errors testing equality on a float.
+                    break;
+                default:
+                    throw new IllegalArgumentException("method not supported for persisted value type " + nodeValue.getPersistedType());
+                }
+            }
+        }
+
+        List<NodeAssocEntity> nodeAssocEntities = selectNodeAssocsBySourceAndPropertyValue(sourceNodeId, typeQNameId, propertyQNameId, nodeValue);
+
+        // Create custom result
+        List<Pair<Long, AssociationRef>> results = new ArrayList<Pair<Long, AssociationRef>>(nodeAssocEntities.size());
+        for (NodeAssocEntity nodeAssocEntity : nodeAssocEntities)
+        {
+            Long assocId = nodeAssocEntity.getId();
+            AssociationRef assocRef = nodeAssocEntity.getAssociationRef(qnameDAO);
+            results.add(new Pair<Long, AssociationRef>(assocId, assocRef));
+        }
+        return results;
+    }
+
+    @Override
     public Pair<Long, AssociationRef> getNodeAssocOrNull(Long assocId)
     {
         NodeAssocEntity nodeAssocEntity = selectNodeAssocById(assocId);
@@ -4871,6 +4932,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
     protected abstract int deleteNodeAssocs(List<Long> ids);
     protected abstract List<NodeAssocEntity> selectNodeAssocs(Long nodeId);
     protected abstract List<NodeAssocEntity> selectNodeAssocsBySource(Long sourceNodeId, Long typeQNameId);
+    protected abstract List<NodeAssocEntity> selectNodeAssocsBySourceAndPropertyValue(Long sourceNodeId, Long typeQNameId, Long propertyQNameId, NodePropertyValue nodeValue);
     protected abstract List<NodeAssocEntity> selectNodeAssocsByTarget(Long targetNodeId, Long typeQNameId);
     protected abstract NodeAssocEntity selectNodeAssocById(Long assocId);
     protected abstract int selectNodeAssocMaxIndex(Long sourceNodeId, Long assocTypeQNameId);

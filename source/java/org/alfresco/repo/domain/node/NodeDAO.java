@@ -458,6 +458,17 @@ public interface NodeDAO extends NodeBulkLoader
     public Collection<Pair<Long, AssociationRef>> getTargetNodeAssocs(Long sourceNodeId, QName typeQName);
 
     /**
+     * Get target associations by type of the association, property name and value.
+     * 
+     * @param sourceNodeId    the source of the association
+     * @param typeQName       the type of the association (<tt>null</tt> allowed)
+     * @param propertyQName   property QName (<tt>null</tt> allowed)
+     * @param propertyValue   property value (<tt>null</tt> allowed only if the <b>propertyQName</b> is <tt>null</tt>)
+     * @return                Returns all the node associations where the node is the <b>source</b>.
+     */
+    public Collection<Pair<Long, AssociationRef>> getTargetAssocsByPropertyValue(Long sourceNodeId, QName typeQName, QName propertyQName, Serializable propertyValue);
+
+    /**
      * @return                  Returns a specific node association with the given ID
      *                          or <tt>null</tt> if it doesn't exist
      */

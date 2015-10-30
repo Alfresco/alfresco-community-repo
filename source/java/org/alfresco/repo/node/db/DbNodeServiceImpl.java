@@ -2238,6 +2238,41 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl
         return nodeAssocRefs;
     }
 
+    @Override
+    public List<AssociationRef> getTargetAssocsByPropertyValue(NodeRef sourceRef, QNamePattern qnamePattern, QName propertyQName, Serializable propertyValue)
+    {
+        Pair<Long, NodeRef> sourceNodePair = getNodePairNotNull(sourceRef);
+        Long sourceNodeId = sourceNodePair.getFirst();
+
+        QName qnameFilter = null;
+        if (qnamePattern instanceof QName)
+        {
+            qnameFilter = (QName) qnamePattern;
+        }
+
+         // Check the QName is not one of the "special" system maintained ones.
+        if (getChildAssocsByPropertyValueBannedProps.contains(propertyQName))
+        {
+            throw new IllegalArgumentException(
+                    "getTargetAssocsByPropertyValue does not allow search of system maintained properties: " + propertyQName);
+        }
+
+        Collection<Pair<Long, AssociationRef>> assocPairs = nodeDAO.getTargetAssocsByPropertyValue(sourceNodeId, qnameFilter, propertyQName, propertyValue);
+        List<AssociationRef> nodeAssocRefs = new ArrayList<AssociationRef>(assocPairs.size());
+        for (Pair<Long, AssociationRef> assocPair : assocPairs)
+        {
+            AssociationRef assocRef = assocPair.getSecond();
+            // check qname pattern, if not already filtered
+            if (qnameFilter == null && !qnamePattern.isMatch(assocRef.getTypeQName()))
+            {
+                continue;   // the assoc name doesn't match the pattern given 
+            }
+            nodeAssocRefs.add(assocRef);
+        }
+        // done
+        return nodeAssocRefs;
+    }
+
     public List<AssociationRef> getSourceAssocs(NodeRef targetRef, QNamePattern qnamePattern)
     {
         Pair<Long, NodeRef> targetNodePair = getNodePairNotNull(targetRef);

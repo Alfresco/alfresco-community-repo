@@ -238,4 +238,57 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
         
         return result;
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * 
+     * Implementation for version store v2
+     */
+    @Override
+    public List<AssociationRef> getTargetAssocsByPropertyValue(NodeRef sourceRef, QNamePattern qnamePattern, QName propertyQName, Serializable propertyValue)
+    {
+        // If lightWeightVersionStore call default version store implementation.
+        if (sourceRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
+        {
+            return super.getTargetAssocsByPropertyValue(sourceRef, qnamePattern, propertyQName, propertyValue);
+        }
+
+        // Get the assoc references from the version store.
+        List<ChildAssociationRef> childAssocRefs = this.dbNodeService.getChildAssocs(VersionUtil.convertNodeRef(sourceRef),
+                Version2Model.CHILD_QNAME_VERSIONED_ASSOCS, qnamePattern);
+
+        List<AssociationRef> result = new ArrayList<AssociationRef>(childAssocRefs.size());
+
+        for (ChildAssociationRef childAssocRef : childAssocRefs)
+        {
+            // Get the assoc reference.
+            NodeRef childRef = childAssocRef.getChildRef();
+            NodeRef referencedNode = (NodeRef) this.dbNodeService.getProperty(childRef, ContentModel.PROP_REFERENCE);
+
+            if (this.dbNodeService.exists(referencedNode))
+            {
+                Long assocDbId = (Long) this.dbNodeService.getProperty(childRef, Version2Model.PROP_QNAME_ASSOC_DBID);
+
+                // Check if property type validation has to be done.
+                if (propertyQName != null)
+                {
+                    Serializable propertyValueRetrieved = this.dbNodeService.getProperty(referencedNode, propertyQName);
+
+                    // Check if property value has been retrieved (property
+                    // exists) and is equal to the requested value.
+                    if (propertyValueRetrieved == null || !propertyValueRetrieved.equals(propertyValue))
+                    {
+                        continue;
+                    }
+                }
+
+                // Build an assoc ref to add to the returned list.
+                AssociationRef newAssocRef = new AssociationRef(assocDbId, sourceRef, childAssocRef.getQName(), referencedNode);
+                result.add(newAssocRef);
+            }
+        }
+
+        return result;
+    }
 }

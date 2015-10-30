@@ -75,6 +75,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.hibernate.dialect.DB2Dialect;
 import org.hibernate.dialect.Dialect;
 import org.springframework.context.ApplicationContext;
@@ -2805,7 +2806,79 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         setComplete();
         endTransaction();
     }
-    
+
+    /**
+     * Tests get target associations by property value.</p>
+     * See <b>MNT-14504</b> for more details.
+     * 
+     * @throws Exception
+     */
+    public void testGetTargetAssocsByPropertyValue() throws Exception
+    {
+        // Create test data.
+        AssociationRef assocRef = createAssociation();
+        NodeRef sourceRef = assocRef.getSourceRef();
+        createAssociation(sourceRef);
+
+        NodeRef targetRef = assocRef.getTargetRef();
+        QName qname = assocRef.getTypeQName();
+
+        /* Positive tests of various types that should be accepted by the query. */
+
+        List<AssociationRef> targetAssocs = nodeService.getTargetAssocsByPropertyValue(sourceRef, qname, null, null);
+        assertEquals("Incorrect number of targets", 2, targetAssocs.size());
+
+        Map<QName, Serializable> checkProperties = new HashMap<QName, Serializable>();
+        checkProperties.put(ContentModel.PROP_ENABLED, Boolean.TRUE);
+        checkProperties.put(ContentModel.PROP_COUNTER, 100);
+        checkProperties.put(ContentModel.PROP_LATITUDE, new Double(51.521)); 
+        checkProperties.put(ContentModel.PROP_SUBJECT, "Hello World");
+
+        for (QName propertyQName : checkProperties.keySet())
+        {
+            Serializable propertyValue = checkProperties.get(propertyQName);
+            nodeService.setProperty(targetRef, propertyQName, propertyValue);
+
+            targetAssocs = nodeService.getTargetAssocsByPropertyValue(sourceRef, qname, propertyQName, propertyValue);
+            assertEquals("Incorrect number of targets", 1, targetAssocs.size());
+            assertTrue("Target not found", targetAssocs.contains(assocRef));
+
+            AssociationRef targetAssoc = targetAssocs.get(0);
+
+            // Check that ID is present
+            assertNotNull("Association does not have ID", targetAssoc.getId());
+
+            NodeRef targetRefFound = targetAssoc.getTargetRef();
+
+            assertEquals("Incorrect value found", propertyValue, this.nodeService.getProperty(targetRefFound, propertyQName));
+        }
+
+        /* Negative tests. */
+
+        // Invalid to search on sys:node-dbid
+        try
+        {
+            targetAssocs = nodeService.getTargetAssocsByPropertyValue(sourceRef, qname, ContentModel.PROP_NODE_DBID, "Fail");
+            fail("sys:node-dbid not rejected");
+        }
+        catch (IllegalArgumentException ie)
+        {
+            // Expect to go here.
+        }
+
+        // Invalid to search on type MLText.
+        try
+        {
+            Serializable title = (String) nodeService.getProperty(sourceRef, ContentModel.PROP_TITLE);
+            targetAssocs = nodeService.getTargetAssocsByPropertyValue(sourceRef, qname, ContentModel.PROP_NAME, title);
+            fail("MLText type not rejected");
+        }
+        catch (IllegalArgumentException ie)
+        {
+            // Expect to go here.
+        }
+    }
+
     public void testGetSourceAssocs() throws Exception
     {
         AssociationRef assocRef = createAssociation();

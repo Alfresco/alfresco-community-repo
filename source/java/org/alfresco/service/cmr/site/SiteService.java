@@ -226,7 +226,7 @@ public interface SiteService
      * Lists all the memberships in sites that the specified user is in.
      * 
      * @param userName String
-     * @param size int
+     * @param size list maximum size or zero for all
      * @return a list of SiteMembership objects
      */
     @NotAuditable

@@ -25,6 +25,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -51,6 +53,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.cache.SimpleCache;
+import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.events.EventPreparator;
 import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.node.NodeArchiveServicePolicies;
@@ -189,9 +192,12 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     private SitesPermissionCleaner sitesPermissionsCleaner;
     private PolicyComponent policyComponent;
     private PublicServiceAccessService publicServiceAccessService;
+    private NodeDAO nodeDAO;
     private EventPublisher eventPublisher;
     
     private NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry;
+    
+    private static int GET_CHILD_ASSOCS_PAGE_SIZE = 512;
 
     /**
      * Set the path to the location of the sites root folder.  For example:
@@ -366,6 +372,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     public void setPublicServiceAccessService(PublicServiceAccessService publicServiceAccessService)
     {
         this.publicServiceAccessService = publicServiceAccessService;
+    }
+    
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
     }
 
     /**
@@ -3037,52 +3048,78 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
     }
     
     @Override
-    public List<SiteMembership> listSiteMemberships (String userName, int size)
+    public List<SiteMembership> listSiteMemberships(String userName, int size)
     {
-        final int maxResults = size > 0 ? size : 1000;
-        final Set<String> siteNames = new TreeSet<String>();
+        final List<String> siteNames = new LinkedList<String>();
         Map<String, String> roleSitePairs = new HashMap<String, String>();
-        // MNT-13198 - use the bridge table
+        
+        
         String actualUserName = personService.getUserIdentifier(userName);
-        if(actualUserName != null)
+        if(actualUserName == null)
         {
-            Set<String> containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, actualUserName, false);
-            for(String authority : containingAuthorities)
-            {
-                if (siteNames.size() < maxResults)
+            return Collections.emptyList();
+        }
+        
+        /* Get the site names and the map between the site name and the role
+           MNT-13198 - use the bridge table */
+        Set<String> containingAuthorities = authorityService.getContainingAuthorities(AuthorityType.GROUP, actualUserName, false);
+        for(String authority : containingAuthorities)
+        {
+                String siteName = resolveSite(authority);
+                if(siteName == null)
                 {
-                    String siteName = resolveSite(authority);
-                    // MNT-10836 fix, after MNT-10109 we should also check site existence
-                    // A simple exists check would be better than getting the site properties etc - profiling suggests x2 faster
-                    if ((siteName != null) && hasSite(siteName))
+                    continue;
+                }
+                
+                /* if the size is not 0 check site existence */
+                if(size > 0)
+                {
+                    /* if we found enough sites ignore the others */
+                    if(siteNames.size() >= size)
                     {
-                        String role = resolveRole(authority);
-                        if (role != null)
-                        {
-                            siteNames.add(siteName);
-                            roleSitePairs.put(siteName, role);
-                        }
+                        break;
+                    }
+                    
+                    /* MNT-10836 fix, after MNT-10109 we should also check site existence.
+                       A simple exists check would be better than getting the site properties etc - profiling suggests x2 faster.
+                       If size = -1 the sites that don't exist will be removed when getting the child associations. */
+                    if(!hasSite(siteName))
+                    {
+                        // if the site doesn't exist skip the current authority
+                        continue;
                     }
                 }
-                else
+                
+                /* resolve the role */
+                String role = resolveRole(authority);
+                if (role != null)
                 {
-                    break;
+                    siteNames.add(siteName);
+                    roleSitePairs.put(siteName, role);
                 }
-            }
         }
+        
         if (siteNames.isEmpty())
         {
             return Collections.emptyList();
         }
-        List<ChildAssociationRef> assocs = this.nodeService.getChildrenByName(
-                getSiteRoot(),
-                ContentModel.ASSOC_CONTAINS,
-                siteNames);
-        List<SiteMembership> result = new ArrayList<SiteMembership>(assocs.size());
+        
+        /* Get the child associations */
+        List<ChildAssociationRef> assocs = getSitesAssocsByName(siteNames);
+        
+        /* Get the node refs and preload the nodes to get the properties faster */
+        List<NodeRef> siteNodes = new LinkedList<NodeRef>();
         for (ChildAssociationRef assoc : assocs)
         {
-            // Ignore any node that is not a "site" type
-            NodeRef site = assoc.getChildRef();
+            siteNodes.add(assoc.getChildRef());
+        }
+        nodeDAO.cacheNodes(siteNodes);
+        
+        /* Compute the site membership objects */
+        List<SiteMembership> result = new LinkedList<SiteMembership>();
+        for (NodeRef site : siteNodes)
+        {
+            /* Ignore any node that is not a "site" type */
             QName siteClassName = this.directNodeService.getType(site);
             if (this.dictionaryService.isSubClass(siteClassName, SiteModel.TYPE_SITE))
             {
@@ -3090,12 +3127,53 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 result.add(new SiteMembership(siteInfo, userName, roleSitePairs.get(siteInfo.getShortName())));
             }
         }
+        
         return result;
     }
     
-    public PagingResults<SiteMembership> listSitesPaged(final String userName, List<Pair<SiteService.SortFields, Boolean>> sortProps, final PagingRequest pagingRequest)
-    {
-		List<SiteMembership> siteMembers = listSiteMemberships (userName, -1);
+    /**
+     * Retrieves the child associations for requested site names 
+     * @param siteNames names of the sites to be retrieved
+     * @return list of child associations between the site root and sites having the requested site names
+     */
+    private List<ChildAssociationRef> getSitesAssocsByName(final List<String> siteNames)
+    { 
+        Iterator<String> sitesIterator = siteNames.iterator();
+        List<String> iterationPage = new LinkedList<String>();
+        List<ChildAssociationRef> assocs = new LinkedList<ChildAssociationRef>();
+        List<ChildAssociationRef> childRefPage;
+        
+        NodeRef siteRoot = getSiteRoot();
+        
+        /* iterate the results and retrieve child associations for batches of 512 elements */
+        while(sitesIterator.hasNext())
+        {
+            String element = sitesIterator.next();
+            iterationPage.add(element);
+
+            /* when the page is full, get the child associations and clean the page */
+            if(iterationPage.size() >= GET_CHILD_ASSOCS_PAGE_SIZE)
+            {
+                /* get the child associations for the current page having siteRoot as parent
+                   use directNodeService to avoid permission check */
+                childRefPage = directNodeService.getChildrenByName(siteRoot, ContentModel.ASSOC_CONTAINS, iterationPage);
+                assocs.addAll(childRefPage);
+                iterationPage.clear();
+            }
+        }
+        if(iterationPage.size() > 0)
+        {
+            /* use directNodeService to avoid permission check */
+            childRefPage = directNodeService.getChildrenByName(siteRoot, ContentModel.ASSOC_CONTAINS, iterationPage);
+            assocs.addAll(childRefPage);
+        }
+        
+        return assocs;
+    }
+        
+	public PagingResults<SiteMembership> listSitesPaged(final String userName, List<Pair<SiteService.SortFields, Boolean>> sortProps, final PagingRequest pagingRequest)
+	{
+		List<SiteMembership> siteMembers = listSiteMemberships (userName, 0);
 	    final int totalSize = siteMembers.size();
 	 	final PageDetails pageDetails = PageDetails.getPageDetails(pagingRequest, totalSize);
 	 	final List<SiteMembership> resultList;

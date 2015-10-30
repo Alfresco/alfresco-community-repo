@@ -24,6 +24,7 @@ import org.alfresco.repo.remoteconnector.LocalWebScriptConnectorServiceImpl;
 import org.alfresco.repo.remotecredentials.PasswordCredentialsInfoImpl;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
 import org.alfresco.service.cmr.remotecredentials.BaseCredentialsInfo;
 import org.alfresco.service.cmr.remotecredentials.RemoteCredentialsService;
@@ -51,6 +52,7 @@ public class RemoteAlfrescoTicketServiceTest extends BaseWebScriptTest
     private static final String INVALID_REMOTE_SYSTEM_ID = "testingInvalidRemoteSystem";
     
     private MutableAuthenticationService authenticationService;
+    private RetryingTransactionHelper retryingTransactionHelper;
     private PersonService personService;
     
     private RemoteAlfrescoTicketService remoteAlfrescoTicketService;
@@ -68,7 +70,8 @@ public class RemoteAlfrescoTicketServiceTest extends BaseWebScriptTest
     protected void setUp() throws Exception
     {
         super.setUp();
-        
+
+        this.retryingTransactionHelper = (RetryingTransactionHelper)getServer().getApplicationContext().getBean("retryingTransactionHelper");
         this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         
@@ -382,12 +385,22 @@ public class RemoteAlfrescoTicketServiceTest extends BaseWebScriptTest
         creds.setRemotePassword("INVALID");
         remoteCredentialsService.updateCredentials(creds);
 
-        try
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
         {
-            remoteAlfrescoTicketService.refetchAlfrescoTicket(TEST_REMOTE_SYSTEM_ID);
-            fail("Shouldn't be able to refetch with wrong details");
-        }
-        catch(AuthenticationException e) {}
+            public Void execute()
+
+            {
+                try
+                {
+                    remoteAlfrescoTicketService.refetchAlfrescoTicket(TEST_REMOTE_SYSTEM_ID);
+                    fail("Shouldn't be able to refetch with wrong details");
+                }
+                catch (AuthenticationException e)
+                {
+                }
+                return null;
+            }
+        }, false, true); // after MNT-13871, POST api/login webscript now requires read-write transaction
 
         // Check it was still marked as invalid, despite a read only transaction
         creds = (PasswordCredentialsInfoImpl)remoteCredentialsService.getPersonCredentials(TEST_REMOTE_SYSTEM_ID);

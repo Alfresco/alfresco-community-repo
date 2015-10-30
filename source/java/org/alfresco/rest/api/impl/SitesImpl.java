@@ -33,12 +33,14 @@ import java.util.TreeSet;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQuerySortDetails.SortOrder;
 import org.alfresco.query.PageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.repo.site.SiteMembership;
+import org.alfresco.repo.site.SiteMembershipComparator;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
@@ -59,6 +61,7 @@ import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.favourites.FavouritesService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -416,17 +419,43 @@ public class SitesImpl implements Sites
 
     	PagingRequest pagingRequest = Util.getPagingRequest(paging);
     	
-        final Collator collator = Collator.getInstance();
-        final Set<SiteMembership> sortedSiteMembers = new TreeSet<SiteMembership>(new Comparator<SiteMembership>()
+        // get the sorting options
+        List<Pair<? extends Object, SortOrder>> sortPairs = new ArrayList<Pair<? extends Object, SortOrder>>(parameters.getSorting().size());
+        for (SortColumn sortColumn : parameters.getSorting())
         {
-            @Override
-            public int compare(SiteMembership o1, SiteMembership o2)
+            SiteService.SortFields sortField;
+            try 
             {
-                return collator.compare(o1.getSiteInfo().getTitle(), o2.getSiteInfo().getTitle());
+                sortField= SiteService.SortFields.valueOf(sortColumn.column);
+            } 
+            catch (IllegalArgumentException ex)
+            {
+                // invalid sort field
+                continue;
             }
-        });
+            
+            sortPairs.add(new Pair<SiteService.SortFields, SortOrder>(
+                    sortField, 
+                    (sortColumn.asc ? SortOrder.ASCENDING : SortOrder.DESCENDING)));
+        }
         
-        List<SiteMembership> siteMembers = siteService.listSiteMemberships (personId, -1);
+        // if no sorting options were specify, sort by title
+        if(sortPairs.size() == 0)
+        {
+            sortPairs.add(new Pair<SiteService.SortFields, SortOrder>(
+                    SiteService.SortFields.SiteTitle, 
+                    SortOrder.ASCENDING ));
+        }
+        
+        final Set<SiteMembership> sortedSiteMembers = new TreeSet<SiteMembership>(
+                new SiteMembershipComparator(
+                        sortPairs, 
+                        SiteMembershipComparator.Type.SITES));
+        
+        // get the unsorted list of site memberships
+        List<SiteMembership> siteMembers = siteService.listSiteMemberships (personId, 0);
+        
+        // sort the list of site memberships
         int totalSize = siteMembers.size();
         sortedSiteMembers.addAll(siteMembers);
         PageDetails pageDetails = PageDetails.getPageDetails(pagingRequest, totalSize);

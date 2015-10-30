@@ -24,12 +24,12 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.transaction.UserTransaction;
-
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -42,6 +42,7 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -66,41 +67,40 @@ public class MultiTServiceImplTest
     private SearchService searchService;
     private NamespaceService namespaceService;
     
-    private UserTransaction txn;
-    
     private boolean mtEnabled;
     
     // Test variables 
     private static final String DEFAULT_ADMIN_PW = "admin";
     private static final String PASS = "password";
-    private static final String DOMAIN = MultiTServiceImplTest.class.getName().toLowerCase();
-    private static final String USER1 = "USER1";
-    private static final String USER2 = "USER2";
-    private static final String USER3 = "USER3";
-    private static final String USER2_WITH_DOMAIN = USER2 + TenantService.SEPARATOR + DOMAIN;
-    private static final String STRING = "stringwithouttenant";
-    private static final String TENANT_STRING = addDomainToId(STRING, DOMAIN);
-    private static final String STRING_WITH_EXISTENT_DOMAIN = TenantService.SEPARATOR + DOMAIN + TenantService.SEPARATOR;
-    private static final String STRING_WITH_NONEXITENT_DOMAIN = TenantService.SEPARATOR + STRING + TenantService.SEPARATOR;
     private static final String PROTOCOL = "testprotocol";
     private static final String IDENTIFIER = "testidentifier";
     private static final String ID = "id";
     private static final String ROOT_PATH = "/";
     private static final StoreRef DEFAULT_STORE = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
-    private static final StoreRef TENANT_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, addDomainToId("SpacesStore", DOMAIN));
     private static final NodeRef NODE_REF = new NodeRef(PROTOCOL, IDENTIFIER, ID);
-    private static final NodeRef TENANT_NODE_REF = new NodeRef(PROTOCOL, addDomainToId(IDENTIFIER, DOMAIN), ID);
     private static final StoreRef STORE_REF = new StoreRef(PROTOCOL, IDENTIFIER);
-    private static final StoreRef TENANT_STORE_REF = new StoreRef(PROTOCOL, addDomainToId(IDENTIFIER, DOMAIN));
     private static final String NAMESPACE_URI = "testassoctypenamespace";
     private static final String LOCAL_NAME = "testassoctypelocalname";
     private static final QName QNAME = QName.createQName(NAMESPACE_URI, LOCAL_NAME);
-    private static final QName TENANT_QNAME = QName.createQName(addDomainToId(NAMESPACE_URI, DOMAIN), LOCAL_NAME);
     private static final AssociationRef assocRef = new AssociationRef(NODE_REF, QNAME, NODE_REF);
-    private static final AssociationRef tenantAssocRef = new AssociationRef(TENANT_NODE_REF, QNAME, TENANT_NODE_REF);
-    private static final ChildAssociationRef childAssocRef = new ChildAssociationRef(QNAME, NODE_REF, QNAME, NODE_REF);
-    private static final ChildAssociationRef tenantChildAssocRef = new ChildAssociationRef(QNAME, TENANT_NODE_REF, QNAME, TENANT_NODE_REF);
-    
+
+    private static String DOMAIN = null;
+    private static String USER1 = null;
+    private static String USER2 = null;
+    private static String USER3 = null;
+    private static String USER2_WITH_DOMAIN = null;
+    private static String STRING = null;
+    private static String TENANT_STRING = null;
+    private static String STRING_WITH_EXISTENT_DOMAIN = null;
+    private static String STRING_WITH_NONEXITENT_DOMAIN = null;
+    private static StoreRef TENANT_STORE = null;
+    private static NodeRef TENANT_NODE_REF = null;
+    private static StoreRef TENANT_STORE_REF = null;
+    private static QName TENANT_QNAME = null;
+    private static AssociationRef tenantAssocRef = null;
+    private static ChildAssociationRef childAssocRef = null;
+    private static ChildAssociationRef tenantChildAssocRef = null;
+
     @Before
     public void setUp() throws Exception
     {
@@ -113,19 +113,34 @@ public class MultiTServiceImplTest
         nodeService = ctx.getBean("NodeService", NodeService.class);
         searchService = ctx.getBean("SearchService", SearchService.class);
         namespaceService = ctx.getBean("NamespaceService", NamespaceService.class);
-        
+
+        DOMAIN = GUID.generate();
+        USER1 = GUID.generate();
+        USER2 = GUID.generate();
+        USER3 = GUID.generate();
+        USER2_WITH_DOMAIN = USER2 + TenantService.SEPARATOR + DOMAIN;
+        STRING = GUID.generate();
+        TENANT_STRING = addDomainToId(STRING, DOMAIN);
+        STRING_WITH_EXISTENT_DOMAIN = TenantService.SEPARATOR + DOMAIN + TenantService.SEPARATOR;
+        STRING_WITH_NONEXITENT_DOMAIN = TenantService.SEPARATOR + STRING + TenantService.SEPARATOR;
+        TENANT_STORE = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, addDomainToId("SpacesStore", DOMAIN));
+        TENANT_NODE_REF = new NodeRef(PROTOCOL, addDomainToId(IDENTIFIER, DOMAIN), ID);
+        TENANT_STORE_REF = new StoreRef(PROTOCOL, addDomainToId(IDENTIFIER, DOMAIN));
+        TENANT_QNAME = QName.createQName(addDomainToId(NAMESPACE_URI, DOMAIN), LOCAL_NAME);
+        tenantAssocRef = new AssociationRef(TENANT_NODE_REF, QNAME, TENANT_NODE_REF);
+        childAssocRef = new ChildAssociationRef(QNAME, NODE_REF, QNAME, NODE_REF);
+        tenantChildAssocRef = new ChildAssociationRef(QNAME, TENANT_NODE_REF, QNAME, TENANT_NODE_REF);
+
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
         mtEnabled = AuthenticationUtil.isMtEnabled();
-        txn = transactionService.getUserTransaction();
-        txn.begin();
         AuthenticationUtil.setMtEnabled(false);
     }
     
     @After
     public void tearDown() throws Exception
     {
-        txn.rollback();
+        deleteTenant(DOMAIN);
         AuthenticationUtil.setMtEnabled(mtEnabled);
         AuthenticationUtil.clearCurrentSecurityContext();
     }
@@ -133,6 +148,13 @@ public class MultiTServiceImplTest
     @Test
     public void testIsTenantUser()
     {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+
+
         // Create a user with a plain user name without a domain
         NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
         assertNotNull("The user was not created.", userNodeRef);
@@ -148,11 +170,21 @@ public class MultiTServiceImplTest
         userNodeRef = createUser(USER3, DOMAIN, PASS);
         assertNotNull("The user was not created.", userNodeRef);
         assertTrue("The user is from a tenant, but was reported otherwise.", multiTServiceImpl.isTenantUser(USER3 + MultiTServiceImpl.SEPARATOR + DOMAIN));
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
     
     @Test
     public void testGetCurrentUserDomain()
     {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+
         // Test a tenant user
         createTenant(DOMAIN);
         NodeRef userNodeRef = createUser(USER1, DOMAIN, PASS);
@@ -185,11 +217,21 @@ public class MultiTServiceImplTest
         
         result = TenantUtil.runAsUserTenant(work, USER2, TenantService.DEFAULT_DOMAIN);
         assertEquals("The domains do not match.", TenantService.DEFAULT_DOMAIN, result);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
     
     @Test
     public void testGetName()
     {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+
         NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
         assertNotNull("The user was not created.", userNodeRef);
         TenantRunAsWork<NodeRef> work1 = new TenantRunAsWork<NodeRef>()
@@ -288,7 +330,7 @@ public class MultiTServiceImplTest
             @Override
             public QName doWork() throws Exception
             {
-                return tenantService.getName(TENANT_NODE_REF ,QNAME);
+                return tenantService.getName(TENANT_NODE_REF, QNAME);
             }
         };
         QName result7 = TenantUtil.runAsUserTenant(work7, USER2, DOMAIN);
@@ -304,11 +346,21 @@ public class MultiTServiceImplTest
         };
         String result8 = TenantUtil.runAsUserTenant(work8, USER2, DOMAIN);
         assertEquals("The String should contain domain.", TENANT_STRING, result8);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
     
     @Test
     public void testGetBaseName()
     {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+
         NodeRef userNodeRef = createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
         assertNotNull("The user was not created.", userNodeRef);
         TenantRunAsWork<NodeRef> work1 = new TenantRunAsWork<NodeRef>()
@@ -412,11 +464,21 @@ public class MultiTServiceImplTest
         };
         String result6 = TenantUtil.runAsUserTenant(work6, USER2, DOMAIN);
         assertEquals("The String should not contain domain.", STRING, result6);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
     
     @Test
     public void testCheckDomainUser()
     {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+
         String nonExistentDomain = "nonExistentDomain";
         createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
         createTenant(DOMAIN);
@@ -458,56 +520,75 @@ public class MultiTServiceImplTest
         {
             // Expected
         }
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
     
     @Test
     public void testCheckDomain()
     {
-        createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
-        createTenant(DOMAIN);
-        createUser(USER2, DOMAIN, PASS);
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
+                createTenant(DOMAIN);
+                createUser(USER2, DOMAIN, PASS);
         try
         {
-            createUser(USER3, STRING, PASS);
+        createUser(USER3, STRING, PASS);
             fail("The string has a domain, but there is no such tenant");
         }
         catch (Exception e)
         {
             // Expected
         }
-        try
-        {
-            checkDomainWork(STRING_WITH_EXISTENT_DOMAIN, TenantService.DEFAULT_DOMAIN, USER1);
-            fail("The string has a domain, which should not match the default one.");
-        }
-        catch (Exception e)
-        {
-            // Expected
-        }
+                try
+                {
+                    checkDomainWork(STRING_WITH_EXISTENT_DOMAIN, TenantService.DEFAULT_DOMAIN, USER1);
+                    fail("The string has a domain, which should not match the default one.");
+                }
+                catch (Exception e)
+                {
+                    // Expected
+                }
 
-        try
-        {
-            checkDomainWork(STRING_WITH_EXISTENT_DOMAIN, DOMAIN, USER2);
-        }
-        catch (Exception e)
-        {
-            fail("The string has a tenant domain and should match the execution context tenant.");
-        }
-        
-        try
-        {
-            checkDomainWork(STRING_WITH_NONEXITENT_DOMAIN, DOMAIN, USER2);
-            fail("The string has a domain, which should not match the execution context tenant.");
-        }
-        catch (Exception e)
-        {
-            // Expected
-        }
+                try
+                {
+                    checkDomainWork(STRING_WITH_EXISTENT_DOMAIN, DOMAIN, USER2);
+                }
+                catch (Exception e)
+                {
+                    fail("The string has a tenant domain and should match the execution context tenant.");
+                }
+
+                try
+                {
+                    checkDomainWork(STRING_WITH_NONEXITENT_DOMAIN, DOMAIN, USER2);
+                    fail("The string has a domain, which should not match the execution context tenant.");
+                }
+                catch (Exception e)
+                {
+                    // Expected
+                }
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
     
     @Test
     public void testGetRootNode()
     {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+
         NodeRef rootNodeRefDefault = nodeService.getRootNode(DEFAULT_STORE);
         NodeRef rootNodeRef = new NodeRef(DEFAULT_STORE, IDENTIFIER);
         NodeRef nodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, ROOT_PATH, rootNodeRef);
@@ -518,6 +599,10 @@ public class MultiTServiceImplTest
         rootNodeRef = new NodeRef(TENANT_STORE, IDENTIFIER);
         nodeRef = tenantService.getRootNode(nodeService, searchService, namespaceService, ROOT_PATH, rootNodeRef);
         assertEquals("The reported rootNodeRef for the tenant domain is not correct.", rootNodeRefDefault, nodeRef);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
     
     /**
@@ -526,33 +611,58 @@ public class MultiTServiceImplTest
     @Test
     public void testIsTenantName()
     {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+
         boolean result = tenantService.isTenantName(STRING);
         assertFalse("The string was reported as domain, but it is not", result);
         
         result = tenantService.isTenantName(STRING_WITH_EXISTENT_DOMAIN);
         assertTrue("The string was not reported as domain.", result);
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
     
     @Test
     public void testGetPrimaryDomain()
     {
-        String result = tenantService.getPrimaryDomain(USER1);
-        assertNull("The primary domain should be null for a non tenant user without a tenant in name.", result);
-        
-        result = tenantService.getPrimaryDomain(USER2_WITH_DOMAIN);
-        assertNull("The primary domain should be null for a tenant user if multi tenancy is not enabled.", result);
-        
-        createTenant(DOMAIN);
-        result = tenantService.getPrimaryDomain(USER2_WITH_DOMAIN);
-        assertEquals("The primary domain should be of the USER2 is " + DOMAIN + ", but was reported as " + result, DOMAIN, result);
-        
-        result = tenantService.getPrimaryDomain(USER1);
-        assertTrue("The primary domain should be the default one (empty string) for a non tenant user without a tenant in name.", result.equals(TenantService.DEFAULT_DOMAIN));
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                String result = tenantService.getPrimaryDomain(USER1);
+                assertNull("The primary domain should be null for a non tenant user without a tenant in name.", result);
+
+                result = tenantService.getPrimaryDomain(USER2_WITH_DOMAIN);
+                assertNull("The primary domain should be null for a tenant user if multi tenancy is not enabled.", result);
+
+                createTenant(DOMAIN);
+                result = tenantService.getPrimaryDomain(USER2_WITH_DOMAIN);
+                assertEquals("The primary domain of the USER2 should be " + DOMAIN + ", but was reported as " + result, DOMAIN, result);
+
+                result = tenantService.getPrimaryDomain(USER1);
+                assertTrue("The primary domain should be the default one (empty string) for a non tenant user without a tenant in name.", result.equals(TenantService.DEFAULT_DOMAIN));
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
     
     @Test
     public void testGetDomain() throws Exception
     {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+
         createUser(USER1, TenantService.DEFAULT_DOMAIN, PASS);
         String result = getDomainWork(STRING, TenantService.DEFAULT_DOMAIN, USER1, false);
         assertEquals("The domain should be reported as default.", TenantService.DEFAULT_DOMAIN, result);
@@ -584,24 +694,43 @@ public class MultiTServiceImplTest
         {
             // Expected
         }
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
     
     @Test
     public void testGetTenant()
     {
-        Tenant tenant = tenantService.getTenant(DOMAIN);
-        assertNull("The tenant should not exist.", tenant);
-        
-        createTenant(DOMAIN);
-        tenant = tenantService.getTenant(DOMAIN);
-        assertNotNull("The tenant should exist.", tenant);
-        assertTrue("The tenant should have the correct domain.", DOMAIN.equals(tenant.getTenantDomain()));
-        assertTrue("The tenant should be enabled.", tenant.isEnabled());
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                Tenant tenant = tenantService.getTenant(DOMAIN);
+                assertNull("The tenant should not exist.", tenant);
+
+                createTenant(DOMAIN);
+                tenant = tenantService.getTenant(DOMAIN);
+                assertNotNull("The tenant should exist.", tenant);
+                assertTrue("The tenant should have the correct domain.", DOMAIN.equals(tenant.getTenantDomain()));
+                assertTrue("The tenant should be enabled.", tenant.isEnabled());
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
     
     @Test
     public void testGetUserDomain()
     {
+        RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+
         String result = tenantService.getUserDomain(USER1);
         assertEquals("The user domain should be the default one for a non tenant user without a tenant in name.", TenantService.DEFAULT_DOMAIN, result);
         
@@ -614,6 +743,10 @@ public class MultiTServiceImplTest
         
         result = tenantService.getUserDomain(USER1);
         assertTrue("The user domain should be the default one (empty string) for a non tenant user without a tenant in name.", result.equals(TenantService.DEFAULT_DOMAIN));
+                return null;
+            }
+        };
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
     
     /**
@@ -736,7 +869,38 @@ public class MultiTServiceImplTest
 
         return personNodeRef;
     }
-    
+
+    private void deleteTenant(final String tenantDomain)
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                RetryingTransactionHelper.RetryingTransactionCallback<Void> work = new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+                {
+                    public Void execute() throws Throwable
+                    {
+                        // delete tenant (if it exists)
+                        if (tenantAdminService.existsTenant(tenantDomain))
+                        {
+                            // TODO: WARNING: HACK for ALF-19155: MT deleteTenant does not work
+                            //       PersonService prevents 'guest' authorities from being deleted
+                            {
+                                BehaviourFilter behaviourFilter = (BehaviourFilter) ctx.getBean("policyBehaviourFilter");
+                                behaviourFilter.disableBehaviour(ContentModel.TYPE_PERSON);
+                                behaviourFilter.disableBehaviour(ContentModel.ASPECT_UNDELETABLE);
+                            }
+                            tenantAdminService.deleteTenant(tenantDomain);
+                        }
+                        return null;
+                    }
+                };
+                transactionService.getRetryingTransactionHelper().doInTransaction(work);
+                return null;
+            }
+        }, AuthenticationUtil.getSystemUserName());
+    }
+
     /**
      * Utility method to add a domain to an string id
      * @param id String

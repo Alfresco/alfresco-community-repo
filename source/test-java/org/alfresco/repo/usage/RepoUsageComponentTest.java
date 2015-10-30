@@ -166,11 +166,14 @@ public class RepoUsageComponentTest extends TestCase
     
     public void test4FullUse() throws Exception
     {
-        // Set the restrictions
+        // Update usage
+        updateUsage(UsageType.USAGE_ALL);
+
+    	// Set the restrictions
         RepoUsage restrictions = new RepoUsage(
                 System.currentTimeMillis(),
-                7L,
-                600L,
+                getUsage().getUsers(),
+                getUsage().getDocuments(),
                 LicenseMode.TEAM,
                 System.currentTimeMillis() + 24*3600000,
                 false);
@@ -178,12 +181,13 @@ public class RepoUsageComponentTest extends TestCase
         // Get the restrictions (should not need a txn for this)
         RepoUsage restrictionsCheck = repoUsageComponent.getRestrictions();
         assertEquals("Restrictions should return without change.", restrictions, restrictionsCheck);
-        
+
         // Update use
         updateUsage(UsageType.USAGE_ALL);
-        
+
         // Get the usage
-        RepoUsage usage = getUsage();
+        RepoUsage usage = getUsage();        
+        
         // Check
         assertNotNull("Usage is null", usage);
         assertNotNull("Invalid user count", usage.getUsers());

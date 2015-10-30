@@ -1227,6 +1227,17 @@
              </bean>
         </property>
     </bean>
+
+    <bean id="patch.db-V4.1-AuthorizationTables" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-V4.1-AuthorizationTables</value></property>
+        <property name="description"><value>patch.schemaUpgradeScript.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9010</value></property>
+        <property name="targetSchema"><value>9011</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AuthorizationTables.sql</value>
+        </property>
+    </bean>
     
     <bean id="patch.addInviteAddDirectEmailTemplates" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.addInviteAddDirectEmailTemplates</value></property>

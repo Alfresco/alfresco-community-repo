@@ -19,6 +19,7 @@
 package org.alfresco.filesys.auth.ftp;
 
 import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.filesys.alfresco.AlfrescoClientInfo;
@@ -117,6 +118,17 @@ public class AlfrescoFtpAuthenticator extends FTPAuthenticatorBase {
     {
       if ( logger.isDebugEnabled())
         logger.debug( ex);
+        try
+        {
+            tx.setRollbackOnly();
+        }
+        catch (SystemException e)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug(e);
+            }
+        }
     }
     finally
     {

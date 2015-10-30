@@ -77,6 +77,10 @@
                <type>d:content</type>
                <multiple>false</multiple>
             </property>               
+            <property name="sys:keyStore">
+               <type>d:content</type>
+               <multiple>false</multiple>
+            </property>    			
          </properties>
       </type>      
 

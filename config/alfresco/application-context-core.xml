@@ -49,4 +49,7 @@
     <import resource="classpath:alfresco/invitation-service-context.xml"/>
     <import resource="classpath:alfresco/webdav-context.xml"/>
     <import resource="classpath*:alfresco/patch/*-context.xml" />
+    <import resource="classpath*:alfresco/dbscripts/*-context.xml" />
+    <import resource="classpath*:alfresco/enterprise/authorization-context.xml" />
+    <import resource="classpath*:alfresco/enterprise/enterprise-usage-services-context.xml" />
 </beans>

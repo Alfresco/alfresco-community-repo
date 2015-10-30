@@ -22,6 +22,7 @@
                 <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-UsageTables.sql</value>
                 <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-SubscriptionTables.sql</value>
                 <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-TenantTables.sql</value>
+                <value>classpath:alfresco/dbscripts/create/${db.script.dialect}/AlfrescoCreate-AuthorizationTables.sql</value>
             </list>
         </property>
     </bean>
@@ -59,6 +60,7 @@
                 <ref bean="patch.db-V4.1-createIdxAlfNodeTQN" />
                 <ref bean="patch.db-V4.2-restructure-idx_alf_nprop_s-MSSQL" />
                 <ref bean="patch.db-V4.2-migrate-locale-multilingual" />
+                <ref bean="patch.db-V4.1-AuthorizationTables" />
                 <ref bean="patch.db-V5.0-ContentUrlEncryptionTables" />
                 <ref bean="patch.db-V5.1-metadata-query-indexes" />
             </list>

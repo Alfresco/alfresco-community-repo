@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -55,7 +55,6 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.search.SearcherException;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.tenant.TenantDomainMismatchException;
 import org.alfresco.repo.tenant.TenantService;
@@ -69,8 +68,6 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.admin.RepoAdminService;
-import org.alfresco.service.cmr.admin.RepoUsage.UsageType;
-import org.alfresco.service.cmr.admin.RepoUsageStatus;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.invitation.InvitationException;
 import org.alfresco.service.cmr.model.FileFolderService;
@@ -124,7 +121,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
     private static final String LEAVE = "LEAVE";
     public static final String SYSTEM_FOLDER_SHORT_QNAME = "sys:system";
     public static final String PEOPLE_FOLDER_SHORT_QNAME = "sys:people";
-    private static final String SYSTEM_USAGE_WARN_LIMIT_USERS_EXCEEDED_VERBOSE = "system.usage.err.limit_users_exceeded_verbose";
 
     private static final String KEY_POST_TXN_DUPLICATES = "PersonServiceImpl.KEY_POST_TXN_DUPLICATES";
     public static final String KEY_ALLOW_UID_UPDATE = "PersonServiceImpl.KEY_ALLOW_UID_UPDATE";
@@ -952,18 +948,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             throw new IllegalArgumentException("No username specified when creating the person.");
         }
 
-        /*
-         * Check restrictions on the number of users
-         */
-        Long maxUsers = repoAdminService.getRestrictions().getUsers();
-        if (maxUsers != null)
-        {
-            // Get the set of users created in this transaction
-            Set<String> usersCreated = TransactionalResourceHelper.getSet(KEY_USERS_CREATED);
-            usersCreated.add(userName);
-            AlfrescoTransactionSupport.bindListener(this);
-        }
-
         AuthorityType authorityType = AuthorityType.getAuthorityType(userName);
         if (authorityType != AuthorityType.USER)
         {
@@ -1257,16 +1241,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             {
                 beforeDeleteNodeValidationBehaviour.enable();
             }
-        }
-              
-        /*
-         * Kick off the transaction listener for create user.   It has the side-effect of 
-         * recalculating the number of users.
-         */
-        Long maxUsers = repoAdminService.getRestrictions().getUsers();
-        if (maxUsers != null)
-        {    
-            AlfrescoTransactionSupport.bindListener(this);
         }
     }
     
@@ -2091,72 +2065,6 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         Set<String> usersCreated = TransactionalResourceHelper.getSet(KEY_USERS_CREATED);
         usersCreated.add(userName);
         AlfrescoTransactionSupport.bindListener(this);
-    }
-    
-    /**
-     * {@inheritDoc}
-     */
-    public void beforeCommit(boolean readOnly)
-    {
-        // check whether max users has been exceeded
-        RunAsWork<Long> getMaxUsersWork = new RunAsWork<Long>()
-        {
-            @Override
-            public Long doWork() throws Exception
-            {
-                return repoAdminService.getRestrictions().getUsers();
-            }
-        };
-        Long maxUsers = AuthenticationUtil.runAs(getMaxUsersWork, AuthenticationUtil.getSystemUserName());
-        if(maxUsers == null)
-        {
-            return;
-        }
-    
-        Long users = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Long>()
-        {
-            public Long doWork() throws Exception
-            {
-                repoAdminService.updateUsage(UsageType.USAGE_USERS);
-                if(logger.isDebugEnabled())
-                {
-                    logger.debug("Number of users is " + repoAdminService.getUsage().getUsers());
-                }
-                return repoAdminService.getUsage().getUsers();
-            }
-        } , AuthenticationUtil.getSystemUserName());
-
-        // Get the set of users created in this transaction
-        Set<String> usersCreated = TransactionalResourceHelper.getSet(KEY_USERS_CREATED);
-        
-        // If we exceed the limit, generate decent message about which users were being created, etc.
-        if (users > maxUsers)
-        {
-            List<String> usersMsg = new ArrayList<String>(5);
-            int i = 0;
-            for (String userCreated : usersCreated)
-            {
-                i++;
-                if (i > 5)
-                {
-                    usersMsg.add(" ... more");
-                    break;
-                }
-                else
-                {
-                    usersMsg.add(userCreated);
-                }
-            }
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Maximum number of users exceeded: " + usersCreated);
-            }
-            throw AlfrescoRuntimeException.create(SYSTEM_USAGE_WARN_LIMIT_USERS_EXCEEDED_VERBOSE, maxUsers, usersMsg);
-        }
-        
-        // Get the usages and log any warnings
-        RepoUsageStatus usageStatus = repoAdminService.getUsageStatus();
-        usageStatus.logMessages(logger);
     }
     
     public int countPeople()

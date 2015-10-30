@@ -28,6 +28,7 @@
                 <value>classpath:alfresco/caches.properties</value>
                 <!-- Enterprise defaults -->
                 <!--  Overrides supplied if this is an enterprise install (none exist for community) -->
+                <value>classpath*:alfresco/enterprise/caches.properties</value>
                 <value>classpath*:alfresco/enterprise/repository.properties</value>
                 <!-- <value>classpath:alfresco/jndi.properties</value> -->
                 <!--  Overrides supplied by modules -->

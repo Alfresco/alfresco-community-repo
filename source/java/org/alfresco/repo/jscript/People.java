@@ -95,7 +95,7 @@ public class People extends BaseScopableProcessorExtension implements Initializi
     private int defaultListMaxResults = 5000;
     private boolean honorHintUseCQ = true;
     
-    private static final String HINT_CQ_SUFFIX = " [hint:useCQ]";
+    protected static final String HINT_CQ_SUFFIX = " [hint:useCQ]";
     
     public void afterPropertiesSet() throws Exception
     {
@@ -165,11 +165,11 @@ public class People extends BaseScopableProcessorExtension implements Initializi
     /**
      * Set the service registry
      * 
-     * @param serviceRegistry	the service registry
+     * @param serviceRegistry   the service registry
      */
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
-    	this.services = serviceRegistry;
+        this.services = serviceRegistry;
     }
 
     /**
@@ -311,8 +311,8 @@ public class People extends BaseScopableProcessorExtension implements Initializi
     public ScriptNode createPerson(String userName, String firstName, String lastName, String emailAddress, 
             String password, boolean setAccountEnabled, boolean notifyByEmail)
     {
-    	ParameterCheck.mandatory("firstName", firstName);
-    	ParameterCheck.mandatory("emailAddress", emailAddress);
+        ParameterCheck.mandatory("firstName", firstName);
+        ParameterCheck.mandatory("emailAddress", emailAddress);
         
         ScriptNode person = null;
         
@@ -321,13 +321,13 @@ public class People extends BaseScopableProcessorExtension implements Initializi
         {
             for (int i=0; i < numRetries; i++)
             {
-            	userName = usernameGenerator.generateUserName(firstName, lastName, emailAddress, i);
-            	
-            	// create person if user name does not already exist
-            	if (!personService.personExists(userName))
-            	{
-            	    break;
-            	}
+                userName = usernameGenerator.generateUserName(firstName, lastName, emailAddress, i);
+                
+                // create person if user name does not already exist
+                if (!personService.personExists(userName))
+                {
+                    break;
+                }
             }
         }
         
@@ -344,19 +344,19 @@ public class People extends BaseScopableProcessorExtension implements Initializi
             
             person = createPerson(userName, firstName, lastName, emailAddress);
             
-    		if (person != null && password != null)
-    		{   			
-    			// create account for person with the userName and password
-    		    authenticationService.createAuthentication(userName, password.toCharArray());
-    		    authenticationService.setAuthenticationEnabled(userName, setAccountEnabled);
-    			
-    			person.save();
-    			
-    			if(notifyByEmail)
-    			{
-    			    personService.notifyPerson(userName, password);
-    			}
-    		}
+            if (person != null && password != null)
+            {               
+                // create account for person with the userName and password
+                authenticationService.createAuthentication(userName, password.toCharArray());
+                authenticationService.setAuthenticationEnabled(userName, setAccountEnabled);
+                
+                person.save();
+                
+                if(notifyByEmail)
+                {
+                    personService.notifyPerson(userName, password);
+                }
+            }
         }
         
         return person;
@@ -914,8 +914,8 @@ public class People extends BaseScopableProcessorExtension implements Initializi
 
                 if ("fullName".equalsIgnoreCase(sortBy))
                 {
-                    String firstName = nodeService.getProperty(nodeRef, ContentModel.PROP_FIRSTNAME).toString();
-                    String lastName = nodeService.getProperty(nodeRef, ContentModel.PROP_LASTNAME).toString();
+                    String firstName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_FIRSTNAME);
+                    String lastName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_LASTNAME);
                     String fullName = firstName;
                     if (lastName != null && lastName.length() > 0)
                     {

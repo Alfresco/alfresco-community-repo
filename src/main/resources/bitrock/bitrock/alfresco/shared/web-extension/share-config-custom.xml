@@ -378,9 +378,12 @@
               sessions" feature of your load balancer must be used.
         NOTE: If alfresco server location is not localhost:8080 then also combine changes from the
               "example port config" section below.
-        *Optional* keystore contains SSL client certificate + trusted CAs.
-        Used to authenticate share to an external SSO system such as CAS
-        Remove the keystore section if not required i.e. for NTLM.
+        *Optional* ssl-config contains:
+              keystore for managing client key and certificate.
+              truststore for managing trusted CAs.
+        Used to authenticate share to an external SSO system such as CAS or 
+        to make share talk to SSL layers that require client certificates.
+        Remove the ssl-config section if not required i.e. for NTLM.
         
         NOTE: For Kerberos SSO rename the "KerberosDisabled" condition above to "Kerberos"
         
@@ -405,13 +408,18 @@
    <!--
    <config evaluator="string-compare" condition="Remote">
       <remote>
-         <keystore>
-             <path>alfresco/web-extension/alfresco-system.p12</path>
-             <type>pkcs12</type>
-             <password>alfresco-system</password>
-             <verify-hostname>true</verify-hostname>
-         </keystore>
-         
+         <ssl-config>
+            <keystore-path>alfresco/web-extension/alfresco-system.p12</keystore-path>
+            <keystore-type>pkcs12</keystore-type>
+            <keystore-password>alfresco-system</keystore-password>
+
+            <truststore-path>alfresco/web-extension/ssl-truststore</truststore-path>
+            <truststore-type>JCEKS</truststore-type>
+            <truststore-password>password</truststore-password>
+
+            <verify-hostname>true</verify-hostname>
+         </ssl-config>
+
          <connector>
             <id>alfrescoCookie</id>
             <name>Alfresco Connector</name>

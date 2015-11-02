@@ -655,6 +655,9 @@ msgstr "Enter the location of your Alfresco repository."
 msgid "Repository location: "
 msgstr "Repository location: "
 
+msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions."
+msgstr "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions."
+
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 

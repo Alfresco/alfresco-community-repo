@@ -1676,7 +1676,7 @@ rem RUBY_APPLICATION_STOP</value>
                 <variable>process_binding_port</variable>
             </getProcessUsingPort>
             <setInstallerVariable name="process_binding_message" value=""/>
-            <setInstallerVariable name="process_binding_message" value="${tr('This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port.')}">
+            <setInstallerVariable name="process_binding_message" value="${tr('This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port.')}">
                 <ruleList>
                     <compareText text="${serverIp}" logic="equals" value=""/>
                     <compareText text="${process_binding_port}" logic="does_not_equal" value=""/>

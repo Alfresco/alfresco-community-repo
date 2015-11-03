@@ -456,12 +456,16 @@ public class EmailServiceImpl implements EmailService
         ResultSet resultSet = null;
         try
         {
-            String query = "@sys\\:node-dbid:" + parts[0];
+            Long nodeId = Long.parseLong(parts[0]);
+            String query = "@sys\\:node-dbid:" + nodeId;
             resultSet = searchService.query(storeRef, SearchService.LANGUAGE_LUCENE, query);
             if (resultSet.length() > 0)
             {
                 return resultSet.getNodeRef(0);
             }
+        }
+        catch (NumberFormatException e) 
+        {
         }
         finally
         {
@@ -470,6 +474,7 @@ public class EmailServiceImpl implements EmailService
                 resultSet.close();
             }
         }
+        
         throw new EmailMessageException(ERR_INVALID_NODE_ADDRESS, recipient);
     }
 

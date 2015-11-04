@@ -33,7 +33,7 @@
 
         <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->
         <alfresco.package.name>alfresco-one-enterprise</alfresco.package.name>
-        <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
+        <alfresco.distribution.name>alfresco-enterprise-distribution</alfresco.distribution.name>
     </properties>
 
     <dependencies>

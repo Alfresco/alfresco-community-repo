@@ -115,8 +115,8 @@ msgstr "Implementazione di Alfresco in corso..."
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "Installare PostgreSQL come servizio Windows?"
 
-msgid "Easy - Install using the default configuration"
-msgstr "Facile - Installa i server utilizzando la configurazione predefinita"
+msgid "Easy - Install using the default configuration."
+msgstr "Facile - Installa i server utilizzando la configurazione predefinita."
 
 msgid "Extension Files"
 msgstr "File di estensione"

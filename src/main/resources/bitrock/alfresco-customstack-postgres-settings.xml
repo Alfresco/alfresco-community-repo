@@ -205,7 +205,7 @@
             <displayType>radiobuttons</displayType>
             <insertBefore>components</insertBefore>
             <optionList>
-                <option text="Easy - Install using the default configuration" value="easy"/>
+                <option text="Easy - Install using the default configuration." value="easy"/>
                 <option description="Choose optional components to install." text="Advanced - Configure server ports and service properties." value="advanced"/>
             </optionList>
             <validationActionList>

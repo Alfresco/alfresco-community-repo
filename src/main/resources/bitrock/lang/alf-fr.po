@@ -109,8 +109,8 @@ msgstr "Nom de la base de données"
 msgid "Database Name:"
 msgstr "Nom de la base de données :"
 
-msgid "Deploying Alfresco..."
-msgstr "Déploiement d'Alfresco..."
+msgid "Deploying Alfresco... This can take up to five minutes."
+msgstr "Déploiement d'Alfresco en cours... Veuillez patienter quelques minutes."
 
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "Voulez-vous installer PostgreSQL en tant que service Windows ?"
@@ -655,6 +655,9 @@ msgstr "Saisissez l'emplacement de votre entrepôt Alfresco."
 msgid "Repository location: "
 msgstr "Emplacement de l'entrepôt : "
 
+msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions."
+msgstr "Solr - Installez Solr 1.4 uniquement pour la mise à niveau depuis une version antérieure d'Alfresco."
+
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr est une plateforme de recherche open source qui utilise Apache Lucene comme moteur de recherche et d'indexation. Solr 4 offre des caractéristiques d'évolutivité, des performances et une souplesse supérieures à celles de Solr 1."
 
@@ -663,3 +666,8 @@ msgstr "Liaison au numéro de port indiqué impossible."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Liaison au numéro de port indiqué impossible. Ce port est déjà utilisé par le processus ${process_binding_port}. Sélectionnez un autre port de serveur ${serverName}."
+
+# Built-in messages 
+Installer.Installation.Question.Abort=Voulez-vous annuler l'installation ?
+Installer.LanguageSelection.Title=Sélection de la langue
+Installer.LanguageSelection.Select=Sélectionnez la langue pour l'installation

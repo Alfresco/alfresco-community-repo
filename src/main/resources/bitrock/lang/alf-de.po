@@ -109,8 +109,8 @@ msgstr "Datenbankname"
 msgid "Database Name:"
 msgstr "Datenbankname:"
 
-msgid "Deploying Alfresco..."
-msgstr "Alfresco wird bereitgestellt..."
+msgid "Deploying Alfresco... This can take up to five minutes."
+msgstr "Alfresco wird bereitgestellt... Dies kann bis zu fünf Minuten dauern."
 
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "Möchten Sie PostgreSQL als Windows-Dienst installieren?"
@@ -655,11 +655,19 @@ msgstr "Geben Sie den Speicherort Ihres Alfresco-Repositorys ein."
 msgid "Repository location: "
 msgstr "Repository-Ort: "
 
+msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions."
+msgstr "Solr - Installieren Sie Solr 1.4 nur, um ein Upgrade von früheren Versionen von Alfresco durchzuführen."
+
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr ist eine Open-Source-Suchplattform für Unternehmen. Als Index- und Such-Engine wird dabei Apache Lucene verwendet. Solr 4 ist hinsichtlich Skalierbarkeit, Leistung und Flexibilität besser als Solr 1."
 
 msgid "Unable to bind to the given port number."
 msgstr "Port kann nicht an die angegebene Portnummer gebunden werden."
 
-msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
+msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Port kann nicht an die angegebene Portnummer gebunden werden. Dieser Port wird bereits vom ${process_binding_port}-Prozess verwendet. Bitte wählen Sie einen anderen ${serverName}-Serverport."
+
+# Built-in messages
+Installer.Installation.Question.Abort=Möchten Sie die Installation abbrechen?
+Installer.LanguageSelection.Title=Sprachauswahl
+Installer.LanguageSelection.Select=Wählen Sie die Installationssprache aus

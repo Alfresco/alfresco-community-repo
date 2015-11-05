@@ -658,8 +658,8 @@ msgstr "Locatie van repository: "
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr is een open-source zoekplatform dat gebruikmaakt van Apache Lucene als indexerings- en zoekmachine. Solr 4 biedt verbeterde schaalbaarheid, prestaties en flexibiliteit ten opzichte van Solr 1."
 
-msgid "Unable to bind to the given port number. ${process_binding_message}"
-msgstr "Kan de poort niet binden aan het opgegeven poortnummer. ${process_binding_message}"
+msgid "Unable to bind to the given port number."
+msgstr "Kan de poort niet binden aan het opgegeven poortnummer."
 
-msgid "This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
-msgstr "Deze poort wordt al gebruikt door het ${process_binding_port}-proces. Selecteer een andere ${serverName}-serverpoort."
+msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
+msgstr "Kan de poort niet binden aan het opgegeven poortnummer. Deze poort wordt al gebruikt door het ${process_binding_port}-proces. Selecteer een andere ${serverName}-serverpoort."

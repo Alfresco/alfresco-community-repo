@@ -658,8 +658,8 @@ msgstr "Posizione repository: "
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr è una piattaforma di ricerca enterprise open-source che utilizza Apache Lucene come motore di indicizzazione e ricerca. Rispetto a Solr 1, Solr 4 presenta miglioramenti in termini di scalabilità, prestazioni e flessibilità."
 
-msgid "Unable to bind to the given port number. ${process_binding_message}"
-msgstr "Impossibile stabilire un'associazione al numero di porta specificato. ${process_binding_message}"
+msgid "Unable to bind to the given port number."
+msgstr "Impossibile stabilire un'associazione al numero di porta specificato."
 
-msgid "This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
-msgstr "Questa porta è già utilizzata dal processo ${process_binding_port}. Selezionare un'altra porta del server ${serverName}."
+msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
+msgstr "Impossibile stabilire un'associazione al numero di porta specificato. Questa porta è già utilizzata dal processo ${process_binding_port}. Selezionare un'altra porta del server ${serverName}."

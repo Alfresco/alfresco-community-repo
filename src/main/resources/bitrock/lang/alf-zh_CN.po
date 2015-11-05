@@ -658,8 +658,8 @@ msgstr "存储库位置："
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr 是一种开源的企业搜索平台，使用 Apache Lucene 作为索引和搜索引擎。与 Solr 1 相比，Solr 4 在可扩展性、性能和灵活性方面进行了改进。"
 
-msgid "Unable to bind to the given port number. ${process_binding_message}"
-msgstr "无法绑定提供的服务器端口。${process_binding_message}"
+msgid "Unable to bind to the given port number."
+msgstr "无法绑定提供的服务器端口。"
 
-msgid "This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
-msgstr "此端口已被 ${process_binding_port} 进程使用。请选择其他 ${serverName} 服务器端口。"
+msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
+msgstr "无法绑定提供的服务器端口。 此端口已被 ${process_binding_port} 进程使用。请选择其他 ${serverName} 服务器端口。"

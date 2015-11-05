@@ -658,8 +658,8 @@ msgstr "リポジトリの場所: "
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr は、Apache Lucene をインデックス化/検索エンジンとして使用する、オープンソースのエンタープライズ検索プラットフォームです。Solr 4 は Solr 1 に比べて、拡張性、パフォーマンス、柔軟性に優れています。"
 
-msgid "Unable to bind to the given port number. ${process_binding_message}"
-msgstr "指定した番号にバインドできません。${process_binding_message}"
+msgid "Unable to bind to the given port number."
+msgstr "指定した番号にバインドできません。"
 
-msgid "This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
-msgstr "このポートはすでに ${process_binding_port} プロセスで使用されています。別の ${serverName} サーバー用ポートを選択してください。"
+msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
+msgstr "指定した番号にバインドできません。このポートはすでに ${process_binding_port} プロセスで使用されています。別の ${serverName} サーバー用ポートを選択してください。"

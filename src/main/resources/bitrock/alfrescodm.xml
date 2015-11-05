@@ -177,7 +177,7 @@
             <actionList>
                 <setInstallerVariable name="alfresco_apply_amps" value="1">
                     <ruleList>
-                        <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco Share"/>
+                        <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco Share Enterprise"/>
                     </ruleList>
                 </setInstallerVariable>
             </actionList>
@@ -313,7 +313,7 @@
                 <distributionFile origin="${alfresco_on_install_settings_directory}/alfresco/shared/alfresco-global.properties"/>
             </distributionFileList>
             <shouldPackRuleList>
-                <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco Share"/>
+                <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco Share Enterprise"/>
             </shouldPackRuleList>
         </folder>
         <folder>
@@ -409,7 +409,7 @@
             </actionList>
             <ruleList>
                 <platformTest type="windows"/>
-                <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco Share"/>
+                <compareText text="${product_fullname}" logic="does_not_equal" value="Alfresco Share Enterprise"/>
             </ruleList>
         </actionGroup>
         <substitute>

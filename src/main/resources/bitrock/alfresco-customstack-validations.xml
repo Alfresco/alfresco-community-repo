@@ -246,6 +246,7 @@
             <name>alfresco_report</name>
             <title>Warning</title>
             <explanation>This environment is not configured optimally for Alfresco - review this list before continuing.
+
 While these issues won’t prevent Alfresco from functioning, some product features might not be available, or the system might not perform optimally.</explanation>
             <value></value>
             <insertBefore>readytoinstall</insertBefore>

@@ -1675,17 +1675,9 @@ rem RUBY_APPLICATION_STOP</value>
                 <port>${serverPort}</port>
                 <variable>process_binding_port</variable>
             </getProcessUsingPort>
-            <setInstallerVariable name="process_binding_message" value=""/>
-            <setInstallerVariable name="process_binding_message" value="${tr('This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port.')}">
-                <ruleList>
-                    <compareText text="${serverIp}" logic="equals" value=""/>
-                    <compareText text="${process_binding_port}" logic="does_not_equal" value=""/>
-                    <isTrue value="${showProcessBinding}" />
-                </ruleList>
-            </setInstallerVariable>
             
             <throwError>
-                <text>Unable to bind to the given port number. ${process_binding_message}</text>
+                <text>Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port.</text>
                 <ruleEvaluationLogic>or</ruleEvaluationLogic>
                 <ruleList>
                     <ruleGroup>
@@ -1693,6 +1685,9 @@ rem RUBY_APPLICATION_STOP</value>
                             <compareText text="${serverIp}" logic="equals" value=""/>
                             <portTest port="${serverPort}" condition="cannot_bind"/>
                             <compareText text="${serverType}" logic="equals" value="bundled"/>
+                            <compareText text="${serverName}" logic="equals" value="Tomcat"/>
+                            <compareText text="${process_binding_port}" logic="does_not_equal" value=""/>
+                            <isTrue value="${showProcessBinding}" />
                         </ruleList>
                     </ruleGroup>
                     <ruleGroup>
@@ -1700,6 +1695,51 @@ rem RUBY_APPLICATION_STOP</value>
                             <compareText text="${serverIp}" logic="does_not_equal" value=""/>
                             <portTest condition="cannot_bind" port="${serverPort}" ip="${serverIp}" />
                             <compareText text="${serverType}" logic="equals" value="bundled"/>
+                            <compareText text="${serverName}" logic="equals" value="Tomcat"/>
+                        </ruleList>
+                    </ruleGroup>
+                    <ruleGroup>
+                        <ruleList>
+                            <compareText text="${serverIp}" logic="equals" value=""/>
+                            <portTest port="${serverPort}" condition="cannot_bind"/>
+                            <compareText text="${serverType}" logic="equals" value="bundled"/>
+                            <compareText text="${serverName}" logic="equals" value="LibreOffice"/>
+                            <compareText text="${process_binding_port}" logic="does_not_equal" value=""/>
+                            <isTrue value="${showProcessBinding}" />
+                        </ruleList>
+                    </ruleGroup>
+                    <ruleGroup>
+                        <ruleList>
+                            <compareText text="${serverIp}" logic="does_not_equal" value=""/>
+                            <portTest condition="cannot_bind" port="${serverPort}" ip="${serverIp}" />
+                            <compareText text="${serverType}" logic="equals" value="bundled"/>
+                            <compareText text="${serverName}" logic="equals" value="LibreOffice"/>
+                        </ruleList>
+                    </ruleGroup>
+                    <compareText text="${reservedPorts}" logic="contains" value=" ${serverPort} "/>
+                </ruleList>
+            </throwError>
+            
+            <throwError>
+                <text>Unable to bind to the given port number.</text>
+                <ruleEvaluationLogic>or</ruleEvaluationLogic>
+                <ruleList>
+                    <ruleGroup>
+                        <ruleList>
+                            <compareText text="${serverIp}" logic="equals" value=""/>
+                            <portTest port="${serverPort}" condition="cannot_bind"/>
+                            <compareText text="${serverType}" logic="equals" value="bundled"/>
+                            <compareText text="${serverName}" logic="does_not_equal" value="Tomcat"/>
+                            <compareText text="${serverName}" logic="does_not_equal" value="LibreOffice"/>
+                        </ruleList>
+                    </ruleGroup>
+                    <ruleGroup>
+                        <ruleList>
+                            <compareText text="${serverIp}" logic="does_not_equal" value=""/>
+                            <portTest condition="cannot_bind" port="${serverPort}" ip="${serverIp}" />
+                            <compareText text="${serverType}" logic="equals" value="bundled"/>
+                            <compareText text="${serverName}" logic="does_not_equal" value="Tomcat"/>
+                            <compareText text="${serverName}" logic="does_not_equal" value="LibreOffice"/>
                         </ruleList>
                     </ruleGroup>
                     <compareText text="${reservedPorts}" logic="contains" value=" ${serverPort} "/>

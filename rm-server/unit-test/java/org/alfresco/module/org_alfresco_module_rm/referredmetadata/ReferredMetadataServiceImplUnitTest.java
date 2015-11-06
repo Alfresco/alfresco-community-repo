@@ -18,21 +18,24 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.referredmetadata;
 
-import static java.util.Collections.emptyMap;
 import static java.util.Arrays.asList;
-import static org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataException.ReferentNodeNotFound;
-import static org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataException.MetadataReferralNotFound;
+import static java.util.Collections.emptyMap;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.FPUtils.asSet;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.any;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.eq;
 import static org.mockito.Mockito.when;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataException.MetadataReferralNotFound;
+import org.alfresco.module.org_alfresco_module_rm.referredmetadata.ReferredMetadataException.ReferentNodeNotFound;
 import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -46,10 +49,6 @@ import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Unit tests for {@link ReferredMetadataServiceImpl}.
@@ -96,6 +95,7 @@ public class ReferredMetadataServiceImplUnitTest
                                                this.setAspects(asSet(referredAspect1, referredAspect2));
                                            }};
 
+    @SuppressWarnings("serial")
     @Before public void setUp()
     {
         MockitoAnnotations.initMocks(this);

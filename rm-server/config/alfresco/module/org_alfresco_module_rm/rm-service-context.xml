@@ -392,8 +392,12 @@
         <property name="proxyInterfaces">
             <value>org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService</value>
         </property>
-        <property name="target">
-            <ref bean="filePlanService"/>
+        <property name="targetSource">
+            <bean class="org.alfresco.config.NonBlockingLazyInitTargetSource">
+                <property name="targetBeanName">
+                   <idref bean="filePlanService"/>
+                </property>
+            </bean>
         </property>
         <property name="interceptorNames">
             <list>

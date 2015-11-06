@@ -31,12 +31,16 @@ import java.util.List;
  */
 public class ReferredMetadataException extends AlfrescoRuntimeException
 {
+    private static final long serialVersionUID = -6059777070036571486L;
+
     public ReferredMetadataException(String msgId)                  { super(msgId); }
     public ReferredMetadataException(String msgId, Throwable cause) { super(msgId, cause); }
 
     /** This exception may be thrown when a {@link MetadataReferral} was incorrectly initialised. */
     public static class InvalidMetadataReferral extends ReferredMetadataException
     {
+        private static final long serialVersionUID = 8507076314709440295L;
+
         public InvalidMetadataReferral(String msgId)
         {
             super(msgId);
@@ -46,6 +50,8 @@ public class ReferredMetadataException extends AlfrescoRuntimeException
     /** This exception may be thrown when a {@link MetadataReferral} already exists. */
     public static class MetadataReferralAlreadyExists extends ReferredMetadataException
     {
+        private static final long serialVersionUID = 8119954252195817706L;
+
         private final MetadataReferral metadataReferral;
 
         public MetadataReferralAlreadyExists(String msgId, MetadataReferral metadataReferral)
@@ -53,11 +59,18 @@ public class ReferredMetadataException extends AlfrescoRuntimeException
             super(msgId);
             this.metadataReferral = metadataReferral;
         }
+
+        public MetadataReferral getMetadataReferral()
+        {
+            return this.metadataReferral;
+        }
     }
 
     /** A {@link MetadataReferral} has not been found. */
     public static class MetadataReferralNotFound extends ReferredMetadataException
     {
+        private static final long serialVersionUID = 8648089074801662142L;
+
         public MetadataReferralNotFound(String msgId)
         {
             super(msgId);
@@ -67,6 +80,8 @@ public class ReferredMetadataException extends AlfrescoRuntimeException
     /** A referent Node has not been found. */
     public static class ReferentNodeNotFound extends ReferredMetadataException
     {
+        private static final long serialVersionUID = -6003487925958374458L;
+
         public ReferentNodeNotFound(String msgId)
         {
             super(msgId);
@@ -76,6 +91,8 @@ public class ReferredMetadataException extends AlfrescoRuntimeException
     /** Exception to report that chains of metadata referral are not currently supported. */
     public static class ChainedMetadataReferralUnsupported extends ReferredMetadataException
     {
+        private static final long serialVersionUID = -2293262325447442964L;
+
         private final List<NodeRef> existingReferrers;
 
         public ChainedMetadataReferralUnsupported(String msgId, List<NodeRef> existingReferrers)
@@ -101,6 +118,8 @@ public class ReferredMetadataException extends AlfrescoRuntimeException
     /** Exception to report that metadata referral is not supported for metadata defined on content types. */
     public static class TypeMetadataReferralUnsupported extends ReferredMetadataException
     {
+        private static final long serialVersionUID = 7498707640089715503L;
+
         public TypeMetadataReferralUnsupported(String msgId)
         {
             super(msgId);

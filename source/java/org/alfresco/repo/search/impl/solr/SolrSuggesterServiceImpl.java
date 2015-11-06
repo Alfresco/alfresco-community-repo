@@ -23,6 +23,7 @@ import java.util.HashMap;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.search.impl.lucene.SolrSuggesterResult;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SuggesterParameters;
 import org.alfresco.service.cmr.search.SuggesterResult;
 import org.alfresco.service.cmr.search.SuggesterService;
@@ -37,25 +38,31 @@ import org.json.JSONObject;
 public class SolrSuggesterServiceImpl implements SuggesterService
 {
 
-    public static final String SUGGESTER_PATH = "/alfresco/suggest";
+    public static final String SUGGEST_HANDLER = "/suggest";
 
     private boolean enabled;
-    private SolrAdminHTTPClient solrAdminHTTPClient;
+    
+    SolrQueryHTTPClient solrQueryHTTPClient;
+
 
     public void setEnabled(boolean isEnabled)
     {
         this.enabled = isEnabled;
     }
 
-    public void setSolrAdminHTTPClient(SolrAdminHTTPClient solrAdminHTTPClient)
-    {
-        this.solrAdminHTTPClient = solrAdminHTTPClient;
-    }
-
     @Override
     public boolean isEnabled()
     {
         return this.enabled;
+    }
+
+
+    /**
+     * @param solrQueryHTTPClient the solrQueryHTTPClient to set
+     */
+    public void setSolrQueryHTTPClient(SolrQueryHTTPClient solrQueryHTTPClient)
+    {
+        this.solrQueryHTTPClient = solrQueryHTTPClient;
     }
 
     @Override
@@ -73,13 +80,14 @@ public class SolrSuggesterServiceImpl implements SuggesterService
             int limit = suggesterParameters.getLimit();
 
             params.put("q", term);
+            params.put("shards.qt", SUGGEST_HANDLER);
             if (limit > 0)
             {
                 params.put("suggest.count", Integer.toString(limit));
             }
             params.put("wt", "json");
 
-            JSONObject response = solrAdminHTTPClient.execute(SUGGESTER_PATH, params);
+            JSONObject response = solrQueryHTTPClient.execute(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SUGGEST_HANDLER, params);
             return new SolrSuggesterResult(response);
         }
         catch (Exception e)

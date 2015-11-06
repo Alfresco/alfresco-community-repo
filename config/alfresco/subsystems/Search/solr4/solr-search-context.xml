@@ -327,8 +327,8 @@
         <property name="enabled">
             <value>${solr.suggester.enabled}</value>
         </property>
-        <property name="solrAdminHTTPClient">
-            <ref bean="search.solrAdminHTTPCLient" />
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
         </property>
     </bean>
 

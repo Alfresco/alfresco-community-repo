@@ -692,7 +692,7 @@
         </dependency>        
         <!-- Activiti -->
         <dependency>
-            <groupId>org.activiti</groupId>
+            <groupId>com.activiti</groupId>
             <artifactId>activiti-engine</artifactId>
             <version>${dependency.activiti-engine.version}</version>
             <exclusions>

@@ -3035,9 +3035,28 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                         nodeService.setProperty(target, ContentModel.PROP_MODIFIED, new Date());
                     }
             
-                    // Take an initial guess at the mimetype (if it has not been set by something already)
+                    /**
+                     *  Take a guess at the mimetype
+                     */
                     String mimetype = mimetypeService.guessMimetype(tempFile.getFullName(), new FileContentReader(tempFile.getFile()));
                     logger.debug("guesssed mimetype:" + mimetype);
+                    
+                    /**
+                     * mime type guessing may have failed in which case we should assume the mimetype has not changed.
+                     */
+                    if(mimetype.equalsIgnoreCase(MimetypeMap.MIMETYPE_BINARY))
+                    {
+                        // mimetype guessing may have failed
+                        if(existingContent != null)
+                        {
+                            // copy the mimetype from the existing content.
+                            mimetype = existingContent.getMimetype();
+                            if(logger.isDebugEnabled())
+                            {
+                                logger.debug("using mimetype of existing content :" + mimetype);
+                            }
+                        }
+                    }
             
                     String encoding;
                     // Take a guess at the locale

@@ -23,7 +23,7 @@ create table ACT_GE_BYTEARRAY (
 create table ACT_RE_DEPLOYMENT (
     ID_ varchar(255),
     NAME_ varchar(255),
-    DEPLOY_TIME_ timestamp,
+    DEPLOY_TIME_ timestamp NULL,
     primary key (ID_)
 ) TYPE=InnoDB;
 
@@ -104,7 +104,7 @@ create table ACT_RU_TASK (
     FORM_ varchar(255),
     ASSIGNEE_ varchar(255),
     PRIORITY_ integer,
-    CREATE_TIME_ timestamp,
+    CREATE_TIME_ timestamp NULL,
     START_DEADLINE_ timestamp,
     COMPLETION_DEADLINE_ timestamp,
     SKIPPABLE_ TINYINT,

@@ -981,7 +981,7 @@
         </column>
         <column name="DEPLOY_TIME_" order="5">
           <type>timestamp</type>
-          <nullable>false</nullable>
+          <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
       </columns>
@@ -1676,7 +1676,7 @@
         </column>
         <column name="CREATE_TIME_" order="14">
           <type>timestamp</type>
-          <nullable>false</nullable>
+          <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
         <column name="DUE_DATE_" order="15">

@@ -666,8 +666,3 @@ msgstr "Port kann nicht an die angegebene Portnummer gebunden werden."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Port kann nicht an die angegebene Portnummer gebunden werden. Dieser Port wird bereits vom ${process_binding_port}-Prozess verwendet. Bitte wählen Sie einen anderen ${serverName}-Serverport."
-
-# Built-in messages
-Installer.Installation.Question.Abort=Möchten Sie die Installation abbrechen?
-Installer.LanguageSelection.Title=Sprachauswahl
-Installer.LanguageSelection.Select=Wählen Sie die Installationssprache aus

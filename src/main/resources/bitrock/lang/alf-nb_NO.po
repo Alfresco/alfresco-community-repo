@@ -666,8 +666,3 @@ msgstr "Klarer ikke å binde til et bestemt portnummer."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
 msgstr "Klarer ikke å binde til et bestemt portnummer. Denne porten brukes allerede av ${process_binding_port} prosessen. Vennligst velg en annen ${serverName} serverport."
-
-# Built-in messages 
-Installer.Installation.Question.Abort=Vil du avslutte installasjonen?
-Installer.LanguageSelection.Title=Språkvalg
-Installer.LanguageSelection.Select=Velg installasjonsspråk

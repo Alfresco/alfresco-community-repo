@@ -666,8 +666,3 @@ msgstr "无法绑定提供的服务器端口。"
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
 msgstr "无法绑定提供的服务器端口。 此端口已被 ${process_binding_port} 进程使用。请选择其他 ${serverName} 服务器端口。"
-
-# Built-in messages 
-Installer.Installation.Question.Abort=是否要取消此安装？
-Installer.LanguageSelection.Title=语言选择
-Installer.LanguageSelection.Select=选择安装语言

@@ -666,8 +666,3 @@ msgstr "Não é possível associar ao número da porta indicado."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
 msgstr "Não é possível associar ao número da porta indicado. Essa porta já está em uso pelo processo ${process_binding_port}. Selecione outra porta do servidor ${serverName}."
-
-# Built-in messages 
-Installer.Installation.Question.Abort=Você quer cancelar a instalação?
-Installer.LanguageSelection.Title=Seleção de idioma
-Installer.LanguageSelection.Select=Selecione o idioma de instalação

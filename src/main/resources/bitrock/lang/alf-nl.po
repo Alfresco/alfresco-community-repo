@@ -666,8 +666,3 @@ msgstr "Kan de poort niet binden aan het opgegeven poortnummer."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Kan de poort niet binden aan het opgegeven poortnummer. Deze poort wordt al gebruikt door het ${process_binding_port}-proces. Selecteer een andere ${serverName}-serverpoort."
-
-# Built-in messages 
-Installer.Installation.Question.Abort=Wilt u de installatie annuleren?
-Installer.LanguageSelection.Title=Taal selecteren
-Installer.LanguageSelection.Select=Selecteer de installatietaal

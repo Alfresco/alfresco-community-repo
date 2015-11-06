@@ -128,19 +128,6 @@ public class ReferralAdminServiceImpl implements ReferralAdminService
         return metadataReferral;
     }
 
-    /** Gets the {@link MetadataReferral} which uses the specified {@code assocType}. */
-    private MetadataReferral getReferralForAssociation(QName assocType)
-    {
-        final MetadataReferral metadataReferral = registry.getReferralForAssociation(assocType);
-
-        if (metadataReferral == null)
-        {
-            throw new IllegalArgumentException("No " + MetadataReferral.class.getSimpleName() +
-                                               " configured for assocType " + assocType);
-        }
-        return metadataReferral;
-    }
-
     @Override public MetadataReferral detachReferrer(NodeRef referrer, QName aspectName)
     {
         final MetadataReferral referral = registry.getReferralForAspect(aspectName);

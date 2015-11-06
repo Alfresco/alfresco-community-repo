@@ -44,6 +44,7 @@ public class FPUtils
      * @param <T> the type of elements in the list.
      * @return the list with each element being the first retrieved from a {@code Supplier}.
      */
+    @SafeVarargs
     public static <T> List<T> asListFrom(Supplier<T>... suppliers)
     {
         if (suppliers == null || suppliers.length == 0)
@@ -66,6 +67,7 @@ public class FPUtils
      * @param <T> the type of elements in the set.
      * @return the set with each element being the first retrieved from a {@code Supplier} (duplicates removed).
      */
+    @SafeVarargs
     public static <T> Set<T> asSetFrom(Supplier<T>... suppliers)
     {
         List<T> l = asListFrom(suppliers);
@@ -78,6 +80,7 @@ public class FPUtils
      * @param objects the objects to be added to the set
      * @return a Set of objects (any equal objects will of course not be duplicated)
      */
+    @SafeVarargs
     public static <T> Set<T> asSet(T... objects)
     {
         return new HashSet<>(asList(objects));

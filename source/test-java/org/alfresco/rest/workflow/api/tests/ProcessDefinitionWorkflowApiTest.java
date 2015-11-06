@@ -23,6 +23,8 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -141,7 +143,136 @@ public class ProcessDefinitionWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals(0l, paginationJSON.get("skipCount"));
         assertEquals(false, paginationJSON.get("hasMoreItems"));
     }
-    
+
+    @Test
+    public void testGetProcessDefinitionsSorting() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+
+        String adhocKey = createProcessDefinitionKey("activitiAdhoc", requestContext);
+        org.activiti.engine.repository.ProcessDefinition activitiDefinition = activitiProcessEngine.getRepositoryService()
+                .createProcessDefinitionQuery()
+                .processDefinitionKey(adhocKey)
+                .singleResult();
+
+        assertNotNull(activitiDefinition);
+
+        ProcessDefinitionsClient processDefinitionsClient = publicApiClient.processDefinitionsClient();
+
+        List<ProcessDefinition> processDefinitions = getProcessDefinitions(processDefinitionsClient, "(category = 'http://alfresco.org')", "name");
+        assertEquals(5, processDefinitions.size());
+        List<String> expectedNames = Arrays.asList("Adhoc Activiti Process",
+                "Parallel Group Review And Approve Activiti Process",
+                "Parallel Review And Approve Activiti Process",
+                "Pooled Review And Approve Activiti Process",
+                "Review And Approve Activiti Process");
+
+        List<String> names = collect(processDefinitions, new Collector()
+        {
+            @Override
+            public String collect(ProcessDefinition definition)
+            {
+                return definition.getName();
+            }
+        });
+        assertEquals(expectedNames, names);
+
+        processDefinitions = getProcessDefinitions(processDefinitionsClient, "(category = 'http://alfresco.org')", "name DESC");
+        assertEquals(5, processDefinitions.size());
+        names = collect(processDefinitions, new Collector()
+        {
+            @Override
+            public String collect(ProcessDefinition definition)
+            {
+                return definition.getName();
+            }
+        });
+        Collections.reverse(expectedNames);
+        assertEquals(expectedNames, names);
+
+        processDefinitions = getProcessDefinitions(processDefinitionsClient, "(category = 'http://alfresco.org')", "version DESC");
+        assertEquals(5, processDefinitions.size()); //all the same version so no sorting
+
+        processDefinitions = getProcessDefinitions(processDefinitionsClient, "(category = 'http://alfresco.org')", "id ASC");
+        assertEquals(5, processDefinitions.size());
+        List<String> ids = collect(processDefinitions, new Collector()
+        {
+            @Override
+            public String collect(ProcessDefinition definition)
+            {
+                return definition.getId();
+            }
+        });
+        List<String> sortedIds = new ArrayList<>(ids);
+        Collections.sort(sortedIds);
+        assertEquals(sortedIds, ids);
+
+        processDefinitions = getProcessDefinitions(processDefinitionsClient, "(category = 'http://alfresco.org')", "category ASC");
+        assertEquals(5, processDefinitions.size()); //all the same
+
+        processDefinitions = getProcessDefinitions(processDefinitionsClient, "(category = 'http://alfresco.org')", "key DESC");
+        assertEquals(5, processDefinitions.size());
+        List<String> keys = collect(processDefinitions, new Collector()
+        {
+            @Override
+            public String collect(ProcessDefinition definition)
+            {
+                return definition.getKey();
+            }
+        });
+        List<String> sortedKeys = new ArrayList<>(keys);
+        Collections.sort(sortedKeys); //order
+        Collections.reverse(sortedKeys); //reverse order
+        assertEquals(sortedKeys, keys);
+
+        processDefinitions = getProcessDefinitions(processDefinitionsClient, "(category = 'http://alfresco.org')", "deploymentId ASC");
+        assertEquals(5, processDefinitions.size());
+        List<String> deploymentIds = collect(processDefinitions, new Collector()
+        {
+            @Override
+            public String collect(ProcessDefinition definition)
+            {
+                return definition.getDeploymentId();
+            }
+        });
+        List<String> sortedDeploymentIds = new ArrayList<>(deploymentIds);
+        Collections.sort(sortedDeploymentIds);
+        assertEquals(sortedDeploymentIds, deploymentIds);
+
+        try
+        {
+            processDefinitions = getProcessDefinitions(processDefinitionsClient, "(category = 'http://alfresco.org')", "sausage ASC");
+            fail("Expected exception");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(400, e.getHttpResponse().getStatusCode());
+            assertTrue(e.getMessage().contains("OrderBy sausage is not supported, supported items are"));
+        }
+
+        try
+        {
+            processDefinitions = getProcessDefinitions(processDefinitionsClient, "(category = 'http://alfresco.org')", "deploymentId ASC, key");
+            fail("Expected exception");
+        }
+        catch (PublicApiException e)
+        {
+            assertEquals(400, e.getHttpResponse().getStatusCode());
+            assertTrue(e.getHttpResponse().getResponse().contains("Only one orderBy parameter is supported"));
+        }
+    }
+
+    private List<String> collect(List<ProcessDefinition> processDefinitions, Collector collector)
+    {
+        List<String> collected = new ArrayList<>();
+        for (ProcessDefinition definition:processDefinitions)
+        {
+            collected.add(collector.collect(definition));
+        }
+
+        return collected;
+    }
+
     @Test
     public void testGetProcessDefinitionsWhereClause() throws Exception
     {
@@ -159,7 +290,7 @@ public class ProcessDefinitionWorkflowApiTest extends EnterpriseWorkflowTestApi
         
         // Filter on category equals
         Map<String, ProcessDefinition>  processDefinitionMap = getProcessDefinitions(processDefinitionsClient, "(category = 'http://alfresco.org')");
-        
+
         assertTrue(processDefinitionMap.containsKey("activitiReviewPooled"));
         assertTrue(processDefinitionMap.containsKey("activitiReview"));
         assertTrue(processDefinitionMap.containsKey("activitiParallelGroupReview"));
@@ -639,8 +770,28 @@ public class ProcessDefinitionWorkflowApiTest extends EnterpriseWorkflowTestApi
         {
             params = Collections.singletonMap("where", whereClause);
         }
-        
+
         ListResponse<ProcessDefinition> processDefinitionsResponse = processDefinitionsClient.getProcessDefinitions(params);
         return getProcessDefinitionMapByKey(processDefinitionsResponse.getList());
+    }
+
+    protected List<ProcessDefinition> getProcessDefinitions(ProcessDefinitionsClient processDefinitionsClient, String whereClause, String sort) throws PublicApiException
+    {
+        Map<String, String> params = null;
+        if(whereClause != null)
+        {
+            params = Collections.singletonMap("where", whereClause);
+        }
+        if(sort != null)
+        {
+            params = Collections.singletonMap("orderBy", sort);
+        }
+        
+        return processDefinitionsClient.getProcessDefinitions(params).getList();
+    }
+
+    interface Collector
+    {
+        public String collect (ProcessDefinition processDefinitions);
     }
 }

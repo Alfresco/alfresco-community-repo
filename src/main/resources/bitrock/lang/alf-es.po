@@ -109,8 +109,8 @@ msgstr "Nombre de la base de datos"
 msgid "Database Name:"
 msgstr "Nombre de la base de datos:"
 
-msgid "Deploying Alfresco..."
-msgstr "Desplegando Alfresco..."
+msgid "Deploying Alfresco... This can take up to five minutes."
+msgstr "Implementando Alfresco... Esto puede llevar hasta cinco minutos."
 
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "¿Desea instalar PostgreSQL como servicio de Windows?"
@@ -655,11 +655,19 @@ msgstr "Introduzca la ubicación de su repositorio de Alfresco."
 msgid "Repository location: "
 msgstr "Ubicación del repositorio: "
 
+msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions."
+msgstr "Solr - Instale Solr 1.4 solo para actualizar versiones anteriores de Alfresco."
+
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr es una plataforma de búsqueda empresarial de código abierto que utiliza Apache Lucene como motor de indexación y búsqueda. Solr 4 ofrece mejoras en escalabilidad, rendimiento y flexibilidad en comparación con Solr 1."
 
 msgid "Unable to bind to the given port number."
 msgstr "No se puede unir con el número de puerto dado."
 
-msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
+msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "No se puede unir con el número de puerto dado. Este puerto ya lo está utilizando el proceso ${process_binding_port}. Seleccione otro puerto de servidor ${serverName}."
+
+# Built-in messages
+Installer.Installation.Question.Abort=¿Desea cancelar la instalación?
+Installer.LanguageSelection.Title=Selección de idioma
+Installer.LanguageSelection.Select=Seleccione el idioma de la instalación

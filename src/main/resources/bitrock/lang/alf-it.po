@@ -109,8 +109,8 @@ msgstr "Nome database"
 msgid "Database Name:"
 msgstr "Nome database:"
 
-msgid "Deploying Alfresco..."
-msgstr "Implementazione di Alfresco in corso..."
+msgid "Deploying Alfresco... This can take up to five minutes."
+msgstr "Implementazione di Alfresco in corso... L'operazione potrebbe richiedere fino a cinque minuti."
 
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "Installare PostgreSQL come servizio Windows?"
@@ -655,11 +655,19 @@ msgstr "Immettere la posizione del repository Alfresco."
 msgid "Repository location: "
 msgstr "Posizione repository: "
 
+msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions."
+msgstr "Solr - Installare Solr 1.4 solo per gli aggiornamenti di versioni precedenti di Alfresco."
+
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr è una piattaforma di ricerca enterprise open-source che utilizza Apache Lucene come motore di indicizzazione e ricerca. Rispetto a Solr 1, Solr 4 presenta miglioramenti in termini di scalabilità, prestazioni e flessibilità."
 
 msgid "Unable to bind to the given port number."
 msgstr "Impossibile stabilire un'associazione al numero di porta specificato."
 
-msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
+msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Impossibile stabilire un'associazione al numero di porta specificato. Questa porta è già utilizzata dal processo ${process_binding_port}. Selezionare un'altra porta del server ${serverName}."
+
+# Built-in messages 
+Installer.Installation.Question.Abort=Annullare l'installazione?
+Installer.LanguageSelection.Title=Selezione lingua
+Installer.LanguageSelection.Select=Selezionare la lingua di installazione

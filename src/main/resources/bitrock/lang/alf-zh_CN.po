@@ -109,8 +109,8 @@ msgstr "数据库名称"
 msgid "Database Name:"
 msgstr "数据库名称："
 
-msgid "Deploying Alfresco..."
-msgstr "正在部署 Alfresco..."
+msgid "Deploying Alfresco... This can take up to five minutes."
+msgstr "正在部署 Alfresco... 这可能需要 5 分钟。"
 
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "是否要将 PostgreSQL 作为 Windows 服务安装？"
@@ -655,6 +655,9 @@ msgstr "请输入 Alfresco 存储库的位置。"
 msgid "Repository location: "
 msgstr "存储库位置："
 
+msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions."
+msgstr "Solr - 仅从早期的 Alfresco 版本升级时需要安装 Solr 1.4。"
+
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr 是一种开源的企业搜索平台，使用 Apache Lucene 作为索引和搜索引擎。与 Solr 1 相比，Solr 4 在可扩展性、性能和灵活性方面进行了改进。"
 
@@ -663,3 +666,8 @@ msgstr "无法绑定提供的服务器端口。"
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
 msgstr "无法绑定提供的服务器端口。 此端口已被 ${process_binding_port} 进程使用。请选择其他 ${serverName} 服务器端口。"
+
+# Built-in messages 
+Installer.Installation.Question.Abort=是否要取消此安装？
+Installer.LanguageSelection.Title=语言选择
+Installer.LanguageSelection.Select=选择安装语言

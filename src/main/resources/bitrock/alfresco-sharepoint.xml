@@ -30,6 +30,12 @@
                         <portTest port="${alfresco_sharepoint_port}" condition="cannot_bind"/>
                     </ruleList>
                 </throwError>
+                <throwError>
+                    <text>Use numbers only the port configuration fields. Other characters are not permitted.</text>
+                    <ruleList>
+                        <stringTest text="${alfresco_sharepoint_port}" type="not_digit" />
+                    </ruleList>
+                </throwError>
             </validationActionList>
         </stringParameter>
     </parameterList>

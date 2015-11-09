@@ -1665,7 +1665,7 @@ rem RUBY_APPLICATION_STOP</value>
         </parameterList>
         <actionList>
             <throwError>
-                <text>Please choose a correct value number for the ports (only digits are allowed)</text>
+                <text>Use numbers only in the port configuration fields. Other characters are not permitted.</text>
                 <ruleList>
                     <stringTest text="${serverPort}" type="not_digit" />
                 </ruleList>

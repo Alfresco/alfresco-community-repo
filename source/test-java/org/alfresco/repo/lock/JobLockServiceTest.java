@@ -404,7 +404,10 @@ public class JobLockServiceTest extends TestCase
             // Check that the timed callback is killed properly
             int checkedCount = checked[0];
             int releasedCount = released[0];
-            System.out.println("X:" + checkedCount + ":" + releasedCount);
+            if(logger.isDebugEnabled())
+            {
+                logger.debug("checkedCount=" + checkedCount + ",releasedCount=" + releasedCount);
+            }
             wait(10000L);
             assertEquals("Lock callback timer was not terminated", checkedCount, checked[0]);
             assertEquals("Lock callback timer was not terminated", releasedCount, released[0]);
@@ -485,7 +488,11 @@ public class JobLockServiceTest extends TestCase
     public void testGetLockWithCallbackNormal()         { runGetLockWithCallback(4); }
     
     public void runGetLockWithCallback(int t)
-    {        
+    {
+        // ACE-4347 extra debug logging just for this test so we can see what's going on when it next fails
+        Level saveLogLevel = Logger.getLogger("org.alfresco.repo.lock").getLevel();
+        Logger.getLogger("org.alfresco.repo.lock").setLevel(Level.ALL);
+
         logger.debug("runGetLockWithCallback "+t+
             "\n----------------------------------------"+
             "\n"+Thread.currentThread().getStackTrace()[2].getMethodName()+
@@ -577,6 +584,8 @@ public class JobLockServiceTest extends TestCase
             }
             
             logger.debug("runGetLockWithCallback\n----------------------------------------");
+
+            Logger.getLogger("org.alfresco.repo.lock").setLevel(saveLogLevel);
         }
     }
     

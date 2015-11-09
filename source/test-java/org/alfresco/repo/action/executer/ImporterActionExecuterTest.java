@@ -23,11 +23,13 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -50,6 +52,8 @@ import org.junit.Test;
  */
 public class ImporterActionExecuterTest
 {
+    private static final String FILE_NAME = "import-archive-test/SuspiciousPathsArchive.zip";
+
     @Test
     public void testImportArchiveWithSuspiciousPaths() throws IOException
     {
@@ -58,8 +62,10 @@ public class ImporterActionExecuterTest
         final NodeService nodeService = serviceRegistry.getNodeService();
         final ContentService contentService = serviceRegistry.getContentService();
         final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getTransactionService().getRetryingTransactionHelper();
-        
-        final File file = new File("./source/test-resources/import-archive-test/SuspiciousPathsArchive.zip");
+
+
+        URL url = AbstractContentTransformerTest.class.getClassLoader().getResource(FILE_NAME);
+        final File file = new File(url.getFile());
 
         retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
         {

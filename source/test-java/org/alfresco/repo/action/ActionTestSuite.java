@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,7 @@ import org.alfresco.repo.action.evaluator.IsSubTypeEvaluatorTest;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuterTest;
 import org.alfresco.repo.action.executer.ContentMetadataEmbedderTest;
 import org.alfresco.repo.action.executer.ContentMetadataExtracterTest;
+import org.alfresco.repo.action.executer.ImporterActionExecuterTest;
 import org.alfresco.repo.action.executer.MailActionExecuterTest;
 import org.alfresco.repo.action.executer.RemoveFeaturesActionExecuterTest;
 import org.alfresco.repo.action.executer.SetPropertyValueActionExecuterTest;
@@ -67,6 +68,7 @@ import org.junit.runners.Suite.SuiteClasses;
     ActionTrackingServiceImplTest.class, // intermittent - pending ALF-9773 & ALF-9774
 	MailActionExecuterTest.class,
     ActionServiceImpl2Test.class,
+    ImporterActionExecuterTest.class
 })
 public class ActionTestSuite
 {

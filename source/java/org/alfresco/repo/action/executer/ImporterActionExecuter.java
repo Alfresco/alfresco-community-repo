@@ -69,6 +69,7 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
     public static final String NAME = "import";
     public static final String PARAM_ENCODING = "encoding";
     public static final String PARAM_DESTINATION_FOLDER = "destination";
+    public static final String ARCHIVE_CONTAINS_SUSPICIOUS_PATHS_ERROR = "Archive contains suspicious paths. Please review it's contents and make sure it doesn't contain entries with absolute paths or paths containing references to the parent folder (i.e. \"..\")";
 
     private static final int BUFFER_SIZE = 16384;
     private static final String TEMP_FILE_PREFIX = "alf";
@@ -348,6 +349,12 @@ public class ImporterActionExecuter extends ActionExecuterAbstractBase
 	            {
 	                fileName = entry.getName();
 	                fileName = fileName.replace('/', File.separatorChar);
+
+	                if (fileName.startsWith("/") || fileName.indexOf(":" + File.separator) == 1 || fileName.contains(".." + File.separator))
+	                {
+	                    throw new AlfrescoRuntimeException(ARCHIVE_CONTAINS_SUSPICIOUS_PATHS_ERROR);
+	                }
+
 	                destFileName = extractDir + fileName;
 	                File destFile = new File(destFileName);
 	                String parent = destFile.getParent();

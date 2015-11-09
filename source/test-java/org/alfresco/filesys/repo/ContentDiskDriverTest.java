@@ -8071,7 +8071,7 @@ public class ContentDiskDriverTest extends TestCase
                 * Validate mimetype has not changed
                 */
                assertEquals("mimeType is wrong", TEST_MIMETYPE, data.getMimetype());
-               assertEquals("mimeType is wrong", 3, data.getSize());
+    
            
                return null;
             }

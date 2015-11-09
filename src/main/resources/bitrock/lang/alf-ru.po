@@ -666,8 +666,3 @@ msgstr "Не удается выполнить привязку к заданн�
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Не удается выполнить привязку к заданному номеру порта. Этот порт уже используется процессом ${process_binding_port}. Выберите другой порт сервера ${serverName}."
-
-# Built-in messages 
-Installer.Installation.Question.Abort=Прервать установку?
-Installer.LanguageSelection.Title=Выбор языка
-Installer.LanguageSelection.Select=Выберите язык для использования в процессе установки

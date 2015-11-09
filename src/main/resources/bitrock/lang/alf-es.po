@@ -666,8 +666,3 @@ msgstr "No se puede unir con el número de puerto dado."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "No se puede unir con el número de puerto dado. Este puerto ya lo está utilizando el proceso ${process_binding_port}. Seleccione otro puerto de servidor ${serverName}."
-
-# Built-in messages
-Installer.Installation.Question.Abort=¿Desea cancelar la instalación?
-Installer.LanguageSelection.Title=Selección de idioma
-Installer.LanguageSelection.Select=Seleccione el idioma de la instalación

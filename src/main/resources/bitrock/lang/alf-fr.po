@@ -666,8 +666,3 @@ msgstr "Liaison au numéro de port indiqué impossible."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Liaison au numéro de port indiqué impossible. Ce port est déjà utilisé par le processus ${process_binding_port}. Sélectionnez un autre port de serveur ${serverName}."
-
-# Built-in messages 
-Installer.Installation.Question.Abort=Voulez-vous annuler l'installation ?
-Installer.LanguageSelection.Title=Sélection de la langue
-Installer.LanguageSelection.Select=Sélectionnez la langue pour l'installation

@@ -821,3 +821,5 @@ Admin.addEventListener(window, 'load', function() {
    <input class="<#if class?has_content>${class?html}<#else>inline</#if>" <#if id?has_content>id="${id?html}"</#if> <#if style?has_content>style="${style?html}"</#if> type="button" value="${label?html}" onclick="${onclick?html}" <#if disabled="true">disabled="true"</#if> />
    <#if description?has_content><span class="description">${description?html}</span></#if>
 </#macro>
+
+<#assign docsEdition = server.getVersionMajor() + "." + server.getVersionMinor() />

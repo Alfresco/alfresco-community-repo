@@ -279,36 +279,42 @@ public class FileFolderLoader
                     {
                         // Add the cm:description additional properties
                         boolean wasMLAware = MLPropertyInterceptor.setMLAware(true);
-                        MLText descriptions = new MLText();
-                        String[] languages = Locale.getISOLanguages();
-                        String defaultLanguage = Locale.getDefault().getLanguage();
-                        // Create cm:description translations
-                        for (int descriptionNum = -1; descriptionNum < (descriptionCount-1); descriptionNum++)
+                        try
                         {
-                            String language = null;
-                            // Use the default language for the first description
-                            if (descriptionNum == -1)
+                            MLText descriptions = new MLText();
+                            String[] languages = Locale.getISOLanguages();
+                            String defaultLanguage = Locale.getDefault().getLanguage();
+                            // Create cm:description translations
+                            for (int descriptionNum = -1; descriptionNum < (descriptionCount-1); descriptionNum++)
                             {
-                                language = defaultLanguage;
+                                String language = null;
+                                // Use the default language for the first description
+                                if (descriptionNum == -1)
+                                {
+                                    language = defaultLanguage;
+                                }
+                                else if (languages[descriptionNum].equals(defaultLanguage))
+                                {
+                                    // Skip the default language, if we hit it
+                                    continue;
+                                }
+                                else
+                                {
+                                    language = languages[descriptionNum];
+                                }
+                                Locale languageLocale = new Locale(language);
+                                // For the cm:description, create new reader with a seed that changes each time
+                                String descriptionUrl = SpoofedTextContentReader.createContentUrl(locale, seed + descriptionNum, descriptionSize);
+                                SpoofedTextContentReader readerDescription = new SpoofedTextContentReader(descriptionUrl);
+                                String description = readerDescription.getContentString();
+                                descriptions.put(languageLocale, description);
                             }
-                            else if (languages[descriptionNum].equals(defaultLanguage))
-                            {
-                                // Skip the default language, if we hit it
-                                continue;
-                            }
-                            else
-                            {
-                                language = languages[descriptionNum];
-                            }
-                            Locale languageLocale = new Locale(language);
-                            // For the cm:description, create new reader with a seed that changes each time
-                            String descriptionUrl = SpoofedTextContentReader.createContentUrl(locale, seed + descriptionNum, descriptionSize);
-                            SpoofedTextContentReader readerDescription = new SpoofedTextContentReader(descriptionUrl);
-                            String description = readerDescription.getContentString();
-                            descriptions.put(languageLocale, description);
+                            nodeService.setProperty(fileNodeRef, ContentModel.PROP_DESCRIPTION, descriptions);
                         }
-                        nodeService.setProperty(fileNodeRef, ContentModel.PROP_DESCRIPTION, descriptions);
-                        MLPropertyInterceptor.setMLAware(wasMLAware);
+                        finally
+                        {
+                            MLPropertyInterceptor.setMLAware(wasMLAware);
+                        }
                     }
                     // Success
                     count.incrementAndGet();

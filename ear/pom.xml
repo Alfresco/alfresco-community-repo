@@ -54,7 +54,7 @@
         <!-- Distribution zip -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
+            <artifactId>alfresco-one-platform-distributionzip</artifactId>
             <version>${alfresco.platform.version}</version>
             <type>zip</type>
             <scope>provided</scope>
@@ -217,9 +217,9 @@
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeArtifactIds>alfresco-platform-enterprise-distributionzip</includeArtifactIds>
+                            <includeArtifactIds>alfresco-one-platform-distributionzip</includeArtifactIds>
                             <excludeTransitive>true</excludeTransitive>
-                            <excludes>alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/solr4/,alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/web-server/webapps/,alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/modules/</excludes>
+                            <excludes>alfresco-one-platform-distributionzip-${alfresco.platform.version}/solr4/,alfresco-one-platform-distributionzip-${alfresco.platform.version}/web-server/webapps/,alfresco-one-platform-distributionzip-${alfresco.platform.version}/modules/</excludes>
                         </configuration>
                     </execution>
 
@@ -251,7 +251,7 @@
                                     <version>1.0.1</version>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/web-server/lib</outputDirectory>
+                            <outputDirectory>${project.build.directory}/dependency/alfresco-one-platform-distributionzip-${alfresco.platform.version}/web-server/lib</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

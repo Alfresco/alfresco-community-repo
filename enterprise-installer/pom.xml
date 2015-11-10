@@ -6,7 +6,7 @@
         <artifactId>alfresco-full-installation</artifactId>
         <version>2015-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-enterprise-installer</artifactId>
+    <artifactId>alfresco-one-installer</artifactId>
     <packaging>pom</packaging>
     <name>Alfresco Enterprise Full Installers</name>
 
@@ -33,7 +33,7 @@
 
         <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->
         <alfresco.package.name>alfresco-one</alfresco.package.name>
-        <alfresco.distribution.name>alfresco-enterprise-distribution</alfresco.distribution.name>
+        <alfresco.distribution.name>alfresco-one-distribution</alfresco.distribution.name>
     </properties>
 
     <dependencies>
@@ -74,7 +74,7 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-enterprise-distribution</artifactId>
+                                    <artifactId>alfresco-one-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>

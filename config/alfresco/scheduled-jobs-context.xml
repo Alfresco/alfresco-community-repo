@@ -282,11 +282,10 @@
         </property>
     </bean>
     
-    <!-- Definition for the upgrade password hash job -->
-    <!--  
+    <!-- Definition for the upgrade password hash job -->  
     <bean id="upgradePasswordHashJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
         <property name="jobClass" 
-                  value="org.alfresco.repo.security.authenticationUpgradePasswordHashWorker$UpgradePasswordHashJob" />
+                  value="org.alfresco.repo.security.authentication.UpgradePasswordHashWorker$UpgradePasswordHashJob" />
         <property name="jobDataAsMap">
             <map>
                 <entry key="upgradePasswordHashWorker" value-ref="upgradePasswordHashWorker" />
@@ -299,6 +298,5 @@
         <property name="cronExpression" value="${system.upgradePasswordHash.jobCronExpression}" />
         <property name="startDelayMinutes" value="${system.cronJob.startDelayMinutes}" />
     </bean>
-    -->
     
 </beans>

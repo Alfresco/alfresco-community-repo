@@ -21,6 +21,7 @@ package org.alfresco.repo.security.authentication;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import net.sf.acegisecurity.Authentication;
@@ -31,18 +32,24 @@ import net.sf.acegisecurity.providers.UsernamePasswordAuthenticationToken;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.ntlm.NLTMAuthenticator;
+import org.alfresco.repo.tenant.TenantContextHolder;
 import org.alfresco.repo.tenant.TenantDisabledException;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
-import org.alfresco.repo.tenant.TenantContextHolder;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class AuthenticationComponentImpl extends AbstractAuthenticationComponent implements NLTMAuthenticator
 {
+    private static Log logger = LogFactory.getLog(AuthenticationComponentImpl.class);
+    
     private MutableAuthenticationDao authenticationDao;
-
+    
     AuthenticationManager authenticationManager;
+    CompositePasswordEncoder passwordEncoder;
 
     public AuthenticationComponentImpl()
     {
@@ -67,6 +74,11 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
     public void setAuthenticationDao(MutableAuthenticationDao authenticationDao)
     {
         this.authenticationDao = authenticationDao;
+    }
+    
+    public void setCompositePasswordEncoder(CompositePasswordEncoder passwordEncoder)
+    {
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -94,6 +106,36 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
                                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                             normalized == null ? userName : normalized, new String(password));
                                     authenticationManager.authenticate(authentication);
+                                    
+                                    // check whether the user's password requires re-hashing
+                                    UserDetails userDetails = authenticationDao.loadUserByUsername(userName);
+                                    if (userDetails instanceof RepositoryAuthenticatedUser)
+                                    {
+                                        List<String> hashIndicator = ((RepositoryAuthenticatedUser)userDetails).getHashIndicator();
+                                        String preferredEncoding = passwordEncoder.getPreferredEncoding();
+                                        
+                                        if (hashIndicator != null && !hashIndicator.isEmpty())
+                                        {
+                                            // get the last encoding in the chain
+                                            String currentEncoding = hashIndicator.get(hashIndicator.size()-1);
+                                            
+                                            // if the encoding chain is longer than 1 (double hashed) or the 
+                                            // current encoding is not the preferred encoding then re-generate
+                                            if (hashIndicator.size() > 1 || !currentEncoding.equals(preferredEncoding))
+                                            {
+                                                // add transaction listener to re-hash the users password
+                                                HashPasswordTransactionListener txListener = new HashPasswordTransactionListener(userName, password);
+                                                txListener.setTransactionService(getTransactionService());
+                                                txListener.setAuthenticationDao(authenticationDao);
+                                                AlfrescoTransactionSupport.bindListener(txListener);
+                                                if (logger.isDebugEnabled())
+                                                {
+                                                    logger.debug("New hashed password for user '" + userName + "' has been requested");
+                                                }
+                                            }
+                                        }
+                                    }
+                                    
                                     return normalized;
                                 }
                             }, tenantDomain);

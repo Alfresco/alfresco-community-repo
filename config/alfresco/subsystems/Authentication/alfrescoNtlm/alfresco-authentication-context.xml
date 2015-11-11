@@ -9,6 +9,9 @@
       <property name="authenticationManager">
          <ref bean="authenticationManager" />
       </property>
+      <property name="compositePasswordEncoder">
+         <ref bean="compositePasswordEncoder" />
+      </property>
       <property name="allowGuestLogin">
          <value>${alfresco.authentication.allowGuestLogin}</value>
       </property>

@@ -1930,6 +1930,16 @@ public class AuthenticationTest extends TestCase
         authenticationComponent.clearCurrentSecurityContext();
     }
 
+    /**
+     * For on premise the default is MD4, for cloud BCRYPT10
+     *
+     * @throws Exception
+     */
+    public void testDefaultEncodingIsMD4() throws Exception
+    {
+        assertNotNull(compositePasswordEncoder);
+        assertEquals("md4", compositePasswordEncoder.getPreferredEncoding());
+    }
 
     /**
      * Tests creating a user with a Hashed password
@@ -1937,6 +1947,7 @@ public class AuthenticationTest extends TestCase
     public void testCreateUserWithHashedPassword() throws Exception
     {
         String SOME_PASSWORD = "1 passw0rd";
+        String defaultencoding = compositePasswordEncoder.getPreferredEncoding();
         List<String> encs = Arrays.asList("bcrypt10", "md4");
         for (String enc : encs)
         {
@@ -1945,6 +1956,7 @@ public class AuthenticationTest extends TestCase
             assertCreateHashed(SOME_PASSWORD, hash, null, "me@you.com");
             assertCreateHashed(SOME_PASSWORD, null, SOME_PASSWORD.toCharArray(), "you@me.com");
         }
+        compositePasswordEncoder.setPreferredEncoding(defaultencoding);
     }
 
     private void assertCreateHashed(String rawString, String hash, char[] rawPassword, String user)

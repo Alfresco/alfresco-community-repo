@@ -7939,6 +7939,149 @@ public class ContentDiskDriverTest extends TestCase
         logger.debug("end testScenarioMountainLionWord2011 Edit By Editor ALF-16257");
     } // testScenarioMountainLionWord2011EditByEditor_ALF_16257
     
+    
+    /**
+     * Guess mimetype with insufficient data for ACE-4523
+     * Simulate creating a plain text document via Alfresco Share
+     * then updating it via CIFS/FTP
+     * 
+     * 1. create a document called "foo" with just a little data with an explicit mimetype set.
+     * 2. update the document with different text
+     * 3. check the mimetype of the test doc has not changed
+     */
+    public void testMimetypeWithInsufficiantData() throws Exception
+    {
+        logger.debug("testMimetypeWithInsufficiantData");
+
+        // a file without a clue about mimetype
+        final String FILE_NAME = "foo";
+
+        class TestContext
+        {
+            NetworkFile firstFileHandle;
+            String mimetype;
+        };
+        final TestContext testContext = new TestContext();
+
+        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testMimetypeWithInsufficiantData";
+        
+        // this is a made up mimetype - so there is no way that it could be guessed.
+        final String TEST_MIMETYPE = "text\bar";
+
+        ServerConfiguration scfg = new ServerConfiguration("testServer");
+        TestServer testServer = new TestServer("testServer", scfg);
+        final SrvSession testSession = new TestSrvSession(666, testServer, "test", "remoteName");
+        DiskSharedDevice share = getDiskSharedDevice();
+        final TreeConnection testConnection = testServer.getTreeConnection(share);
+        final RetryingTransactionHelper tran = transactionService.getRetryingTransactionHelper();
+
+        /**
+         * Clean up just in case garbage is left from a previous run
+         */
+        RetryingTransactionCallback<Void> deleteGarbageFileCB = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                driver.deleteFile(testSession, testConnection, TEST_DIR + "\\" + FILE_NAME);
+                return null;
+            }
+        };
+        try
+        {
+            tran.doInTransaction(deleteGarbageFileCB);
+        }
+        catch (Exception e)
+        {
+            // expect to go here
+        }
+         
+        logger.debug("a) create new file");
+        RetryingTransactionCallback<Void> createFileCB = new RetryingTransactionCallback<Void>() {
+
+            @Override
+            public Void execute() throws Throwable
+            {
+                /**
+                 * Create the test directory we are going to use 
+                 */
+                FileOpenParams createRootDirParams = new FileOpenParams(TEST_ROOT_DOS_PATH, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                FileOpenParams createDirParams = new FileOpenParams(TEST_DIR, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                driver.createDirectory(testSession, testConnection, createRootDirParams);
+                driver.createDirectory(testSession, testConnection, createDirParams);
+
+                /**
+                 * Create the file we are going to test
+                 */
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                testContext.firstFileHandle = driver.createFile(testSession, testConnection, createFileParams);
+                assertNotNull(testContext.firstFileHandle);
+                driver.closeFile(testSession, testConnection, testContext.firstFileHandle); 
+                
+                
+                ClassPathResource fileResource = new ClassPathResource("filesys/ContentDiskDriverTestTxt1.txt");
+                // Add the test content via the content writer to simulate being created via Share.
+                NodeRef file1NodeRef = getNodeForPath(testConnection,  TEST_DIR + "\\" + FILE_NAME);
+                ContentWriter contentWriter2 = contentService.getWriter(file1NodeRef, ContentModel.PROP_CONTENT, true);
+                // this is a made up mimetype - so there is no way that it could be guessed.
+                contentWriter2.setMimetype(TEST_MIMETYPE);
+                contentWriter2.putContent(fileResource.getFile());
+
+                return null;
+            }
+        };
+        tran.doInTransaction(createFileCB, false, true);
+        
+        /**
+         * b) Update the file via CIFS
+         */
+        logger.debug("b) update file via CIFS");
+        RetryingTransactionCallback<Void> updateFileCB = new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Exception
+            {
+                FileOpenParams createFileParams = new FileOpenParams(TEST_DIR + "\\" + FILE_NAME, 0, AccessMode.ReadWrite, FileAttribute.NTNormal, 0);
+                NetworkFile file = driver.openFile(testSession, testConnection, createFileParams);
+                assertNotNull(file);
+                String testContent = "Bar";
+                byte[] testContentBytes = testContent.getBytes();
+                file.writeFile(testContentBytes, testContentBytes.length, 0, 0);
+                driver.closeFile(testSession, testConnection, file);
+                return null;
+            }
+        };
+        tran.doInTransaction(updateFileCB, false, true);
+        
+        logger.debug("c) validate results");
+        
+        /**
+         * Now validate everything is correct
+         */
+        RetryingTransactionCallback<Void> validateCB = new RetryingTransactionCallback<Void>() {
+            @Override
+            public Void execute() throws Throwable
+            {
+               NodeRef shuffledNodeRef = getNodeForPath(testConnection, TEST_DIR + "\\" + FILE_NAME);
+               Map<QName, Serializable> props = nodeService.getProperties(shuffledNodeRef);
+               ContentData data = (ContentData)props.get(ContentModel.PROP_CONTENT);
+              
+               
+               /**
+                * Validate mimetype has not changed
+                */
+               assertEquals("mimeType is wrong", TEST_MIMETYPE, data.getMimetype());
+               assertEquals("mimeType is wrong", 3, data.getSize());
+           
+               return null;
+            }
+        };
+        tran.doInTransaction(validateCB, true, true);
+        logger.debug("end testMimetypeWithInsufficiantData");
+    } // testMimetypeWithInsufficiantData"
+    
+    
+    
     /**
      * Test server
      */

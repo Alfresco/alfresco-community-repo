@@ -103,12 +103,13 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
                                 public String doWork() throws Exception
                                 {
                                     String normalized = getPersonService().getUserIdentifier(userName);
+                                    String finalUserName = normalized == null ? userName : normalized; 
                                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                            normalized == null ? userName : normalized, new String(password));
+                                            finalUserName, new String(password));
                                     authenticationManager.authenticate(authentication);
                                     
                                     // check whether the user's password requires re-hashing
-                                    UserDetails userDetails = authenticationDao.loadUserByUsername(userName);
+                                    UserDetails userDetails = authenticationDao.loadUserByUsername(finalUserName);
                                     if (userDetails instanceof RepositoryAuthenticatedUser)
                                     {
                                         List<String> hashIndicator = ((RepositoryAuthenticatedUser)userDetails).getHashIndicator();

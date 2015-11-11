@@ -42,8 +42,9 @@ public class CompositePasswordEncoder
     private Map<String,Object> encoders;
     private String preferredEncoding;
 
+    public static final String MD4_KEY = "md4";
     public static final List<String> SHA256 = Arrays.asList("sha256");
-    public static final List<String> MD4 = Arrays.asList("md4");
+    public static final List<String> MD4 = Arrays.asList(MD4_KEY);
 
     public String getPreferredEncoding()
     {
@@ -131,6 +132,11 @@ public class CompositePasswordEncoder
        if (encoder instanceof net.sf.acegisecurity.providers.encoding.PasswordEncoder)
        {
            net.sf.acegisecurity.providers.encoding.PasswordEncoder pEncoder = (net.sf.acegisecurity.providers.encoding.PasswordEncoder) encoder;
+           if (MD4_KEY.equals(encoderKey))
+           {
+               //In the past MD4 password encoding didn't use a SALT
+               salt = null;
+           }
            if (logger.isDebugEnabled()) {
                logger.debug("Encoding using acegis PasswordEncoder: "+encoderKey);
            }
@@ -193,6 +199,11 @@ public class CompositePasswordEncoder
         if (encoder instanceof net.sf.acegisecurity.providers.encoding.PasswordEncoder)
         {
             net.sf.acegisecurity.providers.encoding.PasswordEncoder pEncoder = (net.sf.acegisecurity.providers.encoding.PasswordEncoder) encoder;
+            if (MD4_KEY.equals(encoderKey))
+            {
+                //In the past MD4 password encoding didn't use a SALT
+                salt = null;
+            }
             if (logger.isDebugEnabled()) {
                 logger.debug("Matching using acegis PasswordEncoder: "+encoderKey);
             }

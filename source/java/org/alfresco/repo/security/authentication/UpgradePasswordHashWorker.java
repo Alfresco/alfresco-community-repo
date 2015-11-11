@@ -303,7 +303,8 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
             }
             else
             {
-                logger.warn("Unsafe to Double Hash user: " + username + "'. The user needs to login first.");
+                logger.warn("Unable to upgrade password hash for user '" + username
+                        + "', please ask them to login.");
                 return false;
             }
         }
@@ -494,7 +495,7 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
                 }
                 else if (logger.isTraceEnabled())
                 {
-                    logger.trace("User '" + username + "' has preferred encoding");
+                    logger.trace("Encoding for user '" + username + "' was not changed.");
                 }
             }
             catch (Exception e)

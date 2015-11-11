@@ -112,8 +112,12 @@ public class CompositePasswordEncoder
                 //The unsafe encoder is used at the end so that's ok.
                 return true;
             }
-            logger.warn("Unsafe encoders in the encoding chain: "+Arrays.toString(unsafeEncoders.toArray())
-                    +". Only 1 unsafe encoder is allowed at the end of the chain: "+Arrays.toString(encodingChain.toArray()));
+            //, because there is already an unupgradable encoder at the end of the chain.
+            if (logger.isDebugEnabled()) {
+                logger.debug("Non-upgradable encoders in the encoding chain: "+Arrays.toString(unsafeEncoders.toArray())
+                        +". Only 1 non-upgradable encoder is allowed at the end of the chain: "+Arrays.toString(encodingChain.toArray()));
+            }
+
         }
         return false;
     }
@@ -128,6 +132,8 @@ public class CompositePasswordEncoder
         if (logger.isDebugEnabled()) {
             logger.debug("Preferred password encoding set to "+preferredEncoding);
         }
+        if (!encoders.containsKey(preferredEncoding)) throw new AlfrescoRuntimeException("Invalid preferredEncoding specified: "
+                +preferredEncoding+ ". Permissible encoders are "+encoders.keySet());
     }
 
     /**

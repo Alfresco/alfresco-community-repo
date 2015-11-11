@@ -6,7 +6,7 @@
         <artifactId>alfresco-enterprise-packaging</artifactId>
         <version>5.1.1-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-platform-enterprise-installer</artifactId>
+    <artifactId>alfresco-one-platform-installer</artifactId>
     <packaging>pom</packaging>
     <name>Alfresco Platform Enterprise Installers</name>
 
@@ -269,7 +269,7 @@
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
+                                    <artifactId>alfresco-one-platform-distributionzip</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>

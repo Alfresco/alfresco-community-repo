@@ -89,8 +89,7 @@ public class AuthenticationTest extends TestCase
     private AuthorityService authorityService;
     private TenantService tenantService;
     private TenantAdminService tenantAdminService;
-    private MD4PasswordEncoder passwordEncoder;
-    private PasswordEncoder sha256PasswordEncoder;
+    private CompositePasswordEncoder compositePasswordEncoder;
     private MutableAuthenticationDao dao;
     private AuthenticationManager authenticationManager;
     private TicketComponent ticketComponent;
@@ -148,8 +147,7 @@ public class AuthenticationTest extends TestCase
         authorityService = (AuthorityService) ctx.getBean("authorityService");
         tenantService = (TenantService) ctx.getBean("tenantService");
         tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
-        passwordEncoder = (MD4PasswordEncoder) ctx.getBean("passwordEncoder");
-        sha256PasswordEncoder = (PasswordEncoder) ctx.getBean("sha256PasswordEncoder");
+        compositePasswordEncoder = (CompositePasswordEncoder) ctx.getBean("compositePasswordEncoder");
         ticketComponent = (TicketComponent) ctx.getBean("ticketComponent");
         authenticationService = (MutableAuthenticationService) ctx.getBean("authenticationService");
         pubAuthenticationService = (MutableAuthenticationService) ctx.getBean("AuthenticationService");
@@ -228,8 +226,7 @@ public class AuthenticationTest extends TestCase
         dao.setTenantService(tenantService);
         dao.setNodeService(nodeService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
-        dao.setPasswordEncoder(passwordEncoder);
-        dao.setSha256PasswordEncoder(sha256PasswordEncoder);
+        dao.setCompositePasswordEncoder(compositePasswordEncoder);
         dao.setPolicyComponent(policyComponent);
         dao.setAuthenticationCache(authenticationCache);
         dao.setSingletonCache(immutableSingletonCache);
@@ -449,8 +446,7 @@ public class AuthenticationTest extends TestCase
         dao.setNodeService(nodeService);
         dao.setAuthorityService(authorityService);
         dao.setNamespaceService(getNamespacePrefixReolsver(""));
-        dao.setPasswordEncoder(passwordEncoder);
-        dao.setSha256PasswordEncoder(sha256PasswordEncoder);
+        dao.setCompositePasswordEncoder(compositePasswordEncoder);
         dao.setPolicyComponent(policyComponent);
         dao.setAuthenticationCache(authenticationCache);
         dao.setSingletonCache(immutableSingletonCache);
@@ -495,10 +491,6 @@ public class AuthenticationTest extends TestCase
         dao.createUser("Andy", "cabbage".toCharArray());
         assertNotNull(dao.getUserOrNull("Andy"));
 
-        byte[] decodedHash = passwordEncoder.decodeHash(dao.getMD4HashedPassword("Andy"));
-        byte[] testHash = MessageDigest.getInstance("MD4").digest("cabbage".getBytes("UnicodeLittleUnmarked"));
-        assertEquals(new String(decodedHash), new String(testHash));
-
         UserDetails AndyDetails = (UserDetails) dao.loadUserByUsername("Andy");
         assertNotNull(AndyDetails);
         assertEquals("Andy", AndyDetails.getUsername());
@@ -508,7 +500,7 @@ public class AuthenticationTest extends TestCase
         assertTrue(AndyDetails.isCredentialsNonExpired());
         assertTrue(AndyDetails.isEnabled());
         assertNotSame("cabbage", AndyDetails.getPassword());
-        assertEquals(AndyDetails.getPassword(), passwordEncoder.encodePassword("cabbage", dao.getSalt(AndyDetails)));
+        assertEquals(AndyDetails.getPassword(), compositePasswordEncoder.encodePreferred("cabbage", null));
         assertEquals(1, AndyDetails.getAuthorities().length);
 
         // Object oldSalt = dao.getSalt(AndyDetails);

@@ -76,13 +76,34 @@
       </property>
    </bean>
 
+   <bean id="compositePasswordEncoder" class="org.alfresco.repo.security.authentication.CompositePasswordEncoder" init-method="init">
+      <property name="encoders">
+         <map>
+            <entry key="md4">
+               <bean class="org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl" />
+            </entry>
+            <entry key="sha256" value-ref="sha256PasswordEncoder" />
+            <entry key="bcrypt15">
+               <bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+                  <constructor-arg value="15" />
+               </bean>
+            </entry>
+            <!--entry key="bcrypt20">
+                  <bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+                      <constructor-arg value="20" />
+                  </bean>
+            </entry-->
+         </map>
+      </property>
+      <property name="preferredEncoding" value="bcrypt15" />
+   </bean>
+
    <bean id="authenticationDao" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationDao">
       <property name="nodeService" ref="nodeService" />
       <property name="authorityService" ref="authorityService" />
       <property name="tenantService" ref="tenantService" />
       <property name="namespaceService" ref="namespaceService" />
-      <property name="passwordEncoder" ref="passwordEncoder" />
-      <property name="sha256PasswordEncoder" ref="sha256PasswordEncoder" />
+      <property name="compositePasswordEncoder" ref="compositePasswordEncoder" />
       <property name="policyComponent" ref="policyComponent" />
       <property name="authenticationCache" ref="authenticationCache" />
       <property name="singletonCache" ref="immutableSingletonCache"/>
@@ -147,17 +168,14 @@
    </bean>
 
    <!-- We provide a DAO to plug into the Acegi DaoAuthenticationProvider  -->
-
-   <bean id="daoAuthenticationProvider" class="net.sf.acegisecurity.providers.dao.DaoAuthenticationProvider">
+   <bean id="daoAuthenticationProvider" class="org.alfresco.repo.security.authentication.RepositoryAuthenticationProvider">
       <property name="authenticationDao">
          <ref bean="authenticationDao" />
       </property>
       <property name="saltSource">
          <ref bean="saltSource" />
       </property>
-      <property name="passwordEncoder">
-         <ref bean="passwordEncoder" />
-      </property>
+      <property name="compositePasswordEncoder" ref="compositePasswordEncoder" />
    </bean>
 
    <!-- The DAO also acts as a salt provider.                              -->

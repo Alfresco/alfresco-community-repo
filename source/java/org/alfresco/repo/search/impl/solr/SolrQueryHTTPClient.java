@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -34,7 +33,6 @@ import java.util.Set;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.httpclient.HttpClientFactory;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -62,6 +60,7 @@ import org.alfresco.service.cmr.search.StatsParameters;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.Pair;
+import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.codec.net.URLCodec;
 import org.apache.commons.httpclient.Header;
@@ -70,11 +69,9 @@ import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.URI;
 import org.apache.commons.httpclient.URIException;
-import org.apache.commons.httpclient.UsernamePasswordCredentials;
-import org.apache.commons.httpclient.auth.AuthScope;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
+import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
-import org.apache.commons.httpclient.params.HttpClientParams;
 import org.apache.commons.httpclient.params.HttpMethodParams;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
@@ -87,11 +84,9 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
-import org.springframework.beans.factory.config.ListFactoryBean;
-import org.springframework.context.ApplicationListener;
-import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.extensions.surf.util.I18NUtil;
+
+import com.hazelcast.impl.monitor.MapOperationsCounter;
 
 /**
  * @author Andy
@@ -834,4 +829,106 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         }
     }
 
+    /**
+     * @param storeRef
+     * @param handler
+     * @param params
+     * @return
+     */
+    public JSONObject execute(StoreRef storeRef, String handler, HashMap<String, String> params)
+    {       
+        try
+        {
+            SolrStoreMappingWrapper mapping = extractMapping(storeRef);
+            
+            URLCodec encoder = new URLCodec();
+            StringBuilder url = new StringBuilder();
+         
+            Pair<HttpClient, String> httpClientAndBaseUrl = mapping.getHttpClientAndBaseUrl();
+            HttpClient httpClient = httpClientAndBaseUrl.getFirst();
+
+            
+            for (String key : params.keySet())
+            {
+                String value = params.get(key);
+                if (url.length() == 0)
+                {
+                    url.append(httpClientAndBaseUrl.getSecond());
+                    
+                    if(!handler.startsWith("/"))
+                    {
+                        url.append("/");
+                    }
+                    url.append(handler);
+                    url.append("?");
+                    url.append(encoder.encode(key, "UTF-8"));
+                    url.append("=");
+                    url.append(encoder.encode(value, "UTF-8"));
+                }
+                else
+                {
+                    url.append("&");
+                    url.append(encoder.encode(key, "UTF-8"));
+                    url.append("=");
+                    url.append(encoder.encode(value, "UTF-8"));
+                }
+
+            }
+            
+            if(mapping.isSharded())
+            {
+                url.append("&shards=");
+                url.append(mapping.getShards());
+            }
+
+            // PostMethod post = new PostMethod(url.toString());
+            GetMethod get = new GetMethod(url.toString());
+
+            try
+            {
+                httpClient.executeMethod(get);
+
+                if (get.getStatusCode() == HttpStatus.SC_MOVED_PERMANENTLY || get.getStatusCode() == HttpStatus.SC_MOVED_TEMPORARILY)
+                {
+                    Header locationHeader = get.getResponseHeader("location");
+                    if (locationHeader != null)
+                    {
+                        String redirectLocation = locationHeader.getValue();
+                        get.setURI(new URI(redirectLocation, true));
+                        httpClient.executeMethod(get);
+                    }
+                }
+
+                if (get.getStatusCode() != HttpServletResponse.SC_OK)
+                {
+                    throw new LuceneQueryParserException("Request failed " + get.getStatusCode() + " " + url.toString());
+                }
+
+                Reader reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream()));
+                // TODO - replace with streaming-based solution e.g. SimpleJSON ContentHandler
+                JSONObject json = new JSONObject(new JSONTokener(reader));
+                return json;
+            }
+            finally
+            {
+                get.releaseConnection();
+            }
+        }
+        catch (UnsupportedEncodingException e)
+        {
+            throw new LuceneQueryParserException("", e);
+        }
+        catch (HttpException e)
+        {
+            throw new LuceneQueryParserException("", e);
+        }
+        catch (IOException e)
+        {
+            throw new LuceneQueryParserException("", e);
+        }
+        catch (JSONException e)
+        {
+            throw new LuceneQueryParserException("", e);
+        }
+    }
 }

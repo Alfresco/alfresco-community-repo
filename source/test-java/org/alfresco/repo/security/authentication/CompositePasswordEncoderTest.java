@@ -53,7 +53,7 @@ public class CompositePasswordEncoderTest
         encodersConfig.put("sha256",  new ShaPasswordEncoderImpl(256));
         encodersConfig.put("bcrypt10",new BCryptPasswordEncoder(10));
         encodersConfig.put("bcrypt11",new BCryptPasswordEncoder(11));
-        encodersConfig.put("bcrypt12",new BCryptPasswordEncoder(11));
+        encodersConfig.put("bcrypt12",new BCryptPasswordEncoder(12));
         encodersConfig.put("badencoder",new Object());
     }
 
@@ -240,6 +240,18 @@ public class CompositePasswordEncoderTest
         mdbChain = Arrays.asList("md4","sha256","bcrypt10");
         encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
         assertTrue(encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
+
+        mdbChain = Arrays.asList("sha256","md4");
+        encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
+        assertTrue(encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
+
+        mdbChain = Arrays.asList("bcrypt10", "sha256","md4");
+        encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
+        assertFalse("bcrypt10 has its own internal salt so needs to be at the end of the chain.", encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
+
+        mdbChain = Arrays.asList("bcrypt10", "bcrypt11");
+        encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
+        assertFalse("bcrypt10 has its own internal salt so you can only use it once.", encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
 
         mdbChain = Arrays.asList("md4","sha256");
         encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);

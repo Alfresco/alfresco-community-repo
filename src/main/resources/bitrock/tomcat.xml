@@ -277,7 +277,7 @@ System variables provided by this component:
                     <value/>
                     <ask>1</ask>
                     <description>Tomcat Server Port:</description>
-            <validationActionList>
+                    <validationActionList>
                         <baseCheckPort serverName="Tomcat" serverType="${tomcat_installation_type}" serverPort="${tomcat_server_port}" serverRequiredRunning="${tomcat_existing_required_running}"/>
                     </validationActionList>
                 </stringParameter>
@@ -287,7 +287,7 @@ System variables provided by this component:
                     <value/>
                     <ask>1</ask>
                     <description>Tomcat Shutdown Port:</description>
-            <validationActionList>
+                    <validationActionList>
                         <throwError>
                             <text>Couldn’t bind to the given port number. Select another Tomcat Shutdown Port.</text>
                             <ruleList>
@@ -298,6 +298,12 @@ System variables provided by this component:
                             <text>Tomcat Server Port and Tomcat Shutdown Port cannot be the same port. Select another Tomcat Shutdown Port."</text>
                             <ruleList>
                                 <compareText text="${tomcat_server_shutdown_port}" logic="equals" value="${tomcat_server_port}"/>
+                            </ruleList>
+                        </throwError>
+                        <throwError>
+                            <text>Use numbers only in the port configuration fields. Other characters are not permitted.</text>
+                            <ruleList>
+                                <stringTest text="${tomcat_server_shutdown_port}" type="not_digit" />
                             </ruleList>
                         </throwError>
                     </validationActionList>
@@ -318,6 +324,12 @@ System variables provided by this component:
                                 <portTest port="${tomcat_server_ssl_port}" condition="cannot_bind"/>
                             </ruleList>
                         </throwError>
+                        <throwError>
+                            <text>Use numbers only in the port configuration fields. Other characters are not permitted.</text>
+                            <ruleList>
+                                <stringTest text="${tomcat_server_ssl_port}" type="not_digit" />
+                            </ruleList>
+                        </throwError>
                     </validationActionList>
                     <ruleList>
                         <compareText text="${tomcat_installation_type}" logic="equals" value="bundled"/>
@@ -329,11 +341,17 @@ System variables provided by this component:
                     <value/>
                     <ask>1</ask>
                     <description>Tomcat AJP Port:</description>
-            <validationActionList>
+                    <validationActionList>
                         <throwError>
                             <text>Couldn’t bind to the given port number. Select another Tomcat AJP Port.</text>
                             <ruleList>
                                 <portTest port="${tomcat_server_ajp_port}" condition="cannot_bind"/>
+                            </ruleList>
+                        </throwError>
+                        <throwError>
+                            <text>Use numbers only in the port configuration fields. Other characters are not permitted.</text>
+                            <ruleList>
+                                <stringTest text="${tomcat_server_ajp_port}" type="not_digit" />
                             </ruleList>
                         </throwError>
                     </validationActionList>
@@ -352,6 +370,12 @@ System variables provided by this component:
                             <text>Couldn’t bind to the given port number. Select another Tomcat JMX Port.</text>
                             <ruleList>
                                 <portTest port="${tomcat_server_jmx_port}" condition="cannot_bind"/>
+                            </ruleList>
+                        </throwError>
+                        <throwError>
+                            <text>Use numbers only in the port configuration fields. Other characters are not permitted.</text>
+                            <ruleList>
+                                <stringTest text="${tomcat_server_jmx_port}" type="not_digit" />
                             </ruleList>
                         </throwError>
                     </validationActionList>

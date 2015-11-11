@@ -122,21 +122,16 @@ public class PasswordHashingTest
     @Test
     public void testRehashedPasswordBcrypt() throws Exception
     {
-        cpe.setPreferredEncoding("bcrypt10");
+        cpe.setPreferredEncoding("md4");
         Map<QName, Serializable> properties = new HashMap<>();
-        properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable) Arrays.asList("bcrypt10"));
+        properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable) Arrays.asList("md4"));
         properties.put(ContentModel.PROP_PASSWORD_HASH,  "long hash");
         //Nothing to do.
         assertFalse(passwordHashWorker.processPasswordHash(properties));
 
         cpe.setPreferredEncoding("bcrypt11");
         assertTrue(passwordHashWorker.processPasswordHash(properties));
-        assertEquals(Arrays.asList("bcrypt10","bcrypt11"),RepositoryAuthenticationDao.determinePasswordHash(properties).getFirst());
-
-        cpe.setPreferredEncoding("bcrypt12");
-        assertTrue(passwordHashWorker.processPasswordHash(properties));
-        //Triple hashing!
-        assertEquals(Arrays.asList("bcrypt10","bcrypt11","bcrypt12"),RepositoryAuthenticationDao.determinePasswordHash(properties).getFirst());
+        assertEquals(Arrays.asList("md4","bcrypt11"),RepositoryAuthenticationDao.determinePasswordHash(properties).getFirst());
     }
 
     @Test

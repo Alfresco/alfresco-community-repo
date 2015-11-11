@@ -12,9 +12,15 @@
             <outputDirectory></outputDirectory>
         </fileSet>
 
-        <!-- Platform Distribution -->
+        <!-- Platform Community Distribution -->
         <fileSet>
-            <directory>${project.build.directory}/dependency/alfresco-platform-${alfresco.platform.edition}-distributionzip-${alfresco.platform.version}</directory>
+            <directory>${project.build.directory}/dependency/alfresco-platform-community-distributionzip-${alfresco.platform.version}</directory>
+            <outputDirectory/>
+        </fileSet>
+
+        <!-- Platform Enterprise Distribution -->
+        <fileSet>
+            <directory>${project.build.directory}/dependency/alfresco-one-platform-distributionzip-${alfresco.platform.version}</directory>
             <outputDirectory/>
         </fileSet>
 

@@ -47,7 +47,6 @@ import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 
 @SuppressWarnings("unchecked")
-@Category(OwnJVMTestsCategory.class)
 public class UpgradePasswordHashTest extends TestCase
 {
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
@@ -100,27 +99,23 @@ public class UpgradePasswordHashTest extends TestCase
 
         upgradePasswordHashWorker = (UpgradePasswordHashWorker)ctx.getBean("upgradePasswordHashWorker");
         nodeService = serviceRegistry.getNodeService();
-        userTransaction = serviceRegistry.getTransactionService().getUserTransaction();
-        userTransaction.begin();
-        
+
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-        
-        createTestUsers("md4");
-        
-        userTransaction.commit();
     }
     
     protected void createTestUsers(String encoding) throws Exception
     {
+        userTransaction = serviceRegistry.getTransactionService().getUserTransaction();
+        userTransaction.begin();
 
-        // create 50 users and change their properties back to how
-        // they would have been pre-upgrade.
-        testUsers = new ArrayList<NodeRef>(50);
+        testUsers = new ArrayList<NodeRef>(5);
         testUsers.add(createUser("king"+encoding, "king".toCharArray(), encoding));
         testUsers.add(createUser("kin" +encoding, "Kong".toCharArray(), encoding));
         testUsers.add(createUser("ding"+encoding, "dong".toCharArray(), encoding));
         testUsers.add(createUser("ping"+encoding, "pong".toCharArray(),encoding));
         testUsers.add(createUser("pin" +encoding, "pop".toCharArray(), encoding));
+
+        userTransaction.commit();
     }
 
     private NodeRef createUser(String caseSensitiveUserName, char[] password, String encoding)
@@ -143,7 +138,9 @@ public class UpgradePasswordHashTest extends TestCase
         properties.remove(ContentModel.PROP_HASH_INDICATOR);
         properties.remove(ContentModel.PROP_PASSWORD);
         properties.remove(ContentModel.PROP_PASSWORD_SHA256);
-        properties.put(ContentModel.PROP_PASSWORD,  compositePasswordEncoder.encode(encoding,new String(password), null));
+        String encoded =  compositePasswordEncoder.encode(encoding,new String(password), null);
+        properties.put("sha256".equals(encoding)?ContentModel.PROP_PASSWORD_SHA256:ContentModel.PROP_PASSWORD, encoded);
+
         nodeService.setProperties(userNodeRef, properties);
         return userNodeRef;
     }
@@ -162,7 +159,6 @@ public class UpgradePasswordHashTest extends TestCase
             }
         }
         testUsers.clear();
-
     }
 
     @Override
@@ -170,7 +166,7 @@ public class UpgradePasswordHashTest extends TestCase
     {
         // remove all the test users we created
         deleteTestUsers();
-        
+
         // cleanup transaction if necessary so we don't effect subsequent tests
         if ((userTransaction.getStatus() == Status.STATUS_ACTIVE) || (userTransaction.getStatus() == Status.STATUS_MARKED_ROLLBACK))
         {
@@ -183,9 +179,45 @@ public class UpgradePasswordHashTest extends TestCase
     
     public void testWorkerWithDefaultConfiguration() throws Exception
     {
+        List<String> doubleHashed = Arrays.asList("md4", "bcrypt10");
+        createTestUsers("md4");
+        runWorker(doubleHashed);
+        //users deleted in the teardown
+    }
+
+    public void testWorkerWithCloudDefaultConfiguration() throws Exception
+    {
+        List<String> doubleHashed = Arrays.asList("sha256", "bcrypt10");
+        createTestUsers("sha256");
+        runWorker(doubleHashed);
+        //users deleted in the teardown
+    }
+    
+    public void testWorkerWithLegacyConfiguration() throws Exception
+    {
+        List<String> legacy = Arrays.asList("md4");
+        createTestUsers("md4");
+        runWorker(legacy);
+        //users deleted in the teardown
+    }
+
+    public void testWorkerWithLegacy256Configuration() throws Exception
+    {
+        List<String> legacy = Arrays.asList("sha256");
+        createTestUsers("sha256");
+        runWorker(legacy);
+        //users deleted in the teardown
+    }
+
+    private void runWorker(List<String> expectedEncoding) throws Exception
+    {
+        //set preferred
+        compositePasswordEncoder.setPreferredEncoding(expectedEncoding.get(expectedEncoding.size()-1));
+        this.upgradePasswordHashWorker.setCompositePasswordEncoder(compositePasswordEncoder);
+
         userTransaction = serviceRegistry.getTransactionService().getUserTransaction();
         userTransaction.begin();
-        
+
         for (NodeRef testUser : testUsers)
         {
             assertNull("The hash indicator should not be set",nodeService.getProperty(testUser, ContentModel.PROP_HASH_INDICATOR));
@@ -197,23 +229,14 @@ public class UpgradePasswordHashTest extends TestCase
         userTransaction.commit();
         userTransaction = serviceRegistry.getTransactionService().getUserTransaction();
         userTransaction.begin();
-        
+
         // ensure all the test users have been upgraded to use the preferred encoding
-        List<String> doubleHashed = Arrays.asList("md4", "bcrypt10");
         for (NodeRef testUser : testUsers)
         {
             assertNotNull("The password hash should be set",  nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD_HASH));
-            assertEquals(doubleHashed,nodeService.getProperty(testUser, ContentModel.PROP_HASH_INDICATOR));
+            assertEquals(expectedEncoding,nodeService.getProperty(testUser, ContentModel.PROP_HASH_INDICATOR));
             assertNull("The md4 password should not be set",  nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD));
             assertNull("The sh256 password should not be set",nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD_SHA256));
         }
-    }
-    
-    public void xxxtestWorkerWithLegacyConfiguration() throws Exception
-    {
-        // execute the worker to upgrade all users 
-        this.upgradePasswordHashWorker.execute();
-        
-        // ensure all the test users have been upgraded but maintain the MD4 encoding
     }
 }

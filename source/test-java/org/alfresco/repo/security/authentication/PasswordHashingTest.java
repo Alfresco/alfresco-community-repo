@@ -36,7 +36,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by gethin on 01/10/15.
+ * Tests Password hashing logic
+ *
+ * @author Gethin James
  */
 public class PasswordHashingTest
 {

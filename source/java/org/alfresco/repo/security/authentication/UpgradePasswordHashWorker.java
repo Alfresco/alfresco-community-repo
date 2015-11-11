@@ -282,6 +282,11 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         if (!passwordEncoder.lastEncodingIsPreferred(passwordHash.getFirst()))
         {
             // We need to double hash
+            if (logger.isTraceEnabled())
+            {
+                String username = (String)properties.get(ContentModel.PROP_USER_USERNAME);
+                logger.trace("Double hashing user '" + username + "'.");
+            }
             List<String> nowHashed = new ArrayList<String>();
             nowHashed.addAll(passwordHash.getFirst());
             nowHashed.add(passwordEncoder.getPreferredEncoding());
@@ -299,6 +304,11 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         if (hashIndicator == null)
         {
             // Already the preferred encoding, just set it
+            if (logger.isTraceEnabled())
+            {
+                String username = (String)properties.get(ContentModel.PROP_USER_USERNAME);
+                logger.trace("User '" + username + "' has preferred encoding, just updating properties to match.");
+            }
             properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)passwordHash.getFirst());
             properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordHash.getSecond());
             properties.remove(ContentModel.PROP_PASSWORD);
@@ -460,7 +470,7 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
 
                         if (logger.isDebugEnabled())
                         {
-                            logger.debug("Upgrading password hash for user: " + username);
+                            logger.debug("Saving password hash for user: " + username);
                         }
                         
                         // persist the changes

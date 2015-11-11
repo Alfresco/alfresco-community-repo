@@ -109,6 +109,8 @@ public class AuthenticationTest extends TestCase
     private NodeRef typesNodeRef;
     private NodeRef personAndyNodeRef;
 
+    private static char[] DONT_CARE_PASSWORD = "1 really don't care".toCharArray();
+
     // TODO: pending replacement
     private Dialect dialect;
 
@@ -390,19 +392,19 @@ public class AuthenticationTest extends TestCase
 
     public void testCreateUsers()
     {
-        authenticationService.createAuthentication(AuthenticationUtil.getGuestUserName(), "".toCharArray());
-        authenticationService.authenticate(AuthenticationUtil.getGuestUserName(), "".toCharArray());
+        authenticationService.createAuthentication(AuthenticationUtil.getGuestUserName(), DONT_CARE_PASSWORD);
+        authenticationService.authenticate(AuthenticationUtil.getGuestUserName(),DONT_CARE_PASSWORD);
         // Guest is treated like any other user
         assertEquals(AuthenticationUtil.getGuestUserName(), authenticationService.getCurrentUserName());
 
-        authenticationService.createAuthentication("Andy", "".toCharArray());
-        authenticationService.authenticate("Andy", "".toCharArray());
+        authenticationService.createAuthentication("Andy", DONT_CARE_PASSWORD);
+        authenticationService.authenticate("Andy", DONT_CARE_PASSWORD);
         assertEquals("Andy", authenticationService.getCurrentUserName());
 
         if (! tenantService.isEnabled())
         {
-            authenticationService.createAuthentication("Mr.Woof.Banana@chocolate.chip.cookie.com", "".toCharArray());
-            authenticationService.authenticate("Mr.Woof.Banana@chocolate.chip.cookie.com", "".toCharArray());
+            authenticationService.createAuthentication("Mr.Woof.Banana@chocolate.chip.cookie.com", DONT_CARE_PASSWORD);
+            authenticationService.authenticate("Mr.Woof.Banana@chocolate.chip.cookie.com", DONT_CARE_PASSWORD);
             assertEquals("Mr.Woof.Banana@chocolate.chip.cookie.com", authenticationService.getCurrentUserName());
         }
         else
@@ -410,12 +412,12 @@ public class AuthenticationTest extends TestCase
             // TODO - could create tenant domain 'chocolate.chip.cookie.com'
         }
 
-        authenticationService.createAuthentication("Andy_Woof/Domain", "".toCharArray());
-        authenticationService.authenticate("Andy_Woof/Domain", "".toCharArray());
+        authenticationService.createAuthentication("Andy_Woof/Domain", DONT_CARE_PASSWORD);
+        authenticationService.authenticate("Andy_Woof/Domain", DONT_CARE_PASSWORD);
         assertEquals("Andy_Woof/Domain", authenticationService.getCurrentUserName());
 
-        authenticationService.createAuthentication("Andy_ Woof/Domain", "".toCharArray());
-        authenticationService.authenticate("Andy_ Woof/Domain", "".toCharArray());
+        authenticationService.createAuthentication("Andy_ Woof/Domain", DONT_CARE_PASSWORD);
+        authenticationService.authenticate("Andy_ Woof/Domain", DONT_CARE_PASSWORD);
         assertEquals("Andy_ Woof/Domain", authenticationService.getCurrentUserName());
 
         if (! tenantService.isEnabled())
@@ -428,8 +430,8 @@ public class AuthenticationTest extends TestCase
                 un = "Andy `\u00ac\u00a6!\u00a3$%^&*()-_=+\t\n[]{};'#:@~,./<>?|";
             }
             
-            authenticationService.createAuthentication(un, "".toCharArray());
-            authenticationService.authenticate(un, "".toCharArray());
+            authenticationService.createAuthentication(un, DONT_CARE_PASSWORD);
+            authenticationService.authenticate(un, DONT_CARE_PASSWORD);
             assertEquals(un, authenticationService.getCurrentUserName());
         }
         else
@@ -500,7 +502,7 @@ public class AuthenticationTest extends TestCase
         assertTrue(AndyDetails.isCredentialsNonExpired());
         assertTrue(AndyDetails.isEnabled());
         assertNotSame("cabbage", AndyDetails.getPassword());
-        assertEquals(AndyDetails.getPassword(), compositePasswordEncoder.encodePreferred("cabbage", null));
+        assertTrue(compositePasswordEncoder.matches(compositePasswordEncoder.getPreferredEncoding(),"cabbage", AndyDetails.getPassword(), null));
         assertEquals(1, AndyDetails.getAuthorities().length);
 
         // Object oldSalt = dao.getSalt(AndyDetails);
@@ -580,9 +582,9 @@ public class AuthenticationTest extends TestCase
 
     public void testAuthentication()
     {
-        dao.createUser("GUEST", "".toCharArray());
+        dao.createUser("GUEST", DONT_CARE_PASSWORD);
 
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken("GUEST", "");
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken("GUEST", DONT_CARE_PASSWORD);
         token.setAuthenticated(false);
 
         Authentication result = authenticationManager.authenticate(token);
@@ -1133,8 +1135,8 @@ public class AuthenticationTest extends TestCase
 
     public void testAuthenticationServiceGetNewTicket()
     {
-        authenticationService.createAuthentication("GUEST", "".toCharArray());
-        authenticationService.authenticate("GUEST", "".toCharArray());
+        authenticationService.createAuthentication("GUEST", DONT_CARE_PASSWORD);
+        authenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
 
         // create an authentication object e.g. the user
         authenticationService.createAuthentication("Andy", "auth1".toCharArray());
@@ -1166,8 +1168,8 @@ public class AuthenticationTest extends TestCase
 
     public void testAuthenticationService1()
     {
-        authenticationService.createAuthentication("GUEST", "".toCharArray());
-        authenticationService.authenticate("GUEST", "".toCharArray());
+        authenticationService.createAuthentication("GUEST", DONT_CARE_PASSWORD);
+        authenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
 
         // create an authentication object e.g. the user
         authenticationService.createAuthentication("Andy", "auth1".toCharArray());
@@ -1202,8 +1204,8 @@ public class AuthenticationTest extends TestCase
 
     public void testAuthenticationService2()
     {
-        authenticationService.createAuthentication("GUEST", "".toCharArray());
-        authenticationService.authenticate("GUEST", "".toCharArray());
+        authenticationService.createAuthentication("GUEST", DONT_CARE_PASSWORD);
+        authenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
 
         // create an authentication object e.g. the user
         authenticationService.createAuthentication("Andy", "auth1".toCharArray());
@@ -1238,8 +1240,8 @@ public class AuthenticationTest extends TestCase
 
     public void testAuthenticationService3()
     {
-        authenticationService.createAuthentication("GUEST", "".toCharArray());
-        authenticationService.authenticate("GUEST", "".toCharArray());
+        authenticationService.createAuthentication("GUEST", DONT_CARE_PASSWORD);
+        authenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
 
         // create an authentication object e.g. the user
         authenticationService.createAuthentication("Andy", "auth1".toCharArray());
@@ -1285,8 +1287,8 @@ public class AuthenticationTest extends TestCase
 
     public void testAuthenticationService4()
     {
-        authenticationService.createAuthentication("GUEST", "".toCharArray());
-        authenticationService.authenticate("GUEST", "".toCharArray());
+        authenticationService.createAuthentication("GUEST", DONT_CARE_PASSWORD);
+        authenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
 
         // create an authentication object e.g. the user
         authenticationService.createAuthentication("Andy", "auth1".toCharArray());
@@ -1342,8 +1344,8 @@ public class AuthenticationTest extends TestCase
 
     public void testAuthenticationService()
     {
-        authenticationService.createAuthentication("GUEST", "".toCharArray());
-        authenticationService.authenticate("GUEST", "".toCharArray());
+        authenticationService.createAuthentication("GUEST", DONT_CARE_PASSWORD);
+        authenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
 
         // create an authentication object e.g. the user
         authenticationService.createAuthentication("Andy", "auth1".toCharArray());
@@ -1402,8 +1404,8 @@ public class AuthenticationTest extends TestCase
 
     public void testAuthenticationService0()
     {
-        authenticationService.createAuthentication("GUEST", "".toCharArray());
-        authenticationService.authenticate("GUEST", "".toCharArray());
+        authenticationService.createAuthentication("GUEST", DONT_CARE_PASSWORD);
+        authenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
 
         // create an authentication object e.g. the user
         authenticationService.createAuthentication("Andy", "auth1".toCharArray());
@@ -1459,10 +1461,10 @@ public class AuthenticationTest extends TestCase
     public void testPubAuthenticationService1()
     {
         authenticationComponent.setSystemUserAsCurrentUser();
-        pubAuthenticationService.createAuthentication("GUEST", "".toCharArray());
+        pubAuthenticationService.createAuthentication("GUEST", DONT_CARE_PASSWORD);
         authenticationComponent.clearCurrentSecurityContext();
 
-        pubAuthenticationService.authenticate("GUEST", "".toCharArray());
+        pubAuthenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
 
         // create an authentication object e.g. the user
 
@@ -1507,10 +1509,10 @@ public class AuthenticationTest extends TestCase
     public void testPubAuthenticationService2()
     {
         authenticationComponent.setSystemUserAsCurrentUser();
-        pubAuthenticationService.createAuthentication("GUEST", "".toCharArray());
+        pubAuthenticationService.createAuthentication("GUEST", DONT_CARE_PASSWORD);
         authenticationComponent.clearCurrentSecurityContext();
 
-        pubAuthenticationService.authenticate("GUEST", "".toCharArray());
+        pubAuthenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
 
         // create an authentication object e.g. the user
 
@@ -1554,10 +1556,10 @@ public class AuthenticationTest extends TestCase
     public void testPubAuthenticationService3()
     {
         authenticationComponent.setSystemUserAsCurrentUser();
-        pubAuthenticationService.createAuthentication("GUEST", "".toCharArray());
+        pubAuthenticationService.createAuthentication("GUEST", DONT_CARE_PASSWORD);
         authenticationComponent.clearCurrentSecurityContext();
 
-        pubAuthenticationService.authenticate("GUEST", "".toCharArray());
+        pubAuthenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
 
         // create an authentication object e.g. the user
 
@@ -1619,12 +1621,12 @@ public class AuthenticationTest extends TestCase
 
         assertNull(authenticationComponent.getCurrentAuthentication());
         authenticationComponent.setSystemUserAsCurrentUser();
-        pubAuthenticationService.createAuthentication("GUEST", "".toCharArray());
+        pubAuthenticationService.createAuthentication("GUEST", DONT_CARE_PASSWORD);
         authenticationComponent.clearCurrentSecurityContext();
 
         assertNull(authenticationComponent.getCurrentAuthentication());
-        pubAuthenticationService.authenticate("GUEST", "".toCharArray());
-        pubAuthenticationService.authenticate("GUEST", "".toCharArray());
+        pubAuthenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
+        pubAuthenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
         authenticationComponent.clearCurrentSecurityContext();
         assertNull(authenticationComponent.getCurrentAuthentication());
 
@@ -1680,12 +1682,12 @@ public class AuthenticationTest extends TestCase
 
         assertNull(authenticationComponent.getCurrentAuthentication());
         authenticationComponent.setSystemUserAsCurrentUser();
-        pubAuthenticationService.createAuthentication("GUEST", "".toCharArray());
+        pubAuthenticationService.createAuthentication("GUEST", DONT_CARE_PASSWORD);
         authenticationComponent.clearCurrentSecurityContext();
 
         assertNull(authenticationComponent.getCurrentAuthentication());
-        pubAuthenticationService.authenticate("GUEST", "".toCharArray());
-        pubAuthenticationService.authenticate("GUEST", "".toCharArray());
+        pubAuthenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
+        pubAuthenticationService.authenticate("GUEST", DONT_CARE_PASSWORD);
         authenticationComponent.clearCurrentSecurityContext();
         assertNull(authenticationComponent.getCurrentAuthentication());
 

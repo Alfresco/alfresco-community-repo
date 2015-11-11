@@ -487,7 +487,7 @@ public class AuthenticationTest extends TestCase
         String hashedPassword = dao.getMD4HashedPassword(userName);
         assertNotNull(hashedPassword);
         UserDetails userDetails = (UserDetails) dao.loadUserByUsername(userName);
-        assertEquals(passwordEncoder.encodePassword(password, dao.getSalt(userDetails)), hashedPassword);
+        assertEquals(compositePasswordEncoder.encodePassword(password, dao.getSalt(userDetails)), hashedPassword);
     }
 
     public void testCreateAndyUserAndOtherCRUD() throws NoSuchAlgorithmException, UnsupportedEncodingException

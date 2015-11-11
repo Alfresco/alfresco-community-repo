@@ -76,7 +76,7 @@ public class BeanExtender implements BeanFactoryPostProcessor
         // check for extending bean
         if (!beanFactory.containsBean(extendingBeanName))
         {
-            throw new NoSuchBeanDefinitionException("Can't find bean '" + extendingBeanName + "' that is going to extend origional bean definition.");
+            throw new NoSuchBeanDefinitionException("Can't find bean '" + extendingBeanName + "' that is going to extend original bean definition.");
         }
 
         // get the bean definitions

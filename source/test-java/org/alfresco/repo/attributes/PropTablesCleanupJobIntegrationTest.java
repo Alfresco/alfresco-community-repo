@@ -18,9 +18,8 @@
  */
 package org.alfresco.repo.attributes;
 
-import static org.junit.Assert.*;
-
-import java.util.Date;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.util.ApplicationContextHelper;
@@ -29,10 +28,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.quartz.JobDetail;
-import org.quartz.SchedulerException;
 import org.springframework.context.ApplicationContext;
-
-import com.ibm.icu.util.Calendar;
 
 /**
  * Integration tests for the {@link PropTablesCleanupJob} class.
@@ -54,18 +50,6 @@ public class PropTablesCleanupJobIntegrationTest
     public void setUp() throws Exception
     {
         jobTrigger = ctx.getBean("propTablesCleanupTrigger", CronTriggerBean.class);
-    }
-
-    @Test
-    public void checkJobWillNeverRunByDefault() throws Exception
-    {
-        Date fireTime = jobTrigger.getTrigger().getFireTimeAfter(new Date());
-        Calendar calendar = Calendar.getInstance();
-        
-        // Far into the future, we count this as never.
-        calendar.setTime(fireTime);
-        assertEquals(2099, calendar.get(Calendar.YEAR));
-        
     }
     
     @Test

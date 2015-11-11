@@ -187,12 +187,14 @@ public interface ServiceRegistry
 
     /**
      * @return the descriptor service
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     DescriptorService getDescriptorService();
 
     /**
      * @return the transaction service
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     TransactionService getTransactionService();
@@ -235,6 +237,7 @@ public interface ServiceRegistry
 
     /**
      * @return the content filter languages service (or null, if one is not provided)
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     ContentFilterLanguagesService getContentFilterLanguagesService();
@@ -289,18 +292,21 @@ public interface ServiceRegistry
 
     /**
      * @return the importer service or null if not present
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     ImporterService getImporterService();
 
     /**
      * @return the exporter service or null if not present
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     ExporterService getExporterService();
 
     /**
      * @return the rule service (or null, if one is not provided)
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     RuleService getRuleService();
@@ -337,6 +343,7 @@ public interface ServiceRegistry
 
     /**
      * @return the script execution service (or null if one is not provided)
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     ScriptService getScriptService();
@@ -349,12 +356,14 @@ public interface ServiceRegistry
     
     /**
      * @return the notification service (or null if on is not provided)
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     NotificationService getNotificationService();
 
     /**
      * @return the audit service (or null if one is not provided)
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     AuditService getAuditService();
@@ -362,6 +371,7 @@ public interface ServiceRegistry
     /**
      * Get the ownable service (or null if one is not provided)
      * @return OwnableService
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     OwnableService getOwnableService();
@@ -386,18 +396,21 @@ public interface ServiceRegistry
 
     /**
      * Get the Multilingual Content Service
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     MultilingualContentService getMultilingualContentService();
 
     /**
      * Get the Edition Service
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     EditionService getEditionService();
     
     /**
      * Get the Thumbnail Service
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     ThumbnailService getThumbnailService();
@@ -410,6 +423,7 @@ public interface ServiceRegistry
     
     /**
      * Get the form service (or null if one is not provided)
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     FormService getFormService();
@@ -436,6 +450,7 @@ public interface ServiceRegistry
      * Get the blog service (or null if one is not provided)
      * 
      * @since 4.0
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     BlogService getBlogService();
@@ -444,6 +459,7 @@ public interface ServiceRegistry
      * Get the calendar service (or null if one is not provided)
      * 
      * @since 4.0
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     CalendarService getCalendarService();
@@ -451,6 +467,7 @@ public interface ServiceRegistry
     /**
      * Get the invitation service (or null if one is not provided)
      * @return the invitation service
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     InvitationService getInvitationService();
@@ -458,6 +475,7 @@ public interface ServiceRegistry
     /**
      * Get the CMIS Dictionary service (or null if one is not provided)
      * @return the CMIS Dictionary service
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     CMISDictionaryService getCMISDictionaryService();
@@ -465,6 +483,7 @@ public interface ServiceRegistry
     /**
      * Get the CMIS Query service (or null if one is not provided)
      * @return the CMIS Query service
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     CMISQueryService getCMISQueryService();
@@ -472,6 +491,7 @@ public interface ServiceRegistry
     /**
      * Get the IMAP service (or null if one is not provided)
      * @return the IMAP service
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     ImapService getImapService();
@@ -479,6 +499,7 @@ public interface ServiceRegistry
     /**
      * Get the Public Service Access service (or null if one is not provided)
      * @return the Public Service Access service
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     PublicServiceAccessService getPublicServiceAccessService();
@@ -486,6 +507,7 @@ public interface ServiceRegistry
     /**
      * Get the repo admin service (or null if one is not provided)
      * @return the repo admin service
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     RepoAdminService getRepoAdminService();
@@ -493,6 +515,7 @@ public interface ServiceRegistry
     /**
      * Get the sys admin params helper bean.
      * @return the sys admin params bean.
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     SysAdminParams getSysAdminParams();
@@ -500,6 +523,7 @@ public interface ServiceRegistry
     /**
      * Get the webdav service / helper bean.
      * @return the webdav service / helper bean
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     WebDavService getWebDavService();
@@ -514,6 +538,7 @@ public interface ServiceRegistry
     /**
      * Get the Solr facet helper bean
      * @return the Solr facet helper bean
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     SolrFacetHelper getSolrFacetHelper();
@@ -521,6 +546,7 @@ public interface ServiceRegistry
     /**
      * Get the facet label display handler registry bean
      * @return the Facet label display handler registry bean
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     FacetLabelDisplayHandlerRegistry getFacetLabelDisplayHandlerRegistry();
@@ -535,6 +561,7 @@ public interface ServiceRegistry
     /**
      * Get the document link service
      * @return the document link service
+     * @deprecated This method returns a service that is not part of the public Java API.
      */
     @NotAuditable
     DocumentLinkService getDocumentLinkService();

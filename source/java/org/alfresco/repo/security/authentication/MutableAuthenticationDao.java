@@ -35,7 +35,15 @@ public interface MutableAuthenticationDao extends AuthenticationDao, SaltSource
      * Create a user with the given userName and password
      */
     public void createUser(String userName, char[] rawPassword) throws AuthenticationException;
-    
+
+    /**
+     * Create a user with the given userName and password hash
+     * If hashedPassword is passed in then this is used, otherwise it falls back to using the rawPassword.
+     * It is assumed the hashed password has been encoded using system.preferred.password.encoding and doesn't use its
+     * own salt.
+     */
+    public void createUser(String caseSensitiveUserName, String hashedPassword, char[] rawPassword) throws AuthenticationException;
+
     /**
      * Update a user's password.
      */

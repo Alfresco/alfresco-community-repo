@@ -87,6 +87,19 @@ public class DefaultMutableAuthenticationDao implements MutableAuthenticationDao
      */
     public void createUser(String userName, char[] rawPassword) throws AuthenticationException
     {
+        createUser(userName, null, rawPassword);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p/>
+     * If enabled does nothing
+     *
+     * @throws AlfrescoRuntimeException if the the operation is not allowed
+     */
+    @Override
+    public void createUser(String caseSensitiveUserName, String hashedpassword, char[] rawPassword) throws AuthenticationException
+    {
         if (!allowCreateUser)
         {
             throw new AlfrescoRuntimeException("Create User is not supported");

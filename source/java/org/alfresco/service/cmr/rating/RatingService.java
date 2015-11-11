@@ -23,6 +23,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.rating.AbstractRatingRollupAlgorithm;
 import org.alfresco.service.NotAuditable;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -42,6 +43,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Neil McErlean
  * @since 3.4
  */
+@AlfrescoPublicApi
 public interface RatingService
 {
     /**

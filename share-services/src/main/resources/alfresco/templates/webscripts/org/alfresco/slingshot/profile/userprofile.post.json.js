@@ -25,7 +25,7 @@ function main()
    if (username == null)
    {
       status.code = 400;
-      status.message = "Username parameter not supplied.";
+      status.message = msg.get("error.noUsername");
       status.redirect = true;
       return;
    }
@@ -36,7 +36,7 @@ function main()
        (people.isAdmin(person) == false && user.properties.userName != person.properties.userName))
    {
       status.code = 500;
-      status.message = "Failed to locate user to modify or permission denied.";
+      status.message = msg.get("error.user");
       status.redirect = true;
       return;
    }

@@ -109,8 +109,8 @@ msgstr "データベース名"
 msgid "Database Name:"
 msgstr "データベース名"
 
-msgid "Deploying Alfresco..."
-msgstr "Alfresco をデプロイしています..."
+msgid "Deploying Alfresco... This can take up to five minutes."
+msgstr "Alfresco をデプロイしています... これには最大 5 分かかります。"
 
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "PostgreSQL を Windows サービスとしてインストールしますか?"
@@ -654,6 +654,9 @@ msgstr "Alfresco 用のリポジトリの場所を入力してください。"
 
 msgid "Repository location: "
 msgstr "リポジトリの場所: "
+
+msgid "Solr - Install Solr 1.4 only for upgrading from earlier Alfresco versions."
+msgstr "Solr - 旧バージョンの Alfresco からアップグレードする場合のみ Solr 1.4 をインストールしてください。"
 
 msgid "Solr is an open source enterprise search platform that uses Apache Lucene as an indexing and search engine. Solr 4 provides improvements in scalability, performance, and flexibility over Solr 1."
 msgstr "Solr は、Apache Lucene をインデックス化/検索エンジンとして使用する、オープンソースのエンタープライズ検索プラットフォームです。Solr 4 は Solr 1 に比べて、拡張性、パフォーマンス、柔軟性に優れています。"

@@ -42,6 +42,7 @@ import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -277,7 +278,19 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         BatchProcessWorker<Long> worker = new UpgradePasswordHashBatch(progress);
         RetryingTransactionHelper retryingTransactionHelper = transactionService.getRetryingTransactionHelper();
         retryingTransactionHelper.setForceWritable(true);
-        
+
+        //Create the QNames if they don't exist
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                qnameDAO.getOrCreateQName(ContentModel.PROP_PASSWORD_HASH);
+                qnameDAO.getOrCreateQName(ContentModel.PROP_HASH_INDICATOR);
+                return null;
+            }
+        }, false, true);
+
         BatchProcessor<Long> batchProcessor = new BatchProcessor<Long>(
                 "UpgradePasswordHashWorker",
                 retryingTransactionHelper,
@@ -398,16 +411,13 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
                     
                     // We do not want any behaviours associated with our transactions
                     behaviourFilter.disableBehaviour();
-                    
-                    // call hashedPassword on the RepositoryAuthenticationDao object
-                    
-                    
-//                    ((RepositoryAuthenticationDao)authenticationDao).rehashedPassword(userProps);
-                    
+
                     if (logger.isDebugEnabled())
                     {
                         logger.debug("Upgrading password hash for user: " + username);
                     }
+                    authenticationDao.hashUserPassword(username);
+
                 }
                 else if (logger.isTraceEnabled())
                 {

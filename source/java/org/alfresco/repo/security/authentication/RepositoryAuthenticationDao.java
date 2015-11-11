@@ -468,7 +468,23 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     {
         return (getUserOrNull(userName) != null);
     }
-    
+
+    @Override
+    public void hashUserPassword(String userName) throws AuthenticationException
+    {
+        NodeRef userRef = getUserOrNull(userName);
+        if (userRef == null)
+        {
+            throw new AuthenticationException("User name does not exist: " + userName);
+        }
+        Map<QName, Serializable> properties = nodeService.getProperties(userRef);
+
+        if (rehashedPassword(properties))
+        {
+            nodeService.setProperties(userRef, properties);
+        }
+    }
+
     /**
      * @return                  Returns the user properties or <tt>null</tt> if there are none
      */

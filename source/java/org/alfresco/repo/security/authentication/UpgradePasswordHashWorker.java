@@ -19,6 +19,7 @@
 package org.alfresco.repo.security.authentication;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -387,7 +389,13 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
             this.progress = progress;
         }
 
-        @SuppressWarnings("unchecked")
+        @Override
+        public void beforeProcess() throws Throwable
+        {
+            // Run as the systemuser
+            AuthenticationUtil.setRunAsUser(AuthenticationUtil.getSystemUserName());
+        }
+        
         @Override
         public void process(Long nodeId) throws Throwable
         {
@@ -398,26 +406,32 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
                 // get properties for the user
                 Map<QName, Serializable> userProps = nodeDAO.getNodeProperties(nodeId);
                 
-                // get the hash indicator property
-                List<String> hashIndicator = (List<String>)userProps.get(ContentModel.PROP_HASH_INDICATOR);
-                
                 // get the username
                 String username = (String)userProps.get(ContentModel.PROP_USER_USERNAME);
                 
-                // determine whether we need to upgrade the password hash for the user
-                if (hashIndicator == null || !passwordEncoder.lastEncodingIsPreferred(hashIndicator))
+                // determine whether the password requires re-hashing
+                if (processPasswordHash(userProps))
                 {
                     progress.usersChanged.incrementAndGet();
                     
-                    // We do not want any behaviours associated with our transactions
-                    behaviourFilter.disableBehaviour();
-
-                    if (logger.isDebugEnabled())
+                    try
                     {
-                        logger.debug("Upgrading password hash for user: " + username);
-                    }
-                    authenticationDao.hashUserPassword(username);
+                        // disable auditing
+                        behaviourFilter.disableBehaviour();
 
+                        if (logger.isDebugEnabled())
+                        {
+                            logger.debug("Upgrading password hash for user: " + username);
+                        }
+                        
+                        // persist the changes
+                        nodeDAO.setNodeProperties(nodeId, userProps);
+                    }
+                    finally
+                    {
+                        // enable auditing
+                        behaviourFilter.enableBehaviour();
+                    }
                 }
                 else if (logger.isTraceEnabled())
                 {
@@ -438,6 +452,55 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         public String getIdentifier(Long nodeId)
         {
             return (String)nodeDAO.getNodeProperty(nodeId, ContentModel.PROP_USER_USERNAME);
+        }
+        
+        @Override
+        public void afterProcess() throws Throwable
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
+        
+        /**
+         * Processes the user properties, re-hashing the password, if required.
+         * 
+         * @param properties The properties for the user.
+         * @return true if the password was upgraded, false if no changes were made.
+         */
+        private boolean processPasswordHash(Map<QName, Serializable> properties)
+        {
+            // retrieve the password and hash indicator
+            Pair<List<String>, String> passwordHash = RepositoryAuthenticationDao.determinePasswordHash(properties);
+            
+            // determine if current password hash matches the preferred encoding
+            if (!passwordEncoder.lastEncodingIsPreferred(passwordHash.getFirst()))
+            {
+                // We need to double hash
+                List<String> nowHashed = new ArrayList<String>();
+                nowHashed.addAll(passwordHash.getFirst());
+                nowHashed.add(passwordEncoder.getPreferredEncoding());
+                Object salt = properties.get(ContentModel.PROP_SALT);
+                properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordEncoder.encodePreferred(new String(passwordHash.getSecond()), salt));
+                properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)nowHashed);
+                properties.remove(ContentModel.PROP_PASSWORD);
+                properties.remove(ContentModel.PROP_PASSWORD_SHA256);
+                return true;
+            }
+
+            // ensure password hash is in the correct place
+            @SuppressWarnings("unchecked")
+            List<String> hashIndicator = (List<String>) properties.get(ContentModel.PROP_HASH_INDICATOR);
+            if (hashIndicator == null)
+            {
+                // Already the preferred encoding, just set it
+                properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)passwordHash.getFirst());
+                properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordHash.getSecond());
+                properties.remove(ContentModel.PROP_PASSWORD);
+                properties.remove(ContentModel.PROP_PASSWORD_SHA256);
+                return true;
+            }
+
+            // if we get here no changes were made
+            return false;
         }
     }
 

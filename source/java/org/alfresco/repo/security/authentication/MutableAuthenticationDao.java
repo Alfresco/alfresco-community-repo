@@ -50,11 +50,6 @@ public interface MutableAuthenticationDao extends AuthenticationDao, SaltSource
      * Check is a user exists.
      */
     public boolean userExists(String userName);
-    
-    /**
-     * Hashes the user password to the preferred encoding.
-     */
-    public void hashUserPassword(String userName) throws AuthenticationException;
 
     /**
      * Enable/disable a user.

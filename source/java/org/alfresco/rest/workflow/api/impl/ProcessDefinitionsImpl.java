@@ -47,6 +47,7 @@ import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.ProcessDefinitions;
 import org.alfresco.rest.workflow.api.model.FormModelElement;
@@ -162,59 +163,48 @@ public class ProcessDefinitionsImpl extends WorkflowRestImpl implements ProcessD
         {
             query.processDefinitionKeyLike("@" + TenantUtil.getCurrentDomain() + "@%");
         }
-        
-        String sortParam = parameters.getParameter("sort");
-        if (sortParam != null)
+
+        List<SortColumn> sortList = parameters.getSorting();
+        SortColumn sortColumn = null;
+        if (sortList != null && sortList.size() > 0)
         {
-            if (PROCESS_DEFINITION_COLLECTION_SORT_PROPERTIES.contains(sortParam))
+            if (sortList.size() != 1)
             {
-                if ("id".equalsIgnoreCase(sortParam))
-                {
+                throw new InvalidArgumentException("Only one orderBy parameter is supported");
+            }
+            sortColumn = sortList.get(0);
+
+            switch (sortColumn.column) {
+                case "id":
                     query.orderByProcessDefinitionId();
-                }
-                else if ("deploymentId".equalsIgnoreCase(sortParam))
-                {
+                    break;
+                case "deploymentId":
                     query.orderByDeploymentId();
-                }
-                else if ("key".equalsIgnoreCase(sortParam))
-                {
+                    break;
+                case "key":
                     query.orderByProcessDefinitionKey();
-                }
-                else if ("category".equalsIgnoreCase(sortParam))
-                {
+                    break;
+                case "category":
                     query.orderByProcessDefinitionCategory();
-                }
-                else if ("version".equalsIgnoreCase(sortParam))
-                {
+                    break;
+                case "version":
                     query.orderByProcessDefinitionVersion();
-                }
-                else if ("name".equalsIgnoreCase(sortParam))
-                {
+                    break;
+                case "name":
                     query.orderByProcessDefinitionName();
-                }
+                    break;
+                default:
+                    throw new InvalidArgumentException("OrderBy " + sortColumn.column +
+                            " is not supported, supported items are " + PROCESS_DEFINITION_COLLECTION_SORT_PROPERTIES);
+            }
+
+            if (sortColumn.asc)
+            {
+                query.asc();
             }
             else
             {
-                throw new InvalidArgumentException("sort " + sortParam + 
-                        " is not supported, supported items are " + PROCESS_DEFINITION_COLLECTION_SORT_PROPERTIES.toArray());
-            }
-            
-            String sortOrderParam = parameters.getParameter("sortOrder");
-            if (sortOrderParam != null)
-            {
-                if ("asc".equalsIgnoreCase(sortOrderParam))
-                {
-                    query.asc();
-                }
-                else if ("desc".equalsIgnoreCase(sortOrderParam))
-                {
-                    query.desc();
-                }
-                else
-                {
-                    throw new InvalidArgumentException("sort order " + sortOrderParam + 
-                            " is not supported, supported items are asc and desc");
-                }
+                query.desc();
             }
         }
         else

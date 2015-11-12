@@ -34,6 +34,8 @@ import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.BeforeCheckOut;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCancelCheckOut;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckIn;
 import org.alfresco.repo.coci.CheckOutCheckInServicePolicies.OnCheckOut;
+import org.alfresco.repo.coci.traitextender.CheckOutCheckInServiceExtension;
+import org.alfresco.repo.coci.traitextender.CheckOutCheckInServiceTrait;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -61,6 +63,11 @@ import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.traitextender.AJProxyTrait;
+import org.alfresco.traitextender.Extend;
+import org.alfresco.traitextender.ExtendedTrait;
+import org.alfresco.traitextender.Extensible;
+import org.alfresco.traitextender.Trait;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -70,7 +77,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * 
  * @author Roy Wetherall
  */
-public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
+public class CheckOutCheckInServiceImpl implements CheckOutCheckInService,Extensible
 {
     /**
      * I18N labels
@@ -111,7 +118,15 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     
     /** Component to determine which behaviours are active and which not */
     private BehaviourFilter behaviourFilter;
+    private final ExtendedTrait<CheckOutCheckInServiceTrait> checkOutCheckInServiceTrait;
     
+    
+    
+    public CheckOutCheckInServiceImpl()
+    {
+        this.checkOutCheckInServiceTrait=new ExtendedTrait<CheckOutCheckInServiceTrait>(AJProxyTrait.create(this, CheckOutCheckInServiceTrait.class));
+    }
+
     /**
      * @param behaviourFilter the behaviourFilter to set
      */
@@ -348,6 +363,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     }
 
     @Override
+    @Extend(traitAPI=CheckOutCheckInServiceTrait.class,extensionAPI=CheckOutCheckInServiceExtension.class)
     public NodeRef checkout(NodeRef nodeRef) 
     {
         // Find the primary parent in order to determine where to put the copy
@@ -358,6 +374,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     }
 
     @Override
+    @Extend(traitAPI=CheckOutCheckInServiceTrait.class,extensionAPI=CheckOutCheckInServiceExtension.class)
     public NodeRef checkout(
             final NodeRef nodeRef, 
             final NodeRef destinationParentNodeRef,
@@ -504,6 +521,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     }
 
     @Override
+    @Extend(traitAPI=CheckOutCheckInServiceTrait.class,extensionAPI=CheckOutCheckInServiceExtension.class)
     public NodeRef checkin(
             NodeRef workingCopyNodeRef,
             Map<String, Serializable> versionProperties) 
@@ -512,6 +530,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     }
 
     @Override
+    @Extend(traitAPI=CheckOutCheckInServiceTrait.class,extensionAPI=CheckOutCheckInServiceExtension.class)
     public NodeRef checkin(
             NodeRef workingCopyNodeRef,
             Map<String, Serializable> versionProperties, 
@@ -521,6 +540,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     }
 
     @Override
+    @Extend(traitAPI=CheckOutCheckInServiceTrait.class,extensionAPI=CheckOutCheckInServiceExtension.class)
     public NodeRef checkin(
             NodeRef workingCopyNodeRef,
             Map<String,Serializable> versionProperties, 
@@ -671,6 +691,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     }
 
     @Override
+    @Extend(traitAPI=CheckOutCheckInServiceTrait.class,extensionAPI=CheckOutCheckInServiceExtension.class)
     public NodeRef cancelCheckout(NodeRef workingCopyNodeRef) 
     {
         // Check that we have been handed a working copy
@@ -721,6 +742,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     }
     
     @Override
+    @Extend(traitAPI=CheckOutCheckInServiceTrait.class,extensionAPI=CheckOutCheckInServiceExtension.class)
     public NodeRef getWorkingCopy(NodeRef nodeRef)
     {
         NodeRef workingCopy = null;
@@ -746,6 +768,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     }
 
     @Override
+    @Extend(traitAPI=CheckOutCheckInServiceTrait.class,extensionAPI=CheckOutCheckInServiceExtension.class)
     public NodeRef getCheckedOut(NodeRef nodeRef)
     {
         NodeRef original = null;
@@ -771,12 +794,14 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     }
 
     @Override
+    @Extend(traitAPI=CheckOutCheckInServiceTrait.class,extensionAPI=CheckOutCheckInServiceExtension.class)
     public boolean isWorkingCopy(NodeRef nodeRef)
     {
         return nodeService.hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY);
     }
 
     @Override
+    @Extend(traitAPI=CheckOutCheckInServiceTrait.class,extensionAPI=CheckOutCheckInServiceExtension.class)
     public boolean isCheckedOut(NodeRef nodeRef)
     {
         return nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT);
@@ -875,5 +900,11 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService
     public static String getWorkingCopyLabel() 
     {
         return I18NUtil.getMessage(MSG_WORKING_COPY_LABEL);
+    }
+
+    @Override
+    public <T extends Trait> ExtendedTrait<T> getTrait(Class<? extends T> traitAPI)
+    {
+        return (ExtendedTrait<T>) checkOutCheckInServiceTrait;
     }
 }

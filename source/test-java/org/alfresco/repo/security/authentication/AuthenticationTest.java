@@ -1980,13 +1980,27 @@ public class AuthenticationTest extends TestCase
     {
         String SOME_PASSWORD = "1 passw0rd";
         String defaultencoding = compositePasswordEncoder.getPreferredEncoding();
+        String user1 = "uzer"+GUID.generate();
+        String user2 = "uzer"+GUID.generate();
         List<String> encs = Arrays.asList("bcrypt10", "md4");
+
+        final String myTestDomain = TEST_TENANT_DOMAIN+"my.test";
+
+        TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Object>() {
+            public Object doWork() throws Exception {
+                if (!tenantAdminService.existsTenant(myTestDomain)) {
+                    tenantAdminService.createTenant(myTestDomain, TENANT_ADMIN_PW.toCharArray(), null);
+                }
+                return null;
+            }
+        }, TenantService.DEFAULT_DOMAIN);
+
         for (String enc : encs)
         {
             compositePasswordEncoder.setPreferredEncoding(enc);
             String hash = compositePasswordEncoder.encodePreferred(SOME_PASSWORD,null);
-            assertCreateHashed(SOME_PASSWORD, hash, null, "me@you.com");
-            assertCreateHashed(SOME_PASSWORD, null, SOME_PASSWORD.toCharArray(), "you@me.com");
+            assertCreateHashed(SOME_PASSWORD, hash, null, user1+ TenantService.SEPARATOR + myTestDomain);
+            assertCreateHashed(SOME_PASSWORD, null, SOME_PASSWORD.toCharArray(), user2+ TenantService.SEPARATOR + myTestDomain);
         }
         compositePasswordEncoder.setPreferredEncoding(defaultencoding);
     }

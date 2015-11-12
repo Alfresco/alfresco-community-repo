@@ -151,6 +151,8 @@
             <aspect name="audio:audio" />
             <aspect name="cm:indexControl" />
             <aspect name="dp:restrictable" />
+            <aspect name="vm:custom-virtualization" />
+            <aspect name="vm:system-virtualization" />
          </visible>
 
          <!-- Aspects that a user can add. Same as "visible" if left empty -->
@@ -175,11 +177,12 @@
       -->
       <types>
          <type name="cm:content">
+            <subtype name="vm:virtualFolderTemplate" />
          </type>
 
-         <type name="cm:folder">
+          <type name="cm:folder">
          </type>
- 
+
          <type name="trx:transferTarget">
             <subtype name="trx:fileTransferTarget" />
          </type>

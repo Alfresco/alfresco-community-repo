@@ -29,6 +29,8 @@ import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.repo.node.SystemNodeUtils;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.workflow.traitextender.WorkflowPackageExtension;
+import org.alfresco.repo.workflow.traitextender.WorkflowPackageTrait;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -38,6 +40,11 @@ import org.alfresco.service.cmr.workflow.WorkflowException;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.traitextender.AJProxyTrait;
+import org.alfresco.traitextender.Extend;
+import org.alfresco.traitextender.ExtendedTrait;
+import org.alfresco.traitextender.Extensible;
+import org.alfresco.traitextender.Trait;
 import org.alfresco.util.GUID;
 import org.springframework.extensions.surf.util.ParameterCheck;
 
@@ -47,7 +54,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * 
  * @author davidc
  */
-public class WorkflowPackageImpl implements WorkflowPackageComponent
+public class WorkflowPackageImpl implements WorkflowPackageComponent,Extensible
 {
     private final static String PACKAGE_FOLDER = "packages";
     private static final String ERR_PACKAGE_ALREADY_ASSOCIATED = "workflow.package.already.associated.error";
@@ -62,7 +69,13 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     private TenantService tenantService;
     private MessageService messageService;
     private BehaviourFilter policyBehaviourFilter;
+    private final ExtendedTrait<WorkflowPackageTrait> workflowPackageTrait;
     
+    public WorkflowPackageImpl()
+    {
+       workflowPackageTrait=new ExtendedTrait<WorkflowPackageTrait>(AJProxyTrait.create(this, WorkflowPackageTrait.class));
+    }
+
     /**
      * @param bootstrap the importer bootstrap for the store to place workflow
      *            items into
@@ -127,6 +140,7 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     /**
     * {@inheritDoc}
      */
+    @Extend(traitAPI=WorkflowPackageTrait.class,extensionAPI=WorkflowPackageExtension.class)
     public NodeRef createPackage(NodeRef container)
     {
         // create a container, if one is not specified
@@ -204,6 +218,7 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     /**
     * {@inheritDoc}
      */
+    @Extend(traitAPI=WorkflowPackageTrait.class,extensionAPI=WorkflowPackageExtension.class)
     public void deletePackage(NodeRef container)
     {
         if (container != null && nodeService.exists(container)
@@ -225,6 +240,7 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     /**
     * {@inheritDoc}
      */
+    @Extend(traitAPI=WorkflowPackageTrait.class,extensionAPI=WorkflowPackageExtension.class)
     public List<String> getWorkflowIdsForContent(NodeRef packageItem)
     {
         ParameterCheck.mandatory("packageItem", packageItem);
@@ -353,6 +369,7 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
     /**
     * {@inheritDoc}
      */
+    @Extend(traitAPI=WorkflowPackageTrait.class,extensionAPI=WorkflowPackageExtension.class)
     public boolean setWorkflowForPackage(WorkflowInstance instance)
     {
         NodeRef packageNode = instance.getWorkflowPackage();
@@ -383,6 +400,12 @@ public class WorkflowPackageImpl implements WorkflowPackageComponent
         nodeService.setProperty(packageNode, WorkflowModel.PROP_WORKFLOW_DEFINITION_NAME, definitionName);
         nodeService.setProperty(packageNode, WorkflowModel.PROP_WORKFLOW_INSTANCE_ID, instanceId);
         return true;
+    }
+
+    @Override
+    public <T extends Trait> ExtendedTrait<T> getTrait(Class<? extends T> traitAPI)
+    {
+        return (ExtendedTrait<T>) workflowPackageTrait;
     }
 
 }

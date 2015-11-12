@@ -26,6 +26,8 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeIdAndAclId;
+import org.alfresco.repo.domain.permissions.traitextender.AccessControlListDAOExtension;
+import org.alfresco.repo.domain.permissions.traitextender.AccessControlListDAOTrait;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlList;
@@ -36,6 +38,11 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.traitextender.AJExtender;
+import org.alfresco.traitextender.Extend;
+import org.alfresco.traitextender.ExtendedTrait;
+import org.alfresco.traitextender.Extensible;
+import org.alfresco.traitextender.Trait;
 import org.alfresco.util.Pair;
 import org.springframework.dao.ConcurrencyFailureException;
 
@@ -45,7 +52,7 @@ import org.springframework.dao.ConcurrencyFailureException;
  * 
  * @author andyh
  */
-public class ADMAccessControlListDAO implements AccessControlListDAO
+public class ADMAccessControlListDAO implements AccessControlListDAO, Extensible
 {
     /**
      * The DAO for Nodes.
@@ -56,7 +63,14 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
     
     private BehaviourFilter behaviourFilter;
     private boolean preserveAuditableData = true;
-
+    
+    private final ExtendedTrait<AccessControlListDAOTrait> accessControlListDAOTrait;
+    
+    public ADMAccessControlListDAO()
+    {
+        accessControlListDAOTrait=new ExtendedTrait<AccessControlListDAOTrait>(createAccessControlListDAOTrait());
+    }
+    
     public void setNodeDAO(NodeDAO nodeDAO)
     {
         this.nodeDAO = nodeDAO;
@@ -97,6 +111,8 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         return nodePair.getFirst();
     }
 
+    @Override
+    @Extend(traitAPI = AccessControlListDAOTrait.class, extensionAPI = AccessControlListDAOExtension.class)
     public Acl getAccessControlList(NodeRef nodeRef)
     {
         Long nodeId = getNodeIdNotNull(nodeRef);
@@ -546,5 +562,33 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         {
             counter += i;
         }
+    }
+
+    @Override
+    public <M extends Trait> ExtendedTrait<M> getTrait(Class<? extends M> traitAPI)
+    {
+        return  (ExtendedTrait<M>) accessControlListDAOTrait;
+    }
+    
+    public AccessControlListDAOTrait createAccessControlListDAOTrait()
+    {
+        return new AccessControlListDAOTrait()
+        {
+
+            @Override
+            public Acl getAccessControlList(final NodeRef nodeRef)
+            {
+                return AJExtender.run(new AJExtender.ExtensionBypass<Acl>()
+                {
+                    @Override
+                    public Acl run()
+                    {
+                        return ADMAccessControlListDAO.this.getAccessControlList(nodeRef);
+                    };
+                });
+            };
+
+        };
+
     }
 }

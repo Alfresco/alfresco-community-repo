@@ -57,13 +57,17 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.traitextender.SpringExtensionBundle;
 import org.alfresco.util.ApplicationContextHelper;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Ignore;
 import org.springframework.context.ApplicationContext;
 
 @Ignore
 public abstract class VirtualizationIntegrationTest extends TestCase implements VirtualizationTest
 {
+    private static Log logger = LogFactory.getLog(VirtualizationIntegrationTest.class);
 
     private static final String PROP_VM_TEMPLATE_CLASSPATH = "prop_vm_system-template-location";
 
@@ -157,11 +161,24 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
     protected String configuredTemplatesClassPath = null;
 
     protected SystemTemplateLocationsConstraint constraints;
+
     @Override
     protected void setUp() throws Exception
     {
         virtualizationConfigTestBootstrap = ctx.getBean(VIRTUALIZATION_CONFIG_TEST_BOOTSTRAP_BEAN_ID,
                                                         VirtualizationConfigTestBootstrap.class);
+
+        if (!virtualizationConfigTestBootstrap.areVirtualFoldersEnabled())
+        {
+            // "use the force" and enable virtual folders
+            SpringExtensionBundle vfBundle = ctx.getBean("virtualFoldersBundle",
+                                                         SpringExtensionBundle.class);
+            vfBundle.start();
+        }
+        else
+        {
+            logger.info("Virtual folders are spring-enabled.");
+        }
 
         // Get the required services
         ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
@@ -206,6 +223,14 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
 
     public void tearDown() throws Exception
     {
+        if (!virtualizationConfigTestBootstrap.areVirtualFoldersEnabled())
+        {
+            // "use the force" and disable virtual folders
+            SpringExtensionBundle vfBundle = ctx.getBean("virtualFoldersBundle",
+                                                         SpringExtensionBundle.class);
+            vfBundle.stop();
+        }
+
         if (configuredTemplatesClassPath != null)
         {
             constraints.setTemplatesParentClasspath(configuredTemplatesClassPath);

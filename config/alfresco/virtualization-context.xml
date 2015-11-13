@@ -253,7 +253,7 @@
 
    <!-- BUNDLE -->
 
-   <bean class="org.alfresco.traitextender.SpringExtensionBundle">
+   <bean id="virtualFoldersBundle" class="org.alfresco.traitextender.SpringExtensionBundle">
       <property name="id" value="org.alfresco.virtual.folders" />
       <property name="enabled" value="${virtual.folders.enabled}" />
       <property name="extensions">

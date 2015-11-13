@@ -39,7 +39,7 @@
             <configuration>
                <redirectTestOutputToFile>false</redirectTestOutputToFile>
                <suiteXmlFiles>
-                  <suiteXmlFile>${project.build.testOutputDirectory}/testng.xml</suiteXmlFile>
+                  <suiteXmlFile>${project.build.testOutputDirectory}/${suiteXmlFile}</suiteXmlFile>
                </suiteXmlFiles>
             </configuration>
          </plugin>

@@ -1455,9 +1455,8 @@ public class CopyServiceImpl extends AbstractBaseCopyService implements CopyServ
                         "   " + copyDetails);
             }
         }
-        
     }
-    
+
     /**
      * Callback behaviour retrieval for the 'ownable' aspect.
      * 

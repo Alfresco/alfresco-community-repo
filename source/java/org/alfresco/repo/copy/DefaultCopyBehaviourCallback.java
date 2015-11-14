@@ -21,7 +21,14 @@ package org.alfresco.repo.copy;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.repo.copy.traitextender.DefaultCopyBehaviourCallbackExtension;
+import org.alfresco.repo.copy.traitextender.DefaultCopyBehaviourCallbackTrait;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.traitextender.AJExtender;
+import org.alfresco.traitextender.Extend;
+import org.alfresco.traitextender.ExtendedTrait;
+import org.alfresco.traitextender.Extensible;
+import org.alfresco.traitextender.Trait;
 import org.alfresco.util.Pair;
 
 
@@ -41,10 +48,16 @@ import org.alfresco.util.Pair;
  * @author Derek Hulley
  * @since 3.2
  */
-public class DefaultCopyBehaviourCallback extends AbstractCopyBehaviourCallback
+public class DefaultCopyBehaviourCallback extends AbstractCopyBehaviourCallback implements Extensible
 {
     private static CopyBehaviourCallback instance = new DefaultCopyBehaviourCallback();
     
+    private final ExtendedTrait<DefaultCopyBehaviourCallbackTrait> defaultCopyBehaviourCallbackTrait;
+    
+    public DefaultCopyBehaviourCallback()
+    {
+        defaultCopyBehaviourCallbackTrait=new ExtendedTrait<DefaultCopyBehaviourCallbackTrait>(createTrait());
+    }
     /**
      * @return          Returns a stateless singleton
      */
@@ -58,6 +71,7 @@ public class DefaultCopyBehaviourCallback extends AbstractCopyBehaviourCallback
      * 
      * @return          Returns <tt>true</tt> always
      */
+    @Extend(traitAPI=DefaultCopyBehaviourCallbackTrait.class,extensionAPI=DefaultCopyBehaviourCallbackExtension.class)
     public boolean getMustCopy(QName classQName, CopyDetails copyDetails)
     {
         return true;
@@ -114,5 +128,31 @@ public class DefaultCopyBehaviourCallback extends AbstractCopyBehaviourCallback
             Map<QName, Serializable> properties)
     {
         return properties;
+    }
+
+    private DefaultCopyBehaviourCallbackTrait createTrait()
+    {
+        return new DefaultCopyBehaviourCallbackTrait()
+        {
+            @Override
+            public boolean getMustCopy(final QName classQName, final CopyDetails copyDetails)
+            {
+                return AJExtender.run(new AJExtender.ExtensionBypass<Boolean>()
+                {
+                    @Override
+                    public Boolean run()
+                    {
+                        return getInstance().getMustCopy(classQName, copyDetails);
+                    };
+                });
+                
+            }
+        };
+    }
+
+    @Override
+    public <T extends Trait> ExtendedTrait<T> getTrait(Class<? extends T> traitAPI)
+    {
+        return (ExtendedTrait<T>) defaultCopyBehaviourCallbackTrait;
     }
 }

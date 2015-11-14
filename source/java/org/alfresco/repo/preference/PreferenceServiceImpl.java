@@ -32,6 +32,8 @@ import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.preference.traitextender.PreferenceServiceExtension;
+import org.alfresco.repo.preference.traitextender.PreferenceServiceTrait;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
@@ -46,6 +48,11 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.traitextender.AJExtender;
+import org.alfresco.traitextender.Extend;
+import org.alfresco.traitextender.ExtendedTrait;
+import org.alfresco.traitextender.Extensible;
+import org.alfresco.traitextender.Trait;
 import org.alfresco.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
@@ -58,7 +65,7 @@ import org.json.JSONObject;
  * 
  * @author Roy Wetherall
  */
-public class PreferenceServiceImpl implements PreferenceService
+public class PreferenceServiceImpl implements PreferenceService, Extensible
 {
     private static final Log log = LogFactory.getLog(PreferenceServiceImpl.class);
     
@@ -75,7 +82,13 @@ public class PreferenceServiceImpl implements PreferenceService
     /** Authentication Service */
     private AuthenticationContext authenticationContext;
     private AuthorityService authorityService;
+
+    private final ExtendedTrait<PreferenceServiceTrait> preferenceServiceTrait;
     
+    public PreferenceServiceImpl()
+    {
+        preferenceServiceTrait=new ExtendedTrait<PreferenceServiceTrait>(createPreferenceServiceTrait());
+    }
     /**
      * Set the node service
      * 
@@ -191,7 +204,10 @@ public class PreferenceServiceImpl implements PreferenceService
     @SuppressWarnings({ "unchecked" })
     public Map<String, Serializable> getPreferences(String userName, String preferenceFilter)
     {
-        if (log.isTraceEnabled()) { log.trace("getPreferences(" + userName + ", " + preferenceFilter + ")"); }
+        if (log.isTraceEnabled()) 
+        { 
+            log.trace("getPreferences(" + userName + ", " + preferenceFilter + ")"); 
+        }
         
         Map<String, Serializable> preferences = new TreeMap<String, Serializable>();
         
@@ -254,7 +270,10 @@ public class PreferenceServiceImpl implements PreferenceService
             throw new AlfrescoRuntimeException("Can not get preferences for " + userName + " because there was an error parsing the JSON data.", exception);
         }
 
-        if (log.isTraceEnabled()) { log.trace("result = " + preferences); }
+        if (log.isTraceEnabled()) 
+        { 
+            log.trace("result = " + preferences); 
+        }
         
         return preferences;
     }
@@ -354,6 +373,7 @@ public class PreferenceServiceImpl implements PreferenceService
         return result;
     }
 
+    @Extend(traitAPI=PreferenceServiceTrait.class,extensionAPI=PreferenceServiceExtension.class)
     public void setPreferences(final String userName, final Map<String, Serializable> preferences)
     {
         // Get the user node reference
@@ -602,4 +622,36 @@ public class PreferenceServiceImpl implements PreferenceService
             return pageSize;
         }
     }
+    
+    @Override
+    public <M extends Trait> ExtendedTrait<M> getTrait(Class<? extends M> traitAPI)
+    {
+        return (ExtendedTrait<M>) preferenceServiceTrait;
+    }
+    
+    public PreferenceServiceTrait createPreferenceServiceTrait()
+    {
+        return new PreferenceServiceTrait()
+        {
+
+            @Override
+            public void setPreferences(final String userName, final Map<String, Serializable> preferences)
+                        throws Throwable
+            {
+
+                AJExtender.run(new AJExtender.ExtensionBypass<Void>()
+                {
+                    @Override
+                    public Void run()
+                    {
+                        PreferenceServiceImpl.this.setPreferences(userName, preferences);
+                        return null;
+                    };
+                });
+
+            }
+
+        };
+    }
+
 }

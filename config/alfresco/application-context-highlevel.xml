@@ -41,4 +41,5 @@
     <import resource="classpath*:alfresco/solr-facets-context.xml" />
     <import resource="classpath*:alfresco/custom-model-management-services-context.xml" />
     <import resource="classpath*:alfresco/domain/*-context.xml" />
+    <import resource="classpath*:alfresco/virtualization-context.xml" />
 </beans>

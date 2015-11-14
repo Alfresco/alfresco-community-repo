@@ -199,11 +199,6 @@
       <property name="extensionPoint" ref="fileFolderServiceExtensionPoint" />
    </bean>
 
-   <bean id="accessControlListDAOExtension" class="org.alfresco.repo.virtual.bundle.VirtualAccessControlListDAOExtension">
-      <property name="environment" ref="actualEnvironment" />
-      <property name="extensionPoint" ref="accessControlListDAOExtensionPoint" />
-   </bean>
-
    <bean id="preferenceServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualPreferenceServiceExtension">
       <property name="virtualStore" ref="virtualStore" />
       <property name="environment" ref="actualEnvironment" />
@@ -260,7 +255,6 @@
          <list>
             <ref bean="nodeServiceExtension" />
             <ref bean="fileFolderServiceExtension" />
-            <!-- ref bean="accessControlListDAOExtension" / -->
             <ref bean="preferenceServiceExtension" />
             <ref bean="ratingServiceExtension" />
             <ref bean="lockServiceExtension" />
@@ -289,11 +283,6 @@
    <bean id="fileFolderServiceExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
       <property name="extension" value="org.alfresco.repo.model.filefolder.traitextender.FileFolderServiceExtension" />
       <property name="trait" value="org.alfresco.repo.model.filefolder.traitextender.FileFolderServiceTrait" />
-   </bean>
-
-   <bean id="accessControlListDAOExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">
-      <property name="extension" value="org.alfresco.repo.domain.permissions.traitextender.AccessControlListDAOExtension" />
-      <property name="trait" value="org.alfresco.repo.domain.permissions.traitextender.AccessControlListDAOTrait" />
    </bean>
 
    <bean id="preferenceServiceExtensionPoint" class="org.alfresco.traitextender.SpringExtensionPoint">

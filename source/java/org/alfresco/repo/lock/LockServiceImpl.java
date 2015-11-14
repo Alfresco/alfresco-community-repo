@@ -38,6 +38,8 @@ import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.lock.mem.LockState;
 import org.alfresco.repo.lock.mem.LockStore;
 import org.alfresco.repo.lock.mem.LockableAspectInterceptor;
+import org.alfresco.repo.lock.traitextender.LockServiceExtension;
+import org.alfresco.repo.lock.traitextender.LockServiceTrait;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.index.NodeIndexer;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -67,6 +69,11 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.traitextender.Extend;
+import org.alfresco.traitextender.ExtendedTrait;
+import org.alfresco.traitextender.Extensible;
+import org.alfresco.traitextender.AJProxyTrait;
+import org.alfresco.traitextender.Trait;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.util.Assert;
@@ -82,7 +89,8 @@ public class LockServiceImpl implements LockService,
                                         NodeServicePolicies.BeforeDeleteNodePolicy,
                                         NodeServicePolicies.OnMoveNodePolicy,
                                         CopyServicePolicies.OnCopyNodePolicy,
-                                        VersionServicePolicies.OnCreateVersionPolicy, TransactionListener
+                                        VersionServicePolicies.OnCreateVersionPolicy, TransactionListener,
+                                        Extensible
 {
     public static final int MAX_EPHEMERAL_LOCK_SECONDS = 2 * 86400;
     
@@ -105,6 +113,13 @@ public class LockServiceImpl implements LockService,
     private NodeIndexer nodeIndexer;
     
     private int ephemeralExpiryThreshold;
+
+    private final ExtendedTrait<LockServiceTrait> lockServiceTrait;
+    
+    public LockServiceImpl()
+    {
+        this.lockServiceTrait=new ExtendedTrait<LockServiceTrait>(AJProxyTrait.create(this, LockServiceTrait.class));
+    }
     
     public void setNodeService(NodeService nodeService)
     {
@@ -270,6 +285,7 @@ public class LockServiceImpl implements LockService,
     /**
      * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockType)
      */
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void lock(NodeRef nodeRef, LockType lockType)
     {
         // Lock with no expiration
@@ -280,6 +296,7 @@ public class LockServiceImpl implements LockService,
      * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockType, int)
      */
     @Override
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire)
     {
         lock(nodeRef, lockType, timeToExpire, Lifetime.PERSISTENT);
@@ -289,6 +306,7 @@ public class LockServiceImpl implements LockService,
      * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockType, int, Lifetime, String)
      */
     @Override
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, Lifetime lifetime)
     {
         lock(nodeRef, lockType, timeToExpire, lifetime, null);
@@ -298,6 +316,7 @@ public class LockServiceImpl implements LockService,
      * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockType, int, Lifetime, String)
      */
     @Override
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, Lifetime lifetime, String additionalInfo)
     {
         invokeBeforeLock(nodeRef, lockType);
@@ -416,6 +435,7 @@ public class LockServiceImpl implements LockService,
     /**
      * @see org.alfresco.service.cmr.lock.LockService#lock(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.lock.LockType, int, boolean)
      */
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, boolean lockChildren)
             throws UnableToAquireLockException
     {
@@ -434,6 +454,7 @@ public class LockServiceImpl implements LockService,
     /**
      * @see org.alfresco.service.cmr.lock.LockService#lock(java.util.Collection, org.alfresco.service.cmr.lock.LockType, int)
      */
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void lock(Collection<NodeRef> nodeRefs, LockType lockType, int timeToExpire)
             throws UnableToAquireLockException
     {
@@ -448,6 +469,7 @@ public class LockServiceImpl implements LockService,
      * @see org.alfresco.service.cmr.lock.LockService#unlock(NodeRef)
      */
     @Override
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void unlock(NodeRef nodeRef) throws UnableToReleaseLockException
     {
         unlock(nodeRef, false, false);
@@ -457,6 +479,7 @@ public class LockServiceImpl implements LockService,
      * @see org.alfresco.service.cmr.lock.LockService#unlock(org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
     @Override
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void unlock(NodeRef nodeRef, boolean lockChildren) throws UnableToReleaseLockException
     {
         unlock(nodeRef, lockChildren, false);
@@ -466,6 +489,7 @@ public class LockServiceImpl implements LockService,
      * @see org.alfresco.service.cmr.lock.LockService#unlock(NodeRef, boolean, boolean)
      */
     @Override
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void unlock(NodeRef nodeRef, boolean unlockChildren, boolean allowCheckedOut)
             throws UnableToReleaseLockException
     {
@@ -530,6 +554,7 @@ public class LockServiceImpl implements LockService,
     /**
      * @see org.alfresco.service.cmr.lock.LockService#unlock(Collection)
      */
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void unlock(Collection<NodeRef> nodeRefs) throws UnableToReleaseLockException
     {
         for (NodeRef nodeRef : nodeRefs)
@@ -541,6 +566,7 @@ public class LockServiceImpl implements LockService,
     /**
      * @see org.alfresco.service.cmr.lock.LockService#getLockStatus(NodeRef)
      */
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public LockStatus getLockStatus(NodeRef nodeRef)
     {
         nodeRef = tenantService.getName(nodeRef);
@@ -555,6 +581,7 @@ public class LockServiceImpl implements LockService,
      * @param userName  the user name
      * @return          the lock status
      */
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public LockStatus getLockStatus(NodeRef nodeRef, String userName)
     {
         Pair<LockState, LockStatus> stateAndStatus = getLockStateAndStatus(nodeRef, userName);
@@ -575,6 +602,7 @@ public class LockServiceImpl implements LockService,
     /**
      * @see LockService#getLockType(NodeRef)
      */
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public LockType getLockType(NodeRef nodeRef)
     {
         LockType result = null;
@@ -610,6 +638,7 @@ public class LockServiceImpl implements LockService,
     /**
      * {@inheritDoc}
      */
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void checkForLock(NodeRef nodeRef) throws NodeLockedException
     {
         String userName = getUserName();
@@ -802,6 +831,7 @@ public class LockServiceImpl implements LockService,
     }
 
     @Override
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void suspendLocks()
     {
        getBehaviourFilter().disableBehaviour(ContentModel.ASPECT_LOCKABLE);
@@ -809,6 +839,7 @@ public class LockServiceImpl implements LockService,
     }
     
     @Override
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void enableLocks()
     {
        getBehaviourFilter().enableBehaviour(ContentModel.ASPECT_LOCKABLE);
@@ -816,6 +847,7 @@ public class LockServiceImpl implements LockService,
     }
 
     @Override
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public String getAdditionalInfo(NodeRef nodeRef)
     {
         LockState lockState = getLockState(nodeRef);
@@ -824,6 +856,7 @@ public class LockServiceImpl implements LockService,
     }
 
     @Override
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public LockState getLockState(NodeRef nodeRef)
     {
         // Check in-memory for ephemeral locks first.
@@ -915,6 +948,7 @@ public class LockServiceImpl implements LockService,
     }
 
     @Override
+    @Extend(traitAPI=LockServiceTrait.class,extensionAPI=LockServiceExtension.class)
     public void setEphemeralExpiryThreshold(int threshSecs)
     {
         ephemeralExpiryThreshold = threshSecs;
@@ -923,5 +957,11 @@ public class LockServiceImpl implements LockService,
     public int getEphemeralExpiryThreshold()
     {
         return ephemeralExpiryThreshold;
+    }
+
+    @Override
+    public <M extends Trait> ExtendedTrait<M> getTrait(Class<? extends M> traitAPI)
+    {
+        return (ExtendedTrait<M>) lockServiceTrait;
     }
 }

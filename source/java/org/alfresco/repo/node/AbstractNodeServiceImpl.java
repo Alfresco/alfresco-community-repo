@@ -51,6 +51,8 @@ import org.alfresco.repo.node.NodeServicePolicies.OnRestoreNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnSetNodeTypePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdateNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
+import org.alfresco.repo.node.db.traitextender.NodeServiceExtension;
+import org.alfresco.repo.node.db.traitextender.NodeServiceTrait;
 import org.alfresco.repo.policy.AssociationPolicyDelegate;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -70,6 +72,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.traitextender.Extend;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
@@ -854,6 +857,7 @@ public abstract class AbstractNodeServiceImpl implements NodeService
     }
 
     @Override
+    @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
     public final boolean removeSeconaryChildAssociation(ChildAssociationRef childAssocRef)
     {
         return removeSecondaryChildAssociation(childAssocRef);

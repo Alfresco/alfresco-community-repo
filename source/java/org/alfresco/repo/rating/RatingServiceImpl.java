@@ -28,6 +28,8 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
+import org.alfresco.repo.rating.traitextender.RatingServiceExtension;
+import org.alfresco.repo.rating.traitextender.RatingServiceTrait;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -40,6 +42,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.traitextender.Extend;
+import org.alfresco.traitextender.ExtendedTrait;
+import org.alfresco.traitextender.Extensible;
+import org.alfresco.traitextender.AJProxyTrait;
+import org.alfresco.traitextender.Trait;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -47,7 +54,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Neil McErlean
  * @since 3.4
  */
-public class RatingServiceImpl implements RatingService
+public class RatingServiceImpl implements RatingService, Extensible 
 {
     private static final Log log = LogFactory.getLog(RatingServiceImpl.class);
     private RatingSchemeRegistry schemeRegistry;
@@ -56,6 +63,13 @@ public class RatingServiceImpl implements RatingService
     private DictionaryService dictionaryService;
     private NodeService nodeService;
     private BehaviourFilter behaviourFilter;
+    
+    public final ExtendedTrait<RatingServiceTrait> ratingServiceTrait;
+    
+    public RatingServiceImpl()
+    {
+        ratingServiceTrait=new ExtendedTrait<RatingServiceTrait>(AJProxyTrait.create(this, RatingServiceTrait.class));
+    }
     
     private RatingNamingConventionsUtil ratingNamingConventions;
     
@@ -84,12 +98,14 @@ public class RatingServiceImpl implements RatingService
         this.ratingNamingConventions = namingConventions;
     }
     
+    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
     public Map<String, RatingScheme> getRatingSchemes()
     {
         // This is already an unmodifiable Map.
         return schemeRegistry.getRatingSchemes();
     }
     
+    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
     public RatingScheme getRatingScheme(String ratingSchemeName)
     {
         return schemeRegistry.getRatingSchemes().get(ratingSchemeName);
@@ -99,6 +115,7 @@ public class RatingServiceImpl implements RatingService
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.rating.RatingService#applyRating(org.alfresco.service.cmr.repository.NodeRef, float, java.lang.String)
      */
+    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
     public void applyRating(final NodeRef targetNode, final float rating,
             final String ratingSchemeName) throws RatingServiceException
     {
@@ -273,6 +290,7 @@ public class RatingServiceImpl implements RatingService
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.rating.RatingService#getRatingByCurrentUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
+    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
     public Rating getRatingByCurrentUser(NodeRef targetNode, String ratingSchemeName)
     {
         String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -283,6 +301,7 @@ public class RatingServiceImpl implements RatingService
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.rating.RatingService#getRatingsByCurrentUser(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
     public List<Rating> getRatingsByCurrentUser(NodeRef targetNode)
     {
         final String fullyAuthenticatedUser = AuthenticationUtil.getFullyAuthenticatedUser();
@@ -347,6 +366,7 @@ public class RatingServiceImpl implements RatingService
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.rating.RatingService#removeRatingByCurrentUser(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
+    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
     public Rating removeRatingByCurrentUser(NodeRef targetNode,
             String ratingScheme)
     {
@@ -386,6 +406,7 @@ public class RatingServiceImpl implements RatingService
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.rating.RatingService#getTotalRating(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
+    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
     public float getTotalRating(NodeRef targetNode, String ratingSchemeName)
     {
         Serializable result = this.getRatingRollup(targetNode, ratingSchemeName, RatingTotalRollupAlgorithm.ROLLUP_NAME);
@@ -397,6 +418,7 @@ public class RatingServiceImpl implements RatingService
         return (Float)result;
     }
     
+    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
     public float getAverageRating(NodeRef targetNode, String ratingSchemeName)
     {
         float totalRating = getTotalRating(targetNode, ratingSchemeName);
@@ -405,6 +427,7 @@ public class RatingServiceImpl implements RatingService
         return ratingCount == 0 ? -1 : Float.valueOf(totalRating / (float)ratingCount);
     }
 
+    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
     public int getRatingsCount(NodeRef targetNode, String ratingSchemeName)
     {
         Serializable result = this.getRatingRollup(targetNode, ratingSchemeName, RatingCountRollupAlgorithm.ROLLUP_NAME);
@@ -420,6 +443,7 @@ public class RatingServiceImpl implements RatingService
      * (non-Javadoc)
      * @see org.alfresco.service.cmr.rating.RatingService#getRatingRollup(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.lang.String)
      */
+    @Extend(traitAPI=RatingServiceTrait.class,extensionAPI=RatingServiceExtension.class)
     public Serializable getRatingRollup(NodeRef targetNode, String ratingSchemeName, String ratingRollupName)
     {
         RatingScheme scheme = schemeRegistry.getRatingSchemes().get(ratingSchemeName);
@@ -480,5 +504,11 @@ public class RatingServiceImpl implements RatingService
         RatingScheme scheme = getRatingScheme(schemeName);
         Rating result = new Rating(scheme, score, appliedBy, ratedAt);
         return result;
+    }
+    
+    @Override
+    public <M extends Trait> ExtendedTrait<M> getTrait(Class<? extends M> traitAPI)
+    {
+        return (ExtendedTrait<M>) ratingServiceTrait;
     }
 }

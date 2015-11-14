@@ -1,0 +1,20 @@
+{
+    "name":"Test",
+    "filing":{
+        
+    },
+    "nodes":[
+        {
+            "id":"1",
+            "name":"Node1",
+            "description":"SUBFOLDERS",
+            "search":{
+                "language":"fts-alfresco",
+                "query":"(PATH:'//app:company_home//cm:TestFolder//cm:FOLDER')"
+            },
+            "filing":{
+                "path":"%ACTUAL_PATH%"
+            }
+        }
+    ]
+}

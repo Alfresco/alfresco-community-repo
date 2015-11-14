@@ -34,7 +34,9 @@ public class SpringExtensionBundle implements InitializingBean
 
     private String id;
 
-    private boolean enabled=true;
+    private boolean enabled = true;
+
+    private RegistryExtensionBundle extensionBundle;
 
     public void setEnabled(boolean enabled)
     {
@@ -51,14 +53,13 @@ public class SpringExtensionBundle implements InitializingBean
         this.id = id;
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception
+    public synchronized void start()
     {
-        if (this.enabled)
-        {
-            logger.info("Starting extension bundle " + id);
 
-            RegistryExtensionBundle extensionBundle = new RegistryExtensionBundle(id);
+        if (extensionBundle == null)
+        {
+            logger.info("Registering extension bundle " + id);
+            extensionBundle = new RegistryExtensionBundle(id);
 
             for (SpringBeanExtension<?, ?> springExtension : extensions)
             {
@@ -74,12 +75,33 @@ public class SpringExtensionBundle implements InitializingBean
                 }
 
             }
+        }
 
-            Extender.getInstance().start(extensionBundle);
+        logger.info("Starting extension bundle " + id);
+        Extender.getInstance().start(extensionBundle);
+    }
+
+    public synchronized void stop()
+    {
+        if (extensionBundle == null)
+        {
+            logger.info("Stop request for unregistered extension bundle " + id);
+        }
+        logger.info("Stopping extension bundle " + id);
+        Extender.getInstance().stop(extensionBundle);
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception
+    {
+        if (this.enabled)
+        {
+            logger.info("The extension bundle " + id+" is spring-enabled. Starting ... ");
+            start();
         }
         else
         {
-            logger.info("Extension bundle " + id + " is disabled.");
+            logger.info("Extension bundle " + id + " is spring-disabled.");
         }
     }
 

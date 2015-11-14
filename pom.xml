@@ -896,6 +896,9 @@
                                  <goal>test</goal>
                               </goals>
                               <configuration>
+                                  <systemPropertyVariables>
+                                    <virtual.folders.enabled>true</virtual.folders.enabled>
+                                  </systemPropertyVariables>
                                   <forkMode>always</forkMode>
                                   <includes combine.self="override">
                                       <include>**/org/alfresco/Repository*TestSuite.java</include>

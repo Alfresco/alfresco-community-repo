@@ -20,21 +20,17 @@
 package org.alfresco.repo.virtual.bundle;
 
 import java.util.Collection;
-import java.util.Set;
 
-import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.ref.GetActualNodeRefMethod;
 import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
-import org.alfresco.service.namespace.QName;
 import org.junit.Test;
 
 public class VirtualVersionServiceExtensionTest extends VirtualizationIntegrationTest

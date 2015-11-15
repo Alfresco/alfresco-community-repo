@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -260,6 +260,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     }
 
     public static final char ID_SEPERATOR = ';';
+    public static final char REPLACEMENT_CHAR = '_';
     public static final String ASSOC_ID_PREFIX = "assoc:";
     public static final String PWC_VERSION_LABEL = "pwc";
     public static final String UNVERSIONED_VERSION_LABEL = "1.0";
@@ -2173,11 +2174,13 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             return df.newXMLGregorianCalendar((GregorianCalendar) value).toXMLFormat();
         }
 
-        // MNT-12496
-        // Encode for AtomPub only. Browser/json binding already encodes.
-        if (AlfrescoCmisServiceCall.get() != null && CallContext.BINDING_ATOMPUB.equals(AlfrescoCmisServiceCall.get().getBinding()))
+        // MNT-12496 MNT-15044
+        // Filter for AtomPub and Web services bindings only. Browser/json binding already encodes.
+        if (AlfrescoCmisServiceCall.get() != null && 
+                (CallContext.BINDING_ATOMPUB.equals(AlfrescoCmisServiceCall.get().getBinding()) ||
+                 CallContext.BINDING_WEBSERVICES.equals(AlfrescoCmisServiceCall.get().getBinding())))
         {
-        	return escapeControlCharacters(value.toString());
+        	return filterXmlRestrictedCharacters(value.toString());
         }
         else
         {
@@ -2277,16 +2280,18 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             }
             else
             {
-               // MNT-12496
-               // Encode for AtomPub only. Browser/json binding already encodes.
-            	if (AlfrescoCmisServiceCall.get() != null && CallContext.BINDING_ATOMPUB.equals(AlfrescoCmisServiceCall.get().getBinding()))
-            	{
-            		((PropertyStringImpl) result).setValue(escapeControlCharacters((String) value));
-            	}
-            	else
-            	{
-            		((PropertyStringImpl) result).setValue((String) value);
-            	}
+               // MNT-12496 MNT-15044
+               // Filter for AtomPub and Web services bindings only. Browser/json binding already encodes.
+                if (AlfrescoCmisServiceCall.get() != null && 
+                        (CallContext.BINDING_ATOMPUB.equals(AlfrescoCmisServiceCall.get().getBinding()) ||
+                         CallContext.BINDING_WEBSERVICES.equals(AlfrescoCmisServiceCall.get().getBinding())))
+                {
+                    ((PropertyStringImpl) result).setValue(filterXmlRestrictedCharacters((String) value));
+                }
+                else
+                {
+                    ((PropertyStringImpl) result).setValue((String) value);
+                }
             }
             break;
         case URI:
@@ -2315,7 +2320,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return result;
     }
     
-    private String escapeControlCharacters(String origValue)
+    private String filterXmlRestrictedCharacters(String origValue)
     {
         if (origValue == null)
         {
@@ -2326,33 +2331,10 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         for (int i = 0; i < origValue.length(); i++)
         {
             char ch = origValue.charAt(i);
-            switch (ch)
-            {
-            case '\b':
-            case '\f':
-            case '\n':
-            case '\r':
-            case '\t':
-                sb.append(ch);
-                break;
-            default:
-                // Reference: http://www.unicode.org/versions/Unicode5.1.0/
-                if ((ch >= '\u0000' && ch <= '\u001F') || (ch >= '\u007F' && ch <= '\u009F') || (ch >= '\u2000' && ch <= '\u20FF'))
-                {
-                    String ss = Integer.toHexString(ch);
-                    sb.append("\\u");
-                    for (int k = 0; k < 4 - ss.length(); k++)
-                    {
-                        sb.append('0');
-                    }
-                    sb.append(ss.toUpperCase());
-                }
-                else
-                {
-                    sb.append(ch);
-                }
-            }
+            boolean restricted = (ch < '\u0020') && !(ch == '\t' || ch == '\n' || ch == '\r');
+            sb.append(restricted ? REPLACEMENT_CHAR : ch);
         }
+        
         return sb.toString();
     }
 

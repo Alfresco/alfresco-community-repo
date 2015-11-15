@@ -1634,7 +1634,7 @@ public class TestCMIS extends EnterpriseTestApi
                        SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
                        final TestSite site = network1.createSite(siteInfo);
                        
-                       NodeRef resNode = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "testdoc.txt", "Test Doc1 Title", "d\u0010", "Test Content");
+                       NodeRef resNode = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "testdoc \u0010.txt", "Test Doc1 Title \u0010", "d\u0010", "Test Content");
                        return resNode;
                    }
                }, person1Id, network1.getId());
@@ -1655,6 +1655,55 @@ public class TestCMIS extends EnterpriseTestApi
        // Response hasn't full info at error - writer just stops at incorrect character.
        // Therefore we can check end tag of root element
        assertTrue("No end tag was found", xml.endsWith("</atom:entry>"));
+   }
+   
+   /**
+    * 1) Creating a file with currency symbols in the name, title and description (MNT-15044)
+    * 2) Get the document with correct chars in the properties.
+    * @throws Exception
+    */
+   @Test
+   public void testGetXmlWithCorrectCurrencySymbols() throws Exception
+   {
+       final TestNetwork network1 = getTestFixture().getRandomNetwork();
+
+       String username = "user" + System.currentTimeMillis();
+       PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+       TestPerson person1 = network1.createUser(personInfo);
+       String person1Id = person1.getId();
+
+       final String siteName = "site" + System.currentTimeMillis();
+
+       NodeRef fileNode = TenantUtil.runAsUserTenant(new TenantRunAsWork<NodeRef>()
+               {
+           @Override
+           public NodeRef doWork() throws Exception
+           {
+               SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
+               final TestSite site = network1.createSite(siteInfo);
+
+               NodeRef resNode = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), 
+                                                            "Euro \u20AC Pound \u00A3 Franc \u20A3.txt", 
+                                                            "Euro \u20AC Pound \u00A3 Franc \u20A3 File", 
+                                                            "\u20A3 \u00A3 \u20A3", 
+                                                            "\u20A3 \u00A3 \u20A3");
+               return resNode;
+           }
+               }, person1Id, network1.getId());
+
+       publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+       CmisSession atomCmisSession10 = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_10, AlfrescoObjectFactoryImpl.class.getName());
+
+       String objectId = fileNode.getId();
+       Document doc = (Document)atomCmisSession10.getObject(objectId);
+
+       String name = (String)doc.getProperty(PropertyIds.NAME).getFirstValue();
+       String title = (String)doc.getProperty("cm:title").getFirstValue();
+       String description = (String)doc.getProperty("cm:description").getFirstValue();
+
+       assertEquals("Euro \u20AC Pound \u00A3 Franc \u20A3.txt", name);
+       assertEquals("Euro \u20AC Pound \u00A3 Franc \u20A3 File", title);
+       assertEquals("\u20A3 \u00A3 \u20A3", description);
    }
 
     /*

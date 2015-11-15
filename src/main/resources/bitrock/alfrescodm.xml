@@ -55,15 +55,15 @@
             </ruleList>
             <validationActionList>
                 <throwError>
-                    <text>Couldn’t bind to the given port number. Select another FTP Port.</text>
-                    <ruleList>
-                        <portTest port="${alfresco_ftp_port}" condition="cannot_bind"/>
-                    </ruleList>
-                </throwError>
-                <throwError>
                     <text>Use numbers only in the port configuration fields. Other characters are not permitted.</text>
                     <ruleList>
                         <stringTest text="${alfresco_ftp_port}" type="not_digit" />
+                    </ruleList>
+                </throwError>
+                <throwError>
+                    <text>Couldn’t bind to the given port number. Select another FTP Port.</text>
+                    <ruleList>
+                        <portTest port="${alfresco_ftp_port}" condition="cannot_bind"/>
                     </ruleList>
                 </throwError>
             </validationActionList>
@@ -83,15 +83,15 @@
             </ruleList>
             <validationActionList>
                 <throwError>
-                    <text>Couldn’t bind to the given port number. Select another RMI Port.</text>
-                    <ruleList>
-                        <portTest port="${alfresco_rmi_port}" condition="cannot_bind"/>
-                    </ruleList>
-                </throwError>
-                <throwError>
                     <text>Use numbers only in the port configuration fields. Other characters are not permitted.</text>
                     <ruleList>
                         <stringTest text="${alfresco_rmi_port}" type="not_digit" />
+                    </ruleList>
+                </throwError>
+                <throwError>
+                    <text>Couldn’t bind to the given port number. Select another RMI Port.</text>
+                    <ruleList>
+                        <portTest port="${alfresco_rmi_port}" condition="cannot_bind"/>
                     </ruleList>
                 </throwError>
             </validationActionList>

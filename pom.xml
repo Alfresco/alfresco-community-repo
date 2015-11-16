@@ -1000,27 +1000,55 @@
              </executions>
          </plugin>
 
-            <!-- ACE-3329 Create _en.properties message files  -->
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                  <executions>
+                    <!-- ACE-3329 Create _en.properties message files  -->
                     <execution>
                         <id>duplicate-english-messages</id>
                         <phase>generate-resources</phase>
                         <goals>
                             <goal>run</goal>
                         </goals>
+                        <configuration>
+                            <target>
+                                <copy todir="${project.build.outputDirectory}">
+                                    <fileset dir="${basedir}/config"
+                                        includes="alfresco/messages/**/*.properties,alfresco/workflow/**/*.properties" />
+                                    <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties"/>
+                                </copy>
+                            </target>
+                        </configuration>
+                    </execution>
+                    <!-- ACE-4563 Package h2 dialect files, copying the PostgreSQL ones, to be reused by Maven SDK -->
+                    <execution>
+                        <id>package-h2scripts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <target>
+                                <zip destfile="${project.build.directory}/h2scripts.jar">
+                                    <mappedresources>
+                                        <zipfileset dir="${basedir}/config">
+                                            <include name="alfresco/ibatis/org.hibernate.dialect.PostgreSQLDialect/*" />
+                                            <include name="alfresco/dbscripts/create/org.hibernate.dialect.PostgreSQLDialect/*" /> 
+                                        </zipfileset>
+                                        <regexpmapper from="(.*)PostgreSQLDialect(.*)" to="\1H2Dialect\2"/>
+                                    </mappedresources>
+                                    <mappedresources>
+                                        <zipfileset dir="${basedir}/../../enterpriseprojects/repository/config" erroronmissingdir="false">
+                                            <include name="alfresco/ibatis/org.hibernate.dialect.PostgreSQLDialect/*" />
+                                            <include name="alfresco/dbscripts/create/org.hibernate.dialect.PostgreSQLDialect/*" /> 
+                                        </zipfileset>
+                                        <regexpmapper from="(.*)PostgreSQLDialect(.*)" to="\1H2Dialect\2"/>
+                                    </mappedresources>
+                                </zip>
+                            </target>
+                        </configuration>
                     </execution>
                 </executions>
-                <configuration>
-                    <target>
-                        <copy todir="${project.build.outputDirectory}">
-                            <fileset dir="${basedir}/config"
-                                includes="alfresco/messages/**/*.properties,alfresco/workflow/**/*.properties" />
-                            <mapper type="regexp" from="^([^_]*).properties$" to="\1_en.properties"/>
-                        </copy>
-                    </target>
-                </configuration>
             </plugin>
             <plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -1045,6 +1073,30 @@
 					<target>1.7</target>
 				</configuration>
            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                 <executions>
+                    <!-- ACE-4563 Attach h2 dialect file to project -->
+                    <execution>
+                        <id>attach-h2scripts</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>attach-artifact</goal>
+                        </goals>
+                        <configuration>
+                            <artifacts>
+                                <artifact>
+                                    <file>${project.build.directory}/h2scripts.jar</file>
+                                    <type>jar</type>
+                                    <classifier>h2scripts</classifier>
+                                </artifact>
+                            </artifacts>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
 
     	<pluginManagement>

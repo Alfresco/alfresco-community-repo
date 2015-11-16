@@ -37,7 +37,6 @@
                 <setInstallerVariable name="imagemagick_distribution_folder_unix" value="${local_binaries_folder}/ImageMagick"/>
                 <setInstallerVariable name="java_distribution_folder" value="${local_binaries_folder}/java"/>
                 <setInstallerVariable name="libreoffice_distribution_folder" value="${local_binaries_folder}/libreoffice"/>
-                <setInstallerVariable name="swftools_distribution_folder" value="${binaries_folder}/swftools-0.9.2"/>
                 <setInstallerVariable name="tomcat_distribution_folder" value="${local_binaries_folder}/apache-tomcat"/>
                 <setInstallerVariable name="ghostscript_distribution_folder" value="${local_binaries_folder}/ghostscript"/>
                 <!-- END ALFRESCO BUILD SYSTEM-->

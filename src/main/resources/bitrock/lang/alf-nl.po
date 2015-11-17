@@ -373,12 +373,6 @@ msgstr "SMTP TCP-poort in gebruik"
 msgid "SMTP Port"
 msgstr "SMTP-poort"
 
-msgid "SWFTOOLS Component"
-msgstr "SWFTOOLS-onderdeel"
-
-msgid "SWFTOOLS installation directory"
-msgstr "SWFTOOLS-installatiemap"
-
 msgid "Select a folder:"
 msgstr "Selecteer een map:"
 

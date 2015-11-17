@@ -373,12 +373,6 @@ msgstr "正在使用的 SMTP TCP 端口"
 msgid "SMTP Port"
 msgstr "SMTP 端口"
 
-msgid "SWFTOOLS Component"
-msgstr "SWFTOOLS 组件"
-
-msgid "SWFTOOLS installation directory"
-msgstr "SWFTOOLS 安装目录"
-
 msgid "Select a folder:"
 msgstr "选择文件夹："
 

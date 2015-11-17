@@ -10,7 +10,7 @@
    <artifactId>alfresco-rm-automation</artifactId>
    <properties>
       <selenium.version>2.45.0</selenium.version>
-      <spring.version>4.0.5.RELEASE</spring.version>
+      <spring.version>4.0.6.RELEASE</spring.version>
       <!-- Within the rm-automation project only, we want source code to be Java 8. -->
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
    </properties>
@@ -83,6 +83,11 @@
          <artifactId>spring-beans</artifactId>
          <version>${spring.version}</version>
       </dependency>
+      <dependency>
+	<groupId>org.springframework</groupId>
+	<artifactId>spring-core</artifactId>
+	<version>${spring.version}</version>
+       </dependency>
       <dependency>
          <groupId>org.springframework</groupId>
          <artifactId>spring-context</artifactId>

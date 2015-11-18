@@ -68,6 +68,11 @@ public class SubsystemChainingFtpAuthenticator extends AbstractChainingFtpAuthen
             {
                 ApplicationContext context = this.applicationContextManager.getApplicationContext(instance);
                 FTPAuthenticatorBase authenticator = (FTPAuthenticatorBase) context.getBean(sourceBeanName);
+                
+                if(this.getClass().isInstance(authenticator))
+                {
+                    continue;
+                }
                 // Only add active authenticators. E.g. we might have an passthru FTP authenticator that is disabled.
                 if (!(authenticator instanceof ActivateableBean)
                         || ((ActivateableBean) authenticator).isActive())

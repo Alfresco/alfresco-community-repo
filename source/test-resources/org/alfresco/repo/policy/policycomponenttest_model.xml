@@ -59,7 +59,33 @@
             </association>
          </associations>            
       </type>
-      
+
+      <type name="test:a_type">
+         <parent>sys:base</parent>
+         <properties>
+            <property name="test:a_type">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+
+      <type name="test:b_type">
+         <parent>test:a_type</parent>
+         <properties>
+            <property name="test:b_type">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
+
+      <type name="test:c_type">
+         <parent>test:b_type</parent>
+         <properties>
+            <property name="test:c_type">
+               <type>d:text</type>
+            </property>
+         </properties>
+      </type>
    </types>
    
    <aspects>

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -81,12 +81,33 @@ public interface BehaviourFilter
     
     /**
      * Disable behaviour for a type or aspect for all nodes.
+     * <br>
+     * Given a direct instance of className (ie. not a subclass) 
+     * all behaviour is disabled (including superclass behaviour).
+     * </br>
+     * <br>The same as calling {@link #disableBehaviour(QName, boolean)} with <code>false</code></br>
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
-     * 
+     *
      * @param className         the type/aspect behaviour to disable
      */
     public void disableBehaviour(QName className);
+
+    /**
+     * Disable behaviour for a type or aspect for all nodes.
+     * <br>
+     * Given an instance of className (including instances that are subclasses of className, if includeSubClasses is true) 
+     * all behaviour is disabled (including superclass behaviour).
+     * </br>
+     * <br>Successive calls (within the current transaction) will overwrite the filter for this class.</br>
+     * The change applies <b>ONLY</b> to the current transaction.
+     * 
+     * @param className the type/aspect behaviour to disable
+     * @param includeSubClasses set to <code>true</code> to disable the behaviours of subclasses
+     * 
+     * @since 5.1
+     */
+    public void disableBehaviour(QName className, boolean includeSubClasses);
 
     /**
      * Disable behaviour for specific node and class
@@ -114,6 +135,7 @@ public interface BehaviourFilter
     
     /**
      * Enable behaviour for all nodes
+     * <br>This is also applied to the to the disabled behaviours with {@link #disableBehaviour(QName, boolean)}</br>
      * <p>
      * The change applies <b>ONLY</b> to the current transaction.
      * 
@@ -162,7 +184,7 @@ public interface BehaviourFilter
      * @return              true => behaviour is enabled
      */
     public boolean isEnabled(QName className);
-    
+
     /**
      * Determine if behaviour is enabled for specific node and class.
      * <p> 

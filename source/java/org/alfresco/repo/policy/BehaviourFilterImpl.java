@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,6 +24,7 @@ import java.util.Map;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
+import org.alfresco.service.cmr.dictionary.ClassDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -116,29 +117,33 @@ public class BehaviourFilterImpl implements BehaviourFilter
     @Override
     public void disableBehaviour(QName className)
     {
+        disableBehaviour(className, false);
+    }
+
+    @Override
+    public void disableBehaviour(QName className, boolean includeSubClasses)
+    {
         if (logger.isDebugEnabled())
         {
             logger.debug("Behaviour: DISABLE (" + AlfrescoTransactionSupport.getTransactionId() + "): " + className);
         }
         ParameterCheck.mandatory("className",  className);
+        ClassFilter classFilter = new ClassFilter(className, includeSubClasses);
 
         TransactionalResourceHelper.incrementCount(KEY_FILTER_COUNT);
-        
-        Map<QName, MutableInt> classFilters = TransactionalResourceHelper.getMap(KEY_CLASS_FILTERS);
-        MutableInt filter = classFilters.get(className);
-        if (filter == null)
+
+        Map<ClassFilter, MutableInt> classFilters = TransactionalResourceHelper.getMap(KEY_CLASS_FILTERS);
+        MutableInt filterNumber = classFilters.get(classFilter);
+        if (filterNumber == null)
         {
-            filter = new MutableInt(1);        // Already incremented
-            classFilters.put(className, filter);
+            filterNumber = new MutableInt(0);
         }
-        else
-        {
-            filter.increment();
-        }
-        
+        filterNumber.increment();
+        classFilters.put(classFilter, filterNumber);
+
         if (logger.isDebugEnabled())
         {
-            logger.debug("   Now: " + filter);
+            logger.debug("   Now: " + filterNumber);
         }
     }
 
@@ -241,25 +246,33 @@ public class BehaviourFilterImpl implements BehaviourFilter
             // Nothing was disabled
             return;
         }
-        Map<QName, MutableInt> classFilters = TransactionalResourceHelper.getMap(KEY_CLASS_FILTERS);
-        MutableInt filter = classFilters.get(className);
-        if (filter == null)
+        Map<ClassFilter, MutableInt> classFilters = TransactionalResourceHelper.getMap(KEY_CLASS_FILTERS);
+        MutableInt filterNumber = null;
+        for (ClassFilter classFilter : classFilters.keySet())
+        {
+            if (classFilter.getClassName().equals(className))
+            {
+                filterNumber = classFilters.get(classFilter);
+                break;
+            }
+        }
+        if (filterNumber == null)
         {
             // Class was not disabled
             return;
         }
-        else if (filter.intValue() <= 0)
+        else if (filterNumber.intValue() <= 0)
         {
             // Can't go below zero for this
         }
         else
         {
-            filter.decrement();
+            filterNumber.decrement();
         }
         
         if (logger.isDebugEnabled())
         {
-            logger.debug("   Now: "+ filter);
+            logger.debug("   Now: "+ filterNumber);
         }
     }
 
@@ -358,6 +371,22 @@ public class BehaviourFilterImpl implements BehaviourFilter
         return TransactionalResourceHelper.getCount(KEY_GLOBAL_FILTERS) <= 0;
     }
 
+    /**
+     * @param className the class name
+     * @return the super class or <code>null</code>
+     */
+    private QName generaliseClass(QName className)
+    {
+        ClassDefinition classDefinition = dictionaryService.getClass(className);
+        if (classDefinition == null)
+        {
+            // The class definition doesn't exist
+            return null;
+        }
+        QName parentClassName = classDefinition.getParentName();
+        return parentClassName;
+    }
+
     @Override
     public boolean isEnabled(QName className)
     {
@@ -374,9 +403,68 @@ public class BehaviourFilterImpl implements BehaviourFilter
             // Nothing was disabled
             return true;
         }
-        Map<QName, MutableInt> classFilters = TransactionalResourceHelper.getMap(KEY_CLASS_FILTERS);
-        MutableInt classFilter = classFilters.get(className);
-        return (classFilter == null) || classFilter.intValue() <= 0;
+        Map<ClassFilter, MutableInt> classFilters = TransactionalResourceHelper.getMap(KEY_CLASS_FILTERS);
+
+        // Check this class to be disabled
+        ClassFilter classFilter = getClassFilter(className);
+        if (classFilter != null)
+        {
+            MutableInt filterNumber = classFilters.get(classFilter);
+            if (filterNumber != null && filterNumber.intValue() > 0) {
+                // the class is disabled
+                return false;
+            }
+        }
+
+        // Search for the super classes to be disabled with subclasses
+        while (className != null)
+        {
+            classFilter = getClassFilter(className);
+            if (classFilter != null && classFilter.isDisableSubClasses())
+            {
+                MutableInt filterNumber = classFilters.get(classFilter);
+                if (filterNumber != null && filterNumber.intValue() > 0)
+                {
+                    // the class is disabled
+                    return false;
+                }
+            }
+            // continue search
+            // look up the hierarchy
+            className = generaliseClass(className);
+        }
+        return true;
+    }
+
+    private ClassFilter getClassFilter(QName className)
+    {
+        ParameterCheck.mandatory("className", className);
+
+        // Check the global, first
+        if (!isEnabled())
+        {
+            return null;
+        }
+
+        if (!TransactionalResourceHelper.isResourcePresent(KEY_CLASS_FILTERS))
+        {
+            // Nothing was disabled
+            return null;
+        }
+        Map<ClassFilter, MutableInt> classFilters = TransactionalResourceHelper.getMap(KEY_CLASS_FILTERS);
+        for (ClassFilter classFilter : classFilters.keySet())
+        {
+            if (classFilter.getClassName().equals(className))
+            {
+                MutableInt filterNumber = classFilters.get(classFilter);
+                if (filterNumber != null && filterNumber.intValue() > 0 )
+                {
+                    return classFilter;
+                }
+                break;
+            }
+        }
+        return null;
     }
 
     @Override

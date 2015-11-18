@@ -61,7 +61,11 @@ public class PolicyComponentTransactionTest extends TestCase
     private static final String TEST_NAMESPACE = "http://www.alfresco.org/test/policycomponenttest/1.0";
     private static QName BASE_TYPE = QName.createQName(TEST_NAMESPACE, "base");
     private static QName FILE_TYPE = QName.createQName(TEST_NAMESPACE, "file");
-    
+
+    private static QName A_TYPE = QName.createQName(TEST_NAMESPACE, "a_type");
+    private static QName B_TYPE = QName.createQName(TEST_NAMESPACE, "b_type");
+    private static QName C_TYPE = QName.createQName(TEST_NAMESPACE, "c_type");
+
     private static ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext();
     private static ClassPolicyDelegate<SideEffectTestPolicy> sideEffectDelegate = null;
     private PolicyComponent policyComponent;
@@ -71,6 +75,10 @@ public class PolicyComponentTransactionTest extends TestCase
     private NodeService nodeService;
     private NodeLocatorService nodeLocatorService;
     private NodeRef companyHome;
+
+    private TestOnCreateNodePolicy aTypeBehavior;
+    private TestOnCreateNodePolicy bTypeBehavior;
+    private TestOnCreateNodePolicy cTypeBehavior;
 
     
     @Override
@@ -106,8 +114,22 @@ public class PolicyComponentTransactionTest extends TestCase
         }
 
         this.companyHome = nodeLocatorService.getNode(CompanyHomeNodeLocator.NAME, null, null);
+        createAndEnableBehaviours();
     }
 
+    private void createAndEnableBehaviours()
+    {
+        aTypeBehavior = new TestOnCreateNodePolicy();
+        bTypeBehavior = new TestOnCreateNodePolicy();
+        cTypeBehavior = new TestOnCreateNodePolicy();
+
+        // bind custom behavior for super type
+        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, A_TYPE, new JavaBehaviour(aTypeBehavior, "onCreateNode"));
+        // bind custom behavior for "middle" type
+        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, B_TYPE, new JavaBehaviour(bTypeBehavior, "onCreateNode"));
+        // bind custom behavior for sub type
+        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, C_TYPE, new JavaBehaviour(cTypeBehavior, "onCreateNode"));
+    }
     
     @Override
     protected void tearDown() throws Exception
@@ -377,92 +399,20 @@ public class PolicyComponentTransactionTest extends TestCase
         }        
     }
 
-    /**
-     * Test for MNT_13836
-     * <p>first show that both behaviours are enabled and triggered for a sub- (child) instance</p>
-     * @throws Exception
-     */
-    public void testChildParentBehaviours1() throws Exception
+    public void behaviourHierarchyTestWork(QName createDocType, ClassFilter... disableTypes) throws Exception
     {
-        TestOnCreateNodePolicy baseTypeBehavior = new TestOnCreateNodePolicy();
-        TestOnCreateNodePolicy fileTypeBehavior = new TestOnCreateNodePolicy();
-        
-        // bind custom behavior for parent type
-        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, BASE_TYPE, new JavaBehaviour(baseTypeBehavior, "onCreateNode"));
-        // bind custom behavior for child type
-        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, FILE_TYPE, new JavaBehaviour(fileTypeBehavior, "onCreateNode"));
-
         UserTransaction transaction = trxService.getUserTransaction();
         try
         {
             transaction.begin();
-
-            final String name = "Test (" + System.currentTimeMillis() + ").docx";
-            final Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
-            contentProps.put(ContentModel.PROP_NAME, name);
-            
-            // create node of child type
-            nodeService.createNode(companyHome,
-                    ContentModel.ASSOC_CONTAINS,
-                    QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
-                    FILE_TYPE,
-                    contentProps);
-            transaction.commit();
-        }
-        catch(Exception e)
-        {
-            try { transaction.rollback(); } catch (IllegalStateException ee) {}
-            throw e;
-        }
-        
-        assertTrue("Behavior should be executed for parent type.", baseTypeBehavior.isExecuted());
-        assertEquals(1, baseTypeBehavior.getExecutionCount());
-        assertTrue("Behavior should be executed for child type.", fileTypeBehavior.isExecuted());
-        assertEquals(1, fileTypeBehavior.getExecutionCount());
-    }
-
-    /**
-     * Test for MNT_13836
-     * <p>then disable the super- behaviour only and show that sub behaviour is still enabled and triggered</p>
-     * @throws Exception
-     */
-    /*
-    public void testChildParentBehaviours2() throws Exception
-    {
-        TestOnCreateNodePolicy baseTypeBehavior = new TestOnCreateNodePolicy();
-        TestOnCreateNodePolicy fileTypeBehavior = new TestOnCreateNodePolicy();
-
-        // bind custom behavior for parent type
-        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, BASE_TYPE, new JavaBehaviour(baseTypeBehavior, "onCreateNode"));
-        // bind custom behavior for child type
-        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, FILE_TYPE, new JavaBehaviour(fileTypeBehavior, "onCreateNode"));
-
-        UserTransaction transaction = trxService.getUserTransaction();
-        try
-        {
-            transaction.begin();
-            // disable behavior for parent type
-            behaviourFilter.disableBehaviour(BASE_TYPE);
-            // check that behavior is disabled correctly
+            disableBehaviours(disableTypes);
             try
             {
-                checkBehaviour(BASE_TYPE, companyHome, true, false, false, true);
-
-                final String name = "Test (" + System.currentTimeMillis() + ").docx";
-                final Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
-                contentProps.put(ContentModel.PROP_NAME, name);
-
-                // create node of child type
-                nodeService.createNode(companyHome,
-                        ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
-                        FILE_TYPE,
-                        contentProps);
+                createDocOfType(createDocType);
             }
             finally
             {
-                behaviourFilter.enableBehaviour(BASE_TYPE);
-                checkBehaviour(BASE_TYPE, companyHome, true, true, true, true);
+                enableBehaviours(disableTypes);
             }
             transaction.commit();
         }
@@ -471,61 +421,473 @@ public class PolicyComponentTransactionTest extends TestCase
             try { transaction.rollback(); } catch (IllegalStateException ee) {}
             throw e;
         }
-
-        assertFalse("Behavior should not be executed for parent type.", baseTypeBehavior.isExecuted());
-        assertEquals(0, baseTypeBehavior.getExecutionCount());
-        assertTrue("Behavior should be executed for child type.", fileTypeBehavior.isExecuted());
-        assertEquals(1, fileTypeBehavior.getExecutionCount());
     }
-    */
-    
+
     /**
-     * Test for MNT_13836
-     * <p>then also disable the sub- behaviour and show that neither behaviour is triggered</p>
+     * Test for MNT-13836
      * @throws Exception
      */
-    public void testChildParentBehaviours3() throws Exception
+    public void testBehaviourHierarchyEnableAll1() throws Exception
     {
-        TestOnCreateNodePolicy baseTypeBehavior = new TestOnCreateNodePolicy();
-        TestOnCreateNodePolicy fileTypeBehavior = new TestOnCreateNodePolicy();
+        behaviourHierarchyTestWork(A_TYPE);
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
 
-        // bind custom behavior for parent type
-        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, BASE_TYPE, new JavaBehaviour(baseTypeBehavior, "onCreateNode"));
-        // bind custom behavior for child type
-        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, FILE_TYPE, new JavaBehaviour(fileTypeBehavior, "onCreateNode"));
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyEnableAll2() throws Exception
+    {
+        behaviourHierarchyTestWork(B_TYPE);
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(1, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
 
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyEnableAll3() throws Exception
+    {
+        behaviourHierarchyTestWork(C_TYPE);
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(1, bTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(1, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableAllUpHierarchy1() throws Exception
+    {
+        behaviourHierarchyTestWork(
+                A_TYPE,
+                new ClassFilter(A_TYPE, false),
+                new ClassFilter(B_TYPE, false),
+                new ClassFilter(C_TYPE, false)
+        );
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableAllUpHierarchy2() throws Exception
+    {
+        behaviourHierarchyTestWork(
+                B_TYPE,
+                new ClassFilter(A_TYPE, false),
+                new ClassFilter(B_TYPE, false),
+                new ClassFilter(C_TYPE, false)
+        );
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableAllUpHierarchy3() throws Exception
+    {
+        behaviourHierarchyTestWork(
+                C_TYPE,
+                new ClassFilter(A_TYPE, false),
+                new ClassFilter(B_TYPE, false),
+                new ClassFilter(C_TYPE, false)
+        );
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableAllDownHierarchy1() throws Exception
+    {
+        behaviourHierarchyTestWork(
+                A_TYPE,
+                new ClassFilter(A_TYPE, true),
+                new ClassFilter(B_TYPE, true),
+                new ClassFilter(C_TYPE, true)
+        );
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableAllDownHierarchy2() throws Exception
+    {
+        behaviourHierarchyTestWork(
+                B_TYPE,
+                new ClassFilter(A_TYPE, true),
+                new ClassFilter(B_TYPE, true),
+                new ClassFilter(C_TYPE, true)
+        );
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableAllDownHierarchy3() throws Exception
+    {
+        behaviourHierarchyTestWork(
+                C_TYPE,
+                new ClassFilter(A_TYPE, true),
+                new ClassFilter(B_TYPE, true),
+                new ClassFilter(C_TYPE, true)
+        );
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableSuper1() throws Exception
+    {
+        behaviourHierarchyTestWork(A_TYPE, new ClassFilter(A_TYPE, false));
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableSuper2() throws Exception
+    {
+        behaviourHierarchyTestWork(B_TYPE, new ClassFilter(A_TYPE, false));
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(1, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableSuper3() throws Exception
+    {
+        behaviourHierarchyTestWork(C_TYPE, new ClassFilter(A_TYPE, false));
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(1, bTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(1, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableSuper4() throws Exception
+    {
+        behaviourHierarchyTestWork(A_TYPE, new ClassFilter(A_TYPE, true));
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableSuper5() throws Exception
+    {
+        behaviourHierarchyTestWork(B_TYPE, new ClassFilter(A_TYPE, true));
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableSuper6() throws Exception
+    {
+        behaviourHierarchyTestWork(C_TYPE, new ClassFilter(A_TYPE, true));
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableMiddle1() throws Exception
+    {
+        behaviourHierarchyTestWork(A_TYPE, new ClassFilter(B_TYPE, false));
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableMiddle2() throws Exception
+    {
+        behaviourHierarchyTestWork(B_TYPE, new ClassFilter(B_TYPE, false));
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableMiddle3() throws Exception
+    {
+        behaviourHierarchyTestWork(C_TYPE, new ClassFilter(B_TYPE, false));
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(1, bTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(1, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableMiddle4() throws Exception
+    {
+        behaviourHierarchyTestWork(A_TYPE, new ClassFilter(B_TYPE, true));
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableMiddle5() throws Exception
+    {
+        behaviourHierarchyTestWork(B_TYPE, new ClassFilter(B_TYPE, true));
+        assertFalse("Behavior should notbe executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior not should be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableMiddle6() throws Exception
+    {
+        behaviourHierarchyTestWork(C_TYPE, new ClassFilter(B_TYPE, true));
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableSub1() throws Exception
+    {
+        behaviourHierarchyTestWork(A_TYPE, new ClassFilter(C_TYPE, false));
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableSub2() throws Exception
+    {
+        behaviourHierarchyTestWork(B_TYPE, new ClassFilter(C_TYPE, false));
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(1, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableSub3() throws Exception
+    {
+        behaviourHierarchyTestWork(C_TYPE, new ClassFilter(C_TYPE, false));
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableSub4() throws Exception
+    {
+        behaviourHierarchyTestWork(A_TYPE, new ClassFilter(C_TYPE, true));
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableSub5() throws Exception
+    {
+        behaviourHierarchyTestWork(B_TYPE, new ClassFilter(C_TYPE, true));
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(1, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testBehaviourHierarchyDisableSub6() throws Exception
+    {
+        behaviourHierarchyTestWork(C_TYPE, new ClassFilter(C_TYPE, true));
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testIsEnabled1() throws Exception
+    {
         UserTransaction transaction = trxService.getUserTransaction();
         try
         {
             transaction.begin();
-            // disable behavior for parent type
-            behaviourFilter.disableBehaviour(BASE_TYPE);
-            // check that behavior is disabled correctly
-            checkBehaviour(BASE_TYPE, companyHome, true, false, false, true);
-
-            // disable behavior for child type
-            behaviourFilter.disableBehaviour(FILE_TYPE);
-            // check that behavior is disabled correctly
-            checkBehaviour(FILE_TYPE, companyHome, true, false, false, true);
+            disableBehaviours(new ClassFilter(B_TYPE, true));
             try
             {
-                final String name = "Test (" + System.currentTimeMillis() + ").docx";
-                final Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
-                contentProps.put(ContentModel.PROP_NAME, name);
-
-                // create node of child type
-                nodeService.createNode(companyHome,
-                        ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
-                        FILE_TYPE,
-                        contentProps);
+                assertEquals("Incorrect behaviour state: global: ", true, behaviourFilter.isEnabled());
+                // A_TYPE
+                assertEquals("Incorrect behaviour state: class: ", true, behaviourFilter.isEnabled(A_TYPE));
+                assertEquals("Incorrect behaviour state: classAndInstance", true, behaviourFilter.isEnabled(companyHome, A_TYPE));
+                assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
+                // B_TYPE
+                assertEquals("Incorrect behaviour state: class: ", false, behaviourFilter.isEnabled(B_TYPE));
+                assertEquals("Incorrect behaviour state: classAndInstance", false, behaviourFilter.isEnabled(companyHome, B_TYPE));
+                assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
+                // C_TYPE
+                assertEquals("Incorrect behaviour state: class: ", false, behaviourFilter.isEnabled(C_TYPE));
+                assertEquals("Incorrect behaviour state: classAndInstance", false, behaviourFilter.isEnabled(companyHome, C_TYPE));
+                assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
             }
             finally
             {
-                behaviourFilter.enableBehaviour(BASE_TYPE);
-                behaviourFilter.enableBehaviour(FILE_TYPE);
-                checkBehaviour(BASE_TYPE, companyHome, true, true, true, true);
-                checkBehaviour(FILE_TYPE, companyHome, true, true, true, true);
+                behaviourFilter.enableBehaviour(B_TYPE);
             }
             transaction.commit();
         }
@@ -535,54 +897,38 @@ public class PolicyComponentTransactionTest extends TestCase
             throw e;
         }
 
-        assertFalse("Behavior should not be executed for parent type.", baseTypeBehavior.isExecuted());
-        assertEquals(0, baseTypeBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for child type.", fileTypeBehavior.isExecuted());
-        assertEquals(0, fileTypeBehavior.getExecutionCount());
     }
 
     /**
-     * Test for MNT_13836
-     * <p>then vice-versa, ie. disabling sub- behaviour does not disable inherited super- behaviours</p>
+     * Test for MNT-13836 (new API)
      * @throws Exception
      */
-    /*
-    public void testChildParentBehaviours4() throws Exception
+    public void testIsEnabled2() throws Exception
     {
-        TestOnCreateNodePolicy baseTypeBehavior = new TestOnCreateNodePolicy();
-        TestOnCreateNodePolicy fileTypeBehavior = new TestOnCreateNodePolicy();
-
-        // bind custom behavior for parent type
-        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, BASE_TYPE, new JavaBehaviour(baseTypeBehavior, "onCreateNode"));
-        // bind custom behavior for child type
-        policyComponent.bindClassBehaviour(OnCreateNodePolicy.QNAME, FILE_TYPE, new JavaBehaviour(fileTypeBehavior, "onCreateNode"));
-
         UserTransaction transaction = trxService.getUserTransaction();
         try
         {
             transaction.begin();
-            // disable behavior for child type
-            behaviourFilter.disableBehaviour(FILE_TYPE);
-            // check that behavior is disabled correctly
-            checkBehaviour(FILE_TYPE, companyHome, true, false, false, true);
-
+            disableBehaviours(new ClassFilter(B_TYPE, false));
             try
             {
-                final String name = "Test (" + System.currentTimeMillis() + ").docx";
-                final Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
-                contentProps.put(ContentModel.PROP_NAME, name);
-
-                // create node of child type
-                nodeService.createNode(companyHome,
-                        ContentModel.ASSOC_CONTAINS,
-                        QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
-                        FILE_TYPE,
-                        contentProps);
+                assertEquals("Incorrect behaviour state: global: ", true, behaviourFilter.isEnabled());
+                // A_TYPE
+                assertEquals("Incorrect behaviour state: class: ", true, behaviourFilter.isEnabled(A_TYPE));
+                assertEquals("Incorrect behaviour state: classAndInstance", true, behaviourFilter.isEnabled(companyHome, A_TYPE));
+                assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
+                // B_TYPE
+                assertEquals("Incorrect behaviour state: class: ", false, behaviourFilter.isEnabled(B_TYPE));
+                assertEquals("Incorrect behaviour state: classAndInstance", false, behaviourFilter.isEnabled(companyHome, B_TYPE));
+                assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
+                // C_TYPE
+                assertEquals("Incorrect behaviour state: class: ", true, behaviourFilter.isEnabled(C_TYPE));
+                assertEquals("Incorrect behaviour state: classAndInstance", true, behaviourFilter.isEnabled(companyHome, C_TYPE));
+                assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
             }
             finally
             {
-                behaviourFilter.enableBehaviour(FILE_TYPE);
-                checkBehaviour(FILE_TYPE, companyHome, true, true, true, true);
+                behaviourFilter.enableBehaviour(B_TYPE);
             }
             transaction.commit();
         }
@@ -591,13 +937,158 @@ public class PolicyComponentTransactionTest extends TestCase
             try { transaction.rollback(); } catch (IllegalStateException ee) {}
             throw e;
         }
-
-        assertTrue("Behavior should be executed for parent type.", baseTypeBehavior.isExecuted());
-        assertEquals(1, baseTypeBehavior.getExecutionCount());
-        assertFalse("Behavior should not be executed for child type.", fileTypeBehavior.isExecuted());
-        assertEquals(0, fileTypeBehavior.getExecutionCount());
     }
-    */
+
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testBehaviourHierarchySequence1() throws Exception
+    {
+        UserTransaction transaction = trxService.getUserTransaction();
+        try
+        {
+            transaction.begin();
+            disableBehaviours(new ClassFilter(A_TYPE, true), new ClassFilter(B_TYPE, true));
+
+            behaviourFilter.enableBehaviour(B_TYPE);
+            // Should be still disabled
+            checkBehaviour(B_TYPE, companyHome, true, false, false, true);
+            try
+            {
+                createDocOfType(C_TYPE);
+            }
+            finally
+            {
+                enableBehaviours(new ClassFilter(A_TYPE, true), new ClassFilter(B_TYPE, true));
+            }
+            transaction.commit();
+        }
+        catch(Exception e)
+        {
+            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+            throw e;
+        }
+        assertFalse("Behavior should not be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(0, aTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(0, bTypeBehavior.getExecutionCount());
+        assertFalse("Behavior should not be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(0, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testBehaviourHierarchySequence2() throws Exception
+    {
+        UserTransaction transaction = trxService.getUserTransaction();
+        try
+        {
+            transaction.begin();
+            disableBehaviours(new ClassFilter(A_TYPE, false), new ClassFilter(B_TYPE, true));
+
+            behaviourFilter.enableBehaviour(B_TYPE);
+            assertEquals("Incorrect behaviour state: class: ", true, behaviourFilter.isEnabled(B_TYPE));
+            assertEquals("Incorrect behaviour state: classAndInstance", true, behaviourFilter.isEnabled(companyHome, B_TYPE));
+            assertEquals("Incorrect behaviour state: instance", true, behaviourFilter.isEnabled(companyHome));
+            try
+            {
+                createDocOfType(C_TYPE);
+            }
+            finally
+            {
+                enableBehaviours(new ClassFilter(A_TYPE, true), new ClassFilter(B_TYPE, true));
+            }
+            transaction.commit();
+        }
+        catch(Exception e)
+        {
+            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+            throw e;
+        }
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(1, bTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(1, cTypeBehavior.getExecutionCount());
+    }
+
+    /**
+     * Test for MNT-13836 (new API)
+     * @throws Exception
+     */
+    public void testBehaviourHierarchySequence3() throws Exception
+    {
+        UserTransaction transaction = trxService.getUserTransaction();
+        try
+        {
+            transaction.begin();
+            disableBehaviours(new ClassFilter(A_TYPE, false), new ClassFilter(B_TYPE, false));
+            try
+            {
+                createDocOfType(C_TYPE);
+            }
+            finally
+            {
+                enableBehaviours(new ClassFilter(A_TYPE, true), new ClassFilter(B_TYPE, true));
+            }
+            transaction.commit();
+        }
+        catch(Exception e)
+        {
+            try { transaction.rollback(); } catch (IllegalStateException ee) {}
+            throw e;
+        }
+        assertTrue("Behavior should be executed for a_type.", aTypeBehavior.isExecuted());
+        assertEquals(1, aTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for b_type.", bTypeBehavior.isExecuted());
+        assertEquals(1, bTypeBehavior.getExecutionCount());
+        assertTrue("Behavior should be executed for c_type.", cTypeBehavior.isExecuted());
+        assertEquals(1, cTypeBehavior.getExecutionCount());
+    }
+
+    private void disableBehaviours(ClassFilter... classFilters)
+    {
+        for(int i = 0; i < classFilters.length; i++)
+        {
+            behaviourFilter.disableBehaviour(
+                    classFilters[i].getClassName(),
+                    classFilters[i].isDisableSubClasses()
+            );
+            // check that behavior is disabled correctly
+            checkBehaviour(classFilters[i].getClassName(), companyHome, true, false, false, true);
+        }
+    }
+
+    private void enableBehaviours(ClassFilter... types)
+    {
+        for(int i = 0; i < types.length; i++)
+        {
+            behaviourFilter.enableBehaviour(types[i].getClassName());
+        }
+        for(int i = 0; i < types.length; i++)
+        {
+            checkBehaviour(types[i].getClassName(), companyHome, true, true, true, true);
+        }
+    }
+
+    private void createDocOfType(QName type)
+    {
+        final String name = "Test (" + System.currentTimeMillis() + ").docx";
+        final Map<QName, Serializable> contentProps = new HashMap<QName, Serializable>();
+        contentProps.put(ContentModel.PROP_NAME, name);
+
+        // create node of child type
+        nodeService.createNode(companyHome,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_PREFIX, name),
+                type,
+                contentProps);
+    }
 
     /**
      * @param className                 the class to check

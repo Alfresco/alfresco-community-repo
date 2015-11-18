@@ -23,6 +23,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import org.alfresco.module.org_alfresco_module_rm.caveat.dao.CaveatDAOInterface;
+import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatGroup;
+import org.alfresco.module.org_alfresco_module_rm.caveat.scheme.CaveatMark;
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationException.MissingConfiguration;
 import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.classification.validation.ClassificationLevelFieldsValidator;
@@ -61,6 +65,8 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
     private ClearanceLevelManager clearanceLevelManager = new ClearanceLevelManager();
     /** The exemption categories currently configured in this server. */
     private ExemptionCategoryManager exemptionCategoryManager = new ExemptionCategoryManager();
+    /** The caveat DAO, which is used to access the classification levels. */
+    private CaveatDAOInterface caveatDAO;
     private ClassificationServiceDAO classificationServiceDAO;
     private ClassificationLevelFieldsValidator classificationLevelFieldsValidator = new ClassificationLevelFieldsValidator();
     private ClassificationSchemeEntityValidator<ClassificationLevel> classificationLevelValidator = new ClassificationSchemeEntityValidator<>(classificationLevelFieldsValidator);
@@ -82,6 +88,8 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
         this.classificationServiceDAO = classificationServiceDAO;
     }
 
+    /** Set the caveat DAO, which is used to access the classification levels. */
+    public void setCaveatDAO(CaveatDAOInterface caveatDAO) { this.caveatDAO = caveatDAO; }
     /** Set the object from which configuration options will be read. */
     public void setClassificationServiceDAO(ClassificationServiceDAO classificationServiceDAO) { this.classificationServiceDAO = classificationServiceDAO; }
     public void setAttributeService(AttributeService attributeService) { this.attributeService = attributeService; }
@@ -110,8 +118,7 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
                 {
                     public Void execute()
                     {
-                        List<ClassificationLevel> levels = getConfiguredSchemeEntities(
-                                    ClassificationLevel.class, LEVELS_KEY, classificationLevelValidator);
+                        List<ClassificationLevel> levels = getConfiguredClassificationLevels(LEVELS_KEY, classificationLevelValidator);
                         classificationLevelManager.setClassificationLevels(levels);
 
                         List<ClassificationReason> reasons = getConfiguredSchemeEntities(
@@ -158,6 +165,46 @@ public class ClassificationServiceBootstrap extends AbstractLifecycleBean implem
         if      (l == null)   { return "null"; }
         else if (l.isEmpty()) { return "empty"; }
         else                  { return "non-empty"; }
+    }
+
+    /**
+     * Create the classification levels from the classification caveat group data.
+     *
+     * @param key The key used to persist the classification levels in the attribute service.
+     * @param validator The validator used to check the classification levels.
+     * @return A list of the configured classification levels.
+     */
+    protected List<ClassificationLevel> getConfiguredClassificationLevels(Serializable[] key, ClassificationSchemeEntityValidator<ClassificationLevel> validator)
+    {
+        List<ClassificationLevel> persistedValues = getPersistedValues(key);
+        CaveatGroup classificationCaveatGroup = caveatDAO.getGroupById(CLASSIFICATION_LEVEL_CAVEAT);
+        Builder<ClassificationLevel> builder = ImmutableList.builder();
+        for (CaveatMark caveatMark : classificationCaveatGroup.getCaveatMarks())
+        {
+            builder.add(new ClassificationLevel(caveatMark));
+        }
+        List<ClassificationLevel> classpathValues = builder.build();
+
+        // Note! We cannot log the entities or even the size of these lists for security reasons.
+        LOGGER.debug("Persisted ClassificationLevel: {}", loggableStatusOf(persistedValues));
+        LOGGER.debug("Classpath ClassificationLevel: {}", loggableStatusOf(classpathValues));
+
+        validator.validate(classpathValues, ClassificationLevel.class.getSimpleName());
+
+        if (isEmpty(classpathValues))
+        {
+            throw new MissingConfiguration("ClassificationLevel configuration is missing.");
+        }
+        if (classpathValues.equals(persistedValues))
+        {
+            return persistedValues;
+        }
+        if (!isEmpty(persistedValues))
+        {
+            LOGGER.warn("ClassificationLevel configuration changed. This may result in unpredictable results if the classification scheme is already in use.");
+        }
+        attributeService.setAttribute((Serializable) classpathValues, key);
+        return classpathValues;
     }
 
     protected <T extends ClassificationSchemeEntity> List<T> getConfiguredSchemeEntities(Class<T> clazz, Serializable[] key, ClassificationSchemeEntityValidator<T> validator)

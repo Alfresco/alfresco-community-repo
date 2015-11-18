@@ -40,7 +40,7 @@ import org.alfresco.service.namespace.QName;
  */
 public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTestCase
 {
-    private static final String LEVEL1 = "level1";
+    private static final String TOP_SECRET_ID = "TS";
     private static final String REASON = "Test Reason 1";
 
     private ClassificationAspectProperties propertiesDTO;
@@ -50,7 +50,7 @@ public class ClassificationEnforcementPreMethodInvocationTest extends BaseRMTest
     {
         super.setUp();
         propertiesDTO = new ClassificationAspectProperties();
-        propertiesDTO.setClassificationLevelId(LEVEL1);
+        propertiesDTO.setClassificationLevelId(TOP_SECRET_ID);
         propertiesDTO.setClassifiedBy(generate());
         propertiesDTO.setClassificationAgency(generate());
         propertiesDTO.setClassificationReasonIds(Collections.singleton(REASON));

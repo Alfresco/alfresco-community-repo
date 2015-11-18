@@ -86,8 +86,8 @@ public class ClassificationRestApiTest extends BaseRMWebScriptTestCase
 
     /** Constants for classification request body parameters */
     private static final String ID = "id";
-    private static final String CLASSIFICATION_LEVEL_ID1_VALUE = "level1";
-    private static final String CLASSIFICATION_LEVEL_ID2_VALUE = "level2";
+    private static final String TOP_SECRET_ID = "TS";
+    private static final String SECRET_ID = "S";
     private static final String CLASSIFIED_BY1 = generate();
     private static final String CLASSIFIED_BY2 = generate();
     private static final String CLASSIFICATION_AGENCY1 = generate();
@@ -123,7 +123,7 @@ public class ClassificationRestApiTest extends BaseRMWebScriptTestCase
 
         // Classify content
         JSONObject requestBody = new JSONObject();
-        requestBody.put(CLASSIFICATION_LEVEL_ID, CLASSIFICATION_LEVEL_ID1_VALUE);
+        requestBody.put(CLASSIFICATION_LEVEL_ID, TOP_SECRET_ID);
         requestBody.put(CLASSIFIED_BY, CLASSIFIED_BY1);
         requestBody.put(CLASSIFICATION_AGENCY, CLASSIFICATION_AGENCY1);
         JSONArray classificationReasons = new JSONArray();
@@ -142,7 +142,7 @@ public class ClassificationRestApiTest extends BaseRMWebScriptTestCase
 
         assertNotNull(responseAsJson);
         assertTrue(responseAsJson.getBoolean(RESPONSE_SUCCESS));
-        assertEquals(CLASSIFICATION_LEVEL_ID1_VALUE, nodeService.getProperty(record, PROP_CURRENT_CLASSIFICATION));
+        assertEquals(TOP_SECRET_ID, nodeService.getProperty(record, PROP_CURRENT_CLASSIFICATION));
         assertEquals(CLASSIFIED_BY1, nodeService.getProperty(record, PROP_CLASSIFIED_BY));
         assertEquals(CLASSIFICATION_AGENCY1, nodeService.getProperty(record, PROP_CLASSIFICATION_AGENCY));
         List<String> classificationReasonsList = (List<String>) nodeService.getProperty(record, PROP_CLASSIFICATION_REASONS);
@@ -160,7 +160,7 @@ public class ClassificationRestApiTest extends BaseRMWebScriptTestCase
 
         // Edit classified content
         requestBody = new JSONObject();
-        requestBody.put(CLASSIFICATION_LEVEL_ID, CLASSIFICATION_LEVEL_ID2_VALUE);
+        requestBody.put(CLASSIFICATION_LEVEL_ID, SECRET_ID);
         requestBody.put(CLASSIFIED_BY, CLASSIFIED_BY2);
         requestBody.put(CLASSIFICATION_AGENCY, CLASSIFICATION_AGENCY2);
         classificationReasons = new JSONArray();
@@ -174,7 +174,7 @@ public class ClassificationRestApiTest extends BaseRMWebScriptTestCase
 
         assertNotNull(responseAsJson);
         assertTrue(responseAsJson.getBoolean(RESPONSE_SUCCESS));
-        assertEquals(CLASSIFICATION_LEVEL_ID2_VALUE, nodeService.getProperty(record, PROP_CURRENT_CLASSIFICATION));
+        assertEquals(SECRET_ID, nodeService.getProperty(record, PROP_CURRENT_CLASSIFICATION));
         assertEquals(CLASSIFIED_BY2, nodeService.getProperty(record, PROP_CLASSIFIED_BY));
         assertEquals(CLASSIFICATION_AGENCY2, nodeService.getProperty(record, PROP_CLASSIFICATION_AGENCY));
         List<String> editedClassificationReasonsList = (List<String>) nodeService.getProperty(record, PROP_CLASSIFICATION_REASONS);
@@ -206,7 +206,7 @@ public class ClassificationRestApiTest extends BaseRMWebScriptTestCase
 
         // Classify content
         JSONObject requestBody = new JSONObject();
-        requestBody.put(CLASSIFICATION_LEVEL_ID, CLASSIFICATION_LEVEL_ID1_VALUE);
+        requestBody.put(CLASSIFICATION_LEVEL_ID, TOP_SECRET_ID);
         requestBody.put(CLASSIFIED_BY, CLASSIFIED_BY1);
         requestBody.put(CLASSIFICATION_AGENCY, CLASSIFICATION_AGENCY1);
         JSONArray classificationReasons = new JSONArray();

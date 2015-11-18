@@ -40,8 +40,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class RelationshipClassificationEnforcementTest extends BaseRMTestCase
 {
-    private static final String LEVEL1 = "level1";
-    private static final String LEVEL3 = "level3";
+    private static final String TOP_SECRET_ID = "TS";
+    private static final String CONFIDENTIAL_ID = "C";
     private static final String REASON = "Test Reason 1";
     private ClassificationAspectProperties propertiesDTO;
 
@@ -50,7 +50,7 @@ public class RelationshipClassificationEnforcementTest extends BaseRMTestCase
     {
         super.setUp();
         propertiesDTO = new ClassificationAspectProperties();
-        propertiesDTO.setClassificationLevelId(LEVEL1);
+        propertiesDTO.setClassificationLevelId(TOP_SECRET_ID);
         propertiesDTO.setClassifiedBy(generate());
         propertiesDTO.setClassificationAgency(generate());
         propertiesDTO.setClassificationReasonIds(Collections.singleton(REASON));
@@ -64,8 +64,8 @@ public class RelationshipClassificationEnforcementTest extends BaseRMTestCase
          * and a category, a folder and two records have been created
          *
          * When the user has been granted filing permissions
-         * and the clearance level 3 for the test user has been set
-         * and one of the records has been classified as level 1
+         * and confidential clearance for the test user has been set
+         * and one of the records has been classified as top secret
          * and a relationship between those two records has been created
          *
          * Then the admin user should see both records in the folder
@@ -106,7 +106,7 @@ public class RelationshipClassificationEnforcementTest extends BaseRMTestCase
             public void when() throws Exception
             {
                 filePlanPermissionService.setPermission(category, myUser, FILING);
-                securityClearanceService.setUserSecurityClearance(myUser, LEVEL3);
+                securityClearanceService.setUserSecurityClearance(myUser, CONFIDENTIAL_ID);
                 contentClassificationService.classifyContent(propertiesDTO, record1);
                 relationshipService.addRelationship(CUSTOM_REF_RENDITION.getLocalName(), record1, record2);
             }

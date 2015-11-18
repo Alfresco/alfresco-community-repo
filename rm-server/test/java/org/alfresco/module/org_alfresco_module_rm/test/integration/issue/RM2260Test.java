@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public class RM2260Test extends BaseRMTestCase
 {
-    private static final String LEVEL = "level1";
+    private static final String LEVEL = "TS";
     private static final String REASON = "Test Reason 1";
     private ClassificationAspectProperties propertiesDTO;
 

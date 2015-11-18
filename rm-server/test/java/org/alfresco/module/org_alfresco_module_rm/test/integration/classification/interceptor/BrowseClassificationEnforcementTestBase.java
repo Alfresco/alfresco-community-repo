@@ -38,12 +38,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public abstract class BrowseClassificationEnforcementTestBase extends BaseRMTestCase
 {
     protected String testUser;
-    protected static final String LEVEL1 = "level1";
-    protected static final String LEVEL2 = "level2";
+    protected static final String TOP_SECRET_ID = "TS";
+    protected static final String SECRET_ID = "S";
     protected static final String REASON = "Test Reason 1";
-    /** Classified properties for classification level 1. */
+    /** Classified properties for top secret. */
     protected ClassificationAspectProperties propertiesDTO1;
-    /** Classified properties for classification level 2. */
+    /** Classified properties for secret. */
     protected ClassificationAspectProperties propertiesDTO2;
 
     @Override
@@ -51,12 +51,12 @@ public abstract class BrowseClassificationEnforcementTestBase extends BaseRMTest
     {
         super.setUp();
         propertiesDTO1 = new ClassificationAspectProperties();
-        propertiesDTO1.setClassificationLevelId(LEVEL1);
+        propertiesDTO1.setClassificationLevelId(TOP_SECRET_ID);
         propertiesDTO1.setClassifiedBy(generate());
         propertiesDTO1.setClassificationAgency(generate());
         propertiesDTO1.setClassificationReasonIds(Collections.singleton(REASON));
         propertiesDTO2 = new ClassificationAspectProperties();
-        propertiesDTO2.setClassificationLevelId(LEVEL2);
+        propertiesDTO2.setClassificationLevelId(SECRET_ID);
         propertiesDTO2.setClassifiedBy(generate());
         propertiesDTO2.setClassificationAgency(generate());
         propertiesDTO2.setClassificationReasonIds(Collections.singleton(REASON));

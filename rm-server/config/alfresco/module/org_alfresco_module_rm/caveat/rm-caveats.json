@@ -1,0 +1,69 @@
+[
+   {
+      "id"           : "classification",
+      "displayLabel" : "rm.caveat.classification.label",
+      "description"  : "rm.caveat.classification.description",
+      "type"         : "HIERARCHICAL",
+      "model" :
+      {
+         "property" : "clf:currentClassification"
+      },
+      "marks" :
+      [
+         {
+            "id"           : "TS",
+            "displayLabel" : "rm.caveat.classification.mark.ts.label"
+         },
+         {
+            "id"           : "S",
+            "displayLabel" : "rm.caveat.classification.mark.s.label"
+         },
+         {
+            "id"           : "C",
+            "displayLabel" : "rm.caveat.classification.mark.c.label"
+         }
+      ]
+   },
+   {
+      "id"           : "nationality",
+      "displayLabel" : "rm.caveat.nationality.label",
+      "description"  : "rm.caveat.nationality.description",
+      "type"         : "USER_REQUIRES_ANY",
+      "marks" :
+      [
+         {
+            "id"           : "GBR",
+            "displayLabel" : "rm.caveat.nationality.mark.gbr.label"
+         },
+         {
+            "id"           : "CAN",
+            "displayLabel" : "rm.caveat.nationality.mark.can.label"
+         },
+         {
+            "id"           : "AUS",
+            "displayLabel" : "rm.caveat.nationality.mark.aus.label"
+         }
+      ]
+   },
+   {
+      "id"           : "training",
+      "displayLabel" : "rm.caveat.training.label",
+      "description"  : "rm.caveat.training.description",
+      "type"         : "USER_REQUIRES_ALL",
+      "marks" :
+      [
+         {
+            "id"           : "SA",
+            "displayLabel" : "rm.caveat.training.mark.securityAwareness.label"
+         },
+         {
+            "id"           : "DPT",
+            "displayLabel" : "rm.caveat.training.mark.dataProtectionTraining.label"
+         },
+         {
+            "id"           : "IFP",
+            "displayLabel" : "rm.caveat.training.mark.interprettingFinancialPredictions.label"
+         }
+      ]
+   }
+]

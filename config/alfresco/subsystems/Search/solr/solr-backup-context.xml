@@ -49,6 +49,9 @@
         <property name="solrAdminClient">
             <ref bean="solrAdminClient" />
         </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
     </bean>
     
     <!--  archive://SpacesStore - archive -->
@@ -97,6 +100,9 @@
         </property>
         <property name="solrAdminClient">
             <ref bean="solrAdminClient" />
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
         </property>
     </bean>
    

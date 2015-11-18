@@ -52,6 +52,9 @@
         <property name="fixNumberToKeepOffByOneError">
             <value>true</value>
         </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
+        </property>
     </bean>
     
     <!--  archive://SpacesStore - archive -->
@@ -103,6 +106,9 @@
         </property>
         <property name="fixNumberToKeepOffByOneError">
             <value>true</value>
+        </property>
+        <property name="solrQueryHTTPClient">
+            <ref bean="search.solrQueryHTTPCLient" />
         </property>
     </bean>
    

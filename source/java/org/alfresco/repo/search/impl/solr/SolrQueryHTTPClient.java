@@ -36,6 +36,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.dictionary.CMISStrictDictionaryService;
 import org.alfresco.repo.admin.RepositoryState;
 import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.index.shard.Floc;
 import org.alfresco.repo.index.shard.ShardInstance;
 import org.alfresco.repo.index.shard.ShardRegistry;
 import org.alfresco.repo.search.impl.lucene.JSONResult;
@@ -930,5 +931,36 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         {
             throw new LuceneQueryParserException("", e);
         }
+    }
+
+    /**
+     * @return
+     */
+    public boolean isSharded()
+    {
+        if((shardRegistry != null) && useDynamicShardRegistration)
+        {
+            for( Floc floc : shardRegistry.getFlocs().keySet())
+            {
+                if(floc.getNumberOfShards() > 1)
+                {
+                    return true;
+                }
+            }
+            return false;
+        
+        }
+        else
+        {
+            for(SolrStoreMappingWrapper mapping : mappingLookup.values())
+            {
+                if(mapping.isSharded())
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
     }
 }

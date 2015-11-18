@@ -39,15 +39,15 @@ import org.json.JSONObject;
  */
 public class JSONConversionComponentTest extends BaseRMTestCase
 {
-    private static final String LEVEL1 = "level1";
+    private static final String TOP_SECRET_ID = "TS";
     private static final String REASON1 = "Test Reason 1";
 
     private JSONConversionComponent converter;
     private ContentClassificationService contentClassificationService;
 
     private NodeRef record;
-    /** Classification properties for classification level 1. */
-    private ClassificationAspectProperties level1PropertiesDTO;
+    /** Classification properties for top secret classification. */
+    private ClassificationAspectProperties topSecretPropertiesDTO;
     /** Classification properties for unclassified content. */
     private ClassificationAspectProperties unclassifiedPropertiesDTO;
 
@@ -55,11 +55,11 @@ public class JSONConversionComponentTest extends BaseRMTestCase
     public void setUp() throws Exception
     {
         super.setUp();
-        level1PropertiesDTO = new ClassificationAspectProperties();
-        level1PropertiesDTO.setClassificationLevelId(LEVEL1);
-        level1PropertiesDTO.setClassifiedBy(generate());
-        level1PropertiesDTO.setClassificationAgency(generate());
-        level1PropertiesDTO.setClassificationReasonIds(Collections.singleton(REASON1));
+        topSecretPropertiesDTO = new ClassificationAspectProperties();
+        topSecretPropertiesDTO.setClassificationLevelId(TOP_SECRET_ID);
+        topSecretPropertiesDTO.setClassifiedBy(generate());
+        topSecretPropertiesDTO.setClassificationAgency(generate());
+        topSecretPropertiesDTO.setClassificationReasonIds(Collections.singleton(REASON1));
         unclassifiedPropertiesDTO = new ClassificationAspectProperties();
         unclassifiedPropertiesDTO.setClassificationLevelId(UNCLASSIFIED_ID);
         unclassifiedPropertiesDTO.setClassifiedBy(generate());
@@ -113,7 +113,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(level1PropertiesDTO, record);
+                contentClassificationService.classifyContent(topSecretPropertiesDTO, record);
                 jsonString = converter.toJSON(record, true);
             }
 
@@ -227,7 +227,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
             @Override
             public void when() throws Exception
             {
-                contentClassificationService.classifyContent(level1PropertiesDTO, file);
+                contentClassificationService.classifyContent(topSecretPropertiesDTO, file);
                 jsonString = converter.toJSON(file, true);
             }
 

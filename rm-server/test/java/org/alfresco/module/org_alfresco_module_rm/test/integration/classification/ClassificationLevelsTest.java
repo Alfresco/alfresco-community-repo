@@ -18,7 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.classification;
 
-import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationLevel;
@@ -33,28 +33,10 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
  */
 public class ClassificationLevelsTest extends BaseRMTestCase
 {
-    private static final String CLASSIFICATION_LEVELS_FILE_PATH = "/alfresco/module/org_alfresco_module_rm/classification/rm-classification-levels.json";
-    private static final String LEVEL1_ID = "level1";
-    private static final String LEVEL1_DISPLAY_LABEL = "Level 1";
-    private static final String LEVEL2_ID = "level2";
-    private static final String LEVEL2_DISPLAY_LABEL_KEY = "rm.classification.level2";
-    private static final String LEVEL3_ID = "level3";
-    private static final String LEVEL3_DISPLAY_LABEL_KEY = "rm.classification.level3";
-    private static final String LEVEL4_ID = "level4";
-    private static final String LEVEL4_DISPLAY_LABEL = "Level 4";
-
     public void testClassificationLevels() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
         {
-            public void given() throws Exception
-            {
-                try (final InputStream in = getClass().getResourceAsStream(CLASSIFICATION_LEVELS_FILE_PATH))
-                {
-                    assertNotNull(in);
-                }
-            }
-
             public void when() throws Exception
             {
                 // Server is up and running
@@ -63,25 +45,12 @@ public class ClassificationLevelsTest extends BaseRMTestCase
             public void then() throws Exception
             {
                 List<ClassificationLevel> levels = classificationSchemeService.getClassificationLevels();
-                assertNotNull(levels);
-                assertEquals("Expected 5 levels to be configured (4 defined in the test plus Unclassified)", 5, levels.size());
-
-                ClassificationLevel level1 = levels.get(0);
-                ClassificationLevel level2 = levels.get(1);
-                ClassificationLevel level3 = levels.get(2);
-                ClassificationLevel level4 = levels.get(3);
-
-                assertEquals(level4.getDisplayLabel(), LEVEL4_DISPLAY_LABEL);
-                assertEquals(level3.getDisplayLabel(), LEVEL3_DISPLAY_LABEL_KEY);
-                assertEquals(level2.getDisplayLabel(), LEVEL2_DISPLAY_LABEL_KEY);
-                assertEquals(level1.getDisplayLabel(), LEVEL1_DISPLAY_LABEL);
-
-                assertEquals(level1.getId(), LEVEL1_ID);
-                assertEquals(level2.getId(), LEVEL2_ID);
-                assertEquals(level3.getId(), LEVEL3_ID);
-                assertEquals(level4.getId(), LEVEL4_ID);
-
-                assertEquals(ClassificationLevelManager.UNCLASSIFIED, levels.get(4));
+                List<ClassificationLevel> expectedLevels = Arrays.asList(
+                            new ClassificationLevel("TS", "rm.caveat.classification.mark.ts.label.label"),
+                            new ClassificationLevel("S", "rm.caveat.classification.mark.s.label.label"),
+                            new ClassificationLevel("C", "rm.caveat.classification.mark.c.label.label"),
+                            ClassificationLevelManager.UNCLASSIFIED);
+                assertEquals(levels, expectedLevels);
             }
         });
     }

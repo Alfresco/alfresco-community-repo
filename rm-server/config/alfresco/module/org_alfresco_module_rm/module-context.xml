@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xmlns:aop="http://www.springframework.org/schema/aop"
     xsi:schemaLocation="
        http://www.springframework.org/schema/beans
@@ -25,7 +25,7 @@
 
    <!-- Import extended repository context -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/extended-repository-context.xml"/>
-   
+
    <!-- Bootstrap records management data -->
    <bean id="org_alfresco_module_rm_bootstrapData"
       class="org.alfresco.module.org_alfresco_module_rm.bootstrap.BootstrapImporterModuleComponent"
@@ -83,7 +83,7 @@
          </list>
       </property>
    </bean>
-   
+
    <!-- Records management permission post processor -->
    <bean id="recordsManagementPermissionPostProcessor" class="org.alfresco.module.org_alfresco_module_rm.permission.RecordsManagementPermissionPostProcessor" parent="parentPermissionPostProcessor">
       <property name="nodeService" ref="nodeService"/>
@@ -269,6 +269,9 @@
 
    <!-- Import the Metadata Referral Services -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/metadata-referral-context.xml"/>
+
+   <!-- Import the Caveat Services -->
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/caveat-context.xml"/>
 
    <!-- Import the Classified Content Services -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/classified-content-context.xml"/>

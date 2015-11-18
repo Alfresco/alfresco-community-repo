@@ -39,12 +39,12 @@
          </list>
       </property>
    </bean>
-    
+
    <!-- Classification Permission Pre Processor -->
-   <bean id="classificationPermissionPreProcessor" 
-         class="org.alfresco.module.org_alfresco_module_rm.classification.permission.ClassificationPermissionPreProcessor" 
+   <bean id="classificationPermissionPreProcessor"
+         class="org.alfresco.module.org_alfresco_module_rm.classification.permission.ClassificationPermissionPreProcessor"
          parent="parentPermissionPreProcessor">
-      <property name="contentClassificationService" ref="contentClassificationService" />      
+      <property name="contentClassificationService" ref="contentClassificationService" />
       <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
       <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
       <property name="authenticationUtil" ref="rm.authenticationUtil" />
@@ -53,7 +53,6 @@
    <!-- Classification service DAO -->
 
    <bean id="classificationServiceDAO" class="org.alfresco.module.org_alfresco_module_rm.classification.ClassificationServiceDAO">
-        <property name="levelConfigLocation" value="${rm.classification.levelsFile}" />
         <property name="reasonConfigLocation" value="${rm.classification.reasonsFile}" />
         <property name="exemptionCategoryConfigLocation" value="${rm.classification.exemptionCategoriesFile}" />
    </bean>
@@ -123,6 +122,7 @@
        <constructor-arg ref="TransactionService"/>
        <constructor-arg ref="attributeService"/>
        <constructor-arg ref="classificationServiceDAO"/>
+        <property name="caveatDAO" ref="caveatDAO" />
    </bean>
 
    <bean name="classifiedRenditionAssoc" parent="mr.baseReferralAssoc">

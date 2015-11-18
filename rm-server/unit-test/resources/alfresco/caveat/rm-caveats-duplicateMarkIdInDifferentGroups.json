@@ -1,0 +1,32 @@
+[
+   {
+      "id"           : "classification",
+      "displayLabel" : "rm.caveat.classification.group",
+      "description"  : "rm.caveat.classification.description",
+      "type"         : "HIERARCHICAL",
+      "model" :
+      {
+         "property" : "clf:classification"
+      },
+      "marks" :
+      [
+         {
+            "id"           : "CO",
+            "displayLabel" : "rm.caveat.classification.mark.confidential"
+         }
+      ]
+   },
+   {
+      "id"           : "nationality",
+      "displayLabel" : "rm.caveat.nationality.group",
+      "description"  : "rm.caveat.nationality.description",
+      "type"         : "USER_REQUIRES_ANY",
+      "marks" :
+      [
+         {
+            "id"           : "CO",
+            "displayLabel" : "rm.caveat.nationality.mark.colombia"
+         }
+      ]
+   }
+]

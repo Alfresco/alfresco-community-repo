@@ -19,6 +19,10 @@
 package org.alfresco.module.org_alfresco_module_rm.util;
 
 import static org.alfresco.util.collections.CollectionUtils.filterKeys;
+import static org.apache.commons.lang.StringUtils.isNotBlank;
+
+import java.io.Serializable;
+import java.util.Map;
 
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException;
@@ -28,9 +32,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.collections.Function;
-
-import java.io.Serializable;
-import java.util.Map;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Provides additional methods of general use that could (in principle) be moved to the core services.
@@ -81,5 +83,18 @@ public class CoreServicesExtras
         });
         nodeService.addProperties(to, relevantPropVals);
         return relevantPropVals;
+    }
+
+    /**
+     * Use the {@link I18NUtil} to look up a key and return the localised message. If no entry for the current language
+     * is found then return the key.
+     *
+     * @param i18nKey The message key.
+     * @return The message if one exists, or the key. Never returns null (unless null is supplied as the key).
+     */
+    public static String getI18NMessageOrKey(String i18nKey)
+    {
+        String message = I18NUtil.getMessage(i18nKey);
+        return (isNotBlank(message) ? message : i18nKey);
     }
 }

@@ -440,7 +440,7 @@ public class DestroyContentTest extends BaseRMTestCase
 
                 // classify the content
                 ClassificationAspectProperties properties = new ClassificationAspectProperties();
-                properties.setClassificationLevelId("level1");
+                properties.setClassificationLevelId("TS");
                 properties.setClassifiedBy("me");
                 properties.setClassificationReasonIds(Collections.singleton("Test Reason 1"));
                 contentClassificationService.classifyContent(properties, deleteableContent);
@@ -505,7 +505,7 @@ public class DestroyContentTest extends BaseRMTestCase
 
                 // classify the content
                 ClassificationAspectProperties properties = new ClassificationAspectProperties();
-                properties.setClassificationLevelId("level1");
+                properties.setClassificationLevelId("TS");
                 properties.setClassifiedBy("me");
                 properties.setClassificationReasonIds(Collections.singleton("Test Reason 1"));
                 contentClassificationService.classifyContent(properties, deleteableContent);

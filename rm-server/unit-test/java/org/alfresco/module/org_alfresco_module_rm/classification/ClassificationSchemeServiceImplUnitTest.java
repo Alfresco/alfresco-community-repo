@@ -50,9 +50,9 @@ import org.mockito.MockitoAnnotations;
  */
 public class ClassificationSchemeServiceImplUnitTest
 {
-    private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS = asLevelList("Top Secret",   "rm.classification.topSecret",
-                                                                                               "Secret",       "rm.classification.secret",
-                                                                                               "Confidential", "rm.classification.confidential",
+    private static final List<ClassificationLevel> DEFAULT_CLASSIFICATION_LEVELS = asLevelList("Top Secret",   "rm.caveat.classification.mark.ts.label",
+                                                                                               "Secret",       "rm.caveat.classification.mark.s.label",
+                                                                                               "Confidential", "rm.caveat.classification.mark.c.label",
                                                                                                "No Clearance", "rm.classification.noClearance");
 
     /**
@@ -99,12 +99,12 @@ public class ClassificationSchemeServiceImplUnitTest
      */
     @Test public void restrictList_filter()
     {
-        ClassificationLevel targetLevel = new ClassificationLevel("Secret", "rm.classification.secret");
+        ClassificationLevel targetLevel = new ClassificationLevel("Secret", "rm.caveat.classification.mark.s.label");
 
         List<ClassificationLevel> actual = classificationSchemeServiceImpl.restrictList(DEFAULT_CLASSIFICATION_LEVELS, targetLevel);
 
-        List<ClassificationLevel> expected = asLevelList("Secret",       "rm.classification.secret",
-                                                         "Confidential", "rm.classification.confidential",
+        List<ClassificationLevel> expected = asLevelList("Secret",       "rm.caveat.classification.mark.s.label",
+                                                         "Confidential", "rm.caveat.classification.mark.c.label",
                                                          "No Clearance", "rm.classification.noClearance");
         assertEquals(expected, actual);
         // Check that the returned list can't be modified.

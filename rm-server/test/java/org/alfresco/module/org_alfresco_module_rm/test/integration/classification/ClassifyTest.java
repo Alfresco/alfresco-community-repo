@@ -40,8 +40,8 @@ import org.alfresco.util.GUID;
 public class ClassifyTest extends BaseRMTestCase
 {
     /** test data */
-    private static final String CLASSIFICATION_LEVEL = "level1";
-    private static final String LOWER_CLASSIFICATION_LEVEL = "level2";
+    private static final String CLASSIFICATION_LEVEL = "TS";
+    private static final String LOWER_CLASSIFICATION_LEVEL = "S";
     private static final String CLASSIFICATION_REASON = "Test Reason 1";
     private static final String CLASSIFICATION_AGENCY = "classification agency";
     private static final String CLASSIFIED_BY = "classified by text";
@@ -122,8 +122,8 @@ public class ClassifyTest extends BaseRMTestCase
     }
 
     /**
-     * Given I have "level1" clearance
-     * When I try to classify content with the level "level1"
+     * Given I have top secret clearance
+     * When I try to classify content as top secret
      * Then the content is classified.
      */
     public void testClassifyContent()
@@ -165,15 +165,15 @@ public class ClassifyTest extends BaseRMTestCase
             {
                 assertTrue("Record should have been classified.",
                             nodeService.hasAspect(record, ClassifiedContentModel.ASPECT_CLASSIFIED));
-                assertEquals("Record should be 'level1' classified.", CLASSIFICATION_LEVEL,
+                assertEquals("Record should be classified as top secret.", CLASSIFICATION_LEVEL,
                             nodeService.getProperty(record, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION));
             }
         });
     }
 
     /**
-     * Given I have "level2" clearance
-     * When I call the classify content API directly using the level "level1"
+     * Given I have secret clearance
+     * When I call the classify content API directly using the level "top secret"
      * Then I receive an error that the level could not be found.
      */
     public void testClearanceNecessaryToClassifyContent()

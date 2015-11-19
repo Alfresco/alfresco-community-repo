@@ -1,9 +1,11 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">   
-   <meta name="Generator" content="Alfresco Repository"><style type="text/css">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">   
+   <meta name="Generator" content="Alfresco Repository">
+
+   <style type="text/css">
       body {
          background-color:#FFFFFF;
          color:#000000;
@@ -56,7 +58,7 @@
 </head>
 <body>
 <hr/>
-<h1> 文档（名称）：  ${document.name} </h1>
+<h1> 文件 （名）：  ${document.name} </h1>
 <hr/>
 <fieldset>
 <legend> 元数据 </legend>
@@ -85,10 +87,10 @@
    <td>内容文件夹：</td><td> <a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
-   <td>内容 URL：</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
+   <td>URL 内容：</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
    </tr>
    <tr>
-   <td>下载 URL：</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>URL 下载：</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
    </tr>
 </table>
 </fieldset>

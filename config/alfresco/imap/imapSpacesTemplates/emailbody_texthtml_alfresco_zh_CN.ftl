@@ -1,8 +1,8 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">   
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">   
    <meta name="Generator" content="Alfresco Repository">
    <meta name="layoutengine" content="MSHTML">
    <style type="text/css">
@@ -40,7 +40,7 @@
 </head>
 <body>
 <hr>
-<h1> 文档（名称）：  ${document.name} </h1>
+<h1> 文件 （名）：  ${document.name} </h1>
 <hr>
 <h2> 元数据 </h2>
 <table class="description">
@@ -67,13 +67,13 @@
    <td>内容文件夹：</td><td> <a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
-   <td>内容 URL：</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
+   <td>URL 内容：</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
    </tr>
    <tr>
-   <td>下载 URL：</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>URL 下载：</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
    </tr>
    <tr>
-   <td>WebDAV URL：</td><td> <a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a></td>
+   <td>URL WebDAV：</td><td> <a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a></td>
    </tr>
 </table>
 </body>

@@ -408,6 +408,15 @@
                 <distributionFile origin="${alfresco_commands_source_directory}/*" allowWildcards="1"/>
             </distributionFileList>
         </folder>
+        <folder>
+            <description>//ServerInfo.properties File</description>
+            <destination>${alfresco_library_directory}/org/apache/catalina/util</destination>
+            <name>serverinfofile</name>
+            <platforms>all</platforms>
+            <distributionFileList>
+                <distributionFile origin="${alfresco_on_install_settings_directory}/alfresco/shared/ServerInfo.properties"/>
+            </distributionFileList>
+        </folder>
     </folderList>
     <postInstallationActionList>
         <alfrescoConfigure alfrescoFiles="${tomcat_server_directory}/bin/service.bat;${tomcat_server_directory}/scripts/ctl.sh"/>

@@ -3,9 +3,9 @@
 ------------------------------------------------------------------------------
 
    <#if document.properties.title?exists>
-Заголовок:   ${document.properties.title}
+Название:   ${document.properties.title}
    <#else>
-Заголовок:	ОТСУТСТВУЕТ
+Название:	ОТСУТСТВУЕТ
    </#if>
    <#if document.properties.description?exists>
 Описание:   ${document.properties.description}

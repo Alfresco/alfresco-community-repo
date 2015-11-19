@@ -74,23 +74,23 @@
                      <tr><td valign="top">Beschreibung:</td><td>&nbsp;</td></tr>
    </#if>
                      <tr><td>Ersteller:</td><td>${document.properties.creator}</td></tr>
-                     <tr><td>Erstellt am:</td><td>${document.properties.created?datetime}</td></tr>
+                     <tr><td>Erstellt:</td><td>${document.properties.created?datetime}</td></tr>
                      <tr><td>Bearbeiter:</td><td>${document.properties.modifier}</td></tr>
-                     <tr><td>Bearbeitet am:</td><td>${document.properties.modified?datetime}</td></tr>
-                     <tr><td>Größe:</td><td>${document.size / 1024} Kb</td></tr>
+                     <tr><td>Geändert:</td><td>${document.properties.modified?datetime}</td></tr>
+                     <tr><td>Größe:</td><td>${document.size / 1024} KB</td></tr>
 </table>
 </fieldset>
 <fieldset>
 <legend> Links zum Inhalt </legend>
 <table class="links">
    <tr>
-   <td>Dokumenten Ordner:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
+   <td>Inhaltsordner:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
    <td>URL zum Inhalt:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
    </tr>
    <tr>
-   <td>Download URL:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>URL zum Download:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
    </tr>
 </table>
 </fieldset>

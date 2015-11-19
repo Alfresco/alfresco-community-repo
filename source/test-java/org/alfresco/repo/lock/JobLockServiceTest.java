@@ -508,7 +508,8 @@ public class JobLockServiceTest extends TestCase
 
             if (t==3) 
             {
-                long ttlLongerThanDefaultRetry = 300;
+                // default num retries * default retry wait + time to create lock (pessimistic)
+                long ttlLongerThanDefaultRetry = 10*20 + 2000;
                 tokenB = jobLockService.getLock(lockA, ttlLongerThanDefaultRetry);
             }                
 
@@ -528,7 +529,7 @@ public class JobLockServiceTest extends TestCase
             
             callback.isActive = false;
             
-            Thread.sleep(40);
+            Thread.sleep(1000); // need to make this quite long to account for slow database updates
             
             assertEquals(true,callback.released);
             assertEquals(2,callback.isActiveCount);

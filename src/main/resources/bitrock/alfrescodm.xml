@@ -320,6 +320,7 @@
                     </ruleList>
                 </actionGroup>
                 <alfrescoConfigure alfrescoFiles="*/alfresco-global.properties"/>
+                <changePermissions permissions="640" files="*/alfresco-global.properties"/>
             </actionList>
             <distributionFileList>
                 <distributionFile origin="${alfresco_on_install_settings_directory}/alfresco/shared/alfresco-global.properties"/>

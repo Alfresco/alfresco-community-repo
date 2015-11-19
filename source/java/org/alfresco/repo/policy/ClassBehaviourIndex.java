@@ -161,19 +161,11 @@ import org.alfresco.util.LockHelper;
         {
             List<BehaviourDefinition> behaviours = new ArrayList<BehaviourDefinition>();
 
-            // Determine if behaviour has been disabled
-            boolean isEnabled = true;
-            if (filter != null)
+            // Find class behaviour by scanning up the class hierarchy
+            List<BehaviourDefinition<B>> behaviour = null;
+
+            if (isEnabled(binding))
             {
-                NodeRef nodeRef = binding.getNodeRef();
-                QName className = binding.getClassQName();
-                isEnabled = (nodeRef == null) ? filter.isEnabled(className) : filter.isEnabled(nodeRef, className);
-            }
-            
-            if (isEnabled)
-            {
-                // Find class behaviour by scanning up the class hierarchy
-                List<BehaviourDefinition<B>> behaviour = null;
                 while (binding != null)
                 {
                     behaviour = classMap.get(binding);
@@ -184,7 +176,6 @@ import org.alfresco.util.LockHelper;
                     binding = (B)binding.generaliseBinding();
                 }
             }
-            
             // Append all service-level behaviours
             behaviours.addAll(serviceMap.getAll());
             
@@ -195,7 +186,6 @@ import org.alfresco.util.LockHelper;
             lock.readLock().unlock();
         }
     }
-
 
     @Override
     public void addChangeObserver(BehaviourChangeObserver<B> observer)
@@ -264,6 +254,18 @@ import org.alfresco.util.LockHelper;
         {
             lock.writeLock().unlock();
         }
-    } 
+    }
 
+    private boolean isEnabled(B binding)
+    {
+        // Determine if behaviour has been disabled
+        boolean isEnabled = true;
+        if (filter != null)
+        {
+            NodeRef nodeRef = binding.getNodeRef();
+            QName className = binding.getClassQName();
+            isEnabled = (nodeRef == null) ? filter.isEnabled(className) : filter.isEnabled(nodeRef, className);
+        }
+        return isEnabled;
+    }
 }

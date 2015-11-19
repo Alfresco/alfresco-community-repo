@@ -7,24 +7,24 @@
          font-size: 14px;
          color: #4c4c4c;
       }
-      
+
       a, a:visited
       {
          color: #0072cf;
       }
-      
+
       .activity a
       {
          text-decoration: none;
       }
-      
+
       .activity a:hover
       {
          text-decoration: underline;
       }
       --></style>
    </head>
-   
+
    <body bgcolor="#dddddd">
       <table width="100%" cellpadding="20" cellspacing="0" border="0" bgcolor="#dddddd">
          <tr>
@@ -111,7 +111,7 @@
                            </tr>
                            <tr>
                               <td style="padding: 0px 30px; font-size: 13px;">
-                                 U kunt meldingen uitschakelen door op deze koppeling te klikken:<br />
+                                 U kunt meldingen uitschakelen door te klikken op deze koppeling:<br />
                                  <br /><a href="${shareUrl}/page/user/${personProps["cm:userName"]}/user-notifications">${shareUrl}/page/user/${personProps["cm:userName"]}/user-notifications</a>
                               </td>
                            </tr>

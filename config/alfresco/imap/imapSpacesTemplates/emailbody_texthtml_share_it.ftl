@@ -73,15 +73,15 @@
    <#else>
                      <tr><td valign="top">Descrizione:</td><td>&nbsp;</td></tr>
    </#if>
-                     <tr><td>Autore:</td><td>${document.properties.creator}</td></tr>
-                     <tr><td>Data di creazione:</td><td>${document.properties.created?datetime}</td></tr>
+                     <tr><td>Creatore:</td><td>${document.properties.creator}</td></tr>
+                     <tr><td>Creato:</td><td>${document.properties.created?datetime}</td></tr>
                      <tr><td>Modificatore:</td><td>${document.properties.modifier}</td></tr>
-                     <tr><td>Data di modifica:</td><td>${document.properties.modified?datetime}</td></tr>
-                     <tr><td>Dimensioni:</td><td>${document.size / 1024} Kb</td></tr>
+                     <tr><td>Modificato:</td><td>${document.properties.modified?datetime}</td></tr>
+                     <tr><td>Dimensioni:</td><td>${document.size / 1024} KB</td></tr>
 </table>
 </fieldset>
 <fieldset>
-<legend> Collegamenti del contenuto </legend>
+<legend> Link al contenuto </legend>
 <table class="links">
    <tr>
    <td>Cartella del contenuto:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>

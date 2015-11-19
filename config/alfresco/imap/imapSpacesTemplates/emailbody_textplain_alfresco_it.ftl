@@ -1,25 +1,27 @@
-﻿------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 Nome documento:   ${document.name}
 ------------------------------------------------------------------------------
 
    <#if document.properties.title?exists>
 Titolo:   ${document.properties.title}
    <#else>
-Titolo:         NESSUNO
+Titolo:        NESSUNO
    </#if>
    <#if document.properties.description?exists>
 Descrizione:   ${document.properties.description}
    <#else>
 Descrizione:   NESSUNA
    </#if>
-Autore:   ${document.properties.creator}
-Data di creazione:   ${document.properties.created?datetime}
+Creatore:      ${document.properties.creator}
+Creato:        ${document.properties.created?datetime}
 Modificatore:  ${document.properties.modifier}
-Data di modifica:  ${document.properties.modified?datetime}
-Dimensioni:      ${document.size / 1024} Kb
+Modificato:    ${document.properties.modified?datetime}
+Dimensioni:    ${document.size / 1024} KB
 
 
-COLLEGAMENTI DEL CONTENUTO
+LINK AL CONTENUTO
 
-URL del contenuto:      ${document.shareUrl}
-
+Cartella del contenuto:  ${contentFolderUrl}
+URL del contenuto:       ${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
+URL di download:         ${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true
+URL WebDAV:              ${contextUrl}${document.webdavUrl}

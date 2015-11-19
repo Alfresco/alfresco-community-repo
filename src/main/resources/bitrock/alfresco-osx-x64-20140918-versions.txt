@@ -11,7 +11,6 @@ freetype 2.3.4
 libwmf 0.2.8.4
 ghostscript 8.64
 imagemagick 6.8.6-6
-swftools 0.9.1
 libstdcplusplus 0
 ncurses 5.6
 readline 5.2

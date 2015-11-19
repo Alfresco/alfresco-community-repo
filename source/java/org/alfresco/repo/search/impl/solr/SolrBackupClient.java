@@ -55,8 +55,8 @@ public class SolrBackupClient implements InitializingBean
     private boolean fixNumberToKeepOffByOneError = false;
 
     private SOLRAdminClient solrAdminClient;
-
     
+    private SolrQueryHTTPClient solrQueryHTTPClient;
     
     
     /**
@@ -87,6 +87,11 @@ public class SolrBackupClient implements InitializingBean
         this.remoteBackupLocation = remoteBackupLocation;
     }
     
+    public void setSolrQueryHTTPClient(SolrQueryHTTPClient solrQueryHTTPClient)
+    {
+        this.solrQueryHTTPClient = solrQueryHTTPClient;
+    }
+
     /**
      * @param numberToKeep the numberToKeep to set
      */
@@ -97,6 +102,10 @@ public class SolrBackupClient implements InitializingBean
 
     public void execute()
     {
+        if(solrQueryHTTPClient.isSharded())
+        {
+            return;
+        }
 
         String lockToken = getLock(60000);
         if (lockToken == null)

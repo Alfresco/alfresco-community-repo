@@ -265,7 +265,7 @@
             </substitution>
         </substitutionList>
         <ruleList>
-            <compareText text="${product_fullname}" logic="equals" value="Alfresco Share Enterprise"/>
+            <compareText text="${product_fullname}" logic="equals" value="Alfresco One Share"/>
         </ruleList>
     </substitute>
     </postInstallationActionList>

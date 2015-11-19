@@ -373,12 +373,6 @@ msgstr "使用中の SMTP TCP ポート"
 msgid "SMTP Port"
 msgstr "SMTP ポート"
 
-msgid "SWFTOOLS Component"
-msgstr "SWFTOOLS コンポーネント"
-
-msgid "SWFTOOLS installation directory"
-msgstr "SWFTOOLS のインストールディレクトリ"
-
 msgid "Select a folder:"
 msgstr "インストール先フォルダ:"
 

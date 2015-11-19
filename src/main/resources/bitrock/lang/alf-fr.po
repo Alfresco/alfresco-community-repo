@@ -373,12 +373,6 @@ msgstr "Port TCP SMTP en cours d'utilisation"
 msgid "SMTP Port"
 msgstr "Port SMTP"
 
-msgid "SWFTOOLS Component"
-msgstr "Composant SWFTOOLS"
-
-msgid "SWFTOOLS installation directory"
-msgstr "Répertoire d'installation SWFTOOLS"
-
 msgid "Select a folder:"
 msgstr "Sélectionnez un dossier :"
 

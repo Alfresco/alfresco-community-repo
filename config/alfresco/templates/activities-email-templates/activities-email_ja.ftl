@@ -83,7 +83,7 @@
                                                    <#case "org.alfresco.profile.status-changed">
                                                       <#assign custom0=(activity.activitySummary.status!"")?html>
                                                       <#assign suppressSite=true>
-                                                      <#break>
+                                                      <#break>      
                                                    <#default>
                                                 </#switch>
                                                 
@@ -111,7 +111,7 @@
                            </tr>
                            <tr>
                               <td style="padding: 0px 30px; font-size: 13px;">
-                                 この通知の受信を停止する場合は、次のリンクをクリックしてください。<br />
+                                 通知をオフにするには、次のリンクをクリックします:<br />
                                  <br /><a href="${shareUrl}/page/user/${personProps["cm:userName"]}/user-notifications">${shareUrl}/page/user/${personProps["cm:userName"]}/user-notifications</a>
                               </td>
                            </tr>

@@ -77,11 +77,11 @@
                      <tr><td>Créé :</td><td>${document.properties.created?datetime}</td></tr>
                      <tr><td>Modificateur :</td><td>${document.properties.modifier}</td></tr>
                      <tr><td>Modifié :</td><td>${document.properties.modified?datetime}</td></tr>
-                     <tr><td>Taille :</td><td>${document.size / 1024} Kb</td></tr>
+                     <tr><td>Taille :</td><td>${document.size / 1024} Ko</td></tr>
 </table>
 </fieldset>
 <fieldset>
-<legend> Liens de contenu  </legend>
+<legend> Liens du contenu  </legend>
 <table class="links">
    <tr>
    <td>Dossier du contenu :</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
@@ -90,7 +90,7 @@
    <td>URL du contenu :</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
    </tr>
    <tr>
-   <td>Adresse Webdav :</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>URL de téléchargement :</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
    </tr>
 </table>
 </fieldset>

@@ -1,4 +1,4 @@
-﻿------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 Nom du document :   ${document.name}
 ------------------------------------------------------------------------------
 
@@ -10,16 +10,18 @@ Titre :         AUCUN
    <#if document.properties.description?exists>
 Description :   ${document.properties.description}
    <#else>
-Description :   AUCUN
+Description :   AUCUNE
    </#if>
-Créateur :   ${document.properties.creator}
-Créé :   ${document.properties.created?datetime}
+Créateur :      ${document.properties.creator}
+Créé :          ${document.properties.created?datetime}
 Modificateur :  ${document.properties.modifier}
-Modifié :  ${document.properties.modified?datetime}
-Taille :      ${document.size / 1024} Ko
+Modifié :       ${document.properties.modified?datetime}
+Taille :        ${document.size / 1024} Ko
 
 
-LIENS DE CONTENU
+LIENS DU CONTENU
 
-URL de contenu :      ${document.shareUrl}
-
+Dossier du contenu :     ${contentFolderUrl}
+URL du contenu :         ${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
+URL de téléchargement :  ${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true
+URL WebDAV :             ${contextUrl}${document.webdavUrl}

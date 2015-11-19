@@ -63,7 +63,6 @@
         <setInstallerVariable name="java_distribution_folder" value="${binaries_folder}/java" />
         <setInstallerVariable name="xvfb_distribution_folder" value="${binaries_folder}/Xvfb" />
         <setInstallerVariable name="libreoffice_distribution_folder" value="${binaries_folder}/libreoffice" />
-        <setInstallerVariable name="swftools_distribution_folder" value="${binaries_folder}/swftools" />
         <setInstallerVariable name="tomcat_distribution_folder" value="${binaries_folder}/apache-tomcat" />
         <setInstallerVariable name="manager_distribution_folder" value="${binaries_folder}" />
 

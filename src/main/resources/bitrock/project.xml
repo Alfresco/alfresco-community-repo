@@ -193,7 +193,6 @@
 
         <include file="imagemagick.xml"/>
         <include file="ghostscript.xml"/>
-        <include file="swftools.xml"/>
         <include file="alfresco-customstack-postgres-settings.xml" />
         <include file="alfresco-customstack-shortcuts.xml" />
         <include file="alfresco-customstack-validations.xml"/>

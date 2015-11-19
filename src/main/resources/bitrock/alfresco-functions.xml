@@ -190,34 +190,6 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                             <value>${libreoffice_port}</value>
                         </substitution>
                         <substitution>
-                            <pattern>@@BITROCK_PDF2SWF_PATH@@</pattern>
-                            <value>${installdir.dos.unix}/swftools/pdf2swf.exe</value>
-                            <ruleList>
-                                <platformTest type="windows"/>
-                            </ruleList>
-                        </substitution>
-                        <substitution>
-                            <pattern>@@BITROCK_PDF2SWF_PATH@@</pattern>
-                            <value>${installdir.unix}/common/bin/pdf2swf</value>
-                            <ruleList>
-                                <platformTest type="unix"/>
-                            </ruleList>
-                        </substitution>
-                        <substitution>
-                            <pattern>@@BITROCK_PDF2SWF_LANGUAGEDIR@@</pattern>
-                            <value>${installdir.dos.unix}/swftools/japanese</value>
-                            <ruleList>
-                                <platformTest type="windows"/>
-                            </ruleList>
-                        </substitution>
-                        <substitution>
-                            <pattern>@@BITROCK_PDF2SWF_LANGUAGEDIR@@</pattern>
-                            <value>${installdir.unix}/common/japanese</value>
-                            <ruleList>
-                                <platformTest type="unix"/>
-                            </ruleList>
-                        </substitution>
-                        <substitution>
                             <pattern>@@BITROCK_MYSQL_PORT@@</pattern>
                             <value>${database_port}</value>
                         </substitution>

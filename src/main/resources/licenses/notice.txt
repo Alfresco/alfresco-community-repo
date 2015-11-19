@@ -200,7 +200,6 @@ ncurses http://www.gnu.org/software/ncurses/
 libiconv    http://www.gnu.org/software/libiconv/
 libstdc++   http://gcc.gnu.org/libstdc++/
 LibreOffice Portable    http://portableapps.com/apps/office/libreoffice_portable
-SWF Tools   http://www.swftools.org/
 
 
 === ICU License ===

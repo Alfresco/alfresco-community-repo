@@ -23,7 +23,6 @@
 #jodconverter.portNumbers=8101
 #jodconverter.enabled=true
 #img.root=./ImageMagick
-#swf.exe=./bin/pdf2swf
 
 #
 # Windows specific environment variables (should not be set on unix) for ImageMagick

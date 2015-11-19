@@ -34,10 +34,6 @@ function testGetRenditions()
     var imageRenditions = renditionService.getRenditions(testSourceNode, "image");
     test.assertNotNull(imageRenditions, "imageRenditions returned null.");
     test.assertEquals(2, imageRenditions.length);
-
-    var swfRenditions = renditionService.getRenditions(testSourceNode, "application/x-shockwave-flash");
-    test.assertNotNull(swfRenditions, "swfRenditions returned null.");
-    test.assertEquals(0, swfRenditions.length);
 }
 
 function testCreateRenditionDefinitionAndRender()

@@ -11,6 +11,11 @@
 -->
 <#macro page title readonly=false controller=DEFAULT_CONTROLLER!"/admin" params="" dialog=false>
 <#assign FORM_ID="admin-jmx-form" />
+<#if server.edition == "Community">
+    <#assign docsEdition = "community" />
+<#elseif server.edition == "Enterprise" >
+    <#assign docsEdition = server.getVersionMajor() + "." + server.getVersionMinor() />
+</#if>
 <#if metadata??>
 <#assign HOSTNAME>${msg("admin-console.host")}: ${metadata.hostname}</#assign>
 <#assign HOSTADDR>${msg("admin-console.ipaddress")}: ${metadata.hostaddress}</#assign>
@@ -466,7 +471,7 @@ Admin.addEventListener(window, 'load', function() {
       
       <div class="header">
          <span><a href="${url.serviceContext}${DEFAULT_CONTROLLER!"/admin"}">${msg("admin-console.header")}</a></span><#if metadata??><span class="meta">${HOSTNAME}</span><span class="meta">${HOSTADDR}</span></#if>
-         <div style="float:right"><a href="http://docs.alfresco.com/5.0/concepts/ch-administering.html" target="_blank">${msg("admin-console.help")}</a></div>
+         <div style="float:right"><a href="${msg("admin-console.help-link", docsEdition)}" target="_blank">${msg("admin-console.help")}</a></div>
       </div>
       
       <div class="navigation-wrapper">
@@ -821,5 +826,3 @@ Admin.addEventListener(window, 'load', function() {
    <input class="<#if class?has_content>${class?html}<#else>inline</#if>" <#if id?has_content>id="${id?html}"</#if> <#if style?has_content>style="${style?html}"</#if> type="button" value="${label?html}" onclick="${onclick?html}" <#if disabled="true">disabled="true"</#if> />
    <#if description?has_content><span class="description">${description?html}</span></#if>
 </#macro>
-
-<#assign docsEdition = server.getVersionMajor() + "." + server.getVersionMinor() />

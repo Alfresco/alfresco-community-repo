@@ -375,4 +375,16 @@ public class VirtualCheckOutCheckInServiceExtensionTest extends VirtualizationIn
                      sourceAssocs.get(0).getSourceRef());
         checkOutCheckInService.cancelCheckout(workingCopyVirtualContext);
     }
+    
+    public void test_ACE_4699() throws Exception
+    {
+        checkOutCheckInService.checkout(originalContentNodeRef);
+        NodeRef workingCopyVirtualContext = nodeService.getChildByName(node,
+                                                                       ContentModel.ASSOC_CONTAINS,
+                                                                       PROP_WORKING_COPY_NAME);
+        assertNotNull(workingCopyVirtualContext);
+        NodeRef cancelCheckoutNodeRef = checkOutCheckInService.cancelCheckout(workingCopyVirtualContext);
+        assertEquals(originalContentNodeRef,
+                     cancelCheckoutNodeRef);
+    }
 }

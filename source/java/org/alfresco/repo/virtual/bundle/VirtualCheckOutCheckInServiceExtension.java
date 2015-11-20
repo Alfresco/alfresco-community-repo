@@ -144,7 +144,10 @@ public class VirtualCheckOutCheckInServiceExtension extends
     @Override
     public NodeRef cancelCheckout(NodeRef workingCopyNodeRef)
     {
-        return getTrait().cancelCheckout(virtualStore.materializeIfPossible(workingCopyNodeRef));
+        NodeRef materialOriginalNode = getTrait().cancelCheckout(virtualStore.materializeIfPossible(workingCopyNodeRef));
+        
+        return virtualizeOriginalIfNeeded(workingCopyNodeRef,
+                                          materialOriginalNode);
     }
 
     @Override

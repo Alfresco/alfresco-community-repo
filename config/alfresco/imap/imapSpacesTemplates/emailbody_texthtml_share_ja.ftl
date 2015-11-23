@@ -61,7 +61,7 @@
 <h1> 文書 (名前):   ${document.name} </h1>
 <hr/>
 <fieldset>
-<legend>メタデータ</legend>
+<legend> メタデータ </legend>
 <table class="description">
    <#if document.properties.title?exists>
                      <tr><td valign="top">タイトル:</td><td>${document.properties.title}</td></tr>
@@ -75,22 +75,22 @@
    </#if>
                      <tr><td>作成者:</td><td>${document.properties.creator}</td></tr>
                      <tr><td>作成日時:</td><td>${document.properties.created?datetime}</td></tr>
-                     <tr><td>修正者:</td><td>${document.properties.modifier}</td></tr>
-                     <tr><td>修正日時:</td><td>${document.properties.modified?datetime}</td></tr>
-                     <tr><td>サイズ:</td><td>${document.size / 1024} Kb</td></tr>
+                     <tr><td>変更者:</td><td>${document.properties.modifier}</td></tr>
+                     <tr><td>変更日時:</td><td>${document.properties.modified?datetime}</td></tr>
+                     <tr><td>サイズ:</td><td>${document.size / 1024} KB</td></tr>
 </table>
 </fieldset>
 <fieldset>
-<legend> コンテンツリンク  </legend>
+<legend> コンテンツのリンク </legend>
 <table class="links">
    <tr>
-   <td>コンテンツ フォルダー:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
+   <td>コンテンツフォルダ:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
-   <td>コンテンツ URL:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
+   <td>コンテンツの URL:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
    </tr>
    <tr>
-   <td>ダウンロード URL:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>ダウンロード用 URL:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
    </tr>
 </table>
 </fieldset>

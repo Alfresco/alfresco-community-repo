@@ -77,20 +77,20 @@
                      <tr><td>Creado:</td><td>${document.properties.created?datetime}</td></tr>
                      <tr><td>Modificador:</td><td>${document.properties.modifier}</td></tr>
                      <tr><td>Modificado:</td><td>${document.properties.modified?datetime}</td></tr>
-                     <tr><td>Tamaño:</td><td>${document.size / 1024} Kb</td></tr>
+                     <tr><td>Tamaño:</td><td>${document.size / 1024} KB</td></tr>
 </table>
 </fieldset>
 <fieldset>
-<legend> Enlaces de contenido: </legend>
+<legend> Enlaces de contenido </legend>
 <table class="links">
    <tr>
    <td>Carpeta de contenido:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
-   <td>Dirección URL de contenido:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
+   <td>URL de contenido:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
    </tr>
    <tr>
-   <td>Dirección URL de descarga:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>URL de descarga:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
    </tr>
 </table>
 </fieldset>

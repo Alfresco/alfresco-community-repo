@@ -76,25 +76,31 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         // create authentication for owner
         createPerson(OWNER);
         
+        // prepare content
+        prepareContent(dmDocument);
+    }
+    
+    protected void prepareContent(NodeRef content)
+    {
         // add titled aspect
         PropertyMap titledProperties = new PropertyMap(2);
         titledProperties.put(ContentModel.PROP_TITLE, "document title");
         titledProperties.put(ContentModel.PROP_DESCRIPTION, "document description");
-        nodeService.addAspect(dmDocument, ContentModel.ASPECT_TITLED, titledProperties);
+        nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProperties);
         
         // add ownable aspect
         PropertyMap ownableProperties = new PropertyMap(1);
         ownableProperties.put(ContentModel.PROP_OWNER, OWNER);
-        nodeService.addAspect(dmDocument, ContentModel.ASPECT_OWNABLE, ownableProperties);
+        nodeService.addAspect(content, ContentModel.ASPECT_OWNABLE, ownableProperties);
         
         // add Dublin core aspect
         PropertyMap dublinCoreProperties = new PropertyMap(2);
         dublinCoreProperties.put(QNAME_PUBLISHER, PUBLISHER);
         dublinCoreProperties.put(QNAME_SUBJECT, SUBJECT);
-        nodeService.addAspect(dmDocument, ContentModel.ASPECT_DUBLINCORE, dublinCoreProperties);
+        nodeService.addAspect(content, ContentModel.ASPECT_DUBLINCORE, dublinCoreProperties);
         
         // add content
-        ContentWriter writer = contentService.getWriter(dmDocument, ContentModel.PROP_CONTENT, true);
+        ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
         writer.setEncoding("UTF-8");
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.putContent(CONTENT);
@@ -122,7 +128,7 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         
         // store document state
         Map<QName, Serializable> beforeProperties = nodeService.getProperties(document);
-        Set<QName> beforeAspects = nodeService.getAspects(dmDocument);
+        Set<QName> beforeAspects = nodeService.getAspects(document);
         
         // get the current version
         Version version = versionService.getCurrentVersion(document);
@@ -229,6 +235,9 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
                 cloneFrozenProperties.remove(entry.getKey());
             }
         }
+        
+        // remove "owner" from cloneFrozenProperties
+        cloneFrozenProperties.remove(ContentModel.PROP_OWNER);
         
         
         // frozen properties should be empty

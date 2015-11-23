@@ -33,7 +33,8 @@ import org.junit.runners.Suite.SuiteClasses;
 {
     AdHocRecordableVersionsTest.class,
     AutoRecordableVersionsTest.class,
-    DeclareAsRecordVersionTest.class
+    DeclareAsRecordVersionTest.class,
+    AutoVersionTest.class
 })
 public class VersionTestSuite
 {

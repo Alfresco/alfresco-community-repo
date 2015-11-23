@@ -45,9 +45,9 @@
 <h2> Метаданные </h2>
 <table class="description">
    <#if document.properties.title?exists>
-                     <tr><td valign="top">Заголовок:</td><td> ${document.properties.title}</td></tr>
+                     <tr><td valign="top">Название:</td><td> ${document.properties.title}</td></tr>
    <#else>
-                     <tr><td valign="top">Заголовок:</td><td>&nbsp;</td></tr>
+                     <tr><td valign="top">Название:</td><td>&nbsp;</td></tr>
    </#if>
    <#if document.properties.description?exists>
                      <tr><td valign="top">Описание:</td><td> ${document.properties.description}</td></tr>

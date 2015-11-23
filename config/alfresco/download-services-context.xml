@@ -81,7 +81,7 @@
 
 
    <bean id="downloadStatusUpdateService" class="org.alfresco.repo.download.DownloadStatusUpdateServiceImpl">
-	  <property name="storage" ref="downloadStorage" />
+     <property name="storage" ref="downloadStorage" />
    </bean>
 
    <bean id="downloadContentServiceHelper" class="org.alfresco.repo.download.LocalContentServiceHelper">
@@ -91,13 +91,13 @@
    <bean id="createDownloadArchiveAction" class="org.alfresco.repo.download.CreateDownloadArchiveAction" parent="action-executer">
       <property name="checkOutCheckInSerivce" ref="checkOutCheckInService"/>
       <property name="contentServiceHelper" ref="downloadContentServiceHelper" />
-	  <property name="downloadStorage" ref="downloadStorage" />
-	  <property name="exporterService" ref="downloadExporterComponent" />
-	  <property name="maximumContentSize" value="${download.maxContentSize}" />
-	  <property name="nodeService" ref="nodeService" />
-	  <property name="publicAction" value="false"/>
-      <property name="transactionHelper" ref="retryingTransactionHelper"/>
-	  <property name="updateService" ref="downloadStatusUpdateService"/>
+     <property name="downloadStorage" ref="downloadStorage" />
+     <property name="exporterService" ref="downloadExporterComponent" />
+     <property name="maximumContentSize" value="${download.maxContentSize}" />
+     <property name="nodeService" ref="nodeService" />
+     <property name="publicAction" value="false"/>
+     <property name="transactionHelper" ref="retryingTransactionHelper"/>
+     <property name="updateService" ref="downloadStatusUpdateService"/>
    </bean>
 
     <bean id="downloadExporterComponent" parent="exporterComponent">

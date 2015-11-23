@@ -1,9 +1,11 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">   
-   <meta name="Generator" content="Alfresco Repository"><style type="text/css">
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">   
+   <meta name="Generator" content="Alfresco Repository">
+
+   <style type="text/css">
       body {
          background-color:#FFFFFF;
          color:#000000;
@@ -56,7 +58,7 @@
 </head>
 <body>
 <hr/>
-<h1> Document (naam): ${document.name} </h1>
+<h1> Document(naam): ${document.name} </h1>
 <hr/>
 <fieldset>
 <legend> Metagegevens </legend>
@@ -72,8 +74,8 @@
                      <tr><td valign="top">Beschrijving:</td><td>&nbsp;</td></tr>
    </#if>
                      <tr><td>Maker:</td><td> ${document.properties.creator}</td></tr>
-                     <tr><td>Gemaakt op:</td><td> ${document.properties.created?datetime}</td></tr>
-                     <tr><td>Gewijzigd door:</td><td> ${document.properties.modifier}</td></tr>
+                     <tr><td>Gemaakt:</td><td> ${document.properties.created?datetime}</td></tr>
+                     <tr><td>Wijziger:</td><td> ${document.properties.modifier}</td></tr>
                      <tr><td>Gewijzigd:</td><td> ${document.properties.modified?datetime}</td></tr>
                      <tr><td>Grootte:</td><td> ${document.size / 1024} kB</td></tr>
 </table>

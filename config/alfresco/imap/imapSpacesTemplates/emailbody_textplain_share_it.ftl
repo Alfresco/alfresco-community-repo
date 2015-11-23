@@ -5,22 +5,22 @@ Nome documento:   ${document.name}
    <#if document.properties.title?exists>
 Titolo:      ${document.properties.title}
    <#else>
-Titolo:         NESSUNO
+Titolo:        NESSUNO
    </#if>
    <#if document.properties.description?exists>
 Descrizione:   ${document.properties.description}
    <#else>
-Descrizione:   NESSUNO
+Descrizione:   NESSUNA
    </#if>
-Autore:              ${document.properties.creator}
-Data di creazione:   ${document.properties.created?datetime}
-Modificatore:        ${document.properties.modifier}
-Data di modifica:    ${document.properties.modified?datetime}
-Dimensioni:          ${document.size / 1024} Kb
+Creatore:      ${document.properties.creator}
+Creato:        ${document.properties.created?datetime}
+Modificatore:  ${document.properties.modifier}
+Modificato:    ${document.properties.modified?datetime}
+Dimensioni:    ${document.size / 1024} KB
 
 
-Collegamenti del contenuto
+LINK AL CONTENUTO
 
-Cartella del contenuto:   ${contentFolderUrl}
-URL del contenuto:      ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
-URL di download:     ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true
+Cartella del contenuto:  ${contentFolderUrl}
+URL del contenuto:       ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}
+URL di download:         ${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true

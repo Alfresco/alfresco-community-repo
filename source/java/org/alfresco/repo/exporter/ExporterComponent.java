@@ -96,6 +96,7 @@ public class ExporterComponent
 
     /** Indent Size */
     private int indentSize = 2;
+    private boolean exportSecondaryNodes = false;
     
     
     /**
@@ -162,6 +163,14 @@ public class ExporterComponent
         this.permissionService = permissionService;
     }
     
+    /**
+     * @param exportSecondaryNodes whether children that do dot have a primary association with their parent are exported as nodes
+     * If false, these nodes will be exported as secondary links.
+     */
+    public void setExportSecondaryNodes(boolean exportSecondaryNodes) 
+    {
+        this.exportSecondaryNodes = exportSecondaryNodes;
+    }
     
     /* (non-Javadoc)
      * @see org.alfresco.service.cmr.view.ExporterService#exportView(java.io.OutputStream, org.alfresco.service.cmr.view.ExporterCrawlerParameters, org.alfresco.service.cmr.view.Exporter)
@@ -524,7 +533,7 @@ public class ExporterComponent
                     {
                         continue;
                     }
-                    if (childAssoc.isPrimary() == false)
+                    if (childAssoc.isPrimary() == false && !exportSecondaryNodes)
                     {
                         context.recordSecondaryLink(nodeRef);
                         continue;

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
 <head>
@@ -23,8 +23,8 @@
       h2 {
          text-align:left;
          font-size:13px;
-         margin: 17px;
-         text-decoration:underline;
+		 margin: 17px;
+		 text-decoration:underline;
       }
       table.links td, table.description td {
          border-bottom:1px dotted #555555;
@@ -33,8 +33,8 @@
       table.description, table.links {
          border:0;
          border-collapse:collapse;
-         width:auto;
-         margin:7px 20px 7px 20px;
+		 width:auto;
+ 		 margin:7px 20px 7px 20px;
       }
    </style>
 </head>
@@ -55,25 +55,25 @@
                      <tr><td valign="top">Beschreibung:</td><td>&nbsp;</td></tr>
    </#if>
                      <tr><td>Ersteller:</td><td>${document.properties.creator}</td></tr>
-                     <tr><td>Erstellt am:</td><td>${document.properties.created?datetime}</td></tr>
+                     <tr><td>Erstellt:</td><td>${document.properties.created?datetime}</td></tr>
                      <tr><td>Bearbeiter:</td><td>${document.properties.modifier}</td></tr>
-                     <tr><td>Bearbeitet am:</td><td>${document.properties.modified?datetime}</td></tr>
-                     <tr><td>Größe:</td><td>${document.size / 1024} Kb</td></tr>
+                     <tr><td>Geändert:</td><td>${document.properties.modified?datetime}</td></tr>
+                     <tr><td>Größe:</td><td>${document.size / 1024} KB</td></tr>
 </table>
 <br>
 <h2> Links zum Inhalt </h2>
 <table class="links">
    <tr>
-   <td>Dokumenten Ordner:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
+   <td>Inhaltsordner:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
    <td>URL zum Inhalt:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
    </tr>
    <tr>
-   <td>Download URL:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>URL zum Download:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
    </tr>
    <tr>
-   <td>WebDAV URL:</td><td><a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a></td>
+   <td>WebDAV-URL:</td><td><a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a></td>
    </tr>
 </table>
 </body>

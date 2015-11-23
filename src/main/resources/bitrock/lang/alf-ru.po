@@ -556,6 +556,9 @@ msgstr "Не удается выполнить привязку к заданн�
 msgid "Couldn’t bind to the given port number. Select another Tomcat Shutdown Port."
 msgstr "Не удается выполнить привязку к заданному номеру порта. Выберите другой порт отключения Tomcat."
 
+msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
+msgstr "В полях настройки порта можно использовать только цифры. Другие символы недопустимы."
+
 msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
 msgstr "Не удается выполнить привязку к заданному номеру порта.  Выберите другой порт для протокола SharePoint."
 

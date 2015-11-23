@@ -556,6 +556,9 @@ msgstr "No se pudo unir con el número de puerto dado. Seleccione otro puerto To
 msgid "Couldn’t bind to the given port number. Select another Tomcat Shutdown Port."
 msgstr "No se pudo unir con el número de puerto dado. Seleccione otro puerto de cierre de Tomcat."
 
+msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
+msgstr "Utilice solo números en los campos de configuración de puertos. No se permiten otros caracteres."
+
 msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
 msgstr "No se pudo unir con el número de puerto dado. Seleccione otro puerto para el protocolo SharePoint."
 

@@ -1,10 +1,11 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 <html>
 <head>
-   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">   
+   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">   
    <meta name="Generator" content="Alfresco Repository">
-   <meta name="layoutengine" content="MSHTML"><style type="text/css">
+   <meta name="layoutengine" content="MSHTML">
+   <style type="text/css">
       body {
          background-color:#FFFFFF;
          color:#000000;
@@ -55,24 +56,24 @@
    </#if>
                      <tr><td>Создатель:</td><td> ${document.properties.creator}</td></tr>
                      <tr><td>Создано:</td><td> ${document.properties.created?datetime}</td></tr>
-                     <tr><td>Модификатор:</td><td> ${document.properties.modifier}</td></tr>
+                     <tr><td>Редактор:</td><td> ${document.properties.modifier}</td></tr>
                      <tr><td>Изменено:</td><td> ${document.properties.modified?datetime}</td></tr>
                      <tr><td>Размер:</td><td> ${document.size / 1024} КБ</td></tr>
 </table>
 <br>
-<h2> Ссылки на контент </h2>
+<h2> Ссылки </h2>
 <table class="links">
    <tr>
-   <td>Папка с контентом:</td><td> <a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
+   <td>Папка с содержимым:</td><td> <a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
    </tr>
    <tr>
-   <td>URL-адрес контента:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
+   <td>Ссылка на документ:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
    </tr>
    <tr>
-   <td>Загрузить с URL-адреса:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>Ссылка на загрузку документа:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
    </tr>
    <tr>
-   <td>URL-адрес WebDAV:</td><td> <a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a></td>
+   <td>Ссылка WebDAV:</td><td> <a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a></td>
    </tr>
 </table>
 </body>

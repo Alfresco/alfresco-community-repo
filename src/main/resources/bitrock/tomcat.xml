@@ -531,7 +531,7 @@ export LD_LIBRARY_PATH
                     <path>${application_server_directory}/bin/setenv.bat</path>
                     <text>set JAVA_HOME=${java_home_directory.dos}
 set JRE_HOME=%JAVA_HOME%
-set JAVA_OPTS=${tomcat_extra_opts_windows} ${tomcat_memory_settings_windows} %JAVA_OPTS%
+set JAVA_OPTS=${tomcat_extra_opts_windows} ${tomcat_memory_settings_windows}
 </text>
                     <ruleList>
                         <platformTest type="windows"/>
@@ -542,7 +542,7 @@ set JAVA_OPTS=${tomcat_extra_opts_windows} ${tomcat_memory_settings_windows} %JA
                     <path>${application_server_directory}/bin/setenv.bat</path>
                     <text>set JAVA_HOME=${java_home_directory.dos}
 set JRE_HOME=%JAVA_HOME%\jre
-set JAVA_OPTS=${tomcat_extra_opts_windows} ${tomcat_memory_settings_windows} %JAVA_OPTS%
+set JAVA_OPTS=${tomcat_extra_opts_windows} ${tomcat_memory_settings_windows}
 </text>
                     <ruleList>
                         <platformTest type="windows"/>

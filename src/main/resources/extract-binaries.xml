@@ -47,6 +47,8 @@
             <!-- Accommodate poor Cygwin users -->
             <pathconvert property="maven.localrepo" targetos="unix">
                 <map from="C:" to="/c" />
+                <map from="D:" to="/d" />
+                <map from="E:" to="/e" />
                 <path>
                     <pathelement path="${settings.localRepository}"/>
                 </path>

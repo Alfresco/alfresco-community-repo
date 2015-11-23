@@ -83,7 +83,7 @@
                                                    <#case "org.alfresco.profile.status-changed">
                                                       <#assign custom0=(activity.activitySummary.status!"")?html>
                                                       <#assign suppressSite=true>
-                                                      <#break>
+                                                      <#break>      
                                                    <#default>
                                                 </#switch>
                                                 
@@ -111,7 +111,7 @@
                            </tr>
                            <tr>
                               <td style="padding: 0px 30px; font-size: 13px;">
-                                 Vous pouvez désactiver les notifications en cliquant sur le lien suivant :<br />
+                                 Pour désactiver les notifications, cliquez sur ce lien :<br />
                                  <br /><a href="${shareUrl}/page/user/${personProps["cm:userName"]}/user-notifications">${shareUrl}/page/user/${personProps["cm:userName"]}/user-notifications</a>
                               </td>
                            </tr>

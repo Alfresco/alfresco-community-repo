@@ -556,6 +556,9 @@ msgstr "指定したポート番号にバインドできません。別の Tomca
 msgid "Couldn’t bind to the given port number. Select another Tomcat Shutdown Port."
 msgstr "指定したポート番号にバインドできません。Tomcat のシャットダウン用に別のポートを選択してください。"
 
+msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
+msgstr "ポートの設定フィールドでは数字だけを使用してください。 他の文字は使用できません。"
+
 msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
 msgstr "指定したポート番号にバインドできません。SharePoint プロトコル用に別のポートを選択してください。"
 

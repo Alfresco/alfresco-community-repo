@@ -661,5 +661,5 @@ msgstr "Solr é uma plataforma de pesquisa corporativa de código aberto que usa
 msgid "Unable to bind to the given port number."
 msgstr "Não é possível associar ao número da porta indicado."
 
-msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
+msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Não é possível associar ao número da porta indicado. Essa porta já está em uso pelo processo ${process_binding_port}. Selecione outra porta do servidor ${serverName}."

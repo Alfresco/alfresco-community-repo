@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -134,12 +134,13 @@ public class AlfrescoCmisServiceFactory extends AbstractServiceFactory
     {
         if (logger.isDebugEnabled())
         {
-            logger.debug("\n" +
-                    "CMIS getService(): \n" +
-                    "   Authenticated as: " + AuthenticationUtil.getFullyAuthenticatedUser() + "\n" +
-                    "   Running as:       " + AuthenticationUtil.getRunAsUser() + "\n" +
-                    "   User:             " + context.getUsername() + "\n" +
-                    "   Repo:             " + context.getRepositoryId());
+            StringBuilder sb = new StringBuilder();
+            sb.append("getService: ").append(AuthenticationUtil.getFullyAuthenticatedUser())
+                    .append(" [runAsUser=").append(AuthenticationUtil.getRunAsUser())
+                    .append(",ctxUserName=").append(context.getUsername())
+                    .append(",ctxRepoId=").append(context.getRepositoryId()).append("]");
+
+            logger.debug(sb.toString());
         }
 
         // Avoid using guest user if the user is provided in the context

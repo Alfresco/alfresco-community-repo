@@ -79,6 +79,8 @@ public class ProcessesImplTest extends TestCase
 
 
     private static final String QUERY_STATUS_ACTIVE = "(status=active)";
+    
+    private static final String QUERY_WORKFLOWDESCRIPTION_MATCHES = "(variables/bpm_workflowDescription MATCHES ('%s'))";
 
 
     private ApplicationContext applicationContext = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
@@ -122,6 +124,7 @@ public class ProcessesImplTest extends TestCase
     {
         Map<QName, Serializable> parameters = new HashMap<QName, Serializable>();
         parameters.put(WorkflowModel.ASSOC_ASSIGNEE, (Serializable) Collections.singletonList(assignee));
+        parameters.put(WorkflowModel.PROP_WORKFLOW_DESCRIPTION, "Test workflow api calls review and approve"); // MNT-14631
         //parameters.put(WorkflowModel.ASSOC_PACKAGE, workflowService.createPackage(null));
 
         workflowService.startWorkflow(neededDefinition.getId(), parameters);
@@ -182,6 +185,34 @@ public class ProcessesImplTest extends TestCase
         assertFalse(actualProcesses.hasMoreItems());
     }
 
+    @Test
+    public void testGetProcessesMatchesIgnoreCase()
+    {       
+        CollectionWithPagingInfo<ProcessInfo> result = queryMatchesProcesses("(?i)test workflow api calls review and approve");
+
+        assertNotNull(result);
+        assertNotNull(result.getCollection());
+        assertTrue(result.getTotalItems() > 0 );
+    }
+    
+    @Test
+    public void testGetProcessesMatchesIgnoreCaseNoResults()
+    {       
+        CollectionWithPagingInfo<ProcessInfo> result = queryMatchesProcesses("test workflow api calls review and approve");
+
+        assertNotNull(result);
+        assertNotNull(result.getCollection());
+        assertTrue(result.getTotalItems() == 0 );
+    }
+    
+    private CollectionWithPagingInfo<ProcessInfo> queryMatchesProcesses(String matchesString)
+    {
+        Query query = ResourceWebScriptHelper.getWhereClause(String.format(QUERY_WORKFLOWDESCRIPTION_MATCHES, matchesString));
+        Parameters parameters = Params.valueOf(new RecognizedParams(null, Paging.valueOf(0, ACTIVE_WORKFLOWS_INITIAL_AMOUNT), null, null, null, query, null), null, null);
+        
+        return processes.getProcesses(parameters);
+    }
+    
     private CollectionWithPagingInfo<ProcessInfo> queryActiveProcessesAndAssertResult(int skipCount, int maxItems)
     {
         Query query = ResourceWebScriptHelper.getWhereClause(QUERY_STATUS_ACTIVE);

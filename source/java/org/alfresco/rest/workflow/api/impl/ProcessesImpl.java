@@ -388,7 +388,15 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
                     {
                         throw new InvalidArgumentException("the matches operator can only be used with a String value for property " + queryVariableHolder.getPropertyName());
                     }
-                    query.variableValueLike(queryVariableHolder.getPropertyName(), (String) queryVariableHolder.getPropertyValue());
+                    
+                    if (((String) queryVariableHolder.getPropertyValue()).startsWith("(?i)"))
+                    {
+                        query.variableValueLikeIgnoreCase(queryVariableHolder.getPropertyName(), ((String) queryVariableHolder.getPropertyValue()).substring("(?i)".length()).toLowerCase());
+                    }
+                    else
+                    {
+                        query.variableValueLike(queryVariableHolder.getPropertyName(), (String) queryVariableHolder.getPropertyValue());
+                    }
                 }
                 else if (queryVariableHolder.getOperator() == WhereClauseParser.NEGATION)
                 {

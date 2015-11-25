@@ -110,7 +110,7 @@ public class PublicApiClient
 		this.rc.set(rc);
 	}
 
-	private RequestContext getRequestContext()
+	public RequestContext getRequestContext()
 	{
 		RequestContext context = rc.get();
 		if(context == null)

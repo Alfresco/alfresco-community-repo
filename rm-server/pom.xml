@@ -192,9 +192,9 @@
                         <configuration>
                            <tasks>
                               <delete file="${project.build.outputDirectory}/alfresco/extension/dev-context.xml"/>
-                              <move todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
+                              <copy todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
                                  <fileset dir="${project.build.outputDirectory}/alfresco"/>
-                              </move>
+                              </copy>
                               <move file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties"
                                  todir="${project.build.directory}/${project.build.finalName}"/>
                            </tasks>

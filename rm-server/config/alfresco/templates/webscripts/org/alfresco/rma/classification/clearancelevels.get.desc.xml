@@ -1,8 +1,0 @@
-<webscript>
-   <shortname>Records Management Clearance Levels</shortname>
-   <description>Gets the list of clearance levels.</description>
-   <url>/api/clearance/levels</url>
-   <format default="json"/>
-   <authentication>user</authentication>
-   <transaction allow="readonly">required</transaction>
-</webscript>

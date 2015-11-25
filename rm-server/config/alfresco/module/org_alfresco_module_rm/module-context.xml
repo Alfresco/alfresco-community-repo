@@ -11,12 +11,6 @@
    <!--  Authentication Helper -->
    <bean name="rm.authenticationUtil" class="org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil"/>
 
-   <!-- Utility methods that enhance core Alfresco services -->
-   <bean name="rm.coreServicesExtras" class="org.alfresco.module.org_alfresco_module_rm.util.CoreServicesExtras">
-      <property name="dictionaryService" ref="dictionaryService" />
-      <property name="nodeService" ref="NodeService" />
-   </bean>
-
    <!-- Transactional Resouce Helper -->
    <bean name="rm.transactionalResourceHelper" class="org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper" />
 
@@ -33,7 +27,6 @@
       <property name="nodeService" ref="nodeService" />
       <property name="modulePatchExecuter" ref="rm.modulePatchExecuter" />
       <property name="recordContributorsGroupBootstrapComponent" ref="recordContributorsGroupBootstrapComponent"/>
-      <property name="clearanceForAdminBootstrapComponent" ref="clearanceForAdminBootstrapComponent"/>
       <property name="moduleId" value="org_alfresco_module_rm"/>
       <property name="name" value="org_alfresco_module_rm_bootstrapData"/>
       <property name="description" value="Bootstrap records management data"/>
@@ -55,15 +48,6 @@
          class="org.alfresco.module.org_alfresco_module_rm.bootstrap.RecordContributorsGroupBootstrapComponent">
       <property name="authorityService" ref="AuthorityService" />
       <property name="authenticationUtil" ref="rm.authenticationUtil"/>
-   </bean>
-
-   <!-- Clearance for admin bootstrap component -->
-   <bean id="clearanceForAdminBootstrapComponent"
-         class="org.alfresco.module.org_alfresco_module_rm.bootstrap.ClearanceForAdminBootstrapComponent">
-      <property name="authenticationUtil" ref="rm.authenticationUtil"/>
-      <property name="personService" ref="PersonService"/>
-      <property name="nodeService" ref="NodeService"/>
-      <property name="classificationServiceBootstrap" ref="classificationServiceBootstrap"/>
    </bean>
 
    <!--  Bootstrap the message property files -->
@@ -235,7 +219,6 @@
       <property name="filterRegistry" ref="nodeFilterRegistry" />
       <property name="dispositionService" ref="dispositionService"/>
       <property name="filePlanService" ref="FilePlanService" />
-      <property name="classificationSchemeService" ref="ClassificationSchemeService" />
    </bean>
 
    <bean id="rmTypeFormFilter"
@@ -266,15 +249,6 @@
 
    <!-- Import the RM webscript's -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/rm-webscript-context.xml"/>
-
-   <!-- Import the Metadata Referral Services -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/metadata-referral-context.xml"/>
-
-   <!-- Import the Caveat Services -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/caveat-context.xml"/>
-
-   <!-- Import the Classified Content Services -->
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/classified-content-context.xml"/>
 
    <!-- Import the Content Services -->
    <import resource="classpath:alfresco/module/org_alfresco_module_rm/content-context.xml"/>

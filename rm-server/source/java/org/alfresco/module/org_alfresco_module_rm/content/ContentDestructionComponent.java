@@ -24,15 +24,8 @@ import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.RenditionModel;
-import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
-import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
-import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
-import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
-import org.alfresco.repo.policy.annotation.BehaviourKind;
-import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -42,66 +35,68 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * Content destruction component.
- * <p>
- * Listens for the destruction of sensitive nodes (classified content and records) and schedules
- * all their content for immediate destruction.
- * <p>
- * If enabled, the content is also cleansed before destruction.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.4.a
  */
 @BehaviourBean
-public class ContentDestructionComponent implements NodeServicePolicies.BeforeDeleteNodePolicy
+public class ContentDestructionComponent
 {
-    /** authentication utils */
-    private AuthenticationUtil authenticationUtil;
-    
-    /** content classification service */
-    private ContentClassificationService contentClassificationService;
-    
-    /** record service */
-    private RecordService recordService;
-    
     /** eager content store cleaner */
     private EagerContentStoreCleaner eagerContentStoreCleaner;
-    
+
     /** dictionary service */
     private DictionaryService dictionaryService;
-    
+
     /** node service */
     private NodeService nodeService;
-    
+
     /** behaviour filter */
     private BehaviourFilter behaviourFilter;
-    
+
     /** indicates whether cleansing is enabled or not */
     private boolean cleansingEnabled = false;
-    
+
     /**
-     * @param authenticationUtil    authentication utils
+     * @return the eagerContentStoreCleaner
      */
-    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
+    protected EagerContentStoreCleaner getEagerContentStoreCleaner()
     {
-        this.authenticationUtil = authenticationUtil;
+        return this.eagerContentStoreCleaner;
     }
-    
+
     /**
-     * @param contentClassificationService  content classification service
+     * @return the dictionaryService
      */
-    public void setContentClassificationService(ContentClassificationService contentClassificationService)
+    protected DictionaryService getDictionaryService()
     {
-        this.contentClassificationService = contentClassificationService;
+        return this.dictionaryService;
     }
-    
+
     /**
-     * @param recordService record service
+     * @return the nodeService
      */
-    public void setRecordService(RecordService recordService)
+    protected NodeService getNodeService()
     {
-        this.recordService = recordService;
+        return this.nodeService;
     }
-    
+
+    /**
+     * @return the behaviourFilter
+     */
+    protected BehaviourFilter getBehaviourFilter()
+    {
+        return this.behaviourFilter;
+    }
+
+    /**
+     * @return  true if cleansing is enabled, false otherwise
+     */
+    public boolean isCleansingEnabled()
+    {
+        return cleansingEnabled;
+    }
+
     /**
      * @param eagerContentStoreCleaner  eager content store cleaner
      */
@@ -109,7 +104,7 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
     {
         this.eagerContentStoreCleaner = eagerContentStoreCleaner;
     }
-    
+
     /**
      * @param dictionaryService dictionary service
      */
@@ -125,15 +120,7 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
     {
         this.nodeService = nodeService;
     }
-    
-    /**
-     * @param cleansingEnabled  true if cleansing enabled, false otherwise
-     */
-    public void setCleansingEnabled(boolean cleansingEnabled)
-    {
-        this.cleansingEnabled = cleansingEnabled;
-    }
-    
+
     /**
      * @param behaviourFilter   behaviour filter
      */
@@ -141,62 +128,28 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
     {
         this.behaviourFilter = behaviourFilter;
     }
-    
+
     /**
-     * @return  true if cleansing is enabled, false otherwise
+     * @param cleansingEnabled  true if cleansing enabled, false otherwise
      */
-    public boolean isCleansingEnabled()
+    public void setCleansingEnabled(boolean cleansingEnabled)
     {
-        return cleansingEnabled;
+        this.cleansingEnabled = cleansingEnabled;
     }
-    
-    /**
-     * System behaviour implementation that listens for sensitive nodes 
-     * and schedules them for immediate destruction.
-     * <p>
-     * Note that the content destruction and cleansing takes place on transaction
-     * commit.  If the transaction is rolled back after this behaviour is encountered
-     * then the content will not be destroyed or cleansed.
-     * 
-     * @param nodeRef node reference about to be deleted
-     */
-    @Override
-    @Behaviour
-    (
-       isService = true,
-       kind = BehaviourKind.CLASS
-    )
-    public void beforeDeleteNode(final NodeRef nodeRef)
-    {
-        authenticationUtil.runAsSystem(new RunAsWork<Void>()
-        {
-            public Void doWork() throws Exception
-            {
-                // if enable and content is classified or a record
-                if (contentClassificationService.isClassified(nodeRef) ||
-                    recordService.isRecord(nodeRef))
-                {
-                    // then register all content for destruction
-                    registerAllContentForDestruction(nodeRef, false);
-                }                
-                return null;
-            }
-        });
-    }
-    
+
     /**
      * Destroy content
-     * 
+     *
      * @param nodeRef
      */
     public void destroyContent(NodeRef nodeRef)
     {
         destroyContent(nodeRef, true);
     }
-    
+
     /**
      * Destroy content
-     * 
+     *
      * @param nodeRef
      * @param includeRenditions
      */
@@ -205,7 +158,7 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
     {
         // destroy the nodes content properties
         registerAllContentForDestruction(nodeRef, true);
-        
+
         // Remove the renditioned aspect (and its properties and associations) if it is present.
         //
         // From Alfresco 3.3 it is the rn:renditioned aspect which defines the
@@ -215,12 +168,12 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
         // We want to remove the rn:renditioned aspect, but due to the possibility
         // that there is Alfresco 3.2-era data with the cm:thumbnailed aspect
         // applied, we must consider removing it too.
-        if (nodeService.hasAspect(nodeRef, RenditionModel.ASPECT_RENDITIONED) ||
-            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_THUMBNAILED))
+        if (getNodeService().hasAspect(nodeRef, RenditionModel.ASPECT_RENDITIONED) ||
+                getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_THUMBNAILED))
       {
           // get the rendition assoc types
           Set<QName> childAssocTypes = dictionaryService.getAspect(RenditionModel.ASPECT_RENDITIONED).getChildAssociations().keySet();
-          for (ChildAssociationRef child : nodeService.getChildAssocs(nodeRef))
+          for (ChildAssociationRef child : getNodeService().getChildAssocs(nodeRef))
           {
               if (childAssocTypes.contains(child.getTypeQName()))
               {
@@ -230,36 +183,36 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
           }
        }
     }
-    
+
     /**
      * Registers all content on the given node for destruction.
-     * 
+     *
      * @param nodeRef               node reference
      * @param clearContentProperty  if true then clear content property, otherwise false
      */
-    private void registerAllContentForDestruction(NodeRef nodeRef, boolean clearContentProperty)
+    protected void registerAllContentForDestruction(NodeRef nodeRef, boolean clearContentProperty)
     {
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-        
+        Map<QName, Serializable> properties = getNodeService().getProperties(nodeRef);
+
         for (Map.Entry<QName, Serializable> entry : properties.entrySet())
         {
             if (entry.getValue() instanceof ContentData)
             {
                 // get content data
                 ContentData dataContent = (ContentData)entry.getValue();
-                
-                // if enabled cleanse content 
+
+                // if enabled cleanse content
                 if (isCleansingEnabled())
                 {
                     // register for cleanse then immediate destruction
-                    eagerContentStoreCleaner.registerOrphanedContentUrlForCleansing(dataContent.getContentUrl());
+                    getEagerContentStoreCleaner().registerOrphanedContentUrlForCleansing(dataContent.getContentUrl());
                 }
                 else
                 {
                     // register for immediate destruction
-                    eagerContentStoreCleaner.registerOrphanedContentUrl(dataContent.getContentUrl(), true);
+                    getEagerContentStoreCleaner().registerOrphanedContentUrl(dataContent.getContentUrl(), true);
                 }
-                
+
                 // clear the property
                 if (clearContentProperty)
                 {
@@ -267,7 +220,7 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
                     behaviourFilter.disableBehaviour();
                     try
                     {
-                        nodeService.removeProperty(nodeRef, entry.getKey());
+                        getNodeService().removeProperty(nodeRef, entry.getKey());
                     }
                     finally
                     {
@@ -275,6 +228,6 @@ public class ContentDestructionComponent implements NodeServicePolicies.BeforeDe
                     }
                 }
             }
-        }         
+        }
     }
 }

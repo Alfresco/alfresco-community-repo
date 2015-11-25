@@ -43,8 +43,6 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
 
     /** record contributors group bootstrap component */
     private RecordContributorsGroupBootstrapComponent recordContributorsGroupBootstrapComponent;
-    /** Clearance for admin bootstrap component. */
-    private ClearanceForAdminBootstrapComponent clearanceForAdminBootstrapComponent;
 
     /**
      * @param nodeService   node service
@@ -71,15 +69,6 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
     }
 
     /**
-     * @param clearanceForAdminBootstrapComponent The bootstrap component that give the admin user the maximum
-     *            clearance.
-     */
-    public void setClearanceForAdminBootstrapComponent(ClearanceForAdminBootstrapComponent clearanceForAdminBootstrapComponent)
-    {
-        this.clearanceForAdminBootstrapComponent = clearanceForAdminBootstrapComponent;
-    }
-
-    /**
      * Need to check whether this module has already been executed.
      *
      * @see org.alfresco.repo.module.ImporterModuleComponent#executeInternal()
@@ -94,7 +83,6 @@ public class BootstrapImporterModuleComponent extends ImporterModuleComponent
 
             // Bootstrap creation of initial data.
             recordContributorsGroupBootstrapComponent.createRecordContributorsGroup();
-            clearanceForAdminBootstrapComponent.createClearanceForAdmin();
 
             // init module schema number
             modulePatchExecuter.initSchemaVersion();

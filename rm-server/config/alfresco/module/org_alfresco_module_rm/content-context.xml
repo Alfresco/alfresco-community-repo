@@ -13,27 +13,24 @@
 
    <!-- content destruction component -->
    <bean name="contentDestructionComponent" class="org.alfresco.module.org_alfresco_module_rm.content.ContentDestructionComponent">
-      <property name="authenticationUtil" ref="rm.authenticationUtil" />
-      <property name="recordService" ref="recordService" />
-      <property name="contentClassificationService" ref="contentClassificationService" />	
-   	  <property name="eagerContentStoreCleaner" ref="eagerContentStoreCleaner" />	
-   	  <property name="dictionaryService" ref="dictionaryService" />	
-   	  <property name="nodeService" ref="nodeService" />   	 
+      <property name="eagerContentStoreCleaner" ref="eagerContentStoreCleaner" />
+      <property name="dictionaryService" ref="dictionaryService" />
+      <property name="nodeService" ref="nodeService" />
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
-   	  <property name="cleansingEnabled" value="${rm.content.cleansing.enabled}" />		   
+      <property name="cleansingEnabled" value="${rm.content.cleansing.enabled}" />
    </bean>
-   
+
    <!--  extended eager content store cleaner -->
    <bean name="rm.eagerContentStoreCleaner" class="org.alfresco.module.org_alfresco_module_rm.content.EagerContentStoreCleaner">
-      <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />	
+      <property name="transactionalResourceHelper" ref="rm.transactionalResourceHelper" />
       <property name="contentCleanser" ref="${rm.content.cleaner}" />
    </bean>
    <bean class="org.alfresco.util.BeanExtender">
       <property name="beanName" value="eagerContentStoreCleaner" />
       <property name="extendingBeanName" value="rm.eagerContentStoreCleaner" />
    </bean>
-   
+
    <!-- content cleanser -->
    <bean id="contentCleanser.522022M" class="org.alfresco.module.org_alfresco_module_rm.content.cleanser.ContentCleanser522022M"/>
-   
+
 </beans>

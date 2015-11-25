@@ -17,8 +17,6 @@
       <property name="capabilityService" ref="CapabilityService"/>
       <property name="dictionaryService" ref="DictionaryService" />
       <property name="siteService" ref="SiteService" />
-      <property name="contentClassificationService" ref="contentClassificationService"/>
-      <property name="securityClearanceService" ref="SecurityClearanceService" />
       <property name="policyComponent" ref="policyComponent" />
       <property name="jsonConversionComponentCache" ref="jsonConversionComponentCache" />
       <property name="mimetypeService" ref="MimetypeService" />
@@ -924,30 +922,6 @@
          </set>
       </property>
       <property name="capability" value="MoveDmRecords"/>
-   </bean>
-
-   <bean id="currentClassificationPropertyDecorator"
-         parent="baseDecorator"
-         class="org.alfresco.repo.jscript.app.CurrentClassificationPropertyDecorator"
-         depends-on="classifiedContentDictionaryBootstrap">
-      <property name="propertyName" value="clf:currentClassification" />
-      <property name="classificationSchemeService" ref="ClassificationSchemeService" />
-   </bean>
-
-   <bean id="classificationReasonsPropertyDecorator"
-         parent="baseDecorator"
-         class="org.alfresco.repo.jscript.app.ClassificationReasonsPropertyDecorator"
-         depends-on="classifiedContentDictionaryBootstrap">
-      <property name="propertyName" value="clf:classificationReasons" />
-      <property name="classificationSchemeService" ref="ClassificationSchemeService" />
-   </bean>
-
-   <bean id="exemptionsCategoriesPropertyDecorator"
-         parent="baseDecorator"
-         class="org.alfresco.repo.jscript.app.ExemptionsCategoriesPropertyDecorator"
-         depends-on="classifiedContentDictionaryBootstrap">
-      <property name="propertyName" value="clf:declassificationExemptions" />
-      <property name="classificationSchemeService" ref="ClassificationSchemeService" />
    </bean>
 
 </beans>

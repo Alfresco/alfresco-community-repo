@@ -1,8 +1,0 @@
-<webscript>
-   <shortname>Records Management Classification Levels</shortname>
-   <description>Gets the list of classification levels.</description>
-   <url>/api/classification/levels</url>
-   <format default="json"/>
-   <authentication>user</authentication>
-   <transaction allow="readonly">required</transaction>
-</webscript>

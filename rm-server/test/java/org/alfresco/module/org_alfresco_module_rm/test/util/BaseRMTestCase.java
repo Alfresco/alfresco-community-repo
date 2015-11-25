@@ -29,9 +29,6 @@ import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminSe
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
-import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
-import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
 import org.alfresco.module.org_alfresco_module_rm.dataset.DataSetService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
@@ -163,9 +160,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     protected HoldService holdService;
     protected InplaceRecordService inplaceRecordService;
     protected RelationshipService relationshipService;
-    protected ClassificationSchemeService classificationSchemeService;
-    protected SecurityClearanceService securityClearanceService;
-    protected ContentClassificationService contentClassificationService;
 
     /** test data */
     protected String siteId;
@@ -405,9 +399,6 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         holdService = (HoldService) applicationContext.getBean("HoldService");
         inplaceRecordService = (InplaceRecordService) applicationContext.getBean("InplaceRecordService");
         relationshipService = (RelationshipService) applicationContext.getBean("RelationshipService");
-        classificationSchemeService = (ClassificationSchemeService) applicationContext.getBean("ClassificationSchemeService");
-        securityClearanceService = (SecurityClearanceService) applicationContext.getBean("SecurityClearanceService");
-        contentClassificationService = (ContentClassificationService) applicationContext.getBean("ContentClassificationService");
     }
 
     /**

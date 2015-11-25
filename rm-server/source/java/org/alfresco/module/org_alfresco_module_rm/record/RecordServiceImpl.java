@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.record;
 
+import static com.google.common.collect.Lists.newArrayList;
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSIONED_NODEREF;
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSION_LABEL;
 import static org.apache.commons.lang.StringUtils.isNotBlank;
@@ -43,7 +44,6 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnFi
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
-import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
@@ -146,18 +146,19 @@ public class RecordServiceImpl extends BaseBehaviourBean
     };
 
     /** always edit model URI's */
-    private static final String[] ALWAYS_EDIT_URIS = new String[]
+    protected List<String> getAlwaysEditURIs()
     {
-        NamespaceService.SECURITY_MODEL_1_0_URI,
-        NamespaceService.SYSTEM_MODEL_1_0_URI,
-        NamespaceService.WORKFLOW_MODEL_1_0_URI,
-        NamespaceService.APP_MODEL_1_0_URI,
-        NamespaceService.DATALIST_MODEL_1_0_URI,
-        NamespaceService.DICTIONARY_MODEL_1_0_URI,
-        NamespaceService.BPM_MODEL_1_0_URI,
-        NamespaceService.RENDITION_MODEL_1_0_URI,
-        ClassifiedContentModel.CLF_URI
-     };
+        return newArrayList(
+            NamespaceService.SECURITY_MODEL_1_0_URI,
+            NamespaceService.SYSTEM_MODEL_1_0_URI,
+            NamespaceService.WORKFLOW_MODEL_1_0_URI,
+            NamespaceService.APP_MODEL_1_0_URI,
+            NamespaceService.DATALIST_MODEL_1_0_URI,
+            NamespaceService.DICTIONARY_MODEL_1_0_URI,
+            NamespaceService.BPM_MODEL_1_0_URI,
+            NamespaceService.RENDITION_MODEL_1_0_URI
+        );
+    }
 
     /** record model URI's */
     public static final List<String> RECORD_MODEL_URIS = Collections.unmodifiableList(
@@ -166,7 +167,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             RM_CUSTOM_URI,
             ReportModel.RMR_URI,
             RecordableVersionModel.RMV_URI,
-            DOD5015Model.DOD_URI            
+            DOD5015Model.DOD_URI
     ));
 
     /** non-record model URI's */
@@ -602,7 +603,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
     @Override
     public void disablePropertyEditableCheck()
     {
-        getBehaviour("onUpdateProperties").disable();
+        org.alfresco.repo.policy.Behaviour behaviour = getBehaviour("onUpdateProperties");
+        if (behaviour != null)
+        {
+            getBehaviour("onUpdateProperties").disable();
+        }
     }
 
     /**
@@ -620,7 +625,11 @@ public class RecordServiceImpl extends BaseBehaviourBean
     @Override
     public void enablePropertyEditableCheck()
     {
-        getBehaviour("onUpdateProperties").enable();
+        org.alfresco.repo.policy.Behaviour behaviour = getBehaviour("onUpdateProperties");
+        if (behaviour != null)
+        {
+            behaviour.enable();
+        }
     }
 
     /**
@@ -1259,7 +1268,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
         {
         	result = AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
         	{
-				public Boolean doWork() throws Exception 
+				public Boolean doWork() throws Exception
 				{
 		            return (null != nodeService.getProperty(nodeRef, PROP_DATE_FILED));
 				}
@@ -1640,7 +1649,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
      */
     private boolean alwaysEditProperty(QName property)
     {
-        return (ArrayUtils.contains(ALWAYS_EDIT_URIS, property.getNamespaceURI()) ||
+        return (getAlwaysEditURIs().contains(property.getNamespaceURI()) ||
                 ArrayUtils.contains(ALWAYS_EDIT_PROPERTIES, property) ||
                 isProtectedProperty(property));
     }

@@ -20,14 +20,12 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.destroy;
 
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationAspectProperties;
 import org.alfresco.module.org_alfresco_module_rm.content.ContentDestructionComponent;
 import org.alfresco.module.org_alfresco_module_rm.content.EagerContentStoreCleaner;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -55,10 +53,10 @@ public class DestroyContentTest extends BaseRMTestCase
 {
     private static final String BEAN_NAME_CONTENT_CLEANSER = "contentCleanser.test";
 
-    private ContentStore contentStore;
-    private TestContentCleanser contentCleanser;
+    protected ContentStore contentStore;
+    protected TestContentCleanser contentCleanser;
+    protected ContentDestructionComponent contentDestructionComponent;
     private EagerContentStoreCleaner eagerContentStoreCleaner;
-    private ContentDestructionComponent contentDestructionComponent;
     @SuppressWarnings("unused")
     private RenditionService renditionService;
 
@@ -290,256 +288,6 @@ public class DestroyContentTest extends BaseRMTestCase
 
                 // ensure the record isn't in the archive store
                 NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, destroyableRecord.getId());
-                assertFalse(nodeService.exists(archiveNodeRef));
-            }
-
-            public void after() throws Exception
-            {
-                // reset cleansing to default
-                contentDestructionComponent.setCleansingEnabled(false);
-            }
-        });
-    }
-
-    /**
-     * When the a record is deleted
-     * Then the content is destroyed
-     */
-    @AlfrescoTest (jira="RM-2461")
-    public void testRecordDelete() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef recordCategoryRecordLevel;
-            private NodeRef recordFolder;
-            private NodeRef deleteableRecord;
-            private ContentData contentData;
-
-            public void given() throws Exception
-            {
-                // create destroyable record
-                recordCategoryRecordLevel = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                recordFolder = recordFolderService.createRecordFolder(recordCategoryRecordLevel, GUID.generate());
-                deleteableRecord = utils.createRecord(recordFolder, GUID.generate(), GUID.generate());
-                contentData = (ContentData)nodeService.getProperty(deleteableRecord, PROP_CONTENT);
-
-                // assert things are as we expect
-                assertNotNull(contentData);
-                assertTrue(contentStore.exists(contentData.getContentUrl()));
-
-                // reset test content cleanser
-                contentCleanser.reset();
-                assertFalse(contentDestructionComponent.isCleansingEnabled());
-            }
-
-            public void when() throws Exception
-            {
-                // delete the record
-                nodeService.deleteNode(deleteableRecord);
-            }
-
-            public void then() throws Exception
-            {
-                // record destroyed
-                assertFalse(nodeService.exists(deleteableRecord));
-                assertFalse(contentStore.exists(contentData.getContentUrl()));
-
-                // content cleansing hasn't taken place
-                assertFalse(contentCleanser.hasCleansed());
-
-                // ensure the record isn't in the archive store
-                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableRecord.getId());
-                assertFalse(nodeService.exists(archiveNodeRef));
-            }
-        });
-    }
-
-    /**
-     * Given cleansing is configured on
-     * When the a record is deleted
-     * Then the content is cleansed
-     * And then the content is destroyed
-     */
-    @AlfrescoTest (jira="RM-2460")
-    public void testRecordDeleteAndCleanse() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef recordCategoryRecordLevel;
-            private NodeRef recordFolder;
-            private NodeRef deleteableRecord;
-            private ContentData contentData;
-
-            public void given() throws Exception
-            {
-                // create destroyable record
-                recordCategoryRecordLevel = filePlanService.createRecordCategory(filePlan, GUID.generate());
-                recordFolder = recordFolderService.createRecordFolder(recordCategoryRecordLevel, GUID.generate());
-                deleteableRecord = utils.createRecord(recordFolder, GUID.generate(), GUID.generate());
-                contentData = (ContentData)nodeService.getProperty(deleteableRecord, PROP_CONTENT);
-
-                // assert things are as we expect
-                assertNotNull(contentData);
-                assertTrue(contentStore.exists(contentData.getContentUrl()));
-
-                // reset test content cleanser and configure on
-                contentCleanser.reset();
-                contentDestructionComponent.setCleansingEnabled(true);
-                assertTrue(contentDestructionComponent.isCleansingEnabled());
-            }
-
-            public void when() throws Exception
-            {
-                // delete the record
-                nodeService.deleteNode(deleteableRecord);
-            }
-
-            public void then() throws Exception
-            {
-                // record destroyed
-                assertFalse(nodeService.exists(deleteableRecord));
-                assertFalse(contentStore.exists(contentData.getContentUrl()));
-
-                // content cleansing has taken place
-                assertTrue(contentCleanser.hasCleansed());
-
-                // ensure the record isn't in the archive store
-                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableRecord.getId());
-                assertFalse(nodeService.exists(archiveNodeRef));
-            }
-
-            public void after() throws Exception
-            {
-                // reset cleansing to default
-                contentDestructionComponent.setCleansingEnabled(false);
-            }
-        });
-    }
-
-    /**
-     * When classified content (non-record) is deleted
-     * Then it is destroyed
-     */
-    @AlfrescoTest (jira="RM-2461")
-    public void testClassifiedContentDelete() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef deleteableContent;
-            private ContentData contentData;
-
-            public void given() throws Exception
-            {
-                // create deletable classified content
-                assertTrue(nodeService.exists(folder));
-                deleteableContent = fileFolderService.create(folder, "myDocument.txt", TYPE_CONTENT).getNodeRef();
-                ContentWriter writer = fileFolderService.getWriter(deleteableContent);
-                writer.setEncoding("UTF-8");
-                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                writer.putContent(GUID.generate());
-
-                // classify the content
-                ClassificationAspectProperties properties = new ClassificationAspectProperties();
-                properties.setClassificationLevelId("TS");
-                properties.setClassifiedBy("me");
-                properties.setClassificationReasonIds(Collections.singleton("Test Reason 1"));
-                contentClassificationService.classifyContent(properties, deleteableContent);
-
-                // grab the content data
-                contentData = (ContentData)nodeService.getProperty(deleteableContent, PROP_CONTENT);
-
-                // assert things are as we expect
-                assertNotNull(contentData);
-                assertTrue(contentStore.exists(contentData.getContentUrl()));
-
-                // reset test content cleanser
-                contentCleanser.reset();
-                assertFalse(contentDestructionComponent.isCleansingEnabled());
-            }
-
-            public void when() throws Exception
-            {
-                // delete the content
-                nodeService.deleteNode(deleteableContent);
-            }
-
-            public void then() throws Exception
-            {
-                // content destroyed
-                assertFalse(nodeService.exists(deleteableContent));
-                assertFalse(contentStore.exists(contentData.getContentUrl()));
-
-                // content cleansing hasn't taken place
-                assertFalse(contentCleanser.hasCleansed());
-
-                // ensure the record isn't in the archive store
-                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableContent.getId());
-                assertFalse(nodeService.exists(archiveNodeRef));
-            }
-        });
-    }
-
-    /**
-     * Given data cleansing is configured on
-     * When classified content (non-record) is deleted
-     * Then it is cleansed
-     * And then it is destroyed
-     */
-    @AlfrescoTest (jira="RM-2460")
-    public void testClassifiedContentDeleteAndCleanse() throws Exception
-    {
-        doBehaviourDrivenTest(new BehaviourDrivenTest()
-        {
-            private NodeRef deleteableContent;
-            private ContentData contentData;
-
-            public void given() throws Exception
-            {
-                // create deletable classified content
-                assertTrue(nodeService.exists(folder));
-                deleteableContent = fileFolderService.create(folder, "myDocument.txt", TYPE_CONTENT).getNodeRef();
-                ContentWriter writer = fileFolderService.getWriter(deleteableContent);
-                writer.setEncoding("UTF-8");
-                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-                writer.putContent(GUID.generate());
-
-                // classify the content
-                ClassificationAspectProperties properties = new ClassificationAspectProperties();
-                properties.setClassificationLevelId("TS");
-                properties.setClassifiedBy("me");
-                properties.setClassificationReasonIds(Collections.singleton("Test Reason 1"));
-                contentClassificationService.classifyContent(properties, deleteableContent);
-
-                // grab the content data
-                contentData = (ContentData)nodeService.getProperty(deleteableContent, PROP_CONTENT);
-
-                // assert things are as we expect
-                assertNotNull(contentData);
-                assertTrue(contentStore.exists(contentData.getContentUrl()));
-
-                // reset test content cleanser and configure on
-                contentCleanser.reset();
-                contentDestructionComponent.setCleansingEnabled(true);
-                assertTrue(contentDestructionComponent.isCleansingEnabled());
-            }
-
-            public void when() throws Exception
-            {
-                // delete the content
-                nodeService.deleteNode(deleteableContent);
-            }
-
-            public void then() throws Exception
-            {
-                // content destroyed
-                assertFalse(nodeService.exists(deleteableContent));
-                assertFalse(contentStore.exists(contentData.getContentUrl()));
-
-                // content cleansing has taken place
-                assertTrue(contentCleanser.hasCleansed());
-
-                // ensure the record isn't in the archive store
-                NodeRef archiveNodeRef = new NodeRef(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, deleteableContent.getId());
                 assertFalse(nodeService.exists(archiveNodeRef));
             }
 

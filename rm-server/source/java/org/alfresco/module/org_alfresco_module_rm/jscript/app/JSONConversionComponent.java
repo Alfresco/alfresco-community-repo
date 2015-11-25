@@ -29,8 +29,6 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
-import org.alfresco.module.org_alfresco_module_rm.classification.ContentClassificationService;
-import org.alfresco.module.org_alfresco_module_rm.classification.SecurityClearanceService;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -70,8 +68,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     private static final String IS_RM_SITE_CREATED = "isRmSiteCreated";
     private static final String IS_RECORD_CONTRIBUTOR_GROUP_ENABLED = "isRecordContributorGroupEnabled";
     private static final String RECORD_CONTRIBUTOR_GROUP_NAME = "recordContributorGroupName";
-    public static final String IS_CLASSIFIED = "isClassified";
-    private static final String HAS_CURRENT_USER_CLEARANCE = "hasCurrentUserClearance";
 
     /** true if record contributor group is enabled, false otherwise */
     private boolean isRecordContributorsGroupEnabled = false;
@@ -93,12 +89,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
     /** site service */
     private SiteService siteService;
-
-    /** Content classification service */
-    private ContentClassificationService contentClassificationService;
-
-    /** Security clearance service */
-    private SecurityClearanceService securityClearanceService;
 
     /** Indicators */
     private List<BaseEvaluator> indicators = new ArrayList<BaseEvaluator>();
@@ -169,22 +159,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
-    }
-
-    /**
-     * @param contentClassificationService the contentClassificationService to set
-     */
-    public void setContentClassificationService(ContentClassificationService contentClassificationService)
-    {
-        this.contentClassificationService = contentClassificationService;
-    }
-
-    /**
-     * @param securityClearanceService the securityClearanceService to set
-     */
-    public void setSecurityClearanceService(SecurityClearanceService securityClearanceService)
-    {
-        this.securityClearanceService = securityClearanceService;
     }
 
     /**
@@ -269,12 +243,6 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
             // Get the node reference for convenience
             NodeRef nodeRef = nodeInfo.getNodeRef();
-
-            // Is the node classified
-            rootJSONObject.put(IS_CLASSIFIED, contentClassificationService.isClassified(nodeRef));
-
-            // Has current user clearance
-            rootJSONObject.put(HAS_CURRENT_USER_CLEARANCE, securityClearanceService.hasCurrentUserClearance());
 
             if (AccessStatus.ALLOWED.equals(capabilityService.getCapabilityAccessState(nodeRef, ViewRecordsCapability.NAME)))
             {

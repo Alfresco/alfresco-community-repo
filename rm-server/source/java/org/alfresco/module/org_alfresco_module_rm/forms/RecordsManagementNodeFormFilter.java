@@ -19,18 +19,13 @@
 package org.alfresco.module.org_alfresco_module_rm.forms;
 
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAsSystem;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.model.ImapModel;
-import org.alfresco.module.org_alfresco_module_rm.classification.ClassificationSchemeService;
-import org.alfresco.module.org_alfresco_module_rm.classification.model.ClassifiedContentModel;
 import org.alfresco.module.org_alfresco_module_rm.compatibility.CompatibilityModel;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionScheduleImpl;
@@ -75,19 +70,12 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     protected static final String TRANSIENT_DECLARED = "rmDeclared";
     protected static final String TRANSIENT_CATEGORY_ID = "rmCategoryIdentifier";
     protected static final String TRANSIENT_DISPOSITION_INSTRUCTIONS = "rmDispositionInstructions";
-    protected static final String TRANSIENT_CURRENT_CLASSIFICATION = "clfCurrentClassification";
-    protected static final String TRANSIENT_INITIAL_CLASSIFICATION = "clfInitialClassification";
-    protected static final String TRANSIENT_CLASSIFICATION_REASON_LABELS = "clfClassificationReasonLabels";
-    protected static final String TRANSIENT_DECLASSIFICATION_EXEMPTIONS = "clfDeclassificationExemptions";
 
     /** Disposition service */
     private DispositionService dispositionService;
 
     /** File Plan Service */
     private FilePlanService filePlanService;
-
-    /** Classification Scheme Service */
-    private ClassificationSchemeService classificationSchemeService;
 
     /**
      * Returns the disposition service
@@ -110,16 +98,6 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     }
 
     /**
-     * Returns the classification scheme service
-     *
-     * @return Classification scheme service
-     */
-    protected ClassificationSchemeService getClassificationSchemeService()
-    {
-        return this.classificationSchemeService;
-    }
-
-    /**
      * Sets the disposition service
      *
      * @param dispositionService    disposition service
@@ -135,14 +113,6 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
     public void setFilePlanService(FilePlanService filePlanService)
     {
         this.filePlanService = filePlanService;
-    }
-
-    /**
-     * @param classificationSchemeService classification scheme service
-     */
-    public void setClassificationSchemeService(ClassificationSchemeService classificationSchemeService)
-    {
-        this.classificationSchemeService = classificationSchemeService;
     }
 
     /**
@@ -200,53 +170,6 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
                  {
                      protectRecordLevelDispositionPropertyField(form);
                  }
-            }
-        }
-
-        if (dictionaryService.isSubClass(nodeService.getType(nodeRef), ContentModel.TYPE_CONTENT))
-        {
-            String initialClassificationId = (String) nodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_INITIAL_CLASSIFICATION);
-            if (isNotBlank(initialClassificationId))
-            {
-                String initialClassificationDisplayLabel = getClassificationSchemeService().getClassificationLevelById(initialClassificationId).getDisplayLabel();
-                addTransientPropertyField(form, TRANSIENT_INITIAL_CLASSIFICATION, DataTypeDefinition.TEXT, initialClassificationDisplayLabel);
-            }
-
-            String currentClassificationId = (String) nodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_CURRENT_CLASSIFICATION);
-            if (isNotBlank(currentClassificationId))
-            {
-                String currentClassificationDisplayLabel = getClassificationSchemeService().getClassificationLevelById(currentClassificationId).getDisplayLabel();
-                addTransientPropertyField(form, TRANSIENT_CURRENT_CLASSIFICATION, DataTypeDefinition.TEXT, currentClassificationDisplayLabel);
-            }
-
-            @SuppressWarnings("unchecked")
-            List<String> classificationReasons = (List<String>) nodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_CLASSIFICATION_REASONS);
-            if (classificationReasons != null && !classificationReasons.isEmpty())
-            {
-                List<String> classificationReasonLabels = new ArrayList<>();
-                int size = classificationReasons.size();
-                for (int i = 0; i < size; i++)
-                {
-                    String id = classificationReasons.get(i);
-                    String displayLabel = getClassificationSchemeService().getClassificationReasonById(id).getDisplayLabel();
-                    classificationReasonLabels.add(id + ": " + displayLabel + (i < size - 1 ? "|": ""));
-                }
-                addTransientPropertyField(form, TRANSIENT_CLASSIFICATION_REASON_LABELS, DataTypeDefinition.TEXT, classificationReasonLabels);
-            }
-
-            @SuppressWarnings("unchecked")
-            List<String> declassificationExemptions = (List<String>) nodeService.getProperty(nodeRef, ClassifiedContentModel.PROP_DECLASSIFICATION_EXEMPTIONS);
-            if (declassificationExemptions != null && !declassificationExemptions.isEmpty())
-            {
-                List<String> declassificationExemptionLabels = new ArrayList<>();
-                int size = declassificationExemptions.size();
-                for (int i = 0; i < size; i++)
-                {
-                    String id = declassificationExemptions.get(i);
-                    String displayLabel = getClassificationSchemeService().getExemptionCategoryById(id).getDisplayLabel();
-                    declassificationExemptionLabels.add(id + ": " + displayLabel + (i < size - 1 ? "|": ""));
-                }
-                addTransientPropertyField(form, TRANSIENT_DECLASSIFICATION_EXEMPTIONS, DataTypeDefinition.TEXT, declassificationExemptionLabels);
             }
         }
     }

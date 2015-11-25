@@ -47,7 +47,6 @@ public class BootstrapImporterModuleComponentUnitTest extends BaseUnitTest
     @Mock(name="importer")                                  private ImporterBootstrap                         mockedImporter;
     @Mock(name="modulePatchExecuter")                       private ModulePatchExecuter                       mockedModulePatchExecuter;
     @Mock(name="recordContributorsGroupBootstrapComponent") private RecordContributorsGroupBootstrapComponent mockedRecordContributorsGroupBootstrapComponent;
-    @Mock(name="clearanceForAdminBootstrapComponent")       private ClearanceForAdminBootstrapComponent       mockedClearanceForAdminBootstrapComponent;
 
     /** importer */
     @InjectMocks

@@ -280,11 +280,12 @@ public class SitesImpl implements Sites
     	if(siteInfo == null)
     	{
     		// site does not exist
+            logger.debug("Site does not exist: "+siteId);            
     		throw new RelationshipResourceNotFoundException(personId, siteId);
     	}
     	siteId = siteInfo.getShortName();
 
-        logger.debug("Getting member role for "+siteId+ " person "+personId);
+		logger.debug("Getting member role for "+siteId+ " person "+personId);
     	String role = siteService.getMembersRole(siteId, personId);
     	if(role != null)
     	{
@@ -306,6 +307,7 @@ public class SitesImpl implements Sites
     	if(siteInfo == null)
     	{
     		// site does not exist
+			logger.debug("addSiteMember:  site does not exist "+siteId+ " person "+personId);
     		throw new EntityNotFoundException(siteId);
     	}
     	// set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
@@ -314,16 +316,19 @@ public class SitesImpl implements Sites
     	String role = siteMember.getRole();
     	if(role == null)
     	{
+			logger.debug("addSiteMember:  Must provide a role "+siteMember);
     		throw new InvalidArgumentException("Must provide a role");
     	}
     	
     	if(siteService.isMember(siteId, personId))
     	{
+			logger.debug("addSiteMember:  "+ personId + " is already a member of site " + siteId);
     		throw new ConstraintViolatedException(personId + " is already a member of site " + siteId);
     	}
 
     	if(!siteService.canAddMember(siteId, personId, role))
     	{
+			logger.debug("addSiteMember:  PermissionDeniedException "+siteId+ " person "+personId+ " role "+role);
     		throw new PermissionDeniedException();
     	}
 
@@ -333,6 +338,7 @@ public class SitesImpl implements Sites
         }
         catch (UnknownAuthorityException e)
         {
+			logger.debug("addSiteMember:  UnknownAuthorityException "+siteId+ " person "+personId+ " role "+role);
             throw new InvalidArgumentException("Unknown role '" + role + "'");
         }
 		return siteMember;

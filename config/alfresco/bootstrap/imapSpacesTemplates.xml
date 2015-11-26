@@ -2,7 +2,7 @@
 <view:view xmlns:view="http://www.alfresco.org/view/repository/1.0"
     xmlns:app="http://www.alfresco.org/model/application/1.0"
     xmlns:sys="http://www.alfresco.org/model/system/1.0"
-    xmlns:cm="http://www.alfresco.org/model/content/1.0"> 
+    xmlns:cm="http://www.alfresco.org/model/content/1.0">
 
     <!-- US locale -->
     <cm:content view:childName="cm:emailbody_textplain_share.ftl">
@@ -13,7 +13,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for share - ${version.default}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_textplain.description} - ${version.default}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
             <cm:title>emailbody_textplain_share.ftl</cm:title>
             <cm:author></cm:author>
@@ -21,7 +21,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_textplain_alfresco.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -30,7 +30,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for explorer - ${version.default}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_textplain.description} - ${version.default}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
             <cm:title>emailbody_textplain_alfresco.ftl</cm:title>
             <cm:author></cm:author>
@@ -38,7 +38,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_alfresco.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -47,7 +47,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for explorer - ${version.default}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_texthtml.description} - ${version.default}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
             <cm:title>emailbody_texthtml_alfresco.ftl</cm:title>
             <cm:author></cm:author>
@@ -55,7 +55,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_share.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -64,7 +64,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for share - ${version.default}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_texthtml.description} - ${version.default}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=en_US_</cm:content>
             <cm:title>emailbody_texthtml_share.ftl</cm:title>
             <cm:author></cm:author>
@@ -72,7 +72,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
 
     <!-- DE locale -->
     <cm:content view:childName="cm:emailbody_textplain_share_de.ftl">
@@ -83,7 +83,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for share - ${version.german}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_textplain.description} - ${version.german}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_de.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=de</cm:content>
             <cm:title>emailbody_textplain_share_de.ftl</cm:title>
             <cm:author></cm:author>
@@ -91,7 +91,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_textplain_alfresco_de.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -100,7 +100,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for explorer - ${version.german}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_textplain.description} - ${version.german}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_de.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=de</cm:content>
             <cm:title>emailbody_textplain_alfresco_de.ftl</cm:title>
             <cm:author></cm:author>
@@ -108,7 +108,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_alfresco_de.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -117,7 +117,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for explorer - ${version.german}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_texthtml.description} - ${version.german}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_de.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=de</cm:content>
             <cm:title>emailbody_texthtml_alfresco_de.ftl</cm:title>
             <cm:author></cm:author>
@@ -125,7 +125,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_share_de.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -134,7 +134,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for share - ${version.german}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_texthtml.description} - ${version.german}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_de.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=de</cm:content>
             <cm:title>emailbody_texthtml_share_de.ftl</cm:title>
             <cm:author></cm:author>
@@ -142,10 +142,10 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-     
-    
+
+
     <!-- ES locale -->
-      <cm:content view:childName="cm:emailbody_textplain_share_es.ftl">
+    <cm:content view:childName="cm:emailbody_textplain_share_es.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
             <cm:author></cm:author>
@@ -153,7 +153,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for share - ${version.spanish}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_textplain.description} - ${version.spanish}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_es.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=es</cm:content>
             <cm:title>emailbody_textplain_share_es.ftl</cm:title>
             <cm:author></cm:author>
@@ -161,7 +161,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_textplain_alfresco_es.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -170,7 +170,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for explorer - ${version.spanish}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_textplain.description} - ${version.spanish}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_es.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=es</cm:content>
             <cm:title>emailbody_textplain_alfresco_es.ftl</cm:title>
             <cm:author></cm:author>
@@ -178,7 +178,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_alfresco_es.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -187,7 +187,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for explorer - ${version.spanish}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_texthtml.description} - ${version.spanish}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_es.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=es</cm:content>
             <cm:title>emailbody_texthtml_alfresco_es.ftl</cm:title>
             <cm:author></cm:author>
@@ -195,7 +195,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_share_es.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -204,7 +204,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for share - ${version.spanish}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_texthtml.description} - ${version.spanish}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_es.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=es</cm:content>
             <cm:title>emailbody_texthtml_share_es.ftl</cm:title>
             <cm:author></cm:author>
@@ -212,8 +212,8 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
-    
+
+
     <!-- FR locale -->
     <cm:content view:childName="cm:emailbody_textplain_share_fr.ftl">
         <view:aspects>
@@ -223,7 +223,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for share - ${version.french}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_textplain.description} - ${version.french}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_fr.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=fr</cm:content>
             <cm:title>emailbody_textplain_share_fr.ftl</cm:title>
             <cm:author></cm:author>
@@ -231,7 +231,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_textplain_alfresco_fr.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -240,7 +240,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for explorer - ${version.french}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_textplain.description} - ${version.french}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_fr.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=fr</cm:content>
             <cm:title>emailbody_textplain_alfresco_fr.ftl</cm:title>
             <cm:author></cm:author>
@@ -248,7 +248,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_alfresco_fr.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -257,7 +257,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for explorer - ${version.french}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_texthtml.description} - ${version.french}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_fr.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=fr</cm:content>
             <cm:title>emailbody_texthtml_alfresco_fr.ftl</cm:title>
             <cm:author></cm:author>
@@ -265,7 +265,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_share_fr.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -274,7 +274,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for share - ${version.french}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_texthtml.description} - ${version.french}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_fr.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=fr</cm:content>
             <cm:title>emailbody_texthtml_share_fr.ftl</cm:title>
             <cm:author></cm:author>
@@ -282,10 +282,10 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-  
-    
+
+
     <!-- IT locale -->
-   <cm:content view:childName="cm:emailbody_textplain_share_it.ftl">
+    <cm:content view:childName="cm:emailbody_textplain_share_it.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
             <cm:author></cm:author>
@@ -293,7 +293,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for share - ${version.italian}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_textplain.description} - ${version.italian}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_it.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=it</cm:content>
             <cm:title>emailbody_textplain_share_it.ftl</cm:title>
             <cm:author></cm:author>
@@ -301,7 +301,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_textplain_alfresco_it.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -310,7 +310,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for explorer - ${version.italian}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_textplain.description} - ${version.italian}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_it.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=it</cm:content>
             <cm:title>emailbody_textplain_alfresco_it.ftl</cm:title>
             <cm:author></cm:author>
@@ -318,7 +318,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_alfresco_it.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -327,7 +327,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for explorer - ${version.italian}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_texthtml.description} - ${version.italian}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_it.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=it</cm:content>
             <cm:title>emailbody_texthtml_alfresco_it.ftl</cm:title>
             <cm:author></cm:author>
@@ -335,7 +335,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_share_it.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -344,7 +344,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for share - ${version.italian}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_texthtml.description} - ${version.italian}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_it.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=it</cm:content>
             <cm:title>emailbody_texthtml_share_it.ftl</cm:title>
             <cm:author></cm:author>
@@ -352,10 +352,10 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
- 
+
 
     <!-- JA locale -->
-   <cm:content view:childName="cm:emailbody_textplain_share_ja.ftl">
+    <cm:content view:childName="cm:emailbody_textplain_share_ja.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
             <cm:author></cm:author>
@@ -363,7 +363,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for share - ${version.japanese}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_textplain.description} - ${version.japanese}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_ja.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=ja</cm:content>
             <cm:title>emailbody_textplain_share_ja.ftl</cm:title>
             <cm:author></cm:author>
@@ -371,7 +371,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_textplain_alfresco_ja.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -380,7 +380,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for explorer - ${version.japanese}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_textplain.description} - ${version.japanese}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_ja.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=ja</cm:content>
             <cm:title>emailbody_textplain_alfresco_ja.ftl</cm:title>
             <cm:author></cm:author>
@@ -388,7 +388,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_alfresco_ja.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -397,7 +397,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for explorer - ${version.japanese}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_texthtml.description} - ${version.japanese}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_ja.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=ja</cm:content>
             <cm:title>emailbody_texthtml_alfresco_ja.ftl</cm:title>
             <cm:author></cm:author>
@@ -405,7 +405,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_share_ja.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -414,7 +414,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for share - ${version.japanese}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_texthtml.description} - ${version.japanese}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_ja.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=ja</cm:content>
             <cm:title>emailbody_texthtml_share_ja.ftl</cm:title>
             <cm:author></cm:author>
@@ -422,9 +422,10 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
- 
-    <!-- NL locale -->
-   <cm:content view:childName="cm:emailbody_textplain_share_nl.ftl">
+
+
+    <!-- NB locale -->
+    <cm:content view:childName="cm:emailbody_textplain_share_nb.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
             <cm:author></cm:author>
@@ -432,7 +433,77 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for share - ${version.dutch}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_textplain.description} - ${version.norwegian_bokmal}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_nb.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=nb</cm:content>
+            <cm:title>emailbody_textplain_share_nb.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_textplain_share_nb.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+
+    <cm:content view:childName="cm:emailbody_textplain_alfresco_nb.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_textplain.description} - ${version.norwegian_bokmal}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_nb.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=nb</cm:content>
+            <cm:title>emailbody_textplain_alfresco_nb.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_textplain_alfresco_nb.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+
+    <cm:content view:childName="cm:emailbody_texthtml_alfresco_nb.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_texthtml.description} - ${version.norwegian_bokmal}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_nb.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=nb</cm:content>
+            <cm:title>emailbody_texthtml_alfresco_nb.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_texthtml_alfresco_nb.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+
+    <cm:content view:childName="cm:emailbody_texthtml_share_nb.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.share.emailbody_texthtml.description} - ${version.norwegian_bokmal}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_nb.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=nb</cm:content>
+            <cm:title>emailbody_texthtml_share_nb.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_texthtml_share_nb.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+
+
+    <!-- NL locale -->
+    <cm:content view:childName="cm:emailbody_textplain_share_nl.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.share.emailbody_textplain.description} - ${version.dutch}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_nl.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=nl</cm:content>
             <cm:title>emailbody_textplain_share_nl.ftl</cm:title>
             <cm:author></cm:author>
@@ -440,7 +511,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_textplain_alfresco_nl.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -449,7 +520,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for explorer - ${version.dutch}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_textplain.description} - ${version.dutch}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_nl.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=nl</cm:content>
             <cm:title>emailbody_textplain_alfresco_nl.ftl</cm:title>
             <cm:author></cm:author>
@@ -457,7 +528,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_alfresco_nl.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -466,7 +537,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for explorer - ${version.dutch}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_texthtml.description} - ${version.dutch}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_nl.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=nl</cm:content>
             <cm:title>emailbody_texthtml_alfresco_nl.ftl</cm:title>
             <cm:author></cm:author>
@@ -474,7 +545,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_share_nl.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -483,7 +554,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for share - ${version.dutch}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_texthtml.description} - ${version.dutch}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_nl.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=nl</cm:content>
             <cm:title>emailbody_texthtml_share_nl.ftl</cm:title>
             <cm:author></cm:author>
@@ -492,8 +563,9 @@
         <view:associations></view:associations>
     </cm:content>
 
-    <!-- RU locale -->
-   <cm:content view:childName="cm:emailbody_textplain_share_ru.ftl">
+
+    <!-- pt_BR locale -->
+    <cm:content view:childName="cm:emailbody_textplain_share_pt_BR.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
             <cm:author></cm:author>
@@ -501,7 +573,77 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for share - ${version.russian}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_textplain.description} - ${version.brazilian_portuguese}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_pt_BR.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=pt_BR</cm:content>
+            <cm:title>emailbody_textplain_share_pt_BR.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_textplain_share_pt_BR.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+
+    <cm:content view:childName="cm:emailbody_textplain_alfresco_pt_BR.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_textplain.description} - ${version.brazilian_portuguese}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_pt_BR.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=pt_BR</cm:content>
+            <cm:title>emailbody_textplain_alfresco_pt_BR.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_textplain_alfresco_pt_BR.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+
+    <cm:content view:childName="cm:emailbody_texthtml_alfresco_pt_BR.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_texthtml.description} - ${version.brazilian_portuguese}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_pt_BR.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=pt_BR</cm:content>
+            <cm:title>emailbody_texthtml_alfresco_pt_BR.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_texthtml_alfresco_pt_BR.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+
+    <cm:content view:childName="cm:emailbody_texthtml_share_pt_BR.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.share.emailbody_texthtml.description} - ${version.brazilian_portuguese}</cm:description>
+            <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_pt_BR.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=pt_BR</cm:content>
+            <cm:title>emailbody_texthtml_share_pt_BR.ftl</cm:title>
+            <cm:author></cm:author>
+            <cm:name>emailbody_texthtml_share_pt_BR.ftl</cm:name>
+        </view:properties>
+        <view:associations></view:associations>
+    </cm:content>
+
+
+    <!-- RU locale -->
+    <cm:content view:childName="cm:emailbody_textplain_share_ru.ftl">
+        <view:aspects>
+            <cm:titled></cm:titled>
+            <cm:author></cm:author>
+            <app:inlineeditable></app:inlineeditable>
+        </view:aspects>
+        <view:properties>
+            <app:editInline>true</app:editInline>
+            <cm:description>${spaces.imap_templates.share.emailbody_textplain.description} - ${version.russian}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_ru.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=ru</cm:content>
             <cm:title>emailbody_textplain_share_ru.ftl</cm:title>
             <cm:author></cm:author>
@@ -509,7 +651,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_textplain_alfresco_ru.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -518,7 +660,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for explorer - ${version.russian}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_textplain.description} - ${version.russian}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_ru.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=ru</cm:content>
             <cm:title>emailbody_textplain_alfresco_ru.ftl</cm:title>
             <cm:author></cm:author>
@@ -526,7 +668,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_alfresco_ru.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -535,7 +677,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for explorer - ${version.russian}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_texthtml.description} - ${version.russian}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_ru.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=ru</cm:content>
             <cm:title>emailbody_texthtml_alfresco_ru.ftl</cm:title>
             <cm:author></cm:author>
@@ -543,7 +685,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_share_ru.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -552,7 +694,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for share - ${version.russian}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_texthtml.description} - ${version.russian}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_ru.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=ru</cm:content>
             <cm:title>emailbody_texthtml_share_ru.ftl</cm:title>
             <cm:author></cm:author>
@@ -561,8 +703,9 @@
         <view:associations></view:associations>
     </cm:content>
 
+
     <!-- zh_CN locale -->
-   <cm:content view:childName="cm:emailbody_textplain_share_zh_CN.ftl">
+    <cm:content view:childName="cm:emailbody_textplain_share_zh_CN.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
             <cm:author></cm:author>
@@ -570,7 +713,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for share - ${version.chinese}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_textplain.description} - ${version.chinese}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_share_zh_CN.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=zh_CN</cm:content>
             <cm:title>emailbody_textplain_share_zh_CN.ftl</cm:title>
             <cm:author></cm:author>
@@ -578,7 +721,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_textplain_alfresco_zh_CN.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -587,7 +730,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_textplain.description} for explorer - ${version.chinese}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_textplain.description} - ${version.chinese}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_textplain_alfresco_zh_CN.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=zh_CN</cm:content>
             <cm:title>emailbody_textplain_alfresco_zh_CN.ftl</cm:title>
             <cm:author></cm:author>
@@ -595,7 +738,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_alfresco_zh_CN.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -604,7 +747,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for explorer - ${version.chinese}</cm:description>
+            <cm:description>${spaces.imap_templates.alfresco.emailbody_texthtml.description} - ${version.chinese}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_alfresco_zh_CN.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=zh_CN</cm:content>
             <cm:title>emailbody_texthtml_alfresco_zh_CN.ftl</cm:title>
             <cm:author></cm:author>
@@ -612,7 +755,7 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-    
+
     <cm:content view:childName="cm:emailbody_texthtml_share_zh_CN.ftl">
         <view:aspects>
             <cm:titled></cm:titled>
@@ -621,7 +764,7 @@
         </view:aspects>
         <view:properties>
             <app:editInline>true</app:editInline>
-            <cm:description>${spaces.imap_templates.emailbody_texthtml.description} for share - ${version.chinese}</cm:description>
+            <cm:description>${spaces.imap_templates.share.emailbody_texthtml.description} - ${version.chinese}</cm:description>
             <cm:content>contentUrl=classpath:alfresco/imap/imapSpacesTemplates/emailbody_texthtml_share_zh_CN.ftl|mimetype=text/plain|size=|encoding=UTF-8|locale=zh_CN</cm:content>
             <cm:title>emailbody_texthtml_share_zh_CN.ftl</cm:title>
             <cm:author></cm:author>
@@ -629,5 +772,5 @@
         </view:properties>
         <view:associations></view:associations>
     </cm:content>
-	
+
  </view:view>

@@ -554,10 +554,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
         }
 
-        if (logger.isDebugEnabled())
-        {
-            logger.debug("getChildren: " + list.size() + " in " + (System.currentTimeMillis() - start) + " msecs");
-        }
+        logGetObjectsCall("getChildren", start, folderId, list.size(), filter, includeAllowableActions, includeRelationships,
+                renditionFilter, includePathSegment, extension, skipCount, maxItems, orderBy, null);
 
         return result;
     }
@@ -568,6 +566,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships,
             String renditionFilter, Boolean includePathSegment, ExtensionsData extension)
     {
+        long start = System.currentTimeMillis();
+
         checkRepositoryId(repositoryId);
 
         List<ObjectInFolderContainer> result = new ArrayList<ObjectInFolderContainer>();
@@ -580,6 +580,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, false,
                 result);
 
+        logGetObjectsCall("getDescendants", start, folderId, countDescendantsTree(result), filter, includeAllowableActions, includeRelationships,
+                renditionFilter, includePathSegment, extension, null, null, null, depth);
+
         return result;
     }
 
@@ -589,6 +592,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships,
             String renditionFilter, Boolean includePathSegment, ExtensionsData extension)
     {
+        long start = System.currentTimeMillis();
+
         checkRepositoryId(repositoryId);
 
         List<ObjectInFolderContainer> result = new ArrayList<ObjectInFolderContainer>();
@@ -600,7 +605,87 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 filter, includeAllowableActions, includeRelationships, renditionFilter, includePathSegment, true,
                 result);
 
+        logGetObjectsCall("getFolderTree", start, folderId, countDescendantsTree(result), filter, includeAllowableActions, includeRelationships,
+                renditionFilter, includePathSegment, extension, null, null, null, depth);
+
         return result;
+    }
+
+    protected void logGetObjectsCall(String methodName, long start, String folderId, int itemCount,
+                                     String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships,
+                                     String renditionFilter, Boolean includePathSegment, ExtensionsData extensionsData,
+                                     BigInteger skipCount, BigInteger maxItems, String orderBy, BigInteger depth)
+    {
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(methodName).append(": ").append(folderId).append(" - ").append(itemCount)
+                    .append(" in ").append(System.currentTimeMillis()-start).append(" ms")
+                    .append(" [includeAllowableActions=").append(includeAllowableActions)
+                    .append(",includeRelationships=").append(includeRelationships).append(",renditionFilter=").append(renditionFilter);
+
+            if (includePathSegment != null) {
+                sb.append((methodName.equals("getObjectParents") ? ",includeRelativePathSegment=" : ",includePathSegment="))
+                        .append(includePathSegment);
+            }
+
+            if (filter != null) { sb.append(",filter=").append(filter); }
+            if (skipCount != null) { sb.append(",skipCount=").append(skipCount); }
+            if (maxItems != null) { sb.append(",maxItems=").append(maxItems); }
+            if (orderBy != null) { sb.append(",orderBy=").append(orderBy); }
+            if (depth != null) { sb.append(",depth=").append(depth); }
+            if (extensionsData != null) { sb.append(",extensionsData=").append(extensionsData); }
+
+            sb.append("]");
+
+            logger.debug(sb.toString());
+        }
+        else if (logger.isInfoEnabled())
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(methodName).append(": ").append(folderId).append(" - ").append(itemCount)
+                    .append(" in ").append(System.currentTimeMillis()-start).append(" ms");
+
+            logger.info(sb.toString());
+        }
+    }
+
+    private int countDescendantsTree(List<ObjectInFolderContainer> tree) {
+        int c = tree.size();
+        for (ObjectInFolderContainer o : tree) {
+            c += countDescendantsTree(o.getChildren());
+        }
+        return c;
+    }
+
+    protected void logGetObjectCall(String methodName, long start, String idOrPath,
+                                    String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships,
+                                    String renditionFilter, Boolean includePolicyIds, Boolean includeAcl,
+                                    Boolean isObjectInfoRequired, ExtensionsData extensionsData)
+    {
+        if (logger.isDebugEnabled())
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(methodName).append(": ").append(idOrPath).append(" in ").append(System.currentTimeMillis()-start).append(" ms")
+                    .append(" [includeAllowableActions=").append(includeAllowableActions)
+                    .append(",includeRelationships=").append(includeRelationships).append(",renditionFilter=").append(renditionFilter)
+                    .append(",includePolicyIds=").append(includePolicyIds).append(",includeAcl=").append(includeAcl)
+                    .append(",isObjectInfoRequired=").append(isObjectInfoRequired);
+
+            if (filter != null) { sb.append(",filter=").append(filter); }
+            if (extensionsData != null) { sb.append(",extensionsData=").append(extensionsData); }
+
+            sb.append("]");
+
+            logger.debug(sb.toString());
+        }
+        else if (logger.isInfoEnabled())
+        {
+            StringBuilder sb = new StringBuilder();
+            sb.append(methodName).append(": ").append(idOrPath).append(" in ").append(System.currentTimeMillis()-start).append(" ms");
+
+            logger.info(sb.toString());
+        }
     }
 
     private void getDescendantsTree(
@@ -733,6 +818,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             Boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
             Boolean includeRelativePathSegment, ExtensionsData extension)
     {
+        long start = System.currentTimeMillis();
+
         checkRepositoryId(repositoryId);
 
         List<ObjectParentData> result = new ArrayList<ObjectParentData>();
@@ -803,6 +890,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
         }
 
+        logGetObjectsCall("getObjectParents", start, objectId, result.size(), filter, includeAllowableActions, includeRelationships,
+                renditionFilter, includeRelativePathSegment, extension, null, null, null, null);
+
         return result;
     }
 
@@ -812,6 +902,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             Boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
             BigInteger maxItems, BigInteger skipCount, ExtensionsData extension)
     {
+        long start = System.currentTimeMillis();
+
         checkRepositoryId(repositoryId);
 
         // convert BigIntegers to int
@@ -958,6 +1050,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         // has more ?
         result.setHasMoreItems(nodeRefs.size() - skip > list.size());
+
+        logGetObjectsCall("getCheckedOutDocs", start, folderId, list.size(), filter, includeAllowableActions, includeRelationships,
+                renditionFilter, null, extension, skipCount, maxItems, orderBy, null);
 
         return result;
     }
@@ -1708,6 +1803,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             IncludeRelationships includeRelationships, String renditionFilter, Boolean includePolicyIds,
             Boolean includeAcl, ExtensionsData extension)
     {
+    	long start = System.currentTimeMillis();
+    	
         checkRepositoryId(repositoryId);
 
         // what kind of object is it?
@@ -1723,6 +1820,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             getObjectInfo(repositoryId, info.getObjectId(), includeRelationships);
         }
+
+        logGetObjectCall("getObject", start, objectId, filter, includeAllowableActions, includeRelationships,
+                renditionFilter, includePolicyIds, includeAcl, isObjectInfoRequired, extension);
 
         return object;
     }
@@ -1920,15 +2020,21 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             IncludeRelationships includeRelationships, String renditionFilter, Boolean includePolicyIds,
             Boolean includeAcl, ExtensionsData extension)
     {
+        long start = System.currentTimeMillis();
+
+        boolean isObjectInfoRequired = false;
+
         checkRepositoryId(repositoryId);
 
         // start at the root node
         NodeRef rootNodeRef = connector.getRootNodeRef();
 
+        ObjectData object;
+
         if (path.equals("/"))
         {
-            return connector.createCMISObject(createNodeInfo(rootNodeRef), filter, includeAllowableActions,
-                    includeRelationships, renditionFilter, includePolicyIds, includeAcl);
+            object = connector.createCMISObject(createNodeInfo(rootNodeRef), filter, includeAllowableActions,
+                                                includeRelationships, renditionFilter, includePolicyIds, includeAcl);
         }
         else
         {
@@ -1939,30 +2045,34 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                         rootNodeRef,
                         Arrays.asList(path.substring(1).split("/")));
 
-                if(connector.filter(fileInfo.getNodeRef()))
+                if (connector.filter(fileInfo.getNodeRef()))
                 {
                     throw new CmisObjectNotFoundException("Object not found: " + path);
                 }
 
                 CMISNodeInfo info = createNodeInfo(fileInfo.getNodeRef());
 
-                ObjectData object = connector.createCMISObject(
+                object = connector.createCMISObject(
                         info, fileInfo, filter, includeAllowableActions,
                         includeRelationships, renditionFilter, includePolicyIds, includeAcl);
 
-            	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+                isObjectInfoRequired = getContext().isObjectInfoRequired();
                 if (isObjectInfoRequired)
                 {
                     getObjectInfo(repositoryId, info.getObjectId(), includeRelationships);
                 }
 
-                return object;
             }
             catch (FileNotFoundException e)
             {
                 throw new CmisObjectNotFoundException("Object not found: " + path);
             }
         }
+
+        logGetObjectCall("getObjectByPath", start, path, filter, includeAllowableActions, includeRelationships,
+                renditionFilter, includePolicyIds, includeAcl, isObjectInfoRequired, extension);
+
+        return object;
     }
 
     @Override
@@ -2276,6 +2386,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             Boolean major, String filter, Boolean includeAllowableActions, IncludeRelationships includeRelationships,
             String renditionFilter, Boolean includePolicyIds, Boolean includeAcl, ExtensionsData extension)
     {
+        long start = System.currentTimeMillis();
+
         checkRepositoryId(repositoryId);
 
         if (objectId != null)
@@ -2297,6 +2409,12 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             getObjectInfo(repositoryId, info.getObjectId(), includeRelationships);
         }
+
+        StringBuilder sb = new StringBuilder();
+        sb.append(objectId).append("-").append(versionSeriesId);
+        
+        logGetObjectCall("getObjectOfLatestVersion", start, sb.toString(), filter, includeAllowableActions, includeRelationships,
+                renditionFilter, includePolicyIds, includeAcl, isObjectInfoRequired, extension);
 
         return object;
     }

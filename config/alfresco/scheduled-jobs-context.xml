@@ -299,4 +299,32 @@
         <property name="startDelayMinutes" value="${system.cronJob.startDelayMinutes}" />
     </bean>
     
+    
+    <!-- Add Unmovable aspect to site patch -->
+    <bean id="patchAddUnmovableAspectJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.admin.patch.AsynchronousPatch$AsynchronousPatchJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="asynchronousPatch">
+                    <ref bean="patch.addUnmovableAspect" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    <bean id="patchAddUnmovableAspectTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail">
+            <ref bean="patchAddUnmovableAspectJobDetail" />
+        </property>
+        <property name="scheduler">
+            <ref bean="schedulerFactory" />
+        </property>
+        <property name="cronExpression">
+            <value>${system.patch.addUnmovableAspect.cronExpression}</value>
+        </property>
+        <property name="startDelayMinutes">
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
+    </bean>
 </beans>

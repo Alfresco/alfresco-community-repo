@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -183,6 +183,10 @@ public class PatchServiceImpl implements PatchService
                 // go through all the patches and apply them where necessary        
                 for (Patch patch : sortedPatches)
                 {
+                    if(patch.isDeferred())
+                    {
+                        continue;
+                    }
                     // apply the patch
                     success = applyPatchAndDependencies(patch, appliedPatchesById);
                     if (!success)
@@ -284,9 +288,9 @@ public class PatchServiceImpl implements PatchService
         AppliedPatch appliedPatch = appliedPatchesById.get(id); 
         if (appliedPatch != null && appliedPatch.getSucceeded())
         {
-            if (appliedPatch.getWasExecuted() && appliedPatch.getSucceeded())
+            if (appliedPatch.getWasExecuted())
             {
-                // It was sucessfully executed
+                // It was successfully executed
                 return true;
             }
             // We give the patch another chance
@@ -549,6 +553,7 @@ public class PatchServiceImpl implements PatchService
                         patch.getId(),
                         I18NUtil.getMessage(patch.getDescription()));
                 logger.info(msg);
+                // the patch is executed regardless of the deferred flag value
                 report = (patch.isDeferred()) ? patch.applyAsync() : patch.apply();
                 state = STATE.APPLIED;
             }

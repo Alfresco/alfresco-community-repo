@@ -25,7 +25,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.admin.patch.AbstractPatch;
+import org.alfresco.repo.admin.patch.AsynchronousPatch;
 import org.alfresco.repo.batch.BatchProcessWorkProvider;
 import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -47,7 +47,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Alex Mukha
  *
  */
-public class AddUnmovableAspectToSitesPatch extends AbstractPatch
+public class AddUnmovableAspectToSitesPatch extends AsynchronousPatch
 {
     private static Log logger = LogFactory.getLog(AddUnmovableAspectToSitesPatch.class);
     private static final String MSG_SUCCESS = "patch.addUnmovableAspect.result";

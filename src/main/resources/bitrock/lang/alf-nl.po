@@ -556,6 +556,9 @@ msgstr "Kan de poort niet binden aan het opgegeven poortnummer. Selecteer een an
 msgid "Couldn’t bind to the given port number. Select another Tomcat Shutdown Port."
 msgstr "Kan de poort niet binden aan het opgegeven poortnummer. Selecteer een andere Tomcat Shutdown-poort."
 
+msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
+msgstr "Gebruik alleen cijfers in de poortconfiguratievelden. Andere tekens zijn niet toegestaan."
+
 msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
 msgstr "Kan de poort niet binden aan het opgegeven poortnummer. Selecteer een andere poort voor het SharePoint-protocol."
 

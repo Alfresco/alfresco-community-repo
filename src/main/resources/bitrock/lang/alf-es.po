@@ -116,7 +116,7 @@ msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "¿Desea instalar PostgreSQL como servicio de Windows?"
 
 msgid "Easy - Install using the default configuration."
-msgstr "Fácil: instalación con la configuración por defecto."
+msgstr "Fácil: instalación con la configuración predeterminada."
 
 msgid "Extension Files"
 msgstr "Ficheros de extensión"

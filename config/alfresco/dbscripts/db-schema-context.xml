@@ -87,6 +87,7 @@
                 <ref bean="patch.db-V5.0-upgrade-to-activiti-5.16.2" />
                 <ref bean="patch.db-V5.0-upgrade-to-activiti-5.16.4" />
                 <ref bean="patch.db-V5.0-remove-columns-after-upgrade-to-activiti-5.16.2" />
+                <ref bean="patch.db-V5.1-upgrade-to-activiti-5.19.0" />
             </list>
         </property>
     </bean>

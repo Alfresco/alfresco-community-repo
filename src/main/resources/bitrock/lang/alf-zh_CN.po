@@ -556,6 +556,9 @@ msgstr "无法捆绑到给定的端口号。请选择其他 Tomcat 服务器端�
 msgid "Couldn’t bind to the given port number. Select another Tomcat Shutdown Port."
 msgstr "无法捆绑到给定的端口号。请选择其他 Tomcat 关闭端口。"
 
+msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
+msgstr "端口配置字段中只能出现数字。 不允许出现其他字符。"
+
 msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
 msgstr "无法捆绑到给定的端口号。请选择其他 SharePoint 协议端口。"
 
@@ -658,5 +661,5 @@ msgstr "Solr 是一种开源的企业搜索平台，使用 Apache Lucene 作为�
 msgid "Unable to bind to the given port number."
 msgstr "无法绑定提供的服务器端口。"
 
-msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Please select another ${serverName} Server Port."
-msgstr "无法绑定提供的服务器端口。 此端口已被 ${process_binding_port} 进程使用。请选择其他 ${serverName} 服务器端口。"
+msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
+msgstr "无法绑定提供的服务器端口。此端口已被 ${process_binding_port} 进程使用。请选择其他 ${serverName} 服务器端口。"

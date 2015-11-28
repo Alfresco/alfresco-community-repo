@@ -103,7 +103,7 @@ public class JSONConversionComponentTest extends BaseRMTestCase
         public JSONObject run() throws Exception
         {
             String json = converter.toJSON(nodeRef, true);
-            System.out.println(json);
+            //System.out.println(json);
             return new JSONObject(json);
         }
 

@@ -437,7 +437,7 @@
          <artifactId>spring-webscripts</artifactId>
          <!--
             We are overriding a managed version of a dependency here.
-            This is need to be able to support different Alfresco
+            This is needed in order to support different Alfresco
             versions (i.e for the time being 5.0.2, 5.0.d and 5.1.b-EA)
          -->
          <version>${alfresco.spring.webscripts}</version>

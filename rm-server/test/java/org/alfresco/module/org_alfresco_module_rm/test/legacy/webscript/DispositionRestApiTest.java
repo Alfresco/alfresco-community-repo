@@ -428,7 +428,7 @@ public class DispositionRestApiTest extends BaseRMWebScriptTestCase implements R
         JSONObject periodProperties = data.getJSONObject("periodProperties");
         assertEquals(SERVICE_URL_PREFIX + GET_LIST_URL + "/periodproperties", periodProperties.getString("url"));
         items = periodProperties.getJSONArray("items");
-        assertEquals(5, items.length());
+        assertEquals(4, items.length());
         assertTrue(items.length() > 0);
         item = items.getJSONObject(0);
         assertTrue(item.length() == 2);

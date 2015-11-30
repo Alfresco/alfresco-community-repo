@@ -312,147 +312,116 @@ public class CIFSContentComparator implements ContentComparator
     // Comparator for MS PowerPoint
     private class PPTContentComparator implements ContentComparator
     {
-        
-@Override
-public boolean isContentEqual(ContentReader existingContent, File newFile)
-{
-    long fileSizesDifference = newFile.length() - existingContent.getSize();
-        
-    if(logger.isDebugEnabled())
-    {
-        logger.debug("comparing two powerpoint files size:" + existingContent.getSize() + ", and " + newFile.length());
-    }
-
-    File tpm1 = null;
-    File tpm2 = null;
-    InputStream leftIs = null;
-    try
-    {
-        if(fileSizesDifference != 0)
+                
+        @Override
+        public boolean isContentEqual(ContentReader existingContent, File newFile)
         {
-            // ALF-18793
-            // Experience has shown that the size of opened/closed file increases to 3072 bytes.
-            // (That occurs only in case if the file has been created on one MS PowerPoint instance and opened/closed on another
-            // due to change of lastEditUsername property (if they are different)).
-            if (fileSizesDifference > 3072 && fileSizesDifference < 0)
+            long fileSizesDifference = newFile.length() - existingContent.getSize();
+                
+            if(logger.isDebugEnabled())
             {
-                logger.debug("powerpoint files are different size");
-                // Different size
-                return false;
+                logger.debug("comparing two powerpoint files size:" + existingContent.getSize() + ", and " + newFile.length());
             }
 
-            Collection<String> excludes = new HashSet<String>();
-
-            leftIs = existingContent.getContentInputStream();
-            HSLFSlideShow slideShow1 = new HSLFSlideShow(leftIs);
-            HSLFSlideShow slideShow2 = new HSLFSlideShow(new FileInputStream(newFile));
-
-            String lastEditUsername1 = slideShow1.getCurrentUserAtom().getLastEditUsername();
-            String lastEditUsername2 = slideShow2.getCurrentUserAtom().getLastEditUsername();
-
-            if (lastEditUsername1.equals(lastEditUsername2))
-            {
-                logger.debug("powerpoint files are different size and same editor name");
-                // Different size
-                return false;
-            }
-            else
-            {
-                //make sure that nothing has been changed except lastEditUsername
-                tpm1 = TempFileProvider.createTempFile("CIFSContentComparator1", "ppt");
-                FileOutputStream os = new FileOutputStream(tpm1);
-                try
-                {
-                    slideShow1.write(os);
-                }
-                finally
-                {
-                    try
-                    {
-                        os.close();
-                    }
-                    catch (IOException ie)
-                    {
-                        // ignore
-                    }
-                }
-                tpm2 = TempFileProvider.createTempFile("CIFSContentComparator2", "ppt");
-                FileOutputStream os2 = new FileOutputStream(tpm2);
-                try
-                {
-                    slideShow2.write(os2);
-                }
-                finally
-                {
-                    try
-                    {
-                        os2.close();
-                    }
-                    catch (IOException ie)
-                    {
-                        // ignore
-                    }
-                }
-
-                NPOIFSFileSystem fs1 = new NPOIFSFileSystem(tpm1);
-                NPOIFSFileSystem fs2 = new NPOIFSFileSystem(tpm2);
-
-                return isContentIdentical(fs1, fs2, excludes);
-            }
-        
-        }
-
-        return true;
-    }
-    catch (ContentIOException ce)
-    {
-        logger.debug("Unable to compare contents", ce);
-        return false;
-    }
-    catch (IOException e)
-    {
-        logger.debug("Unable to compare contents", e);
-        return false;
-    }
-    finally
-    {
-        if(tpm1 != null)
-        {
-            try 
-            {
-                tpm1.delete();
-            }
-            catch (Exception e)
-            {
-                // ignore
-            }
-        }
-        if(tpm2 != null)
-        {
-            try 
-            {
-                tpm2.delete();
-            }
-            catch (Exception e)
-            {
-                // ignore
-            }
-        }
-        if(leftIs != null)
-        {
+            File tpm1 = null;
+            File tpm2 = null;
+            InputStream leftIs = null;
             try
             {
-                leftIs.close();
-            } 
+                if(fileSizesDifference != 0)
+                {
+                    // ALF-18793
+                    // Experience has shown that the size of opened/closed file increases to 3072 bytes.
+                    // (That occurs only in case if the file has been created on one MS PowerPoint instance and opened/closed on another
+                    // due to change of lastEditUsername property (if they are different)).
+                    if (fileSizesDifference > 3072 && fileSizesDifference < 0)
+                    {
+                        logger.debug("powerpoint files are different size");
+                        // Different size
+                        return false;
+                    }
+
+                    Collection<String> excludes = new HashSet<String>();
+
+                    leftIs = existingContent.getContentInputStream();
+                    HSLFSlideShow slideShow1 = new HSLFSlideShow(leftIs);
+                    HSLFSlideShow slideShow2 = new HSLFSlideShow(new FileInputStream(newFile));
+
+                    String lastEditUsername1 = slideShow1.getCurrentUserAtom().getLastEditUsername();
+                    String lastEditUsername2 = slideShow2.getCurrentUserAtom().getLastEditUsername();
+
+                    if (lastEditUsername1.equals(lastEditUsername2))
+                    {
+                        logger.debug("powerpoint files are different size");
+                        // Different size
+                        return false;
+                    }
+                    else
+                    {
+                        //make sure that nothing has been changed except lastEditUsername
+
+                        tpm1 = TempFileProvider.createTempFile("CIFSContentComparator1", "ppt");
+                        tpm2 = TempFileProvider.createTempFile("CIFSContentComparator2", "ppt");
+
+                        slideShow1.write(new FileOutputStream(tpm1));
+                        slideShow1.write(new FileOutputStream(tpm2));
+
+                        NPOIFSFileSystem fs1 = new NPOIFSFileSystem(tpm1);
+                        NPOIFSFileSystem fs2 = new NPOIFSFileSystem(tpm2);
+
+                        return isContentIdentical(fs1, fs2, excludes);
+                    }
+                
+                }
+
+                return true;
+            }
+            catch (ContentIOException ce)
+            {
+                logger.debug("Unable to compare contents", ce);
+                return false;
+            }
             catch (IOException e)
             {
-               // Ignore
+                logger.debug("Unable to compare contents", e);
+                return false;
+            }
+            finally
+            {
+            	if(tpm1 != null)
+            	{
+            		try 
+            		{
+            	        tpm1.delete();
+            		}
+            		catch (Exception e)
+            		{
+            			// ignore
+            		}
+            	}
+            	if(tpm2 != null)
+            	{
+            		try 
+            		{
+            		    tpm2.delete();
+        		    }
+        		    catch (Exception e)
+        		    {
+        			    // ignore
+        		    }
+            	}
+                if(leftIs != null)
+                {
+                    try
+                    {
+                        leftIs.close();
+                    } 
+                    catch (IOException e)
+                    {
+                       // Ignore
+                    }
+                }
             }
         }
-    }
-}
-     
-      
-          
     }
 }

@@ -107,16 +107,12 @@ public class Index extends AbstractDbObject
         if (!super.equals(obj)) return false;
         if (getClass() != obj.getClass()) return false;
         Index other = (Index) obj;
-        if (this.unique != other.unique) 
-        {
-            return false;
-        }
         if (this.columnNames == null)
         {
             if (other.columnNames != null) return false;
         }
         else if (!this.columnNames.equals(other.columnNames)) return false;
-        
+        if (this.unique != other.unique) return false;
         return true;
     }
 
@@ -140,16 +136,11 @@ public class Index extends AbstractDbObject
             }
             else
             {
-                // If one index is unique and the other is not then it is not a match
-                if (this.unique != other.unique) 
-                {
-                    return false;
-                }
-                
                 // The name may be different, but if it has the same parent table (see above)
                 // and indexes the same columns, then it is the same index.
                 return columnNames.equals(other.getColumnNames());
             }
+        
         }
         
         return false;

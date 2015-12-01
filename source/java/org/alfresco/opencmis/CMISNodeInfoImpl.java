@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -25,6 +25,7 @@ import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
@@ -36,7 +37,9 @@ import org.alfresco.opencmis.dictionary.RelationshipTypeDefintionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.version.Version2Model;
+import org.alfresco.repo.version.VersionBaseModel;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.repo.version.common.VersionUtil;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -56,7 +59,7 @@ import org.apache.chemistry.opencmis.commons.exceptions.CmisPermissionDeniedExce
  * CMIS representation of a node.
  * 
  * Tries to avoid getting the node's version history where possible (because it's not very performant).
- * 
+ *
  */
 public class CMISNodeInfoImpl implements CMISNodeInfo
 {
@@ -82,6 +85,9 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
     private Map<String, Serializable> properties;
     private List<CMISNodeInfo> parents;
 
+    private Map<QName,Serializable> nodeProps; // for nodeRef
+    private Set<QName> nodeAspects; // for nodeRef
+
     public CMISNodeInfoImpl()
     {
     }
@@ -94,13 +100,20 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         analyseObjectId();
     }
 
-    public CMISNodeInfoImpl(CMISConnector connector, NodeRef nodeRef, VersionHistory versionHistory)
+    public CMISNodeInfoImpl(CMISConnector connector, NodeRef nodeRef, QName nodeType, Map<QName,Serializable> nodeProps, VersionHistory versionHistory, boolean checkExists)
     {
         this.connector = connector;
         this.nodeRef = nodeRef;
         this.versionHistory = versionHistory;
 
-        analyseNodeRef();
+        if (nodeType != null)
+        {
+            determineType(nodeType);
+        }
+
+        this.nodeProps = nodeProps;
+
+        analyseNodeRef(checkExists);
     }
     
     public CMISNodeInfoImpl(CMISConnector connector, NodeRef nodeRef)
@@ -108,7 +121,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         this.connector = connector;
         this.nodeRef = nodeRef;
 
-        analyseNodeRef();
+        analyseNodeRef(true);
     }
 
     public CMISNodeInfoImpl(CMISConnector connector, AssociationRef associationRef)
@@ -134,13 +147,14 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             objectId = connector.constructObjectId(nodeRef, CMISConnector.UNVERSIONED_VERSION_LABEL);
             versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
             currentObjectId = objectId;
-            hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
+            hasPWC = isNodeCheckedOut();
         }
         else
         {
+            versionLabel = (String)getNodeProps().get(ContentModel.PROP_VERSION_LABEL);
+
             Version headVersion = versionHistory.getHeadVersion();
 
-            versionLabel = (String) connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
             objectId = connector.constructObjectId(headVersion.getVersionedNodeRef(), versionLabel);
             currentObjectId = connector.constructObjectId(headVersion.getVersionedNodeRef(), headVersion.getVersionLabel());
             currentNodeId = headVersion.getVersionedNodeRef().toString();
@@ -151,9 +165,9 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         }
     }
 
-    protected void analyseCurrentVersion(NodeRef nodeRef)
+    protected void analyseCurrentVersion()
     {
-        if(connector.getVersionService().isVersioned(nodeRef))
+        if (isNodeVersioned(nodeRef))
         {
             versionLabel = (String) connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL);
             if(versionLabel == null)
@@ -164,21 +178,21 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
             currentObjectId = objectId;
             currentNodeId = nodeRef.toString();
             objecVariant = CMISObjectVariant.CURRENT_VERSION;
-            hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
+            hasPWC = isNodeCheckedOut();
         }
         else
         {
-            setUnversioned(nodeRef);
+            setUnversioned();
         }
     }
     
-    protected void setUnversioned(NodeRef nodeRef)
+    protected void setUnversioned()
     {
         objecVariant = CMISObjectVariant.CURRENT_VERSION;
         objectId = connector.constructObjectId(nodeRef, CMISConnector.UNVERSIONED_VERSION_LABEL);
         versionLabel = CMISConnector.UNVERSIONED_VERSION_LABEL;
         currentObjectId = objectId; 
-        hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);		
+        hasPWC = isNodeCheckedOut();
     }
     
     protected void analyseObjectId()
@@ -252,7 +266,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         		}
 
         		// check PWC
-        		if (connector.getCheckOutCheckInService().isWorkingCopy(nodeRef))
+        		if (isNodeWorkingCopy())
         		{
         			NodeRef checkedOut = connector.getCheckOutCheckInService().getCheckedOut(nodeRef);
         			if(connector.filter(nodeRef))
@@ -318,7 +332,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
         				objectId = connector.constructObjectId(objectId, versionLabel);
         				currentObjectId = objectId;
-        				hasPWC = connector.getCheckOutCheckInService().isCheckedOut(nodeRef);
+        				hasPWC = isNodeCheckedOut();
         			}
         			else
 	        		{
@@ -352,7 +366,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 	        	}
 	
 	        	// check version
-	        	if(!connector.getVersionService().isVersioned(nodeRef))
+	        	if(! isNodeVersioned(nodeRef))
 	        	{
 	        		// the node isn't versioned
 	        		if(connector.filter(nodeRef))
@@ -428,7 +442,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         }
     }
 
-    protected void analyseNodeRef()
+    protected void analyseNodeRef(boolean checkExists)
     {
         objectId = null;
         currentNodeId = nodeRef.toString();
@@ -437,7 +451,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         hasPWC = false;
 
         // check for existence
-        if (!connector.getNodeService().exists(nodeRef))
+        if (checkExists && (!connector.getNodeService().exists(nodeRef)))
         {
             objecVariant = CMISObjectVariant.NOT_EXISTING;
             return;
@@ -470,7 +484,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         }
         
         // check PWC
-        if (connector.getCheckOutCheckInService().isWorkingCopy(nodeRef))
+        if (isNodeWorkingCopy())
         {
             NodeRef checkedOut = connector.getCheckOutCheckInService().getCheckedOut(nodeRef);
             if (checkedOut == null)
@@ -491,15 +505,44 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         }
 
         // check version
-        if(connector.getVersionService().isAVersion(nodeRef))
+        if (isNodeAVersion(nodeRef))
         {
             analyseVersionNode();
         }
         else
         {
-            analyseCurrentVersion(nodeRef);
+            analyseCurrentVersion();
         }
+    }
 
+    private boolean isNodeWorkingCopy()
+    {
+        return getNodeAspects().contains(ContentModel.ASPECT_WORKING_COPY);
+    }
+
+    private boolean isNodeCheckedOut()
+    {
+        return getNodeAspects().contains(ContentModel.ASPECT_CHECKED_OUT);
+    }
+
+    private boolean isNodeAVersion(NodeRef nodeRef)
+    {
+        if(nodeRef.getStoreRef().getProtocol().equals(VersionBaseModel.STORE_PROTOCOL))
+        {
+            NodeRef realNodeRef = VersionUtil.convertNodeRef(nodeRef);
+            return connector.getVersionService().isAVersion(realNodeRef);
+        }
+        return getNodeAspects().contains(Version2Model.ASPECT_VERSION);
+    }
+
+    private boolean isNodeVersioned(NodeRef nodeRef)
+    {
+        if(nodeRef.getStoreRef().getProtocol().equals(VersionBaseModel.STORE_PROTOCOL))
+        {
+            NodeRef realNodeRef = VersionUtil.convertNodeRef(nodeRef);
+            return connector.getVersionService().isVersioned(realNodeRef);
+        }
+        return getNodeAspects().contains(ContentModel.ASPECT_VERSIONABLE);
     }
 
     protected void analyseAssociationRef()
@@ -520,7 +563,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         objectId = CMISConnector.ASSOC_ID_PREFIX + associationRef.getId();
     }
 
-    private void determineType()
+    private void determineType(QName nodeType)
     {
         type = null;
 
@@ -531,7 +574,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         
         if (nodeRef != null)
         {
-            QName typeQName = connector.getNodeService().getType(nodeRef);
+            QName typeQName = (nodeType != null ? nodeType : connector.getNodeService().getType(nodeRef));
             type = connector.getOpenCMISDictionaryService().findNodeType(typeQName);
         } else if (associationRef != null)
         {
@@ -694,7 +737,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
     {
         if (type == null)
         {
-            determineType();
+            determineType(null);
         }
 
         return type;
@@ -744,7 +787,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
                 name = associationRef.toString();
             } else
             {
-                Object nameObj = connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_NAME);
+                Object nameObj = getNodeProps().get(ContentModel.PROP_NAME);
                 name = (nameObj instanceof String ? (String) nameObj : "");
             }
         }
@@ -840,7 +883,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         // MNT-12680 we should return always creation date of original node
         if (isDocument() || isFolder())
         {
-            return connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_CREATED);
+            return getNodeProps().get(ContentModel.PROP_CREATED);
         }
         else
         {
@@ -854,14 +897,14 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         {
             if (isCurrentVersion() || isPWC())
             {
-                return connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+                return getNodeProps().get(ContentModel.PROP_MODIFIED);
             } else
             {
                 return getVersion().getVersionProperty(ContentModel.PROP_MODIFIED.getLocalName());
             }
         } else if (isFolder() || isItem())
         {
-            return connector.getNodeService().getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+            return getNodeProps().get(ContentModel.PROP_MODIFIED);
         } else
         {
             return DUMMY_DATE;
@@ -1060,5 +1103,23 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
         }
 
         return parents;
+    }
+
+    public Map<QName, Serializable> getNodeProps()
+    {
+        if ((nodeProps == null) && (nodeRef != null))
+        {
+            nodeProps = connector.getNodeService().getProperties(nodeRef);
+        }
+        return nodeProps;
+    }
+
+    public Set<QName> getNodeAspects()
+    {
+        if ((nodeAspects == null) && (nodeRef != null))
+        {
+            nodeAspects = connector.getNodeService().getAspects(nodeRef);
+        }
+        return nodeAspects;
     }
 }

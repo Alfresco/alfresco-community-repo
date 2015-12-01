@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -33,6 +34,7 @@ import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionD
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.disposition.property.DispositionProperty;
+import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.event.EventCompletionDetails;
 import org.alfresco.module.org_alfresco_module_rm.job.PublishUpdatesJobExecuter;
 import org.alfresco.module.org_alfresco_module_rm.job.publish.PublishExecutor;
@@ -65,7 +67,7 @@ public class DispositionServiceImplTest extends BaseRMTestCase
                 Collection<DispositionProperty> properties = dispositionService.getDispositionProperties();
 
                 assertNotNull(properties);
-                assertEquals(4, properties.size());
+                assertEquals(5, properties.size());
 
                 for (DispositionProperty property : properties)
                 {
@@ -823,6 +825,80 @@ public class DispositionServiceImplTest extends BaseRMTestCase
     // TODO List<QName> getDispositionPeriodProperties();
 
     /* === Issues === */
+
+    private NodeRef testRM263RecordCategory;
+    private DispositionSchedule testRM263DispositionSchedule;
+    private NodeRef testRM263Record;
+
+    /**
+     * https://issues.alfresco.com/jira/browse/RM-263
+     */
+    public void testRM_263() throws Exception
+    {
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                testRM263RecordCategory = filePlanService.createRecordCategory(rmContainer, "rm263");
+                testRM263DispositionSchedule = utils.createBasicDispositionSchedule(
+                        testRM263RecordCategory,
+                        "test",
+                        "test",
+                        true,
+                        false);
+
+                Map<QName, Serializable> adParams = new HashMap<QName, Serializable>(3);
+                adParams.put(PROP_DISPOSITION_ACTION_NAME, "cutoff");
+                adParams.put(PROP_DISPOSITION_DESCRIPTION, "test");
+                adParams.put(PROP_DISPOSITION_PERIOD, "week|1");
+                adParams.put(PROP_DISPOSITION_PERIOD_PROPERTY, DOD5015Model.PROP_PUBLICATION_DATE.toString());
+
+                dispositionService.addDispositionActionDefinition(testRM263DispositionSchedule, adParams);
+
+                NodeRef recordFolder = recordFolderService.createRecordFolder(testRM263RecordCategory, "testRM263RecordFolder");
+                testRM263Record = utils.createRecord(recordFolder, "testRM263Record", "testRM263Record");
+
+                return null;
+            }
+        });
+
+        doTestInTransaction(new Test<Void>()
+        {
+            private final QName PROP_SEARCH_ASOF = QName.createQName(RM_URI, "recordSearchDispositionActionAsOf");
+
+            @Override
+            public Void run() throws Exception
+            {
+                Date pubDate = (Date)nodeService.getProperty(testRM263Record, DOD5015Model.PROP_PUBLICATION_DATE);
+                assertNull(pubDate);
+                Date asOfDate = (Date)nodeService.getProperty(testRM263Record, PROP_SEARCH_ASOF);
+                assertNull(asOfDate);
+
+                DispositionAction da = dispositionService.getNextDispositionAction(testRM263Record);
+                assertNotNull(da);
+                assertNull(da.getAsOfDate());
+
+                //rma:recordSearchDispositionActionAsOf"
+                nodeService.setProperty(testRM263Record, DOD5015Model.PROP_PUBLICATION_DATE, new Date());
+
+                return null;
+            }
+
+            @Override
+            public void test(Void result) throws Exception
+            {
+                Date pubDate = (Date)nodeService.getProperty(testRM263Record, DOD5015Model.PROP_PUBLICATION_DATE);
+                assertNotNull(pubDate);
+                Date asOfDate = (Date)nodeService.getProperty(testRM263Record, PROP_SEARCH_ASOF);
+                assertNotNull(asOfDate);
+
+                DispositionAction da = dispositionService.getNextDispositionAction(testRM263Record);
+                assertNotNull(da);
+                assertNotNull(da.getAsOfDate());
+            }
+        });
+    }
 
     private NodeRef testRM386RecordCategory;
     private DispositionSchedule testRM386DispositionSchedule;

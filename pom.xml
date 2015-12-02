@@ -6,9 +6,9 @@
         <artifactId>alfresco-enterprise-packaging</artifactId>
         <version>5.1-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-one-platform-installer</artifactId>
-    <packaging>pom</packaging>
-    <name>Alfresco Platform Enterprise Installers</name>
+    <artifactId>alfresco-one-installer-resources</artifactId>
+    <packaging>jar</packaging>
+    <name>Alfresco One Installer Resources + Platform Installers</name>
 
     <properties>
         <binaries.folder>${user.home}/binaries</binaries.folder>
@@ -249,6 +249,12 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <artifactId>maven-dependency-plugin</artifactId>
@@ -266,6 +272,7 @@
                                     <artifactId>alfresco-installer-resources</artifactId>
                                     <version>${project.version}</version>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
+                                    <excludes>bitrock/bitrock/alfresco/shared/alfresco-global.properties</excludes>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
@@ -291,27 +298,6 @@
                                     <includes>solr4.war</includes>
                                 </artifactItem>
                             </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Override local resources - alfresco-global.properties, etc. -->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>override-local-resources</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <nonFilteredFileExtensions>
-                                <nonFilteredFileExtension>properties</nonFilteredFileExtension>
-                            </nonFilteredFileExtensions>
                         </configuration>
                     </execution>
                 </executions>

@@ -401,40 +401,12 @@ public class CIFSContentComparator implements ContentComparator
                     else
                     {
                         //make sure that nothing has been changed except lastEditUsername
+
                         tpm1 = TempFileProvider.createTempFile("CIFSContentComparator1", "ppt");
-                        FileOutputStream os = new FileOutputStream(tpm1);
-                        try
-                        {
-                            slideShow1.write(os);
-                        }
-                        finally
-                        {
-                            try
-                            {
-                            	os.close();
-                            }
-                            catch (IOException ie)
-                            {
-                                // ignore
-                            }
-                        }
                         tpm2 = TempFileProvider.createTempFile("CIFSContentComparator2", "ppt");
-                        FileOutputStream os2 = new FileOutputStream(tpm2);
-                        try
-                        {
-                            slideShow2.write(os2);
-                        }
-                        finally
-                        {
-                            try
-                            {
-                                os2.close();
-                            }
-                            catch (IOException ie)
-                            {
-                                // ignore
-                            }
-                        }
+
+                        slideShow1.write(new FileOutputStream(tpm1));
+                        slideShow1.write(new FileOutputStream(tpm2));
 
                         NPOIFSFileSystem fs1 = new NPOIFSFileSystem(tpm1);
                         NPOIFSFileSystem fs2 = new NPOIFSFileSystem(tpm2);

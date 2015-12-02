@@ -317,23 +317,21 @@ public class CIFSContentComparatorTest extends TestCase
             boolean result = contentComparator.isContentEqual(reader, file1);
             assertTrue("compare different powerpoint files, should not be equal", !result);
         }
-//        
-//      Test commented out, fails after implementation corrected - so there is a another bug in the content 
-//        comparison raised MNT-14860 to investigate.
-//        
-//        /**
-//         * Compare trivially different powerpoint files, should ignore trivial differences and be equal
-//         */
-//        {
-//            File file0 = file0Resource.getFile();
-//            File file2 = file2Resource.getFile();
-//
-//            ContentReader reader = new FileContentReader(file0);
-//            reader.setMimetype("application/vnd.ms-powerpoint");
-//            reader.setEncoding("UTF-8");
-//            boolean result = contentComparator.isContentEqual(reader, file2);
-//            assertTrue("compare trivially different powerpoint files, should be equal", result);
-//        }
+
+        
+        /**
+         * Compare trivially different powerpoint files, should ignore trivial differences and be equal
+         */
+        {
+            File file0 = file0Resource.getFile();
+            File file2 = file2Resource.getFile();
+
+            ContentReader reader = new FileContentReader(file0);
+            reader.setMimetype("application/vnd.ms-powerpoint");
+            reader.setEncoding("UTF-8");
+            boolean result = contentComparator.isContentEqual(reader, file2);
+            assertTrue("compare trivially different powerpoint files, should be equal", result);
+        }
 
         /**
          * Compare different powerpoint files, should not be ignored

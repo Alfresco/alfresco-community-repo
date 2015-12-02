@@ -1,3 +1,4 @@
+
 /* 
  * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
@@ -37,6 +38,8 @@ import org.alfresco.repo.virtual.ref.ResourceProcessingError;
 import org.alfresco.repo.virtual.ref.VanillaProtocol;
 import org.alfresco.repo.virtual.ref.VirtualProtocol;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Creates a {@link VirtualFolderDefinition} by executing the template indicated
@@ -49,6 +52,8 @@ public class ApplyTemplateMethod extends AbstractProtocolMethod<VirtualFolderDef
     public static final String VANILLA_JSON_PARAM_NAME = "vanillaJSON";
 
     private ActualEnvironment environment;
+
+    private static Log logger = LogFactory.getLog(ApplyTemplateMethod.class);
 
     public ApplyTemplateMethod(ActualEnvironment environment)
     {
@@ -126,13 +131,26 @@ public class ApplyTemplateMethod extends AbstractProtocolMethod<VirtualFolderDef
         {
             throw new ProtocolMethodException(e);
         }
+        finally
+        {
+            try
+            {
+                if (vanillaIS != null)
+                    vanillaIS.close();
+            }
+            catch (IOException ioe)
+            {
+                logger.warn("Failed to close input stream : " + ioe);
+            }
+        }
+
     }
 
     /**
      * Creates an empty {@link VirtualFolderDefinition} parameterized with a
      * {@link NullFilingRule} as this method is called for non-virtual nodes.
      * 
-     * @param protocol 
+     * @param protocol
      * @param reference
      * @return The empty {@link VirtualFolderDefinition}.
      */

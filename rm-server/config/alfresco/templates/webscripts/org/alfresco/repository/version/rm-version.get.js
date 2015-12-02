@@ -62,7 +62,7 @@ function main()
    {
       var nodeRef = args["nodeRef"],
          node = search.findNode(nodeRef),
-         versionHistory, version, p, recordNodeRef;
+         versionHistory, version, p, recordNodeRef, isRecordedVersionDestroyed;
 
       if (node != null)
       {
@@ -73,11 +73,14 @@ function main()
             {
                version = versionHistory[i];
                p = getPerson(version.creator);
+               
                recordNodeRef = version.getVersionProperty("recordNodeRef");
+               isRecordedVersionDestroyed = version.getVersionProperty("RecordedVersionDestroyed");
+               
                versions[versions.length] =
                {
                   nodeRef: version.node.nodeRef.toString(),
-                  name: version.node.name,
+                  name: (isRecordedVersionDestroyed == true) ? "" : version.node.name,
                   label: version.label,
                   description: version.description,
                   createdDate: version.createdDate,
@@ -87,7 +90,8 @@ function main()
                      firstName: p.firstName,
                      lastName: p.lastName
                   },
-                  recordNodeRef: recordNodeRef ? recordNodeRef.toString() : ""
+                  recordNodeRef: recordNodeRef ? recordNodeRef.toString() : "",
+                  isRecordedVersionDestroyed: isRecordedVersionDestroyed
                };
             }
          }
@@ -107,7 +111,8 @@ function main()
                   firstName: p.firstName,
                   lastName: p.lastName
                },
-               recordNodeRef: ""
+               recordNodeRef: "",
+               isRecordedVersionDestroyed: false
             };
          }
       }

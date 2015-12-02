@@ -76,7 +76,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     public static final String KEY_FILE_PLAN = "file-plan";
 
     /** version record property */
-    public static final String PROP_VERSION_RECORD = "RecordVersion";
+    protected static final String PROP_VERSION_RECORD = "RecordVersion";
+    protected static final String PROP_RECORDED_VERSION_DESTROYED = "RecordedVersionDestroyed";
     
     /** version aspect property names */
     private static final String[] VERSION_PROPERTY_NAMES = new String[]
@@ -491,7 +492,8 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
             {
                 // look for the associated record
                 final NodeRef previousRecord = (NodeRef)previousVersion.getVersionProperties().get(PROP_VERSION_RECORD);
-                if (previousRecord != null)
+                if (previousRecord != null &&
+                    nodeService.exists(previousRecord))
                 {
                     versionRecord = previousRecord;
                     break;
@@ -502,6 +504,66 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         return versionRecord;
     }
 
+    @Override
+    protected VersionHistory buildVersionHistory(NodeRef versionHistoryRef, NodeRef nodeRef)
+    {
+        VersionHistory versionHistory = super.buildVersionHistory(versionHistoryRef, nodeRef);
+        
+        // create an empty version history if appropriate
+        if (versionHistoryRef != null && 
+            nodeRef != null &&
+            versionHistory == null &&
+            getAllVersions(versionHistoryRef).isEmpty() == true)
+        {
+            versionHistory = new EmptyVersionHistory();
+        }
+        
+        return versionHistory;
+    }
+    
+    public class EmptyVersionHistory implements VersionHistory
+    {
+        private static final long serialVersionUID = 3449832161314670033L;
+
+        @Override
+        public Version getRootVersion()
+        {
+            return null;
+        }
+
+        @Override
+        public Version getHeadVersion()
+        {
+            return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public Collection<Version> getAllVersions()
+        {
+            return (Collection<Version>)Collections.EMPTY_LIST;
+        }
+
+        @Override
+        public Version getPredecessor(Version version)
+        {
+            return null;
+        }
+
+        @SuppressWarnings("unchecked")
+        @Override
+        public Collection<Version> getSuccessors(Version version)
+        {
+            return (Collection<Version>)Collections.EMPTY_LIST;
+        }
+
+        @Override
+        public Version getVersion(String versionLabel)
+        {
+            return null;
+        }        
+    }
+    
     /**
      * Freezes audit aspect properties.
      *
@@ -533,12 +595,18 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     {
         Version version = super.getVersion(versionRef);
 
+        // place the version record reference in the version properties
         NodeRef record = (NodeRef)dbNodeService.getProperty(versionRef, PROP_RECORD_NODE_REF);
         if (record != null)
-        {
+        {          
             version.getVersionProperties().put(PROP_VERSION_RECORD, record);
         }
 
+        // place information about the destruction of the version record in the properties
+        Boolean destroyed = (Boolean)dbNodeService.getProperty(versionRef, PROP_DESTROYED);
+        if (destroyed == null) { destroyed = Boolean.FALSE; }
+        version.getVersionProperties().put(PROP_RECORDED_VERSION_DESTROYED, destroyed);
+        
         return version;
     }
 
@@ -579,10 +647,31 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
     @Override
     public boolean isRecordedVersion(Version version)
     {
-        boolean result = true;
-        if (version.getVersionProperties().get(PROP_VERSION_RECORD) == null)
+        NodeRef versionNodeRef = getVersionNodeRef(version);
+        return dbNodeService.hasAspect(versionNodeRef, RecordableVersionModel.ASPECT_RECORDED_VERSION);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#getVersionRecord(org.alfresco.service.cmr.version.Version)
+     */
+    @Override
+    public NodeRef getVersionRecord(Version version)
+    {
+        NodeRef result = null;
+        NodeRef versionNodeRef = getVersionNodeRef(version);
+        if (dbNodeService.hasAspect(versionNodeRef, RecordableVersionModel.ASPECT_RECORDED_VERSION))
         {
-            result = false;
+            // get the version record
+            result = (NodeRef)dbNodeService.getProperty(versionNodeRef, RecordableVersionModel.PROP_RECORD_NODE_REF);
+            
+            // check that the version record exists
+            if (result != null && 
+                !dbNodeService.exists(result))
+            {
+                throw new AlfrescoRuntimeException("Version record node doesn't exist.  Indicates version has not been updated "
+                                                 + "when associated version record was deleted. "
+                                                 + "(nodeRef=" + result.toString() + ")");
+            }
         }
         return result;
     }
@@ -735,6 +824,47 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
         }
         
         return record;
+    }
+    
+    /**
+     *  @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#isRecordedVersionDestroyed(org.alfresco.service.cmr.version.Version)
+     */
+    @Override
+    public boolean isRecordedVersionDestroyed(Version version)
+    {
+        boolean result = false;
+        
+        // get the version node reference
+        NodeRef versionNodeRef = getVersionNodeRef(version);        
+
+        // get the destroyed property value
+        Boolean isDestroyed = (Boolean)dbNodeService.getProperty(versionNodeRef, PROP_DESTROYED);
+        if (isDestroyed != null)
+        {
+            result = isDestroyed.booleanValue();
+        }
+        
+        return result;
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#destroyRecordedVersion(org.alfresco.service.cmr.version.Version)
+     */
+    @Override
+    public void destroyRecordedVersion(Version version)
+    {
+        // get the version node reference
+        NodeRef versionNodeRef = getVersionNodeRef(version);
+        
+        // if it's a recorded version
+        if (dbNodeService.hasAspect(versionNodeRef, ASPECT_RECORDED_VERSION))
+        {
+            // mark it as destroyed
+            dbNodeService.setProperty(versionNodeRef, PROP_DESTROYED, true);
+            
+            // clear the record node reference property
+            dbNodeService.setProperty(versionNodeRef, RecordableVersionModel.PROP_RECORD_NODE_REF, null);            
+        }        
     }
     
     /**

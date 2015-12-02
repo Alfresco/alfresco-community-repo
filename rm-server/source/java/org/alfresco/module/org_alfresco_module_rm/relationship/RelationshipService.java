@@ -30,6 +30,9 @@ import org.alfresco.service.cmr.repository.NodeRef;
  */
 public interface RelationshipService
 {
+    /** System relationship names */
+    static final String RELATIONSHIP_VERSIONS = "versions";
+    
     /**
      * Gets all the existing relationship definitions
      *
@@ -85,14 +88,42 @@ public interface RelationshipService
      * @return All relationships that come out from the given node reference
      */
     Set<Relationship> getRelationshipsFrom(NodeRef nodeRef);
-
+    
     /**
-     * Gets all the relationships that go in to the given node reference
+     * Gets all the relationships that come out from the given node reference
+     * that match the a given name filter.
+     * <p>
+     * Exact match only.
      *
      * @param nodeRef The node reference
-     * @return All relationships that go in to the given node reference
+     * @param nameFilter Name filter for results
+     * @return All relationships that come out from the given node reference
+     * 
+     * @since 2.3.1
+     */
+    Set<Relationship> getRelationshipsFrom(NodeRef nodeRef, String nameFilter);
+
+    /**
+     * Gets all the relationships that go into the given node reference
+     *
+     * @param nodeRef The node reference
+     * @return All relationships that go into the given node reference
      */
     Set<Relationship> getRelationshipsTo(NodeRef nodeRef);
+    
+    /**
+     * Gets all the relationships that go into the given node reference
+     * that match the a given name filter.
+     * <p>
+     * Exact match only.
+     *
+     * @param nodeRef The node reference
+     * @param nameFilter Name filter for results
+     * @return All relationships that go into the given node reference
+     * 
+     * @since 2.3.1
+     */
+    Set<Relationship> getRelationshipsTo(NodeRef nodeRef, String nameFilter);
 
     /**
      * Adds a relationship from the given node <code>source</code>

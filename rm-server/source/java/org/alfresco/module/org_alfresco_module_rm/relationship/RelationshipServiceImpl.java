@@ -377,15 +377,24 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     @Override
     public Set<Relationship> getRelationshipsFrom(NodeRef nodeRef)
     {
+        return getRelationshipsFrom(nodeRef, null);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService#getRelationshipsFrom(org.alfresco.service.cmr.repository.NodeRef, String)
+     */
+    @Override
+    public Set<Relationship> getRelationshipsFrom(NodeRef nodeRef, String nameFilter)
+    {
         mandatory("nodeRef", nodeRef);
 
         Set<Relationship> relationships = new HashSet<Relationship>();
 
         List<AssociationRef> customReferencesFrom = getNodeService().getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
-        relationships.addAll(generateRelationshipFromAssociationRef(customReferencesFrom));
+        relationships.addAll(generateRelationshipFromAssociationRef(customReferencesFrom, nameFilter));
 
         List<ChildAssociationRef> customChildReferences = getNodeService().getChildAssocs(nodeRef);
-        relationships.addAll(generateRelationshipFromParentChildAssociationRef(customChildReferences));
+        relationships.addAll(generateRelationshipFromParentChildAssociationRef(customChildReferences, nameFilter));
 
         return relationships;
     }
@@ -396,19 +405,28 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
     @Override
     public Set<Relationship> getRelationshipsTo(NodeRef nodeRef)
     {
+        return getRelationshipsTo(nodeRef, null);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService#getRelationshipsTo(org.alfresco.service.cmr.repository.NodeRef, String)
+     */
+    @Override
+    public Set<Relationship> getRelationshipsTo(NodeRef nodeRef, String nameFilter)
+    {
         mandatory("nodeRef", nodeRef);
 
         Set<Relationship> relationships = new HashSet<Relationship>();
 
         List<AssociationRef> customReferencesTo = getNodeService().getSourceAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
-        relationships.addAll(generateRelationshipFromAssociationRef(customReferencesTo));
+        relationships.addAll(generateRelationshipFromAssociationRef(customReferencesTo, nameFilter));
 
         List<ChildAssociationRef> customParentReferences = getNodeService().getParentAssocs(nodeRef);
-        relationships.addAll(generateRelationshipFromParentChildAssociationRef(customParentReferences));
+        relationships.addAll(generateRelationshipFromParentChildAssociationRef(customParentReferences, nameFilter));
 
         return relationships;
     }
-
+    
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService#addRelationship(java.lang.String, org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.cmr.repository.NodeRef)
      */
@@ -418,7 +436,19 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
         mandatoryString("uniqueName", uniqueName);
         mandatory("source", source);
         mandatory("target", target);
-
+        
+        // check the source node exists
+        if (!getNodeService().exists(source))
+        {
+            throw new AlfrescoRuntimeException("Can't create relationship '" + uniqueName + "', because source node doesn't exist.");
+        }
+        
+        // check the target node exists
+        if (!getNodeService().exists(target))
+        {
+            throw new AlfrescoRuntimeException("Can't create relationship " + uniqueName + ", because target node doesn't exist.");
+        }
+        
         if (getNodeService().hasAspect(target, ASPECT_FROZEN))
         {
             StringBuilder sb = new StringBuilder();
@@ -622,14 +652,15 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
      * @param associationRefs Association references
      * @return Relationships generated from the given association references
      */
-    private Set<Relationship> generateRelationshipFromAssociationRef(List<AssociationRef> associationRefs)
+    private Set<Relationship> generateRelationshipFromAssociationRef(List<AssociationRef> associationRefs, String nameFilter)
     {
         Set<Relationship> relationships = new HashSet<Relationship>();
 
         for (AssociationRef associationRef : associationRefs)
         {
             String uniqueName = associationRef.getTypeQName().getLocalName();
-            if (existsRelationshipDefinition(uniqueName))
+            if (existsRelationshipDefinition(uniqueName) &&
+                (nameFilter == null || uniqueName.equals(nameFilter)))
             {
                 NodeRef from = associationRef.getSourceRef();
                 NodeRef to = associationRef.getTargetRef();
@@ -646,14 +677,15 @@ public class RelationshipServiceImpl extends RecordsManagementAdminBase implemen
      * @param childAssociationRefs Child association references
      * @return Relationships generated from the given child association references
      */
-    private Set<Relationship> generateRelationshipFromParentChildAssociationRef(List<ChildAssociationRef> childAssociationRefs)
+    private Set<Relationship> generateRelationshipFromParentChildAssociationRef(List<ChildAssociationRef> childAssociationRefs, String nameFilter)
     {
         Set<Relationship> relationships = new HashSet<Relationship>();
 
         for (ChildAssociationRef childAssociationRef : childAssociationRefs)
         {
             String uniqueName = childAssociationRef.getQName().getLocalName();
-            if (existsRelationshipDefinition(uniqueName))
+            if (existsRelationshipDefinition(uniqueName)&&
+                (nameFilter == null || uniqueName.equals(nameFilter)))
             {
                 NodeRef from = childAssociationRef.getParentRef();
                 NodeRef to = childAssociationRef.getChildRef();

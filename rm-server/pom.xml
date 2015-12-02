@@ -15,7 +15,6 @@
       <alfresco.client.contextPath>/alfresco</alfresco.client.contextPath>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <alfresco.mysql.version>5.1.31</alfresco.mysql.version>
-      <alfresco.spring.webscripts>5.4</alfresco.spring.webscripts>
       <webapp.id.name>alfresco</webapp.id.name>
       <webapp.id>${webapp.id.name}</webapp.id>
    </properties>
@@ -435,12 +434,6 @@
       <dependency>
          <groupId>org.springframework.extensions.surf</groupId>
          <artifactId>spring-webscripts</artifactId>
-         <!--
-            We are overriding a managed version of a dependency here.
-            This is needed in order to support different Alfresco
-            versions (i.e for the time being 5.0.2, 5.0.d and 5.1.b-EA)
-         -->
-         <version>${alfresco.spring.webscripts}</version>
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>

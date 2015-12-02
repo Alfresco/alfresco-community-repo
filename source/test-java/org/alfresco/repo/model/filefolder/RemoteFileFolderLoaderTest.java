@@ -195,7 +195,7 @@ public class RemoteFileFolderLoaderTest  extends BaseWebScriptTest
             // We also expect the default language description to be present
             String description = (String) nodeService.getProperty(fileNodeRef, ContentModel.PROP_DESCRIPTION);
             assertNotNull("No description", description);
-            assertEquals("Description length incorrect: \"" + description + "\"", 128L, description.length());
+            assertEquals("Description length incorrect: \"" + description + "\"", 128L, description.getBytes("UTF-8").length);
         }
     }
 

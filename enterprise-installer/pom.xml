@@ -68,7 +68,7 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-installer-resources</artifactId>
+                                    <artifactId>alfresco-one-installer-resources</artifactId>
                                     <version>${alfresco.platform.version}</version>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                 </artifactItem>
@@ -138,27 +138,6 @@
                                     <type>amp</type>
                                 </artifactItem>
                             </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!-- Override local resources - alfresco-global.properties, etc. -->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>override-local-resources</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <nonFilteredFileExtensions>
-                                <nonFilteredFileExtension>properties</nonFilteredFileExtension>
-                            </nonFilteredFileExtensions>
                         </configuration>
                     </execution>
                 </executions>

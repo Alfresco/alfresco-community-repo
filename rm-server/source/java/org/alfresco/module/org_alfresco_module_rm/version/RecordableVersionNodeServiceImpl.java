@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.version;
 import static org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl.RECORD_MODEL_URIS;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -181,6 +182,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     /**
      * @see org.alfresco.repo.version.Node2ServiceImpl#getAspects(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @SuppressWarnings("unchecked")
     @Override
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
@@ -190,8 +192,15 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
         if (dbNodeService.hasAspect(converted, ASPECT_RECORDED_VERSION))
         {
             NodeRef record = (NodeRef)dbNodeService.getProperty(converted, PROP_RECORD_NODE_REF);
-            Set<QName> aspects =  dbNodeService.getAspects(record);
-            return processAspects(aspects);
+            if (dbNodeService.exists(record))
+            {
+                Set<QName> aspects =  dbNodeService.getAspects(record);
+                return processAspects(aspects);
+            }
+            else
+            {
+                return (Set<QName>)Collections.EMPTY_SET;
+            }
         }
         else
         {

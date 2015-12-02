@@ -190,6 +190,12 @@
       </dependency>
       <!-- Test dependencies -->
       <dependency>
+         <groupId>io.takari.junit</groupId>
+         <artifactId>takari-cpsuite</artifactId>
+         <version>1.2.7</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
          <groupId>junit</groupId>
          <artifactId>junit</artifactId>
          <version>4.11</version>

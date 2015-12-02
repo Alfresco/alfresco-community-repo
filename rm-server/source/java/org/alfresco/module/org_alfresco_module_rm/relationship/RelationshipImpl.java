@@ -21,6 +21,8 @@ package org.alfresco.module.org_alfresco_module_rm.relationship;
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.alfresco.util.ParameterCheck.mandatoryString;
 
+import java.io.Serializable;
+
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -29,8 +31,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.3
  */
-public class RelationshipImpl implements Relationship
+public class RelationshipImpl implements Relationship, Serializable
 {
+        /** serial UID */
+    private static final long serialVersionUID = 9120649510198344978L;
+
     /** The unique name of the relationship */
     private String uniqueName;
 
@@ -113,5 +118,40 @@ public class RelationshipImpl implements Relationship
     private void setTarget(NodeRef target)
     {
         this.target = target;
+    }
+    
+    /**
+     * @see java.lang.Object#equals(java.lang.Object)
+     */
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+        {
+            return true;
+        }
+        if (obj instanceof Relationship)
+        {
+            RelationshipImpl that = (RelationshipImpl) obj;
+            return (this.uniqueName.equals(that.uniqueName)
+                    && this.source.equals(that.source)
+                    && this.target.equals(that.target));
+        }
+        else
+        {
+            return false;
+        }
+    }
+    
+    /**
+     * @see java.lang.Object#hashCode()
+     */
+    @Override
+    public int hashCode()
+    {
+        int prime = 31;
+        int result = prime + uniqueName.hashCode();
+        result = (prime*result) + source.hashCode();
+        return (prime*result) + target.hashCode();
     }
 }

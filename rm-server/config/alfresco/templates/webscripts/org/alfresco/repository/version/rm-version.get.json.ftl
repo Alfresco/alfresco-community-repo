@@ -14,7 +14,8 @@
          "firstName": "${v.creator.firstName!""}",
          "lastName": "${v.creator.lastName!""}"
       },
-      "recordNodeRef": "${v.recordNodeRef}"
+      "recordNodeRef": "${v.recordNodeRef}",
+      "isRecordedVersionDestroyed": ${v.isRecordedVersionDestroyed?c}
    }<#if (v_has_next)>,</#if>
 </#list>
 ]

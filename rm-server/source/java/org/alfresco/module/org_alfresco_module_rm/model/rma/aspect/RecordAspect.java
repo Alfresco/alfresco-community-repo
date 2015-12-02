@@ -36,7 +36,6 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -71,7 +70,7 @@ public class RecordAspect extends    AbstractDisposableItem
 
     /** record service */
     protected RecordService recordService;
-
+    
     /**
      * @param extendedSecurityService   extended security service
      */
@@ -110,7 +109,7 @@ public class RecordAspect extends    AbstractDisposableItem
     )
     public void onCreateChildAssociation(final ChildAssociationRef childAssocRef, boolean bNew)
     {
-        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        authenticationUtil.runAsSystem(new RunAsWork<Void>()
         {
             @Override
             public Void doWork()
@@ -173,7 +172,7 @@ public class RecordAspect extends    AbstractDisposableItem
         // Deal with versioned records
         if (reference.equals(CUSTOM_REF_VERSIONS))
         {
-            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            authenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
                 @Override
                 public Void doWork()
@@ -240,7 +239,7 @@ public class RecordAspect extends    AbstractDisposableItem
             isFilePlanComponent(oldChildAssocRef.getParentRef()))
         {
             final NodeRef record = newChildAssocRef.getChildRef();
-            AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<Object>()
+            authenticationUtil.runAs(new RunAsWork<Object>()
             {
                 public Object doWork()
                 {
@@ -256,7 +255,7 @@ public class RecordAspect extends    AbstractDisposableItem
 
                     return null;
                 }
-            }, AuthenticationUtil.getAdminUserName());
+            }, authenticationUtil.getAdminUserName());
         }
     }
 

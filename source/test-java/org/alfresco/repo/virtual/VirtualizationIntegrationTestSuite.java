@@ -38,15 +38,12 @@ import org.alfresco.repo.virtual.store.VirtualStoreImplTest;
 import org.alfresco.repo.virtual.template.ApplyTemplateMethodTest;
 import org.alfresco.repo.virtual.template.TemplateFilingRuleTest;
 import org.alfresco.repo.virtual.template.TemplateResourceProcessorTest;
-import org.alfresco.util.ApplicationContextHelper;
-import org.springframework.context.ApplicationContext;
 
 /**
  * @author Bogdan Horje
  */
 public class VirtualizationIntegrationTestSuite extends TestSuite implements VirtualizationTest
 {
-    protected static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
 
     public static Test suite()
     {
@@ -62,7 +59,7 @@ public class VirtualizationIntegrationTestSuite extends TestSuite implements Vir
         suite.addTest(new JUnit4TestAdapter(ApplyTemplateMethodTest.class));
         suite.addTest(new JUnit4TestAdapter(SystemTemplateLocationsConstraintTest.class));
         suite.addTest(new JUnit4TestAdapter(SystemVirtualizationMethodTest.class));
-        suite.addTest(new JUnit4TestAdapter(TypeVirtualizationMethodTest.class));
+        suite.addTest(new JUnit4TestAdapter(TypeVirtualizationMethodTest.Integration.class));
         suite.addTest(new JUnit4TestAdapter(TemplateResourceProcessorTest.class));
         suite.addTest(new JUnit4TestAdapter(VirtualStoreImplTest.class));
         suite.addTest(new JUnit4TestAdapter(NodeRefPathExpressionTest.class));

@@ -162,6 +162,14 @@ virtual.folders.enabled=true
 virtual.folders.model=alfresco/model/virtualization-model.xml
 virtual.folders.model.labels=alfresco/messages/virtualization-model
 
+#Virtual reference config
+
+#virtual.reference.classpath.hash=${virtual.folders.config.vanilla.processor.classpath}->1,${virtual.folders.config.system.templates.classpath}->2
+
+#Virtual store config
+
+#Company home relative download associations of virtual entries 
+#virtual.download.associations.folder=${spaces.dictionary.childname}/${spaces.virtualdownloads.childname}
 
 #Generic virtualization methods config
 
@@ -174,17 +182,12 @@ virtual.folders.model.labels=alfresco/messages/virtualization-model
 
 #System virtualization method aspect.
 #virtual.folders.config.system.aspect=vm:system-virtualization
-
 #System virtualization method aspect defined template location property.
 #virtual.folders.config.system.aspect.template.location.property=vm:system-template-location
-
 #Classpath to be explored for *.json entries defining system templates.
 #virtual.folders.config.system.templates.classpath=/org/alfresco/repo/virtual/node
-
 #A company home relative name or qname path location of repository system templates.
-#virtual.folders.config.system.templates.path=Data Dictionary/Virtual Folder Template
 #virtual.folders.config.system.templates.path=${spaces.dictionary.childname}/${spaces.virtualfolders.childname}
-
 #Content sub type of repository system templates.
 #virtual.folders.config.system.templates.template.type=vm:virtualFolderTemplate
 
@@ -201,4 +204,4 @@ virtual.folders.model.labels=alfresco/messages/virtualization-model
 #A company home relative name or qname path location of the type mapped templates.
 #virtual.folders.config.type.templates.path=${spaces.dictionary.childname}/${spaces.virtualfolders.childname}
 #Type and aspect qname regular expression filter. 
-#virtual.folders.config.type.templates.qname.filter.regexp=\\{.*site/1\\.0\\}siteContainer|\\{.*claims_example/1.0\\}claimFolder
+#virtual.folders.config.type.templates.qname.filter.regexp=st:siteContainer,clex:claimFolder

@@ -19,8 +19,6 @@
 
 package org.alfresco.repo.virtual.template;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;

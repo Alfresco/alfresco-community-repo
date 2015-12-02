@@ -34,16 +34,16 @@ public class VirtualizationConfigTestBootstrap
     private NodeRefExpression downloadAssocaiationsFolder;
 
 
-    private String typeTemplatesQNameFilterRegexp;
+    private String typeTemplatesQNameFilter;
     
-    public void setTypeTemplatesQNameFilterRegexp(String typeTemplatesQNameFilterRegexp)
+    public void setTypeTemplatesQNameFilter(String typeTemplatesQNameFilterRegexp)
     {
-        this.typeTemplatesQNameFilterRegexp = typeTemplatesQNameFilterRegexp;
+        this.typeTemplatesQNameFilter = typeTemplatesQNameFilterRegexp;
     }
     
-    public String getTypeTemplatesQNameFilterRegexp()
+    public String getTypeTemplatesQNameFilter()
     {
-        return this.typeTemplatesQNameFilterRegexp;
+        return this.typeTemplatesQNameFilter;
     }
     
     public void setTypeTemplatesPath(NodeRefExpression typeTemplatesPath)

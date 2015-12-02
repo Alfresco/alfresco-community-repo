@@ -48,10 +48,10 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.traitextender.SpringBeanExtension;
 import org.alfresco.util.Pair;
 
-public class VirtualFileFolderServiceExtension extends SpringBeanExtension<FileFolderServiceExtension, FileFolderServiceTrait>
+public class VirtualFileFolderServiceExtension
+            extends VirtualSpringBeanExtension<FileFolderServiceExtension, FileFolderServiceTrait>
             implements FileFolderServiceExtension
 {
     private VirtualStore virtualStore;
@@ -154,17 +154,16 @@ public class VirtualFileFolderServiceExtension extends SpringBeanExtension<FileF
         Set<QName>[] searchAndIgnore = (Set<QName>[]) Array.newInstance(Set.class,
                                                                         3);
 
-        Pair<Set<QName>, Set<QName>> searchTypesAndIgnoreAspects = getTrait()
-                    .buildSearchTypesAndIgnoreAspects(files,
-                                                      folders,
-                                                      ignoreQNames);
+        Pair<Set<QName>, Set<QName>> searchTypesAndIgnoreAspects = getTrait().buildSearchTypesAndIgnoreAspects(files,
+                                                                                                               folders,
+                                                                                                               ignoreQNames);
         if (searchTypesAndIgnoreAspects != null)
         {
             Set<QName> searchTypesQNames = searchTypesAndIgnoreAspects.getFirst();
             Set<QName> ignoreAspectsQNames = searchTypesAndIgnoreAspects.getSecond();
 
             Set<QName> ignoreTypesQNames = null;
-            if ((searchTypesQNames != null || ignoreAspectsQNames != null) && ignoreQNames!=null)
+            if ((searchTypesQNames != null || ignoreAspectsQNames != null) && ignoreQNames != null)
             {
                 ignoreTypesQNames = new HashSet<>(ignoreQNames);
                 if (searchTypesQNames != null)
@@ -235,8 +234,8 @@ public class VirtualFileFolderServiceExtension extends SpringBeanExtension<FileF
                     }
                 };
 
-                FileInfoPropsComparator comparator = (sortProps != null && !sortProps.isEmpty()) ? new FileInfoPropsComparator(sortProps)
-                            : null;
+                FileInfoPropsComparator comparator = (sortProps != null && !sortProps.isEmpty())
+                            ? new FileInfoPropsComparator(sortProps) : null;
 
                 try
                 {
@@ -287,8 +286,8 @@ public class VirtualFileFolderServiceExtension extends SpringBeanExtension<FileF
     }
 
     public PagingResults<FileInfo> asFileInfoResults(ActualEnvironment environment,
-                final PagingResults<Reference> results, VirtualStore store) throws ReferenceEncodingException,
-                VirtualizationException
+                final PagingResults<Reference> results, VirtualStore store)
+                            throws ReferenceEncodingException, VirtualizationException
     {
 
         List<Reference> virtualPage = results.getPage();
@@ -487,10 +486,23 @@ public class VirtualFileFolderServiceExtension extends SpringBeanExtension<FileF
     }
 
     @Override
-    public FileInfo rename(NodeRef sourceNodeRef, String newName) throws FileExistsException, FileNotFoundException 
+    public FileInfo rename(NodeRef sourceNodeRef, String newName) throws FileExistsException, FileNotFoundException
     {
         return getTrait().rename(virtualStore.materializeIfPossible(sourceNodeRef),
                                  newName);
     }
 
+    @Override
+    public PagingResults<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders, Set<QName> ignoreQNames,
+                List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
+    {
+
+        return VirtualFileFolderServiceExtension.this.list(contextNodeRef,
+                                                           files,
+                                                           folders,
+                                                           null,
+                                                           ignoreQNames,
+                                                           sortProps,
+                                                           pagingRequest);
+    }
 }

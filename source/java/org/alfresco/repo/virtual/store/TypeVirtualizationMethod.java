@@ -19,7 +19,10 @@
 
 package org.alfresco.repo.virtual.store;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import org.alfresco.model.ContentModel;
@@ -30,10 +33,12 @@ import org.alfresco.repo.virtual.config.NodeRefExpression;
 import org.alfresco.repo.virtual.ref.Protocols;
 import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceException;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -64,7 +69,20 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
 
     private NodeRefExpression templatesPath;
 
-    private QNamePattern qnamePattern = RegexQNamePattern.MATCH_ALL;
+    private QNamePattern[] qnamePatternFilters = new QNamePattern[] { RegexQNamePattern.MATCH_ALL };
+
+    private static final QNamePattern MATCH_NONE = new QNamePattern()
+    {
+
+        @Override
+        public boolean isMatch(QName qname)
+        {
+            return false;
+        }
+
+    };
+
+    private String filters;
 
     /**
      * Thread local solving template in process indicator.<br>
@@ -81,12 +99,120 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
 
     public void init()
     {
-        //void
+        resetFilters();
     }
-    
-    public void setQnameFilterRegexp(String regexp)
+
+    private synchronized void resetFilters()
     {
-        this.qnamePattern = new RegexQNamePattern(regexp);
+        if (namespacePrefixResolver != null && filters != null)
+        {
+            this.qnamePatternFilters = asRegExpQNamePatternFilters(filters);
+            if (logger.isDebugEnabled())
+            {
+                String regExpFilters = "";
+                for (int i = 0; i < qnamePatternFilters.length; i++)
+                {
+                    regExpFilters += qnamePatternFilters[i].toString() + " | ";
+                }
+                logger.debug("Reset type regexp filters to : " + regExpFilters);
+            }
+        }
+        else
+        {
+            logger.debug("Could not reset qName filters with NameSpacePrefixResolver=" + namespacePrefixResolver
+                        + " and filters=" + filters);
+        }
+
+    }
+
+    private QNamePattern[] asRegExpQNamePatternFilters(String filtersString)
+    {
+        String[] filters = filtersString.split(",");
+        List<QNamePattern> patterns = new ArrayList<>(3);
+        for (int i = 0; i < filters.length; i++)
+        {
+            String trimmedFilters = filters[i].trim();
+            if (!trimmedFilters.isEmpty())
+            {
+                if ("*".equals(trimmedFilters))
+                {
+                    patterns.clear();
+                    patterns.add(RegexQNamePattern.MATCH_ALL);
+                    break;
+                }
+
+                if ("none".equals(trimmedFilters))
+                {
+                    patterns.clear();
+                    patterns.add(MATCH_NONE);
+                    break;
+                }
+
+                String[] components = filters[i].split(":");
+                if (components == null || components.length != 2 || components[0].trim().isEmpty()
+                            || components[1].trim().isEmpty())
+                {
+                    throw new IllegalArgumentException("Illegal filters string " + filtersString
+                                + ". Expected <prefix>:<name> | <prefix>:'*' instead of " + filters[i]);
+                }
+                try
+                {
+                    String uri = namespacePrefixResolver.getNamespaceURI(components[0]);
+
+                    if (uri == null)
+                    {
+                        // replicate expected resolver behavior
+                        throw new NamespaceException("Unregistrered prefix " + components[0]);
+                    }
+
+                    String localName = components[1];
+
+                    if ("*".equals(localName.trim()))
+                    {
+                        localName = ".*";
+                    }
+
+                    Pattern.compile(uri);
+                    Pattern.compile(localName);
+
+                    RegexQNamePattern qNamePattern = new RegexQNamePattern(uri,
+                                                                           localName);
+
+                    if (!qNamePattern.isMatch(QName.createQName(uri,
+                                                                components[1])))
+                    {
+                        throw new IllegalArgumentException("Illegal filters string " + filtersString
+                                    + " due to invalid regexp translatrion in  " + filters[i] + " as " + qNamePattern);
+
+                    }
+                    patterns.add(qNamePattern);
+                }
+                catch (NamespaceException e)
+                {
+                    throw new IllegalArgumentException("Illegal filters string " + filtersString
+                                + " due to unregistered name space in  " + filters[i],
+                                                       e);
+                }
+                catch (PatternSyntaxException e)
+                {
+                    throw new IllegalArgumentException("Illegal filters string " + filtersString
+                                + " due to invalid regexp translatrion in  " + filters[i],
+                                                       e);
+                }
+            }
+
+        }
+
+        return patterns.toArray(new QNamePattern[] {});
+    }
+
+    public void setQnameFilters(String filters)
+    {
+        ParameterCheck.mandatoryString("filters",
+                                       filters);
+        this.filters = filters;
+
+        resetFilters();
     }
 
     public void setTemplatesPath(NodeRefExpression templatesPath)
@@ -97,6 +223,8 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
     public void setNamespacePrefixResolver(NamespacePrefixResolver resolver)
     {
         this.namespacePrefixResolver = resolver;
+
+        resetFilters();
     }
 
     @Override
@@ -129,6 +257,19 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
         return typeTemplateContentName + extension;
     }
 
+    private boolean isAnyFilterMatch(QName qname)
+    {
+        for (int i = 0; i < qnamePatternFilters.length; i++)
+        {
+            if (qnamePatternFilters[i].isMatch(qname))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     private NodeRef templateNodeFor(ActualEnvironment env, NodeRef nodeRef)
     {
         try
@@ -140,7 +281,7 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
             }
             NodeRef templateNode = null;
             QName nodeType = env.getType(nodeRef);
-            if (qnamePattern.isMatch(nodeType))
+            if (isAnyFilterMatch(nodeType))
             {
                 String typeTemplateNodeName = templateNodeNameForType(nodeType);
 
@@ -155,7 +296,7 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
                 for (QName aspect : aspects)
                 {
 
-                    if (qnamePattern.isMatch(aspect))
+                    if (isAnyFilterMatch(aspect))
                     {
                         String aspectTemplateNodeName = templateNodeNameForType(aspect);
                         templateNode = env.getChildByName(templatesContainerNode,
@@ -175,7 +316,8 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
         }
         catch (PatternSyntaxException e)
         {
-            logger.error("Invalid type methof type and aspect qName regexp pattern " + qnamePattern.toString());
+            logger.error("Invalid type method type and aspect in qName filter ",
+                         e);
             return null;
         }
         catch (Exception e)

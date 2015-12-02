@@ -72,7 +72,7 @@ public class PropertyValueConstraint extends VirtualQueryConstraintDecorator
 
     }
 
-    private SearchParameters applyFTS(SearchParameters searchParameters)
+    protected SearchParameters applyFTS(SearchParameters searchParameters)
     {
         SearchParameters constrainedParameters = searchParameters.copy();
         String theQuery = constrainedParameters.getQuery();
@@ -80,7 +80,7 @@ public class PropertyValueConstraint extends VirtualQueryConstraintDecorator
         // TODO: introduce and use operator
 
         theQuery = "(" + theQuery + ")" + " and " + "( " + "=" + property.toPrefixString(this.nspResolver) + ":"
-                    + org.alfresco.util.ISO9075.encode(value.toString()) + " )";
+                    +"\""+value.toString() + "\" )";
 
         constrainedParameters.setQuery(theQuery);
 

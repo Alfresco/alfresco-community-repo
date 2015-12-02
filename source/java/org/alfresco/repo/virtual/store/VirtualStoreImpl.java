@@ -61,6 +61,7 @@ import org.alfresco.repo.virtual.template.FilesFoldersConstraint;
 import org.alfresco.repo.virtual.template.FilingData;
 import org.alfresco.repo.virtual.template.FilingParameters;
 import org.alfresco.repo.virtual.template.FilingRule;
+import org.alfresco.repo.virtual.template.NamePatternPropertyValueConstraint;
 import org.alfresco.repo.virtual.template.PropertyValueConstraint;
 import org.alfresco.repo.virtual.template.NullFilingRule;
 import org.alfresco.repo.virtual.template.VirtualFolderDefinition;
@@ -548,7 +549,7 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
                 }
                 else
                 {
-                    vqConstraint = new PropertyValueConstraint(new FilesFoldersConstraint(BasicConstraint.INSTANCE,
+                    vqConstraint = new NamePatternPropertyValueConstraint(new FilesFoldersConstraint(BasicConstraint.INSTANCE,
                                                                                           true,
                                                                                           true),
                                                                ContentModel.PROP_NAME,

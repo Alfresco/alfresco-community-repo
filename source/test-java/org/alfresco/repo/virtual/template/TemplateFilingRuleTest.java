@@ -28,7 +28,7 @@ import org.junit.Test;
 public class TemplateFilingRuleTest extends VirtualizationIntegrationTest
 {
     @Test
-    public void testISO9075FilingSubPath() throws Exception
+    public void testFilingSubPath_specialCharacters() throws Exception
     {
         NodeRef vfNodeRef = createVirtualizedFolder(testRootFolder.getNodeRef(),
                                                     "Template 6 With Spaces",
@@ -56,7 +56,7 @@ public class TemplateFilingRuleTest extends VirtualizationIntegrationTest
     }
 
     @Test
-    public void testISO9075FilingPath() throws Exception
+    public void testFilingPath_specialCharacters() throws Exception
     {
         NodeRef vfNodeRef = createVirtualizedFolder(testRootFolder.getNodeRef(),
                                                     "Template 6 With Spaces",

@@ -115,7 +115,7 @@
             <property name="path" value="${virtual.folders.config.type.templates.path}" />
          </bean>
       </property>
-      <property name="qnameFilterRegexp" value="${virtual.folders.config.type.templates.qname.filter.regexp}" />
+      <property name="qnameFilters" value="${virtual.folders.config.type.templates.qname.filter}" />
    </bean>
 
    <bean id="virtualStore" class="org.alfresco.repo.virtual.store.VirtualStoreImpl">

@@ -29,11 +29,14 @@ import java.util.List;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.CannedQueryPageDetails;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -45,6 +48,7 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
 {
 
     private static final String NEW_FILE_NAME_2 = "RenameTest2";
+
     private static final String NEW_FILE_NAME_1 = "RenamedTest";
 
     @Test
@@ -126,22 +130,9 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
                                                    ContentModel.ASSOC_CONTAINS,
                                                    "Node2");
 
-        HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        properties.put(ContentModel.PROP_NAME,
-                       "testfile.txt");
-        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                             QName.createValidLocalName("testfile.txt"));
-
-        nodeService.createNode(node1,
-                               ContentModel.ASSOC_CONTAINS,
-                               assocQName,
-                               ContentModel.TYPE_CONTENT,
-                               properties);
-        nodeService.createNode(node2,
-                               ContentModel.ASSOC_CONTAINS,
-                               assocQName,
-                               ContentModel.TYPE_CONTENT,
-                               properties);
+        String fileName="testfile.txt";
+        fileAndFolderService.create(node1, fileName, ContentModel.TYPE_CONTENT);
+        fileAndFolderService.create(node2, fileName, ContentModel.TYPE_CONTENT);
 
         List<FileInfo> search = fileAndFolderService.search(virtualFolder1NodeRef,
                                                             "testfile.txt",
@@ -298,14 +289,14 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
                       contentName);
 
         {
-            PagingResults<FileInfo> folderChildren = fileAndFolderService
-                        .list(node2,
-                              false,
-                              true,
-                              "*",
-                              Collections.<QName> emptySet(),
-                              Collections.<Pair<QName, Boolean>> emptyList(),
-                              new PagingRequest(100));
+            PagingResults<FileInfo> folderChildren = fileAndFolderService.list(node2,
+                                                                               false,
+                                                                               true,
+                                                                               "*",
+                                                                               Collections.<QName> emptySet(),
+                                                                               Collections
+                                                                                           .<Pair<QName, Boolean>> emptyList(),
+                                                                               new PagingRequest(100));
             List<FileInfo> page = folderChildren.getPage();
             assertContainsNames(page,
                                 folderName);
@@ -314,14 +305,14 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
         }
 
         {
-            PagingResults<FileInfo> contentChildren = fileAndFolderService
-                        .list(node2,
-                              true,
-                              false,
-                              "*",
-                              Collections.<QName> emptySet(),
-                              Collections.<Pair<QName, Boolean>> emptyList(),
-                              new PagingRequest(100));
+            PagingResults<FileInfo> contentChildren = fileAndFolderService.list(node2,
+                                                                                true,
+                                                                                false,
+                                                                                "*",
+                                                                                Collections.<QName> emptySet(),
+                                                                                Collections
+                                                                                            .<Pair<QName, Boolean>> emptyList(),
+                                                                                new PagingRequest(100));
             List<FileInfo> page = contentChildren.getPage();
             assertMissesNames(page,
                               folderName);
@@ -403,7 +394,7 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
         NodeRef childByName = nodeService.getChildByName(node2,
                                                          ContentModel.ASSOC_CONTAINS,
                                                          contentName);
-        //rename file in virtual context
+        // rename file in virtual context
         FileInfo renamedFileInfo = fileAndFolderService.rename(childByName,
                                                                NEW_FILE_NAME_1);
         assertNotNull(renamedFileInfo);
@@ -417,13 +408,13 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
                                               ContentModel.ASSOC_CONTAINS,
                                               contentName));
         assertNotNull(nodeService.getChildByName(node2,
-                                              ContentModel.ASSOC_CONTAINS,
-                                              NEW_FILE_NAME_1));
+                                                 ContentModel.ASSOC_CONTAINS,
+                                                 NEW_FILE_NAME_1));
         assertNotNull(nodeService.getChildByName(vf,
-                                              ContentModel.ASSOC_CONTAINS,
-                                              NEW_FILE_NAME_1));
+                                                 ContentModel.ASSOC_CONTAINS,
+                                                 NEW_FILE_NAME_1));
 
-        //rename physical file
+        // rename physical file
         childByName = nodeService.getChildByName(vf,
                                                  ContentModel.ASSOC_CONTAINS,
                                                  NEW_FILE_NAME_1);
@@ -445,6 +436,183 @@ public class VirtualFileFolderServiceExtensionTest extends VirtualizationIntegra
         assertNotNull(nodeService.getChildByName(vf,
                                                  ContentModel.ASSOC_CONTAINS,
                                                  NEW_FILE_NAME_2));
+
+    }
+
+    @Test
+    public void testListNamePattern() throws Exception
+    {
+        List<Pair<QName, Boolean>> sortProps = new ArrayList<Pair<QName, Boolean>>(1);
+        sortProps.add(new Pair<QName, Boolean>(ContentModel.PROP_NAME,
+                                               false));
+        String name = "A N.&ame.txt";
+        String name1 = "A N.&ame-1.txt";
+        String nameAfter = "XXName.txt";
+
+        NodeRef vf = createVirtualizedFolder(testRootFolder.getNodeRef(),
+                                             "TestVirtualFileFolderService_testVirtualFolderVirtualChild",
+                                             TEST_TEMPLATE_3_JSON_SYS_PATH);
+        NodeRef node1 = nodeService.getChildByName(vf,
+                                                   ContentModel.ASSOC_CONTAINS,
+                                                   "Node1");
+        createContent(node1,
+                      name,
+                      "0",
+                      MimetypeMap.MIMETYPE_TEXT_PLAIN,
+                      "UTF-8");
+
+        createContent(node1,
+                      name1,
+                      "01",
+                      MimetypeMap.MIMETYPE_TEXT_PLAIN,
+                      "UTF-8");
+
+        createContent(node1,
+                      nameAfter,
+                      "1",
+                      MimetypeMap.MIMETYPE_TEXT_PLAIN,
+                      "UTF-8");
+
+        String namePattern = "A N.&ame*.txt";
+        PagingResults<FileInfo> results = fileAndFolderService.list(node1,
+                                                                    true,
+                                                                    false,
+                                                                    namePattern,
+                                                                    null,
+                                                                    sortProps,
+                                                                    new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
+
+        List<FileInfo> page = results.getPage();
+        assertEquals(2,
+                     page.size());
+        assertEquals(page.get(0).getName(),
+                     name1);
+        assertEquals(page.get(1).getName(),
+                     name);
+    }
+
+    @Test
+    public void testLastDuplicate() throws Exception
+    {
+        NodeRef lastDup = null;
+        List<Pair<QName, Boolean>> sortProps = new ArrayList<Pair<QName, Boolean>>(1);
+        sortProps.add(new Pair<QName, Boolean>(ContentModel.PROP_NAME,
+                                               false));
+        String name = "AName.txt";
+        String nameAfter = "XXName.txt";
+
+        NodeRef vf = createVirtualizedFolder(testRootFolder.getNodeRef(),
+                                             "TestVirtualFileFolderService_testVirtualFolderVirtualChild",
+                                             TEST_TEMPLATE_3_JSON_SYS_PATH);
+        NodeRef node1 = nodeService.getChildByName(vf,
+                                                   ContentModel.ASSOC_CONTAINS,
+                                                   "Node1");
+        createContent(node1,
+                      name,
+                      "0",
+                      MimetypeMap.MIMETYPE_TEXT_PLAIN,
+                      "UTF-8");
+        NodeRef aNameNodeRef = nodeService.getChildByName(node1,
+                                                          ContentModel.ASSOC_CHILDREN,
+                                                          name);
+
+        createContent(node1,
+                      nameAfter,
+                      "1",
+                      MimetypeMap.MIMETYPE_TEXT_PLAIN,
+                      "UTF-8");
+        NodeRef nameAfterNodeRef = nodeService.getChildByName(node1,
+                                                              ContentModel.ASSOC_CHILDREN,
+                                                              nameAfter);
+
+        String namePattern = addWildCardInName(name,
+                                               fileAndFolderService
+                                                           .getFileInfo(aNameNodeRef)
+                                                               .getContentData()
+                                                               .getMimetype());
+        PagingResults<FileInfo> results = fileAndFolderService
+                    .list(nodeService.getPrimaryParent(aNameNodeRef).getParentRef(),
+                          true,
+                          false,
+                          namePattern,
+                          null,
+                          sortProps,
+                          new PagingRequest(CannedQueryPageDetails.DEFAULT_PAGE_SIZE));
+
+        List<FileInfo> page = results.getPage();
+        FileInfo fileInfo = null;
+        if (page.size() > 0)
+        {
+            fileInfo = page.get(0);
+            lastDup = fileInfo.getNodeRef();
+        }
+        assertFalse(lastDup.equals(nameAfterNodeRef));
+    }
+
+    private String addWildCardInName(String name, String mimetype)
+    {
+        MimetypeService mimetypeService = ctx.getBean("mimetypeService",
+                                                      MimetypeService.class);
+        String extension = mimetypeService.getExtension(mimetype);
+        return name.substring(0,
+                              name.length() - (extension.length() + 1))
+                        .concat("*." + extension);
+    }
+
+    @Test
+    public void testListUsedWithCMIS() throws Exception
+    {
+        NodeRef vf = createVirtualizedFolder(testRootFolder.getNodeRef(),
+                                             "TestVirtualFileFolderService_testVirtualFolderVirtualChild",
+                                             TEST_TEMPLATE_3_JSON_SYS_PATH);
+        NodeRef node2 = nodeService.getChildByName(vf,
+                                                   ContentModel.ASSOC_CONTAINS,
+                                                   "Node2");
+        String contentName = "ContentVirtualChild";
+        createContent(node2,
+                      contentName);
+
+        NodeRef childByName = nodeService.getChildByName(node2,
+                                                         ContentModel.ASSOC_CONTAINS,
+                                                         contentName);
+
+        FileInfo renamedFileInfo = fileAndFolderService.rename(childByName,
+                                                               NEW_FILE_NAME_1);
+        assertNotNull(renamedFileInfo);
+        assertEquals(NEW_FILE_NAME_1,
+                     nodeService.getProperty(childByName,
+                                             ContentModel.PROP_NAME));
+
+        List<Pair<QName, Boolean>> sortProps = Collections.<Pair<QName, Boolean>> emptyList();
+        PagingRequest pagingRequest = new PagingRequest(100);
+
+        PagingResults<FileInfo> results = fileAndFolderService.list(vf,
+                                                                    true,
+                                                                    true,
+                                                                    null,
+                                                                    sortProps,
+                                                                    pagingRequest);
+
+        assertNotNull(results);
+
+        assertEquals(3,
+                     results.getPage().size());
+
+        String contentName1 = "ContentVirtualChild";
+        createContent(node2,
+                      contentName1);
+
+        results = fileAndFolderService.list(vf,
+                                            true,
+                                            true,
+                                            null,
+                                            sortProps,
+                                            pagingRequest);
+
+        assertNotNull(results);
+
+        assertEquals(4,
+                     results.getPage().size());
 
     }
 }

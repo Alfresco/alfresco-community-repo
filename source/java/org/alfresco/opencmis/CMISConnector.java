@@ -65,7 +65,6 @@ import org.alfresco.opencmis.dictionary.FolderTypeDefintionWrapper;
 import org.alfresco.opencmis.dictionary.ItemTypeDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.PropertyDefinitionWrapper;
 import org.alfresco.opencmis.dictionary.TypeDefinitionWrapper;
-import org.alfresco.opencmis.mapping.DirectProperty;
 import org.alfresco.opencmis.search.CMISQueryOptions;
 import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.opencmis.search.CMISQueryService;
@@ -1188,15 +1187,15 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      */
     public CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef)
     {
-        return createNodeInfo(nodeRef, null);
+        return createNodeInfo(nodeRef, null, null, null, true);
     }
 
     /**
      * Creates an object info object.
      */
-    public CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef, VersionHistory versionHistory)
+    public CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef, QName nodeType, Map<QName,Serializable> nodeProps, VersionHistory versionHistory, boolean checkExists)
     {
-        return new CMISNodeInfoImpl(this, nodeRef, versionHistory);
+        return new CMISNodeInfoImpl(this, nodeRef, nodeType, nodeProps, versionHistory, checkExists);
     }
 
     /**
@@ -1395,17 +1394,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         try
         {
             QName typeQName = nodeService.getType(nodeRef);
-            return getType(typeQName);
+            return getOpenCMISDictionaryService().findNodeType(typeQName);
         }
         catch(InvalidNodeRefException inre)
         {
             return null;
         }
-    }
-
-    private TypeDefinitionWrapper getType(QName typeQName)
-    {
-        return getOpenCMISDictionaryService().findNodeType(typeQName);
     }
 
     /**
@@ -1520,21 +1514,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Creates the CMIS object for a node.
      */
-    public ObjectData createCMISObject(CMISNodeInfo info, FileInfo node, String filter,
-            boolean includeAllowableActions, IncludeRelationships includeRelationships, String renditionFilter,
-            boolean includePolicyIds, boolean includeAcl)
-    {
-        if (info.getType() == null)
-        {
-            throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
-        }
-
-        Properties nodeProps = getNodeProperties(info, node, filter, info.getType());
-
-        return createCMISObjectImpl(info, nodeProps, filter, includeAllowableActions, includeRelationships,
-                renditionFilter, includePolicyIds, includeAcl);
-    }
-
     public ObjectData createCMISObject(CMISNodeInfo info, String filter, boolean includeAllowableActions,
             IncludeRelationships includeRelationships, String renditionFilter, boolean includePolicyIds,
             boolean includeAcl)
@@ -1544,8 +1523,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             throw new CmisObjectNotFoundException("No corresponding type found! Not a CMIS object?");
         }
 
-        Properties nodeProps = (info.isRelationship() ? getAssocProperties(info, filter) : getNodeProperties(info,
-                filter));
+        Properties nodeProps = (info.isRelationship() ? getAssocProperties(info, filter) : getNodeProperties(info, filter));
 
         return createCMISObjectImpl(info, nodeProps, filter, includeAllowableActions, includeRelationships,
                 renditionFilter, includePolicyIds, includeAcl);
@@ -1630,6 +1608,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             // add aspects
             List<CmisExtensionElement> extensions = getAspectExtensions(info, filter, result.getProperties()
                     .getProperties().keySet());
+
             if (!extensions.isEmpty())
             {
                 result.getProperties().setExtensions(
@@ -1889,12 +1868,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
 
     private void addAspectProperties(CMISNodeInfo info, String filter, PropertiesImpl result)
     {
-        if(getRequestCmisVersion().equals(CmisVersion.CMIS_1_1))
+        if (getRequestCmisVersion().equals(CmisVersion.CMIS_1_1))
         {
-            Set<String> propertyIds = new HashSet<String>();
+            Set<String> propertyIds = new HashSet<>();
             Set<String> filterSet = splitFilter(filter);
-    
-            Set<QName> aspects = nodeService.getAspects(info.getNodeRef());
+
+            Set<QName> aspects = info.getNodeAspects();
             for (QName aspect : aspects)
             {
                 TypeDefinitionWrapper aspectType = getOpenCMISDictionaryService().findNodeType(aspect);
@@ -1902,7 +1881,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 {
                     continue;
                 }
-    
+
                 for (PropertyDefinitionWrapper propDef : aspectType.getProperties())
                 {
                     if (propertyIds.contains(propDef.getPropertyId()))
@@ -1910,16 +1889,16 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                         // skip properties that have already been added
                         continue;
                     }
-    
+
                     if ((filterSet != null) && (!filterSet.contains(propDef.getPropertyDefinition().getQueryName())))
                     {
                         // skip properties that are not in the filter
                         continue;
                     }
-    
+
                     Serializable value = propDef.getPropertyAccessor().getValue(info);
                     result.addProperty(getProperty(propDef.getPropertyDefinition().getPropertyType(), propDef, value));
-    
+
                     // mark property as 'added'
                     propertyIds.add(propDef.getPropertyId());
                 }
@@ -1946,46 +1925,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             }
 
             Serializable value = propDef.getPropertyAccessor().getValue(info);
-            result.addProperty(getProperty(propDef.getPropertyDefinition().getPropertyType(), propDef, value));
-        }
-
-        addAspectProperties(info, filter, result);
-
-        return result;
-    }
-
-    public Properties getNodeProperties(CMISNodeInfo info, FileInfo node, String filter, TypeDefinitionWrapper type)
-    {
-        PropertiesImpl result = new PropertiesImpl();
-
-        Set<String> filterSet = splitFilter(filter);
-
-        Map<QName, Serializable> nodeProps = node.getProperties();
-
-        for (PropertyDefinitionWrapper propDef : type.getProperties())
-        {
-            if (!propDef.getPropertyId().equals(PropertyIds.OBJECT_ID))
-            {
-                // don't filter the object id
-                if ((filterSet != null) && (!filterSet.contains(propDef.getPropertyDefinition().getQueryName())))
-                {
-                    // skip properties that are not in the filter
-                    continue;
-                }
-            }
-
-            Serializable value = null;
-
-            CMISPropertyAccessor accessor = propDef.getPropertyAccessor();
-            if (accessor instanceof DirectProperty)
-            {
-                value = nodeProps.get(accessor.getMappedProperty());
-            }
-            else
-            {
-                value = propDef.getPropertyAccessor().getValue(info);
-            }
-
             result.addProperty(getProperty(propDef.getPropertyDefinition().getPropertyType(), propDef, value));
         }
 
@@ -2022,15 +1961,14 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     /**
      * Builds aspect extension.
      */
-    public List<CmisExtensionElement> getAspectExtensions(CMISNodeInfo info, String filter,
-            Set<String> alreadySetProperties)
+    public List<CmisExtensionElement> getAspectExtensions(CMISNodeInfo info, String filter, Set<String> alreadySetProperties)
     {
         List<CmisExtensionElement> extensions = new ArrayList<CmisExtensionElement>();
         Set<String> propertyIds = new HashSet<String>(alreadySetProperties);
         List<CmisExtensionElement> propertyExtensionList = new ArrayList<CmisExtensionElement>();
         Set<String> filterSet = splitFilter(filter);
 
-        Set<QName> aspects = nodeService.getAspects(info.getNodeRef());
+        Set<QName> aspects = info.getNodeAspects();
         for (QName aspect : aspects)
         {
             TypeDefinitionWrapper aspectType = getOpenCMISDictionaryService().findNodeType(aspect);
@@ -2038,7 +1976,7 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             {
                 continue;
             }
-            
+
             AspectDefinition aspectDefinition = dictionaryService.getAspect(aspect);
             Map<QName, org.alfresco.service.cmr.dictionary.PropertyDefinition> aspectProperties = aspectDefinition.getProperties();
 

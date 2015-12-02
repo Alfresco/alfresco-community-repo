@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,6 +22,7 @@ import java.io.Serializable;
 import java.util.List;
 
 import org.alfresco.opencmis.CMISConnector;
+import org.alfresco.opencmis.CMISNodeInfoImpl;
 import org.alfresco.opencmis.dictionary.CMISNodeInfo;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -61,9 +62,9 @@ public class DirectProperty extends AbstractProperty
         
         if (nodeInfo.getNodeRef() != null)
         {
+            Serializable result = nodeInfo.getNodeProps().get(alfrescoName);
+
             /* MNT-10548 fix */
-            Serializable result = getServiceRegistry().getNodeService().getProperty(nodeInfo.getNodeRef(), alfrescoName);
-            
             if (result instanceof List)
             {
                 @SuppressWarnings("unchecked")

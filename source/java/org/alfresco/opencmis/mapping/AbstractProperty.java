@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -39,7 +39,7 @@ import org.alfresco.service.namespace.QName;
  */
 public abstract class AbstractProperty implements CMISPropertyAccessor
 {
-    private static final String CONTENT_PROPERTY = "::content";
+    public static final String CONTENT_PROPERTY = "::content";
 
     private ServiceRegistry serviceRegistry;
     protected CMISConnector connector;
@@ -146,8 +146,8 @@ public abstract class AbstractProperty implements CMISPropertyAccessor
         {
             ContentData contentData = null;
 
-            Serializable value = getServiceRegistry().getNodeService().getProperty(nodeInfo.getNodeRef(),
-                    ContentModel.PROP_CONTENT);
+            Serializable value = nodeInfo.getNodeProps().get(ContentModel.PROP_CONTENT);
+
             if (value != null)
             {
                 contentData = DefaultTypeConverter.INSTANCE.convert(ContentData.class, value);

@@ -140,6 +140,8 @@ import org.apache.commons.logging.LogFactory;
  * 
  * @author florian.mueller
  * @author Derek Hulley
+ * @author janv
+ *
  * @since 4.0
  */
 public class AlfrescoCmisServiceImpl extends AbstractCmisService implements AlfrescoCmisService
@@ -159,8 +161,8 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
     public AlfrescoCmisServiceImpl(CMISConnector connector)
     {
         this.connector = connector;
-        nodeInfoMap = new HashMap<String, CMISNodeInfo>();
-        objectInfoMap = new HashMap<String, ObjectInfo>();
+        nodeInfoMap = new HashMap<>();
+        objectInfoMap = new HashMap<>();
     }
 
     @Override
@@ -187,12 +189,17 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
     protected CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef)
     {
-        return createNodeInfo(nodeRef, null);
+        return createNodeInfo(nodeRef, null, true);
     }
 
-    protected CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef, VersionHistory versionHistory)
+    protected CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef, VersionHistory versionHistory, boolean checkExists)
     {
-        CMISNodeInfoImpl result = connector.createNodeInfo(nodeRef, versionHistory);
+        return createNodeInfo(nodeRef, null, null, versionHistory, checkExists);
+    }
+
+    protected CMISNodeInfoImpl createNodeInfo(NodeRef nodeRef, QName nodeType, Map<QName,Serializable> nodeProps, VersionHistory versionHistory, boolean checkExists)
+    {
+        CMISNodeInfoImpl result = connector.createNodeInfo(nodeRef, nodeType, nodeProps, versionHistory, checkExists);
         nodeInfoMap.put(result.getObjectId(), result);
 
         return result;
@@ -494,20 +501,19 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                     }
 
                     // create a child CMIS object
-                    CMISNodeInfo ni = createNodeInfo(child.getNodeRef());
+                    CMISNodeInfo ni = createNodeInfo(child.getNodeRef(), child.getType(), child.getProperties(), null, false); // note: checkExists=false (don't need to check again)
 
-                    if (getObjectInfo(repositoryId, ni.getObjectId(), includeRelationships)==null)
+                    // ignore invalid children
+                    // Skip non-cmis objects
+                    if (ni.getObjectVariant() == CMISObjectVariant.INVALID_ID
+                            || ni.getObjectVariant() == CMISObjectVariant.NOT_EXISTING
+                            || ni.getObjectVariant() == CMISObjectVariant.NOT_A_CMIS_OBJECT
+                            || ni.getObjectVariant() == CMISObjectVariant.PERMISSION_DENIED)
                     {
-                        // ignore invalid children
                         continue;
                     }
 
-                    if (CMISObjectVariant.NOT_A_CMIS_OBJECT.equals(ni.getObjectVariant()))
-                    {
-                        continue;  //Skip non-cmis objects
-                    }
-                    
-                    ObjectData object = connector.createCMISObject(ni, child, filter, includeAllowableActions,
+                    ObjectData object = connector.createCMISObject(ni, filter, includeAllowableActions,
                             includeRelationships, renditionFilter, false, false/*, getContext().getCmisVersion()*/);
 
                 	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
@@ -731,7 +737,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
                 // create a child CMIS object
                 ObjectInFolderDataImpl object = new ObjectInFolderDataImpl();
-                CMISNodeInfo ni = createNodeInfo(child.getChildRef());
+                CMISNodeInfo ni = createNodeInfo(child.getChildRef(), null, false); // note: checkExists=false (don't need to check again)
                 object.setObject(connector.createCMISObject(
                         ni, filter, includeAllowableActions, includeRelationships,
                         renditionFilter, false, false));
@@ -2050,10 +2056,9 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                     throw new CmisObjectNotFoundException("Object not found: " + path);
                 }
 
-                CMISNodeInfo info = createNodeInfo(fileInfo.getNodeRef());
+                CMISNodeInfo info = createNodeInfo(fileInfo.getNodeRef(), fileInfo.getType(), fileInfo.getProperties(), null, false);
 
-                object = connector.createCMISObject(
-                        info, fileInfo, filter, includeAllowableActions,
+                object = connector.createCMISObject(info, filter, includeAllowableActions,
                         includeRelationships, renditionFilter, includePolicyIds, includeAcl);
 
                 isObjectInfoRequired = getContext().isObjectInfoRequired();
@@ -2357,7 +2362,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             // convert the version history
             for (Version version : versionHistory.getAllVersions())
             {
-                CMISNodeInfo versionInfo = createNodeInfo(version.getFrozenStateNodeRef(), versionHistory);
+                CMISNodeInfo versionInfo = createNodeInfo(version.getFrozenStateNodeRef(), versionHistory, true); // TODO do we need to check existence ?
                 // MNT-9557 fix. Replace head version with current node info
                 if (versionHistory.getHeadVersion().equals(version))
                 {
@@ -2412,7 +2417,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
 
         StringBuilder sb = new StringBuilder();
         sb.append(objectId).append("-").append(versionSeriesId);
-        
+
         logGetObjectCall("getObjectOfLatestVersion", start, sb.toString(), filter, includeAllowableActions, includeRelationships,
                 renditionFilter, includePolicyIds, includeAcl, isObjectInfoRequired, extension);
 

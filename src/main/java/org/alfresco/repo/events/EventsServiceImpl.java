@@ -496,9 +496,22 @@ public class EventsServiceImpl extends AbstractEventsService implements EventsSe
             List<List<String>> pathNodeIds = nodeInfo.getParentNodeIds();
 	    	long timestamp = System.currentTimeMillis();
 	    	Long modificationTime = nodeInfo.getModificationTimestamp();
-	    	long size = (value != null ? value.getSize() : 0);
-	    	String mimeType = value.getMimetype();
-	    	String encoding = value.getEncoding();
+            long size;
+            String mimeType;
+            String encoding;
+            if (value != null)
+            {
+                size = value.getSize();
+                mimeType = value.getMimetype();
+                encoding = value.getEncoding();
+            }
+            else
+            {
+                size = 0;
+                mimeType = "";
+                encoding = "";
+            }
+
 	    	String nodeType = nodeInfo.getType().toPrefixString(namespaceService);
             Client alfrescoClient = getAlfrescoClient(nodeInfo.getClient());
 

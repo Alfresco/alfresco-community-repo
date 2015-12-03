@@ -55,6 +55,7 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyMap;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -503,67 +504,30 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
 
         return versionRecord;
     }
-
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService#getRecordedVersion(org.alfresco.service.cmr.repository.NodeRef)
+     */
     @Override
-    protected VersionHistory buildVersionHistory(NodeRef versionHistoryRef, NodeRef nodeRef)
+    public Version getRecordedVersion(NodeRef versionRecord)
     {
-        VersionHistory versionHistory = super.buildVersionHistory(versionHistoryRef, nodeRef);
-        
-        // create an empty version history if appropriate
-        if (versionHistoryRef != null && 
-            nodeRef != null &&
-            versionHistory == null &&
-            getAllVersions(versionHistoryRef).isEmpty() == true)
+        Version version = null;
+        NodeRef versionedNodeRef = (NodeRef) nodeService.getProperty(versionRecord, RecordableVersionModel.PROP_VERSIONED_NODEREF);
+        if (versionedNodeRef != null)
         {
-            versionHistory = new EmptyVersionHistory();
+            String versionLabel = (String) nodeService.getProperty(versionRecord, RecordableVersionModel.PROP_VERSION_LABEL);
+            if (StringUtils.isNotBlank(versionLabel))
+            {
+                VersionHistory versionHistory = getVersionHistory(versionedNodeRef);
+                if (versionHistory != null)
+                {
+                    version = versionHistory.getVersion(versionLabel);
+                }
+            }
         }
-        
-        return versionHistory;
+        return version;
     }
-    
-    public class EmptyVersionHistory implements VersionHistory
-    {
-        private static final long serialVersionUID = 3449832161314670033L;
 
-        @Override
-        public Version getRootVersion()
-        {
-            return null;
-        }
-
-        @Override
-        public Version getHeadVersion()
-        {
-            return null;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public Collection<Version> getAllVersions()
-        {
-            return (Collection<Version>)Collections.EMPTY_LIST;
-        }
-
-        @Override
-        public Version getPredecessor(Version version)
-        {
-            return null;
-        }
-
-        @SuppressWarnings("unchecked")
-        @Override
-        public Collection<Version> getSuccessors(Version version)
-        {
-            return (Collection<Version>)Collections.EMPTY_LIST;
-        }
-
-        @Override
-        public Version getVersion(String versionLabel)
-        {
-            return null;
-        }        
-    }
-    
     /**
      * Freezes audit aspect properties.
      *

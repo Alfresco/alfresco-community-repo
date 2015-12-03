@@ -19,13 +19,18 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.version;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
+import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
 import org.alfresco.repo.content.MimetypeMap;
@@ -396,5 +401,106 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
                 assertTrue(relationshipService.getRelationshipsFrom(recordVersion11, RelationshipService.RELATIONSHIP_VERSIONS).isEmpty());
             }
         });  
+    }
+    
+    /**
+     * Given that a version record
+     * When the version record is destroyed whilst retaining the meta data
+     * Then the version is marked as destroyed in the collab version history
+     */
+    public void testDetroyVerionRecordWithMetadata()
+    {
+        final NodeRef myDocument = createDocumentWithRecordVersions();
+        
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            private VersionHistory versionHistory;
+            private NodeRef recordVersion11;
+            
+            public void given() throws Exception
+            {
+                // create file plan structure
+                NodeRef myCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                utils.createBasicDispositionSchedule(myCategory, GUID.generate(), GUID.generate(), true, true);
+                
+                NodeRef myRecordFolder = recordFolderService.createRecordFolder(myCategory, GUID.generate());
+                
+                // get version history
+                versionHistory = versionService.getVersionHistory(myDocument);
+                
+                // file and complete all the version records into my record folder
+                for (Version version : versionHistory.getAllVersions())
+                {
+                    NodeRef record = recordableVersionService.getVersionRecord(version);
+                    fileFolderService.move(record, myRecordFolder, null);
+                    utils.completeRecord(record);
+                }
+            }
+            
+            public void when()
+            {   
+                Version version11 = versionHistory.getVersion("1.1");
+                recordVersion11 = recordableVersionService.getVersionRecord(version11);
+                
+                Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+                params.put(CompleteEventAction.PARAM_EVENT_NAME, CommonRMTestUtils.DEFAULT_EVENT_NAME);
+                rmActionService.executeRecordsManagementAction(recordVersion11, CompleteEventAction.NAME, params);  
+                
+                rmActionService.executeRecordsManagementAction(recordVersion11, CutOffAction.NAME);
+                
+                rmActionService.executeRecordsManagementAction(recordVersion11, DestroyAction.NAME);
+            }                       
+            
+            public void then()
+            {
+                // verify that the version history looks as expected
+                VersionHistory versionHistory = versionService.getVersionHistory(myDocument);
+                assertNotNull(versionHistory);                
+                Collection<Version> versions = versionHistory.getAllVersions();
+                assertEquals(3, versions.size());
+                
+                // verify 1.2 setup as expected
+                Version version12 = versionHistory.getHeadVersion();
+                assertEquals("1.2", version12.getVersionLabel());
+                assertFalse(recordableVersionService.isRecordedVersionDestroyed(version12));
+                NodeRef recordVersion12 = recordableVersionService.getVersionRecord(version12);
+                assertNotNull(recordVersion12);
+                assertFalse(recordService.isMetadataStub(recordVersion12));
+                
+                assertTrue(relationshipService.getRelationshipsTo(recordVersion12, "versions").isEmpty());
+                
+                Set<Relationship> from12 = relationshipService.getRelationshipsFrom(recordVersion12, "versions");
+                assertEquals(1, from12.size());
+                
+                // verify 1.1 setup as expected
+                Version version11 = versionHistory.getPredecessor(version12);
+                assertEquals("1.1", version11.getVersionLabel());
+                assertTrue(recordableVersionService.isRecordedVersionDestroyed(version11));
+                assertNotNull(recordVersion11);
+                assertTrue(recordService.isMetadataStub(recordVersion11));
+                
+                Set<Relationship> to11 = relationshipService.getRelationshipsTo(recordVersion11, "versions");
+                assertEquals(1, to11.size());
+                assertEquals(recordVersion12, to11.iterator().next().getSource());
+                
+                Set<Relationship> from11 = relationshipService.getRelationshipsFrom(recordVersion11, "versions");
+                assertEquals(1, from11.size());
+                
+                // verify 1.0 setup as expected
+                Version version10 = versionHistory.getPredecessor(version11);
+                assertEquals("1.0", version10.getVersionLabel());
+                assertFalse(recordableVersionService.isRecordedVersionDestroyed(version10));
+                NodeRef recordVersion10 = recordableVersionService.getVersionRecord(version10);
+                assertNotNull(recordVersion10);
+                assertFalse(recordService.isMetadataStub(recordVersion10));
+                
+                Set<Relationship> to10 = relationshipService.getRelationshipsTo(recordVersion10, "versions");
+                assertEquals(1, to10.size());
+                assertEquals(recordVersion11, to10.iterator().next().getSource());
+                
+                assertTrue(relationshipService.getRelationshipsFrom(recordVersion10, "versions").isEmpty());
+
+            }
+        }); 
     }
 }

@@ -57,6 +57,14 @@ public interface RecordableVersionService
     NodeRef getVersionRecord(Version version);
     
     /**
+     * Gets the version that relates to the version record
+     * 
+     * @param versionRecord version record node reference
+     * @return Version  version or null if not found
+     */
+    Version getRecordedVersion(NodeRef record);
+    
+    /**
      * Creates a record from the latest version, marking it as recorded.
      * <p>
      * Does not create a record if the node is not versionable or the latest

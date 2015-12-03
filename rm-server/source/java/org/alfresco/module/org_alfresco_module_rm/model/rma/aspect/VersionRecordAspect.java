@@ -18,9 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSIONED_NODEREF;
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSION_LABEL;
-
 import java.util.Set;
 
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
@@ -34,9 +31,6 @@ import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
-import org.alfresco.service.cmr.version.VersionHistory;
-import org.alfresco.service.cmr.version.VersionService;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * rmv:versionRecord behaviour bean
@@ -51,22 +45,11 @@ import org.apache.commons.lang.StringUtils;
 public class VersionRecordAspect extends    BaseBehaviourBean
                                  implements NodeServicePolicies.BeforeDeleteNodePolicy
 {
-    /** version service */
-    private VersionService versionService;
-    
     /** recordable version service */
     private RecordableVersionService recordableVersionService;
     
     /** relationship service */
     private RelationshipService relationshipService;
-
-    /**
-     * @param versionService    version service
-     */
-    public void setVersionService(VersionService versionService)
-    {
-        this.versionService = versionService;
-    }
     
     /**
      * @param recordableVersionService  recordable version service
@@ -93,60 +76,48 @@ public class VersionRecordAspect extends    BaseBehaviourBean
     @Behaviour (kind = BehaviourKind.CLASS)
     public void beforeDeleteNode(final NodeRef nodeRef)
     {
-        final NodeRef versionedNodeRef = (NodeRef) nodeService.getProperty(nodeRef, PROP_VERSIONED_NODEREF);
-        if (versionedNodeRef != null)
+        final Version version = recordableVersionService.getRecordedVersion(nodeRef);
+        if (version != null)
         {
-            String versionLabel = (String) nodeService.getProperty(nodeRef, PROP_VERSION_LABEL);
-            if (StringUtils.isNotBlank(versionLabel))
+            authenticationUtil.runAsSystem(new RunAsWork<Void>()
             {
-                final VersionHistory versionHistory = versionService.getVersionHistory(versionedNodeRef);
-                if (versionHistory != null)
+                @Override
+                public Void doWork()
                 {
-                    final Version version = versionHistory.getVersion(versionLabel);
-                    if (version != null)
+                    behaviourFilter.disableBehaviour();
+                    try
                     {
-                        authenticationUtil.runAsSystem(new RunAsWork<Void>()
+                        // mark the associated version as destroyed
+                        recordableVersionService.destroyRecordedVersion(version);
+                                                            
+                        // re-organise the versions relationships ...
+                        // if there is only one "to" reference since a version can only have one predecessor
+                        Set<Relationship> tos = relationshipService.getRelationshipsTo(nodeRef, RelationshipService.RELATIONSHIP_VERSIONS);
+                        if (!tos.isEmpty() && tos.size() == 1)
                         {
-                            @Override
-                            public Void doWork()
+                            // if there is some "from" references
+                            Set<Relationship> froms = relationshipService.getRelationshipsFrom(nodeRef, RelationshipService.RELATIONSHIP_VERSIONS);
+                            if (!froms.isEmpty())
                             {
-                                behaviourFilter.disableBehaviour();
-                                try
+                                // get predecessor version relationship
+                                Relationship to = tos.iterator().next();
+                                
+                                for (Relationship from : froms)
                                 {
-                                    // mark the associated version as destroyed
-                                    recordableVersionService.destroyRecordedVersion(version);
-                                                                        
-                                    // re-organise the versions relationships ...
-                                    // if there is only one "to" reference since a version can only have one predecessor
-                                    Set<Relationship> tos = relationshipService.getRelationshipsTo(nodeRef, RelationshipService.RELATIONSHIP_VERSIONS);
-                                    if (!tos.isEmpty() && tos.size() == 1)
-                                    {
-                                        // if there is some "from" references
-                                        Set<Relationship> froms = relationshipService.getRelationshipsFrom(nodeRef, RelationshipService.RELATIONSHIP_VERSIONS);
-                                        if (!froms.isEmpty())
-                                        {
-                                            // get predecessor version relationship
-                                            Relationship to = tos.iterator().next();
-                                            
-                                            for (Relationship from : froms)
-                                            {
-                                                // point the "to" the all the "from's"
-                                                relationshipService.addRelationship(RelationshipService.RELATIONSHIP_VERSIONS, to.getSource(), from.getTarget());
-                                            }
-                                        }
-                                    }
+                                    // point the "to" the all the "from's"
+                                    relationshipService.addRelationship(RelationshipService.RELATIONSHIP_VERSIONS, to.getSource(), from.getTarget());
                                 }
-                                finally
-                                {
-                                    behaviourFilter.enableBehaviour();
-                                }
-        
-                                return null;
                             }
-                        });
+                        }
                     }
+                    finally
+                    {
+                        behaviourFilter.enableBehaviour();
+                    }
+
+                    return null;
                 }
-            }
-        }
+            });
+        }         
     }
 }

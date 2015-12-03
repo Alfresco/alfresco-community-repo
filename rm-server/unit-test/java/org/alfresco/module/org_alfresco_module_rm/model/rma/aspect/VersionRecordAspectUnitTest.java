@@ -18,7 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSIONED_NODEREF;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -53,7 +52,7 @@ public class VersionRecordAspectUnitTest extends BaseUnitTest
     private @InjectMocks VersionRecordAspect versionRecordAspect;
     
     /**
-     * given that version node ref is null
+     * given that there is no recorded version
      * before delete of record
      * then nothing happens
      */
@@ -62,7 +61,7 @@ public class VersionRecordAspectUnitTest extends BaseUnitTest
     {
         NodeRef nodeRef = generateNodeRef();
         
-        when(mockedNodeService.getProperty(nodeRef, PROP_VERSIONED_NODEREF))
+        when(mockedRecordableVersionService.getRecordedVersion(nodeRef))
             .thenReturn(null);
         
         versionRecordAspect.beforeDeleteNode(nodeRef);
@@ -70,89 +69,9 @@ public class VersionRecordAspectUnitTest extends BaseUnitTest
         verify(mockedNodeService, never()).getProperty(nodeRef, RecordableVersionModel.PROP_VERSION_LABEL);        
         verify(mockedRecordableVersionService, never()).destroyRecordedVersion(any(Version.class));        
     }
-    
+     
     /**
-     * given that version node ref is not null
-     * and version label is null
-     * before delete of record
-     * then nothing happens
-     */
-    @Test
-    public void beforeDeleteNoVersionLabel()
-    {
-        NodeRef nodeRef = generateNodeRef();
-        NodeRef versionedNodeRef = generateNodeRef();
-        
-        when(mockedNodeService.getProperty(nodeRef, PROP_VERSIONED_NODEREF))
-            .thenReturn(versionedNodeRef);
-        when(mockedNodeService.getProperty(nodeRef, RecordableVersionModel.PROP_VERSION_LABEL))
-            .thenReturn(null);
-        
-        versionRecordAspect.beforeDeleteNode(nodeRef);
-        
-        verify(mockedVersionService, never()).getVersionHistory(versionedNodeRef);      
-        verify(mockedRecordableVersionService, never()).destroyRecordedVersion(any(Version.class)); 
-    }
-    
-    /**
-     * given that version node ref is not null
-     * and version label is not null
-     * and version history is null
-     * before delete of record
-     * then nothing happens
-     */
-    @Test
-    public void beforeDeleteNoVersionHistory()
-    {
-        NodeRef nodeRef = generateNodeRef();
-        NodeRef versionedNodeRef = generateNodeRef();
-        
-        when(mockedNodeService.getProperty(nodeRef, PROP_VERSIONED_NODEREF))
-            .thenReturn(versionedNodeRef);
-        when(mockedNodeService.getProperty(nodeRef, RecordableVersionModel.PROP_VERSION_LABEL))
-            .thenReturn(generateText());
-        when(mockedVersionService.getVersionHistory(versionedNodeRef))
-            .thenReturn(null);
-        
-        versionRecordAspect.beforeDeleteNode(nodeRef);
-           
-        verify(mockedRecordableVersionService, never()).destroyRecordedVersion(any(Version.class)); 
-    }
-    
-    /**
-     * given that version node ref is not null
-     * and version label is not null
-     * and version history is not null
-     * and the version relating to the version label is null
-     * before delete of record
-     * then nothing happens
-     */
-    @Test
-    public void beforeDeleteNoVersionForLabel()
-    {
-        NodeRef nodeRef = generateNodeRef();
-        NodeRef versionedNodeRef = generateNodeRef();
-        String versionLabel = generateText();
-        
-        when(mockedNodeService.getProperty(nodeRef, PROP_VERSIONED_NODEREF))
-            .thenReturn(versionedNodeRef);
-        when(mockedNodeService.getProperty(nodeRef, RecordableVersionModel.PROP_VERSION_LABEL))
-            .thenReturn(versionLabel);
-        when(mockedVersionService.getVersionHistory(versionedNodeRef))
-            .thenReturn(mockedVersionHistory);        
-        when(mockedVersionHistory.getVersion(versionLabel))
-            .thenReturn(null);
-        
-        versionRecordAspect.beforeDeleteNode(nodeRef);
-           
-        verify(mockedRecordableVersionService, never()).destroyRecordedVersion(any(Version.class)); 
-    }
-    
-    /**
-     * given that version node ref is not null
-     * and version label is not null
-     * and version history is not null
-     * and the version relating to the version label is not null
+     * given that there is a recorded version
      * before delete of record
      * then the version is marked as destroyed
      */
@@ -160,16 +79,8 @@ public class VersionRecordAspectUnitTest extends BaseUnitTest
     public void beforeDeleteMarkVersionDestroyed()
     {
         NodeRef nodeRef = generateNodeRef();
-        NodeRef versionedNodeRef = generateNodeRef();
-        String versionLabel = generateText();
         
-        when(mockedNodeService.getProperty(nodeRef, PROP_VERSIONED_NODEREF))
-            .thenReturn(versionedNodeRef);
-        when(mockedNodeService.getProperty(nodeRef, RecordableVersionModel.PROP_VERSION_LABEL))
-            .thenReturn(versionLabel);
-        when(mockedVersionService.getVersionHistory(versionedNodeRef))
-            .thenReturn(mockedVersionHistory);        
-        when(mockedVersionHistory.getVersion(versionLabel))
+        when(mockedRecordableVersionService.getRecordedVersion(nodeRef))
             .thenReturn(mockedVersion);
         
         versionRecordAspect.beforeDeleteNode(nodeRef);

@@ -18,11 +18,13 @@
  */
 package org.alfresco.service.cmr.activities;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.Client;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
+@AlfrescoPublicApi
 public interface ActivityPostService
 {
     

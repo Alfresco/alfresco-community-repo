@@ -204,4 +204,4 @@ virtual.folders.model.labels=alfresco/messages/virtualization-model
 #A company home relative name or qname path location of the type mapped templates.
 #virtual.folders.config.type.templates.path=${spaces.dictionary.childname}/${spaces.virtualfolders.childname}
 #Type and aspect qname regular expression filter. 
-#virtual.folders.config.type.templates.qname.filter.regexp=st:siteContainer,clex:claimFolder
+#virtual.folders.config.type.templates.qname.filter=none

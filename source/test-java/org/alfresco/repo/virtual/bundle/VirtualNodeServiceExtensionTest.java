@@ -19,8 +19,6 @@
 
 package org.alfresco.repo.virtual.bundle;
 
-import static org.junit.Assert.*;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -36,6 +34,7 @@ import org.alfresco.repo.download.DownloadModel;
 import org.alfresco.repo.download.DownloadStorage;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.virtual.VirtualContentModel;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.config.NodeRefExpression;
@@ -49,7 +48,6 @@ import org.alfresco.repo.virtual.store.VirtualStore;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.namespace.NamespaceService;
@@ -127,9 +125,9 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                           "shouldNotBeCreated");
             fail("Should not be able to create node in a readonly context.");
         }
-        catch (InvalidNodeRefException e)
+        catch (AccessDeniedException e)
         {
-            logger.info("Succesfully denied creation in readonl",
+            logger.info("Succesfully denied creation in readonly",
                         e);
         }
     }
@@ -210,37 +208,29 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                                             "Node2");
         assertNotNull(secondChild);
 
-        HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        properties.put(ContentModel.PROP_NAME,
-                       "testfile.txt");
-        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                             QName.createValidLocalName("testfile.txt"));
         authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         // add testfile.txt to first virtual child
 
-        createNode(firstChild,
-                   assocQName,
-                   properties);
+        String fileName="testfile.txt";
+        uploadNode(firstChild,
+                   fileName);
         assertNotNull(nodeService.getChildByName(firstChild.toNodeRef(),
                                                  ContentModel.ASSOC_CONTAINS,
                                                  "testfile.txt"));
-        createNode(firstChild,
-                   assocQName,
-                   properties);
+        uploadNode(firstChild,
+                   fileName);
         assertNotNull(nodeService.getChildByName(firstChild.toNodeRef(),
                                                  ContentModel.ASSOC_CONTAINS,
                                                  "testfile-1.txt"));
 
         // add testfile.txt to second virtual child
-        createNode(secondChild,
-                   assocQName,
-                   properties);
+        uploadNode(secondChild,
+                   fileName);
         assertNotNull(nodeService.getChildByName(secondChild.toNodeRef(),
                                                  ContentModel.ASSOC_CONTAINS,
                                                  "testfile-2.txt"));
-        createNode(secondChild,
-                   assocQName,
-                   properties);
+        uploadNode(secondChild,
+                   fileName);
         assertNotNull(nodeService.getChildByName(secondChild.toNodeRef(),
                                                  ContentModel.ASSOC_CONTAINS,
                                                  "testfile-3.txt"));
@@ -248,13 +238,9 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
         // add again to first virtual child starting from the last index found
         // (this is the index that comes from
         // upload-post.js)
-        properties.put(ContentModel.PROP_NAME,
-                       "testfile-2.txt");
-        assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                       QName.createValidLocalName("testfile-2.txt"));
-        createNode(firstChild,
-                   assocQName,
-                   properties);
+       fileName="testfile-2.txt";
+       uploadNode(firstChild,
+                  fileName);
         assertNotNull(nodeService.getChildByName(firstChild.toNodeRef(),
                                                  ContentModel.ASSOC_CONTAINS,
                                                  "testfile-4.txt"));
@@ -262,28 +248,14 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
         // test create node for actual node starting from the last index found
         // (this is the index that comes from
         // upload-post.js)
-        properties.put(ContentModel.PROP_NAME,
-                       "testfile-5.txt");
-        assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                       QName.createValidLocalName("testfile-5.txt"));
-        nodeService.createNode(virtualFolder1NodeRef,
-                               ContentModel.ASSOC_CONTAINS,
-                               assocQName,
-                               ContentModel.TYPE_CONTENT,
-                               properties).getChildRef();
+        fileName="testfile-5.txt";
+        fileAndFolderService.create(virtualFolder1NodeRef, fileName, ContentModel.TYPE_CONTENT);
         assertNotNull(nodeService.getChildByName(virtualFolder1NodeRef,
                                                  ContentModel.ASSOC_CONTAINS,
                                                  "testfile-5.txt"));
 
-        properties.put(ContentModel.PROP_NAME,
-                       "testfile-6.txt");
-        assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                       QName.createValidLocalName("testfile-6.txt"));
-        nodeService.createNode(virtualFolder1NodeRef,
-                               ContentModel.ASSOC_CONTAINS,
-                               assocQName,
-                               ContentModel.TYPE_CONTENT,
-                               properties).getChildRef();
+        fileName="testfile-6.txt";
+        fileAndFolderService.create(virtualFolder1NodeRef, fileName, ContentModel.TYPE_CONTENT);
         assertNotNull(nodeService.getChildByName(virtualFolder1NodeRef,
                                                  ContentModel.ASSOC_CONTAINS,
                                                  "testfile-6.txt"));
@@ -291,38 +263,20 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
         // add again to second child starting from the last index found (this is
         // the index that comes from
         // upload-post.js)
-        properties.put(ContentModel.PROP_NAME,
-                       "testfile-4.txt");
-        assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                       QName.createValidLocalName("testfile-4.txt"));
-        nodeService.createNode(secondChild.toNodeRef(),
-                               ContentModel.ASSOC_CONTAINS,
-                               assocQName,
-                               ContentModel.TYPE_CONTENT,
-                               properties).getChildRef();
+        fileName="testfile-4.txt";
+        uploadNode(secondChild,
+                   fileName);
         assertNotNull(nodeService.getChildByName(secondChild.toNodeRef(),
                                                  ContentModel.ASSOC_CONTAINS,
                                                  "testfile-7.txt"));
 
         // test situation when file name is of form testfile1-1.txt
-        properties.put(ContentModel.PROP_NAME,
-                       "testfile1-1.txt");
-        assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                       QName.createValidLocalName("testfile1-1.txt"));
-        nodeService.createNode(secondChild.toNodeRef(),
-                               ContentModel.ASSOC_CONTAINS,
-                               assocQName,
-                               ContentModel.TYPE_CONTENT,
-                               properties).getChildRef();
+        fileName="testfile1-1.txt";
+        fileAndFolderService.create(secondChild.toNodeRef(), fileName, ContentModel.TYPE_CONTENT);
         assertNotNull(nodeService.getChildByName(secondChild.toNodeRef(),
                                                  ContentModel.ASSOC_CONTAINS,
                                                  "testfile1-1.txt"));
-
-        nodeService.createNode(secondChild.toNodeRef(),
-                               ContentModel.ASSOC_CONTAINS,
-                               assocQName,
-                               ContentModel.TYPE_CONTENT,
-                               properties).getChildRef();
+        fileAndFolderService.create(secondChild.toNodeRef(), fileName, ContentModel.TYPE_CONTENT);
         assertNotNull(nodeService.getChildByName(secondChild.toNodeRef(),
                                                  ContentModel.ASSOC_CONTAINS,
                                                  "testfile1-1-1.txt"));
@@ -393,6 +347,13 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                       childAssocsRef);
     }
 
+    private void uploadNode(Reference reference, String name)
+    {
+        fileAndFolderService.create(reference.toNodeRef(),
+                                    name,
+                                    ContentModel.TYPE_CONTENT);
+    }
+
     /**
      * Assets that the given {@link ChildAssociationRef} was created within the
      * given virtualizable nodeRef container reference.
@@ -452,18 +413,10 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                                    ContentModel.ASSOC_CONTAINS,
                                                    "Node2");
 
-        HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        properties.put(ContentModel.PROP_NAME,
-                       "testfile.txt");
-        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                                             QName.createValidLocalName("testfile.txt"));
+        String fileName="testfile.txt";
 
         // add testfile.txt to first virtual child
-        nodeService.createNode(node2,
-                               ContentModel.ASSOC_CONTAINS,
-                               assocQName,
-                               ContentModel.TYPE_CONTENT,
-                               properties);
+        fileAndFolderService.create(node2, fileName, ContentModel.TYPE_CONTENT);
 
         NodeRef childRef = nodeService.getChildByName(node2,
                                                       ContentModel.ASSOC_CONTAINS,
@@ -487,11 +440,7 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                                      "Node2_1");
         assertNotNull(node2_1);
 
-        nodeService.createNode(node2_1,
-                               ContentModel.ASSOC_CONTAINS,
-                               assocQName,
-                               ContentModel.TYPE_CONTENT,
-                               properties);
+        fileAndFolderService.create(node2_1, fileName, ContentModel.TYPE_CONTENT);
 
         NodeRef childRef_1 = nodeService.getChildByName(node2_1,
                                                         ContentModel.ASSOC_CONTAINS,
@@ -1198,6 +1147,110 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
 
       childFolderNodeRef = nodeService.getChildByName(physicalFolder,ContentModel.ASSOC_CONTAINS, "testFolder1");
       assertNotNull(childFolderNodeRef);
+    }
+
+    public void testChildByName_ACE_4700() throws Exception
+    {
+        NodeRef node1 = nodeService.getChildByName(virtualFolder1NodeRef,
+                                                   ContentModel.ASSOC_CONTAINS,
+                                                   "Node1");
+        assertNotNull(node1);
+        String filename = "2015-11_11_1557_folder_empty_space.txt";
+        fileAndFolderService.create(node1,
+                                    filename,
+                                    ContentModel.TYPE_CONTENT);
+        fileAndFolderService.create(node1,
+                                    filename,
+                                    ContentModel.TYPE_CONTENT);
+        assertNotNull(nodeService.getChildByName(node1,
+                                                 ContentModel.ASSOC_CONTAINS,
+                                                 "2015-11_11_1557_folder_empty_space.txt"));
+        assertNotNull(nodeService.getChildByName(node1,
+                                                 ContentModel.ASSOC_CONTAINS,
+                                                 "2015-11_11_1557_folder_empty_space-1.txt"));
+        assertNull(nodeService.getChildByName(node1,
+                                              ContentModel.ASSOC_CONTAINS,
+                                              "2015-11_11_1557_folder_empty_space-2.txt"));
+
+        String suportedCharsFileName = "file~!@#$%^&-=+][';.,.txt";
+        String suportedCharsFileName1 = "file~!@#$%^&-=+][';.,-1.txt";
+        String suportedCharsFileName2 = "file~!@#$%^&-=+][';.,-2.txt";
+        fileAndFolderService.create(node1,
+                                    suportedCharsFileName,
+                                    ContentModel.TYPE_CONTENT);
+        fileAndFolderService.create(node1,
+                                    suportedCharsFileName,
+                                    ContentModel.TYPE_CONTENT);
+        assertNotNull(nodeService.getChildByName(node1,
+                                                 ContentModel.ASSOC_CONTAINS,
+                                                 suportedCharsFileName));
+        assertNotNull(nodeService.getChildByName(node1,
+                                                 ContentModel.ASSOC_CONTAINS,
+                                                 suportedCharsFileName1));
+        assertNull(nodeService.getChildByName(node1,
+                                              ContentModel.ASSOC_CONTAINS,
+                                              suportedCharsFileName2));
+    }
+
+    public void testHasAspect() throws Exception
+    {
+        // test for virtual folder
+        NodeRef node1 = nodeService.getChildByName(virtualFolder1NodeRef,
+                                                   ContentModel.ASSOC_CONTAINS,
+                                                   "Node1");
+        assertNotNull(node1);
+        assertTrue(nodeService.hasAspect(node1,
+                                         VirtualContentModel.ASPECT_VIRTUAL));
+        assertFalse(nodeService.hasAspect(node1,
+                                          VirtualContentModel.ASPECT_VIRTUAL_DOCUMENT));
+
+        // test for document in virtual context
+        String filename = "testName.txt";
+        NodeRef fileNodeRef = fileAndFolderService.create(node1,
+                                                          filename,
+                                                          ContentModel.TYPE_CONTENT).getNodeRef();
+        assertFalse(nodeService.hasAspect(fileNodeRef,
+                                          VirtualContentModel.ASPECT_VIRTUAL));
+        assertTrue(nodeService.hasAspect(fileNodeRef,
+                                         VirtualContentModel.ASPECT_VIRTUAL_DOCUMENT));
+
+        // test for folder in virtual context
+        createFolder(testRootFolder.getNodeRef(),
+                                              "FOLDER").getChildRef();
+        NodeRef virtualFolder = createVirtualizedFolder(testRootFolder.getNodeRef(),
+                                                        VIRTUAL_FOLDER_2_NAME,
+                                                        TEST_TEMPLATE_6_JSON_SYS_PATH);
+        NodeRef node1_1 = nodeService.getChildByName(virtualFolder,
+                                                     ContentModel.ASSOC_CONTAINS,
+                                                     "Node1");
+        assertNotNull(node1_1);
+
+        NodeRef physicalFolderInVirtualContext = nodeService.getChildByName(node1_1,
+                                                                            ContentModel.ASSOC_CONTAINS,
+                                                                            "FOLDER");
+        assertNotNull(physicalFolderInVirtualContext);
+
+        assertFalse(nodeService.hasAspect(physicalFolderInVirtualContext,
+                                          VirtualContentModel.ASPECT_VIRTUAL));
+        assertTrue(nodeService.hasAspect(physicalFolderInVirtualContext,
+                                         VirtualContentModel.ASPECT_VIRTUAL_DOCUMENT));
+
+        //test the document created in a folder in virtual context
+        createContent(physicalFolderInVirtualContext,
+                      "testFile1",
+                      "0",
+                      MimetypeMap.MIMETYPE_TEXT_PLAIN,
+                      "UTF-8");
+
+        NodeRef childFileNodeRef = nodeService.getChildByName(physicalFolderInVirtualContext,
+                                                              ContentModel.ASSOC_CONTAINS,
+                                                              "testFile1");
+        assertNotNull(childFileNodeRef);
+        assertFalse(nodeService.hasAspect(childFileNodeRef,
+                                          VirtualContentModel.ASPECT_VIRTUAL));
+        assertFalse(nodeService.hasAspect(childFileNodeRef,
+                                         VirtualContentModel.ASPECT_VIRTUAL_DOCUMENT));
+
     }
 
     private NodeRef createDownloadNode()

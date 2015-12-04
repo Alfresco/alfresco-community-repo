@@ -43,5 +43,6 @@ public class VirtualizationUnitTestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.virtual.ref.StoredPathHasherTest.class));
 
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.virtual.template.VirtualQueryImplTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.virtual.store.TypeVirtualizationMethodTest.Unit.class));
     }
 }

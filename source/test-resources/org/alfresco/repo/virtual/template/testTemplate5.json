@@ -81,7 +81,7 @@
             "description":"SpecialFilingPath5",
             "search":{
                 "language":"fts-alfresco",
-                "query":"=cm:description:'SpecialFilingPath_5'"
+                "query":"(PATH:'%ACTUAL_PATH%/cm:Space_x0020_Sub_x0020_Folder/*')  and =cm:description:'SpecialFilingPath_5'"
             },
             "filing":{
                 "path":"%ACTUAL_PATH%/cm:Space_x0020_Sub_x0020_Folder",

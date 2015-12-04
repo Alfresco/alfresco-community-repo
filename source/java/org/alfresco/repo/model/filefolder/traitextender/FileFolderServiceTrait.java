@@ -47,6 +47,9 @@ public interface FileFolderServiceTrait extends Trait
     PagingResults<FileInfo> list(final NodeRef contextNodeRef, boolean files, boolean folders, String pattern,
                 Set<QName> ignoreQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
 
+    PagingResults<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders, Set<QName> ignoreQNames,
+                List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
+
     PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames,
                 List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
 
@@ -55,6 +58,6 @@ public interface FileFolderServiceTrait extends Trait
 
     Pair<Set<QName>, Set<QName>> buildSearchTypesAndIgnoreAspects(boolean files, boolean folders,
                 Set<QName> ignoreQNameTypes);
-        
+
     FileInfo rename(NodeRef sourceNodeRef, String newName) throws FileExistsException, FileNotFoundException;
 }

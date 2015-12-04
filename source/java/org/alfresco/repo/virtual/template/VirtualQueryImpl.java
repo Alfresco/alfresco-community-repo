@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.search.EmptyResultSet;
@@ -109,6 +110,12 @@ public class VirtualQueryImpl implements VirtualQuery
             constraint = new FilesFoldersConstraint(constraint,
                                                     files,
                                                     folders);
+            if(pattern != null){
+                constraint = new NamePatternPropertyValueConstraint(constraint,
+                                            ContentModel.PROP_NAME,
+                                            pattern,
+                                            environment.getNamespacePrefixResolver());
+            }
             constraint = new IgnoreConstraint(constraint,
                                               ignoreTypeQNames,
                                               ignoreAspectQNames);

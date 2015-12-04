@@ -38,7 +38,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.forms.FormData;
 import org.alfresco.repo.forms.Item;
 import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -53,6 +52,7 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -129,21 +129,27 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
 
     protected static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext(CONFIG_LOCATIONS);
 
-    protected ContentService contentService;
-
-    private TransactionService transactionService;
-
-    protected FileInfo testRootFolder;
-
     protected FileFolderService fileAndFolderService;
 
-    protected ActualEnvironment environment;
+    protected ContentService contentService;
 
-    protected NodeRef virtualFolder1NodeRef;
+    protected TransactionService transactionService;
 
     protected NodeService nodeService;
 
+    protected PermissionService permissionService;
+
+    protected SearchService searchService;
+
     protected RetryingTransactionHelper retryingTransactionHelper;
+
+    protected FileInfo testRootFolder;
+
+    protected NodeRef virtualFolder1NodeRef;
+
+    protected NodeRef rootNodeRef;
+
+    protected ActualEnvironment environment;
 
     protected TypeAndAspectsFormProcessor typeAndAspectsFormProcessor;
 
@@ -151,22 +157,44 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
 
     protected AuthenticationComponent authenticationComponent;
 
-    protected PermissionService permissionService;
-
-    /** The root node reference */
-    protected NodeRef rootNodeRef;
-
     protected VirtualizationConfigTestBootstrap virtualizationConfigTestBootstrap;
 
-    protected String configuredTemplatesClassPath = null;
-
     protected SystemTemplateLocationsConstraint constraints;
+
+    /** when set to a not-null value will be restored up[on {@link #tearDown()} */
+    protected String configuredTemplatesClassPath = null;
 
     @Override
     protected void setUp() throws Exception
     {
         virtualizationConfigTestBootstrap = ctx.getBean(VIRTUALIZATION_CONFIG_TEST_BOOTSTRAP_BEAN_ID,
                                                         VirtualizationConfigTestBootstrap.class);
+
+        // Get the required services
+        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
+
+        transactionService = serviceRegistry.getTransactionService();
+        retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
+        nodeService = serviceRegistry.getNodeService();
+        contentService = serviceRegistry.getContentService();
+        fileAndFolderService = serviceRegistry.getFileFolderService();
+        permissionService = serviceRegistry.getPermissionService();
+        searchService=serviceRegistry.getSearchService();
+
+        authenticationComponent = ctx.getBean("authenticationComponent",
+                                              AuthenticationComponent.class);
+
+        environment = ctx.getBean("actualEnvironment",
+                                  ActualEnvironment.class);
+
+        typeAndAspectsFormProcessor = ctx.getBean("typeAndAspectsFormProcessor",
+                                                  TypeAndAspectsFormProcessor.class);
+
+        constraints = ctx.getBean("systemTemplateLocations",
+                                  SystemTemplateLocationsConstraint.class);
+
+        Repository repository = ctx.getBean("repositoryHelper",
+                                            Repository.class);
 
         if (!virtualizationConfigTestBootstrap.areVirtualFoldersEnabled())
         {
@@ -180,23 +208,7 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
             logger.info("Virtual folders are spring-enabled.");
         }
 
-        // Get the required services
-        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean("ServiceRegistry");
-        transactionService = serviceRegistry.getTransactionService();
-        authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
-        retryingTransactionHelper = (RetryingTransactionHelper) ctx.getBean("retryingTransactionHelper");
         this.authenticationComponent.setSystemUserAsCurrentUser();
-        permissionService = (PermissionService) ctx.getBean("PermissionService");
-
-        contentService = ctx.getBean("contentService",
-                                     ContentService.class);
-        environment = ctx.getBean("actualEnvironment",
-                                  ActualEnvironment.class);
-
-        fileAndFolderService = serviceRegistry.getFileFolderService();
-
-        Repository repository = ctx.getBean("repositoryHelper",
-                                            Repository.class);
 
         // start the transaction
         txn = transactionService.getUserTransaction();
@@ -207,12 +219,6 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
         testRootFolder = fileAndFolderService.create(root,
                                                      TEST_ROOT_FOLDER_NAME,
                                                      ContentModel.TYPE_FOLDER);
-        nodeService = ctx.getBean("nodeService",
-                                  NodeService.class);
-        typeAndAspectsFormProcessor = ctx.getBean("typeAndAspectsFormProcessor",
-                                                  TypeAndAspectsFormProcessor.class);
-        constraints = ctx.getBean("systemTemplateLocations",
-                                  SystemTemplateLocationsConstraint.class);
 
         virtualFolder1NodeRef = createVirtualizedFolder(testRootFolder.getNodeRef(),
                                                         VIRTUAL_FOLDER_1_NAME,

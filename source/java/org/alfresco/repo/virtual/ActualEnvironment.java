@@ -91,7 +91,7 @@ public interface ActualEnvironment
     Object createScriptVirtualContext(VirtualContext context) throws ActualEnvironmentException;
 
     NodeRef findNodeRef(String referenceType, String[] reference);
-    
+
     NodeRef findQNamePath(String[] patheElements);
 
     boolean exists(NodeRef nodeRef);
@@ -102,10 +102,9 @@ public interface ActualEnvironment
 
     FileInfo create(NodeRef parentNodeRef, String name, QName typeQName) throws FileExistsException;
 
-    ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update) throws InvalidNodeRefException,
-                InvalidTypeException;
+    ContentWriter getWriter(NodeRef nodeRef, QName propertyQName, boolean update)
+                throws InvalidNodeRefException, InvalidTypeException;
 
     void addAspect(NodeRef nodeRef, QName aspectTypeQName, Map<QName, Serializable> aspectProperties)
                 throws InvalidNodeRefException, InvalidAspectException;
-
 }

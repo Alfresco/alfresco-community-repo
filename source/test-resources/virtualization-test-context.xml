@@ -32,7 +32,7 @@
             <property name="path" value="${virtual.download.associations.folder}" />
          </bean>
       </property>
-      <property name="typeTemplatesQNameFilterRegexp" value="${virtual.folders.config.type.templates.qname.filter.regexp}" />
+      <property name="typeTemplatesQNameFilter" value="${virtual.folders.config.type.templates.qname.filter}" />
    </bean>
    <bean id="test.config.hash.store" class="org.alfresco.repo.virtual.ref.HashStoreConfiguration.HashStoreConfigurationBean">
       <property name="classpathsHashes" value="/org/alfresco/repo/virtual/template->8,/org/alfresco/repo/virtual/template/testTemplate1.json->9"/>

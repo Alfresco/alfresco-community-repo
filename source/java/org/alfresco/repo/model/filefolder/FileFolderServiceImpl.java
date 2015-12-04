@@ -435,6 +435,8 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
      * @see org.alfresco.service.cmr.model.FileFolderService#list(org.alfresco.service.cmr.repository.NodeRef, boolean, boolean, java.util.Set, org.alfresco.service.cmr.model.PagingSortRequest)
      */
     @Auditable(parameters = {"contextNodeRef", "files", "folders", "ignoreQNames", "sortProps", "pagingRequest"})
+    @Override
+    @Extend(traitAPI = FileFolderServiceTrait.class, extensionAPI = FileFolderServiceExtension.class)
     public PagingResults<FileInfo> list(NodeRef contextNodeRef,
                                       boolean files,
                                       boolean folders,
@@ -1251,7 +1253,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     {
         return createImpl(parentNodeRef, name, typeQName, assocQName);
     }
-    
+
     private FileInfo createImpl(NodeRef parentNodeRef, String name, QName typeQName, QName assocQName) throws FileExistsException
     {
         // set up initial properties
@@ -1784,6 +1786,22 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
             
             return thisService.rename(sourceNodeRef, newName);
                                        
+        }
+
+        
+        public PagingResults<FileInfo> list(NodeRef contextNodeRef,
+                    boolean files,
+                    boolean folders,
+                    Set<QName> ignoreQNames,
+                    List<Pair<QName, Boolean>> sortProps,
+                    PagingRequest pagingRequest)
+        {
+            return thisService.list(contextNodeRef,
+                                    files,
+                                    folders,
+                                    ignoreQNames,
+                                    sortProps,
+                                    pagingRequest);
         }
     };
 }

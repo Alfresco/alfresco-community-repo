@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see http://www.gnu.org/licenses/.
  */
+
 package org.alfresco.repo.model.filefolder.traitextender;
 
 import java.util.List;
@@ -36,6 +37,9 @@ public interface FileFolderServiceExtension
 
     PagingResults<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders, String pattern,
                 Set<QName> ignoreQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
+
+    PagingResults<FileInfo> list(NodeRef contextNodeRef, boolean files, boolean folders, Set<QName> ignoreQNames,
+                List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
 
     PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames,
                 List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);

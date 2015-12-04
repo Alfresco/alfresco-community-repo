@@ -66,12 +66,11 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.traitextender.SpringBeanExtension;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
-public class VirtualNodeServiceExtension extends SpringBeanExtension<NodeServiceExtension, NodeServiceTrait>
+public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<NodeServiceExtension, NodeServiceTrait>
             implements NodeServiceExtension
 {
     private static Log logger = LogFactory.getLog(VirtualNodeServiceExtension.class);
@@ -102,13 +101,14 @@ public class VirtualNodeServiceExtension extends SpringBeanExtension<NodeService
     {
         if (Reference.isReference(nodeRef))
         {
+            boolean isNodeProtocol = Reference.fromNodeRef(nodeRef).getProtocol().equals(Protocols.NODE.protocol);
             if (VirtualContentModel.ASPECT_VIRTUAL.equals(aspectQName))
             {
-                return true;
+                return !isNodeProtocol;
             }
-            else if (VirtualContentModel.ASPECT_VIRTUAL_DOCUMENT.equals(aspectQName) && Reference.fromNodeRef(nodeRef).getProtocol().equals(Protocols.NODE.protocol))
+            else if (VirtualContentModel.ASPECT_VIRTUAL_DOCUMENT.equals(aspectQName))
             {
-                return true;
+                return isNodeProtocol;
             }
             else
             {
@@ -258,22 +258,13 @@ public class VirtualNodeServiceExtension extends SpringBeanExtension<NodeService
         }
     }
 
-    private boolean isVirtualContextFolder(NodeRef nodeRef)
-    {
-
-        boolean isReference=Reference.isReference(nodeRef);
-        boolean isFolder=environment.isSubClass(environment.getType(nodeRef),
-                                                ContentModel.TYPE_FOLDER);
-        boolean virtualContext=hasAspect(nodeRef,VirtualContentModel.ASPECT_VIRTUAL_DOCUMENT);
-        return  isReference && isFolder && virtualContext;
-    }
-
     @Override
     public ChildAssociationRef createNode(NodeRef parentRef, QName assocTypeQName, QName assocQName,
                 QName nodeTypeQName, Map<QName, Serializable> properties)
     {
         NodeServiceTrait theTrait = getTrait();
-        if (Reference.isReference(parentRef) && !isVirtualContextFolder(parentRef))
+        if (Reference.isReference(parentRef) && !isVirtualContextFolder(parentRef,
+                                                                        environment))
         {
             // CM-533 Suppress options to create folders in a virtual folder
             // (repo)
@@ -357,8 +348,10 @@ public class VirtualNodeServiceExtension extends SpringBeanExtension<NodeService
         else
         {
             QName materialAssocQName = materializeAssocQName(assocQName);
-            if(isVirtualContextFolder(parentRef)){
-                parentRef=virtualStore.materializeIfPossible(parentRef);
+            if (isVirtualContextFolder(parentRef,
+                                       environment))
+            {
+                parentRef = virtualStore.materializeIfPossible(parentRef);
             }
             return theTrait.createNode(parentRef,
                                        assocTypeQName,

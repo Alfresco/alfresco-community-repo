@@ -18,7 +18,10 @@
  */
 package org.alfresco.repo.attributes;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
+import org.alfresco.repo.lock.JobLockService;
+import org.alfresco.repo.lock.LockAcquisitionException;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -31,19 +34,19 @@ import org.quartz.JobExecutionException;
  */
 public class PropTablesCleanupJob implements Job
 {
-    protected static final Object PROPERTY_VALUE_DAO_KEY = "propertyValueDAO";
-
     @Override
     public void execute(JobExecutionContext jobCtx) throws JobExecutionException
     {
         JobDataMap jobData = jobCtx.getJobDetail().getJobDataMap();
-        
-        PropertyValueDAO propertyValueDAO = (PropertyValueDAO) jobData.get(PROPERTY_VALUE_DAO_KEY);
-        if (propertyValueDAO == null)
+        // extract the feed cleaner to use
+        Object cleanerObj = jobData.get("propTablesCleaner");
+
+        if (cleanerObj == null || !(cleanerObj instanceof PropTablesCleaner))
         {
-            throw new IllegalArgumentException(PROPERTY_VALUE_DAO_KEY + " in job data map was null");
+            throw new AlfrescoRuntimeException(
+                    "PropTablesCleanupJob data must contain valid 'PropTablesCleaner' reference");
         }
-        
-        propertyValueDAO.cleanupUnusedValues();
+        PropTablesCleaner cleaner = (PropTablesCleaner) cleanerObj;
+        cleaner.execute();
     }
 }

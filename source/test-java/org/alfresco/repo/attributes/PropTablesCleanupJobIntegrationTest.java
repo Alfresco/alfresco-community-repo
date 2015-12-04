@@ -21,7 +21,6 @@ package org.alfresco.repo.attributes;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.CronTriggerBean;
 import org.junit.Before;
@@ -57,7 +56,7 @@ public class PropTablesCleanupJobIntegrationTest
     {
         JobDetail jobDetail = jobTrigger.getJobDetail();
         assertEquals(PropTablesCleanupJob.class, jobDetail.getJobClass());
-        assertTrue("JobDetail did not contain PropertyValueDAO reference",
-                    jobDetail.getJobDataMap().get("propertyValueDAO") instanceof PropertyValueDAO);
+        assertTrue("JobDetail did not contain PropTablesCleaner reference",
+                    jobDetail.getJobDataMap().get("propTablesCleaner") instanceof PropTablesCleaner);
     }
 }

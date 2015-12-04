@@ -21,6 +21,7 @@ package org.alfresco.service.cmr.activities;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
@@ -30,6 +31,7 @@ import org.alfresco.service.NotAuditable;
 /**
  * The activity service
  */
+@AlfrescoPublicApi
 public interface ActivityService extends ActivityPostService
 {
     /*

@@ -19,6 +19,7 @@
 
 package org.alfresco.repo.virtual.store;
 
+
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -100,16 +101,6 @@ public class TypeVirtualizationMethodTest extends TestSuite
             assertTrue(typeVirtualizationMethod.canVirtualize(environment,
                                                               virtuaChildRef));
 
-            try
-            {
-                // invalid prefix
-                typeVirtualizationMethod.setQnameFilters("invalid:site");
-                fail("Should not be able to se invalib filters.");
-            }
-            catch (IllegalArgumentException e)
-            {
-                // as expected
-            }
 
             assertTrue(typeVirtualizationMethod.canVirtualize(environment,
                                                               virtuaChildRef));
@@ -274,8 +265,7 @@ public class TypeVirtualizationMethodTest extends TestSuite
             final String prefixedType = theType.toPrefixString(environment.getNamespacePrefixResolver());
             String contentName = prefixedType;
             contentName = contentName.replaceAll(":",
-                                                 "_")
-                        + ".json";
+                                                 "_") + ".json";
 
             InputStream testTemplsteJsonIS = getClass().getResourceAsStream(cp);
             ChildAssociationRef templateContentChildRef = createContent(templatesLocation,
@@ -299,17 +289,7 @@ public class TypeVirtualizationMethodTest extends TestSuite
                                       this);
             assertIllegalQNameFilters("",
                                       this);
-            assertIllegalQNameFilters(":",
-                                      this);
-            assertIllegalQNameFilters("vm:",
-                                      this);
-            assertIllegalQNameFilters(":vm",
-                                      this);
-            assertIllegalQNameFilters("vm:fooBar,vm:",
-                                      this);
-            // undefined prefix
-            assertIllegalQNameFilters("vm:anAspect",
-                                      this);
+            
         }
 
         public void testQNameFiltersSetter_validFilters() throws Exception
@@ -336,26 +316,26 @@ public class TypeVirtualizationMethodTest extends TestSuite
 
     private static NamespacePrefixResolver mockNamespacePrefixResolver()
     {
-        NamespacePrefixResolver mockNamespacePrefixResolver = Mockito.mock(NamespacePrefixResolver.class,
+        NamespacePrefixResolver mockNamespacePrefixResolver = Mockito
+                    .mock(NamespacePrefixResolver.class,
 
-                                                                           new ThrowsException(new NamespaceException("Mock exception ")));
+                          new ThrowsException(new NamespaceException("Mock exception ")));
 
-        Mockito
-                    .doReturn(Arrays.<String> asList(SiteModel.SITE_MODEL_PREFIX))
+        Mockito.doReturn(Arrays.<String> asList(SiteModel.SITE_MODEL_PREFIX))
                         .when(mockNamespacePrefixResolver)
                         .getPrefixes(SiteModel.SITE_MODEL_URL);
-        Mockito.doReturn(SiteModel.SITE_MODEL_URL).when(mockNamespacePrefixResolver).getNamespaceURI(
-                                                                                                     SiteModel.SITE_MODEL_PREFIX);
+        Mockito.doReturn(SiteModel.SITE_MODEL_URL)
+                        .when(mockNamespacePrefixResolver)
+                        .getNamespaceURI(SiteModel.SITE_MODEL_PREFIX);
 
-        Mockito
-                    .doReturn(Arrays.<String> asList(NamespaceService.CONTENT_MODEL_PREFIX))
+        Mockito.doReturn(Arrays.<String> asList(NamespaceService.CONTENT_MODEL_PREFIX))
                         .when(mockNamespacePrefixResolver)
                         .getPrefixes(NamespaceService.CONTENT_MODEL_1_0_URI);
-        Mockito.doReturn(NamespaceService.CONTENT_MODEL_1_0_URI).when(mockNamespacePrefixResolver).getNamespaceURI(
-                                                                                                                   NamespaceService.CONTENT_MODEL_PREFIX);
+        Mockito.doReturn(NamespaceService.CONTENT_MODEL_1_0_URI)
+                        .when(mockNamespacePrefixResolver)
+                        .getNamespaceURI(NamespaceService.CONTENT_MODEL_PREFIX);
 
-        Mockito
-                    .doReturn("mock(NamespacePrefixResolver)@" + TypeVirtualizationMethod.class.toString())
+        Mockito.doReturn("mock(NamespacePrefixResolver)@" + TypeVirtualizationMethod.class.toString())
                         .when(mockNamespacePrefixResolver)
                         .toString();
         return mockNamespacePrefixResolver;

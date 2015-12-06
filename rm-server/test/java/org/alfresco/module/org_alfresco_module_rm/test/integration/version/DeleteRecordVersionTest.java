@@ -89,11 +89,11 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
                 assertEquals(1, versionHistory.getAllVersions().size());      
                 
                 // check the recorded version is not marked as destroyed
-                Version version = versionHistory.getHeadVersion();
-                assertNotNull(version);
-                assertFalse(recordableVersionService.isRecordedVersionDestroyed(version));
-                
                 Version head = versionHistory.getHeadVersion();
+                assertNotNull(head);
+                assertFalse(recordableVersionService.isRecordedVersionDestroyed(head));
+                
+                // check the version record
                 NodeRef record = recordableVersionService.getVersionRecord(head);
                 assertTrue(recordService.isRecord(record));
                 

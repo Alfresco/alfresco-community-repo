@@ -38,6 +38,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.repo.virtual.ActualEnvironment;
 import org.alfresco.repo.virtual.VirtualContentModel;
 import org.alfresco.repo.virtual.VirtualizationException;
@@ -62,8 +63,8 @@ import org.alfresco.repo.virtual.template.FilingData;
 import org.alfresco.repo.virtual.template.FilingParameters;
 import org.alfresco.repo.virtual.template.FilingRule;
 import org.alfresco.repo.virtual.template.NamePatternPropertyValueConstraint;
-import org.alfresco.repo.virtual.template.PropertyValueConstraint;
 import org.alfresco.repo.virtual.template.NullFilingRule;
+import org.alfresco.repo.virtual.template.PropertyValueConstraint;
 import org.alfresco.repo.virtual.template.VirtualFolderDefinition;
 import org.alfresco.repo.virtual.template.VirtualQuery;
 import org.alfresco.repo.virtual.template.VirtualQueryConstraint;
@@ -81,6 +82,8 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionResolver
 {
@@ -88,6 +91,11 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
     private List<VirtualizationMethod> virtualizationMethods = null;
 
     private ActualEnvironment environment;
+
+    // Logging
+    private static Log logger = LogFactory.getLog(VirtualStoreImpl.class);
+
+    private static final String VIRTUAL_FOLDER_DEFINITION = "virtualfolder.definition";
 
     /** User permissions */
     private VirtualUserPermissions userPermissions;
@@ -154,8 +162,8 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
         }
     }
 
-    private NodeRef nodeProtocolNodeRef(NodeRef nodeRef) throws ProtocolMethodException, ReferenceParseException,
-                ReferenceEncodingException
+    private NodeRef nodeProtocolNodeRef(NodeRef nodeRef)
+                throws ProtocolMethodException, ReferenceParseException, ReferenceEncodingException
     {
         NodeRef theNodeRef = nodeRef;
         if (Reference.isReference(nodeRef))
@@ -373,7 +381,21 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
 
     public VirtualFolderDefinition resolveVirtualFolderDefinition(Reference reference) throws ProtocolMethodException
     {
-        return reference.execute(new ApplyTemplateMethod(environment));
+        NodeRef key = reference.toNodeRef();
+        Map<NodeRef, VirtualFolderDefinition> definitionsCache = TransactionalResourceHelper
+                    .getMap(VIRTUAL_FOLDER_DEFINITION);
+
+        VirtualFolderDefinition virtualFolderDefinition = definitionsCache.get(key);
+
+        if (virtualFolderDefinition == null)
+        {
+
+            virtualFolderDefinition = reference.execute(new ApplyTemplateMethod(environment));
+            definitionsCache.put(key,
+                                 virtualFolderDefinition);
+        }
+
+        return virtualFolderDefinition;
     }
 
     @Override
@@ -381,7 +403,7 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
                 final boolean folders, final String pattern, final Set<QName> searchTypeQNames,
                 final Set<QName> ignoreTypeQNames, final Set<QName> ignoreAspectQNames,
                 final List<Pair<QName, Boolean>> sortProps, final PagingRequest pagingRequest)
-                throws VirtualizationException
+                            throws VirtualizationException
     {
 
         VirtualFolderDefinition structure = resolveVirtualFolderDefinition(ref);
@@ -455,8 +477,8 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
     }
 
     @Override
-    public PagingResults<Reference> list(Reference ref, boolean actual, boolean virtual, boolean files,
-                boolean folders, String pattern, Set<QName> ignoreTypeQNames, Set<QName> ignoreAspectQNames,
+    public PagingResults<Reference> list(Reference ref, boolean actual, boolean virtual, boolean files, boolean folders,
+                String pattern, Set<QName> ignoreTypeQNames, Set<QName> ignoreAspectQNames,
                 List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest) throws VirtualizationException
     {
         return list(ref,

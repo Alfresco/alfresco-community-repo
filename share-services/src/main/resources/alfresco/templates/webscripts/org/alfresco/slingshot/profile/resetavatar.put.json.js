@@ -22,7 +22,7 @@ function main()
        (people.isAdmin(person) == false && user.properties.userName != person.properties.userName))
    {
       status.code = 500;
-      status.message = "Failed to locate user to modify or permission denied.";
+      status.message = msg.get("error.failed");
       status.redirect = true;
       return;
    }

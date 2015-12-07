@@ -27,7 +27,7 @@ function main()
       if (filename == undefined || content == undefined)
       {
          status.code = 400;
-         status.message = "Uploaded file cannot be located in request";
+         status.message = msg.get("error.uploadMissing");
          status.redirect = true;
          return;
       }
@@ -36,7 +36,7 @@ function main()
       if (sitesNode == null)
       {
          status.code = 500;
-         status.message = "Failed to locate Sites folder.";
+         status.message = msg.get("error.sitesFolder");
          status.redirect = true;
          return;
       }
@@ -66,7 +66,7 @@ function main()
    {
       var x = e;
       status.code = 500;
-      status.message = "Unexpected error occured during upload of new content.";
+      status.message = msg.get("error.unexpected");
       if (x.message && x.message.indexOf("org.alfresco.service.cmr.usage.ContentQuotaException") == 0)
       {
          status.code = 413;

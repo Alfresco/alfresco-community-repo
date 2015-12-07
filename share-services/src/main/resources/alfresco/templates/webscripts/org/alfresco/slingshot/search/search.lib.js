@@ -960,12 +960,15 @@ function getSearchResults(params)
                         }
                      }
                   }
-                  else if (isMultiValueProperty(propValue, modePropValue))
+                  else if (isMultiValueProperty(propValue, modePropValue) || isListProperty(formJson, p))
                   {
-                     formQuery += (first ? '(' : ' AND (');
-                     formQuery += processMultiValue(propName, propValue, modePropValue, false);
-                     formQuery += ')';
-                     first = false;
+                      if(propName.indexOf('isListProperty') === -1) 
+                      {
+                          formQuery += (first ? '(' : ' AND (');
+                          formQuery += processMultiValue(propName, propValue, modePropValue, false);
+                          formQuery += ')';
+                          first = false;
+                     }
                   }
                   else
                   {
@@ -1242,6 +1245,18 @@ function getQueryTemplate()
    };
 }
 
+/*
+* Helper method used to determine whether the property is tied to a list of properties.
+*
+* @param formJSON the list of the properties provided to the form
+* @param prop propertyname 
+* @return true if it is tied to a list of properties, false otherwise
+*/
+function isListProperty(formJson, prop)
+{
+  return prop.indexOf('isListProperty') != -1 || prop+'_isListProperty' in formJson;
+}
+
 /**
  * Helper method used to determine whether the property is tied to categories.
  *
@@ -1251,7 +1266,7 @@ function getQueryTemplate()
  */
 function isCategoryProperty(formJson, prop)
 {
-   return prop.indexOf('usesubcats') != -1 || prop.indexOf('isCategory') ||
+   return prop.indexOf('usesubcats') != -1 || prop.indexOf('isCategory') != -1 ||
       prop+'_usesubcats' in formJson || prop+'_isCategory' in formJson;
 }
 

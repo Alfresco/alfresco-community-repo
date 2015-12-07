@@ -32,14 +32,14 @@ function main()
       if (filename == undefined || content == undefined)
       {
          status.code = 400;
-         status.message = "Uploaded file cannot be located in request";
+         status.message = msg.get("error.noFile");
          status.redirect = true;
          return;
       }
       if (username == null || username.length == 0)
       {
          status.code = 500;
-         status.message = "Username parameter not supplied.";
+         status.message = msg.get("error.noUsername");
          status.redirect = true;
          return;
       }
@@ -50,7 +50,7 @@ function main()
           (people.isAdmin(person) == false && user.properties.userName != person.properties.userName))
       {
          status.code = 500;
-         status.message = "Failed to locate user to modify or permission denied.";
+         status.message = msg.get("error.user");
          status.redirect = true;
          return;
       }
@@ -78,7 +78,7 @@ function main()
       {
          user.removeNode(image);
          status.code = 500;
-         status.message = " Only image files are allowed for user avatar.";
+         status.message = msg.get("error.notImage");
          status.redirect = true;
          return;
       }
@@ -101,7 +101,7 @@ function main()
    {
       var x = e;
       status.code = 500;
-      status.message = "Unexpected error occured during upload of new content.";
+      status.message = msg.get("error.unexpected");
       if(x.message && x.message.indexOf("org.alfresco.service.cmr.usage.ContentQuotaException") == 0)
       {
          status.code = 413;

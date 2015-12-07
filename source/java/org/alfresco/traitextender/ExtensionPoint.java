@@ -16,8 +16,20 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see http://www.gnu.org/licenses/.
  */
+
 package org.alfresco.traitextender;
 
+/**
+ * Defines a two-way interfacing mechanism between a {@link Trait} exposing
+ * object and an extension of that object.<br>
+ * The extended object can call methods of the {@link #extensionAPI} which will
+ * be able to interact with the extended object through the {@link #traitAPI}
+ * interface it was paired with in the extension point. The actual circumstances
+ * in which the extension methods are invoked are not defined by the extension
+ * point.
+ *
+ * @author Bogdan Horje
+ */
 public class ExtensionPoint<E, M extends Trait>
 {
     private Class<E> extensionAPI;
@@ -52,9 +64,8 @@ public class ExtensionPoint<E, M extends Trait>
     {
         if (obj instanceof ExtensionPoint)
         {
-            ExtensionPoint<?,?> pointObj = (ExtensionPoint<?,?>) obj;
-            return extensionAPI.equals(pointObj.extensionAPI)
-                        && traitAPI.equals(pointObj.traitAPI);
+            ExtensionPoint<?, ?> pointObj = (ExtensionPoint<?, ?>) obj;
+            return extensionAPI.equals(pointObj.extensionAPI) && traitAPI.equals(pointObj.traitAPI);
         }
         else
         {

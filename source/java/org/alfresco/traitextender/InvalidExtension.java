@@ -16,8 +16,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see http://www.gnu.org/licenses/.
  */
+
 package org.alfresco.traitextender;
 
+/**
+ * Signals an invalid extension state or extension definition.
+ *
+ * @author Bogdan Horje
+ */
 public class InvalidExtension extends RuntimeException
 {
     private static final long serialVersionUID = -7146808120353555462L;
@@ -29,12 +35,16 @@ public class InvalidExtension extends RuntimeException
 
     public InvalidExtension(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace)
     {
-        super(message, cause, enableSuppression, writableStackTrace);
+        super(message,
+              cause,
+              enableSuppression,
+              writableStackTrace);
     }
 
     public InvalidExtension(String message, Throwable cause)
     {
-        super(message, cause);
+        super(message,
+              cause);
     }
 
     public InvalidExtension(String message)

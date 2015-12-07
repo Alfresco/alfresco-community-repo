@@ -26,6 +26,51 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 
+/**
+ * A {@link SpringBeanExtension}s collection that get registered on the
+ * {@link Extender}'s registry on {@link #afterPropertiesSet()}.<br>
+ * Works in conjunction with {@link SpringBeanExtension}s and
+ * {@link SpringExtensionPoint}s to define and start spring based
+ * {@link ExtensionBundle}s of {@link SingletonExtension}s.<br>
+ * The spring-context XML sample bellow shows the definition of spring-bundled
+ * trait-extensions:
+ * 
+ * <pre>
+ * {@code
+ * 
+ *  <bean id="ep1" class="org.alfresco.traitextender.SpringExtensionPoint">
+ *     <property name="extension" value="org.alfresco.sample.Extension1" />
+ *     <property name="trait" value="org.alfresco.sample.Trait1" />
+ *  </bean>
+ *  
+ *  <bean id="ep2" class="org.alfresco.traitextender.SpringExtensionPoint">
+ *     <property name="extension" value="org.alfresco.sample.Extension2" />
+ *     <property name="trait" value="org.alfresco.sample.Trait2" />
+ *  </bean>
+ * 
+ *   <bean id="extension1" class="org.alfresco.sample.Extension1">
+ *    <property name="extensionPoint" ref="ep1" />
+ *  </bean>
+ * 
+ *  <bean id="extension2" class="org.alfresco.sample.Extension2">
+ *     <property name="extensionPoint" ref="ep2" />
+ *  </bean>
+ * 
+ *  <bean id="aBundle" class="org.alfresco.traitextender.SpringExtensionBundle">
+ *    <property name="id" value="org.alfresco.sample.aBundle" />
+ *    <property name="enabled" value="true" />
+ *    <property name="extensions">
+ *       <list>
+ *          <ref bean="extension1" />
+ *          <ref bean="extension2" />
+ *       </list >
+ *    </property>
+ *  </bean>
+ * }
+ * </pre>
+ * 
+ * @author Bogdan Horje
+ */
 public class SpringExtensionBundle implements InitializingBean
 {
     private static Log logger = LogFactory.getLog(SpringExtensionBundle.class);
@@ -38,6 +83,12 @@ public class SpringExtensionBundle implements InitializingBean
 
     private RegistryExtensionBundle extensionBundle;
 
+    /**
+     * @param enabled <code>true</code> if the current bundle should be
+     *            registered.<br>
+     *            <code>false</code> if the current bundle should skip extension
+     *            registration
+     */
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
@@ -53,6 +104,17 @@ public class SpringExtensionBundle implements InitializingBean
         this.id = id;
     }
 
+    /**
+     * Creates a {@link RegistryExtensionBundle} and registers all contained
+     * {@link SpringBeanExtension}s with it.<br>
+     * When all extension have successfully registered it starts the
+     * {@link RegistryExtensionBundle}.<br>
+     * The previously created {@link RegistryExtensionBundle} is stored for
+     * later start or {@link #stop()} operations.
+     * 
+     * @see Extender#start(ExtensionBundle)
+     * @see Extender#stop(ExtensionBundle)
+     */
     public synchronized void start()
     {
 
@@ -81,6 +143,13 @@ public class SpringExtensionBundle implements InitializingBean
         Extender.getInstance().start(extensionBundle);
     }
 
+    /**
+     * Stops a previously {@link #start()} created
+     * {@link RegistryExtensionBundle}.
+     * 
+     * @see Extender#start(ExtensionBundle)
+     * @see Extender#stop(ExtensionBundle)
+     */
     public synchronized void stop()
     {
         if (extensionBundle == null)
@@ -96,7 +165,7 @@ public class SpringExtensionBundle implements InitializingBean
     {
         if (this.enabled)
         {
-            logger.info("The extension bundle " + id+" is spring-enabled. Starting ... ");
+            logger.info("The extension bundle " + id + " is spring-enabled. Starting ... ");
             start();
         }
         else

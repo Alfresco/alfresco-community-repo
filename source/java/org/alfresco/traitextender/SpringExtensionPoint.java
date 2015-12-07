@@ -19,6 +19,15 @@
 
 package org.alfresco.traitextender;
 
+/**
+ * An {@link ExtensionPoint} spring bean wrapper with spring registering
+ * life-cycle management.<br>
+ * Works in conjunction with {@link SpringBeanExtension}s and
+ * {@link SpringExtensionBundle}s to define spring based {@link ExtensionBundle}
+ * s of singleton extensions.
+ *
+ * @author Bogdan Horje
+ */
 public class SpringExtensionPoint
 {
     private String trait;

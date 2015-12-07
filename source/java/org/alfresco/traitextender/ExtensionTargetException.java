@@ -16,8 +16,14 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see http://www.gnu.org/licenses/.
  */
+
 package org.alfresco.traitextender;
 
+/**
+ * Trait-extension runtime target-exception wrapper.
+ *
+ * @author Bogdan Horje
+ */
 public class ExtensionTargetException extends RuntimeException
 {
     private static final long serialVersionUID = -502697833178766952L;
@@ -30,12 +36,16 @@ public class ExtensionTargetException extends RuntimeException
     public ExtensionTargetException(String message, Throwable cause, boolean enableSuppression,
                 boolean writableStackTrace)
     {
-        super(message, cause, enableSuppression, writableStackTrace);
+        super(message,
+              cause,
+              enableSuppression,
+              writableStackTrace);
     }
 
     public ExtensionTargetException(String message, Throwable cause)
     {
-        super(message, cause);
+        super(message,
+              cause);
     }
 
     public ExtensionTargetException(String message)

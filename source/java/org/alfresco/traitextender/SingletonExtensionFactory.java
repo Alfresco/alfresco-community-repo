@@ -27,6 +27,13 @@ import java.lang.reflect.Proxy;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * Creates singleton extension sub classes that are extension API implementors.
+ * The singleton extensions continue to exist after the extensible has been
+ * collected.
+ *
+ * @author Bogdan Horje
+ */
 public class SingletonExtensionFactory<E, S extends SingletonExtension<E, T>, T extends Trait> implements
             ExtensionFactory<E>
 {

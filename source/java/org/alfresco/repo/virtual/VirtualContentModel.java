@@ -38,4 +38,7 @@ public interface VirtualContentModel
 
     static final QName TYPE_VIRTUAL_FOLDER_TEMPLATE = QName.createQName(VIRTUAL_CONTENT_MODEL_1_0_URI,
                                                                         "virtualFolderTemplate");
+
+    static final QName PROP_ACTUAL_NODE_REF = QName.createQName(VIRTUAL_CONTENT_MODEL_1_0_URI,
+                                                                "actualNodeRef");
 }

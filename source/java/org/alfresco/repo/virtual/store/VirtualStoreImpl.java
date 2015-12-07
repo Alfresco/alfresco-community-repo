@@ -82,20 +82,14 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionResolver
 {
+    private static final String VIRTUAL_FOLDER_DEFINITION = "virtualfolder.definition";
 
     private List<VirtualizationMethod> virtualizationMethods = null;
 
     private ActualEnvironment environment;
-
-    // Logging
-    private static Log logger = LogFactory.getLog(VirtualStoreImpl.class);
-
-    private static final String VIRTUAL_FOLDER_DEFINITION = "virtualfolder.definition";
 
     /** User permissions */
     private VirtualUserPermissions userPermissions;

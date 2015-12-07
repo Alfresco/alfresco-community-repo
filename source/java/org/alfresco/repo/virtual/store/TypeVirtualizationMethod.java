@@ -69,19 +69,6 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
 
     private NodeRefExpression templatesPath;
 
-    private QNamePattern[] qnamePatternFilters = new QNamePattern[] { RegexQNamePattern.MATCH_ALL };
-
-    private static final QNamePattern MATCH_NONE = new QNamePattern()
-    {
-
-        @Override
-        public boolean isMatch(QName qname)
-        {
-            return false;
-        }
-
-    };
-
     private String filters;
 
     /**
@@ -99,14 +86,16 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
 
     public void init()
     {
-        resetFilters();
+        // resetFilters();
     }
 
-    private synchronized void resetFilters()
+    private QNamePattern[] createFilters()
     {
+        QNamePattern[] qnamePatternFilters = new QNamePattern[] {};
+
         if (namespacePrefixResolver != null && filters != null)
         {
-            this.qnamePatternFilters = asRegExpQNamePatternFilters(filters);
+            qnamePatternFilters = asRegExpQNamePatternFilters(filters);
             if (logger.isDebugEnabled())
             {
                 String regExpFilters = "";
@@ -123,6 +112,7 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
                         + " and filters=" + filters);
         }
 
+        return qnamePatternFilters;
     }
 
     private QNamePattern[] asRegExpQNamePatternFilters(String filtersString)
@@ -144,7 +134,6 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
                 if ("none".equals(trimmedFilters))
                 {
                     patterns.clear();
-                    patterns.add(MATCH_NONE);
                     break;
                 }
 
@@ -189,15 +178,21 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
                 }
                 catch (NamespaceException e)
                 {
-                    throw new IllegalArgumentException("Illegal filters string " + filtersString
-                                + " due to unregistered name space in  " + filters[i],
-                                                       e);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Illegal filters string " + filtersString + " due to unregistered name space in  "
+                                                 + filters[i],
+                                     e);
+                    }
                 }
                 catch (PatternSyntaxException e)
                 {
-                    throw new IllegalArgumentException("Illegal filters string " + filtersString
-                                + " due to invalid regexp translatrion in  " + filters[i],
-                                                       e);
+                    if (logger.isDebugEnabled())
+                    {
+                        logger.debug("Illegal filters string " + filtersString
+                                                 + " due to invalid regexp translation in  " + filters[i],
+                                     e);
+                    }
                 }
             }
 
@@ -211,8 +206,6 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
         ParameterCheck.mandatoryString("filters",
                                        filters);
         this.filters = filters;
-
-        resetFilters();
     }
 
     public void setTemplatesPath(NodeRefExpression templatesPath)
@@ -223,8 +216,6 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
     public void setNamespacePrefixResolver(NamespacePrefixResolver resolver)
     {
         this.namespacePrefixResolver = resolver;
-
-        resetFilters();
     }
 
     @Override
@@ -259,9 +250,10 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
 
     private boolean isAnyFilterMatch(QName qname)
     {
-        for (int i = 0; i < qnamePatternFilters.length; i++)
+        QNamePattern[] syncFilters = createFilters();
+        for (int i = 0; i < syncFilters.length; i++)
         {
-            if (qnamePatternFilters[i].isMatch(qname))
+            if (syncFilters[i].isMatch(qname))
             {
                 return true;
             }

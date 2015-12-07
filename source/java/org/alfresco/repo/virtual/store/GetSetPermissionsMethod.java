@@ -40,6 +40,7 @@ import org.alfresco.repo.virtual.template.FilingRule;
 import org.alfresco.repo.virtual.template.VirtualFolderDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 
 public class GetSetPermissionsMethod extends AbstractProtocolMethod<NodePermissionEntry>
 {
@@ -73,6 +74,7 @@ public class GetSetPermissionsMethod extends AbstractProtocolMethod<NodePermissi
             Set<String> deniedPermissions = userPermissions.getDenyReadonlyVirtualNodes();
             toDeny = new HashSet<>(toDeny);
             toDeny.addAll(deniedPermissions);
+            toAllow.add(PermissionService.READ);
         }
 
         return execute(reference,

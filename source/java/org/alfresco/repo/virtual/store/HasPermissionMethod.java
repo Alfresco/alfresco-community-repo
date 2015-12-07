@@ -30,6 +30,7 @@ import org.alfresco.repo.virtual.template.FilingParameters;
 import org.alfresco.repo.virtual.template.FilingRule;
 import org.alfresco.repo.virtual.template.VirtualFolderDefinition;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 
 public class HasPermissionMethod extends AbstractProtocolMethod<AccessStatus>
 {
@@ -62,6 +63,11 @@ public class HasPermissionMethod extends AbstractProtocolMethod<AccessStatus>
             if (deniedPermissions.contains(permissionToCheck))
             {
                 return AccessStatus.DENIED;
+            }
+            
+            if (PermissionService.READ.equals(permissionToCheck))
+            {
+                return AccessStatus.ALLOWED;
             }
         }
 

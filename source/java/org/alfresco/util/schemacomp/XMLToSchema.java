@@ -286,7 +286,7 @@ public class XMLToSchema extends DefaultHandler
     @Override
     public void characters(char[] ch, int start, int length) throws SAXException
     {
-        String text = new String(ch, start, length);
+        String text = new String(ch, start, length).trim();
         if (text.length() > 0)
         {
             lastText.append(text);

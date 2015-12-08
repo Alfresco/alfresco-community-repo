@@ -22,6 +22,7 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
+import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.asSet;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.diffKey;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.head;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.tail;
@@ -34,6 +35,7 @@ import org.junit.Test;
 
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -94,4 +96,12 @@ public class RMCollectionUtilsUnitTest
         assertEquals("a", head(asList("a")));
         assertNull(head(emptyList()));
    }
+
+    @Test public void elementsAsSet()
+    {
+        assertEquals(new HashSet<String>() {{ this.add("hello"); this.add("world"); }},
+                     asSet("hello", "world"));
+        assertEquals(new HashSet<Integer>() {{ this.add(3); this.add(7); this.add(31); this.add(127); }},
+                     asSet(3, 7, 31, 127));
+    }
 }

@@ -98,6 +98,24 @@ public final class RMCollectionUtils
     }
 
     /**
+     * Returns a Set containing all of the provided elements. Duplicate elements will be removed as per the
+     * {@code Set} contract.
+     *
+     * @param elements the elements to put in a Set.
+     * @param <T>      the element type.
+     * @return         a Set containing all the provided elements (without duplicates).
+     */
+    public static <T> HashSet<T> asSet(T... elements)
+    {
+        final HashSet<T> set = new HashSet<>(elements.length);
+        for (T element : elements)
+        {
+            set.add(element);
+        }
+        return set;
+    }
+
+    /**
      * This enum represents a change in an entry between 2 collections.
      */
     public enum Difference

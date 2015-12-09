@@ -397,11 +397,19 @@
     <installationAbortedActionList>
         <actionGroup>
             <actionList>
-            <deleteFile path="${installdir}/tomcat" />
-            <deleteFile path="${installdir}/properties.ini" />
+                <deleteFile path="${installdir}/tomcat" />
+                <deleteFile path="${installdir}/properties.ini" />
             </actionList>
             <ruleList>
                 <compareText text="${tomcat_execute_abort_action_list}" logic="equals" value="1" />
+            </ruleList>
+        </actionGroup>
+        <actionGroup>
+            <actionList>
+                <deleteFile path="${installdir}" />
+            </actionList>
+            <ruleList>
+                <compareText text="${installation_aborted_by_user}" logic="equals" value="1" />
             </ruleList>
         </actionGroup>
     </installationAbortedActionList>

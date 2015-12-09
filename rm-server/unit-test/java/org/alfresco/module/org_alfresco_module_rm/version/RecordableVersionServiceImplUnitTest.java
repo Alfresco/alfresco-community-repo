@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,8 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.version;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyMap;
 import static org.mockito.Matchers.anyString;
@@ -27,6 +29,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
 import java.util.Collections;
@@ -419,9 +422,16 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
     {
         // latest version is already recorded
         Version mockedVersion = mock(VersionImpl.class);
-        doReturn(Collections.singletonMap(RecordableVersionServiceImpl.PROP_VERSION_RECORD, generateNodeRef())).when(mockedVersion).getVersionProperties();        
-        doReturn(true).when(mockedNodeService).hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE);
-        doReturn(mockedVersion).when(recordableVersionService).getCurrentVersion(nodeRef);
+        NodeRef versionNodeRef = generateNodeRef();
+        when(mockedVersion.getFrozenStateNodeRef())
+            .thenReturn(versionNodeRef);
+        
+        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+            .thenReturn(true);
+        when(mockedDbNodeService.hasAspect(versionNodeRef, RecordableVersionModel.ASPECT_RECORDED_VERSION))
+            .thenReturn(true);
+        doReturn(mockedVersion)
+           .when(recordableVersionService).getCurrentVersion(nodeRef);
         
         // create record from version
         recordableVersionService.createRecordFromLatestVersion(filePlan, nodeRef);
@@ -494,5 +504,158 @@ public class RecordableVersionServiceImplUnitTest extends BaseUnitTest
                 newVersionNodeRef, 
                 RecordableVersionModel.ASPECT_RECORDED_VERSION, 
                 Collections.singletonMap(RecordableVersionModel.PROP_RECORD_NODE_REF, (Serializable)newRecordNodeRef));        
+    }
+    
+    
+    /**
+     * given the destroyed prop isn't set
+     * when I ask if the version is destroyed
+     * then the result is false
+     */
+    @Test
+    public void propNotSetVersionNotDestroyed()
+    {
+        // set up version
+        Version mockedVersion = mock(VersionImpl.class);
+        NodeRef versionNodeRef = generateNodeRef();
+        when(mockedVersion.getFrozenStateNodeRef())
+            .thenReturn(versionNodeRef);
+        
+        // set prop not set
+        when(mockedDbNodeService.getProperty(versionNodeRef, RecordableVersionModel.PROP_DESTROYED))
+            .thenReturn(null);
+        
+        // is version destroyed
+        assertFalse(recordableVersionService.isRecordedVersionDestroyed(mockedVersion));            
+    }
+    
+    /**
+     * given the destroyed prop is set
+     * when I ask if the version is destroyed
+     * then the result matches the value set in the destroy property
+     */
+    @Test
+    public void propSetVersionDestroyed()
+    {
+        // set up version
+        Version mockedVersion = mock(VersionImpl.class);
+        NodeRef versionNodeRef = generateNodeRef();
+        when(mockedVersion.getFrozenStateNodeRef())
+            .thenReturn(versionNodeRef);
+        
+        // set prop
+        when(mockedDbNodeService.getProperty(versionNodeRef, RecordableVersionModel.PROP_DESTROYED))
+            .thenReturn(Boolean.TRUE);
+        
+        // is version destroyed
+        assertTrue(recordableVersionService.isRecordedVersionDestroyed(mockedVersion));     
+        
+        // set prop
+        when(mockedDbNodeService.getProperty(versionNodeRef, RecordableVersionModel.PROP_DESTROYED))
+            .thenReturn(Boolean.FALSE);
+        
+        // is version destroyed
+        assertFalse(recordableVersionService.isRecordedVersionDestroyed(mockedVersion));    
+    }
+    
+    /**
+     * given that the version node doesn't have the recorded version aspect applied
+     * when I mark the version as destroyed
+     * then nothing happens
+     */
+    @Test
+    public void noAspectMarkAsDestroyed()
+    {
+        // set up version
+        Version mockedVersion = mock(VersionImpl.class);
+        NodeRef versionNodeRef = generateNodeRef();
+        when(mockedVersion.getFrozenStateNodeRef())
+            .thenReturn(versionNodeRef);
+        
+        // indicate that the version doesn't have the aspect
+        when(mockedDbNodeService.hasAspect(versionNodeRef, RecordableVersionModel.ASPECT_RECORDED_VERSION))
+            .thenReturn(false);
+        
+        // mark as destroyed
+        recordableVersionService.destroyRecordedVersion(mockedVersion);
+        
+        // verify nothing happened
+        verify(mockedDbNodeService, never())
+            .setProperty(versionNodeRef, RecordableVersionModel.PROP_DESTROYED, Boolean.TRUE);        
+    }
+    
+    /**
+     * given that the version node ref has the recorded version aspect applied
+     * and the record version reference exists
+     * when I mark the version as destroyed
+     * then the version is marked as destroyed
+     */
+    @Test
+    public void markAsDestroyed()
+    {
+        // set up version
+        Version mockedVersion = mock(VersionImpl.class);
+        NodeRef versionNodeRef = generateNodeRef();
+        NodeRef versionRecordNodeRef = generateNodeRef();
+        when(mockedVersion.getFrozenStateNodeRef())
+            .thenReturn(versionNodeRef);
+        when(mockedDbNodeService.exists(versionRecordNodeRef))
+            .thenReturn(true);
+        
+        // indicate that the version doesn't have the aspect
+        when(mockedDbNodeService.hasAspect(versionNodeRef, RecordableVersionModel.ASPECT_RECORDED_VERSION))
+            .thenReturn(true);
+        
+        // indicate that the associated version record exists
+        when(mockedDbNodeService.getProperty(versionNodeRef, RecordableVersionModel.PROP_RECORD_NODE_REF))
+            .thenReturn(versionRecordNodeRef);
+        
+        // mark as destroyed
+        recordableVersionService.destroyRecordedVersion(mockedVersion);
+        
+        // verify that the version was marked as destroyed
+        verify(mockedDbNodeService)
+            .setProperty(versionNodeRef, RecordableVersionModel.PROP_DESTROYED, Boolean.TRUE);   
+        // and the reference to the version record was cleared
+        verify(mockedDbNodeService)
+            .setProperty(versionNodeRef, RecordableVersionModel.PROP_RECORD_NODE_REF, null);  
+    }
+    
+    /**
+     * given that the version node ref has the recorded version aspect applied
+     * and the associated version record has been deleted
+     * when I mark the version as destroyed
+     * then the version is marked as destroyed
+     * and the reference to the deleted version record is removed
+     */
+    @Test
+    public void markAsDestroyedClearNodeRef()
+    {
+        // set up version
+        Version mockedVersion = mock(VersionImpl.class);
+        NodeRef versionNodeRef = generateNodeRef();
+        NodeRef versionRecordNodeRef = generateNodeRef();
+        when(mockedVersion.getFrozenStateNodeRef())
+            .thenReturn(versionNodeRef);
+        when(mockedDbNodeService.exists(versionRecordNodeRef))
+            .thenReturn(false);
+        
+        // indicate that the version doesn't have the aspect
+        when(mockedDbNodeService.hasAspect(versionNodeRef, RecordableVersionModel.ASPECT_RECORDED_VERSION))
+            .thenReturn(true);
+        
+        // indicate that the associated version record exists
+        when(mockedDbNodeService.getProperty(versionNodeRef, RecordableVersionModel.PROP_RECORD_NODE_REF))
+            .thenReturn(versionRecordNodeRef);
+        
+        // mark as destroyed
+        recordableVersionService.destroyRecordedVersion(mockedVersion);
+        
+        // verify that the version was marked as destroyed
+        verify(mockedDbNodeService)
+            .setProperty(versionNodeRef, RecordableVersionModel.PROP_DESTROYED, Boolean.TRUE);      
+        // and the reference to the version record was cleared
+        verify(mockedDbNodeService)
+            .setProperty(versionNodeRef, RecordableVersionModel.PROP_RECORD_NODE_REF, null);  
     }
 }

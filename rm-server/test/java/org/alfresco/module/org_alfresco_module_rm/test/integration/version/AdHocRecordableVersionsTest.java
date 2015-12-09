@@ -169,7 +169,7 @@ public class AdHocRecordableVersionsTest extends RecordableVersionsBaseTest
                     public Void doWork() throws Exception
                     {
                         // add custom meta-data to record
-                        NodeRef record = (NodeRef)version.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
+                        NodeRef record = recordableVersionService.getVersionRecord(version);
                         assertNotNull(record);
                         recordService.addRecordType(record, TestModel.ASPECT_RECORD_METADATA);
                         nodeService.setProperty(record, TestModel.PROPERTY_RECORD_METADATA, "Peter Wetherall");

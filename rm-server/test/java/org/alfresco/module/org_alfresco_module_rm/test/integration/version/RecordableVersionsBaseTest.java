@@ -19,15 +19,18 @@
 package org.alfresco.module.org_alfresco_module_rm.test.integration.version;
 
 import java.io.Serializable;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -35,9 +38,12 @@ import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 
 /**
+ * Recordable versions base integration test
+ * 
  * @author Roy Wetherall
  * @since 2.3
  */
@@ -54,7 +60,16 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
     protected static final String CONTENT = 
               "Simple + Smart.  A smarter way to build, a smarter way to deploy.  Its simple because we focus on the end "
               + "user and smart because we support more open standards than any other ECM platform, while delivering all "
-              + "the value a traditional platform provides.";          
+              + "the value a traditional platform provides.";    
+   
+    protected RecordableVersionService recordableVersionService;
+    
+    @Override
+    protected void initServices()
+    {
+        super.initServices();        
+        recordableVersionService = (RecordableVersionService)applicationContext.getBean("RecordableVersionService");
+    }
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase#isCollaborationSiteTest()
@@ -76,25 +91,31 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         // create authentication for owner
         createPerson(OWNER);
         
+        // prepare content
+        prepareContent(dmDocument);
+    }
+    
+    protected void prepareContent(NodeRef content)
+    {
         // add titled aspect
         PropertyMap titledProperties = new PropertyMap(2);
         titledProperties.put(ContentModel.PROP_TITLE, "document title");
         titledProperties.put(ContentModel.PROP_DESCRIPTION, "document description");
-        nodeService.addAspect(dmDocument, ContentModel.ASPECT_TITLED, titledProperties);
+        nodeService.addAspect(content, ContentModel.ASPECT_TITLED, titledProperties);
         
         // add ownable aspect
         PropertyMap ownableProperties = new PropertyMap(1);
         ownableProperties.put(ContentModel.PROP_OWNER, OWNER);
-        nodeService.addAspect(dmDocument, ContentModel.ASPECT_OWNABLE, ownableProperties);
+        nodeService.addAspect(content, ContentModel.ASPECT_OWNABLE, ownableProperties);
         
         // add Dublin core aspect
         PropertyMap dublinCoreProperties = new PropertyMap(2);
         dublinCoreProperties.put(QNAME_PUBLISHER, PUBLISHER);
         dublinCoreProperties.put(QNAME_SUBJECT, SUBJECT);
-        nodeService.addAspect(dmDocument, ContentModel.ASPECT_DUBLINCORE, dublinCoreProperties);
+        nodeService.addAspect(content, ContentModel.ASPECT_DUBLINCORE, dublinCoreProperties);
         
         // add content
-        ContentWriter writer = contentService.getWriter(dmDocument, ContentModel.PROP_CONTENT, true);
+        ContentWriter writer = contentService.getWriter(content, ContentModel.PROP_CONTENT, true);
         writer.setEncoding("UTF-8");
         writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         writer.putContent(CONTENT);
@@ -122,7 +143,7 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         
         // store document state
         Map<QName, Serializable> beforeProperties = nodeService.getProperties(document);
-        Set<QName> beforeAspects = nodeService.getAspects(dmDocument);
+        Set<QName> beforeAspects = nodeService.getAspects(document);
         
         // get the current version
         Version version = versionService.getCurrentVersion(document);
@@ -144,7 +165,7 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         checkAspects(frozen, beforeAspects);
         
         // record version node reference is available on version
-        NodeRef record = (NodeRef)version.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
+        NodeRef record = recordableVersionService.getVersionRecord(version);
         assertNotNull(record);
         
         // check that the version record information has been added
@@ -185,7 +206,7 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         assertEquals(versionLabel, version.getVersionLabel());
                         
         // record version node reference is available on version
-        NodeRef record = (NodeRef)version.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
+        NodeRef record = recordableVersionService.getVersionRecord(version);
         assertNull(record);
         
         // check the version history
@@ -230,6 +251,9 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
             }
         }
         
+        // remove "owner" from cloneFrozenProperties
+        cloneFrozenProperties.remove(ContentModel.PROP_OWNER);
+        
         
         // frozen properties should be empty
         assertTrue("Properties in frozen state, but not in origional. " + cloneFrozenProperties.keySet(), cloneFrozenProperties.isEmpty());
@@ -257,6 +281,122 @@ public abstract class RecordableVersionsBaseTest extends BaseRMTestCase implemen
         {
             fail("Aspects in the frozen state, but not in origional.  " + frozenAspects.toString());
         }         
+    }
+    
+    /**
+     * Creates a document with three versions (1.0, 1.1, 1.2) all of which
+     * are recorded.
+     * 
+     * @return  NodeRef node reference
+     */
+    protected NodeRef createDocumentWithRecordVersions()
+    {
+        // create document and initial version (1.0)
+        final NodeRef myDocument = doTestInTransaction(new Test<NodeRef>()
+        {
+            @Override
+            public NodeRef run() throws Exception
+            {
+                // create a document
+                NodeRef testDoc = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                ContentWriter writer = fileFolderService.getWriter(testDoc);
+                writer.setEncoding("UTF-8");
+                writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+                writer.putContent(GUID.generate());
+                
+                // make versionable
+                Map<QName, Serializable> props = new HashMap<QName, Serializable>(2);
+                props.put(RecordableVersionModel.PROP_RECORDABLE_VERSION_POLICY, RecordableVersionPolicy.ALL);
+                props.put(RecordableVersionModel.PROP_FILE_PLAN, filePlan);
+                nodeService.addAspect(testDoc, RecordableVersionModel.ASPECT_VERSIONABLE, props);
+                nodeService.addAspect(testDoc, ContentModel.ASPECT_VERSIONABLE, null);      
+                
+                return testDoc;
+            }
+        });
+        
+        // create 1.1
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                // update content
+                ContentWriter writer = fileFolderService.getWriter(myDocument);
+                writer.putContent(GUID.generate());
+                
+                return null;
+            }
+        });
+        
+        // create 1.2
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                // update content
+                ContentWriter writer = fileFolderService.getWriter(myDocument);
+                writer.putContent(GUID.generate());
+                
+                return null;
+            }
+        });
+        
+        // we do these checks to ensure that the test data is in the correct state before we
+        // start to manipulate the versions and execute tests
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run() throws Exception
+            {
+                // verify that the version history looks as expected
+                VersionHistory versionHistory = versionService.getVersionHistory(myDocument);
+                assertNotNull(versionHistory);                
+                Collection<Version> versions = versionHistory.getAllVersions();
+                assertEquals(3, versions.size());
+                
+                // verify 1.2 setup as expected
+                Version version12 = versionHistory.getHeadVersion();
+                assertEquals("1.2", version12.getVersionLabel());
+                NodeRef recordVersion12 = recordableVersionService.getVersionRecord(version12);
+                assertNotNull(recordVersion12);
+                
+                assertTrue(relationshipService.getRelationshipsTo(recordVersion12, "versions").isEmpty());
+                
+                Set<Relationship> from12 = relationshipService.getRelationshipsFrom(recordVersion12, "versions");
+                assertEquals(1, from12.size());
+                
+                // verify 1.1 setup as expected
+                Version version11 = versionHistory.getPredecessor(version12);
+                assertEquals("1.1", version11.getVersionLabel());
+                NodeRef recordVersion11 = recordableVersionService.getVersionRecord(version11);
+                assertNotNull(recordVersion11);
+                
+                Set<Relationship> to11 = relationshipService.getRelationshipsTo(recordVersion11, "versions");
+                assertEquals(1, to11.size());
+                assertEquals(recordVersion12, to11.iterator().next().getSource());
+                
+                Set<Relationship> from11 = relationshipService.getRelationshipsFrom(recordVersion11, "versions");
+                assertEquals(1, from11.size());
+                
+                // verify 1.0 setup as expected
+                Version version10 = versionHistory.getPredecessor(version11);
+                assertEquals("1.0", version10.getVersionLabel());
+                NodeRef recordVersion10 = recordableVersionService.getVersionRecord(version10);
+                assertNotNull(recordVersion10);
+                
+                Set<Relationship> to10 = relationshipService.getRelationshipsTo(recordVersion10, "versions");
+                assertEquals(1, to10.size());
+                assertEquals(recordVersion11, to10.iterator().next().getSource());
+                
+                assertTrue(relationshipService.getRelationshipsFrom(recordVersion10, "versions").isEmpty());
+                
+                return null;
+            }
+        });
+                
+        return myDocument;
     }
 
 }

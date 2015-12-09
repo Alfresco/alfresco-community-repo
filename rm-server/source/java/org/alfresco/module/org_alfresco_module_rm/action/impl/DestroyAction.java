@@ -27,9 +27,11 @@ import org.alfresco.module.org_alfresco_module_rm.capability.CapabilityService;
 import org.alfresco.module.org_alfresco_module_rm.content.ContentDestructionComponent;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.StringUtils;
 
@@ -48,6 +50,9 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     
     /** Capability service */
     private CapabilityService capabilityService;
+    
+    /** Recordable version service */
+    private RecordableVersionService recordableVersionService;
 
     /** Indicates if ghosting is enabled or not */
     private boolean ghostingEnabled = true;
@@ -66,6 +71,14 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     public void setCapabilityService(CapabilityService capabilityService)
     {
         this.capabilityService = capabilityService;
+    }
+    
+    /**
+     * @param recordableVersionService  recordable version service
+     */
+    public void setRecordableVersionService(RecordableVersionService recordableVersionService)
+    {
+        this.recordableVersionService = recordableVersionService;
     }
 
     /**
@@ -140,6 +153,13 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     {        
         if (isGhostOnDestroySetForAction(action, record))
         {
+            // mark version as destroyed
+            Version version = recordableVersionService.getRecordedVersion(record);
+            if (version != null)
+            {
+                recordableVersionService.destroyRecordedVersion(version);
+            }
+            
             // Add the ghosted aspect
             getNodeService().addAspect(record, ASPECT_GHOSTED, null);
             

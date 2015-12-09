@@ -19,9 +19,6 @@
 package org.alfresco.module.org_alfresco_module_rm.record;
 
 import static com.google.common.collect.Lists.newArrayList;
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSIONED_NODEREF;
-import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_VERSION_LABEL;
-import static org.apache.commons.lang.StringUtils.isNotBlank;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -62,7 +59,7 @@ import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
 import org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.ClassPolicyDelegate;
@@ -123,8 +120,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                           NodeServicePolicies.OnCreateChildAssociationPolicy,
                                           NodeServicePolicies.OnAddAspectPolicy,
                                           NodeServicePolicies.OnRemoveAspectPolicy,
-                                          NodeServicePolicies.OnUpdatePropertiesPolicy,
-                                          NodeServicePolicies.BeforeDeleteNodePolicy
+                                          NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     /** Logger */
     private static Log logger = LogFactory.getLog(RecordServiceImpl.class);
@@ -232,6 +228,9 @@ public class RecordServiceImpl extends BaseBehaviourBean
 
     /** records management container type */
     private RecordsManagementContainerType recordsManagementContainerType;
+    
+    /** recordable version service */
+    private RecordableVersionService recordableVersionService;
 
     /** list of available record meta-data aspects and the file plan types the are applicable to */
     private Map<QName, Set<QName>> recordMetaDataAspects;
@@ -385,6 +384,14 @@ public class RecordServiceImpl extends BaseBehaviourBean
     {
 		this.recordsManagementContainerType = recordsManagementContainerType;
 	}
+    
+    /**
+     * @param recordableVersionService  recordable version service
+     */
+    public void setRecordableVersionService(RecordableVersionService recordableVersionService)
+    {
+        this.recordableVersionService = recordableVersionService;
+    }
 
     /**
      * Init method
@@ -1034,7 +1041,19 @@ public class RecordServiceImpl extends BaseBehaviourBean
                     {
                     	recordsManagementContainerType.enable();
                     }
-
+                    
+                    // if versionable, then remove without destroying version history,
+                    // because it is being shared with the originating document
+                    behaviourFilter.disableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+                    try
+                    {
+                        nodeService.removeAspect(record, ContentModel.ASPECT_VERSIONABLE);
+                    }
+                    finally
+                    {
+                        behaviourFilter.enableBehaviour(ContentModel.ASPECT_VERSIONABLE);
+                    }
+                    
                     // make record
                     makeRecord(record);
 
@@ -1092,7 +1111,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             for (Version previousVersion : previousVersions)
             {
                 // look for the associated record
-                final NodeRef previousRecord = (NodeRef)previousVersion.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
+                final NodeRef previousRecord = recordableVersionService.getVersionRecord(previousVersion);
                 if (previousRecord != null)
                 {
                     versionRecord = previousRecord;
@@ -1819,38 +1838,5 @@ public class RecordServiceImpl extends BaseBehaviourBean
             // can only unlink a record from a record folder
             throw new RecordLinkRuntimeException("Can only unlink a record from a record folder.");
         }
-    }
-
-    /**
-     * @see org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy#beforeDeleteNode(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    @Behaviour
-    (
-            kind = BehaviourKind.CLASS,
-            type = "rma:record"
-    )
-    public void beforeDeleteNode(NodeRef nodeRef)
-    {
-        final NodeRef versionedNodeRef = (NodeRef) nodeService.getProperty(nodeRef, PROP_VERSIONED_NODEREF);
-        if (versionedNodeRef != null)
-        {
-            String versionLabel = (String) nodeService.getProperty(nodeRef, PROP_VERSION_LABEL);
-            if (isNotBlank(versionLabel))
-            {
-                final Version version = versionService.getVersionHistory(versionedNodeRef).getVersion(versionLabel);
-
-                AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-                {
-                    @Override
-                    public Void doWork()
-                    {
-                        versionService.deleteVersion(versionedNodeRef, version);
-
-                        return null;
-                    }
-                });
-            }
-        }
-    }
+    }    
 }

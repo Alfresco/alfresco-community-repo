@@ -11,6 +11,12 @@
          </list>
       </property>
    </bean>
+   
+   <!-- Recordable version model behaviours -->
+   <bean id="rmv.versionRecord" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.VersionRecordAspect" parent="rm.baseBehaviour">
+        <property name="recordableVersionService" ref="RecordableVersionService" />
+        <property name="relationshipService" ref="RelationshipService" />
+   </bean>
 
    <!-- extended version service bean definition -->
    <bean id="rm.versionService" abstract="true" class="org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl">
@@ -63,7 +69,11 @@
             <![CDATA[
             org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.isCurrentVersionRecorded=RM_ALLOW
             org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.isRecordedVersion=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.getVersionRecord=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.getRecordedVersion=RM_ALLOW
             org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.createRecordFromLatestVersion=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.isRecordedVersionDestroyed=RM_ALLOW
+            org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.destroyRecordedVersion=RM_ALLOW
             org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionService.*=RM_DENY
             ]]>
          </value>

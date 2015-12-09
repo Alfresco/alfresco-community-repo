@@ -94,6 +94,12 @@
                <type>d:text</type>
                <index enabled="false"/>
             </property>
+            <!-- indicates whether the version record has been destroyed or not -->
+            <property name="rmv:destroyed">
+               <title>Destroyed</title>
+               <type>d:boolean</type>
+               <default>false</default>>
+            </property>
          </properties>
       </aspect>
       

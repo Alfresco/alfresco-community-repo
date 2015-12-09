@@ -24,7 +24,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.relationship.Relationship;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy;
-import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
@@ -131,7 +130,7 @@ public class AutoRecordableVersionsTest extends RecordableVersionsBaseTest
                         checkRecordedVersion(dmDocument, null, "0.3");
                         
                         Version version = versionService.getCurrentVersion(dmDocument);                        
-                        NodeRef record = (NodeRef)version.getVersionProperties().get(RecordableVersionServiceImpl.PROP_VERSION_RECORD);
+                        NodeRef record = recordableVersionService.getVersionRecord(version);
                         
                         boolean foundPrevious = false;
                         Set<Relationship> relationships = relationshipService.getRelationshipsFrom(record);

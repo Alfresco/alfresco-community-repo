@@ -28,6 +28,7 @@ import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.util.GUID;
 
 /**
  * Declare as record version integration tests
@@ -99,7 +100,7 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
     
     /**
      * Given versionable content with a recorded latest version
-     * When I delcare a version record
+     * When I declare a version record
      * Then nothing happens since the latest version is already recorded
      * And a warning is logged
      */
@@ -146,5 +147,62 @@ public class DeclareAsRecordVersionTest extends RecordableVersionsBaseTest
         });        
     }
 
+    /**
+     * Given that a document is a specialized type
+     * When version is declared as a record
+     * Then the record is the same type as the source document 
+     * 
+     * @see https://issues.alfresco.com/jira/browse/RM-2194
+     */
+    public void testSpecializedContentType()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
+        {               
+            private NodeRef customDocument;
+            private NodeRef versionRecord;
+            private Map<String, Serializable> versionProperties;    
+            
+            public void given() throws Exception
+            {
+                // create content 
+                customDocument = fileFolderService.create(dmFolder, GUID.generate(), TYPE_CUSTOM_TYPE).getNodeRef();
+                prepareContent(customDocument);
+                
+                // setup version properties
+                versionProperties = new HashMap<String, Serializable>(2);
+                versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
+                versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+                
+                // create version
+                versionService.createVersion(customDocument, versionProperties);
+                
+                // assert that the latest version is not recorded
+                assertFalse(recordableVersionService.isCurrentVersionRecorded(customDocument));
+            }
+            
+            public void when()
+            {   
+                // create version record from latest version
+                versionRecord = recordableVersionService.createRecordFromLatestVersion(filePlan, customDocument);
+            }            
+            
+            public void then()
+            {
+                // check the created record
+                assertNotNull(versionRecord);
+                assertTrue(recordService.isRecord(versionRecord));
+                
+                // check the record type is correct
+                assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(versionRecord));
+                
+                // assert the current version is recorded
+                assertTrue(recordableVersionService.isCurrentVersionRecorded(customDocument));
+                
+                // check the recorded version
+                checkRecordedVersion(customDocument, DESCRIPTION, "0.1");
+            }
+        });   
+        
+    }
     
 }

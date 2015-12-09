@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.importer.ImporterBootstrap;
 import org.alfresco.util.PropertyCheck;
 
@@ -32,6 +33,7 @@ import org.alfresco.util.PropertyCheck;
  * @author Derek Hulley
  * @since 2.0
  */
+@AlfrescoPublicApi
 public class ImporterModuleComponent extends AbstractModuleComponent
 {
     private ImporterBootstrap importer;

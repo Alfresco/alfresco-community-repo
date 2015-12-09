@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.tenant.TenantAdminService;
@@ -43,6 +44,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Derek Hulley
  * @since 2.0
  */
+@AlfrescoPublicApi
 public abstract class AbstractModuleComponent implements ModuleComponent, BeanNameAware
 {
     private static final String ERR_ALREADY_EXECUTED = "module.err.already_executed";

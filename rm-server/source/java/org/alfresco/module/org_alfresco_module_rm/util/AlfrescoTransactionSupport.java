@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
+
 /**
  * Alfresco Transaction Support delegation bean.
  * 
@@ -41,5 +42,13 @@ public class AlfrescoTransactionSupport
     public void unbindResource(Object key)
     {
         org.alfresco.repo.transaction.AlfrescoTransactionSupport.unbindResource(key);
+    }
+    
+    /**
+     * @see org.alfresco.repo.transaction.AlfrescoTransactionSupport#getResource(Object)
+     */
+    public <R extends Object> R getResource(Object key)
+    {
+        return org.alfresco.repo.transaction.AlfrescoTransactionSupport.getResource(key);
     }
 }

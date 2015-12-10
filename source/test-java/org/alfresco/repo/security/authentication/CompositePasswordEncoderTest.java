@@ -31,6 +31,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -284,6 +285,28 @@ public class CompositePasswordEncoderTest
         mdbChain = Arrays.asList("md4","sha256","md4","sha256","bcrypt10");
         encoded = encoder.encodePassword(SOURCE_PASSWORD, salt, mdbChain);
         assertTrue(encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, mdbChain));
+    }
+
+
+    @Test
+    public void testUserChain() throws Exception
+    {
+        String rawPassword = "0000006.cjob@00000.example.com";
+        String salt = GUID.generate();
+
+        ShaPasswordEncoderImpl sha = new ShaPasswordEncoderImpl(256);
+        String shaEncoded = sha.encodePassword(rawPassword, salt);
+        assertTrue(encoder.matches("sha256", rawPassword, shaEncoded, salt));
+
+        List<String> nowHashed = new ArrayList<String>();
+        nowHashed.add("sha256");
+        nowHashed.add("bcrypt10");
+        String nowEncoded = encoder.encode("bcrypt10", shaEncoded, salt);
+        String nowEncoded2 = encoder.encode("bcrypt10", shaEncoded, salt);
+        String nowEncoded3 = encoder.encode("bcrypt10", shaEncoded, salt);
+        assertTrue(encoder.matchesPassword(rawPassword, nowEncoded, salt, nowHashed));
+        assertTrue(encoder.matchesPassword(rawPassword, nowEncoded2, salt, nowHashed));
+        assertTrue(encoder.matchesPassword(rawPassword, nowEncoded3, salt, nowHashed));
     }
 
     @Test

@@ -694,5 +694,42 @@
             <value>${alfresco_user_store.guestusername}</value>
         </property>
     </bean>
+   
+   <!-- UpgradePasswordHashWorker -->
+   <bean id="upgradePasswordHashWorker" class="org.alfresco.repo.security.authentication.UpgradePasswordHashWorker">
+      <property name="jobLockService">
+         <ref bean="jobLockService" />
+      </property> 
+      <property name="transactionService">
+         <ref bean="transactionService" />
+      </property>
+      <property name="authenticationDao">
+         <ref bean="authenticationDao" />
+      </property>
+      <property name="compositePasswordEncoder">
+         <ref bean="compositePasswordEncoder" />
+      </property>
+      <property name="behaviourFilter">
+         <ref bean="policyBehaviourFilter" />
+      </property>
+      <property name="patchDAO">
+         <ref bean="patchDAO"/>
+      </property>
+      <property name="nodeDAO">
+         <ref bean="nodeDAO"/>
+      </property>
+      <property name="qnameDAO">
+         <ref bean="qnameDAO"/>
+      </property>
+      <property name="queryRange">
+         <value>${system.upgradePasswordHash.jobQueryRange}</value>
+      </property>
+      <property name="threadCount">
+         <value>${system.upgradePasswordHash.jobThreadCount}</value>
+      </property>
+      <property name="batchSize">
+         <value>${system.upgradePasswordHash.jobBatchSize}</value>
+      </property>
+   </bean>
 
 </beans>

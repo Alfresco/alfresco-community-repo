@@ -176,7 +176,7 @@
                 </entry-->
 			</map>
 		</property>
-		<property name="preferredEncoding" value="bcrypt10" />
+		<property name="preferredEncoding" value="${system.preferred.password.encoding}" />
 	</bean>
 
     <!-- The Authentication Service implementation. -->

@@ -519,6 +519,8 @@ public class AuthenticationTest extends TestCase
         assertEquals(1, newDetails.getAuthorities().length);
 
         assertNotSame(AndyDetails.getPassword(), newDetails.getPassword());
+        RepositoryAuthenticatedUser rau = (RepositoryAuthenticatedUser) newDetails;
+        assertTrue(compositePasswordEncoder.matchesPassword("carrot", newDetails.getPassword(), null, rau.getHashIndicator()));
         // assertNotSame(oldSalt, dao.getSalt(newDetails));
 
         //Update again
@@ -526,7 +528,8 @@ public class AuthenticationTest extends TestCase
         newDetails = (UserDetails) dao.loadUserByUsername("Andy");
         assertNotNull(newDetails);
         assertEquals("Andy", newDetails.getUsername());
-        assertTrue(compositePasswordEncoder.matches(compositePasswordEncoder.getPreferredEncoding(),"potato", newDetails.getPassword(), null));
+        rau = (RepositoryAuthenticatedUser) newDetails;
+        assertTrue(compositePasswordEncoder.matchesPassword("potato", newDetails.getPassword(), null, rau.getHashIndicator()));
 
         dao.deleteUser("Andy");
         assertFalse("Should not be a cache entry for 'Andy'.", authenticationCache.contains("Andy"));

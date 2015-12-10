@@ -177,10 +177,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                     userDetails.isAccountNonLocked(), userDetails.getAuthorities(), repoUser.getHashIndicator(), repoUser.getSalt());
         }
 
-        // If the credentials have expired, we must return a copy with the flag set
-        return new User(userDetails.getUsername(), userDetails.getPassword(), userDetails.isEnabled(),
-                userDetails.isAccountNonExpired(), false,
-                userDetails.isAccountNonLocked(), userDetails.getAuthorities());
+        throw new AlfrescoRuntimeException("Unable to retrieve a compatible UserDetails object (requires RepositoryAuthenticatedUser)");
     }
     
     /**
@@ -443,7 +440,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         properties.remove(ContentModel.PROP_SALT);
         properties.put(ContentModel.PROP_SALT, salt);
         properties.put(ContentModel.PROP_PASSWORD_HASH,  compositePasswordEncoder.encodePreferred(new String(rawPassword), salt));
-        properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable) Arrays.asList(compositePasswordEncoder.getPreferredEncoding()));
+        properties.put(ContentModel.PROP_HASH_INDICATOR, compositePasswordEncoder.getPreferredEncoding());
         properties.remove(ContentModel.PROP_PASSWORD);
         properties.remove(ContentModel.PROP_PASSWORD_SHA256);
         nodeService.setProperties(userRef, properties);

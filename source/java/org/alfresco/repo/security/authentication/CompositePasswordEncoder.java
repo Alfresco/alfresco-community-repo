@@ -82,6 +82,9 @@ public class CompositePasswordEncoder
     {
         PropertyCheck.mandatory(this, "encoders", encoders);
         PropertyCheck.mandatory(this, "preferredEncoding", preferredEncoding);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Preferred password encoding set to "+preferredEncoding);
+        }
     }
 
     /**

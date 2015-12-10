@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -19,7 +19,6 @@
 package org.alfresco.repo.security.authentication;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,7 +28,6 @@ import java.util.Map;
 import net.sf.acegisecurity.GrantedAuthority;
 import net.sf.acegisecurity.GrantedAuthorityImpl;
 import net.sf.acegisecurity.UserDetails;
-import net.sf.acegisecurity.providers.dao.User;
 import net.sf.acegisecurity.providers.dao.UsernameNotFoundException;
 
 import org.alfresco.error.AlfrescoRuntimeException;

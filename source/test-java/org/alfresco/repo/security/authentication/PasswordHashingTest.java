@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.repo.security.authentication;
 
 import static org.junit.Assert.*;
@@ -20,18 +38,18 @@ import java.util.Map;
 /**
  * Created by gethin on 01/10/15.
  */
-public class RepositoryAuthenticationDaoHashingTest
+public class PasswordHashingTest
 {
-    RepositoryAuthenticationDao authenticationDao;
+    UpgradePasswordHashWorker passwordHashWorker;
     CompositePasswordEncoder cpe;
 
     @Before
     public void setUp() throws Exception
     {
-        authenticationDao = new RepositoryAuthenticationDao();
         cpe = new CompositePasswordEncoder();
         cpe.setEncoders(CompositePasswordEncoderTest.encodersConfig);
-        authenticationDao.setCompositePasswordEncoder(cpe);
+        passwordHashWorker = new UpgradePasswordHashWorker();
+        passwordHashWorker.setCompositePasswordEncoder(cpe);
     }
 
     @Test
@@ -48,7 +66,7 @@ public class RepositoryAuthenticationDaoHashingTest
         properties.put(ContentModel.PROP_PASSWORD, "nonsense");
         assertFalse("Should be empty", properties.containsKey(ContentModel.PROP_PASSWORD_HASH));
         //No hashing to do but we need to update the Indicator
-        assertTrue(authenticationDao.rehashedPassword(properties));
+        assertTrue(passwordHashWorker.processPasswordHash(properties));
         assertEquals(CompositePasswordEncoder.MD4, properties.get(ContentModel.PROP_HASH_INDICATOR));
         assertTrue("Should now contain the password", properties.containsKey(ContentModel.PROP_PASSWORD_HASH));
         assertFalse("Should remove the property", properties.containsKey(ContentModel.PROP_PASSWORD));
@@ -59,7 +77,7 @@ public class RepositoryAuthenticationDaoHashingTest
         properties.clear();
         properties.put(ContentModel.PROP_PASSWORD, "PLAIN TEXT PASSWORD");
         //We don't support plain text.
-        assertTrue(authenticationDao.rehashedPassword(properties));
+        assertTrue(passwordHashWorker.processPasswordHash(properties));
         assertEquals(CompositePasswordEncoder.MD4, properties.get(ContentModel.PROP_HASH_INDICATOR));
         assertTrue("Should now contain the password", properties.containsKey(ContentModel.PROP_PASSWORD_HASH));
         assertFalse("Should remove the property", properties.containsKey(ContentModel.PROP_PASSWORD));
@@ -76,7 +94,7 @@ public class RepositoryAuthenticationDaoHashingTest
         assertTrue("We have the property", properties.containsKey(ContentModel.PROP_PASSWORD));
         assertFalse("Should be empty", properties.containsKey(ContentModel.PROP_PASSWORD_HASH));
         //We rehashed this password by taking the md4 and hashing it by bcrypt
-        assertTrue(authenticationDao.rehashedPassword(properties));
+        assertTrue(passwordHashWorker.processPasswordHash(properties));
         assertEquals(Arrays.asList("md4","bcrypt10"), properties.get(ContentModel.PROP_HASH_INDICATOR));
         assertTrue("Should now contain the password", properties.containsKey(ContentModel.PROP_PASSWORD_HASH));
         assertTrue(matches("HASHED_MY_PASSWORD", properties, cpe));
@@ -92,7 +110,7 @@ public class RepositoryAuthenticationDaoHashingTest
         assertTrue("We have the property", properties.containsKey(ContentModel.PROP_PASSWORD_SHA256));
         assertFalse("Should be empty", properties.containsKey(ContentModel.PROP_PASSWORD_HASH));
         //We rehashed this password by taking the sha256 and hashing it by bcrypt
-        assertTrue(authenticationDao.rehashedPassword(properties));
+        assertTrue(passwordHashWorker.processPasswordHash(properties));
         assertEquals(Arrays.asList("sha256","bcrypt10"), properties.get(ContentModel.PROP_HASH_INDICATOR));
         assertTrue("Should now contain the password", properties.containsKey(ContentModel.PROP_PASSWORD_HASH));
         assertTrue(matches("HASHED_MY_PASSWORD", properties, cpe));
@@ -107,16 +125,16 @@ public class RepositoryAuthenticationDaoHashingTest
         properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable) Arrays.asList("bcrypt10"));
         properties.put(ContentModel.PROP_PASSWORD_HASH,  "long hash");
         //Nothing to do.
-        assertFalse(authenticationDao.rehashedPassword(properties));
+        assertFalse(passwordHashWorker.processPasswordHash(properties));
 
         cpe.setPreferredEncoding("bcrypt11");
-        assertTrue(authenticationDao.rehashedPassword(properties));
-        assertEquals(Arrays.asList("bcrypt10","bcrypt11"),authenticationDao.determinePasswordHash(properties).getFirst());
+        assertTrue(passwordHashWorker.processPasswordHash(properties));
+        assertEquals(Arrays.asList("bcrypt10","bcrypt11"),RepositoryAuthenticationDao.determinePasswordHash(properties).getFirst());
 
         cpe.setPreferredEncoding("bcrypt12");
-        assertTrue(authenticationDao.rehashedPassword(properties));
+        assertTrue(passwordHashWorker.processPasswordHash(properties));
         //Triple hashing!
-        assertEquals(Arrays.asList("bcrypt10","bcrypt11","bcrypt12"),authenticationDao.determinePasswordHash(properties).getFirst());
+        assertEquals(Arrays.asList("bcrypt10","bcrypt11","bcrypt12"),RepositoryAuthenticationDao.determinePasswordHash(properties).getFirst());
     }
 
     @Test
@@ -128,47 +146,48 @@ public class RepositoryAuthenticationDaoHashingTest
 
         try
         {
-            authenticationDao.determinePasswordHash(properties);
+            RepositoryAuthenticationDao.determinePasswordHash(properties);
             fail("Should throw exception");
         }
         catch (AlfrescoRuntimeException are)
         {
-            assertTrue(are.getMessage().contains("Unable to find a user password"));
+            assertTrue(are.getMessage().contains("Unable to find a password for user"));
         }
 
         //if the PROP_PASSWORD field is the only one availble then we are using MD4
         properties.put(ContentModel.PROP_PASSWORD, "mypassword");
-        Pair<List<String>, String> passwordHashed = authenticationDao.determinePasswordHash(properties);
+        Pair<List<String>, String> passwordHashed = RepositoryAuthenticationDao.determinePasswordHash(properties);
         assertEquals(CompositePasswordEncoder.MD4, passwordHashed.getFirst());
         assertEquals("mypassword", passwordHashed.getSecond());
 
         //if the PROP_PASSWORD_SHA256 field is used then we are using SHA256
         properties.put(ContentModel.PROP_PASSWORD_SHA256, "sha_password");
-        passwordHashed = authenticationDao.determinePasswordHash(properties);
+        passwordHashed = RepositoryAuthenticationDao.determinePasswordHash(properties);
         assertEquals(CompositePasswordEncoder.SHA256, passwordHashed.getFirst());
         assertEquals("sha_password", passwordHashed.getSecond());
 
         properties.put(ContentModel.PROP_HASH_INDICATOR, null);
         //If the indicator is NULL then it still uses the old password field
-        passwordHashed = authenticationDao.determinePasswordHash(properties);
+        passwordHashed = RepositoryAuthenticationDao.determinePasswordHash(properties);
         assertEquals(CompositePasswordEncoder.SHA256, passwordHashed.getFirst());
         assertEquals("sha_password", passwordHashed.getSecond());
 
         properties.put(ContentModel.PROP_HASH_INDICATOR, new ArrayList<String>(0));
         //If the indicator doesn't have a value
-        passwordHashed = authenticationDao.determinePasswordHash(properties);
+        passwordHashed = RepositoryAuthenticationDao.determinePasswordHash(properties);
         assertEquals(CompositePasswordEncoder.SHA256, passwordHashed.getFirst());
         assertEquals("sha_password", passwordHashed.getSecond());
 
         //Now it uses the correct property
         properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable) Arrays.asList("myencoding"));
         properties.put(ContentModel.PROP_PASSWORD_HASH, "hashed this time");
-        passwordHashed = authenticationDao.determinePasswordHash(properties);
+        passwordHashed = RepositoryAuthenticationDao.determinePasswordHash(properties);
         assertEquals(Arrays.asList("myencoding"), passwordHashed.getFirst());
         assertEquals("hashed this time",passwordHashed.getSecond());
 
     }
 
+    @SuppressWarnings("unchecked")
     private static boolean matches(String password, Map<QName, Serializable> properties, CompositePasswordEncoder cpe)
     {
         return cpe.matchesPassword(password, (String) properties.get(ContentModel.PROP_PASSWORD_HASH), (String) properties.get(ContentModel.PROP_SALT), (List<String>) properties.get(ContentModel.PROP_HASH_INDICATOR) );

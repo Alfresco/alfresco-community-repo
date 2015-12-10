@@ -41,10 +41,7 @@ import org.alfresco.repo.lock.JobLockService;
 import org.alfresco.repo.lock.JobLockService.JobLockRefreshCallback;
 import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.policy.BehaviourFilter;
-import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -271,6 +268,49 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
     }
     
     /**
+     * Processes the user properties, re-hashing the password, if required.
+     * 
+     * @param properties The properties for the user.
+     * @return true if the password was upgraded, false if no changes were made.
+     */
+    public boolean processPasswordHash(Map<QName, Serializable> properties)
+    {
+        // retrieve the password and hash indicator
+        Pair<List<String>, String> passwordHash = RepositoryAuthenticationDao.determinePasswordHash(properties);
+        
+        // determine if current password hash matches the preferred encoding
+        if (!passwordEncoder.lastEncodingIsPreferred(passwordHash.getFirst()))
+        {
+            // We need to double hash
+            List<String> nowHashed = new ArrayList<String>();
+            nowHashed.addAll(passwordHash.getFirst());
+            nowHashed.add(passwordEncoder.getPreferredEncoding());
+            Object salt = properties.get(ContentModel.PROP_SALT);
+            properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordEncoder.encodePreferred(new String(passwordHash.getSecond()), salt));
+            properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)nowHashed);
+            properties.remove(ContentModel.PROP_PASSWORD);
+            properties.remove(ContentModel.PROP_PASSWORD_SHA256);
+            return true;
+        }
+
+        // ensure password hash is in the correct place
+        @SuppressWarnings("unchecked")
+        List<String> hashIndicator = (List<String>) properties.get(ContentModel.PROP_HASH_INDICATOR);
+        if (hashIndicator == null)
+        {
+            // Already the preferred encoding, just set it
+            properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)passwordHash.getFirst());
+            properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordHash.getSecond());
+            properties.remove(ContentModel.PROP_PASSWORD);
+            properties.remove(ContentModel.PROP_PASSWORD_SHA256);
+            return true;
+        }
+
+        // if we get here no changes were made
+        return false;
+    }
+    
+    /**
      * @param progress          the thread-safe progress
      */
     private synchronized void doWork(UpgradePasswordHashWorkResult progress) throws Exception
@@ -458,49 +498,6 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         public void afterProcess() throws Throwable
         {
             AuthenticationUtil.clearCurrentSecurityContext();
-        }
-        
-        /**
-         * Processes the user properties, re-hashing the password, if required.
-         * 
-         * @param properties The properties for the user.
-         * @return true if the password was upgraded, false if no changes were made.
-         */
-        private boolean processPasswordHash(Map<QName, Serializable> properties)
-        {
-            // retrieve the password and hash indicator
-            Pair<List<String>, String> passwordHash = RepositoryAuthenticationDao.determinePasswordHash(properties);
-            
-            // determine if current password hash matches the preferred encoding
-            if (!passwordEncoder.lastEncodingIsPreferred(passwordHash.getFirst()))
-            {
-                // We need to double hash
-                List<String> nowHashed = new ArrayList<String>();
-                nowHashed.addAll(passwordHash.getFirst());
-                nowHashed.add(passwordEncoder.getPreferredEncoding());
-                Object salt = properties.get(ContentModel.PROP_SALT);
-                properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordEncoder.encodePreferred(new String(passwordHash.getSecond()), salt));
-                properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)nowHashed);
-                properties.remove(ContentModel.PROP_PASSWORD);
-                properties.remove(ContentModel.PROP_PASSWORD_SHA256);
-                return true;
-            }
-
-            // ensure password hash is in the correct place
-            @SuppressWarnings("unchecked")
-            List<String> hashIndicator = (List<String>) properties.get(ContentModel.PROP_HASH_INDICATOR);
-            if (hashIndicator == null)
-            {
-                // Already the preferred encoding, just set it
-                properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)passwordHash.getFirst());
-                properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordHash.getSecond());
-                properties.remove(ContentModel.PROP_PASSWORD);
-                properties.remove(ContentModel.PROP_PASSWORD_SHA256);
-                return true;
-            }
-
-            // if we get here no changes were made
-            return false;
         }
     }
 

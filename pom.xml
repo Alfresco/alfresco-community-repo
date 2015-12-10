@@ -23,6 +23,9 @@
 
         <!-- Alfresco Update Tool version bundled in the update installer -->
         <alfresco.updatetool.version>1.0-SNAPSHOT</alfresco.updatetool.version>
+        
+        <!-- Alfresco SharePoint Imitation -->
+        <alfresco.sharepoint-imitation.version>1.0-SNAPSHOT</alfresco.sharepoint-imitation.version>
 
         <!-- Versions of binaries packaged in the installer -->
         <installer.common.version>5.1-20151118</installer.common.version>

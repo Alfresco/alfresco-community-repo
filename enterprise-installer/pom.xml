@@ -25,7 +25,6 @@
            alfresco_edition=enterprise 
            alfresco_package='${alfresco.package.name}' 
            alfrescogoogledocs_component_enabled=1 
-           alfrescosharepoint_component_enabled=0 
            alfrescosolr_component_enabled=1 
            alfrescowcmqs_component_enabled=1 
            project.outputDirectory=${project.build.directory} 
@@ -111,6 +110,14 @@
                                     <version>${alfresco.share.version}</version>
                                     <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
                                     <includes>alfresco/extension/**</includes>
+                                </artifactItem>
+                                <!-- SharePoint Imitation -->
+                                <artifactItem>
+                                    <groupId>org.alfresco.sharepoint-imitation</groupId>
+                                    <artifactId>alfresco-sharepoint-imitation-distributionzip</artifactId>
+                                    <version>${alfresco.sharepoint-imitation.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/distribution/sharepoint-imitation</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

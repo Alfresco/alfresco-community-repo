@@ -33,7 +33,7 @@
 			<!-- This is so you can not break person lookup -->
             <property name="usr:username">
                <type>d:text</type>
-			   <constraints>
+               <constraints>
                   <constraint ref="usr:userNameConstraint" />
                </constraints>
             </property>
@@ -41,6 +41,9 @@
                <type>d:text</type>
             </property>
             <property name="usr:password2">
+               <type>d:text</type>
+            </property>
+            <property name="usr:passwordHash">
                <type>d:text</type>
             </property>
             <property name="usr:enabled">
@@ -73,6 +76,10 @@
             </property>
             <property name="usr:salt">
                <type>d:text</type>
+            </property>
+            <property name="usr:hashIndicator">
+               <type>d:text</type>
+               <multiple>true</multiple>
             </property>
          </properties>
       </type>

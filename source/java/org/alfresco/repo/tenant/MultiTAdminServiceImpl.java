@@ -46,6 +46,7 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationContext;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.ShaPasswordEncoderImpl;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -59,6 +60,7 @@ import org.alfresco.service.cmr.view.RepositoryExporterService;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -944,8 +946,20 @@ public class MultiTAdminServiceImpl implements TenantAdminService, ApplicationCo
         
         if (tenantAdminRawPassword != null)
         {
-            String salt = null; // GUID.generate();
-            props.put("alfresco_user_store.adminpassword", passwordEncoder.encodePassword(new String(tenantAdminRawPassword), salt));
+            // TODO: This needs to be replaced with the composite password encoder
+            //       and use the new passwordHash property but some further thought
+            //       is required how to handle the case where no passsword is provided
+            //       as we can no longer presume what hash encoding is being used.
+            //       Or maybe this is fine as the background job will upgrade the user object?
+            
+            // generate the new MD4 password hash
+            props.put("alfresco_user_store.adminpassword", passwordEncoder.encodePassword(new String(tenantAdminRawPassword), null));
+            
+            // generate the new SHA256 password hash
+            String salt = props.getProperty("alfresco_user_store.adminsalt");
+            ShaPasswordEncoderImpl sha256PasswordEncoder = new ShaPasswordEncoderImpl(256);
+            String sha256Password = sha256PasswordEncoder.encodePassword(new String(tenantAdminRawPassword), salt);
+            props.put("alfresco_user_store.adminpassword2", sha256Password);
         }
         
         userImporterBootstrap.bootstrap();

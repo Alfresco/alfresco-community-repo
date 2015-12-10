@@ -46,9 +46,6 @@ msgstr "Alfresco RMI-port"
 msgid "Alfresco Share"
 msgstr "Alfresco Deling"
 
-msgid "Alfresco SharePoint Port"
-msgstr "Alfresco SharePoint-port"
-
 msgid "Alfresco Shortcuts"
 msgstr "Alfresco Snarveier"
 
@@ -116,7 +113,7 @@ msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "Vil du installere PostgreSQL som en Windows-tjeneste?"
 
 msgid "Easy - Install using the default configuration."
-msgstr "Enkel - Installer ved bruk av standard konfigurasjoner"
+msgstr "Enkel - Installer ved bruk av standard konfigurasjoner."
 
 msgid "Extension Files"
 msgstr "Utvidelsesfiler"
@@ -283,9 +280,6 @@ msgstr "Velg en mappe for installasjon av ${product_fullname}"
 msgid "Choose a port number for Alfresco to use to execute remote commands."
 msgstr "Velg et portnummer som Alfresco skal bruke til å utføre eksterne kommandoer."
 
-msgid "Choose a port number for the SharePoint protocol."
-msgstr "Velg et portnummer for SharePoint-protokollen."
-
 msgid "Choose a port number for the integrated Alfresco FTP server."
 msgstr "Velg et portnummer for den integrerte Alfresco FTP-serveren."
 
@@ -321,6 +315,12 @@ msgstr "Velg en Tomcat innstilling"
 
 msgid "Select a database configuration."
 msgstr "Velg en databaseinnstilling"
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
+msgstr "Velg denne funksjonen for å la applikasjoner som kan kommunisere med en SharePoint server samhandle med din Alfresco installasjon."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "Velg denne funksjonen for å la applikasjoner som kan kommunisere med en Sharepoint server samhandle med din Alfresco installasjon&#xa;(egenutviklet modell lisensiert til Alfresco Component License)."
 
 msgid "Specify the directory where Tomcat is located."
 msgstr "Angi i hvilken katalog Tomcat er plassert."
@@ -394,11 +394,8 @@ msgstr "Velg databasebruker."
 msgid "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
 msgstr "Installasjonen vil forsøke å installere nye databaser og vil overskrive duplikater. Ønsker du å fortsette?"
 
-msgid "SharePoint"
-msgstr "SharePoint"
-
-msgid "SharePoint Protocol support."
-msgstr "SharePoint-protokollstøtte."
+msgid "SharePoint Imitation"
+msgstr "SharePoint Imitation"
 
 msgid "Shortcuts Images"
 msgstr "Bilder av snarveier"
@@ -559,9 +556,6 @@ msgstr "Kunne ikke binde til det gitte portnummeret. Velg en annen Tomcat avslut
 msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
 msgstr "Bruk bare tall i portkonfigurasjonsfeltene. Andre tegn tillates ikke."
 
-msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
-msgstr "Kunne ikke binde til det gitte portnummeret. Velg et annet portnummer for SharePoint-protokollen."
-
 msgid "Couldn’t bind to the server port. Make sure that ${serverName} is not running."
 msgstr "Kunne ikke binde til serverporten. Sørg for at ${serverName} ikke kjører."
 
@@ -663,3 +657,27 @@ msgstr "Klarer ikke å binde til et bestemt portnummer."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Klarer ikke å binde til et bestemt portnummer. Denne porten brukes allerede av ${process_binding_port} prosessen. Vennligst velg en annen ${serverName} serverport."
+
+msgid "Remote Solr configuration"
+msgstr "Fjernstyr Solr konfigurasjonen"
+
+msgid "Enter the Solr host and port to connect to Alfresco:"
+msgstr "Angi Solr vert og port for å koble til Alfresco:"
+
+msgid "Solr host:"
+msgstr "Solr vert:"
+
+msgid "Solr SSL port:"
+msgstr "Solr SSL-port"
+
+msgid "Sharded Solr installation"
+msgstr "Shardet Solr installasjon"
+
+msgid "Are you using a sharded Solr installation?"
+msgstr "Bruker du en shardet Solr installasjon?"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "No"
+msgstr "Nei"

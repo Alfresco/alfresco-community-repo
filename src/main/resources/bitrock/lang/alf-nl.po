@@ -46,9 +46,6 @@ msgstr "Alfresco RMI-poort"
 msgid "Alfresco Share"
 msgstr "Alfresco Share"
 
-msgid "Alfresco SharePoint Port"
-msgstr "Alfresco SharePoint-poort"
-
 msgid "Alfresco Shortcuts"
 msgstr "Alfresco-snelkoppelingen"
 
@@ -115,8 +112,8 @@ msgstr "Alfresco wordt geïmplementeerd... Dit kan tot vijf minuten duren."
 msgid "Do you want to install PostgreSQL as a Windows service?"
 msgstr "Wilt u PostgreSQL als Windows-service installeren?"
 
-msgid "Easy - Install using the default configuration."
-msgstr "Eenvoudig - servers installeren met de standaardconfiguratie."
+msgid "Easy - Install using the default configuration"
+msgstr "Eenvoudig - servers installeren met de standaardconfiguratie"
 
 msgid "Extension Files"
 msgstr "Uitbreidingsbestanden"
@@ -283,9 +280,6 @@ msgstr "Selecteer een installatiemap voor ${product_fullname}."
 msgid "Choose a port number for Alfresco to use to execute remote commands."
 msgstr "Kies een poortnummer dat Alfresco gebruikt om externe opdrachten uit te voeren."
 
-msgid "Choose a port number for the SharePoint protocol."
-msgstr "Kies een poortnummer voor het SharePoint-protocol."
-
 msgid "Choose a port number for the integrated Alfresco FTP server."
 msgstr "Kies een poortnummer voor de geïntegreerde Alfresco FTP-server."
 
@@ -321,6 +315,12 @@ msgstr "Selecteer een Tomcat-configuratie."
 
 msgid "Select a database configuration."
 msgstr "Selecteer een databaseconfiguratie."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
+msgstr "Selecteer deze module om toepassingen die kunnen communiceren met een SharePoint-server te laten communiceren met uw Alfresco-installatie."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "Selecteer deze module om toepassingen die kunnen communiceren met een SharePoint-server te laten communiceren met uw Alfresco-installatie&#xa;(oorspronkelijke module gelicentieerd onder de Alfresco-componentlicentie)."
 
 msgid "Specify the directory where Tomcat is located."
 msgstr "Geef op in welke map Tomcat zich bevindt."
@@ -394,11 +394,8 @@ msgstr "Stel de gebruiker van de database in."
 msgid "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
 msgstr "Setup probeert nieuwe databases te installeren en duplicaten te overschrijven. Wilt u doorgaan?"
 
-msgid "SharePoint"
-msgstr "SharePoint"
-
-msgid "SharePoint Protocol support."
-msgstr "SharePoint-protocolondersteuning."
+msgid "SharePoint Imitation"
+msgstr "SharePoint Imitation"
 
 msgid "Shortcuts Images"
 msgstr "Snelkoppelingen afbeeldingen "
@@ -559,9 +556,6 @@ msgstr "Kan de poort niet binden aan het opgegeven poortnummer. Selecteer een an
 msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
 msgstr "Gebruik alleen cijfers in de poortconfiguratievelden. Andere tekens zijn niet toegestaan."
 
-msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
-msgstr "Kan de poort niet binden aan het opgegeven poortnummer. Selecteer een andere poort voor het SharePoint-protocol."
-
 msgid "Couldn’t bind to the server port. Make sure that ${serverName} is not running."
 msgstr "Kan de poort niet binden aan de serverpoort. Zorg ervoor dat ${serverName} niet wordt uitgevoerd."
 
@@ -663,3 +657,27 @@ msgstr "Kan de poort niet binden aan het opgegeven poortnummer."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Kan de poort niet binden aan het opgegeven poortnummer. Deze poort wordt al gebruikt door het ${process_binding_port}-proces. Selecteer een andere ${serverName}-serverpoort."
+
+msgid "Remote Solr configuration"
+msgstr "Externe Solr-configuratie"
+
+msgid "Enter the Solr host and port to connect to Alfresco:"
+msgstr "Voer de Solr-host en -poort in om verbinding te maken met Alfresco:"
+
+msgid "Solr host:"
+msgstr "Solr-host:"
+
+msgid "Solr SSL port:"
+msgstr "Solr SSL-poort:"
+
+msgid "Sharded Solr installation"
+msgstr "Sharded Solr-installatie"
+
+msgid "Are you using a sharded Solr installation?"
+msgstr "Gebruikt u een sharded Solr-installatie?"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "No"
+msgstr "Nee"

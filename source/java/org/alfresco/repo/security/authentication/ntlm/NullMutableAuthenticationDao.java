@@ -238,6 +238,15 @@ public class NullMutableAuthenticationDao implements MutableAuthenticationDao
     }
 
     /**
+     * @throws AlfrescoRuntimeException always
+     */
+    @Override
+    public void hashUserPassword(String userName) throws AuthenticationException
+    {
+        throw new AlfrescoRuntimeException("Not implemented");
+    }
+
+    /**
      * @throws AlfrescoRuntimeException Not implemented
      */
     @Override

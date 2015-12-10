@@ -1427,8 +1427,6 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
                 throw new DataIntegrityViolationException("No unique property context exists for id: " + id);
             }
             
-            Long propertyIdToDelete = entity.getPropertyId();
-            
             Long propertyId = null;
             if (propertyValue != null)
             {
@@ -1442,12 +1440,6 @@ public abstract class AbstractPropertyValueDAOImpl implements PropertyValueDAO
             
             // cache
             propertyUniqueContextCache.put(pucKey, entity);
-            
-            // Clean up the previous property, if present
-            if (propertyIdToDelete != null)
-            {
-                deleteProperty(propertyIdToDelete);
-            }
             
             // Done
             if (logger.isDebugEnabled())

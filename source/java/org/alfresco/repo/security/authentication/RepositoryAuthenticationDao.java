@@ -824,9 +824,26 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         }
         else
         {
-            String password = DefaultTypeConverter.INSTANCE.convert(String.class, nodeService.getProperty(userNode, ContentModel.PROP_PASSWORD));
-            return password;
+            Map<QName, Serializable> properties = nodeService.getProperties(userNode);
+            List<String> hashIndicator = (List<String>) properties.get(ContentModel.PROP_HASH_INDICATOR);
+            if (hashIndicator != null && hashIndicator.size() == 1 && CompositePasswordEncoder.MD4.equals(hashIndicator))
+            {
+                //We have hashed the value so get it.
+                return DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_PASSWORD_HASH));
+            }
+            else
+            {
+                //Use MD4
+                String passHash = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_PASSWORD));
+                if (passHash != null)
+                {
+                    return passHash;
+                }
+            }
         }
+
+        logger.error("Request made of MD4 hash for "+userName+" but the unable to find it.");
+        return null;
     }
 
     @Override

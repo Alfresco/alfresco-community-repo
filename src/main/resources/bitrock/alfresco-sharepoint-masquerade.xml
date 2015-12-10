@@ -1,7 +1,7 @@
 <component>
     <name>alfrescosharepointmasquerade</name>
     <description>SharePoint Masquerade</description>
-    <detailedDescription>Select this module to allow applications that can talk to a SharePoint to talk to your Alfresco Installation</detailedDescription>
+    <detailedDescription>Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation.</detailedDescription>
     <canBeEdited>1</canBeEdited>
     <selected>1</selected>
     <show>1</show>

@@ -78,7 +78,7 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     protected PolicyComponent policyComponent;
     
     private TransactionService transactionService;
-    private CompositePasswordEncoder compositePasswordEncoder;
+    protected CompositePasswordEncoder compositePasswordEncoder;
 
 // note: cache is tenant-aware (if using TransctionalCache impl)
     
@@ -327,6 +327,12 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     @Override
     public void createUser(String caseSensitiveUserName, char[] rawPassword) throws AuthenticationException
     {
+        createUser(caseSensitiveUserName, null, rawPassword);
+    }
+
+    @Override
+    public void createUser(String caseSensitiveUserName, String hashedPassword, char[] rawPassword) throws AuthenticationException
+    {
         tenantService.checkDomainUser(caseSensitiveUserName);
 
         NodeRef userRef = getUserOrNull(caseSensitiveUserName);
@@ -339,7 +345,24 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         properties.put(ContentModel.PROP_USER_USERNAME, caseSensitiveUserName);
         String salt = GUID.generate();
         properties.put(ContentModel.PROP_SALT, salt);
-        properties.put(ContentModel.PROP_PASSWORD_HASH,  compositePasswordEncoder.encodePreferred(new String(rawPassword), salt));
+
+        if (hashedPassword == null)
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Hashing raw password to "+compositePasswordEncoder.getPreferredEncoding()
+                +" for "+caseSensitiveUserName);
+            }
+            hashedPassword = compositePasswordEncoder.encodePreferred(new String(rawPassword), salt);
+        }
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Using hashed password for  "+caseSensitiveUserName);
+            }
+        }
+        properties.put(ContentModel.PROP_PASSWORD_HASH, hashedPassword);
         properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable) Arrays.asList(compositePasswordEncoder.getPreferredEncoding()));
         properties.put(ContentModel.PROP_ACCOUNT_EXPIRES, Boolean.valueOf(false));
         properties.put(ContentModel.PROP_CREDENTIALS_EXPIRE, Boolean.valueOf(false));

@@ -22,6 +22,8 @@ import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -1851,7 +1853,7 @@ public class AuthenticationTest extends TestCase
         pubAuthenticationService.createAuthentication("Andy", "auth1".toCharArray());
         
         // find the node representing the Andy user and it's properties
-        NodeRef andyUserNodeRef = getAndyUserNodeRef();
+        NodeRef andyUserNodeRef = getRepositoryAuthenticationDao(). getUserOrNull("Andy");
         assertNotNull(andyUserNodeRef);
         
         // ensure the properties are in the state we're expecting
@@ -1928,7 +1930,34 @@ public class AuthenticationTest extends TestCase
         authenticationComponent.clearCurrentSecurityContext();
     }
 
-    private NodeRef getAndyUserNodeRef()
+
+    /**
+     * Tests creating a user with a Hashed password
+     */
+    public void testCreateUserWithHashedPassword() throws Exception
+    {
+        String SOME_PASSWORD = "1 passw0rd";
+        List<String> encs = Arrays.asList("bcrypt10", "md4");
+        for (String enc : encs)
+        {
+            compositePasswordEncoder.setPreferredEncoding(enc);
+            String hash = compositePasswordEncoder.encodePreferred(SOME_PASSWORD,null);
+            assertCreateHashed(SOME_PASSWORD, hash, null, "me@you.com");
+            assertCreateHashed(SOME_PASSWORD, null, SOME_PASSWORD.toCharArray(), "you@me.com");
+        }
+    }
+
+    private void assertCreateHashed(String rawString, String hash, char[] rawPassword, String user)
+    {
+        dao.createUser(user, hash, rawPassword);
+        UserDetails userDetails = (UserDetails) dao.loadUserByUsername(user);
+        assertNotNull(userDetails);
+        assertNotNull(userDetails.getPassword());
+        assertTrue(compositePasswordEncoder.matches(compositePasswordEncoder.getPreferredEncoding(), rawString, userDetails.getPassword(), null));
+        dao.deleteUser(user);
+    }
+
+    private RepositoryAuthenticationDao getRepositoryAuthenticationDao()
     {
         RepositoryAuthenticationDao dao = new RepositoryAuthenticationDao();
         dao.setTransactionService(transactionService);
@@ -1940,8 +1969,7 @@ public class AuthenticationTest extends TestCase
         dao.setPolicyComponent(policyComponent);
         dao.setAuthenticationCache(authenticationCache);
         dao.setSingletonCache(immutableSingletonCache);
-        
-        return dao.getUserOrNull("Andy");
+        return dao;
     }
 
     private String getUserName(Authentication authentication)

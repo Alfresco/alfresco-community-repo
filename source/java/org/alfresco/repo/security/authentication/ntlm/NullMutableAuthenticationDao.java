@@ -54,7 +54,16 @@ public class NullMutableAuthenticationDao implements MutableAuthenticationDao
     {
         throw new AlfrescoRuntimeException("Not implemented");
     }
-    
+
+    /**
+     * @throws AlfrescoRuntimeException Not implemented
+     */
+    @Override
+    public void createUser(String caseSensitiveUserName, String hashedpassword, char[] rawPassword) throws AuthenticationException
+    {
+        throw new AlfrescoRuntimeException("Not implemented");
+    }
+
     /**
      * @throws AlfrescoRuntimeException Not implemented
      */

@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -125,7 +126,7 @@ public class ThumbnailServiceTest extends BaseWebScriptTest
     public void testCreateThumbnail() throws Exception
     {
         // Check for pdfToSWF transformation before doing test
-        if (this.contentService.getTransformer(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_FLASH) != null)
+        if (this.contentService.getTransformer(MimetypeMap.MIMETYPE_PDF, MimetypeMap.MIMETYPE_FLASH, new TransformationOptions()) != null)
         {
             String url = "/api/node/" + pdfNode.getStoreRef().getProtocol() + "/" + pdfNode.getStoreRef().getIdentifier() + "/" + pdfNode.getId() + "/content/thumbnails";
             

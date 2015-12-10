@@ -388,9 +388,9 @@ public class ProcessDefinitionWorkflowApiTest extends EnterpriseWorkflowTestApi
             .createProcessDefinitionQuery()
             .processDefinitionKey(adhocKey)
             .singleResult();
-        
+
         assertNotNull(activitiDefinition);
-        
+
         // Get a single process definitions
         ProcessDefinitionsClient processDefinitionsClient = publicApiClient.processDefinitionsClient();
         ProcessDefinition adhocDefinition = processDefinitionsClient.findProcessDefinitionById(activitiDefinition.getId());
@@ -415,7 +415,35 @@ public class ProcessDefinitionWorkflowApiTest extends EnterpriseWorkflowTestApi
         assertEquals(activitiDefinition.getId(), adhocDefinition.getId());
         assertEquals("activitiAdhoc", adhocDefinition.getKey());
     }
-    
+
+
+    @Test
+    public void testGetProcessDefinitionsImage() throws Exception
+    {
+        RequestContext requestContext = initApiClientWithTestUser();
+        ProcessDefinitionsClient processDefinitionsClient = publicApiClient.processDefinitionsClient();
+
+        String adhocKey = createProcessDefinitionKey("activitiAdhoc", requestContext);
+        org.activiti.engine.repository.ProcessDefinition activitiDefinition = activitiProcessEngine.getRepositoryService()
+                .createProcessDefinitionQuery()
+                .processDefinitionKey(adhocKey)
+                .singleResult();
+
+        assertNotNull(activitiDefinition);
+        try
+        {
+            HttpResponse response = processDefinitionsClient.findImageById(activitiDefinition.getId());
+            fail("Exception expected");
+        }
+        catch(PublicApiException expected)
+        {
+            assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), expected.getHttpResponse().getStatusCode());
+            assertTrue(expected.getMessage().contains("No image available"));
+        }
+
+
+    }
+
     @Test
     public void testGetProcessDefinitionByIdUnexisting() throws Exception
     {

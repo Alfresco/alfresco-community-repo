@@ -36,12 +36,13 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
 	private String mob;
 	private String instantmsg;
 	private String google;
+	private String description;
 
 	private static Collator collator = Collator.getInstance();
 
 	public Person(String id, String username, Boolean enabled, String firstName, String lastName,
 			Company company, String skype, String location, String tel,
-			String mob, String instantmsg, String google)
+			String mob, String instantmsg, String google, String description)
 	{
 		super();
 		if(id == null)
@@ -60,6 +61,7 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
 		this.mob = mob;
 		this.instantmsg = instantmsg;
 		this.google = google;
+		this.description = description;
 	}
 
 	public String getId()
@@ -165,7 +167,12 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
 	{
 		this.lastName = lastName;
 	}
-	
+
+	public String getDescription()
+	{
+		return description;
+	}
+
 	@Override
 	public String toString()
 	{
@@ -181,6 +188,7 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
 				+ (mob != null ? "mob=" + mob + ", " : "")
 				+ (instantmsg != null ? "instantmsg=" + instantmsg + ", " : "")
 				+ (google != null ? "google=" + google + ", " : "")
+				+ (description != null ? "description=" + description + ", " : "")
 				+ "]";
 	}
 
@@ -219,7 +227,8 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
 		String userId = (String)jsonObject.get("id");
 		String firstName = (String)jsonObject.get("firstName");
 		String lastName = (String)jsonObject.get("lastName");
-		Boolean emailNotificationsEnabled = (Boolean)jsonObject.get("emailNotificationsEnabled");
+		String description = (String)jsonObject.get("description");
+
 		JSONObject companyJSON = (JSONObject)jsonObject.get("company");
 		Company company = null;
 		if(companyJSON != null)
@@ -234,13 +243,13 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
 			String companyEmail = (String)companyJSON.get("email");
 			company = new Company(organization, address1, address2, address3, postcode, companyTelephone, fax, companyEmail);
 		}
-		Person person = new Person(userId, email, enabled, firstName, lastName, company, skypeId, location, telephone, mobile, instantMessageId, googleId);
+		Person person = new Person(userId, email, enabled, firstName, lastName, company, skypeId, location, telephone, mobile, instantMessageId, googleId, description);
 		return person;
 	}
 	
 	public Person restriced()
 	{
-		Person p = new Person(getId(), getEmail(), getEnabled(), getFirstName(), getLastName(), null, null, null, null, null, null, null);
+		Person p = new Person(getId(), getEmail(), getEnabled(), getFirstName(), getLastName(), null, null, null, null, null, null, null, null);
 		return p;
 	}
 

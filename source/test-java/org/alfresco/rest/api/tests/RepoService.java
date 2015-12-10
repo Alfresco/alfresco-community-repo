@@ -47,6 +47,7 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.feed.FeedGenerator;
 import org.alfresco.repo.activities.feed.cleanup.FeedCleaner;
 import org.alfresco.repo.activities.post.lookup.PostLookup;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.cleanup.ContentStoreCleaner;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.repo.domain.activities.ActivityPostDAO;
@@ -56,6 +57,7 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.node.index.NodeIndexer;
+import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteDoesNotExistException;
@@ -68,6 +70,7 @@ import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
+import org.alfresco.repo.web.scripts.invitation.InvitationWebScriptTest;
 import org.alfresco.rest.api.Activities;
 import org.alfresco.rest.api.impl.node.ratings.RatingScheme;
 import org.alfresco.rest.api.tests.client.data.Activity;
@@ -364,7 +367,30 @@ public class RepoService
 	{
 		lockService.unlock(nodeRef);
 	}
-	
+
+	public NodeRef addUserDescription(final String personId, final TestNetwork network, final String personDescription)
+	{
+		return AuthenticationUtil.runAsSystem(new RunAsWork<NodeRef>()
+		{
+			//@Override
+			public NodeRef doWork() throws Exception
+			{
+				NodeRef userRef = personService.getPersonOrNull(personId);
+				if (userRef == null)
+				{
+					throw new AuthenticationException("User name does not exist: " + personId);
+				}
+
+				ContentWriter writer = contentService.getWriter(userRef, ContentModel.PROP_PERSONDESC, true);
+				writer.setMimetype(MimetypeMap.MIMETYPE_HTML);
+				writer.putContent(personDescription);
+
+				log("Updated person description " + personId + (network != null ? " in network " + network : ""));
+				return userRef;
+			}
+		});
+	}
+
 	public TestPerson createUser(final PersonInfo personInfo, final String username, final TestNetwork network)
 	{
 		return AuthenticationUtil.runAsSystem(new RunAsWork<TestPerson>()
@@ -390,10 +416,16 @@ public class RepoService
 					});
 				}
 
-				personService.createPerson(props);
+				NodeRef createdPerson = personService.createPerson(props);
 
 		        // create authentication to represent user
 		        authenticationService.createAuthentication(username, personInfo.getPassword().toCharArray());
+
+				if (EnterpriseTestFixture.WITH_AVATAR.equals(personInfo.getInstantmsg()))
+				{
+					InvitationWebScriptTest.makeAvatar(nodeService,createdPerson);
+					log("Made avatar for " + testPerson.getId() + (network != null ? " in network " + network : ""));
+				}
 
 				log("Created person " + testPerson.getId() + (network != null ? " in network " + network : ""));
 
@@ -1301,6 +1333,19 @@ public class RepoService
 			return person;
 		}
 
+		public NodeRef addUserDescription(final String personId, final String personDescription)
+		{
+			NodeRef personRef = TenantUtil.runAsTenant(new TenantRunAsWork<NodeRef>()
+			{
+				public NodeRef doWork() throws Exception
+				{
+					return RepoService.this.addUserDescription(personId, TestNetwork.this, personDescription);
+				}
+			}, getId());
+
+			return personRef;
+		}
+
 		public TestPerson createUser(final PersonInfo personInfo)
 		{
 			final String username = publicApiContext.createUserName(personInfo.getUsername(), getId());
@@ -1746,7 +1791,7 @@ public class RepoService
 		public TestPerson(String firstName, String lastName, String username, String password, Company company, TestNetwork defaultAccount, String skype, String location, String tel,
 				String mob, String instantmsg, String google)
 		{
-			super(username, username, true, firstName, lastName, company, skype, location, tel, mob, instantmsg, google);
+			super(username, username, true, firstName, lastName, company, skype, location, tel, mob, instantmsg, google, null);
 			this.password = password;
 			this.enabled = true;
 			this.defaultAccount = defaultAccount;

@@ -1541,6 +1541,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             // Test status filtering - completed
             params.clear();
             params.put("where", "(status = 'completed' AND processId = '" + processInstance.getId() + "')");
+            params.put("orderBy", "dueAt DESC");
             assertTasksPresentInTaskQuery(params, tasksClient, false, completedTask.getId());
             
             // Test status filtering - any
@@ -1575,6 +1576,7 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertTasksPresentInTaskQuery(params, tasksClient, activeTask.getId());
             
             params.put("where", "(status = 'completed' AND assignee = '" + anotherUserId + "')");
+            params.put("orderBy", "endedAt");
             assertTasksPresentInTaskQuery(params, tasksClient, completedTask.getId());
             
             params.put("where", "(status = 'any' AND assignee = '" + anotherUserId + "')");
@@ -1870,6 +1872,18 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             {
                 assertEquals(HttpStatus.BAD_REQUEST.value(), expected.getHttpResponse().getStatusCode());
             }
+
+            params.clear();
+            params.put("where", "(status = 'completed' AND processDefinitionName = 'Adhoc Activiti Process')");
+            JSONObject response = publicApiClient.processesClient().getTasks(processInstance.getId(), params);
+            assertNotNull(response);
+            JSONObject paginationJSON = (JSONObject) response.get("pagination");
+            assertEquals(1l, paginationJSON.get("count"));
+
+            params.clear();
+            params.put("where", "(status = 'any' AND variables/numberVar < 'd:int 5')");
+            assertEquals(0, getResultSizeForTaskQuery(params, tasksClient));
+
         }
         finally
         {
@@ -2087,6 +2101,12 @@ public class TaskWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals(taskList.get(0).getId(), taskJSON.get("id"));
             taskJSON = (JSONObject) ((JSONObject) tasksListJSON.get(5)).get("entry");
             assertEquals(taskList.get(numberOfTasks - 1).getId(), taskJSON.get("id"));
+
+            params.put("orderBy", "dueAt DESC");
+            tasksResponseJSON = tasksClient.findTasks(params);
+            tasksListJSON = (JSONArray) tasksResponseJSON.get("entries");
+            assertEquals(6, tasksListJSON.size());
+
         }
         finally
         {

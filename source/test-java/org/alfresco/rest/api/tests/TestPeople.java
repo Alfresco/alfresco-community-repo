@@ -1,10 +1,12 @@
 package org.alfresco.rest.api.tests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
 import java.util.Iterator;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -73,5 +75,15 @@ public class TestPeople extends EnterpriseTestApi
 		{
 			assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
 		}
+
+		RepoService.TestPerson testP = account1.createUser();
+		String personId = testP.getId();
+		String desc = "<B>Nice person</B>";
+		account1.addUserDescription(personId, desc);
+		publicApiClient.setRequestContext(new RequestContext(account1.getId(), personId));
+		Person resp = publicApiClient.people().getPerson(personId);
+		assertEquals(resp.getId(), personId);
+		assertEquals(resp.getDescription(), desc);
 	}
+
 }

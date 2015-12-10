@@ -35,5 +35,5 @@ public interface People
      * @throws NoSuchPersonException if personId does not exist
      */
     Person getPerson(final String personId);
-    Person updatePerson(String personId, Person person);
+    //Person updatePerson(String personId, Person person);
 }

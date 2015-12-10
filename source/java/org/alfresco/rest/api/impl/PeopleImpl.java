@@ -285,7 +285,7 @@ public class PeopleImpl implements People
 
         return person;
     }
-
+/**
     private void addToMap(Map<QName, Serializable> properties, QName name, Serializable value)
     {
 //    	if(name != null && value != null)
@@ -355,4 +355,5 @@ public class PeopleImpl implements People
 
     	return getPerson(personId);
     }
+ */
 }

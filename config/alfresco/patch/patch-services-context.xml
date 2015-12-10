@@ -1278,4 +1278,14 @@
             </props>
         </property>
     </bean>
+    <bean id="patch.db-V5.0-update-activiti-default-timestamp-column" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V5.0-update-activiti-default-timestamp-column" />
+        <property name="description" value="patch.db-V5.0-update-activiti-default-timestamp-column.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="9012" />
+        <property name="targetSchema" value="9013" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/update-activiti-default-timestamp-column.sql</value>
+        </property>
+    </bean>
 </beans>

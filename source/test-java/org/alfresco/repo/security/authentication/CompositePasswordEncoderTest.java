@@ -318,9 +318,17 @@ public class CompositePasswordEncoderTest
 
         //No default preferred encoding
         subject.setPreferredEncoding("nice_encoding");
-        subject.init();
+        try
+        {
+            subject.init();
+        } catch (AlfrescoRuntimeException expected)
+        {
+            expected.getMessage().contains("Invalid preferredEncoding specified");
+        }
 
-        assertEquals("nice_encoding", subject.getPreferredEncoding());
+        subject.setPreferredEncoding("bcrypt12");
+        subject.init();
+        assertEquals("bcrypt12", subject.getPreferredEncoding());
     }
 
     @Test

@@ -281,21 +281,31 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         // determine if current password hash matches the preferred encoding
         if (!passwordEncoder.lastEncodingIsPreferred(passwordHash.getFirst()))
         {
+            String username = (String)properties.get(ContentModel.PROP_USER_USERNAME);
+
             // We need to double hash
-            if (logger.isTraceEnabled())
-            {
-                String username = (String)properties.get(ContentModel.PROP_USER_USERNAME);
-                logger.trace("Double hashing user '" + username + "'.");
-            }
             List<String> nowHashed = new ArrayList<String>();
             nowHashed.addAll(passwordHash.getFirst());
             nowHashed.add(passwordEncoder.getPreferredEncoding());
-            Object salt = properties.get(ContentModel.PROP_SALT);
-            properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordEncoder.encodePreferred(new String(passwordHash.getSecond()), salt));
-            properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)nowHashed);
-            properties.remove(ContentModel.PROP_PASSWORD);
-            properties.remove(ContentModel.PROP_PASSWORD_SHA256);
-            return true;
+
+            if (passwordEncoder.isSafeToEncodeChain(nowHashed))
+            {
+                if (logger.isTraceEnabled())
+                {
+                    logger.trace("Double hashing user '" + username + "'.");
+                }
+                Object salt = properties.get(ContentModel.PROP_SALT);
+                properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordEncoder.encodePreferred(new String(passwordHash.getSecond()), salt));
+                properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)nowHashed);
+                properties.remove(ContentModel.PROP_PASSWORD);
+                properties.remove(ContentModel.PROP_PASSWORD_SHA256);
+                return true;
+            }
+            else
+            {
+                logger.warn("Unsafe to Double Hash user: " + username + "'. The user needs to login first.");
+                return false;
+            }
         }
 
         // ensure password hash is in the correct place

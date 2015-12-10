@@ -222,6 +222,30 @@ public class CompositePasswordEncoderTest
     }
 
     @Test
+    public void testSafeEncodingChain() throws Exception
+    {
+        List<String> mdbChain = Arrays.asList("bcrypt10");
+
+        assertTrue(encoder.isSafeToEncodeChain(mdbChain));
+        mdbChain = Arrays.asList("md4","bcrypt10");
+        assertTrue(encoder.isSafeToEncodeChain(mdbChain));
+        mdbChain = Arrays.asList("sha256","bcrypt10");
+        assertTrue(encoder.isSafeToEncodeChain(mdbChain));
+        mdbChain = Arrays.asList("md4","sha256","bcrypt10");
+        assertTrue(encoder.isSafeToEncodeChain(mdbChain));
+        mdbChain = Arrays.asList("sha256","md4");
+        assertTrue(encoder.isSafeToEncodeChain(mdbChain));
+
+        mdbChain = Arrays.asList("bcrypt10", "sha256","md4");
+        assertFalse(encoder.isSafeToEncodeChain(mdbChain));
+        mdbChain = Arrays.asList("bcrypt10", "bcrypt11");
+        assertFalse(encoder.isSafeToEncodeChain(mdbChain));
+        mdbChain = Arrays.asList("bcrypt10", "sha256", "bcrypt11");
+        assertFalse(encoder.isSafeToEncodeChain(mdbChain));
+        mdbChain = Arrays.asList("md4","bcrypt10","sha256");
+        assertFalse(encoder.isSafeToEncodeChain(mdbChain));
+    }
+    @Test
     public void testEncodeChain() throws Exception
     {
         String salt = GUID.generate();

@@ -26,6 +26,7 @@ import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +72,48 @@ public class CompositePasswordEncoder
         if (hashIndicator!= null && hashIndicator.size() > 0 && preferredEncoding.equals(hashIndicator.get(hashIndicator.size()-1)))
         {
             return true;
+        }
+        return false;
+    }
+
+    /**
+     * Determines if its safe to encode the encoding chain.  This applies particularly to double-hashing.
+     * BCRYPT uses its own internal salt so its NOT safe to use it more than once in an encoding chain
+     * (because the result will be different each time.)  BCRYPT CAN BE USED successfully as the last element in
+     * an encoding chain.
+     *
+     * Anything that implements springframework PasswordEncoder is considered "unsafe"
+     * (because the method takes no salt param).
+     *
+     * @param encodingChain mandatory encoding chain
+     * @return true if it is okay to encode this chain.
+     */
+    public boolean isSafeToEncodeChain(List<String> encodingChain)
+    {
+        if (encodingChain!= null && encodingChain.size() > 0 )
+        {
+            List<String> unsafeEncoders = new ArrayList<>();
+            for (String encoderKey : encodingChain)
+            {
+                Object encoder = encoders.get(encoderKey);
+                if (encoder == null) throw new AlfrescoRuntimeException("Invalid encoder specified: "+encoderKey);
+                if (encoder instanceof org.springframework.security.crypto.password.PasswordEncoder)
+                {
+                    //BCRYPT uses its own internal salt so its NOT safe to use it more than once in an encoding chain.
+                    //the Spring PasswordEncoder class doesn't require a salt and BCRYPTEncoder implements this, so
+                    //we will count the instances of Spring PasswordEncoder
+                    unsafeEncoders.add(encoderKey);
+                }
+            }
+
+            if (unsafeEncoders.isEmpty()) return true;
+            if (unsafeEncoders.size() == 1 && unsafeEncoders.get(0).equals(encodingChain.get(encodingChain.size()-1)))
+            {
+                //The unsafe encoder is used at the end so that's ok.
+                return true;
+            }
+            logger.warn("Unsafe encoders in the encoding chain: "+Arrays.toString(unsafeEncoders.toArray())
+                    +". Only 1 unsafe encoder is allowed at the end of the chain: "+Arrays.toString(encodingChain.toArray()));
         }
         return false;
     }

@@ -169,11 +169,6 @@
 						<constructor-arg value="10" />
 					</bean>
 				</entry>
-				<!--entry key="bcrypt20">
-                      <bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
-                          <constructor-arg value="20" />
-                      </bean>
-                </entry-->
 			</map>
 		</property>
 		<property name="preferredEncoding" value="${system.preferred.password.encoding}" />

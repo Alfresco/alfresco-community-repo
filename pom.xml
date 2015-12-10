@@ -300,6 +300,30 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>get-sharepoint-masquerade</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>copy</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco.sharepoint-masquerade</groupId>
+                                    <artifactId>alfresco-sharepoint-masquerade</artifactId>
+                                    <version>${alfresco.sharepoint-masquerade.version}</version>
+                                    <type>amp</type>
+                                </artifactItem>
+                                <artifactItem>
+                                    <groupId>org.alfresco.sharepoint-masquerade</groupId>
+                                    <artifactId>alfresco-vti-bin</artifactId>
+                                    <version>${alfresco.sharepoint-masquerade.version}</version>
+                                    <destFileName>_vti_bin.war</destFileName>
+                                    <type>war</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
 

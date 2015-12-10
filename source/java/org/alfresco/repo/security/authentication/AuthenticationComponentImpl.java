@@ -112,16 +112,12 @@ public class AuthenticationComponentImpl extends AbstractAuthenticationComponent
                                     if (userDetails instanceof RepositoryAuthenticatedUser)
                                     {
                                         List<String> hashIndicator = ((RepositoryAuthenticatedUser)userDetails).getHashIndicator();
-                                        String preferredEncoding = passwordEncoder.getPreferredEncoding();
                                         
                                         if (hashIndicator != null && !hashIndicator.isEmpty())
                                         {
-                                            // get the last encoding in the chain
-                                            String currentEncoding = hashIndicator.get(hashIndicator.size()-1);
-                                            
                                             // if the encoding chain is longer than 1 (double hashed) or the 
                                             // current encoding is not the preferred encoding then re-generate
-                                            if (hashIndicator.size() > 1 || !currentEncoding.equals(preferredEncoding))
+                                            if (hashIndicator.size() > 1 || !passwordEncoder.lastEncodingIsPreferred(hashIndicator))
                                             {
                                                 // add transaction listener to re-hash the users password
                                                 HashPasswordTransactionListener txListener = new HashPasswordTransactionListener(userName, password);

@@ -108,6 +108,8 @@ public class UpgradePasswordHashTest extends TestCase
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
         
         createTestUsers("md4");
+        
+        userTransaction.commit();
     }
     
     protected void createTestUsers(String encoding) throws Exception
@@ -183,6 +185,9 @@ public class UpgradePasswordHashTest extends TestCase
     
     public void testWorkerWithDefaultConfiguration() throws Exception
     {
+        userTransaction = serviceRegistry.getTransactionService().getUserTransaction();
+        userTransaction.begin();
+        
         for (NodeRef testUser : testUsers)
         {
             assertNull("The hash indicator should not be set",nodeService.getProperty(testUser, ContentModel.PROP_HASH_INDICATOR));
@@ -191,6 +196,10 @@ public class UpgradePasswordHashTest extends TestCase
         // execute the worker to upgrade all users
         this.upgradePasswordHashWorker.execute();
 
+        userTransaction.commit();
+        userTransaction = serviceRegistry.getTransactionService().getUserTransaction();
+        userTransaction.begin();
+        
         // ensure all the test users have been upgraded to use the preferred encoding
         List<String> doubleHashed = Arrays.asList("md4", "bcrypt10");
         for (NodeRef testUser : testUsers)
@@ -200,7 +209,6 @@ public class UpgradePasswordHashTest extends TestCase
             assertNull("The md4 password should not be set",  nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD));
             assertNull("The sh256 password should not be set",nodeService.getProperty(testUser, ContentModel.PROP_PASSWORD_SHA256));
         }
-
     }
     
     public void xxxtestWorkerWithLegacyConfiguration() throws Exception

@@ -285,51 +285,16 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         // Always use a transaction
         return transactionService.getRetryingTransactionHelper().doInTransaction(new SearchUserNameCallback(), true);
     }
-
+    
     /**
-     * Should we rehash the password by updating the properties
-     * @param properties
-     * @return
+     * Retrieves the password hash for the given user properties.
+     * 
+     * @param properties The properties of the user.
+     * @return A Pair object containing the hash indicator and the hashed password.
      */
-    public boolean rehashedPassword(Map<QName, Serializable> properties)
+    public static Pair<List<String>, String> determinePasswordHash(Map<QName, Serializable> properties)
     {
-        List<String> hashIndicator = (List<String>) properties.get(ContentModel.PROP_HASH_INDICATOR);
-        Pair<List<String>, String> passwordHash = determinePasswordHash(properties);
-
-        if (!compositePasswordEncoder.lastEncodingIsPreferred(passwordHash.getFirst()))
-        {
-            //We need to double hash
-            List<String> nowHashed = new ArrayList<String>();
-            nowHashed.addAll(passwordHash.getFirst());
-            nowHashed.add(compositePasswordEncoder.getPreferredEncoding());
-            Object salt = properties.get(ContentModel.PROP_SALT);
-            properties.put(ContentModel.PROP_PASSWORD_HASH,  compositePasswordEncoder.encodePreferred(new String(passwordHash.getSecond()), salt));
-            properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)nowHashed);
-            properties.remove(ContentModel.PROP_PASSWORD);
-            properties.remove(ContentModel.PROP_PASSWORD_SHA256);
-            return true;
-        }
-
-        if (hashIndicator == null)
-        {
-            //Already the preferred encoding, just set it
-            properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)passwordHash.getFirst());
-            properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordHash.getSecond());
-            properties.remove(ContentModel.PROP_PASSWORD);
-            properties.remove(ContentModel.PROP_PASSWORD_SHA256);
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * Where is the password and how is it encoded?
-     * @param properties
-     * @return
-     */
-    protected Pair<List<String>, String> determinePasswordHash(Map<QName, Serializable> properties)
-    {
+        @SuppressWarnings("unchecked")
         List<String> hashIndicator = (List<String>) properties.get(ContentModel.PROP_HASH_INDICATOR);
         if (hashIndicator != null && hashIndicator.size()>0)
         {
@@ -354,8 +319,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                 }
             }
         }
-        throw new AlfrescoRuntimeException("Unable to find a user password, please check your repository authentication settings."
-        + "(PreferredEncoding="+compositePasswordEncoder.getPreferredEncoding()+")");
+        
+        // throw execption if we failed to find a password for the user
+        throw new AlfrescoRuntimeException("Unable to find a password for user '" +
+                    properties.get(ContentModel.PROP_USER_USERNAME) + 
+                    "', please check your repository authentication settings.");
     }
 
     @Override
@@ -467,22 +435,6 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     public boolean userExists(String userName)
     {
         return (getUserOrNull(userName) != null);
-    }
-
-    @Override
-    public void hashUserPassword(String userName) throws AuthenticationException
-    {
-        NodeRef userRef = getUserOrNull(userName);
-        if (userRef == null)
-        {
-            throw new AuthenticationException("User name does not exist: " + userName);
-        }
-        Map<QName, Serializable> properties = nodeService.getProperties(userRef);
-
-        if (rehashedPassword(properties))
-        {
-            nodeService.setProperties(userRef, properties);
-        }
     }
 
     /**

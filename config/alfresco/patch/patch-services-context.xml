@@ -1084,6 +1084,10 @@
       <property name="behaviourFilter" >
          <ref bean="policyBehaviourFilter"/>
       </property>
+      <property name="jobLockService" >
+         <ref bean="jobLockService" />
+      </property>
+      <property name="deferred"><value>${system.patch.addUnmovableAspect.deferred}</value></property>
    </bean>
 
    <bean id="patch.deleteClassifibleAspectForFailedThumbnail" class="org.alfresco.repo.admin.patch.impl.GenericDeleteAspectForTypePatch"
@@ -1191,6 +1195,7 @@
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>9007</value></property>
         <property name="targetSchema"><value>9008</value></property>
+        <property name="applyToTenants"><value>false</value></property>
         <property name="patchDAO">
             <ref bean="patchDAO"/>
         </property>

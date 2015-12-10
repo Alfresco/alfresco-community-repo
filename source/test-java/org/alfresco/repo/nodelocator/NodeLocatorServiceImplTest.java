@@ -92,7 +92,13 @@ public class NodeLocatorServiceImplTest
         NodeRef result = nodeLocatorService.getNode(SitesHomeNodeLocator.NAME, null, null);
         assertEquals(sitesHome, result);
     }
-    
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testRegister()
+    {
+        nodeLocatorService.register(SitesHomeNodeLocator.NAME, new SelfNodeLocator());
+    }
+
     @Before
     public void setUpClass()
     {

@@ -51,12 +51,7 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
      * Type translation for version store
      */
     public QName getType(NodeRef nodeRef) throws InvalidNodeRefException
-    {
-        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
-        {
-            return super.getType(nodeRef);
-        }
-        
+    {   
         // frozen node type -> replaced by actual node type of the version node
         return (QName)this.dbNodeService.getType(VersionUtil.convertNodeRef(nodeRef));
     }
@@ -66,11 +61,6 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
      */
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
-        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
-        {
-            return super.getAspects(nodeRef);
-        }
-        
         Set<QName> aspects = this.dbNodeService.getAspects(VersionUtil.convertNodeRef(nodeRef));
         aspects.remove(Version2Model.ASPECT_VERSION);
         return aspects;
@@ -81,11 +71,6 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
      */
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
     {
-        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
-        {
-            return super.getProperties(nodeRef);
-        }
-        
         Map<QName, Serializable> props = dbNodeService.getProperties(VersionUtil.convertNodeRef(nodeRef));
         VersionUtil.convertFrozenToOriginalProps(props);
         
@@ -97,11 +82,6 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
      */
     public Serializable getProperty(NodeRef nodeRef, QName qname) throws InvalidNodeRefException
     {
-        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
-        {
-            return super.getProperty(nodeRef, qname);
-        }
-        
         // TODO optimise - get property directly and convert if needed
         Map<QName, Serializable> properties = getProperties(VersionUtil.convertNodeRef(nodeRef));
         return properties.get(qname);
@@ -114,11 +94,6 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
      */
     public List<ChildAssociationRef> getParentAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern)
     {
-        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
-        {
-            return super.getParentAssocs(nodeRef, typeQNamePattern, qnamePattern);
-        }
-        
         List<ChildAssociationRef> result = new ArrayList<ChildAssociationRef>();
         if (qnamePattern.isMatch(rootAssocName) == true)
         {
@@ -136,11 +111,6 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
      */
     public List<ChildAssociationRef> getChildAssocs(NodeRef nodeRef, QNamePattern typeQNamePattern, QNamePattern qnamePattern) throws InvalidNodeRefException
     {
-        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
-        {
-            return super.getChildAssocs(nodeRef, typeQNamePattern, qnamePattern);
-        }
-        
         // Get the child assoc references from the version store
         List<ChildAssociationRef> childAssocRefs = this.dbNodeService.getChildAssocs(
                 VersionUtil.convertNodeRef(nodeRef),
@@ -183,11 +153,6 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
      */
     public ChildAssociationRef getPrimaryParent(NodeRef nodeRef) throws InvalidNodeRefException
     {
-        if (nodeRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
-        {
-            return super.getPrimaryParent(nodeRef);
-        }
-        
         return new ChildAssociationRef(
                 ContentModel.ASSOC_CHILDREN,
                 dbNodeService.getRootNode(new StoreRef(StoreRef.PROTOCOL_WORKSPACE, Version2Model.STORE_ID)),
@@ -203,11 +168,6 @@ public class Node2ServiceImpl extends NodeServiceImpl implements NodeService, Ve
     @Override
     public List<AssociationRef> getTargetAssocs(NodeRef sourceRef, QNamePattern qnamePattern)
     {
-        if (sourceRef.getStoreRef().getIdentifier().equals(VersionModel.STORE_ID))
-        {
-            return super.getTargetAssocs(sourceRef, qnamePattern);
-        }
-        
         // Get the assoc references from the version store
         List<ChildAssociationRef> childAssocRefs = this.dbNodeService.getChildAssocs(
                 VersionUtil.convertNodeRef(sourceRef),

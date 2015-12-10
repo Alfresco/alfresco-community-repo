@@ -24,6 +24,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -221,6 +222,7 @@ public class MultiTServiceImplTest
             }
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
+		assertEquals("fred", multiTServiceImpl.getMultiTenantDomainName("@fred@bloggs"));
     }
     
     @Test
@@ -351,7 +353,48 @@ public class MultiTServiceImplTest
         };
         transactionService.getRetryingTransactionHelper().doInTransaction(work);
     }
-    
+
+    @Test
+    public void testGetNull()
+    {
+        assertNull(tenantService.getName((NodeRef)null));
+        assertNull(tenantService.getName((String)null));
+        assertNull(tenantService.getName((StoreRef) null));
+        assertNull(tenantService.getName("", (StoreRef) null));
+        assertNull(tenantService.getName((ChildAssociationRef) null));
+        assertNull(tenantService.getName((AssociationRef) null));
+        assertNull(tenantService.getName((NodeRef)null,(NodeRef)null));
+        assertNull(tenantService.getBaseName((StoreRef) null));
+        assertNull(tenantService.getBaseName((AssociationRef) null));
+        assertNull(tenantService.getBaseName((ChildAssociationRef) null, false));
+        assertNull(tenantService.getBaseName((String)null, false));
+        tenantService.checkDomain((String)null);
+    }
+
+    @Test
+    public void testInvalidDomainUser()
+    {
+        try
+        {
+            tenantService.getDomainUser(TenantService.SEPARATOR, "MYDOMAIN");
+            fail("Should throw exception");
+        }
+        catch (AlfrescoRuntimeException are)
+        {
+           are.getMessage().contains("Invalid base username");
+        }
+        try
+        {
+            tenantService.getDomainUser("", TenantService.SEPARATOR);
+            fail("Should throw exception");
+        }
+        catch (AlfrescoRuntimeException are)
+        {
+            are.getMessage().contains("Invalid tenant domain");
+        }
+
+    }
+
     @Test
     public void testGetBaseName()
     {

@@ -30,6 +30,8 @@ import java.util.Map;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.ActionModel;
 import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies;
 import org.alfresco.repo.action.AsynchronousActionExecutionQueuePolicies.OnAsyncActionExecute;
@@ -357,6 +359,14 @@ public class TaggingServiceImplTest extends TestCase
                 assertNotNull(pagedTags);
                 List<String> tagPage = pagedTags.getFirst();
                 int allFilteredTagsCount = pagedTags.getSecond();
+                assertEquals(1, allFilteredTagsCount);
+                assertEquals(1, tagPage.size());
+                assertTrue(tagPage.get(0).contains("one"));
+
+                tagPage = taggingService.getTags(TaggingServiceImplTest.storeRef, "one");
+                assertNotNull(pagedTags);
+                tagPage = pagedTags.getFirst();
+                allFilteredTagsCount = pagedTags.getSecond();
                 assertEquals(1, allFilteredTagsCount);
                 assertEquals(1, tagPage.size());
                 assertTrue(tagPage.get(0).contains("one"));
@@ -2162,6 +2172,90 @@ public class TaggingServiceImplTest extends TestCase
         assertEquals(tags.get(1).getCount(), 20);
         assertEquals(tags.get(2).getCount(), 1);
     }
+
+    public void testPagedTags() throws UnsupportedEncodingException
+    {
+        authenticationComponent.setSystemUserAsCurrentUser();
+        Pair<List<String>, Integer> tags = taggingService.getPagedTags(storeRef, 1, 10);
+        assertNotNull(tags);
+        PagingResults<Pair<NodeRef, String>> res = taggingService.getTags(storeRef, new PagingRequest(10));
+        assertNotNull(res);
+
+
+        String guid = GUID.generate();
+        // Create a node
+        Map<QName, Serializable> docProps = new HashMap<QName, Serializable>(1);
+        String docName = "testDocument" + guid + ".txt";
+        docProps.put(ContentModel.PROP_NAME, docName);
+        NodeRef myDoc = nodeService.createNode(
+                folder,
+                ContentModel.ASSOC_CONTAINS,
+                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, docName),
+                ContentModel.TYPE_CONTENT,
+                docProps).getChildRef();
+        taggingService.addTag(myDoc,"dog");
+
+        res = taggingService.getTags(myDoc, new PagingRequest(10));
+        assertNotNull(res);
+        assertTrue(res.getTotalResultCount().getFirst() == 1);
+    }
+    
+    public void testChangeTags() throws UnsupportedEncodingException
+    {
+        try
+        {
+                taggingService.changeTag(storeRef, null, null);
+                fail("Should throw exception");
+        }
+        catch (TaggingException tae)
+        {
+            tae.getMessage().contains("Existing tag cannot be null");
+        }
+
+        try
+        {
+            taggingService.changeTag(storeRef, "bob", null);
+            fail("Should throw exception");
+        }
+        catch (TaggingException tae)
+        {
+            tae.getMessage().contains("New tag cannot be null");
+        }
+
+        try
+        {
+            taggingService.changeTag(storeRef, "bob", "bob");
+            fail("Should throw exception");
+        }
+        catch (TaggingException tae)
+        {
+            tae.getMessage().contains("New and existing tags are the same");
+        }
+
+        try
+        {
+            taggingService.changeTag(storeRef, "bob", "hope");
+            fail("Should throw exception");
+        }
+        catch (NonExistentTagException net)
+        {
+            net.getMessage().contains("not found");
+        }
+
+        try
+        {
+            List<String> storeTags = taggingService.getTags(storeRef);
+            assertNotNull(storeTags);
+            assertTrue(storeTags.size()>1);
+            taggingService.changeTag(storeRef, storeTags.get(0), storeTags.get(1));
+            fail("Should throw exception");
+        }
+        catch (TagExistsException tee)
+        {
+            tee.getMessage().contains("already exists");
+        }
+    }
+
     
     /* Test adding tags containing \n and | chars. Test all ways to create tag (e.g. createTag, addTag, setTags) */
     public void testBadTags()

@@ -460,6 +460,28 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                 }
             }
         }
+
+        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                renditionService.render(nodeWithDocContent, renditionName1, new RenderCallback()
+                {
+                    @Override
+                    public void handleSuccessfulRendition(ChildAssociationRef primaryParentOfNewRendition)
+                    {
+                        assertNotNull("The rendition association was null", primaryParentOfNewRendition);
+                    }
+
+                    @Override
+                    public void handleFailedRendition(Throwable t)
+                    {
+                        fail("No error should be thrown: "+t.getMessage());
+                    }
+                });
+                return null;
+            }
+        });
     }
 
     private void assertRenditionContainsTitle(final String titleValue, String output)

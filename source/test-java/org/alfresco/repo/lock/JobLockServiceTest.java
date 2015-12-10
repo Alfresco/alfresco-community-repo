@@ -115,8 +115,21 @@ public class JobLockServiceTest extends TestCase
         lockToken = jobLockService.getLock(lockAAA, 20L, 5L, 0);            // No retries
         jobLockService.refreshLock(lockToken, lockAAA, 20L);
         jobLockService.releaseLock(lockToken, lockAAA);
+
+        try
+        {
+            jobLockService.getLock(lockAAA, 20L, 5L, -1);
+            fail("getLock should have failed ");
+        }
+        catch (IllegalArgumentException expected)
+        {
+           expected.getMessage().contains("Job lock retry count cannot be negative");
+        }
+
     }
-    
+
+
+
     public void testEnforceTxn()
     {
         try

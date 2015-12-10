@@ -30,6 +30,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
@@ -67,6 +68,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -392,6 +394,9 @@ public class AuthenticationTest extends TestCase
     public void testGuest()
     {
         authenticationService.authenticate(AuthenticationUtil.getGuestUserName(), "".toCharArray());
+        Set<String> guestUsers = authenticationService.getDefaultGuestUserNames();
+        assertNotNull(guestUsers);
+        assertTrue(guestUsers.contains(AuthenticationUtil.getGuestUserName()));
     }
 
     public void testCreateUsers()
@@ -466,9 +471,12 @@ public class AuthenticationTest extends TestCase
     public void testAuthenticateMultiTenant()
     {
         // Create a tenant domain
-        TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Object>() {
-            public Object doWork() throws Exception {
-                if (!tenantAdminService.existsTenant(TEST_TENANT_DOMAIN)) {
+        TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Object>()
+        {
+            public Object doWork() throws Exception
+            {
+                if (!tenantAdminService.existsTenant(TEST_TENANT_DOMAIN))
+                {
                     tenantAdminService.createTenant(TEST_TENANT_DOMAIN, TENANT_ADMIN_PW.toCharArray(), null);
                 }
                 return null;
@@ -1766,6 +1774,61 @@ public class AuthenticationTest extends TestCase
         assertEquals("Andy", authenticationService.getCurrentUserName());
 
         // authenticationService.deleteAuthentication("andy");
+    }
+    public void testAuthenticationServiceImpl()
+    {
+        Set<String> domains = authenticationService.getDomains();
+        assertNotNull(domains);
+        domains = authenticationService.getDomainsThatAllowUserCreation();
+        assertNotNull(domains);
+        domains = authenticationService.getDomiansThatAllowUserPasswordChanges();
+        assertNotNull(domains);
+        domains = authenticationService.getDomainsThatAllowUserDeletion();
+        assertNotNull(domains);
+
+        List<AuthenticationService> services = ((AbstractChainingAuthenticationService) authenticationService).getUsableAuthenticationServices();
+        for (AuthenticationService service : services)
+        {
+            if (service instanceof AuthenticationServiceImpl)
+            {
+                AuthenticationServiceImpl impl = (AuthenticationServiceImpl) service;
+
+                assertFalse("Not just anyone", impl.authenticationExists("anyone"));
+                assertFalse("Hardcoded to true", impl.getAuthenticationEnabled("anyone"));
+                authenticationService.invalidateUserSession("anyone");
+
+                impl.setDomain("mydomain");
+                String domain = impl.getDomain();
+                assertEquals("mydomain", domain);
+                Set<TicketComponent> ticketComponents = impl.getTicketComponents();
+                assertNotNull(ticketComponents);
+
+                boolean allows = impl.getAllowsUserPasswordChange();
+                impl.setAllowsUserPasswordChange(allows);
+                assertEquals(allows, impl.getAllowsUserPasswordChange());
+
+                allows = impl.getAllowsUserDeletion();
+                impl.setAllowsUserDeletion(allows);
+                assertEquals(allows, impl.getAllowsUserDeletion());
+
+                allows = impl.getAllowsUserCreation();
+                impl.setAllowsUserCreation(allows);
+                assertEquals(allows, impl.getAllowsUserCreation());
+
+                assertFalse(impl.isCurrentUserTheSystemUser());
+
+                Set<String> users = impl.getUsersWithTickets(true);
+                assertNotNull(users);
+                int tickets = impl.countTickets(true);
+                assertFalse(tickets < users.size());
+
+                tickets = impl.invalidateTickets(true);
+
+                assertTrue(impl.guestUserAuthenticationAllowed());
+
+                break;
+            }
+        }
     }
 
     public void testLoginNotExistingTenant()

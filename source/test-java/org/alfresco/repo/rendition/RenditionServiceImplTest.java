@@ -96,6 +96,7 @@ public class RenditionServiceImplTest extends TestCase
         engineDefs = renditionService.getRenderingEngineDefinitions();
         assertEquals(1, engineDefs.size());
         assertSame(renderingDefinition, engineDefs.get(0));
+        assertNotNull(renditionService.loadRenditionDefinitions(ENGINE_NAME));
         
         // Check that when the action service returns a non-rendering action
         // definition then the rendering service does not include it.

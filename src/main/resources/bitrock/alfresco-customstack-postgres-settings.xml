@@ -194,6 +194,25 @@
                 </ruleGroup>
             </ruleList>
         </actionGroup>
+
+        <!-- Remote Solr configuration scenario -->
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="component(alfresco).parameter(remote_solr_configuration).ask" value="1" />
+            </actionList>
+            <ruleList>
+                <isFalse value="${component(alfrescosolr4).selected}"/>
+                <isFalse value="${component(alfrescosolr).selected}"/>
+            </ruleList>
+        </actionGroup>
+
+        <!-- Sharded Solr configuration panel -->
+        <setInstallerVariable name="component(alfresco).parameter(sharded_solr).ask" value="1">
+            <ruleList>
+                <isTrue value="${component(alfrescosolr4).selected}"/>
+            </ruleList>
+        </setInstallerVariable>
+
     </componentSelectionValidationActionList>
     <parameterList>
         <choiceParameter>
@@ -247,6 +266,7 @@
                         <compareText logic="equals" text="${alfrescocustomstack_installation_type}" value="advanced"/>
                     </ruleList>
                 </actionGroup>
+
                 <!-- Easy mode -->
                 <actionGroup>
                     <actionList>

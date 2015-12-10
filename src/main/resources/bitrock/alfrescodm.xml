@@ -29,6 +29,47 @@
         <stringParameter name="alfresco_database_name" value="alfresco" ask="0"/>
         <stringParameter name="alfresco_database_validate_query" value="SELECT 1" ask="0"/>
 
+        <!-- Remote Solr Configuration -->
+        <parameterGroup>
+            <name>remote_solr_configuration</name>
+            <title>Remote Solr configuration</title>
+            <explanation>Please enter the information to connect Alfresco with your Solr installation.</explanation>
+            <ask>0</ask>
+            <parameterList>
+                <stringParameter>
+                    <name>solr_host</name>
+                    <description>Solr host:</description>
+                    <default>localhost</default>
+                </stringParameter>
+                <stringParameter>
+                    <name>solr_ssl_port</name>
+                    <description>Solr SSL port:</description>
+                    <default>8443</default>
+                </stringParameter>
+            </parameterList>
+        </parameterGroup>
+
+        <!-- Sharded Solr -->
+        <choiceParameter>
+            <name>sharded_solr</name>
+            <title>Sharded Solr installation</title>
+            <explanation>Are you using a Sharded Solr installation ?</explanation>
+            <default>no</default>
+            <ask>0</ask>
+            <cliOptionName>shardedSolr</cliOptionName>
+            <displayType>radiobuttons</displayType>
+            <optionList>
+                <option>
+                    <text>Yes</text>
+                    <value>yes</value>
+                </option>
+                <option>
+                    <text>No</text>
+                    <value>no</value>
+                </option>
+            </optionList>
+        </choiceParameter>
+
         <!-- Repository URL for Alfresco Share Installer -->
         <stringParameter>
             <name>repository_url_port</name>

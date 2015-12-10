@@ -33,7 +33,7 @@
         <parameterGroup>
             <name>remote_solr_configuration</name>
             <title>Remote Solr configuration</title>
-            <explanation>Please enter the information to connect Alfresco with your Solr installation.</explanation>
+            <explanation>Enter the Solr host and port to connect to Alfresco:</explanation>
             <ask>0</ask>
             <parameterList>
                 <stringParameter>
@@ -53,7 +53,7 @@
         <choiceParameter>
             <name>sharded_solr</name>
             <title>Sharded Solr installation</title>
-            <explanation>Are you using a Sharded Solr installation ?</explanation>
+            <explanation>Are you using a sharded Solr installation?</explanation>
             <default>no</default>
             <ask>0</ask>
             <cliOptionName>shardedSolr</cliOptionName>

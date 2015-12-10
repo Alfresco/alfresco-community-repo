@@ -1,0 +1,56 @@
+<component>
+    <name>alfrescosharepointmasquerade</name>
+    <description>SharePoint Masquerade</description>
+    <detailedDescription>Select this module to allow applications that can talk to a SharePoint to talk to your Alfresco Installation</detailedDescription>
+    <canBeEdited>1</canBeEdited>
+    <selected>1</selected>
+    <show>1</show>
+    <shouldPackRuleList>
+        <isTrue value="${alfrescosharepointmasquerade_component_enabled}" />
+    </shouldPackRuleList>
+    <parameterList>
+        <booleanParameter name="alfrescosharepointmasquerade_component_enabled" ask="0" value="1" />
+    </parameterList>
+    <folderList>
+        <folder>
+            <name>programfiles</name>
+            <description>Program Files</description>
+            <destination>${alfresco_amps_directory}</destination>
+            <platforms>all</platforms>
+            <distributionFileList>
+              <distributionFile origin="${alfresco_amps_source_directory}/alfresco-sharepoint-masquerade-*.amp" allowWildcards="1" />
+            </distributionFileList>
+            <actionList>
+                <setInstallerVariable name="alfresco_apply_amps" value="1"/>
+            </actionList>
+        </folder>
+        <folder>
+            <name>vtibinwarfile</name>
+            <description>//War Files</description>
+            <destination>${installdiralfresco}</destination>
+            <distributionFileList>
+                <distributionFile origin="${alfresco_amps_source_directory}/_vti_bin.war" allowWildcards="1" />
+            </distributionFileList>
+        </folder>
+        <folder>
+            <name>alfrescosharepointmasqueradecustomextensions</name>
+            <description>Program Files</description>
+            <destination>${alfresco_shared_directory}/alfresco/extension</destination>
+            <platforms>all</platforms>
+            <actionList>
+                <alfrescoConfigure alfrescoFiles="*/*"/>
+            </actionList>
+            <distributionFileList>
+                <distributionFile origin="${build_project_directory}/bitrock/alfrescosharepointmasquerade/shared/extension/*" allowWildcards="1" />
+            </distributionFileList>
+        </folder>
+        <folder>
+            <name>alfrescosharepointmasqueradelicenses</name>
+            <description>//Alfresco Licenses</description>
+            <destination>${alfresco_base_application_directory}/licenses</destination>
+            <distributionFileList>
+                <distributionFile origin="${build_project_directory}/bitrock/alfrescosharepointmasquerade/licenses/*" allowWildcards="1" />
+            </distributionFileList>
+        </folder>
+    </folderList>
+</component>

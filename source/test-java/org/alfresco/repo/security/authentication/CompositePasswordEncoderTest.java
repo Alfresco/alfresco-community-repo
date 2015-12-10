@@ -170,10 +170,12 @@ public class CompositePasswordEncoderTest
         String sourceEncodedSaltFree = md4.encodePassword(SOURCE_PASSWORD, null);
 
         String encoded = encoder.encode("md4", SOURCE_PASSWORD, salt);
-        assertEquals(sourceEncoded, encoded);
+        //The salt is ignored for MD4 so the passwords will match
         assertTrue(encoder.matches("md4", SOURCE_PASSWORD, encoded, salt));
         assertTrue(encoder.matchesPassword(SOURCE_PASSWORD, encoded, salt, Arrays.asList("md4")));
-        assertEquals(sourceEncoded, encoder.encodePassword(SOURCE_PASSWORD, salt, Arrays.asList("md4")));
+
+        assertNotEquals("The salt must be ignored for MD4", sourceEncoded, encoded);
+        assertNotEquals("The salt must be ignored for MD4", sourceEncoded, encoder.encodePassword(SOURCE_PASSWORD, salt, Arrays.asList("md4")));
 
         encoded = encoder.encode("md4", SOURCE_PASSWORD, null);
         assertEquals(sourceEncodedSaltFree, encoded);

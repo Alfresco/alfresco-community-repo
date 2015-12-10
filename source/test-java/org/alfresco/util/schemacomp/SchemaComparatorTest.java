@@ -30,13 +30,20 @@ import static org.alfresco.util.schemacomp.SchemaCompTestingUtils.table;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import org.alfresco.util.schemacomp.Difference.Where;
+import org.alfresco.util.schemacomp.model.DbObject;
+import org.alfresco.util.schemacomp.model.Index;
 import org.alfresco.util.schemacomp.model.PrimaryKey;
 import org.alfresco.util.schemacomp.model.Schema;
 import org.alfresco.util.schemacomp.model.Table;
+import org.alfresco.util.schemacomp.validator.DbValidator;
+import org.alfresco.util.schemacomp.validator.NameValidator;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQL5InnoDBDialect;
 import org.junit.Before;
@@ -345,4 +352,87 @@ public class SchemaComparatorTest
         // There are no logical differences
         assertEquals(0, results.size());
     }
+    
+    /**
+     * Tests index of primary key validation, problem found when comparing DB2 schemas which has 
+     * system generated indexes for primary keys
+     */
+    @Test
+    public void systemGeneratedPrimaryKeyAndIndex()
+    {
+        
+        reference = new Schema("schema", "alf_", 9012, false);
+        target = new Schema("schema", "alf_", 9012, false);
+        
+        NameValidator validator = new NameValidator();
+        validator.setProperty("pattern","SQL[0-9]+");
+        final List<DbValidator> validators = new ArrayList<DbValidator>();
+        validators.add(new NameValidator());
+        reference.add(new Table(
+                    reference,
+                    "ALF_ACL_CHANGE_SET",
+                    columns(false, "id NUMBER(10)", "nodeRef VARCHAR2(200)", "name VARCHAR2(150)"), 
+                    new PrimaryKey(null, "SQL120116153559440", Arrays.asList("id", "nodeRef"), Arrays.asList(1, 2)),
+                    fkeys(),
+                    indexes("SQL120116153559441 [unique] ID_", "fooX ID_"))); 
+       
+        // Target schema's database objects 
+        target.add(new Table(
+                    target,
+                    "ALF_ACL_CHANGE_SET",
+                    columns(false, "id NUMBER(10)", "name VARCHAR2(150)", "nodeRef VARCHAR2(200)"), 
+                    new PrimaryKey(null, "SQL120116153559442", Arrays.asList("id", "nodeRef"), Arrays.asList(1, 2)),
+                    fkeys(),
+                    indexes("SQL120116153559443 [unique] ID_", "fooX ID_")));        
+        
+        reference.add(new Table(
+                reference,
+                "ALF_LOCK_RESOURCE",
+                columns(false, "id NUMBER(10)", "nodeRef VARCHAR2(200)", "name VARCHAR2(150)"), 
+                new PrimaryKey(null, "SQL120116153554310", Arrays.asList("ID", "int"), Arrays.asList(1, 2)),
+                fkeys(),
+                indexes("SQL120116153616440 [unique] ID_"))); 
+        
+        target.add(new Table(
+                reference,
+                "ALF_LOCK_RESOURCE",
+                columns(false, "id NUMBER(10)", "nodeRef VARCHAR2(200)", "name VARCHAR2(150)"), 
+                new PrimaryKey(null, "SQL120116153554313", Arrays.asList("ID", "int"), Arrays.asList(1, 2)),
+                fkeys(),
+                indexes("SQL120116153616444 [unique] ID_"))); 
+        
+        /**
+         * Now plug in the pattern validator
+         */
+        DbObjectVisitor visitor = new DbObjectVisitor()
+        {
+            @Override
+            public void visit(DbObject dbObject)
+            {
+               if(dbObject instanceof Index)
+               {
+                   dbObject.setValidators(validators);
+               }
+               if(dbObject instanceof PrimaryKey)
+               {
+                   dbObject.setValidators(validators);
+               }
+            }      
+        };
+        reference.accept(visitor);
+        target.accept(visitor);
+        
+        comparator = new SchemaComparator(reference, target, dialect);
+        comparator.validateAndCompare();
+        
+        // See stdout for diagnostics dump...
+        dumpDiffs(comparator.getComparisonResults(), false);
+        dumpValidation(comparator.getComparisonResults());
+        
+        Results results = comparator.getComparisonResults();
+        
+        // There are no logical differences
+        assertEquals(0, results.size());
+    }
+    
 }

@@ -322,6 +322,11 @@
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
+        <column name="time_" order="11">
+          <type>timestamp</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
       </columns>
       <primarykey name="act_hi_attachment_pkey">
         <columnnames>
@@ -762,7 +767,13 @@
         </columnnames>
       </primarykey>
       <foreignkeys/>
-      <indexes/>
+      <indexes>
+        <index name="act_idx_hi_task_inst_procinst" unique="false">
+          <columnnames>
+            <columnname>proc_inst_id_</columnname>
+          </columnnames>
+        </index>
+      </indexes>
     </table>
     <table name="act_hi_varinst">
       <columns>
@@ -1245,6 +1256,11 @@
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
+        <column name="has_graphical_notation_" order="14">
+          <type>bool</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
       </columns>
       <primarykey name="act_re_procdef_pkey">
         <columnnames>
@@ -1424,6 +1440,11 @@
         </column>
         <column name="name_" order="16">
           <type>varchar(255)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="lock_time_" order="17">
+          <type>timestamp</type>
           <nullable>true</nullable>
           <autoincrement>false</autoincrement>
         </column>
@@ -1934,6 +1955,64 @@
           </columnnames>
         </index>
       </indexes>
+    </table>
+    <table name="act_procdef_info">
+      <columns>
+        <column name="ID_" order="1">
+          <type>varchar(64)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="PROC_DEF_ID_" order="2">
+          <type>varchar(64)</type>
+          <nullable>false</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="REV_" order="3">
+          <type>int4</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+        <column name="INFO_JSON_ID_" order="4">
+          <type>varchar(64)</type>
+          <nullable>true</nullable>
+          <autoincrement>false</autoincrement>
+        </column>
+      </columns>
+      <primarykey name="act_procdef_info_pkey">
+        <columnnames>
+          <columnname order="1">id_</columnname>
+        </columnnames>
+      </primarykey>
+      <foreignkeys>
+        <foreignkey name="act_fk_info_json_ba">
+          <localcolumn>info_json_id_</localcolumn>
+          <targettable>act_ge_bytearray</targettable>
+          <targetcolumn>id_</targetcolumn>
+        </foreignkey>
+        <foreignkey name="act_fk_info_procdef">
+          <localcolumn>proc_def_id_</localcolumn>
+          <targettable>act_re_procdef</targettable>
+          <targetcolumn>id_</targetcolumn>
+        </foreignkey>
+      </foreignkeys>
+      <indexes>
+        <index name="act_uniq_info_procdef" unique="true">
+          <columnnames>
+            <columnname>proc_def_id_</columnname>
+          </columnnames>
+        </index>
+        <index name="act_idx_procdef_info_proc" unique="false">
+          <columnnames>
+            <columnname>proc_def_id_</columnname>
+          </columnnames>
+        </index>
+        <index name="act_idx_procdef_info_json" unique="false">
+          <columnnames>
+            <columnname>info_json_id_</columnname>
+          </columnnames>
+        </index>
+      </indexes>    
     </table>
   </objects>
 </schema>

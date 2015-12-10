@@ -164,9 +164,9 @@
 					<bean class="org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl" />
 				</entry>
 				<entry key="sha256" value-ref="sha256PasswordEncoder" />
-				<entry key="bcrypt15">
+				<entry key="bcrypt10">
 					<bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
-						<constructor-arg value="15" />
+						<constructor-arg value="10" />
 					</bean>
 				</entry>
 				<!--entry key="bcrypt20">
@@ -176,7 +176,7 @@
                 </entry-->
 			</map>
 		</property>
-		<property name="preferredEncoding" value="bcrypt15" />
+		<property name="preferredEncoding" value="bcrypt10" />
 	</bean>
 
     <!-- The Authentication Service implementation. -->

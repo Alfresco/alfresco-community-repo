@@ -73,6 +73,8 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Centralises access to site services and maps between representations.
@@ -84,6 +86,7 @@ public class SitesImpl implements Sites
 {
     private static final String FAVOURITE_SITES_PREFIX = "org.alfresco.share.sites.favourites.";
     private static final int FAVOURITE_SITES_PREFIX_LENGTH = FAVOURITE_SITES_PREFIX.length();
+    private static final Log logger = LogFactory.getLog(SitesImpl.class);
 
     protected Nodes nodes;
     protected People people;
@@ -282,16 +285,18 @@ public class SitesImpl implements Sites
         }
         siteId = siteInfo.getShortName();
 
-        String role = siteService.getMembersRole(siteId, personId);
-        if(role != null)
-        {
-            siteMember = new SiteMember(personId, role);
-        }
-        else
-        {
-            throw new RelationshipResourceNotFoundException(personId, siteId);
-        }
-
+        logger.debug("Getting member role for "+siteId+ " person "+personId);
+    	String role = siteService.getMembersRole(siteId, personId);
+    	if(role != null)
+    	{
+	    	siteMember = new SiteMember(personId, role);
+    	}
+    	else
+    	{
+            logger.debug("Getting member role but role is null");
+    		throw new RelationshipResourceNotFoundException(personId, siteId);
+    	}
+        
         return siteMember;
     }
 

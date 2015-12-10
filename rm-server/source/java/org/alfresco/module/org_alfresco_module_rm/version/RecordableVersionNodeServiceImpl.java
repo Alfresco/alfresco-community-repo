@@ -62,6 +62,7 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     /**
      * @see org.alfresco.repo.version.Node2ServiceImpl#getProperties(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @SuppressWarnings("unchecked")
     @Override
     public Map<QName, Serializable> getProperties(NodeRef nodeRef) throws InvalidNodeRefException
     {
@@ -71,8 +72,15 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
         if (dbNodeService.hasAspect(converted, ASPECT_RECORDED_VERSION))
         {
             NodeRef record = (NodeRef)dbNodeService.getProperty(converted, PROP_RECORD_NODE_REF);
-            Map<QName, Serializable> properties =  dbNodeService.getProperties(record);
-            return processProperties(converted, properties);
+            if (record != null && dbNodeService.exists(record))
+            {
+                Map<QName, Serializable> properties =  dbNodeService.getProperties(record);
+                return processProperties(converted, properties);
+            }
+            else
+            {
+                return (Map<QName, Serializable>)Collections.EMPTY_MAP;
+            }
         }
         else
         {
@@ -187,12 +195,12 @@ public class RecordableVersionNodeServiceImpl extends Node2ServiceImpl
     public Set<QName> getAspects(NodeRef nodeRef) throws InvalidNodeRefException
     {
         // TODO only supported for Version2
-
+        
         NodeRef converted = VersionUtil.convertNodeRef(nodeRef);
         if (dbNodeService.hasAspect(converted, ASPECT_RECORDED_VERSION))
         {
             NodeRef record = (NodeRef)dbNodeService.getProperty(converted, PROP_RECORD_NODE_REF);
-            if (dbNodeService.exists(record))
+            if (record != null && dbNodeService.exists(record))
             {
                 Set<QName> aspects =  dbNodeService.getAspects(record);
                 return processAspects(aspects);

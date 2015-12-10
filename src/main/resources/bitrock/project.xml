@@ -186,7 +186,7 @@
 
         <include file="alfrescodm-postgres-database.xml" />
         <!-- AMP extensions -->
-        <include file="alfresco-sharepoint-masquerade.xml" />
+        <include file="alfresco-sharepoint-imitation.xml" />
         <include file="alfresco-wcmqs.xml" />
         <include file="alfresco-googledocs.xml" />
         <include file="base-unix-service.xml" />

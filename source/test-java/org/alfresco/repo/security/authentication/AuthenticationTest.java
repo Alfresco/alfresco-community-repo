@@ -521,22 +521,16 @@ public class AuthenticationTest extends TestCase
         assertNotSame(AndyDetails.getPassword(), newDetails.getPassword());
         // assertNotSame(oldSalt, dao.getSalt(newDetails));
 
+        //Update again
+        dao.updateUser("Andy", "potato".toCharArray());
+        newDetails = (UserDetails) dao.loadUserByUsername("Andy");
+        assertNotNull(newDetails);
+        assertEquals("Andy", newDetails.getUsername());
+        assertTrue(compositePasswordEncoder.matches(compositePasswordEncoder.getPreferredEncoding(),"potato", newDetails.getPassword(), null));
+
         dao.deleteUser("Andy");
         assertFalse("Should not be a cache entry for 'Andy'.", authenticationCache.contains("Andy"));
         assertNull("DAO should report that 'Andy' does not exist.", dao.getUserOrNull("Andy"));
-
-        MessageDigest digester;
-        try
-        {
-            digester = MessageDigest.getInstance("MD4");
-            System.out.println("Digester from " + digester.getProvider());
-        }
-        catch (NoSuchAlgorithmException e)
-        {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            System.out.println("No digester");
-        }
     }
     
     /** 

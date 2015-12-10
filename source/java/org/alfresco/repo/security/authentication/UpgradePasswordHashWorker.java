@@ -235,9 +235,9 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
             doWork(progress);
             
             // Done
-            if (logger.isDebugEnabled())
+            if (logger.isInfoEnabled())
             {
-                logger.debug("Upgrade password hash job " + progress);
+                logger.info("Finished upgrade password hash job: " + progress);
             }
         }
         catch (LockAcquisitionException e)
@@ -359,6 +359,11 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
             this.progress = progress;
             this.maxNodeId = patchDAO.getMaxAdmNodeID();
             this.userTypeId = qnameDAO.getQName(ContentModel.TYPE_USER);
+            
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Max NodeID: " + this.maxNodeId);
+            }
         }
         
         @Override
@@ -366,12 +371,6 @@ public class UpgradePasswordHashWorker implements ApplicationContextAware, Initi
         {
             // execute a query to get total number of user nodes in the system.
             long totalUserCount = patchDAO.getCountNodesWithTypId(ContentModel.TYPE_USER);
-            
-            if (logger.isDebugEnabled())
-            {
-                logger.debug("Max NodeID: " + this.maxNodeId);
-                logger.debug("Total number of users: " + totalUserCount);
-            }
             
             return (int)totalUserCount;
         }

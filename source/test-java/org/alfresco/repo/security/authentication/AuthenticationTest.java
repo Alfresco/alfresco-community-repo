@@ -584,7 +584,7 @@ public class AuthenticationTest extends TestCase
     {
         dao.createUser("GUEST", DONT_CARE_PASSWORD);
 
-        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken("GUEST", DONT_CARE_PASSWORD);
+        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken("GUEST", new String(DONT_CARE_PASSWORD));
         token.setAuthenticated(false);
 
         Authentication result = authenticationManager.authenticate(token);

@@ -28,11 +28,11 @@ import static org.junit.Assert.fail;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.util.GUID;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -43,20 +43,17 @@ import java.util.Map;
  */
 public class CompositePasswordEncoderTest
 {
-
     CompositePasswordEncoder encoder;
-    static Map<String,Object> encodersConfig;
+    public static Map<String,Object> encodersConfig;
     private static final String SOURCE_PASSWORD = "SOURCE PASS Word $%%^ #';/,_+{+} like €this"+"\u4eca\u65e5\u306f\u4e16\u754c";
 
-    @BeforeClass
-    public static void setUpClass() throws Exception
-    {
+    static {
         encodersConfig = new HashMap<>();
         encodersConfig.put("md4", new MD4PasswordEncoderImpl());
         encodersConfig.put("sha256",  new ShaPasswordEncoderImpl(256));
         encodersConfig.put("bcrypt10",new BCryptPasswordEncoder(10));
-        encodersConfig.put("bcrypt20",new BCryptPasswordEncoder(20));
-        encodersConfig.put("bcrypt30",new BCryptPasswordEncoder(30));
+        encodersConfig.put("bcrypt11",new BCryptPasswordEncoder(11));
+        encodersConfig.put("bcrypt12",new BCryptPasswordEncoder(11));
         encodersConfig.put("badencoder",new Object());
     }
 
@@ -252,6 +249,14 @@ public class CompositePasswordEncoderTest
     }
 
     @Test
+    public void testEncodePreferred() throws Exception
+    {
+        encoder.setPreferredEncoding("bcrypt10");
+        String encoded = encoder.encodePreferred(SOURCE_PASSWORD, null);
+        assertTrue(encoder.matches("bcrypt10", SOURCE_PASSWORD, encoded, null));
+    }
+
+    @Test
     public void testMandatoryProperties() throws Exception
     {
         CompositePasswordEncoder subject = new CompositePasswordEncoder();
@@ -264,8 +269,6 @@ public class CompositePasswordEncoderTest
         }
 
         subject.setEncoders(encodersConfig);
-        subject.setLegacyEncoding("md345");
-        subject.setLegacyEncodingProperty("password");
 
         try
         {
@@ -280,8 +283,6 @@ public class CompositePasswordEncoderTest
         subject.init();
 
         assertEquals("nice_encoding", subject.getPreferredEncoding());
-        assertEquals("md345", subject.getLegacyEncoding());
-        assertEquals("password", subject.getLegacyEncodingProperty());
     }
 
     @Test
@@ -289,7 +290,15 @@ public class CompositePasswordEncoderTest
     {
         CompositePasswordEncoder subject = new CompositePasswordEncoder();
         subject.setPreferredEncoding("fish");
-        assertTrue(subject.isPreferredEncoding("fish"));
+        assertTrue(subject.lastEncodingIsPreferred(Arrays.asList("fish")));
         assertEquals("fish", subject.getPreferredEncoding());
+
+        assertFalse(subject.lastEncodingIsPreferred((List)null));
+        assertFalse(subject.lastEncodingIsPreferred(Collections.<String>emptyList()));
+        assertTrue(subject.lastEncodingIsPreferred(Arrays.asList("fish")));
+        assertFalse(subject.lastEncodingIsPreferred(Arrays.asList("bird")));
+        assertTrue(subject.lastEncodingIsPreferred(Arrays.asList("bird", "fish")));
+        assertFalse(subject.lastEncodingIsPreferred(Arrays.asList("bird", "fish", "dog", "cat")));
+        assertTrue(subject.lastEncodingIsPreferred(Arrays.asList("bird", "dog", "cat","fish")));
     }
 }

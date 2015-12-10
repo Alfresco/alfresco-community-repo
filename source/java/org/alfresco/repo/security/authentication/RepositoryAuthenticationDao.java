@@ -19,6 +19,8 @@
 package org.alfresco.repo.security.authentication;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +31,6 @@ import net.sf.acegisecurity.GrantedAuthorityImpl;
 import net.sf.acegisecurity.UserDetails;
 import net.sf.acegisecurity.providers.dao.User;
 import net.sf.acegisecurity.providers.dao.UsernameNotFoundException;
-import net.sf.acegisecurity.providers.encoding.PasswordEncoder;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -55,6 +56,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -75,13 +77,12 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     protected NodeService nodeService;
     protected TenantService tenantService;
     protected NamespacePrefixResolver namespacePrefixResolver;
-    protected PasswordEncoder passwordEncoder;
-    protected PasswordEncoder sha256PasswordEncoder;
     protected PolicyComponent policyComponent;
     
     private TransactionService transactionService;
+    private CompositePasswordEncoder compositePasswordEncoder;
 
-    // note: cache is tenant-aware (if using TransctionalCache impl)
+// note: cache is tenant-aware (if using TransctionalCache impl)
     
     private SimpleCache<String, NodeRef> singletonCache; // eg. for user folder nodeRef
     private final String KEY_USERFOLDER_NODEREF = "key.userfolder.noderef";
@@ -117,16 +118,6 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     {
         this.singletonCache = singletonCache;
     }
-    
-    public void setPasswordEncoder(PasswordEncoder passwordEncoder)
-    {
-        this.passwordEncoder = passwordEncoder;
-    }
-
-    public void setSha256PasswordEncoder(PasswordEncoder passwordEncoder)
-    {
-        this.sha256PasswordEncoder = passwordEncoder;
-    }
 
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
@@ -141,6 +132,11 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
+    }
+
+    public void setCompositePasswordEncoder(CompositePasswordEncoder compositePasswordEncoder)
+    {
+        this.compositePasswordEncoder = compositePasswordEncoder;
     }
 
     public void afterPropertiesSet() throws Exception
@@ -172,6 +168,15 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         {
             return userDetails;
         }
+
+        if (userDetails instanceof RepositoryAuthenticatedUser)
+        {
+            RepositoryAuthenticatedUser repoUser = (RepositoryAuthenticatedUser) userDetails;
+            return new RepositoryAuthenticatedUser(userDetails.getUsername(), userDetails.getPassword(), userDetails.isEnabled(),
+                    userDetails.isAccountNonExpired(), false,
+                    userDetails.isAccountNonLocked(), userDetails.getAuthorities(), repoUser.getHashIndicator(), repoUser.getSalt());
+        }
+
         // If the credentials have expired, we must return a copy with the flag set
         return new User(userDetails.getUsername(), userDetails.getPassword(), userDetails.isEnabled(),
                 userDetails.isAccountNonExpired(), false,
@@ -246,12 +251,12 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                     // Extract values from the query results
                     NodeRef userRef = tenantService.getName(results.get(0).getChildRef());
                     Map<QName, Serializable> properties = nodeService.getProperties(userRef);
-                    String password = DefaultTypeConverter.INSTANCE.convert(String.class,
-                            properties.get(ContentModel.PROP_PASSWORD));
+                    Pair<List<String>, String> hashPassword = determinePasswordHash(properties);
 
                     // Report back the user name as stored on the user
                     String userName = DefaultTypeConverter.INSTANCE.convert(String.class,
                             properties.get(ContentModel.PROP_USER_USERNAME));
+                    Serializable salt = properties.get(ContentModel.PROP_SALT);
 
                     GrantedAuthority[] gas = new GrantedAuthority[1];
                     gas[0] = new GrantedAuthorityImpl("ROLE_AUTHENTICATED");
@@ -261,14 +266,16 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
                     Date credentialsExpiryDate = getCredentialsExpiryDate(userName, properties, isAdminAuthority);
                     boolean credentialsHaveNotExpired = (credentialsExpiryDate == null || credentialsExpiryDate.getTime() >= System.currentTimeMillis());
                     
-                    UserDetails ud = new User(
+                    UserDetails ud = new RepositoryAuthenticatedUser(
                             userName,
-                            password,
+                            hashPassword.getSecond(),
                             getEnabled(userName, properties, isAdminAuthority),
                             !getHasExpired(userName, properties, isAdminAuthority),
                             credentialsHaveNotExpired,
                             !getLocked(userName, properties, isAdminAuthority),
-                            gas);
+                            gas,
+                            hashPassword.getFirst(),
+                            salt);
                     
                     cacheEntry = new CacheEntry(userRef, ud, credentialsExpiryDate);
                     // Only cache positive results
@@ -280,6 +287,78 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         
         // Always use a transaction
         return transactionService.getRetryingTransactionHelper().doInTransaction(new SearchUserNameCallback(), true);
+    }
+
+    /**
+     * Should we rehash the password by updating the properties
+     * @param properties
+     * @return
+     */
+    public boolean rehashedPassword(Map<QName, Serializable> properties)
+    {
+        List<String> hashIndicator = (List<String>) properties.get(ContentModel.PROP_HASH_INDICATOR);
+        Pair<List<String>, String> passwordHash = determinePasswordHash(properties);
+
+        if (!compositePasswordEncoder.lastEncodingIsPreferred(passwordHash.getFirst()))
+        {
+            //We need to double hash
+            List<String> nowHashed = new ArrayList<String>();
+            nowHashed.addAll(passwordHash.getFirst());
+            nowHashed.add(compositePasswordEncoder.getPreferredEncoding());
+            Object salt = properties.get(ContentModel.PROP_SALT);
+            properties.put(ContentModel.PROP_PASSWORD_HASH,  compositePasswordEncoder.encodePreferred(new String(passwordHash.getSecond()), salt));
+            properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)nowHashed);
+            properties.remove(ContentModel.PROP_PASSWORD);
+            properties.remove(ContentModel.PROP_PASSWORD_SHA256);
+            return true;
+        }
+
+        if (hashIndicator == null)
+        {
+            //Already the preferred encoding, just set it
+            properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable)passwordHash.getFirst());
+            properties.put(ContentModel.PROP_PASSWORD_HASH,  passwordHash.getSecond());
+            properties.remove(ContentModel.PROP_PASSWORD);
+            properties.remove(ContentModel.PROP_PASSWORD_SHA256);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Where is the password and how is it encoded?
+     * @param properties
+     * @return
+     */
+    protected Pair<List<String>, String> determinePasswordHash(Map<QName, Serializable> properties)
+    {
+        List<String> hashIndicator = (List<String>) properties.get(ContentModel.PROP_HASH_INDICATOR);
+        if (hashIndicator != null && hashIndicator.size()>0)
+        {
+            //We have hashed the value so get it.
+            return new Pair<>(hashIndicator,DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_PASSWORD_HASH)));
+        }
+        else
+        {
+            String passHash = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_PASSWORD_SHA256));
+            if (passHash != null)
+            {
+                //We have a SHA256 so use it
+                return new Pair<>(CompositePasswordEncoder.SHA256,passHash);
+            }
+            else
+            {
+                passHash = DefaultTypeConverter.INSTANCE.convert(String.class, properties.get(ContentModel.PROP_PASSWORD));
+                if (passHash != null)
+                {
+                    //Use MD4
+                    return new Pair<>(CompositePasswordEncoder.MD4,passHash);
+                }
+            }
+        }
+        throw new AlfrescoRuntimeException("Unable to find a user password, please check your repository authentication settings."
+        + "(PreferredEncoding="+compositePasswordEncoder.getPreferredEncoding()+")");
     }
 
     @Override
@@ -297,8 +376,8 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         properties.put(ContentModel.PROP_USER_USERNAME, caseSensitiveUserName);
         String salt = GUID.generate();
         properties.put(ContentModel.PROP_SALT, salt);
-        properties.put(ContentModel.PROP_PASSWORD, passwordEncoder.encodePassword(new String(rawPassword), null));
-        properties.put(ContentModel.PROP_PASSWORD_SHA256, sha256PasswordEncoder.encodePassword(new String(rawPassword), salt));
+        properties.put(ContentModel.PROP_PASSWORD_HASH,  compositePasswordEncoder.encodePreferred(new String(rawPassword), salt));
+        properties.put(ContentModel.PROP_HASH_INDICATOR, (Serializable) Arrays.asList(compositePasswordEncoder.getPreferredEncoding()));
         properties.put(ContentModel.PROP_ACCOUNT_EXPIRES, Boolean.valueOf(false));
         properties.put(ContentModel.PROP_CREDENTIALS_EXPIRE, Boolean.valueOf(false));
         properties.put(ContentModel.PROP_ENABLED, Boolean.valueOf(true));
@@ -363,10 +442,10 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
         String salt = GUID.generate();
         properties.remove(ContentModel.PROP_SALT);
         properties.put(ContentModel.PROP_SALT, salt);
+        properties.put(ContentModel.PROP_PASSWORD_HASH,  compositePasswordEncoder.encodePreferred(new String(rawPassword), salt));
+        properties.put(ContentModel.PROP_HASH_INDICATOR, compositePasswordEncoder.getPreferredEncoding());
         properties.remove(ContentModel.PROP_PASSWORD);
-        properties.put(ContentModel.PROP_PASSWORD, passwordEncoder.encodePassword(new String(rawPassword), null));
         properties.remove(ContentModel.PROP_PASSWORD_SHA256);
-        properties.put(ContentModel.PROP_PASSWORD_SHA256, sha256PasswordEncoder.encodePassword(new String(rawPassword), salt));
         nodeService.setProperties(userRef, properties);
     }
 

@@ -19,11 +19,14 @@
 package org.alfresco.repo.security.authentication;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -31,39 +34,20 @@ import java.util.Map;
  * A configurable password encoding that delegates the encoding to a Map of
  * configured encoders.
  *
- * @Author Gethin James
+ * @author Gethin James
  */
 public class CompositePasswordEncoder
 {
     private static Log logger = LogFactory.getLog(CompositePasswordEncoder.class);
     private Map<String,Object> encoders;
     private String preferredEncoding;
-    private String legacyEncoding;
-    private String legacyEncodingProperty;
 
-    public void setLegacyEncoding(String legacyEncoding)
-    {
-        this.legacyEncoding = legacyEncoding;
-    }
-
-    public void setLegacyEncodingProperty(String legacyEncodingProperty)
-    {
-        this.legacyEncodingProperty = legacyEncodingProperty;
-    }
+    public static final List<String> SHA256 = Arrays.asList("sha256");
+    public static final List<String> MD4 = Arrays.asList("md4");
 
     public String getPreferredEncoding()
     {
         return preferredEncoding;
-    }
-
-    public String getLegacyEncoding()
-    {
-        return legacyEncoding;
-    }
-
-    public String getLegacyEncodingProperty()
-    {
-        return legacyEncodingProperty;
     }
 
     public void setPreferredEncoding(String preferredEncoding)
@@ -77,13 +61,17 @@ public class CompositePasswordEncoder
     }
 
     /**
-     * Is this the preferred encoding ?
-     * @param encoding a String representing the encoding
+     * Is the preferred encoding the last encoding to be used.
+     * @param hashIndicator a List<String></String> representing the encoding
      * @return true if is correct
      */
-    public boolean isPreferredEncoding(String encoding)
+    public boolean lastEncodingIsPreferred(List<String> hashIndicator)
     {
-        return preferredEncoding.equals(encoding);
+        if (hashIndicator!= null && hashIndicator.size() > 0 && preferredEncoding.equals(hashIndicator.get(hashIndicator.size()-1)))
+        {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -93,8 +81,6 @@ public class CompositePasswordEncoder
     {
         PropertyCheck.mandatory(this, "encoders", encoders);
         PropertyCheck.mandatory(this, "preferredEncoding", preferredEncoding);
-        PropertyCheck.mandatory(this, "legacyEncoding", legacyEncoding);
-        PropertyCheck.mandatory(this, "legacyEncodingProperty", legacyEncodingProperty);
     }
 
     /**
@@ -116,6 +102,17 @@ public class CompositePasswordEncoder
         }
         if (encoded == rawPassword) throw new AlfrescoRuntimeException("No password encoding specified. "+encodingChain);
         return encoded;
+    }
+
+    /**
+     * Encodes a password in the preferred encoding.
+     * @param rawPassword  mandatory password
+     * @param salt optional salt
+     * @return Encoded password
+     */
+    public String encodePreferred(String rawPassword, Object salt)
+    {
+        return encode(getPreferredEncoding(), rawPassword, salt);
     }
 
     /**

@@ -29,6 +29,7 @@ import org.alfresco.repo.security.authentication.AuthenticationTest;
 import org.alfresco.repo.security.authentication.AuthorizationTest;
 import org.alfresco.repo.security.authentication.ChainingAuthenticationServiceTest;
 import org.alfresco.repo.security.authentication.NameBasedUserNameGeneratorTest;
+import org.alfresco.repo.security.authentication.UpgradePasswordHashTest;
 import org.alfresco.repo.security.authority.AuthorityBridgeTableAsynchronouslyRefreshedCacheTest;
 import org.alfresco.repo.security.authority.AuthorityServiceTest;
 import org.alfresco.repo.security.authority.DuplicateAuthorityTest;
@@ -79,6 +80,7 @@ public class SecurityTestSuite extends TestSuite
         suite.addTestSuite(OwnableServiceTest.class);    
         suite.addTestSuite(ReadPermissionTest.class);    
         suite.addTestSuite(AuthorizationTest.class);
+        suite.addTestSuite(UpgradePasswordHashTest.class);
         suite.addTestSuite(AuthorityBridgeTableAsynchronouslyRefreshedCacheTest.class);
 
         suite.addTest(new JUnit4TestAdapter(HomeFolderProviderSynchronizerTest.class));

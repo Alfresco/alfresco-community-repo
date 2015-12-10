@@ -157,6 +157,27 @@
         <constructor-arg index="0"><value>256</value></constructor-arg>
     </bean>
 
+	<bean id="compositePasswordEncoder" class="org.alfresco.repo.security.authentication.CompositePasswordEncoder" init-method="init">
+		<property name="encoders">
+			<map>
+				<entry key="md4">
+					<bean class="org.alfresco.repo.security.authentication.MD4PasswordEncoderImpl" />
+				</entry>
+				<entry key="sha256" value-ref="sha256PasswordEncoder" />
+				<entry key="bcrypt15">
+					<bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+						<constructor-arg value="15" />
+					</bean>
+				</entry>
+				<!--entry key="bcrypt20">
+                      <bean class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder">
+                          <constructor-arg value="20" />
+                      </bean>
+                </entry-->
+			</map>
+		</property>
+		<property name="preferredEncoding" value="bcrypt15" />
+	</bean>
 
     <!-- The Authentication Service implementation. -->
     <!-- -->

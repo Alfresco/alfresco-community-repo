@@ -172,9 +172,6 @@ public class NodeDAOTest extends TestCase
                 NodePropertyValue propVal = prop.getValue();
                 assertNotNull(propVal);
                 assertEquals("STRING", propVal.getActualTypeString());
-                String valueStr = propVal.getStringValue();
-                Serializable valueSer = propVal.getSerializableValue();
-                assertTrue("Test is either TEXT or SERIALIZABLE", valueStr != null || valueSer != null);
                 String value = (String) propVal.getValue(DataTypeDefinition.TEXT);
                 assertNotNull(value);
                 // This all checks out

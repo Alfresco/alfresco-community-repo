@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
 import junit.framework.TestCase;
@@ -59,10 +60,12 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.traitextender.SpringExtensionBundle;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.transaction.TransactionSupportUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.Ignore;
 import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 @Ignore
 public abstract class VirtualizationIntegrationTest extends TestCase implements VirtualizationTest
@@ -149,11 +152,15 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
 
     protected NodeRef rootNodeRef;
 
+    protected NodeRef companyHomeNodeRef;
+
     protected ActualEnvironment environment;
 
     protected TypeAndAspectsFormProcessor typeAndAspectsFormProcessor;
 
-    private UserTransaction txn;
+    protected String txnTamperHint;
+
+    protected UserTransaction txn;
 
     protected AuthenticationComponent authenticationComponent;
 
@@ -179,7 +186,7 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
         contentService = serviceRegistry.getContentService();
         fileAndFolderService = serviceRegistry.getFileFolderService();
         permissionService = serviceRegistry.getPermissionService();
-        searchService=serviceRegistry.getSearchService();
+        searchService = serviceRegistry.getSearchService();
 
         authenticationComponent = ctx.getBean("authenticationComponent",
                                               AuthenticationComponent.class);
@@ -215,8 +222,8 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
         txn.begin();
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-        NodeRef root = repository.getCompanyHome();
-        testRootFolder = fileAndFolderService.create(root,
+        companyHomeNodeRef = repository.getCompanyHome();
+        testRootFolder = fileAndFolderService.create(companyHomeNodeRef,
                                                      TEST_ROOT_FOLDER_NAME,
                                                      ContentModel.TYPE_FOLDER);
 
@@ -243,7 +250,17 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
             configuredTemplatesClassPath = null;
         }
         authenticationComponent.clearCurrentSecurityContext();
-        txn.rollback();
+        try
+        {
+            txn.rollback();
+        }
+        catch (Exception e)
+        {
+            logger.error("Test tear down failed. Has the test setup transaction been tempered with ? Hint : "
+                                     + txnTamperHint,
+                         e);
+        }
+
         super.tearDown();
     }
 

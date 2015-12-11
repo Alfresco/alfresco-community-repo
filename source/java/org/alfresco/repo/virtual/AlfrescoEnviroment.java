@@ -29,7 +29,6 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.virtual.config.NodeRefResolver;
-import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.InvalidAspectException;
 import org.alfresco.service.cmr.dictionary.InvalidTypeException;
@@ -79,6 +78,11 @@ public class AlfrescoEnviroment implements ActualEnvironment
         this.serviceRegistry = serviceRegistry;
     }
 
+    public ServiceRegistry getServiceRegistry()
+    {
+        return this.serviceRegistry;
+    }
+    
     public void setRepositoryHelper(Repository repository)
     {
         this.repositoryHelper = repository;

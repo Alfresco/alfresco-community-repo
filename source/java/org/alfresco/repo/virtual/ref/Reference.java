@@ -136,23 +136,23 @@ public class Reference
         }
     }
 
-    // Average reference length DEBUG trace
+    // Average reference length log trace
 
-    private static long _debug_refLength = 0;
+    private static long _trace_refLength = 0;
 
-    private static long _debug_refCount = 0;
+    private static long _trace_refCount = 0;
 
-    private static final long _debug_refBatchSize = 256;
+    private static final long _trace_refBatchSize = 4096*2;
 
-    private static synchronized void debug_avg_ref_length(long refLength)
+    private static synchronized void _trace_avg_ref_length(long refLength)
     {
-        _debug_refLength += refLength;
-        _debug_refCount++;
-        if (_debug_refBatchSize > 0 && _debug_refCount % _debug_refBatchSize == 0)
+        _trace_refLength += refLength;
+        _trace_refCount++;
+        if (_trace_refBatchSize > 0 && _trace_refCount % _trace_refBatchSize == 0)
         {
-            logger.debug("Average reference encoding size : " + (_debug_refLength / _debug_refCount));
-            _debug_refCount = 0;
-            _debug_refLength = 0;
+            logger.trace("Average reference encoding size : " + (_trace_refLength / _trace_refCount));
+            _trace_refCount = 0;
+            _trace_refLength = 0;
         }
     }
 
@@ -281,9 +281,9 @@ public class Reference
         NodeRef theNode = new NodeRef(storeRef,
                                       idBuilder.toString());
 
-        if (logger.isDebugEnabled())
+        if (logger.isTraceEnabled())
         {
-            debug_avg_ref_length(theNode.toString().length());
+            _trace_avg_ref_length(theNode.toString().length());
         }
 
         return theNode;

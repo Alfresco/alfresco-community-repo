@@ -16,9 +16,17 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see http://www.gnu.org/licenses/.
  */
+
 package org.alfresco.traitextender;
 
-public abstract class SpringBeanExtension<E,T extends Trait> extends SingletonExtension<E, T>
+/**
+ * A {@link SingletonExtension} extension-API implementor defined as a
+ * spring-bean.<br>
+ * Handles also spring-bundle extension registrations.
+ *
+ * @author Bogdan Horje
+ */
+public abstract class SpringBeanExtension<E, T extends Trait> extends SingletonExtension<E, T>
 {
     private SpringExtensionPoint extensionPoint;
 
@@ -31,9 +39,10 @@ public abstract class SpringBeanExtension<E,T extends Trait> extends SingletonEx
     {
         this.extensionPoint = extensionPoint;
     }
-    
-    public void register(RegistryExtensionBundle bundle)  throws InvalidExtension
+
+    public void register(RegistryExtensionBundle bundle) throws InvalidExtension
     {
-        extensionPoint.register(bundle,this);
+        extensionPoint.register(bundle,
+                                this);
     }
 }

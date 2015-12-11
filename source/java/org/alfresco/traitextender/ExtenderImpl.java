@@ -27,11 +27,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+/**
+ * Standard-singleton {@link Extender} implementation.
+ *
+ * @author Bogdan Horje
+ */
 public class ExtenderImpl extends Extender
 {
     private static Log logger = LogFactory.getLog(Extender.class);
-
-  
 
     private List<ExtensionBundle> bundles = new LinkedList<ExtensionBundle>();
 
@@ -62,7 +65,7 @@ public class ExtenderImpl extends Extender
     {
         E extension = null;
 
-        //consistency is checked at registration time 
+        // consistency is checked at registration time
         @SuppressWarnings("unchecked")
         ExtensionFactory<E> factory = (ExtensionFactory<E>) pointFactories.get(point);
 

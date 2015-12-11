@@ -32,14 +32,14 @@ import org.springframework.core.type.filter.AssignableTypeFilter;
 
 public class AJExtensionsCompileTest extends TestCase
 {
-    protected void compile(Class<? extends Extensible> extensible) throws AJExtensibleCompilingException
+    protected void compile(Class<? extends Extensible> extensible) throws Exception
     {
         Set<Class<? extends Extensible>> extensiblesSet = new HashSet<>();
         extensiblesSet.add(extensible);
         compile(extensiblesSet);
     }
 
-    protected void compile(Set<Class<? extends Extensible>> extensibles) throws AJExtensibleCompilingException
+    protected void compile(Set<Class<? extends Extensible>> extensibles) throws Exception
     {
         StringBuilder errorString = new StringBuilder();
         boolean errorsFound = false;

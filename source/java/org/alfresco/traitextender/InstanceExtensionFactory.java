@@ -21,6 +21,12 @@ package org.alfresco.traitextender;
 
 import java.lang.reflect.Constructor;
 
+/**
+ * Creates extension sub classes that are extension API implementors once per
+ * extensible-extension point definition.
+ *
+ * @author Bogdan Horje
+ */
 public class InstanceExtensionFactory<I extends InstanceExtension<E, T>, T extends Trait, E> implements
             ExtensionFactory<E>
 {
@@ -48,7 +54,8 @@ public class InstanceExtensionFactory<I extends InstanceExtension<E, T>, T exten
     {
         try
         {
-            // Trait RTTI will be performed anyway at Constructor#newInstance invocation time
+            // Trait RTTI will be performed anyway at Constructor#newInstance
+            // invocation time
             T tTrait = (T) traitObject;
 
             Constructor<? extends I> c = extensionClass.getConstructor(traitAPI);

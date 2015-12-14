@@ -96,6 +96,8 @@ public abstract class BaseVersionStoreTest extends BaseSpringTest
      */
     protected static final String TEST_NAMESPACE = "http://www.alfresco.org/test/versionstorebasetest/1.0";
     protected static final QName TEST_TYPE_QNAME = QName.createQName(TEST_NAMESPACE, "testtype");
+    protected static final QName TEST_TYPE_WITH_MANDATORY_ASPECT_QNAME = QName.createQName(TEST_NAMESPACE, "contentWithMandatoryAspect");
+    protected static final QName TEST_MANDATORY_ASPECT_QNAME = QName.createQName(TEST_NAMESPACE, "mandatoryAspect");
     protected static final QName TEST_ASPECT_QNAME = QName.createQName(TEST_NAMESPACE, "testaspect");
     protected static final QName PROP_1 = QName.createQName(TEST_NAMESPACE, "prop1");
     protected static final QName PROP_2 = QName.createQName(TEST_NAMESPACE, "prop2");

@@ -1004,7 +1004,60 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
             fail("Transaction failed: " + e);
         }
     }
-    
+
+    /**
+     * Test reverting from Share with changing type
+     * see MNT-14688
+     * <li>
+     *     <ul>1) Create a node and a version (simulates upload a doc to Share)</ul>
+     *     <ul>2) Change the node's type to a custom with mandatory aspect</ul>
+     *     <ul>3) Create a new version via upload</ul>
+     *     <ul>4) Try to revert to original document and see if the type is reverted, too</ul>
+     * </li>
+     */
+    @SuppressWarnings("unused")
+    public void testScriptNodeRevertWithChangeType()
+    {
+        CheckOutCheckInService checkOutCheckInService =
+                (CheckOutCheckInService) applicationContext.getBean("checkOutCheckInService");
+
+        // Create a versionable node
+        NodeRef versionableNode = createNewVersionableNode();
+        Version version1 = createVersion(versionableNode);
+        //Set new type
+        nodeService.setType(versionableNode, TEST_TYPE_WITH_MANDATORY_ASPECT_QNAME);
+        // Create a new version
+        NodeRef checkedOut = checkOutCheckInService.checkout(versionableNode);
+        ContentWriter contentWriter = this.contentService.getWriter(checkedOut, ContentModel.PROP_CONTENT, true);
+        assertNotNull(contentWriter);
+        contentWriter.putContent(UPDATED_CONTENT_1);
+        nodeService.setProperty(checkedOut, PROP_1, VALUE_1);
+        checkOutCheckInService.checkin(checkedOut, null, contentWriter.getContentUrl(), false);
+        Version version2 = createVersion(versionableNode);
+
+        // Create a ScriptNode as used in Share
+        ServiceRegistry services = applicationContext.getBean(ServiceRegistry.class);
+        ScriptNode scriptNode = new ScriptNode(versionableNode, services);
+        assertEquals("0.2", nodeService.getProperty(scriptNode.getNodeRef(), ContentModel.PROP_VERSION_LABEL));
+        assertEquals(TEST_TYPE_WITH_MANDATORY_ASPECT_QNAME, nodeService.getType(scriptNode.getNodeRef()));
+
+        // Revert to version1
+        ScriptNode newNode = scriptNode.revert("History", false, version1.getVersionLabel());
+        assertEquals("0.3", nodeService.getProperty(newNode.getNodeRef(), ContentModel.PROP_VERSION_LABEL));
+        assertEquals(TEST_TYPE_QNAME, nodeService.getType(newNode.getNodeRef()));
+
+        // All done
+        setComplete();
+        try
+        {
+            endTransaction();
+        }
+        catch(Throwable e)
+        {
+            fail("Transaction failed: " + e);
+        }
+    }
+
     /**
      * Test restore
      */

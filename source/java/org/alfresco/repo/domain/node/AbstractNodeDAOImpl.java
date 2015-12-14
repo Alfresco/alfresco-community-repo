@@ -1490,26 +1490,48 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Store
         if (!childStore.getId().equals(newParentStore.getId()))
         {
-            // Remove the cm:auditable aspect from the source node
-            // Remove the cm:auditable aspect from the old node as the new one will get new values as required
-            Set<Long> aspectIdsToDelete = qnameDAO.convertQNamesToIds(
-                    Collections.singleton(ContentModel.ASPECT_AUDITABLE),
-                    true);
-            deleteNodeAspects(childNodeId, aspectIdsToDelete);
-            // ... but make sure we copy over the cm:auditable data from the originating node
-            AuditablePropertiesEntity auditableProps = childNode.getAuditableProperties();
-            // Create a new node and copy all the data over to it
+
+            // Create a new node
             newChildNode = newNodeImpl(
                     newParentStore,
                     childNode.getUuid(),
                     childNode.getTypeQNameId(),
                     childNode.getLocaleId(),
                     childNode.getAclId(),
-                    auditableProps);
+                    null);
             Long newChildNodeId = newChildNode.getId();
-            moveNodeData(
-                    childNode.getId(),
-                    newChildNodeId);
+
+            QName nodeTypeQName = qnameDAO.getQName(childNode.getTypeQNameId()).getSecond();
+            boolean isAuditable = AuditablePropertiesEntity.hasAuditableAspect(nodeTypeQName, dictionaryService);
+            AuditablePropertiesEntity auditableProps = null;
+
+            if (isAuditable)
+            {
+                //Delete the ASPECT_AUDITABLE from the source node so it doesn't get copied across
+                //A new aspect would have already been created in the newNodeImpl method.
+                // ... make sure we have the cm:auditable data from the originating node
+                auditableProps = childNode.getAuditableProperties();
+
+                Set<Long> aspectIdsToDelete = qnameDAO.convertQNamesToIds(
+                        Collections.singleton(ContentModel.ASPECT_AUDITABLE),
+                        true);
+                deleteNodeAspects(childNodeId, aspectIdsToDelete);
+            }
+
+            //copy all the data over to new node
+            moveNodeData(childNode.getId(), newChildNodeId);
+
+            if (isAuditable && auditableProps != null)
+            {
+                Node node = getNodeNotNull(newChildNodeId, false);
+                NodeUpdateEntity nodeUpdate = new NodeUpdateEntity();
+                nodeUpdate.setId(newChildNodeId);
+                nodeUpdate.setAuditableProperties(auditableProps);
+                nodeUpdate.setUpdateAuditableProperties(true);
+                nodeUpdate.setVersion(node.getVersion());
+                updateNode(nodeUpdate);
+            }
+
             // The new node will have new data not present in the cache, yet
             invalidateNodeCaches(newChildNodeId);
             invalidateNodeChildrenCaches(newChildNodeId, true, true);

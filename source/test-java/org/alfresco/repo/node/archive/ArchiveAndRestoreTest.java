@@ -18,6 +18,7 @@
  */
 package org.alfresco.repo.node.archive;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -35,6 +36,8 @@ import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.dictionary.DictionaryDAO;
+import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.node.StoreArchiveMap;
 import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
@@ -79,7 +82,8 @@ public class ArchiveAndRestoreTest extends TestCase
     private static final QName QNAME_B = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "b");
     private static final QName QNAME_AA = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "aa");
     private static final QName QNAME_BB = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "bb");
-    
+    private static final QName TYPE_QNAME_TEST_CONTENT = QName.createQName("http://www.alfresco.org/test/nodearchive", "content");
+
     private static ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
     
     private NodeArchiveService nodeArchiveService;
@@ -124,7 +128,15 @@ public class ArchiveAndRestoreTest extends TestCase
         authenticationComponent = (AuthenticationComponent) ctx.getBean("authenticationComponent");
         ownableService = (OwnableService) ctx.getBean("ownableService");
         transactionService = serviceRegistry.getTransactionService();
-        
+        DictionaryDAO dictionaryDao = (DictionaryDAO) ctx.getBean("dictionaryDAO");
+
+        ClassLoader cl = ArchiveAndRestoreTest.class.getClassLoader();
+        // load the test model
+        InputStream modelStream = cl.getResourceAsStream("org/alfresco/repo/node/archive/archiveTest_model.xml");
+        assertNotNull(modelStream);
+        M2Model model = M2Model.createModel(modelStream);
+        dictionaryDao.putModel(model);
+
         // Start a transaction
         txn = transactionService.getUserTransaction();
         txn.begin();
@@ -261,7 +273,7 @@ public class ArchiveAndRestoreTest extends TestCase
                 bb,
                 ContentModel.ASSOC_CONTAINS,
                 QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "bb"));
-        
+
         // deduce the references
         a_ = new NodeRef(archiveStoreRef, a.getId());
         b_ = new NodeRef(archiveStoreRef, b.getId());
@@ -848,7 +860,9 @@ public class ArchiveAndRestoreTest extends TestCase
         // Get the cm:auditable modified time
         String modifierOriginal = (String) nodeService.getProperty(b, ContentModel.PROP_MODIFIER);
         Date modifiedOriginal = (Date) nodeService.getProperty(b, ContentModel.PROP_MODIFIED);
-        
+
+        verifyAspectExistence(b, ContentModel.ASPECT_AUDITABLE, true);
+
         nodeService.deleteNode(b);
         verifyNodeExistence(b_, true);
         
@@ -870,8 +884,46 @@ public class ArchiveAndRestoreTest extends TestCase
         Date modifiedRestored = (Date) nodeService.getProperty(b, ContentModel.PROP_MODIFIED);
         assertEquals("cm:modifier should not have changed", modifierOriginal, modifierRestored);
         assertEquals("cm:modified should not have changed", modifiedOriginal, modifiedRestored);
+        verifyAspectExistence(b, ContentModel.ASPECT_AUDITABLE, true);
     }
-    
+
+    /**
+     * Use a custom node ref because it isn't auditable.  Tests restoring it correctly
+     * @throws Exception
+     */
+    public synchronized void testMNT15211ArchiveAndRestoreNotAuditable() throws Exception
+    {
+        Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
+
+        properties.put(ContentModel.PROP_NODE_UUID, "r");
+        NodeRef r = nodeService.createNode(
+                workStoreRootNodeRef,
+                ContentModel.ASSOC_CHILDREN,
+                QNAME_A,
+                TYPE_QNAME_TEST_CONTENT,
+                properties).getChildRef();
+        NodeRef r_ = new NodeRef(archiveStoreRef, r.getId());
+
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        verifyAspectExistence(r, ContentModel.ASPECT_AUDITABLE, false);
+
+        nodeService.deleteNode(r);
+        verifyNodeExistence(r, false);
+        verifyNodeExistence(r_, true);
+
+        commitAndBeginNewTransaction();
+
+        RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(r_);
+        assertEquals("Restore failed", RestoreStatus.SUCCESS, report.getStatus());
+
+        //It is restored, still with no AUDITABLE ASPECT
+        verifyNodeExistence(r, true);
+        verifyAspectExistence(r, ContentModel.ASPECT_AUDITABLE, false);
+
+        nodeService.deleteNode(r);
+    }
+
+
     /**
      * <a href="https://issues.alfresco.com/jira/browse/MNT-2777">MNT-2777</a>
      */

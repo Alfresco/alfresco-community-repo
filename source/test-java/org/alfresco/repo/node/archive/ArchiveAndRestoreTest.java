@@ -891,7 +891,7 @@ public class ArchiveAndRestoreTest extends TestCase
      * Use a custom node ref because it isn't auditable.  Tests restoring it correctly
      * @throws Exception
      */
-    public synchronized void ignoreTestMNT15211ArchiveAndRestoreNotAuditable() throws Exception
+    public synchronized void testMNT15211ArchiveAndRestoreNotAuditable() throws Exception
     {
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>(1);
 

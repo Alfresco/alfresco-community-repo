@@ -1292,7 +1292,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Create the node (it is not a root node)
         Long nodeTypeQNameId = qnameDAO.getOrCreateQName(nodeTypeQName).getFirst();
         Long nodeLocaleId = localeDAO.getOrCreateLocalePair(nodeLocale).getFirst();
-        NodeEntity node = newNodeImpl(store, uuid, nodeTypeQNameId, nodeLocaleId, childAclId, auditableProps, false);
+        NodeEntity node = newNodeImpl(store, uuid, nodeTypeQNameId, nodeLocaleId, childAclId, auditableProps, true);
         Long nodeId = node.getId();
         
         // Protect the node's cm:auditable if it was explicitly set

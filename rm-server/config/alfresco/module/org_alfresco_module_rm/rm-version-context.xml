@@ -44,6 +44,16 @@
       <property name="extendingBeanName" value="rm.versionNodeService" />
    </bean>
 
+   <!--  Extended auto-version behaviour -->
+   <bean id="rm.extendedVersionableAspect" class="org.alfresco.module.org_alfresco_module_rm.version.ExtendedVersionableAspect">      
+      <property name="nodeService" ref="NodeService" />  
+      <property name="versionService" ref="VersionService" />
+      <property name="lockService" ref="LockService" />
+      <property name="authenticationUtil" ref="rm.authenticationUtil" />
+      <property name="alfrescoTransactionSupport" ref="rm.alfrescoTransactionSupport" />
+      <property name="autoVersionOnTypeChange" value="${version.store.enableAutoVersionOnTypeChange}" />
+   </bean>
+
    <!--  rmv:versionable aspect behaviour bean -->
    <bean id="rm.versionableAspect" class="org.alfresco.module.org_alfresco_module_rm.version.model.VersionableAspect" parent="rm.baseBehaviour">
    </bean>

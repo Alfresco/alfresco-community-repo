@@ -142,13 +142,13 @@ public class ExtendedVersionableAspect implements NodeServicePolicies.OnSetNodeT
     public void onSetNodeType(NodeRef nodeRef, QName oldType, QName newType)
     {
         if (isAutoVersionOnTypeChange &&
-            nodeService.exists(nodeRef) == true && 
+            nodeService.exists(nodeRef) && 
             !LockUtils.isLockedAndReadOnly(nodeRef, lockService) &&
-            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true && 
-            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false)
+            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) && 
+            !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY))
         {
             Map<NodeRef, NodeRef> versionedNodeRefs = (Map)alfrescoTransactionSupport.getResource(KEY_VERSIONED_NODEREFS);
-            if (versionedNodeRefs == null || versionedNodeRefs.containsKey(nodeRef) == false)
+            if (versionedNodeRefs == null || !versionedNodeRefs.containsKey(nodeRef))
             {
                 // Determine whether the node is auto versionable (for content updates) or not
                 boolean autoVersion = false;

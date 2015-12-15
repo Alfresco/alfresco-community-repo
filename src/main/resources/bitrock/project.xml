@@ -216,57 +216,108 @@
                 <platformTest type="osx" />
             </ruleList>
         </actionGroup>
-    <actionGroup>
-        <actionList>
-        <runProgram>
-            <abortOnError>0</abortOnError>
-            <showMessageOnError>0</showMessageOnError>
-            <program>sc</program>
-            <programArguments>config ${tomcat_unique_service_name} depend= "${postgres_unique_service_name}"</programArguments>
-            <ruleList>
-            <platformTest type="windows" />
-            </ruleList>
-        </runProgram>
-        <runProgram>
-            <progressText>Stopping PostgreSQL...</progressText>
-            <program>${installdir}/${ctlscript_unix}</program>
-            <programArguments>stop postgresql</programArguments>
+        <actionGroup>
+            <actionList>
+                <runProgram>
+                    <abortOnError>0</abortOnError>
+                    <showMessageOnError>0</showMessageOnError>
+                    <program>sc</program>
+                    <programArguments>config ${tomcat_unique_service_name} depend= "${postgres_unique_service_name}"</programArguments>
+                    <ruleList>
+                    <platformTest type="windows" />
+                    </ruleList>
+                </runProgram>
+                <runProgram>
+                    <progressText>Stopping PostgreSQL...</progressText>
+                    <program>${installdir}/${ctlscript_unix}</program>
+                    <programArguments>stop postgresql</programArguments>
+                    <ruleList>
+                        <componentTest logic="exists" name="postgres"/>
+                        <platformTest type="unix" />
+                    </ruleList>
+                </runProgram>
+                <runProgram>
+                    <progressText>Stopping PostgreSQL...</progressText>
+                    <program>${postgres_root_directory.dos}\scripts\servicerun.bat</program>
+                    <programArguments>STOP</programArguments>
+                    <ruleList>
+                        <componentTest logic="exists" name="postgres"/>
+                        <platformTest type="windows" />
+                    </ruleList>
+                </runProgram>
+                <waitForPort port="${database_port}" timeout="10000" state="free" />
+            </actionList>
             <ruleList>
                 <componentTest logic="exists" name="postgres"/>
-                <platformTest type="unix" />
+                <isTrue value="${component(postgres).selected}" />
             </ruleList>
-        </runProgram>
-        <runProgram>
-            <progressText>Stopping PostgreSQL...</progressText>
-            <program>${postgres_root_directory.dos}\scripts\servicerun.bat</program>
-            <programArguments>STOP</programArguments>
+        </actionGroup>
+
+        <!-- Substitute repository url  -->
+        <substitute>
+            <files>${installdir}/tomcat/shared/classes/alfresco/web-extension/share-config-custom.xml</files>
+            <type>exact</type>
+            <substitutionList>
+                <substitution>
+                    <pattern>http://localhost:${application_server_port}/alfresco</pattern>
+                    <value>${project.component(alfresco).parameter(repository_url_port).value}</value>
+                </substitution>
+            </substitutionList>
             <ruleList>
-                <componentTest logic="exists" name="postgres"/>
-                <platformTest type="windows" />
+                <compareText text="${product_fullname}" logic="equals" value="Alfresco One Share"/>
             </ruleList>
-        </runProgram>
-        <waitForPort port="${database_port}" timeout="10000" state="free" />
-        </actionList>
-        <ruleList>
-            <!--isTrue value="${alfrescopostgresquestion_bundled}" /-->
-            <componentTest logic="exists" name="postgres"/>
-            <isTrue value="${component(postgres).selected}" />
-        </ruleList>
-    </actionGroup>
-    <!-- Substitute repository url  -->
-    <substitute>
-        <files>${installdir}/tomcat/shared/classes/alfresco/web-extension/share-config-custom.xml</files>
-        <type>exact</type>
-        <substitutionList>
-            <substitution>
-                <pattern>http://localhost:${application_server_port}/alfresco</pattern>
-                <value>${project.component(alfresco).parameter(repository_url_port).value}</value>
-            </substitution>
-        </substitutionList>
-        <ruleList>
-            <compareText text="${product_fullname}" logic="equals" value="Alfresco One Share"/>
-        </ruleList>
-    </substitute>
+        </substitute>
+
+        <!-- Remote Solr configuration -->
+        <substitute>
+            <files>${installdir}/tomcat/shared/classes/alfresco-global.properties</files>
+            <type>exact</type>
+            <substitutionList>
+                <substitution>
+                    <pattern>solr.host=localhost</pattern>
+                    <value>solr.host=${project.component(alfresco).parameter(remote_solr_configuration).parameter(solr_host).value}</value>
+                </substitution>
+                <substitution>
+                    <pattern>solr.port.ssl=@@BITROCK_SOLR_SSL_PORT@@</pattern>
+                    <value>solr.port.ssl=${project.component(alfresco).parameter(remote_solr_configuration).parameter(solr_ssl_port).value}</value>
+                </substitution>
+            </substitutionList>
+            <ruleList>
+                <isFalse value="${component(alfrescosolr4).selected}"/>
+                <isFalse value="${component(alfrescosolr).selected}"/>
+            </ruleList>
+        </substitute>
+        <substitute>
+            <files>${installdir}/tomcat/shared/classes/alfresco-global.properties</files>
+            <type>exact</type>
+            <substitutionList>
+                <substitution>
+                    <pattern>solr.port.ssl=@@BITROCK_SOLR_SSL_PORT@@</pattern>
+                    <value>solr.port.ssl=${application_server_ssl_port}</value>
+                </substitution>
+            </substitutionList>
+            <ruleList>
+                <ruleGroup ruleEvaluationLogic="or">
+                    <ruleList>
+                        <isTrue value="${component(alfrescosolr4).selected}"/>
+                        <isTrue value="${component(alfrescosolr).selected}"/>
+                    </ruleList>
+                </ruleGroup>
+            </ruleList>
+        </substitute>
+
+        <!-- Sharded Solr configuration -->
+        <actionGroup>
+            <actionList>
+                <deleteFile path="${installdir}/solr4/archive-SpacesStore"/>
+                <deleteFile path="${installdir}/solr4/workspace-SpacesStore"/>
+                <renameFile origin="${installdir}/solr4/conf/shared.properties.sample" destination="${installdir}/solr4/conf/shared.properties"/>
+            </actionList>
+            <ruleList>
+                <compareText text="${sharded_solr}" logic="equals" value="yes"/>
+            </ruleList>
+        </actionGroup>
+        
     </postInstallationActionList>
     
     <finalPageActionList>

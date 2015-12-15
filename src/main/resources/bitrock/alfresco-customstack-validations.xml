@@ -12,6 +12,7 @@
                     <ruleList>
                         <ruleGroup ruleEvaluationLogic="and">
                             <ruleList>
+                                <compareText logic="equals" text="${alfresco_edition}" value="community"/>
                                 <componentTest name="alfrescosolr4" logic="exists"/>
                                 <componentTest name="alfrescosolr" logic="exists"/>
                                 <componentTest name="alfrescosolr4" logic="not_selected"/>

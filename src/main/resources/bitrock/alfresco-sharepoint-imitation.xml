@@ -1,18 +1,18 @@
 <component>
-    <name>alfrescosharepointmasquerade</name>
-    <description>SharePoint Masquerade</description>
+    <name>alfrescosharepointimitation</name>
+    <description>SharePoint Imitation</description>
     <detailedDescription>Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation.</detailedDescription>
     <canBeEdited>1</canBeEdited>
     <selected>1</selected>
     <show>1</show>
     <shouldPackRuleList>
-        <isTrue value="${alfrescosharepointmasquerade_component_enabled}" />
+        <isTrue value="${alfrescosharepointimitation_component_enabled}" />
     </shouldPackRuleList>
     <parameterList>
-        <booleanParameter name="alfrescosharepointmasquerade_component_enabled" ask="0" value="1" />
+        <booleanParameter name="alfrescosharepointimitation_component_enabled" ask="0" value="1" />
     </parameterList>
     <initializationActionList>
-		<setInstallerVariable name="component(alfrescosharepointmasquerade).detailedDescription" value="Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation.&#xa;(proprietary module licensed under the Alfresco Component License)">
+		<setInstallerVariable name="component(alfrescosharepointimitation).detailedDescription" value="Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License).">
 			<ruleList>
                 <compareText text="${alfresco_edition}" value="community"/>
 			</ruleList>
@@ -25,7 +25,7 @@
             <destination>${alfresco_amps_directory}</destination>
             <platforms>all</platforms>
             <distributionFileList>
-              <distributionFile origin="${sharepoint_masquerade_distribution_folder}/alfresco-sharepoint-masquerade-*.amp" allowWildcards="1" />
+              <distributionFile origin="${sharepoint_imitation_distribution_folder}/alfresco-sharepoint-imitation-*.amp" allowWildcards="1" />
             </distributionFileList>
             <actionList>
                 <setInstallerVariable name="alfresco_apply_amps" value="1"/>
@@ -36,11 +36,11 @@
             <description>//War Files</description>
             <destination>${installdiralfresco}</destination>
             <distributionFileList>
-                <distributionFile origin="${sharepoint_masquerade_distribution_folder}/_vti_bin.war" allowWildcards="1" />
+                <distributionFile origin="${sharepoint_imitation_distribution_folder}/_vti_bin.war" allowWildcards="1" />
             </distributionFileList>
         </folder>
         <folder>
-            <name>alfrescosharepointmasqueradecustomextensions</name>
+            <name>alfrescosharepointimitationcustomextensions</name>
             <description>Program Files</description>
             <destination>${alfresco_shared_directory}/alfresco/extension</destination>
             <platforms>all</platforms>
@@ -48,15 +48,15 @@
                 <alfrescoConfigure alfrescoFiles="*/*"/>
             </actionList>
             <distributionFileList>
-                <distributionFile origin="${sharepoint_masquerade_distribution_folder}/extension/*" allowWildcards="1" />
+                <distributionFile origin="${sharepoint_imitation_distribution_folder}/extension/*" allowWildcards="1" />
             </distributionFileList>
         </folder>
         <folder>
-            <name>alfrescosharepointmasqueradelicenses</name>
+            <name>alfrescosharepointimitationlicenses</name>
             <description>//Alfresco Licenses</description>
             <destination>${alfresco_base_application_directory}/licenses</destination>
             <distributionFileList>
-                <distributionFile origin="${sharepoint_masquerade_distribution_folder}/*-license.txt" allowWildcards="1" />
+                <distributionFile origin="${sharepoint_imitation_distribution_folder}/*-license.txt" allowWildcards="1" />
             </distributionFileList>
         </folder>
     </folderList>

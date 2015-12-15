@@ -23,6 +23,7 @@ import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.alfresco.repo.virtual.bundle.FileInfoPropsComparatorTest;
 import org.alfresco.repo.virtual.bundle.VirtualCheckOutCheckInServiceExtensionTest;
 import org.alfresco.repo.virtual.bundle.VirtualFileFolderServiceExtensionTest;
 import org.alfresco.repo.virtual.bundle.VirtualLockableAspectInterceptorExtensionTest;
@@ -66,6 +67,7 @@ public class VirtualizationIntegrationTestSuite extends TestSuite implements Vir
         suite.addTest(new JUnit4TestAdapter(VirtualStoreImplTest.class));
         suite.addTest(new JUnit4TestAdapter(NodeRefPathExpressionTest.class));
         suite.addTest(new JUnit4TestAdapter(TemplateFilingRuleTest.class));
+        suite.addTest(new JUnit4TestAdapter(FileInfoPropsComparatorTest.class));
 
         return suite;
 

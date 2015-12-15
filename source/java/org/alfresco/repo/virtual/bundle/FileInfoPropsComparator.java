@@ -36,6 +36,8 @@ public class FileInfoPropsComparator implements Comparator<FileInfo>
 
     private Collator collator;
 
+    public static final String IS_FOLDER = "IS_FOLDER";
+
     public FileInfoPropsComparator(List<Pair<QName, Boolean>> sortProps)
     {
         this.sortProps = sortProps;
@@ -71,6 +73,12 @@ public class FileInfoPropsComparator implements Comparator<FileInfo>
 
         pv1 = node1.getProperties().get(sortPropQName);
         pv2 = node2.getProperties().get(sortPropQName);
+
+        if (sortPropQName.getLocalName().equals(IS_FOLDER))
+        {
+            pv1 = node1.isFolder();
+            pv2 = node2.isFolder();
+        }
 
         if (pv1 == null)
         {

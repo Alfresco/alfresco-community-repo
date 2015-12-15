@@ -283,8 +283,24 @@
                 </substitution>
             </substitutionList>
             <ruleList>
-                <isFalse value="${component(alfrescosolr4).selected}"/>
-                <isFalse value="${component(alfrescosolr).selected}"/>
+                <ruleGroup ruleEvaluationLogic="or">
+                    <ruleList>
+                        <ruleGroup>
+                            <ruleList>
+                                <compareText logic="equals" text="${project.fullName}" value="Alfresco One Platform"/>
+                                <isFalse value="${component(alfrescosolr4).selected}"/>
+                            </ruleList>
+                        </ruleGroup>
+                        <ruleGroup>
+                            <ruleList>
+                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco One Platform"/>
+                                <compareText logic="equals" text="${alfresco_edition}" value="enterprise"/>
+                                <isFalse value="${component(alfrescosolr4).selected}"/>
+                                <isFalse value="${component(alfrescosolr).selected}"/>
+                            </ruleList>
+                        </ruleGroup>
+                    </ruleList>
+                </ruleGroup>
             </ruleList>
         </substitute>
         <substitute>
@@ -299,8 +315,17 @@
             <ruleList>
                 <ruleGroup ruleEvaluationLogic="or">
                     <ruleList>
-                        <isTrue value="${component(alfrescosolr4).selected}"/>
-                        <isTrue value="${component(alfrescosolr).selected}"/>
+                        <ruleGroup>
+                            <ruleList>
+                                <isTrue value="${component(alfrescosolr4).selected}"/>
+                            </ruleList>
+                        </ruleGroup>
+                        <ruleGroup>
+                            <ruleList>
+                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco One Platform"/>
+                                <isTrue value="${component(alfrescosolr).selected}"/>
+                            </ruleList>
+                        </ruleGroup>
                     </ruleList>
                 </ruleGroup>
             </ruleList>

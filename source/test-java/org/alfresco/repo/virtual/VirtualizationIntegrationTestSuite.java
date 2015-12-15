@@ -28,6 +28,7 @@ import org.alfresco.repo.virtual.bundle.VirtualFileFolderServiceExtensionTest;
 import org.alfresco.repo.virtual.bundle.VirtualLockableAspectInterceptorExtensionTest;
 import org.alfresco.repo.virtual.bundle.VirtualNodeServiceExtensionTest;
 import org.alfresco.repo.virtual.bundle.VirtualPermissionServiceExtensionTest;
+import org.alfresco.repo.virtual.bundle.VirtualPreferenceServiceExtensionTest;
 import org.alfresco.repo.virtual.bundle.VirtualRatingServiceExtensionTest;
 import org.alfresco.repo.virtual.bundle.VirtualVersionServiceExtensionTest;
 import org.alfresco.repo.virtual.config.NodeRefPathExpressionTest;
@@ -49,6 +50,7 @@ public class VirtualizationIntegrationTestSuite extends TestSuite implements Vir
     {
         TestSuite suite = new TestSuite();
 
+        suite.addTest(new JUnit4TestAdapter(VirtualPreferenceServiceExtensionTest.class));
         suite.addTest(new JUnit4TestAdapter(VirtualLockableAspectInterceptorExtensionTest.class));
         suite.addTest(new JUnit4TestAdapter(VirtualVersionServiceExtensionTest.class));
         suite.addTest(new JUnit4TestAdapter(VirtualRatingServiceExtensionTest.class));

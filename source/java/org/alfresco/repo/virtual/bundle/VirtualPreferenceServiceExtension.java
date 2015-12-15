@@ -30,32 +30,35 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.preference.traitextender.PreferenceServiceExtension;
 import org.alfresco.repo.preference.traitextender.PreferenceServiceTrait;
-import org.alfresco.repo.virtual.ActualEnvironment;
 import org.alfresco.repo.virtual.ref.GetActualNodeRefMethod;
-import org.alfresco.repo.virtual.ref.GetParentReferenceMethod;
 import org.alfresco.repo.virtual.ref.Reference;
-import org.alfresco.repo.virtual.store.VirtualStore;
 import org.alfresco.service.cmr.preference.PreferenceService;
-import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.traitextender.SpringBeanExtension;
 
+/**
+ * PreferenceServiceImpl extension used for manipulate favorites preferences
+ * that are set for virtual references.
+ * 
+ * @author sdinuta
+ */
 public class VirtualPreferenceServiceExtension extends
-            SpringBeanExtension<PreferenceServiceExtension, PreferenceServiceTrait>implements PreferenceServiceExtension
+            SpringBeanExtension<PreferenceServiceExtension, PreferenceServiceTrait> implements
+            PreferenceServiceExtension
 {
+    private static final String EMPTY_STRING = "";
 
     private static final String DOCUMENTS_FAVOURITES_KEY = "org.alfresco.share.documents.favourites";
+
+    private static final String FOLDERS_FAVOURITES_KEY = "org.alfresco.share.folders.favourites";
 
     private static final String CREATED_AT = ".createdAt";
 
     private static final String EXT_DOCUMENTS_FAVOURITES = "org.alfresco.ext.documents.favourites.";
 
-    private VirtualStore virtualStore;
-
-    private ActualEnvironment environment;
+    private static final String EXT_FOLDERS_FAVOURITES = "org.alfresco.ext.folders.favourites.";
 
     private PreferenceService preferenceService;
 
@@ -64,35 +67,26 @@ public class VirtualPreferenceServiceExtension extends
         super(PreferenceServiceTrait.class);
     }
 
-    public ActualEnvironment getEnvironment()
-    {
-        return environment;
-    }
-
-    public void setEnvironment(ActualEnvironment environment)
-    {
-        this.environment = environment;
-    }
-
-    public PreferenceService getPreferenceService()
-    {
-        return preferenceService;
-    }
-
     public void setPreferenceService(PreferenceService preferenceService)
     {
         this.preferenceService = preferenceService;
     }
 
-    public void setVirtualStore(VirtualStore virtualStore)
-    {
-        this.virtualStore = virtualStore;
-    }
-
-    private String getExtDocumentPreferenceKey(Map<String, Serializable> preferences)
+    /**
+     * Obtains the org.alfresco.ext.documents.favourites.* or
+     * org.alfresco.ext.folders.favourites.* key used for setting favorites for
+     * documents and folders, or null if not favorites are targeted.
+     * 
+     * @param preferences
+     * @return the org.alfresco.ext.documents.favourites.* or
+     *         org.alfresco.ext.folders.favourites.* key used for setting
+     *         favorites for documents and folders, or null if not favorites are
+     *         targeted.
+     */
+    private String getExtPreferenceKey(Map<String, Serializable> preferences)
     {
         String extKey = null;
-        if (!preferences.containsKey(DOCUMENTS_FAVOURITES_KEY))
+        if (!preferences.containsKey(DOCUMENTS_FAVOURITES_KEY) && !preferences.containsKey(FOLDERS_FAVOURITES_KEY))
         {
             return null;
         }
@@ -101,7 +95,6 @@ public class VirtualPreferenceServiceExtension extends
         {
             return null;
         }
-
         Iterator<Entry<String, Serializable>> iterator = entrySet.iterator();
         if (!iterator.hasNext())
         {
@@ -111,31 +104,52 @@ public class VirtualPreferenceServiceExtension extends
         {
             Entry<String, Serializable> entry = iterator.next();
             String key = entry.getKey();
-            if (key.startsWith(EXT_DOCUMENTS_FAVOURITES))
+            if (key.startsWith(EXT_DOCUMENTS_FAVOURITES) || key.startsWith(EXT_FOLDERS_FAVOURITES))
             {
                 extKey = key;
                 break;
             }
         }
-
         return extKey;
     }
 
+    /**
+     * If the favorites preferences are changed then for virtual references the
+     * actual nodeRef is added/removed from favorites preferences instead of
+     * virtual nodeRef. For non virtual entries or for preferences that are not
+     * related to favorites the original implementation from
+     * PreferenceServiceImpl is used.
+     */
     @Override
     public void setPreferences(String userName, Map<String, Serializable> preferences) throws Throwable
     {
         final String comma = ",";
 
-        String extKey = getExtDocumentPreferenceKey(preferences);
+        String extKey = getExtPreferenceKey(preferences);
         if (extKey != null)
         {
-            String pattern = "^" + EXT_DOCUMENTS_FAVOURITES + "(\\S+)" + CREATED_AT + "$";
+            String extFavKey;
+            String favKey;
+            if (extKey.startsWith(EXT_DOCUMENTS_FAVOURITES))
+            // favorites for documents
+            {
+                extFavKey = EXT_DOCUMENTS_FAVOURITES;
+                favKey = DOCUMENTS_FAVOURITES_KEY;
+            }
+            else
+            // favorites for folders
+            {
+                extFavKey = EXT_FOLDERS_FAVOURITES;
+                favKey = FOLDERS_FAVOURITES_KEY;
+            }
+
+            String pattern = "^" + extFavKey + "(\\S+)" + CREATED_AT + "$";
             Pattern p = Pattern.compile(pattern);
             Matcher m = p.matcher(extKey);
             if (m.find())
             {
                 String documentNodeRefStr = m.group(1);
-                String favorites = (String) preferences.get(DOCUMENTS_FAVOURITES_KEY);
+                String favorites = (String) preferences.get(favKey);
                 if (documentNodeRefStr != null && !documentNodeRefStr.isEmpty())
                 {
                     NodeRef documentNodeRef = new NodeRef(documentNodeRefStr);
@@ -145,65 +159,50 @@ public class VirtualPreferenceServiceExtension extends
                         Reference reference = Reference.fromNodeRef(documentNodeRef);
                         NodeRef actualNodeRef = reference.execute(new GetActualNodeRefMethod(null));
                         String actualNodeRefStr = actualNodeRef.toString();
-                        Reference parentVF = reference.execute(new GetParentReferenceMethod());
-                        NodeRef actualFolder = parentVF.execute(new GetActualNodeRefMethod(environment));
-                        Reference virtualizedRoot = virtualStore.virtualize(actualFolder);
-                        String documentName = (String) environment.getProperty(documentNodeRef,
-                                                                               ContentModel.PROP_NAME);
-                        List<Reference> results = virtualStore.search(virtualizedRoot,
-                                                                      documentName,
-                                                                      true,
-                                                                      false,
-                                                                      true);
-                        if (favorites.contains(documentNodeRefStr))
-                        {
-                            for (Reference ref : results)
-                            {
-                                NodeRef nodeRef = ref.toNodeRef();
-                                String nodeRefStr = nodeRef.toString();
-                                if (!favorites.contains(nodeRefStr))
-                                {
-                                    if (favorites.isEmpty())
-                                    {
-                                        favorites = nodeRefStr;
-                                    }
-                                    else
-                                    {
-                                        favorites = favorites + comma + nodeRefStr;
-                                    }
+                        String actualExtPreference = extFavKey + actualNodeRefStr + CREATED_AT;
+                        List<String> elements = new ArrayList<String>(Arrays.asList(favorites.split(comma)));
+                        boolean elementsChanged = false;
 
-                                }
+                        if (favorites.contains(documentNodeRefStr))
+                        // add favorite
+                        {
+                            if (!preferences.containsKey(actualExtPreference))
+                            {
+                                Serializable value = preferences.get(extKey);
+                                preferences.put(actualExtPreference,
+                                                value);
                             }
+                            preferences.remove(extKey);
+
                             if (!favorites.contains(actualNodeRefStr))
                             {
-                                favorites = favorites + comma + actualNodeRefStr;
+                                favorites = favorites.replace(documentNodeRefStr,
+                                                              actualNodeRefStr);
                             }
-                            preferences.put(DOCUMENTS_FAVOURITES_KEY,
-                                            favorites);
-                        }
-                        else
-                        {
-                            List<String> elements = new ArrayList<String>(Arrays.asList(favorites.split(comma)));
-                            for (Reference ref : results)
+                            else
                             {
-                                NodeRef nodeRef = ref.toNodeRef();
-                                String nodeRefStr = nodeRef.toString();
-                                if (elements.contains(nodeRefStr))
+                                if (elements.contains(documentNodeRefStr))
                                 {
-                                    elements.remove(nodeRefStr);
-                                    String preferenceToClear = EXT_DOCUMENTS_FAVOURITES + nodeRefStr + CREATED_AT;
-                                    preferenceService.clearPreferences(userName,
-                                                                       preferenceToClear);
+                                    elements.remove(documentNodeRefStr);
+                                    elementsChanged = true;
                                 }
                             }
+                        }
+                        else
+                        // remove favorite
+                        {
                             if (elements.contains(actualNodeRefStr))
                             {
                                 elements.remove(actualNodeRefStr);
-                                String preferenceToClear = EXT_DOCUMENTS_FAVOURITES + actualNodeRefStr + CREATED_AT;
                                 preferenceService.clearPreferences(userName,
-                                                                   preferenceToClear);
+                                                                   actualExtPreference);
+                                elementsChanged = true;
                             }
-                            favorites = "";
+                        }
+
+                        if (elementsChanged)
+                        {
+                            favorites = EMPTY_STRING;
                             for (String element : elements)
                             {
                                 if (favorites.isEmpty())
@@ -215,83 +214,14 @@ public class VirtualPreferenceServiceExtension extends
                                     favorites = favorites + comma + element;
                                 }
                             }
-                            preferences.put(DOCUMENTS_FAVOURITES_KEY,
-                                            favorites);
                         }
-                    }
-                    else
-                    {
-                        ChildAssociationRef parentAssociation = environment.getPrimaryParent(documentNodeRef);
-                        NodeRef parentNodeRef = parentAssociation.getParentRef();
-                        if (virtualStore.canVirtualize(parentNodeRef))
-                        {
-                            Reference virtualizedRoot = virtualStore.virtualize(parentNodeRef);
-                            String documentName = (String) environment.getProperty(documentNodeRef,
-                                                                                   ContentModel.PROP_NAME);
-                            List<Reference> results = virtualStore.search(virtualizedRoot,
-                                                                          documentName,
-                                                                          true,
-                                                                          false,
-                                                                          true);
-                            if (preferences.get(extKey) == null)
-                            {
-                                List<String> elements = new ArrayList<String>(Arrays.asList(favorites.split(comma)));
-                                for (Reference ref : results)
-                                {
-                                    NodeRef nodeRef = ref.toNodeRef();
-                                    String nodeRefStr = nodeRef.toString();
-                                    if (elements.contains(nodeRefStr))
-                                    {
-                                        elements.remove(nodeRefStr);
-                                        String preferenceToClear = EXT_DOCUMENTS_FAVOURITES + nodeRefStr + CREATED_AT;
-                                        preferenceService.clearPreferences(userName,
-                                                                           preferenceToClear);
-
-                                    }
-                                }
-                                favorites = "";
-                                for (String element : elements)
-                                {
-                                    if (favorites.isEmpty())
-                                    {
-                                        favorites = element;
-                                    }
-                                    else
-                                    {
-                                        favorites = favorites + comma + element;
-                                    }
-                                }
-                                preferences.put(DOCUMENTS_FAVOURITES_KEY,
-                                                favorites);
-                            }
-                            else
-                            {
-                                for (Reference ref : results)
-                                {
-                                    NodeRef nodeRef = ref.toNodeRef();
-                                    String nodeRefStr = nodeRef.toString();
-                                    if (!favorites.contains(nodeRefStr))
-                                    {
-                                        if (favorites.isEmpty())
-                                        {
-                                            favorites = nodeRefStr;
-                                        }
-                                        else
-                                        {
-                                            favorites = favorites + comma + nodeRefStr;
-                                        }
-                                    }
-                                }
-                                preferences.put(DOCUMENTS_FAVOURITES_KEY,
-                                                favorites);
-                            }
-                        }
+                        preferences.put(favKey,
+                                        favorites);
                     }
                 }
             }
         }
         getTrait().setPreferences(userName,
                                   preferences);
-
     }
 }

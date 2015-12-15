@@ -200,8 +200,6 @@
    </bean>
 
    <bean id="preferenceServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualPreferenceServiceExtension">
-      <property name="virtualStore" ref="virtualStore" />
-      <property name="environment" ref="actualEnvironment" />
       <property name="preferenceService" ref="preferenceService" />
       <property name="extensionPoint" ref="preferenceServiceExtensionPoint" />
    </bean>

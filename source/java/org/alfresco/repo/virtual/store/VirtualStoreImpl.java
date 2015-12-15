@@ -550,11 +550,11 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
                 else
                 {
                     vqConstraint = new NamePatternPropertyValueConstraint(new FilesFoldersConstraint(BasicConstraint.INSTANCE,
-                                                                                          true,
-                                                                                          true),
-                                                               ContentModel.PROP_NAME,
-                                                               namePattern,
-                                                               environment.getNamespacePrefixResolver());
+                                                                                                     true,
+                                                                                                     true),
+                                                                          ContentModel.PROP_NAME,
+                                                                          namePattern,
+                                                                          environment.getNamespacePrefixResolver());
                 }
                 PagingResults<Reference> queryNodes = query.perform(environment,
                                                                     vqConstraint,
@@ -636,7 +636,10 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
         else
         {
             NodeRef actual = reference.execute(new GetActualNodeRefMethod(environment));
-            return environment.getProperties(actual);
+            Map<QName, Serializable> properties = environment.getProperties(actual);
+            properties.put(VirtualContentModel.PROP_ACTUAL_NODE_REF,
+                           actual.toString());
+            return properties;
 
         }
     }
@@ -657,7 +660,7 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
         {
             filingRule = new NullFilingRule(environment);
         }
-        
+
         FilingParameters filingParameters = new FilingParameters(parentReference,
                                                                  assocTypeQName,
                                                                  assocQName,

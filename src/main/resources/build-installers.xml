@@ -20,6 +20,7 @@
             <arg value="--setvars" />
             <arg line="${bitrock.arguments}" />
             <arg value="alfresco_distribution_folder=${project.build.directory}/distribution/${alfresco.distribution.name}-${installer.version.name}" />
+            <arg value="sharepoint_masquerade_distribution_folder=${project.build.directory}/distribution/sharepoint-masquerade" />
             <arg value="binaries_folder=${binaries.folder}/bitrock/binaries-windows" />
             <arg value="local_binaries_folder=${project.build.directory}/binaries-windows" />
             <arg value="alfresco_amps_source_directory=${project.build.directory}/dependency" />
@@ -38,6 +39,7 @@
             <arg value="--setvars" />
             <arg line="${bitrock.arguments}" />
             <arg value="alfresco_distribution_folder=${project.build.directory}/distribution/${alfresco.distribution.name}-${installer.version.name}" />
+            <arg value="sharepoint_masquerade_distribution_folder=${project.build.directory}/distribution/sharepoint-masquerade" />
             <arg value="binaries_folder=${binaries.folder}/bitrock/binaries-windows-x64" />
             <arg value="local_binaries_folder=${project.build.directory}/binaries-windows-x64" />
             <arg value="alfresco_amps_source_directory=${project.build.directory}/dependency" />
@@ -56,6 +58,7 @@
             <arg value="--setvars" />
             <arg line="${bitrock.arguments}" />
             <arg value="alfresco_distribution_folder=${project.build.directory}/distribution/${alfresco.distribution.name}-${installer.version.name}" />
+            <arg value="sharepoint_masquerade_distribution_folder=${project.build.directory}/distribution/sharepoint-masquerade" />
             <arg value="binaries_folder=${binaries.folder}/bitrock/binaries-linux-x64" />
             <arg value="local_binaries_folder=${project.build.directory}/binaries-linux-x64" />
             <arg value="alfresco_amps_source_directory=${project.build.directory}/dependency" />
@@ -74,6 +77,7 @@
             <arg value="--setvars" />
             <arg line="${bitrock.arguments}" />
             <arg value="alfresco_distribution_folder=${project.build.directory}/distribution/${alfresco.distribution.name}-${installer.version.name}" />
+            <arg value="sharepoint_masquerade_distribution_folder=${project.build.directory}/distribution/sharepoint-masquerade" />
             <arg value="binaries_folder=${binaries.folder}/bitrock/binaries-osx-x64" />
             <arg value="local_binaries_folder=${project.build.directory}/binaries-osx-x64" />
             <arg value="alfresco_amps_source_directory=${project.build.directory}/dependency" />

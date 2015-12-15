@@ -18,7 +18,7 @@
             <destination>${alfresco_amps_directory}</destination>
             <platforms>all</platforms>
             <distributionFileList>
-              <distributionFile origin="${alfresco_amps_source_directory}/alfresco-sharepoint-masquerade-*.amp" allowWildcards="1" />
+              <distributionFile origin="${sharepoint_masquerade_distribution_folder}/alfresco-sharepoint-masquerade-*.amp" allowWildcards="1" />
             </distributionFileList>
             <actionList>
                 <setInstallerVariable name="alfresco_apply_amps" value="1"/>
@@ -29,7 +29,7 @@
             <description>//War Files</description>
             <destination>${installdiralfresco}</destination>
             <distributionFileList>
-                <distributionFile origin="${alfresco_amps_source_directory}/_vti_bin.war" allowWildcards="1" />
+                <distributionFile origin="${sharepoint_masquerade_distribution_folder}/_vti_bin.war" allowWildcards="1" />
             </distributionFileList>
         </folder>
         <folder>
@@ -41,7 +41,7 @@
                 <alfrescoConfigure alfrescoFiles="*/*"/>
             </actionList>
             <distributionFileList>
-                <distributionFile origin="${build_project_directory}/bitrock/alfrescosharepointmasquerade/shared/extension/*" allowWildcards="1" />
+                <distributionFile origin="${sharepoint_masquerade_distribution_folder}/extension/*" allowWildcards="1" />
             </distributionFileList>
         </folder>
         <folder>
@@ -49,7 +49,7 @@
             <description>//Alfresco Licenses</description>
             <destination>${alfresco_base_application_directory}/licenses</destination>
             <distributionFileList>
-                <distributionFile origin="${build_project_directory}/bitrock/alfrescosharepointmasquerade/licenses/*" allowWildcards="1" />
+                <distributionFile origin="${sharepoint_masquerade_distribution_folder}/*-license.txt" allowWildcards="1" />
             </distributionFileList>
         </folder>
     </folderList>

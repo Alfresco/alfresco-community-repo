@@ -37,6 +37,7 @@ import org.alfresco.service.cmr.attributes.AttributeService.AttributeQueryCallba
 import org.alfresco.service.cmr.attributes.DuplicateAttributeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.ApplicationContextHelper;
+import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang.mutable.MutableInt;
 import org.springframework.context.ApplicationContext;
@@ -94,7 +95,17 @@ public class AttributeServiceTest extends TestCase
         assertEquals(VALUE_AAA_STRING, attributeService.getAttribute(KEY_AAA));
         assertEquals(VALUE_AAB_STRING, attributeService.getAttribute(KEY_AAB));
         assertEquals(VALUE_AAC_STRING, attributeService.getAttribute(KEY_AAC));
-//        
+
+        //Too many keys
+        try
+        {
+            attributeService.exists(new Serializable[]{"a", "a", "a", "a", "a"});
+            fail("You can't have more than 3 keys");
+        }
+        catch (IllegalArgumentException expected)
+        {
+        }
+
 //        attributeService.removeAttribute(KEY_AAA);
 //        attributeService.removeAttribute(KEY_AAB);
 //        attributeService.removeAttribute(KEY_AAC);
@@ -297,5 +308,34 @@ public class AttributeServiceTest extends TestCase
             attributeService.removeAttribute(KEY_STR_1, KEY_SERIALIZABLE);
             propertyValueDAO.cleanupUnusedValues();
         }
+    }
+
+    public void testUpdateOrCreateAttribute()
+    {
+        final String KEY_RND_STR_1 = "string1"+ GUID.generate();
+        final String KEY_RND_STR_2 = "string2"+ GUID.generate();
+
+        try
+        {
+            attributeService.updateOrCreateAttribute(KEY_RND_STR_2, null, null, KEY_RND_STR_1, null, null);
+            try
+            {
+                attributeService.updateOrCreateAttribute(KEY_RND_STR_2, null, null, KEY_RND_STR_1, null, null);
+                fail("Duplicate attribute creation should not be allowed");
+            }
+            catch (DuplicateAttributeException expected)
+            {
+            }
+
+            //First call creates it, the second updates it. No errors.
+            attributeService.updateOrCreateAttribute(KEY_RND_STR_1, null, null, KEY_RND_STR_2, null, null);
+            attributeService.updateOrCreateAttribute(KEY_RND_STR_2, null, null, KEY_RND_STR_2, null, null);
+        }
+        finally
+        {
+            attributeService.removeAttribute(KEY_RND_STR_1, null, null);
+            attributeService.removeAttribute(KEY_RND_STR_2, null, null);
+        }
+
     }
 }

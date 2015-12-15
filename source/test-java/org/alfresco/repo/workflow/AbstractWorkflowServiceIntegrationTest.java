@@ -87,6 +87,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     protected TestGroupManager groupManager;
     protected NodeService nodeService;
     protected NodeRef companyHome;
+    protected ServiceRegistry serviceRegistry;
     protected WorkflowTestHelper wfTestHelper;
     protected TransactionServiceImpl transactionService;
     
@@ -1236,7 +1237,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     protected abstract QName getAdhocProcessName();
     
 
-    private InputStream getInputStream(String resource)
+    protected InputStream getInputStream(String resource)
     {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         return classLoader.getResourceAsStream(resource);
@@ -1329,25 +1330,25 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     protected void onSetUpInTransaction() throws Exception
     {
         super.onSetUpInTransaction();
-        ServiceRegistry registry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        this.workflowService = registry.getWorkflowService();
+        serviceRegistry = (ServiceRegistry) applicationContext.getBean(ServiceRegistry.SERVICE_REGISTRY);
+        this.workflowService = serviceRegistry.getWorkflowService();
         this.authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
-        this.nodeService = registry.getNodeService();
+        this.nodeService = serviceRegistry.getNodeService();
         Repository repositoryHelper = (Repository) applicationContext.getBean("repositoryHelper");
         this.companyHome = repositoryHelper.getCompanyHome();
         try
         {
-            this.transactionService = (TransactionServiceImpl) registry.getTransactionService();
+            this.transactionService = (TransactionServiceImpl) serviceRegistry.getTransactionService();
         }
         catch (ClassCastException e)
         {
             throw new AlfrescoRuntimeException("The AbstractWorkflowServiceIntegrationTest needs direct access to the TransactionServiceImpl");
         }
 
-        MutableAuthenticationService authenticationService = registry.getAuthenticationService();
-        AuthorityService authorityService = registry.getAuthorityService();
-        PersonService personService = registry.getPersonService();
-        SearchService searchService = registry.getSearchService();
+        MutableAuthenticationService authenticationService = serviceRegistry.getAuthenticationService();
+        AuthorityService authorityService = serviceRegistry.getAuthorityService();
+        PersonService personService = serviceRegistry.getPersonService();
+        SearchService searchService = serviceRegistry.getSearchService();
 
         authenticationComponent.setSystemUserAsCurrentUser();
 

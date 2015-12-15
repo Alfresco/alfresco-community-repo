@@ -19,6 +19,7 @@
 
 package org.alfresco.repo.workflow.activiti;
 
+import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,15 +29,23 @@ import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.AbstractWorkflowServiceIntegrationTest;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
+import org.alfresco.service.cmr.workflow.WorkflowDeployment;
+import org.alfresco.service.cmr.workflow.WorkflowException;
+import org.alfresco.service.cmr.workflow.WorkflowInstance;
+import org.alfresco.service.cmr.workflow.WorkflowInstanceQuery;
 import org.alfresco.service.cmr.workflow.WorkflowPath;
 import org.alfresco.service.cmr.workflow.WorkflowTask;
 import org.alfresco.service.cmr.workflow.WorkflowTaskDefinition;
@@ -53,7 +62,12 @@ import org.alfresco.util.GUID;
 public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServiceIntegrationTest
 {
     private final static String USER_RECREATED = "WFUserRecreated" + GUID.generate();
-    
+    public static final String ACTIVITI_TEST_TRANSACTION_BPMN20_XML = "activiti/testTransaction.bpmn20.xml";
+    public static final String ALFRESCO_WORKFLOW_ADHOC_BPMN20_XML = "alfresco/workflow/adhoc.bpmn20.xml";
+    public static final String ALFRESCO_WORKFLOW_REVIEW_POOLED_BPMN20_XML = "alfresco/workflow/review-pooled.bpmn20.xml";
+    public static final String ALFRESCO_WORKFLOW_PARALLEL_REVIEW_BPMN20_XML = "alfresco/workflow/parallel-review.bpmn20.xml";
+    public static final String ACTIVITI_TEST_TIMER_BPMN20_XML = "activiti/testTimer.bpmn20.xml";
+
     public void testOutcome() throws Exception
     {
         WorkflowDefinition definition = deployDefinition("alfresco/workflow/review.bpmn20.xml");
@@ -86,7 +100,7 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         Map<QName, Serializable> props = new HashMap<QName, Serializable>();
         props.put(outcomePropName, "Approve");
         workflowService.updateTask(reviewTask.getId(), props, null, null);
-        
+
         // End task and check outcome property
         WorkflowTask result = workflowService.endTask(reviewTask.getId(), null);
         Serializable outcome = result.getProperties().get(WorkflowModel.PROP_OUTCOME);
@@ -165,14 +179,17 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertNotNull(group);
         params.put(WorkflowModel.ASSOC_GROUP_ASSIGNEE, group);
         
-        nodeService.addChild(workflowPackage, addedNodeRef,  WorkflowModel.ASSOC_PACKAGE_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
-                QName.createValidLocalName((String)nodeService.getProperty(addedNodeRef, ContentModel.PROP_NAME))));
+        nodeService.addChild(workflowPackage, addedNodeRef, WorkflowModel.ASSOC_PACKAGE_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI,
+                QName.createValidLocalName((String) nodeService.getProperty(addedNodeRef, ContentModel.PROP_NAME))));
         
         WorkflowPath workflowPath = workflowService.startWorkflow(definition.getId(), params);
         assertNotNull(workflowPath);
         assertTrue(workflowPath.isActive());
         final String workflowInstanceId = workflowPath.getInstance().getId();
-        
+
+        List<WorkflowTask> pooledTasks = workflowService.getPooledTasks(GROUP);
+        assertNotNull(pooledTasks);
+
         // End start task to progress workflow
         WorkflowTask startTask = workflowService.getStartTask(workflowInstanceId);
         String startTaskId = startTask.getId();
@@ -205,24 +222,28 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         
         // Create workflow parameters
         Map<QName, Serializable> params = new HashMap<QName, Serializable>();
-        Serializable wfPackage = workflowService.createPackage(null);
+        NodeRef wfPackage = workflowService.createPackage(null);
         params.put(WorkflowModel.ASSOC_PACKAGE, wfPackage);
         NodeRef assignee = personManager.get(USER2);
         params.put(WorkflowModel.ASSOC_ASSIGNEE, assignee);  // task instance field
 
         WorkflowPath path = workflowService.startWorkflow(definition.getId(), params);
         String instanceId = path.getInstance().getId();
-        
+
         WorkflowTask startTask = workflowService.getStartTask(instanceId);
         workflowService.endTask(startTask.getId(), null);
-        
+
+        List<NodeRef> taskPackage = workflowService.getPackageContents(startTask.getId());
+        assertTrue(taskPackage.isEmpty());
+        List<NodeRef> packageContents = workflowService.getPackageContents(wfPackage);
+        assertTrue(packageContents.isEmpty());
+
         List<WorkflowTask> tasks = workflowService.getTasksForWorkflowPath(path.getId());
         assertEquals(1, tasks.size());
-        
-        
+
         // Assign task to user3
-        workflowService.updateTask(tasks.get(0).getId(), Collections.singletonMap(WorkflowModel.ASSOC_ASSIGNEE, 
-                    (Serializable) personManager.get(USER3)), null, null);
+        workflowService.updateTask(tasks.get(0).getId(), Collections.singletonMap(WorkflowModel.ASSOC_ASSIGNEE,
+                (Serializable) personManager.get(USER3)), null, null);
         
         // Authenticate as user3
         personManager.setUser(USER3);
@@ -495,7 +516,122 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
             nodeService.deleteNode(childAssoc.getChildRef());
         }
     }
-    
+
+    public void testWorkflowWithNodes() throws Exception
+    {
+        authenticationComponent.setSystemUserAsCurrentUser();
+
+        FileInfo incorrectNode = serviceRegistry.getFileFolderService().create(companyHome, "NO_WORKFLOW" + GUID.generate() + ".xml", ContentModel.TYPE_CONTENT);
+        FileInfo fileInfo = serviceRegistry.getFileFolderService().create(companyHome, "workflow" + GUID.generate() + ".xml", WorkflowModel.TYPE_WORKFLOW_DEF);
+        NodeRef workflowNode = fileInfo.getNodeRef();
+        nodeService.setProperty(workflowNode, WorkflowModel.PROP_WORKFLOW_DEF_ENGINE_ID, getEngine());
+        InputStream input = getInputStream("activiti/testDiagram.bpmn20.xml");
+        ContentWriter contentWriter = serviceRegistry.getContentService().getWriter(fileInfo.getNodeRef(), ContentModel.TYPE_CONTENT, true);
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.putContent(input);
+
+        try
+        {
+            workflowService.isDefinitionDeployed(incorrectNode.getNodeRef());
+            fail("The content type is incorrect, it should not get here");
+        }
+        catch (WorkflowException we)
+        {
+            assertTrue(we.getMessage().contains(" is not of type 'bpm:workflowDefinition'"));
+        }
+
+        boolean isDeployed = workflowService.isDefinitionDeployed(workflowNode);
+
+        try
+        {
+            workflowService.deployDefinition(incorrectNode.getNodeRef());
+            fail("The content type is incorrect, it should not get here");
+        }
+        catch (WorkflowException we)
+        {
+            assertTrue(we.getMessage().contains(" is not of type 'bpm:workflowDefinition'"));
+        }
+
+        assertFalse(workflowService.isDefinitionDeployed(workflowNode));
+        WorkflowDeployment workflowDeployment =  workflowService.deployDefinition(workflowNode);
+        assertNotNull(workflowDeployment);
+        assertTrue(workflowService.isDefinitionDeployed(workflowNode));
+
+        List<WorkflowDefinition> defs =  workflowService.getAllDefinitionsByName(workflowDeployment.getDefinition().getName());
+        assertNotNull(defs);
+        assertEquals(1, defs.size());
+
+        workflowService.undeployDefinition(workflowDeployment.getDefinition().getId());
+        assertFalse(workflowService.isDefinitionDeployed(workflowNode));
+
+        try
+        {
+            workflowService.startWorkflowFromTemplate(incorrectNode.getNodeRef());
+            fail("This method hasn't be implemented");
+        }
+        catch (UnsupportedOperationException we)
+        {
+        }
+
+        boolean multi = workflowService.isMultiTenantWorkflowDeploymentEnabled();
+        assertTrue(multi);
+    }
+
+    public void testWorkflowVarious() throws Exception
+    {
+        WorkflowDefinition definition = deployDefinition(getTestDefinitionPath());
+
+        // Start the Workflow
+        WorkflowPath path = workflowService.startWorkflow(definition.getId(), null);
+        String instanceId = path.getInstance().getId();
+
+        List<WorkflowTask> workflowTasks = workflowService.getStartTasks(Arrays.asList(instanceId), true);
+        assertNotNull(workflowTasks);
+        assertEquals(1, workflowTasks.size());
+
+        assertFalse(workflowService.hasWorkflowImage(instanceId));
+        assertNull(workflowService.getWorkflowImage(instanceId));
+
+        List<WorkflowInstance> instances = workflowService.cancelWorkflows(null);
+        assertTrue(instances.isEmpty());
+
+        WorkflowInstance wfi = workflowService.deleteWorkflow(instanceId);
+        assertEquals(instanceId, wfi.getId());
+
+        try
+        {
+            byte[] image = workflowService.getDefinitionImage(definition.getId());
+        }
+        catch (WorkflowException we )
+        {
+            assertTrue(we.getMessage().contains("Failed to retrieve workflow definition"));
+        }
+
+    }
+
+    public void testWorkflowQueries() throws Exception
+    {
+        WorkflowDefinition definition = deployDefinition(getTestDefinitionPath());
+
+        WorkflowInstanceQuery workflowInstanceQuery = new WorkflowInstanceQuery(true);
+        long active = workflowService.countWorkflows(workflowInstanceQuery);
+        assertNotNull(active);
+
+        workflowInstanceQuery.setWorkflowDefinitionId(definition.getId());
+        workflowInstanceQuery.setEngineId(getEngine());
+        active = workflowService.countWorkflows(workflowInstanceQuery);
+        assertNotNull(active);
+
+        WorkflowTaskQuery workflowTaskQuery = createWorkflowTaskQuery(WorkflowTaskState.COMPLETED);
+        long completed = workflowService.countTasks(workflowTaskQuery);
+        assertNotNull(completed);
+
+        workflowTaskQuery.setEngineId(getEngine());
+        completed = workflowService.countTasks(workflowTaskQuery);
+        assertNotNull(completed);
+    }
+
+
     @Override
     protected String getEngine()
     {
@@ -505,31 +641,31 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
     @Override
     protected String getTestDefinitionPath()
     {
-        return "activiti/testTransaction.bpmn20.xml";
+        return ACTIVITI_TEST_TRANSACTION_BPMN20_XML;
     }
 
     @Override
     protected String getAdhocDefinitionPath()
     {
-        return "alfresco/workflow/adhoc.bpmn20.xml";
+        return ALFRESCO_WORKFLOW_ADHOC_BPMN20_XML;
     }
 
     @Override
     protected String getPooledReviewDefinitionPath()
     {
-        return "alfresco/workflow/review-pooled.bpmn20.xml";
+        return ALFRESCO_WORKFLOW_REVIEW_POOLED_BPMN20_XML;
     }
     
     @Override
     protected String getParallelReviewDefinitionPath()
     {
-        return "alfresco/workflow/parallel-review.bpmn20.xml";
+        return ALFRESCO_WORKFLOW_PARALLEL_REVIEW_BPMN20_XML;
     }
 
     @Override
     protected String getTestTimerDefinitionPath() 
     {
-        return "activiti/testTimer.bpmn20.xml";
+        return ACTIVITI_TEST_TIMER_BPMN20_XML;
     }
 
     protected String getAssignmentListenerDefinitionPath()

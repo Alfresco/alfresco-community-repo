@@ -18,9 +18,11 @@
  */
 package org.alfresco.repo.security.permissions.impl;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.sf.acegisecurity.Authentication;
@@ -33,13 +35,16 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.ACLType;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionEntry;
+import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.PermissionContext;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -1718,6 +1723,23 @@ public class PermissionServiceTest extends AbstractPermissionTest
         assertEquals(36, answer.size());
     }
 
+
+    public void testSimplePermissionOnStore()
+    {
+        runAs("andy");
+
+        NodePermissionEntry entry = permissionService.getSetPermissions(testStoreRef);
+        assertNotNull(entry);
+        assertEquals(0, entry.getPermissionEntries().size());
+        assertEquals(0, permissionService.getAllSetPermissions(testStoreRef).size());
+
+        //Test Nulls
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(null, getPermission(PermissionService.READ)));
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(rootNodeRef, (PermissionReference)null));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(new NodeRef(testStoreRef, "I don't exist"), getPermission(PermissionService.READ)));
+    }
+
+
     public void testSimplePermissionOnRoot()
     {
         runAs("andy");
@@ -2732,7 +2754,18 @@ public class PermissionServiceTest extends AbstractPermissionTest
         NodeRef n1 = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, QName.createQName("{namespace}one"), ContentModel.TYPE_FOLDER).getChildRef();
         NodeRef n2 = nodeService.createNode(n1, ContentModel.ASSOC_CONTAINS, QName.createQName("{namespace}two"), ContentModel.TYPE_FOLDER).getChildRef();
 
+        Long aclID = nodeService.getNodeAclId(n1);
+        PermissionContext context = new PermissionContext(QName.createQName("{namespace}one"));
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(aclID, context, PermissionService.ALL_PERMISSIONS));
+
         runAs("andy");
+
+        //Pass null aclid
+        assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(null, context, PermissionService.ALL_PERMISSIONS));
+        context.setStoreAcl(3455l);
+        //Gets further but should now fail
+        assertEquals(AccessStatus.DENIED, permissionService.hasPermission(null, context, PermissionService.ALL_PERMISSIONS));
+
         assertFalse(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ)) == AccessStatus.ALLOWED);
         assertFalse(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ_PROPERTIES)) == AccessStatus.ALLOWED);
         assertFalse(permissionService.hasPermission(rootNodeRef, getPermission(PermissionService.READ_CHILDREN)) == AccessStatus.ALLOWED);

@@ -74,6 +74,8 @@ public class AbstractPermissionTest extends TestCase
 
     protected LocalSessionFactoryBean sessionFactory;
 
+    protected StoreRef testStoreRef;
+
     protected NodeRef rootNodeRef;
 
     protected NamespacePrefixResolver namespacePrefixResolver;
@@ -149,10 +151,10 @@ public class AbstractPermissionTest extends TestCase
         
         testTX = transactionService.getUserTransaction();
         testTX.begin();
-        
-        
-        StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());
-        rootNodeRef = nodeService.getRootNode(storeRef);
+
+
+        testStoreRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());
+        rootNodeRef = nodeService.getRootNode(testStoreRef);
 
         QName children = ContentModel.ASSOC_CHILDREN;
         QName system = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "system");

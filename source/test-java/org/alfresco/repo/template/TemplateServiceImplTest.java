@@ -19,6 +19,7 @@
 package org.alfresco.repo.template;
 
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -34,12 +35,14 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.repository.TemplateException;
 import org.alfresco.service.cmr.repository.TemplateService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * @author Kevin Roast
@@ -49,7 +52,8 @@ public class TemplateServiceImplTest extends TestCase
 {
     private static final String TEMPLATE_1 = "org/alfresco/repo/template/test_template1.ftl";
     private static final ApplicationContext ctx = ApplicationContextHelper.getApplicationContext();
-    
+    private NodeRef root_node;
+
     private TemplateService templateService;
     private NodeService nodeService;
     private TransactionService transactionService;
@@ -89,6 +93,19 @@ public class TemplateServiceImplTest extends TestCase
         DictionaryComponent dictionary = new DictionaryComponent();
         dictionary.setDictionaryDAO(dictionaryDao);
         BaseNodeServiceTest.loadModel(ctx);
+
+        transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionCallback<Object>()
+                {
+                    @SuppressWarnings("unchecked")
+                    public Object execute() throws Exception
+                    {
+                        StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "template_" + System.currentTimeMillis());
+                        root_node = nodeService.getRootNode(store);
+                        BaseNodeServiceTest.buildNodeGraph(nodeService, root_node);
+                        return null;
+                    }
+                });
     }
 
     @Override
@@ -106,29 +123,68 @@ public class TemplateServiceImplTest extends TestCase
                 @SuppressWarnings("unchecked")
                 public Object execute() throws Exception
                 {
-                    StoreRef store = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "template_" + System.currentTimeMillis());
-                    NodeRef root = nodeService.getRootNode(store);
-                    BaseNodeServiceTest.buildNodeGraph(nodeService, root);
-                    
+
                     // check the default template engine exists
                     assertNotNull(templateService.getTemplateProcessor("freemarker"));
-                    
-                    // create test model
-                    Map model = new HashMap(7, 1.0f);
-                    
-                    model.put("root", new TemplateNode(root, serviceRegistry, null));
-                    
+                    Map model = createTemplateModel(root_node);
+
                     // execute on test template
                     String output = templateService.processTemplate("freemarker", TEMPLATE_1, model);
                     
                     // check template contains the expected output
-                    assertTrue( (output.indexOf(root.getId()) != -1) );
-                    
-                    System.out.print(output);
-                    
+                    assertTrue( (output.indexOf(root_node.getId()) != -1) );
+
                     return null;
                 }                
             });
+    }
+
+    private Map createTemplateModel(NodeRef root)
+    {
+        // create test model
+        Map model = new HashMap(7, 1.0f);
+        model.put("root", new TemplateNode(root, serviceRegistry, null));
+        return model;
+    }
+
+    public void testGetTemplateProcessor()
+    {
+        assertNotNull(templateService.getTemplateProcessor(null));
+    }
+
+    public void testProcessTemplate()
+    {
+        Map model = createTemplateModel(root_node);
+        StringWriter writer = new StringWriter();
+        templateService.processTemplate(TEMPLATE_1, model, writer);
+        assertTrue( (writer.toString().indexOf(root_node.getId()) != -1) );
+
+        try
+        {
+            templateService.processTemplate("NOT_REAL", TEMPLATE_1, model, new StringWriter());
+            fail("The engine name is nonsense");
+        } catch (TemplateException expected)
+        {
+            //
+        }
+
+        try
+        {
+            templateService.processTemplate("NOT_REAL", TEMPLATE_1, model, I18NUtil.getLocale());
+            fail("The engine name is nonsense");
+        } catch (TemplateException expected)
+        {
+            //
+        }
+
+        try
+        {
+            templateService.processTemplateString("NOT_REAL", TEMPLATE_1, model, new StringWriter());
+            fail("The engine name is nonsense");
+        } catch (TemplateException expected)
+        {
+            //
+        }
     }
     
 }

@@ -201,14 +201,31 @@
                 <setInstallerVariable name="component(alfresco).parameter(remote_solr_configuration).ask" value="1" />
             </actionList>
             <ruleList>
-                <isFalse value="${component(alfrescosolr4).selected}"/>
-                <isFalse value="${component(alfrescosolr).selected}"/>
+                <ruleGroup ruleEvaluationLogic="or">
+                    <ruleList>
+                        <ruleGroup>
+                            <ruleList>
+                                <compareText logic="equals" text="${project.fullName}" value="Alfresco One Platform"/>
+                                <isFalse value="${component(alfrescosolr4).selected}"/>
+                            </ruleList>
+                        </ruleGroup>
+                        <ruleGroup>
+                            <ruleList>
+                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco One Platform"/>
+                                <compareText logic="equals" text="${alfresco_edition}" value="enterprise"/>
+                                <isFalse value="${component(alfrescosolr4).selected}"/>
+                                <isFalse value="${component(alfrescosolr).selected}"/>
+                            </ruleList>
+                        </ruleGroup>
+                    </ruleList>
+                </ruleGroup>
             </ruleList>
         </actionGroup>
 
         <!-- Sharded Solr configuration panel -->
         <setInstallerVariable name="component(alfresco).parameter(sharded_solr).ask" value="1">
             <ruleList>
+                <compareText logic="equals" text="${alfresco_edition}" value="enterprise"/>
                 <isTrue value="${component(alfrescosolr4).selected}"/>
             </ruleList>
         </setInstallerVariable>
@@ -248,7 +265,7 @@
                 <!-- Advanced mode -->
                 <actionGroup>
                     <actionList>
-                        <setInstallerVariable name="component(tomcat).parameter(tomcat_show_ports).value" value="1"/> 
+                        <setInstallerVariable name="component(tomcat).parameter(tomcat_show_ports).value" value="1"/>
                         <setInstallerVariable name="component(libreofficecomponent).parameter(libreoffice_show_ports).value" value="1">
                             <ruleList>
                                 <componentTest logic="exists" name="libreofficecomponent"/>
@@ -280,7 +297,7 @@
                             <ruleList>
                                 <componentTest logic="exists" name="postgres"/>
                             </ruleList>
-                        </setInstallerVariable> 
+                        </setInstallerVariable>
                         <setInstallerVariable name="alfresco_show_ports" value="no"/>
                         <setInstallerVariable name="project.allowComponentSelection" value="0"/>
                     </actionList>
@@ -321,7 +338,7 @@
                     <ruleList>
                         <componentTest logic="exists" name="postgresservice"/>
                     </ruleList>
-                </setInstallerVariable> 
+                </setInstallerVariable>
                 <setInstallerVariable name="component(libreofficecomponent).parameter(libreofficeservice_startup).value" value="${alfrescocustomstack_services_startup}">
                     <ruleList>
                         <componentTest logic="exists" name="libreofficecomponent"/>

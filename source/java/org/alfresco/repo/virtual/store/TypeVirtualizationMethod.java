@@ -96,15 +96,6 @@ public class TypeVirtualizationMethod extends TemplateVirtualizationMethod
         if (namespacePrefixResolver != null && filters != null)
         {
             qnamePatternFilters = asRegExpQNamePatternFilters(filters);
-            if (logger.isDebugEnabled())
-            {
-                String regExpFilters = "";
-                for (int i = 0; i < qnamePatternFilters.length; i++)
-                {
-                    regExpFilters += qnamePatternFilters[i].toString() + " | ";
-                }
-                logger.debug("Reset type regexp filters to : " + regExpFilters);
-            }
         }
         else
         {

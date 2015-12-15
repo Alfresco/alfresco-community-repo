@@ -46,9 +46,6 @@ msgstr "Alfresco RMI Port"
 msgid "Alfresco Share"
 msgstr "Alfresco Share"
 
-msgid "Alfresco SharePoint Port"
-msgstr "Alfresco SharePoint Port"
-
 msgid "Alfresco Shortcuts"
 msgstr "Alfresco Shortcuts"
 
@@ -283,9 +280,6 @@ msgstr "Choose a folder to install ${product_fullname}."
 msgid "Choose a port number for Alfresco to use to execute remote commands."
 msgstr "Choose a port number for Alfresco to use to execute remote commands."
 
-msgid "Choose a port number for the SharePoint protocol."
-msgstr "Choose a port number for the SharePoint protocol."
-
 msgid "Choose a port number for the integrated Alfresco FTP server."
 msgstr "Choose a port number for the integrated Alfresco FTP server."
 
@@ -321,6 +315,12 @@ msgstr "Select a Tomcat configuration"
 
 msgid "Select a database configuration."
 msgstr "Select a database configuration."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
+msgstr "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
 
 msgid "Specify the directory where Tomcat is located."
 msgstr "Specify the directory where Tomcat is located."
@@ -394,11 +394,8 @@ msgstr "Set the database user."
 msgid "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
 msgstr "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
 
-msgid "SharePoint"
-msgstr "SharePoint"
-
-msgid "SharePoint Protocol support."
-msgstr "SharePoint Protocol support."
+msgid "SharePoint Imitation"
+msgstr "SharePoint Imitation"
 
 msgid "Shortcuts Images"
 msgstr "Shortcuts Images"
@@ -558,9 +555,6 @@ msgstr "Couldn’t bind to the given port number. Select another Tomcat Shutdown
 
 msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
 msgstr "Use numbers only in the port configuration fields. Other characters are not permitted."
-
-msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
-msgstr "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
 
 msgid "Couldn’t bind to the server port. Make sure that ${serverName} is not running."
 msgstr "Couldn’t bind to the server port. Make sure that ${serverName} is not running."

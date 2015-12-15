@@ -26,7 +26,6 @@
            alfresco_edition=enterprise 
            alfresco_package='${alfresco.package.name}' 
            alfrescogoogledocs_component_enabled=0 
-           alfrescosharepoint_component_enabled=0 
            alfrescosolr_component_enabled=0 
            alfrescowcmqs_component_enabled=0 
         </bitrock.arguments>

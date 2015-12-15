@@ -11,6 +11,13 @@
     <parameterList>
         <booleanParameter name="alfrescosharepointmasquerade_component_enabled" ask="0" value="1" />
     </parameterList>
+    <initializationActionList>
+		<setInstallerVariable name="component(alfrescosharepointmasquerade).detailedDescription" value="Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation.&#xa;(proprietary module licensed under the Alfresco Component License)">
+			<ruleList>
+                <compareText text="${alfresco_edition}" value="community"/>
+			</ruleList>
+		</setInstallerVariable>
+    </initializationActionList>
     <folderList>
         <folder>
             <name>programfiles</name>

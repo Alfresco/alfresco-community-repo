@@ -46,9 +46,6 @@ msgstr "Alfresco RMI-Port"
 msgid "Alfresco Share"
 msgstr "Alfresco Share"
 
-msgid "Alfresco SharePoint Port"
-msgstr "Alfresco SharePoint-Port"
-
 msgid "Alfresco Shortcuts"
 msgstr "Alfresco-Tastenkombinationen"
 
@@ -283,9 +280,6 @@ msgstr "Wählen Sie einen Ordner für die Installation von ${product_fullname} a
 msgid "Choose a port number for Alfresco to use to execute remote commands."
 msgstr "Wählen Sie eine Port-Nummer, damit Alfresco Remote-Befehle ausführen kann."
 
-msgid "Choose a port number for the SharePoint protocol."
-msgstr "Wählen Sie eine Port-Nummer für das SharePoint-Protokoll."
-
 msgid "Choose a port number for the integrated Alfresco FTP server."
 msgstr "Wählen Sie eine Port-Nummer, die der integrierte Alfresco-FTP-Server verwenden kann."
 
@@ -321,6 +315,12 @@ msgstr "Wählen Sie eine Tomcat-Konfiguration aus."
 
 msgid "Select a database configuration."
 msgstr "Wählen Sie eine Datenbankkonfiguration aus."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
+msgstr "Wählen Sie dieses Modul, wenn Sie zulassen möchten, dass Anwendungen, die mit einem SharePoint-Server kommunizieren können, mit Ihrer Alfresco-Installation kommunizieren."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "Wählen Sie dieses Modul, wenn Sie zulassen möchten, dass Anwendungen, die mit einem SharePoint-Server kommunizieren können, mit Ihrer Alfresco-Installation kommunizieren&#xa;(proprietäres Modul mit Lizenz gemäß Alfresco-Komponentenlizenz)."
 
 msgid "Specify the directory where Tomcat is located."
 msgstr "Geben Sie das Verzeichnis an, in dem sich Tomcat befindet."
@@ -394,11 +394,8 @@ msgstr "Bestimmen Sie den Datenbankbenutzer."
 msgid "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
 msgstr "Setup wird die neuen Datenbanken installieren und überschreibt dabei bereits bestehende identische Datenbanken. Möchten Sie fortfahren?"
 
-msgid "SharePoint"
-msgstr "SharePoint"
-
-msgid "SharePoint Protocol support."
-msgstr "Unterstützung für SharePoint-Protokoll."
+msgid "SharePoint Imitation"
+msgstr "SharePoint Imitation"
 
 msgid "Shortcuts Images"
 msgstr "Shortcut-Symbole"
@@ -559,9 +556,6 @@ msgstr "Binden an die angegebene Portnummer nicht möglich. Bitte wählen Sie ei
 msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
 msgstr "In den Feldern für die Portkonfiguration dürfen nur Zahlen eingegeben werden. Andere Zeichen sind nicht zulässig."
 
-msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
-msgstr "Binden an die angegebene Portnummer nicht möglich. Wählen Sie einen anderen Port für das SharePoint-Protokoll aus."
-
 msgid "Couldn’t bind to the server port. Make sure that ${serverName} is not running."
 msgstr "Binden an den Serverport nicht möglich. Stellen Sie sicher, dass ${serverName} nicht gerade ausgeführt wird."
 
@@ -663,3 +657,27 @@ msgstr "Port kann nicht an die angegebene Portnummer gebunden werden."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Port kann nicht an die angegebene Portnummer gebunden werden. Dieser Port wird bereits vom ${process_binding_port}-Prozess verwendet. Bitte wählen Sie einen anderen ${serverName}-Serverport."
+
+msgid "Remote Solr configuration"
+msgstr "Solr-Remote-Konfiguration"
+
+msgid "Enter the Solr host and port to connect to Alfresco:"
+msgstr "Geben Sie den Solr-Host und -Port für die Verbindung zu Alfresco an:"
+
+msgid "Solr host:"
+msgstr "Solr-Host:"
+
+msgid "Solr SSL port:"
+msgstr "Solr-SSL-Port:"
+
+msgid "Sharded Solr installation"
+msgstr "Horizontal skalierte Solr-Installation"
+
+msgid "Are you using a sharded Solr installation?"
+msgstr "Arbeiten Sie mit einer horizontal skalierten Solr-Installation?"
+
+msgid "Yes"
+msgstr "Ja"
+
+msgid "No"
+msgstr "Nein"

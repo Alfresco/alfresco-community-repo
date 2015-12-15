@@ -46,9 +46,6 @@ msgstr "Port RMI Alfresco"
 msgid "Alfresco Share"
 msgstr "Alfresco Share"
 
-msgid "Alfresco SharePoint Port"
-msgstr "Port SharePoint Alfresco"
-
 msgid "Alfresco Shortcuts"
 msgstr "Raccourcis Alfresco"
 
@@ -283,9 +280,6 @@ msgstr "Sélectionnez un dossier d'installation de ${product_fullname}."
 msgid "Choose a port number for Alfresco to use to execute remote commands."
 msgstr "Choisissez un numéro de port dédié aux commandes à distance exécutées par Alfresco."
 
-msgid "Choose a port number for the SharePoint protocol."
-msgstr "Choisissez un numéro de port pour le protocole SharePoint."
-
 msgid "Choose a port number for the integrated Alfresco FTP server."
 msgstr "Choisissez un numéro de port pour le serveur FTP Alfresco intégré."
 
@@ -321,6 +315,12 @@ msgstr "Sélectionnez une configuration de Tomcat"
 
 msgid "Select a database configuration."
 msgstr "Sélectionnez une configuration de base de données."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
+msgstr "Sélectionnez ce module pour permettre aux applications capables de communiquer avec un serveur SharePoint de communiquer avec votre installation Alfresco."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "Sélectionnez ce module pour permettre aux applications capables de communiquer avec un serveur SharePoint de communiquer avec votre installation Alfresco&#xa;(module propriétaire sous licence du composant Alfresco)."
 
 msgid "Specify the directory where Tomcat is located."
 msgstr "Spécifiez le répertoire dans lequel est situé Tomcat."
@@ -394,11 +394,8 @@ msgstr "Définissez l'utilisateur de la base de données."
 msgid "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
 msgstr "Le processus d'installation va tenter d'installer de nouvelles bases de données et écraser les éventuels doublons. Souhaitez-vous continuer ?"
 
-msgid "SharePoint"
-msgstr "SharePoint"
-
-msgid "SharePoint Protocol support."
-msgstr "Prise en charge du protocole SharePoint."
+msgid "SharePoint Imitation"
+msgstr "SharePoint Imitation"
 
 msgid "Shortcuts Images"
 msgstr "Images des raccourcis"
@@ -559,9 +556,6 @@ msgstr "Liaison au numéro de port indiqué impossible. Sélectionnez un autre p
 msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
 msgstr "Utilisez uniquement des chiffres dans les champs de configuration des ports. Les autres caractères ne sont pas autorisés."
 
-msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
-msgstr "Liaison au numéro de port indiqué impossible. Sélectionnez un autre port pour le protocole SharePoint."
-
 msgid "Couldn’t bind to the server port. Make sure that ${serverName} is not running."
 msgstr "Liaison au port du serveur impossible. Assurez-vous que ${serverName} n'est pas en cours d'exécution."
 
@@ -663,3 +657,27 @@ msgstr "Liaison au numéro de port indiqué impossible."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Liaison au numéro de port indiqué impossible. Ce port est déjà utilisé par le processus ${process_binding_port}. Sélectionnez un autre port de serveur ${serverName}."
+
+msgid "Remote Solr configuration"
+msgstr "Configuration Solr à distance"
+
+msgid "Enter the Solr host and port to connect to Alfresco:"
+msgstr "Entrez l'hôte et le port Solr pour la connexion à Alfresco :"
+
+msgid "Solr host:"
+msgstr "Hôte Solr :"
+
+msgid "Solr SSL port:"
+msgstr "Port SSL Solr :"
+
+msgid "Sharded Solr installation"
+msgstr "Installation Solr avec partitionnement"
+
+msgid "Are you using a sharded Solr installation?"
+msgstr "Utilisez-vous une installation Solr avec partitionnement ?"
+
+msgid "Yes"
+msgstr "Oui"
+
+msgid "No"
+msgstr "Non"

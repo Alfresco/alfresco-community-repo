@@ -46,9 +46,6 @@ msgstr "Puerto RMI de Alfresco"
 msgid "Alfresco Share"
 msgstr "Alfresco Share"
 
-msgid "Alfresco SharePoint Port"
-msgstr "Puerto de SharePoint en Alfresco"
-
 msgid "Alfresco Shortcuts"
 msgstr "Accesos directos de Alfresco"
 
@@ -283,9 +280,6 @@ msgstr "Elija una carpeta para instalar ${product_fullname}."
 msgid "Choose a port number for Alfresco to use to execute remote commands."
 msgstr "Elija un número de puerto que utilizará Alfresco para ejecutar comandos remotos."
 
-msgid "Choose a port number for the SharePoint protocol."
-msgstr "Elija un número de puerto para el protocolo SharePoint."
-
 msgid "Choose a port number for the integrated Alfresco FTP server."
 msgstr "Elija un número de puerto para el servidor FTP integrado de Alfresco."
 
@@ -321,6 +315,12 @@ msgstr "Selecciones una configuración de Tomcat."
 
 msgid "Select a database configuration."
 msgstr "Seleccione una configuración de base de datos."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
+msgstr "Seleccione este módulo para que las aplicaciones que pueden hablar con un servidor de SharePoint hablen con su instalación de Alfresco."
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "Seleccione este módulo para que las aplicaciones que pueden hablar con un servidor de SharePoint hablen con su instalación de Alfresco&#xa;(módulo de propiedad con licencia bajo la licencia de componentes de Alfresco)."
 
 msgid "Specify the directory where Tomcat is located."
 msgstr "Especifique el directorio donde se encuentra Tomcat."
@@ -394,11 +394,8 @@ msgstr "Establezca el usuario de la base de datos."
 msgid "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
 msgstr "El programa de instalación intentará instalar nuevas bases de datos y sobrescribirá cualquier datos duplicado.  ¿Desea continuar?"
 
-msgid "SharePoint"
-msgstr "SharePoint"
-
-msgid "SharePoint Protocol support."
-msgstr "Soporte del protocolo SharePoint."
+msgid "SharePoint Imitation"
+msgstr "SharePoint Imitation"
 
 msgid "Shortcuts Images"
 msgstr "Imágenes de accesos directos"
@@ -559,9 +556,6 @@ msgstr "No se pudo unir con el número de puerto dado. Seleccione otro puerto de
 msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
 msgstr "Utilice solo números en los campos de configuración de puertos. No se permiten otros caracteres."
 
-msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
-msgstr "No se pudo unir con el número de puerto dado. Seleccione otro puerto para el protocolo SharePoint."
-
 msgid "Couldn’t bind to the server port. Make sure that ${serverName} is not running."
 msgstr "No se pudo unir con el puerto de servidor. Asegúrese de que ${serverName} no se está ejecutando."
 
@@ -663,3 +657,27 @@ msgstr "No se puede unir con el número de puerto dado."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "No se puede unir con el número de puerto dado. Este puerto ya lo está utilizando el proceso ${process_binding_port}. Seleccione otro puerto de servidor ${serverName}."
+
+msgid "Remote Solr configuration"
+msgstr "Configuración remota de Solr"
+
+msgid "Enter the Solr host and port to connect to Alfresco:"
+msgstr "Introduzca el puerto y host de Solr para conectar a Alfresco:"
+
+msgid "Solr host:"
+msgstr "Host de Solr:"
+
+msgid "Solr SSL port:"
+msgstr "Puerto SSL de Solr:"
+
+msgid "Sharded Solr installation"
+msgstr "Instalación particionada de Solr"
+
+msgid "Are you using a sharded Solr installation?"
+msgstr "¿Está utilizando una instalación particionada de Solr?"
+
+msgid "Yes"
+msgstr "Sí"
+
+msgid "No"
+msgstr "No"

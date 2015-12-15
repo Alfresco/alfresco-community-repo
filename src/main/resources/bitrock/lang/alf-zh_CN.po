@@ -46,9 +46,6 @@ msgstr "Alfresco RMI 端口"
 msgid "Alfresco Share"
 msgstr "Alfresco Share"
 
-msgid "Alfresco SharePoint Port"
-msgstr "Alfresco SharePoint 端口"
-
 msgid "Alfresco Shortcuts"
 msgstr "Alfresco 快捷方式"
 
@@ -283,9 +280,6 @@ msgstr "请选择要安装 ${product_fullname} 的文件夹。"
 msgid "Choose a port number for Alfresco to use to execute remote commands."
 msgstr "请选择 Alfresco 执行远程命令使用的端口号。"
 
-msgid "Choose a port number for the SharePoint protocol."
-msgstr "请选择 SharePoint 协议的端口号。"
-
 msgid "Choose a port number for the integrated Alfresco FTP server."
 msgstr "请选择集成式 Alfresco FTP 服务器的端口号。"
 
@@ -321,6 +315,12 @@ msgstr "请选择 Tomcat 配置"
 
 msgid "Select a database configuration."
 msgstr "请选择数据库配置。"
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
+msgstr "选择此模块后，可与 SharePoint 服务器通信的应用程序将能与您的 Alfresco 安装通信。"
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "选择此模块后，可与 SharePoint 服务器通信的应用程序将能与您的 Alfresco 安装通信&#xa;（Alfresco 组件许可证授权的属性模块）。"
 
 msgid "Specify the directory where Tomcat is located."
 msgstr "请指定 Tomcat 所在的目录。"
@@ -394,11 +394,8 @@ msgstr "设置数据库用户。"
 msgid "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
 msgstr "安装程序将尝试安装新数据库，并覆盖任何重复。是否继续？"
 
-msgid "SharePoint"
-msgstr "SharePoint"
-
-msgid "SharePoint Protocol support."
-msgstr "SharePoint 协议支持。"
+msgid "SharePoint Imitation"
+msgstr "SharePoint Imitation"
 
 msgid "Shortcuts Images"
 msgstr "快捷方式图像"
@@ -559,9 +556,6 @@ msgstr "无法捆绑到给定的端口号。请选择其他 Tomcat 关闭端口�
 msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
 msgstr "端口配置字段中只能出现数字。 不允许出现其他字符。"
 
-msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
-msgstr "无法捆绑到给定的端口号。请选择其他 SharePoint 协议端口。"
-
 msgid "Couldn’t bind to the server port. Make sure that ${serverName} is not running."
 msgstr "无法捆绑到服务器端口。请确保 ${serverName} 没有在运行。"
 
@@ -663,3 +657,27 @@ msgstr "无法绑定提供的服务器端口。"
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "无法绑定提供的服务器端口。此端口已被 ${process_binding_port} 进程使用。请选择其他 ${serverName} 服务器端口。"
+
+msgid "Remote Solr configuration"
+msgstr "远程 Solr 配置"
+
+msgid "Enter the Solr host and port to connect to Alfresco:"
+msgstr "输入 Solr 主机和端口以连接至 Alfresco："
+
+msgid "Solr host:"
+msgstr "Solr 主机："
+
+msgid "Solr SSL port:"
+msgstr "Solr SSL 端口："
+
+msgid "Sharded Solr installation"
+msgstr "安装 Solr 分片"
+
+msgid "Are you using a sharded Solr installation?"
+msgstr "您是否安装使用了 Solr 分片？"
+
+msgid "Yes"
+msgstr "是"
+
+msgid "No"
+msgstr "否"

@@ -46,9 +46,6 @@ msgstr "Alfresco RMI のポート"
 msgid "Alfresco Share"
 msgstr "Alfresco Share"
 
-msgid "Alfresco SharePoint Port"
-msgstr "Alfresco SharePoint のポート"
-
 msgid "Alfresco Shortcuts"
 msgstr "Alfresco のショートカット"
 
@@ -283,9 +280,6 @@ msgstr "${product_fullname} をインストールするフォルダを選択し�
 msgid "Choose a port number for Alfresco to use to execute remote commands."
 msgstr "リモートコマンドの実行に使用する Alfresco 用ポート番号を選択してください。"
 
-msgid "Choose a port number for the SharePoint protocol."
-msgstr "SharePoint プロトコル用のポート番号を選択してください。"
-
 msgid "Choose a port number for the integrated Alfresco FTP server."
 msgstr "統合された Alfresco FTP サーバーに使用するポート番号を選択してください。"
 
@@ -321,6 +315,12 @@ msgstr "Tomcat の設定を選択してください。"
 
 msgid "Select a database configuration."
 msgstr "データベースの設定を選択してください。"
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation."
+msgstr "インストールされている Alfresco に SharePoint サーバー経由でアクセスすることをアプリケーションに許可する場合は、このモジュールを選択します。"
+
+msgid "Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation&#xa;(proprietary module licensed under the Alfresco Component License)."
+msgstr "インストールされている Alfresco に SharePoint サーバー経由でアクセスすることをアプリケーションに許可する場合は、&#xa;このモジュールを選択します (Alfresco コンポーネントライセンスの下でライセンスされた専用モジュール)。"
 
 msgid "Specify the directory where Tomcat is located."
 msgstr "Tomcat があるディレクトリを指定してください。"
@@ -394,11 +394,8 @@ msgstr "データベースユーザーを設定してください。"
 msgid "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
 msgstr "新しいデータベースがインストールされ、同じ名前の既存のデータベースは上書きされます。操作を続けますか?"
 
-msgid "SharePoint"
-msgstr "SharePoint"
-
-msgid "SharePoint Protocol support."
-msgstr "SharePoint プロトコルに対応しています。"
+msgid "SharePoint Imitation"
+msgstr "SharePoint Imitation"
 
 msgid "Shortcuts Images"
 msgstr "ショートカット画像"
@@ -559,9 +556,6 @@ msgstr "指定したポート番号にバインドできません。Tomcat の�
 msgid "Use numbers only in the port configuration fields. Other characters are not permitted."
 msgstr "ポートの設定フィールドでは数字だけを使用してください。 他の文字は使用できません。"
 
-msgid "Couldn’t bind to the given port number. Select another port for the SharePoint Protocol."
-msgstr "指定したポート番号にバインドできません。SharePoint プロトコル用に別のポートを選択してください。"
-
 msgid "Couldn’t bind to the server port. Make sure that ${serverName} is not running."
 msgstr "サーバー用ポートにバインドできませんでした。${serverName} が稼働していないことを確認してください。"
 
@@ -663,3 +657,27 @@ msgstr "指定した番号にバインドできません。"
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "指定した番号にバインドできません。このポートはすでに ${process_binding_port} プロセスで使用されています。別の ${serverName} サーバー用ポートを選択してください。"
+
+msgid "Remote Solr configuration"
+msgstr "リモート Solr の設定"
+
+msgid "Enter the Solr host and port to connect to Alfresco:"
+msgstr "Alfresco に接続する Solr ホストとポートを入力してください:"
+
+msgid "Solr host:"
+msgstr "Solr ホスト:"
+
+msgid "Solr SSL port:"
+msgstr "Solr の SSL ポート:"
+
+msgid "Sharded Solr installation"
+msgstr "シャード化された Solr インストール"
+
+msgid "Are you using a sharded Solr installation?"
+msgstr "シャード化された Solr インストールを使いますか?"
+
+msgid "Yes"
+msgstr "はい"
+
+msgid "No"
+msgstr "いいえ"

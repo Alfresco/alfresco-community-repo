@@ -133,7 +133,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         ppOne.put(ContentModel.PROP_EMAIL, email);
         ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
         NodeRef person = personService.createPerson(ppOne);
-        String avatarUrl = makeAvatar(person);
+        String avatarUrl = makeAvatar(nodeService,person);
 
         // Create expected user properties
         HashMap<String, String> properties = new HashMap<String, String>(4);
@@ -511,7 +511,7 @@ public class InvitationWebScriptTest extends BaseWebScriptTest
         }
     }
 
-    private String makeAvatar(final NodeRef person)
+    public static String makeAvatar(final NodeService nodeService, final NodeRef person)
     {
         nodeService.addAspect(person, ContentModel.ASPECT_PREFERENCES, null);
         ChildAssociationRef assoc = nodeService.createNode(person, ContentModel.ASSOC_PREFERENCE_IMAGE, avatarQName,

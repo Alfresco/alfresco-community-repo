@@ -127,7 +127,12 @@ public class WorkflowApiClient extends PublicApiClient
             JSONObject entry = (JSONObject) response.getJsonResponse().get("entry");
             return ProcessDefinitionParser.INSTANCE.parseEntry(entry);
         }
-        
+
+        public HttpResponse findImageById(String processDefinitionId) throws PublicApiException
+        {
+            return getSingle("process-definitions", processDefinitionId, "image", null, "Failed to get process definition");
+        }
+
         public JSONObject findStartFormModel(String processDefinitionId) throws PublicApiException
         {
             HttpResponse response = getAll("process-definitions", processDefinitionId, "start-form-model", null, null,

@@ -657,7 +657,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertNotNull(processList);
             assertEquals(3, processList.getList().size());
             assertNull(processList.getList().get(0).getProcessVariables());
-            
+
             paramMap = new HashMap<String, String>();
             paramMap.put("where", "(processDefinitionKey = 'activitiAdhoc2')");
             processList = processesClient.getProcesses(paramMap);
@@ -737,7 +737,31 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             processList = processesClient.getProcesses(paramMap);
             assertNotNull(processList);
             assertEquals(3, processList.getList().size());
-            
+
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(variables/bpm_priority > 'd:int 1')");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(0, processList.getList().size());
+
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(variables/bpm_priority >= 'd:int 1')");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(variables/bpm_priority < 'd:int 5')");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+
+            paramMap = new HashMap<String, String>();
+            paramMap.put("where", "(variables/bpm_priority <= 'd:int 4')");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+            assertEquals(3, processList.getList().size());
+
             paramMap = new HashMap<String, String>();
             paramMap.put("where", "(variables/bpm_priority = 'd_int 5')");
             processList = processesClient.getProcesses(paramMap);
@@ -994,7 +1018,31 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             assertEquals(process2.getId(), processList.getList().get(0).getId());
             assertEquals(process1.getId(), processList.getList().get(1).getId());
             assertEquals(process3.getId(), processList.getList().get(2).getId());
-            
+
+            paramMap.put("orderBy", "startedAt ASC");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+
+            paramMap.put("orderBy", "endedAt ASC");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+
+            paramMap.put("orderBy", "durationInMillis ASC");
+            processList = processesClient.getProcesses(paramMap);
+            assertNotNull(processList);
+
+            // sort on more than 1.
+            paramMap.put("orderBy", "startedAt, endedAt");
+            try
+            {
+                processList = processesClient.getProcesses(paramMap);
+                fail();
+            }
+            catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
+            }
+
             // sort on non existing key
             paramMap.put("orderBy", "businessKey2 ASC");
             try 

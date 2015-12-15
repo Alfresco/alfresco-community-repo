@@ -6,6 +6,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 
 public abstract class EnterpriseTestFixture extends AbstractTestFixture
 {
+	public static final String WITH_AVATAR = "withAvatar"; //If you set PersonInfo instantmsg to WITH_AVATAR, an avatar gets created.
     public EnterpriseTestFixture(String[] configLocations, String[] classLocations, int port, String contextPath,
     		String servletName, int numMembersPerSite, boolean cleanup)
     {
@@ -37,10 +38,10 @@ public abstract class EnterpriseTestFixture extends AbstractTestFixture
 
     	addPerson(new PersonInfo("David", "Smith", "david.smith", "password", null, "skype", "location", "telephone", "mob", "instant", "google"));
     	addPerson(new PersonInfo("Bob", "Jones", "bob.jones", "password", null, "skype", "location", "telephone", "mob", "instant", "google"));
-    	addPerson(new PersonInfo("Bill", "Grainger", "bill.grainger", "password", null, "skype", "location", "telephone", "mob", "instant", "google"));
+    	addPerson(new PersonInfo("Bill", "Grainger", "bill.grainger", "password", null, "skype", "location", "telephone", "mob", WITH_AVATAR, "google"));
     	addPerson(new PersonInfo("Jill", "Fry", "jill.fry", "password", null, "skype", "location", "telephone", "mob", "instant", "google"));
-    	addPerson(new PersonInfo("Elvis", "Presley", "elvis.presley", "password", null, "skype", "location", "telephone", "mob", "instant", "google"));
-    	addPerson(new PersonInfo("John", "Lennon", "john.lennon", "password", null, "skype", "location", "telephone", "mob", "instant", "google"));
+    	addPerson(new PersonInfo("Elvis", "Presley", "elvis.presley", "password", null, "skype", "location", "telephone", "mob", WITH_AVATAR, "google"));
+    	addPerson(new PersonInfo("John", "Lennon", "john.lennon", "password", null, "skype", "location", "telephone", "mob", WITH_AVATAR, "google"));
     	addPerson(new PersonInfo("George", "Harrison", "george.harrison", "password", null, "skype", "location", "telephone", "mob", "instant", "google"));
     	addPerson(new PersonInfo("David", "Bowie", "david.bowie", "password", null, "skype", "location", "telephone", "mob", "instant", "google"));
     	addPerson(new PersonInfo("Ford", "Prefect", "ford.prefect", "password", null, "skype", "location", "telephone", "mob", "instant", "google"));

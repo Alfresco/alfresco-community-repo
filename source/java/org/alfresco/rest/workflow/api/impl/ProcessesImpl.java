@@ -62,7 +62,6 @@ import org.alfresco.repo.workflow.WorkflowPropertyHandlerRegistry;
 import org.alfresco.repo.workflow.WorkflowQNameConverter;
 import org.alfresco.repo.workflow.activiti.ActivitiConstants;
 import org.alfresco.repo.workflow.activiti.ActivitiNodeConverter;
-import org.alfresco.repo.workflow.activiti.ActivitiTypeConverter;
 import org.alfresco.repo.workflow.activiti.ActivitiUtil;
 import org.alfresco.repo.workflow.activiti.properties.ActivitiPropertyConverter;
 import org.alfresco.rest.antlr.WhereClauseParser;
@@ -141,7 +140,6 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
     protected WorkflowPropertyHandlerRegistry handlerRegistry;
     protected WorkflowAuthorityManager authorityManager;
     protected ActivitiPropertyConverter propertyConverter;
-    protected ActivitiTypeConverter typeConverter;
     
     public void setAuthorityDAO(AuthorityDAO authorityDAO)
     {
@@ -255,15 +253,6 @@ public class ProcessesImpl extends WorkflowRestImpl implements Processes
             propertyConverter = new ActivitiPropertyConverter(getActivitiUtil(), getWorkflowFactory(), getHandlerRegistry(), getAuthorityManager(), messageService, getNodeConverter());
         }
         return propertyConverter;
-    }
-        
-    protected ActivitiTypeConverter getTypeConverter()
-    {
-        if (typeConverter == null)
-        {
-            typeConverter = new ActivitiTypeConverter(activitiProcessEngine, getWorkflowFactory(), getPropertyConverter(), deployWorkflowsInTenant);
-        }
-        return typeConverter;
     }
 
     @Override

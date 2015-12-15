@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
+    
+    <bean id="aosDataModelMappingConfiguration" class="org.alfresco.enterprise.repo.officeservices.metadata.StandardDataModelMappingConfiguration" parent="aosBaseDataModelMappingConfiguration">
+        <!-- Use this includedTypesPatterns property to list patterns for Types to activate property mapping for -->
+        <property name="includedTypesPatterns">
+            <list merge="true">
+                <value>.*</value>
+            </list>
+        </property>
+        <!-- Use this excludedTypesPatterns property to exclude specific types from mapping that have been included by the includedTypesPatterns -->
+        <!-- Make sure to keep the merge="true" attribute to exclude some system types -->
+        <!--
+        <property name="excludedTypesPatterns">
+            <list merge="true">
+                <value>\Q{http://www.alfresco.org/model/sample/1.0}sampleType\E</value>
+                <value>\Q{http://www.alfresco.org/model/another-sample/1.0}\E.*</value>
+            </list>
+        </property>
+        -->
+        <!-- By default, the base mapping configuration includes some aspects from the contentModel. You can either replace this list (merge="false") with your -->
+        <!-- own list of aspects or extend this list (merge="true") with additional aspects -->
+        <!--
+        <property name="includedAspectsPatterns">
+            <list merge="true">
+                <value>\Q{http://www.alfresco.org/model/sample/1.0}\E.*</value>
+            </list>
+        </property>
+        -->
+        <!-- Use this excludedAspectsPatterns property to exclude specific aspects from mapping that have been included by the includedAspectsPatterns -->
+        <!-- Make sure to keep the merge="true" attribute to exclude some system aspects -->
+        <!--
+        <property name="excludedAspectsPatterns">
+            <list merge="true">
+                <value>\Q{http://www.alfresco.org/model/sample/1.0}sampleAspect\E</value>
+                <value>\Q{http://www.alfresco.org/model/another-sample/1.0}\E.*</value>
+            </list>
+        </property>
+        -->
+        <!-- By default, the base mapping configuration includes all properties with the catch-all wildcard '.*'. You can overwrite this to only include specific properties -->
+        <!--
+        <property name="includedPropertiesPatterns">
+            <list>
+                <value>\Q{http://www.alfresco.org/model/sample/1.0}\E.*</value>
+            </list>
+        </property>
+        -->
+        <!-- Use this excludedPropertiesPatterns property to exclude specific properties from mapping that have been included by the includedPropertiesPatterns -->
+        <!-- Make sure to keep the merge="true" attribute to exclude some system properties -->
+        <!--
+        <property name="excludedPropertiesPatterns">
+            <list merge="true">
+                <value>\Q{http://www.alfresco.org/model/sample/1.0}confidentialData\E</value>
+            </list>
+        </property>
+        -->
+        <!-- Use this includedInstantiableTypesPatterns property to define a list of types users have to choose from when creating a new document with the "Save As" dialog -->
+        <!-- If this property is not set or empty, new documents are always created with the default type for new documents -->
+        <!--
+        <property name="includedInstantiableTypesPatterns">
+            <list>
+                <value>\Q{http://www.alfresco.org/model/sample/1.0}\E.*</value>
+            </list>
+        </property>
+        -->
+        <!-- Use this excludedInstantiableTypesPatterns property to exclude specific types from the list of instantiable types that have been included by the includedInstantiableTypesPatterns -->
+        <!--
+        <property name="excludedInstantiableTypesPatterns">
+            <list>
+            </list>
+        </property>
+        -->
+    </bean>
+   
+</beans>

@@ -274,10 +274,6 @@ img.exe=${'${img.root}'}\\convert.exe</value>
                             <value>${application_server_domain}</value>
                         </substitution>
                         <substitution>
-                            <pattern>@@BITROCK_SHAREPOINT_PORT@@</pattern>
-                            <value>${alfresco_sharepoint_port}</value>
-                        </substitution>
-                        <substitution>
                             <pattern>@@BITROCK_QUICKR_PORT@@</pattern>
                             <value>${alfresco_quickr_port}</value>
                         </substitution>

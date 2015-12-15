@@ -38,8 +38,11 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
 import org.alfresco.repo.security.permissions.PermissionReference;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.repo.virtual.ActualEnvironment;
+import org.alfresco.repo.virtual.AlfrescoEnviroment;
 import org.alfresco.repo.virtual.VirtualContentModel;
 import org.alfresco.repo.virtual.VirtualizationException;
 import org.alfresco.repo.virtual.page.PageCollationException;
@@ -68,6 +71,7 @@ import org.alfresco.repo.virtual.template.PropertyValueConstraint;
 import org.alfresco.repo.virtual.template.VirtualFolderDefinition;
 import org.alfresco.repo.virtual.template.VirtualQuery;
 import org.alfresco.repo.virtual.template.VirtualQueryConstraint;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -82,9 +86,13 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionResolver
 {
+    private static Log logger = LogFactory.getLog(VirtualStoreImpl.class);
+
     private static final String VIRTUAL_FOLDER_DEFINITION = "virtualfolder.definition";
 
     private List<VirtualizationMethod> virtualizationMethods = null;
@@ -121,6 +129,20 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
     @Override
     public boolean canVirtualize(NodeRef nodeRef) throws VirtualizationException
     {
+        String runAsUser = AuthenticationUtil.getRunAsUser();
+        if (runAsUser == null)
+        {
+            if (logger.isTraceEnabled())
+            {
+
+                RuntimeException stackTracingException = new RuntimeException("Stack trace.");
+                logger.trace("Virtualization check call in unauthenticated-context - stack trace follows:",
+                             stackTracingException);
+            }
+
+            return false;
+        }
+
         if (Reference.isReference(nodeRef))
         {
             return true;
@@ -156,8 +178,8 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
         }
     }
 
-    private NodeRef nodeProtocolNodeRef(NodeRef nodeRef)
-                throws ProtocolMethodException, ReferenceParseException, ReferenceEncodingException
+    private NodeRef nodeProtocolNodeRef(NodeRef nodeRef) throws ProtocolMethodException, ReferenceParseException,
+                ReferenceEncodingException
     {
         NodeRef theNodeRef = nodeRef;
         if (Reference.isReference(nodeRef))
@@ -373,23 +395,40 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
         return childReferences;
     }
 
-    public VirtualFolderDefinition resolveVirtualFolderDefinition(Reference reference) throws ProtocolMethodException
+    public VirtualFolderDefinition resolveVirtualFolderDefinition(final Reference reference)
+                throws VirtualizationException
     {
-        NodeRef key = reference.toNodeRef();
-        Map<NodeRef, VirtualFolderDefinition> definitionsCache = TransactionalResourceHelper
-                    .getMap(VIRTUAL_FOLDER_DEFINITION);
+        ServiceRegistry serviceRegistry = ((AlfrescoEnviroment) environment).getServiceRegistry();
+        RetryingTransactionHelper transactionHelper = serviceRegistry.getRetryingTransactionHelper();
 
-        VirtualFolderDefinition virtualFolderDefinition = definitionsCache.get(key);
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<VirtualFolderDefinition>()
+                                                 {
 
-        if (virtualFolderDefinition == null)
-        {
+                                                     @Override
+                                                     public VirtualFolderDefinition execute() throws Throwable
+                                                     {
+                                                         NodeRef key = reference.toNodeRef();
 
-            virtualFolderDefinition = reference.execute(new ApplyTemplateMethod(environment));
-            definitionsCache.put(key,
-                                 virtualFolderDefinition);
-        }
+                                                         Map<NodeRef, VirtualFolderDefinition> definitionsCache = TransactionalResourceHelper
+                                                                     .getMap(VIRTUAL_FOLDER_DEFINITION);
 
-        return virtualFolderDefinition;
+                                                         VirtualFolderDefinition virtualFolderDefinition = definitionsCache
+                                                                     .get(key);
+
+                                                         if (virtualFolderDefinition == null)
+                                                         {
+
+                                                             virtualFolderDefinition = reference
+                                                                         .execute(new ApplyTemplateMethod(environment));
+                                                             definitionsCache.put(key,
+                                                                                  virtualFolderDefinition);
+                                                         }
+
+                                                         return virtualFolderDefinition;
+                                                     }
+                                                 },
+                                                 true,
+                                                 false);
     }
 
     @Override
@@ -397,7 +436,7 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
                 final boolean folders, final String pattern, final Set<QName> searchTypeQNames,
                 final Set<QName> ignoreTypeQNames, final Set<QName> ignoreAspectQNames,
                 final List<Pair<QName, Boolean>> sortProps, final PagingRequest pagingRequest)
-                            throws VirtualizationException
+                throws VirtualizationException
     {
 
         VirtualFolderDefinition structure = resolveVirtualFolderDefinition(ref);
@@ -471,8 +510,8 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
     }
 
     @Override
-    public PagingResults<Reference> list(Reference ref, boolean actual, boolean virtual, boolean files, boolean folders,
-                String pattern, Set<QName> ignoreTypeQNames, Set<QName> ignoreAspectQNames,
+    public PagingResults<Reference> list(Reference ref, boolean actual, boolean virtual, boolean files,
+                boolean folders, String pattern, Set<QName> ignoreTypeQNames, Set<QName> ignoreAspectQNames,
                 List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest) throws VirtualizationException
     {
         return list(ref,

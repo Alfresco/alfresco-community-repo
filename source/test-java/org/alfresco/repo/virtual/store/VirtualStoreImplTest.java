@@ -19,8 +19,18 @@
 
 package org.alfresco.repo.virtual.store;
 
-import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
+import java.nio.charset.StandardCharsets;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.virtual.VirtualizationException;
+import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
+import org.alfresco.repo.virtual.ref.Protocols;
+import org.alfresco.repo.virtual.ref.Reference;
+import org.alfresco.repo.virtual.ref.VanillaProtocol;
+import org.alfresco.repo.virtual.ref.VirtualProtocol;
+import org.alfresco.repo.virtual.template.ApplyTemplateMethodTest;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -42,6 +52,69 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         virtualStore = ctx.getBean("virtualStore",
                                    VirtualStoreImpl.class);
 
+    }
+
+    public void testResolveVirtualFolderDefinition_inactiveSynchronization() throws Exception
+    {
+        txnTamperHint = "VirtualStoreImplTest::testResolveVirtualFolderDefinition_inactiveSynchronization";
+        txn.rollback();
+        NodeRef ntVirtualizedFolder = null;
+        NodeRef jsonTemplateContent = null;
+        try
+        {
+            final String templateName = "template1.json";
+            jsonTemplateContent = nodeService.getChildByName(companyHomeNodeRef,
+                                                             ContentModel.ASSOC_CONTAINS,
+                                                             templateName);
+            if (jsonTemplateContent == null)
+            {
+                ChildAssociationRef templateChild = createContent(companyHomeNodeRef,
+                                                                  templateName,
+                                                                  ApplyTemplateMethodTest.class
+                                                                              .getResourceAsStream(TEST_TEMPLATE_1_JSON_NAME),
+                                                                  MimetypeMap.MIMETYPE_JSON,
+                                                                  StandardCharsets.UTF_8.name());
+                jsonTemplateContent = templateChild.getChildRef();
+            }
+
+            final String folderName = "testCanVirtualize_nonTransactional";
+            ntVirtualizedFolder = nodeService.getChildByName(companyHomeNodeRef,
+                                                             ContentModel.ASSOC_CONTAINS,
+                                                             folderName);
+            if (ntVirtualizedFolder == null)
+            {
+                ChildAssociationRef folderChild = createFolder(companyHomeNodeRef,
+                                                               folderName);
+                ntVirtualizedFolder = folderChild.getChildRef();
+            }
+
+            Reference aVanillaRef = ((VanillaProtocol) Protocols.VANILLA.protocol)
+                        .newReference(VANILLA_PROCESSOR_JS_CLASSPATH,
+                                      "/1",
+                                      ntVirtualizedFolder,
+                                      jsonTemplateContent);
+
+            // We use transactional-synchronized resources for caching. In
+            // non-transactional contexts they might not be available.
+            virtualStore.resolveVirtualFolderDefinition(aVanillaRef);
+
+        }
+        finally
+        {
+
+            txn = transactionService.getUserTransaction();
+            txn.begin();
+            if (ntVirtualizedFolder != null)
+            {
+                nodeService.deleteNode(ntVirtualizedFolder);
+            }
+
+            if (jsonTemplateContent != null)
+            {
+                nodeService.deleteNode(jsonTemplateContent);
+            }
+            txn.commit();
+        }
     }
 
     @Test
@@ -71,46 +144,77 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         assertEquals(false,
                      canVirtualize);
     }
-    
+
     private String asTypedPermission(String perm)
     {
-        return virtualStore.getUserPermissions().getPermissionTypeQName()+"."+perm;
+        return virtualStore.getUserPermissions().getPermissionTypeQName() + "." + perm;
     }
-    
-    private void assertHasQueryNodePermission(AccessStatus accessStatus,String perm)
+
+    private void assertHasQueryNodePermission(AccessStatus accessStatus, String perm)
     {
         VirtualUserPermissions virtualUserPermissions = virtualStore.getUserPermissions();
-        
-        assertEquals(AccessStatus.DENIED,virtualUserPermissions.hasQueryNodePermission(perm));
-        assertEquals(AccessStatus.DENIED,virtualUserPermissions.hasQueryNodePermission(asTypedPermission(perm)));
+
+        assertEquals(AccessStatus.DENIED,
+                     virtualUserPermissions.hasQueryNodePermission(perm));
+        assertEquals(AccessStatus.DENIED,
+                     virtualUserPermissions.hasQueryNodePermission(asTypedPermission(perm)));
     }
-    
-    private void assertHasVirtualNodePermission(AccessStatus accessStatus,String perm,boolean readonly)
+
+    private void assertHasVirtualNodePermission(AccessStatus accessStatus, String perm, boolean readonly)
     {
         VirtualUserPermissions virtualUserPermissions = virtualStore.getUserPermissions();
-        
-        assertEquals(AccessStatus.DENIED,virtualUserPermissions.hasVirtualNodePermission(perm,readonly));
-        assertEquals(AccessStatus.DENIED,virtualUserPermissions.hasVirtualNodePermission(asTypedPermission(perm),readonly));
+
+        assertEquals(AccessStatus.DENIED,
+                     virtualUserPermissions.hasVirtualNodePermission(perm,
+                                                                     readonly));
+        assertEquals(AccessStatus.DENIED,
+                     virtualUserPermissions.hasVirtualNodePermission(asTypedPermission(perm),
+                                                                     readonly));
     }
-    
+
     @Test
     public void testConfiguredUserPermissions() throws Exception
     {
-        assertHasQueryNodePermission(AccessStatus.DENIED,PermissionService.DELETE);
-        assertHasQueryNodePermission(AccessStatus.DENIED,PermissionService.DELETE_NODE);
-        assertHasQueryNodePermission(AccessStatus.DENIED,PermissionService.CHANGE_PERMISSIONS);
+        assertHasQueryNodePermission(AccessStatus.DENIED,
+                                     PermissionService.DELETE);
+        assertHasQueryNodePermission(AccessStatus.DENIED,
+                                     PermissionService.DELETE_NODE);
+        assertHasQueryNodePermission(AccessStatus.DENIED,
+                                     PermissionService.CHANGE_PERMISSIONS);
 
-        assertHasVirtualNodePermission(AccessStatus.DENIED,PermissionService.CREATE_ASSOCIATIONS,true);
-        assertHasVirtualNodePermission(AccessStatus.DENIED,PermissionService.UNLOCK,true);
-        assertHasVirtualNodePermission(AccessStatus.DENIED,PermissionService.CANCEL_CHECK_OUT,true);
-        assertHasVirtualNodePermission(AccessStatus.DENIED,PermissionService.DELETE,true);
-        assertHasVirtualNodePermission(AccessStatus.DENIED,PermissionService.DELETE_NODE,true);
-        assertHasVirtualNodePermission(AccessStatus.DENIED,PermissionService.CHANGE_PERMISSIONS,true);
-        assertHasVirtualNodePermission(AccessStatus.DENIED,PermissionService.WRITE_CONTENT,true);
-        assertHasVirtualNodePermission(AccessStatus.DENIED,PermissionService.WRITE,true);
-        assertHasVirtualNodePermission(AccessStatus.DENIED,PermissionService.WRITE_PROPERTIES,true);
-        assertHasVirtualNodePermission(AccessStatus.DENIED,PermissionService.WRITE,false);
-        assertHasVirtualNodePermission(AccessStatus.DENIED,PermissionService.WRITE_PROPERTIES,false);
+        assertHasVirtualNodePermission(AccessStatus.DENIED,
+                                       PermissionService.CREATE_ASSOCIATIONS,
+                                       true);
+        assertHasVirtualNodePermission(AccessStatus.DENIED,
+                                       PermissionService.UNLOCK,
+                                       true);
+        assertHasVirtualNodePermission(AccessStatus.DENIED,
+                                       PermissionService.CANCEL_CHECK_OUT,
+                                       true);
+        assertHasVirtualNodePermission(AccessStatus.DENIED,
+                                       PermissionService.DELETE,
+                                       true);
+        assertHasVirtualNodePermission(AccessStatus.DENIED,
+                                       PermissionService.DELETE_NODE,
+                                       true);
+        assertHasVirtualNodePermission(AccessStatus.DENIED,
+                                       PermissionService.CHANGE_PERMISSIONS,
+                                       true);
+        assertHasVirtualNodePermission(AccessStatus.DENIED,
+                                       PermissionService.WRITE_CONTENT,
+                                       true);
+        assertHasVirtualNodePermission(AccessStatus.DENIED,
+                                       PermissionService.WRITE,
+                                       true);
+        assertHasVirtualNodePermission(AccessStatus.DENIED,
+                                       PermissionService.WRITE_PROPERTIES,
+                                       true);
+        assertHasVirtualNodePermission(AccessStatus.DENIED,
+                                       PermissionService.WRITE,
+                                       false);
+        assertHasVirtualNodePermission(AccessStatus.DENIED,
+                                       PermissionService.WRITE_PROPERTIES,
+                                       false);
 
     }
 }

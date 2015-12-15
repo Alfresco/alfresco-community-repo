@@ -294,6 +294,7 @@
                         <ruleGroup>
                             <ruleList>
                                 <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco One Platform"/>
+                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco One Share"/>
                                 <compareText logic="equals" text="${alfresco_edition}" value="enterprise"/>
                                 <isFalse value="${component(alfrescosolr4).selected}"/>
                                 <isFalse value="${component(alfrescosolr).selected}"/>
@@ -317,6 +318,7 @@
                     <ruleList>
                         <ruleGroup>
                             <ruleList>
+                                <compareText logic="does_not_equal" text="${project.fullName}" value="Alfresco One Share"/>
                                 <isTrue value="${component(alfrescosolr4).selected}"/>
                             </ruleList>
                         </ruleGroup>

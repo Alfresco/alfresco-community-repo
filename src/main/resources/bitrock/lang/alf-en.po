@@ -663,3 +663,27 @@ msgstr "Unable to bind to the given port number."
 
 msgid "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
 msgstr "Unable to bind to the given port number. This port is already in use by the ${process_binding_port} process. Select another ${serverName} Server Port."
+
+msgid "Remote Solr configuration"
+msgstr "Remote Solr configuration"
+
+msgid "Enter the Solr host and port to connect to Alfresco:"
+msgstr "Enter the Solr host and port to connect to Alfresco:"
+
+msgid "Solr host:"
+msgstr "Solr host:"
+
+msgid "Solr SSL port:"
+msgstr "Solr SSL port:"
+
+msgid "Sharded Solr installation"
+msgstr "Sharded Solr installation"
+
+msgid "Are you using a sharded Solr installation?"
+msgstr "Are you using a sharded Solr installation?"
+
+msgid "Yes"
+msgstr "Yes"
+
+msgid "No"
+msgstr "No"

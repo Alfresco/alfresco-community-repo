@@ -297,11 +297,11 @@
                                     <includes>solr4.war</includes>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.alfresco.sharepoint-masquerade</groupId>
-                                    <artifactId>alfresco-sharepoint-masquerade-distributionzip</artifactId>
-                                    <version>${alfresco.sharepoint-masquerade.version}</version>
+                                    <groupId>org.alfresco.sharepoint-imitation</groupId>
+                                    <artifactId>alfresco-sharepoint-imitation-distributionzip</artifactId>
+                                    <version>${alfresco.sharepoint-imitation.version}</version>
                                     <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/sharepoint-masquerade</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/distribution/sharepoint-imitation</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

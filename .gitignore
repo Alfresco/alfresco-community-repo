@@ -1,0 +1,38 @@
+# General ignored files and directories
+.ant-targets-build.xml
+.classpath
+.gradle
+.idea
+.project
+.settings
+*.eml
+*.iml
+*.log*
+*.tmp
+*.war
+bin
+build.local.properties
+dist
+explodedDeps
+local.properties
+target
+test-output
+
+# /rm-community/
+/rm-community/l10n
+/rm-community/root
+
+# /rm-community/rm-server/
+/rm-community/rm-server/alfresco-solr.zip
+/rm-community/rm-server/solr
+/rm-community/rm-server/shared
+
+# /rm-community/rm-server/config/
+/rm-community/rm-server/config/alfresco-global.properties
+
+# /rm-community/rm-server/config/alfresco/
+/rm-community/rm-server/config/alfresco/extension
+
+# /rm-enterprise/rm-automation-enterprise/
+/rm-enterprise/rm-automation-enterprise/l10n
+/rm-enterprise/rm-automation-enterprise/root

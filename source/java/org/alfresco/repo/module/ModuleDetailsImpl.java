@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,6 +32,7 @@ import org.alfresco.service.cmr.module.ModuleInstallState;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
 import org.alfresco.util.Pair;
 import org.alfresco.util.VersionNumber;
+import org.alfresco.repo.module.tool.LogOutput;
 
 /**
  * Module details implementation.
@@ -58,6 +59,7 @@ public class ModuleDetailsImpl implements ModuleDetails
     private List<ModuleDependency> dependencies;
     private Date installDate;
     private ModuleInstallState installState;
+    private LogOutput log;
     
     /**
      * Private constructor to set default values.
@@ -80,8 +82,22 @@ public class ModuleDetailsImpl implements ModuleDetails
      */
     public ModuleDetailsImpl(Properties properties)
     {
+        this(properties, null);
+    }
+
+    /**
+     * Creates the instance from a set of properties.  All the property values are trimmed
+     * and empty string values are removed from the set.  In other words, zero length or
+     * whitespace strings are not supported.
+     * 
+     * @param properties        the set of properties
+     * @param log               logger
+     */
+    public ModuleDetailsImpl(Properties properties, LogOutput log)
+    {
         // Set defaults
         this();
+        this.log = log;
         // Copy the properties so they don't get modified
         Properties trimmedProperties = new Properties();
         // Trim all the property values
@@ -155,6 +171,15 @@ public class ModuleDetailsImpl implements ModuleDetails
             try
             {
                 repoVersionMin = new VersionNumber(trimmedProperties.getProperty(PROP_REPO_VERSION_MIN));
+                int[] parts = repoVersionMin.getParts();
+                if (parts.length > 3)
+                {
+                    repoVersionMin = new VersionNumber(parts[0] + "." + parts[1] + "." + parts[2]);
+                    if (log != null)
+                    {
+                        log.info("WARNING: version.label from repoVersionMin is ignored.");
+                    }
+                }
             }
             catch (Throwable t)
             {
@@ -167,6 +192,15 @@ public class ModuleDetailsImpl implements ModuleDetails
             try
             {
                 repoVersionMax = new VersionNumber(trimmedProperties.getProperty(PROP_REPO_VERSION_MAX));
+                int[] parts = repoVersionMax.getParts();
+                if (parts.length > 3)
+                {
+                    repoVersionMax = new VersionNumber(parts[0] + "." + parts[1] + "." + parts[2]);
+                    if (log != null)
+                    {
+                        log.info("WARNING: version.label from repoVersionMax is ignored.");
+                    }
+                }
             }
             catch (Throwable t)
             {

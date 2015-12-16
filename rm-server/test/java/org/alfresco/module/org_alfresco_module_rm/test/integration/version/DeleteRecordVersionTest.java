@@ -345,7 +345,7 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
      * When I delete version record 1.2
      * Then 1.1 is the most recent version
      */
-    public void testDeleteLatestVersion()
+    public void testDeleteCurrentVersion()
     {
         final NodeRef myDocument = createDocumentWithRecordVersions();
         
@@ -361,44 +361,43 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
             
             public void when()
             {   
-                Version version10 = versionHistory.getVersion("1.0");
-                NodeRef recordVersion10 = recordableVersionService.getVersionRecord(version10);
+                Version version12 = versionHistory.getVersion("1.2");
+                NodeRef recordVersion12 = recordableVersionService.getVersionRecord(version12);
                 
-                // delete record version 1.0
-                nodeService.deleteNode(recordVersion10);
+                // delete record version 1.2
+                nodeService.deleteNode(recordVersion12);
             }       
             
             public void then()
             {
-                // check the deleted version
-                Version version10 = versionHistory.getVersion("1.0");
-                assertNotNull(version10);
-                assertTrue(recordableVersionService.isRecordedVersionDestroyed(version10));
-                NodeRef recordVersion10 = recordableVersionService.getVersionRecord(version10);
-                assertNull(recordVersion10);
+                // check 1.2
+                Version version12 = versionHistory.getVersion("1.2");
+                assertNotNull(version12);
+                assertTrue(recordableVersionService.isRecordedVersionDestroyed(version12));
+                assertNull(recordableVersionService.getVersionRecord(version12));
                 
-                // verify 1.2 setup as expected
-                Version version12 = versionHistory.getHeadVersion();
-                assertEquals("1.2", version12.getVersionLabel());
-                NodeRef recordVersion12 = recordableVersionService.getVersionRecord(version12);
-                assertNotNull(recordVersion12);
-                
-                assertTrue(relationshipService.getRelationshipsTo(recordVersion12, RelationshipService.RELATIONSHIP_VERSIONS).isEmpty());
-                
-                Set<Relationship> from12 = relationshipService.getRelationshipsFrom(recordVersion12, RelationshipService.RELATIONSHIP_VERSIONS);
-                assertEquals(1, from12.size());
-                
-                // verify 1.1 setup as expected
-                Version version11 = versionHistory.getPredecessor(version12);
-                assertEquals("1.1", version11.getVersionLabel());
+                // verify 1.1 
+                Version version11 = versionHistory.getVersion("1.1");
+                assertNotNull(version11);
                 NodeRef recordVersion11 = recordableVersionService.getVersionRecord(version11);
                 assertNotNull(recordVersion11);
                 
-                Set<Relationship> to11 = relationshipService.getRelationshipsTo(recordVersion11, RelationshipService.RELATIONSHIP_VERSIONS);
-                assertEquals(1, to11.size());
-                assertEquals(recordVersion12, to11.iterator().next().getSource());
+                assertTrue(relationshipService.getRelationshipsTo(recordVersion11, RelationshipService.RELATIONSHIP_VERSIONS).isEmpty());
                 
-                assertTrue(relationshipService.getRelationshipsFrom(recordVersion11, RelationshipService.RELATIONSHIP_VERSIONS).isEmpty());
+                Set<Relationship> from11 = relationshipService.getRelationshipsFrom(recordVersion11, RelationshipService.RELATIONSHIP_VERSIONS);
+                assertEquals(1, from11.size());
+                
+                // verify 1.0
+                Version version10 = versionHistory.getVersion("1.0");
+                assertNotNull(version10);
+                NodeRef recordVersion10 = recordableVersionService.getVersionRecord(version10);
+                assertNotNull(recordVersion10);
+                
+                Set<Relationship> to10 = relationshipService.getRelationshipsTo(recordVersion10, RelationshipService.RELATIONSHIP_VERSIONS);
+                assertEquals(1, to10.size());
+                assertEquals(recordVersion11, to10.iterator().next().getSource());
+                
+                assertTrue(relationshipService.getRelationshipsFrom(recordVersion10, RelationshipService.RELATIONSHIP_VERSIONS).isEmpty());
             }
         });  
     }

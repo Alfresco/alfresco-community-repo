@@ -534,7 +534,7 @@ Admin.addEventListener(window, 'load', function() {
    </div>
    
    <div class="footer">
-      Alfresco Software, Inc. &copy; 2005-2015 All rights reserved.
+      Alfresco Software, Inc. &copy; 2005-2016 All rights reserved.
    </div>
    
 <#else>

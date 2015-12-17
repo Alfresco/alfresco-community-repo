@@ -1,0 +1,33 @@
+# General ignored files and directories
+.classpath
+.gradle
+.idea
+.project
+.settings
+*.iml
+*.log*
+*.tmp
+*.war
+bin
+dist
+explodedDeps
+
+# /
+/l10n
+/root
+
+# /rm-server/
+/rm-server/alfresco-solr.zip
+/rm-server/solr
+
+# /rm-server/build/
+/rm-server/build/*
+
+# /rm-server/config/alfresco/
+/rm-server/config/alfresco/extension
+
+# /rm-server/libs/
+/rm-server/libs/
+
+# /rm-share/build/
+/rm-share/build/*

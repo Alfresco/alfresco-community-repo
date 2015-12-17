@@ -115,7 +115,7 @@ ModuleDetails shareServicesModule = moduleService.getModule("alfresco-share-serv
       <div class="push"></div>
    </div>
    <div class="footer">
-      Alfresco Software, Inc. &copy; 2005-2015 All rights reserved.
+      Alfresco Software, Inc. &copy; 2005-2016 All rights reserved.
    </div>
 </body>
 </html>

@@ -407,7 +407,7 @@ public class DeleteRecordVersionTest extends RecordableVersionsBaseTest
      * When the version record is destroyed whilst retaining the meta data
      * Then the version is marked as destroyed in the collab version history
      */
-    public void testDetroyVerionRecordWithMetadata()
+    public void testDestroyVersionRecordWithMetadata()
     {
         final NodeRef myDocument = createDocumentWithRecordVersions();
         

@@ -237,7 +237,7 @@ function doclist_main()
       item = Evaluator.run(node);
       if (item !== null &&  (filter!=="editingMe" && filter!=="editingOthers" || node.getIsLocked() || item.workingCopy.isWorkingCopy ) )
       {
-         item.isFavourite = (favourites[item.node.nodeRef] === true);
+         item.isFavourite = (favourites[item.node.nodeRef] === true || (item.node.properties["vm:actualNodeRef"] && favourites[item.node.properties["vm:actualNodeRef"]] === true));
          item.likes = Common.getLikes(node);
 
          // Does this collection of nodes have potentially differering paths?

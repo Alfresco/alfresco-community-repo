@@ -1,4 +1,4 @@
-Copyright (c) 2005-2015 Alfresco Software, Ltd. and others.
+Copyright (c) 2005-2016 Alfresco Software, Ltd. and others.
 All rights reserved.  This program and the accompanying materials are made available under the terms of the Alfresco 
 agreement located at www.alfresco.com/legal/agreements/ or other commercial agreement between Alfresco Software, Ltd. 
 ("Alfresco") and the user of this program.

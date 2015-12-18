@@ -364,6 +364,7 @@
         <actionGroup>
             <actionList>
             <setInstallerVariable name="finalpage_start_servers" value="1" />
+            <setEnvironmentVariable name="PGPASSWORD" value=""/>
             <runProgram>
                 <progressText>Starting servers...</progressText>
                 <program>${installdir}/${ctlscript_unix}</program>

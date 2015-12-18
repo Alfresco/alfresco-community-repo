@@ -108,6 +108,9 @@
     </bean>
 
     <bean id="unserializerValidatorBootstrap" class="org.alfresco.repo.admin.UnserializerValidatorBootstrap">
+       <property name="properties">
+          <ref bean="global-properties" />
+       </property>
     </bean>
     
     <bean id="encryptionChecker" class="org.alfresco.encryption.EncryptionChecker">

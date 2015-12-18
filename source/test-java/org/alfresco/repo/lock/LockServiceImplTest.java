@@ -981,8 +981,16 @@ public class LockServiceImplTest extends BaseSpringTest
         
             // lock it as GOOD user
             this.securedLockService.lock(testNode, LockType.WRITE_LOCK, 2 * 86400, lt, null);
+            
+            // check lock state and status as GOOD user
+            assertNotNull(this.securedLockService.getLockState(testNode));
+            assertNotNull(this.securedLockService.getLockStatus(testNode));
         
             TestWithUserUtils.authenticateUser(BAD_USER_NAME, PWD, rootNodeRef, this.authenticationService);
+
+            // check lock state and status as BAD user
+            assertNotNull(this.securedLockService.getLockState(testNode));
+            assertNotNull(this.securedLockService.getLockStatus(testNode));
         
             try
             {
@@ -996,6 +1004,10 @@ public class LockServiceImplTest extends BaseSpringTest
             }
         
             TestWithUserUtils.authenticateUser(AuthenticationUtil.getAdminUserName(), "admin", rootNodeRef, this.authenticationService);
+
+            // check lock state and status as ADMIN user
+            assertNotNull(this.securedLockService.getLockState(testNode));
+            assertNotNull(this.securedLockService.getLockStatus(testNode));
         
             // try to unlock as ADMIN user
             this.securedLockService.unlock(testNode);

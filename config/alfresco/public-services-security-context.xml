@@ -611,6 +611,7 @@
                 org.alfresco.service.cmr.lock.LockService.getLockType=ACL_NODE.0.sys:base.ReadProperties
                 org.alfresco.service.cmr.lock.LockService.checkForLock=ACL_NODE.0.sys:base.ReadProperties
                 org.alfresco.repo.lock.LockServiceImpl.getLocks=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.lock.LockService.getLockState=ACL_NODE.0.sys:base.ReadProperties
                 org.alfresco.service.cmr.lock.LockService.*=ACL_DENY
             </value>
         </property>

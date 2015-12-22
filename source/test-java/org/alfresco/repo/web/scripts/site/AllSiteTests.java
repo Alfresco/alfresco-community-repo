@@ -39,7 +39,6 @@ import org.junit.runners.Suite;
     SiteServiceImplTest.class,
     SiteServiceImplMoreTest.class,
     SiteServiceTest.class,
-    SiteExportServiceTest.class,
     SiteActivityTestCaseSensitivity.class,
     SiteActivityTestCaseInsensitivity.class
 })

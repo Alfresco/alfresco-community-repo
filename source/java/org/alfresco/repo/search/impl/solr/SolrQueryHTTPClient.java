@@ -783,6 +783,16 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             SearchParameters sp = new SearchParameters();
             sp.addStore(store);
             List<ShardInstance> slice = shardRegistry.getIndexSlice(sp);
+            if((slice == null) || (slice.size() == 0))
+            {
+                s_logger.error("No available shards for solr query of store " + store + " - trying non-dynamic configuration");
+                SolrStoreMappingWrapper mappings = mappingLookup.get(store);
+                if (mappings == null)
+                {
+                    throw new LuceneQueryParserException("No solr query support for store " + store);
+                }
+                return mappings;
+            }
             return DynamicSolrStoreMappingWrapperFactory.wrap(slice, beanFactory);
         }
         else
@@ -791,7 +801,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
 
             if (mappings == null)
             {
-                throw new AlfrescoRuntimeException("No solr query support for store " + store);
+                throw new LuceneQueryParserException("No solr query support for store " + store);
             }
             return mappings;
         }

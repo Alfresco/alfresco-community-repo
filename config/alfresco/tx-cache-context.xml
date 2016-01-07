@@ -704,6 +704,7 @@
       <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
       <property name="cacheStats" ref="cacheStatistics"/>
       <property name="cacheStatsEnabled" value="${cache.shardStateSharedCache.tx.statsEnabled}"/>
+      <property name="tenantAware" value="false" />
    </bean>
    
    <!-- The transactional cache for index shard instance guids -->
@@ -720,6 +721,7 @@
       <property name="disableSharedCache" value="${system.cache.disableImmutableSharedCaches}" />
       <property name="cacheStats" ref="cacheStatistics"/>
       <property name="cacheStatsEnabled" value="${cache.shardToGuidSharedCache.tx.statsEnabled}"/>
+      <property name="tenantAware" value="false" />
    </bean>
    
 </beans>

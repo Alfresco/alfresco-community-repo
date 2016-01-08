@@ -12,6 +12,7 @@
     <properties>
         <build-number>0</build-number>
         <scm-revision>123456</scm-revision>
+        <repositoryTestIncludes>**/org/alfresco/Repository*TestSuite.java</repositoryTestIncludes>
     </properties>
     
     <dependencies>
@@ -905,7 +906,7 @@
                                   </systemPropertyVariables>
                                   <forkMode>always</forkMode>
                                   <includes combine.self="override">
-                                      <include>**/org/alfresco/Repository*TestSuite.java</include>
+                                      <include>${repositoryTestIncludes}</include>
                                   </includes>
                               </configuration>
                            </execution>

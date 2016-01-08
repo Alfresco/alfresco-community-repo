@@ -8,6 +8,7 @@ function main()
       argsMaxResults = args['size'],
       argsXPath = args['xpath'],
       argsRootNode = args['rootNode'],
+      argsSelectableMimeType=args['selectableMimeType'],
       pathElements = url.service.split("/"),
       parent = null,
       rootNode = companyhome,
@@ -24,8 +25,8 @@ function main()
       logger.log("argsSearchTerm = " + argsSearchTerm);
       logger.log("argsMaxResults = " + argsMaxResults);
       logger.log("argsXPath = " + argsXPath);
+      logger.log("selectableMimeType = " + selectableMimeType);
    }
-         
    try
    {
       // construct the NodeRef from the URL
@@ -119,8 +120,14 @@ function main()
                { 
                   item: result
                };
-               resultObj.selectable = isItemSelectable(result, argsSelectableType);
-               
+               if(argsSelectableMimeType)
+               {
+                  resultObj.selectable = isItemSelectableByMimeType(result, argsSelectableType, argsSelectableMimeType);
+               }
+               else
+               {
+                  resultObj.selectable = isItemSelectable(result, argsSelectableType);
+               }
                containerResults.push(resultObj);
             }
             else
@@ -135,7 +142,14 @@ function main()
                { 
                   item: result
                };
-               resultObj.selectable = isItemSelectable(result, argsSelectableType);
+               if(argsSelectableMimeType)
+               {
+                  resultObj.selectable = isItemSelectableByMimeType(result, argsSelectableType, argsSelectableMimeType);
+               }
+               else
+               {
+                  resultObj.selectable = isItemSelectable(result, argsSelectableType);
+               }
                resultObj.container = container;
                contentResults.push(resultObj);
             }
@@ -253,6 +267,24 @@ function isItemSelectable(node, selectableType)
       }
    }
    
+   return selectable;
+}
+
+/**
+ * Identifies if the node can be selected. The node can be selected if it is of specified type and has specified mime type.
+ * 
+ * @param node
+ * @param selectableType
+ * @param argsSelectableMimeType
+ * @returns <code>true<code> if the node can be selected, or false otherwise.
+ */
+function isItemSelectableByMimeType(node, selectableType, argsSelectableMimeType)
+{
+   var selectable = isItemSelectable(node, selectableType);
+   if(selectable && argsSelectableMimeType != null && argsSelectableMimeType != "")
+   {
+      selectable = node.properties.content.mimetype.equals(argsSelectableMimeType);
+   }
    return selectable;
 }
 

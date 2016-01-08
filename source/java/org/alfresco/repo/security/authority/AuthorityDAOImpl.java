@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1009,18 +1009,29 @@ public class AuthorityDAOImpl implements AuthorityDAO, NodeServicePolicies.Befor
 
     public String getName(AuthorityType type, String shortName)
     {
+        String authorityName = shortName;
         if (type.isFixedString())
         {
-            return type.getFixedString();
+            authorityName = type.getFixedString();
         }
         else if (type.isPrefixed())
         {
-            return type.getPrefixString() + shortName;
+            String prefix = type.getPrefixString();
+            if (shortName.startsWith(prefix))
+            {
+                String doublePrefixed = prefix + prefix;
+                if (shortName.startsWith(doublePrefixed))
+                {
+                    throw new AuthorityException("The authority name is double-prefixed");
+                }
+            }
+            else
+            {
+                authorityName = prefix + shortName;
+            }
         }
-        else
-        {
-            return shortName;
-        }
+            return authorityName;
+            
     }
 
     protected void addAuthorityNameIfMatches(Set<String> authorities, String authorityName, AuthorityType type)

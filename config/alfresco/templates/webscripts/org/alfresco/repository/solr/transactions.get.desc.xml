@@ -6,7 +6,7 @@
   <!-- Solr api is protected by a solr-specific authentication mechanism -->
   <authentication>none</authentication>
   <!-- Must be readwrite as it updates shard state -->
-  <transaction allow="readwrite">required</transaction>
+  <transaction allow="readonly">required</transaction>
   <lifecycle>internal</lifecycle>
   <family>SOLR</family>
 </webscript>

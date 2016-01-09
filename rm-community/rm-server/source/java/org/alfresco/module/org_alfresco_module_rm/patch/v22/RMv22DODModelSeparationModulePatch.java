@@ -43,7 +43,7 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
 {
     /** query batch size */
     private static final long BATCH_SIZE = 100000L;
-    
+
     /** indicates whether we convert to a standard file plan or not */
     private boolean convertToStandardFilePlan = false;
 
@@ -65,11 +65,11 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
         DOD5015Model.PROP_ADDRESS,
         DOD5015Model.PROP_OTHER_ADDRESS
     };
-    
+
     /**
      * @param convertToStandardFilePlan	convert to standard file if true, false otherwise
      */
-    public void setConvertToStandardFilePlan(boolean convertToStandardFilePlan) 
+    public void setConvertToStandardFilePlan(boolean convertToStandardFilePlan)
     {
 		this.convertToStandardFilePlan = convertToStandardFilePlan;
 	}
@@ -98,13 +98,13 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
     {
     	if (!convertToStandardFilePlan)
     	{
-	        Long maxNodeId = patchDAO.getMaxAdmNodeID();
+	        Long maxNodeId = nodeDAO.getMaxNodeId();
 	        long recordCount = patchDAO.getCountNodesWithAspects(Collections.singleton(ASPECT_RECORD));
 	        if (LOGGER.isDebugEnabled())
 	        {
 	            LOGGER.debug("   ... updating " + recordCount + " records in batches of " + BATCH_SIZE);
 	        }
-	
+
 	        // apply the DOD record aspect to all exiting records
 	        int completed = 0;
 	        for (Long i = 0L; i < maxNodeId; i+=BATCH_SIZE)
@@ -113,11 +113,11 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
 	        	Integer batchCount = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Integer>()
 	            {
 	        		int batchCount = 0;
-	        		
-	        		public Integer execute() throws Throwable 
+
+	        		public Integer execute() throws Throwable
 					{
 						nodeDAO.getNodesWithAspects(Collections.singleton(ASPECT_RECORD), finali, finali + BATCH_SIZE, new NodeDAO.NodeRefQueryCallback()
-				        {	
+				        {
 				            public boolean handle(Pair<Long, NodeRef> nodePair)
 				            {
 				            	 // get the records properties
@@ -142,18 +142,18 @@ public class RMv22DODModelSeparationModulePatch extends AbstractModulePatch
 				            	 if (changed)
 				            	 {
 				            		 nodeDAO.setNodeProperties(nodePair.getFirst(), properties);
-				            	 }				            	
+				            	 }
 				            	 nodeDAO.addNodeAspects(nodePair.getFirst(), Collections.singleton(DOD5015Model.ASPECT_DOD_5015_RECORD));
 				            	 batchCount ++;
-				                
+
 				            	 return true;
 				            }
 				        });
-				
+
 						return batchCount;
-					}           		
-	            } , false, true);    
-	        	
+					}
+	            } , false, true);
+
 	        	if (batchCount != 0)
 	        	{
 		        	completed = completed + batchCount;

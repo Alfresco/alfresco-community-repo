@@ -105,6 +105,7 @@ public final class RMCollectionUtils
      * @param <T>      the element type.
      * @return         a Set containing all the provided elements (without duplicates).
      */
+    @SafeVarargs
     public static <T> HashSet<T> asSet(T... elements)
     {
         final HashSet<T> set = new HashSet<>(elements.length);

@@ -23,6 +23,7 @@ import static com.google.common.collect.Sets.newHashSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
+import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.asSerializableList;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.asSet;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.diffKey;
 import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.head;
@@ -30,6 +31,7 @@ import static org.alfresco.module.org_alfresco_module_rm.util.RMCollectionUtils.
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -100,5 +102,14 @@ public class RMCollectionUtilsUnitTest
     {
         assertEquals(newHashSet("hello", "world"), asSet("hello", "world"));
         assertEquals(newHashSet(3, 7, 31, 127), asSet(3, 7, 31, 127));
+    }
+
+    @Test public void elementsAsSerializableList()
+    {
+        // If these lines compile, then we're good
+        Serializable s = asSerializableList("one", "two", "three");
+        List<String> l = asSerializableList("one", "two", "three");
+
+        assertEquals(s, l);
     }
 }

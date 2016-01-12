@@ -20,6 +20,7 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -96,6 +97,25 @@ public final class RMCollectionUtils
         {
             return l.subList(1, l.size());
         }
+    }
+
+    /**
+     * Returns a Serializable List containing all of the provided elements.
+     *
+     * @param elements the elements to put in a list.
+     * @param <T>      the element type.
+     * @return         a Serializable List containing all the provided elements.
+     */
+    @SafeVarargs
+    public static <T extends Serializable, LIST extends Serializable & List<T>>
+                  LIST asSerializableList(T... elements)
+    {
+        final LIST l = (LIST)new ArrayList<>(elements.length);
+        for (T element : elements)
+        {
+            l.add(element);
+        }
+        return l;
     }
 
     /**

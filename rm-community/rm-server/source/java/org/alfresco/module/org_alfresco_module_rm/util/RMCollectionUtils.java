@@ -110,7 +110,7 @@ public final class RMCollectionUtils
     public static <T extends Serializable, LIST extends Serializable & List<T>>
                   LIST asSerializableList(T... elements)
     {
-        final LIST l = (LIST)new ArrayList<>(elements.length);
+        final LIST l = (LIST)new ArrayList<T>(elements.length);
         for (T element : elements)
         {
             l.add(element);

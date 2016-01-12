@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -113,6 +114,22 @@ public final class RMCollectionUtils
         {
             set.add(element);
         }
+        return set;
+    }
+
+    /**
+     * Returns a Set containing all of the elements in the provided collection.
+     * Duplicate elements will be removed as per the
+     * {@code Set} contract.
+     *
+     * @param c   the elements to put in a Set.
+     * @param <T> the element type.
+     * @return    a Set containing all the provided elements (without duplicates).
+     */
+    public static <T> HashSet<T> asSet(Collection<T> c)
+    {
+        final HashSet<T> set = new HashSet<>();
+        set.addAll(c);
         return set;
     }
 

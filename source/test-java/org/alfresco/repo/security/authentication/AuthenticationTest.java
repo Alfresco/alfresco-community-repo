@@ -272,7 +272,7 @@ public class AuthenticationTest extends TestCase
     private Map<QName, Serializable> createPersonProperties(String userName)
     {
         HashMap<QName, Serializable> properties = new HashMap<QName, Serializable>();
-        properties.put(ContentModel.PROP_USERNAME, "Andy");
+        properties.put(ContentModel.PROP_USERNAME, userName);
         return properties;
     }
 
@@ -495,6 +495,40 @@ public class AuthenticationTest extends TestCase
         String hashedPassword = dao.getMD4HashedPassword(userName);
         assertNotNull(hashedPassword);
         assertEquals(compositePasswordEncoder.encode("md4",password, null), hashedPassword);
+    }
+
+    /**
+     * Test for ACE-4909
+     */
+    public void testCheckUserDisabledTenant()
+    {
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        String domainName = "ace4909.domain";
+        String userName = "ace4909" + TenantService.SEPARATOR + domainName;
+        Map<QName, Serializable> props = createPersonProperties(userName);
+        NodeRef userNodeRef = personService.createPerson(props);
+        assertNotNull(userNodeRef);
+        authenticationService.createAuthentication(userName, "passwd".toCharArray());
+        tenantAdminService.createTenant(domainName, TENANT_ADMIN_PW.toCharArray(), null);
+        tenantAdminService.disableTenant(domainName);
+        assertTrue("The user should exist", dao.userExists(userName));
+    }
+
+    /**
+     * Test for ACE-4909
+     */
+    public void testCheckUserDeletedTenant()
+    {
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        String domainName = "ace4909.domain";
+        String userName = "ace4909" + TenantService.SEPARATOR + domainName;
+        Map<QName, Serializable> props = createPersonProperties(userName);
+        NodeRef userNodeRef = personService.createPerson(props);
+        assertNotNull(userNodeRef);
+        authenticationService.createAuthentication(userName, "passwd".toCharArray());
+        tenantAdminService.createTenant(domainName, TENANT_ADMIN_PW.toCharArray(), null);
+        tenantAdminService.deleteTenant(domainName);
+        assertTrue("The user should exist", dao.userExists(userName));
     }
 
     public void testCreateAndyUserAndOtherCRUD() throws NoSuchAlgorithmException, UnsupportedEncodingException

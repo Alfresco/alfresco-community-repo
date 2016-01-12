@@ -38,6 +38,7 @@ import org.alfresco.repo.node.NodeServicePolicies.BeforeDeleteNodePolicy;
 import org.alfresco.repo.node.NodeServicePolicies.OnUpdatePropertiesPolicy;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
+import org.alfresco.repo.tenant.TenantDisabledException;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -374,7 +375,22 @@ public class RepositoryAuthenticationDao implements MutableAuthenticationDao, In
     
     private NodeRef getUserFolderLocation(String caseSensitiveUserName)
     {
-        NodeRef userNodeRef = singletonCache.get((tenantService.getUserDomain(caseSensitiveUserName) + KEY_USERFOLDER_NODEREF));
+        String userDomain = null;
+        try
+        {
+            userDomain = tenantService.getUserDomain(caseSensitiveUserName);
+        }
+        catch (TenantDisabledException tde)
+        {
+            // see ACE-4909
+            // it is normal at this part if the tenant is disabled
+        }
+        if (userDomain == null)
+        {
+            // try to use default domain
+            userDomain = TenantService.DEFAULT_DOMAIN;
+        }
+        NodeRef userNodeRef = singletonCache.get(userDomain + KEY_USERFOLDER_NODEREF);
         if (userNodeRef == null)
         {
             QName qnameAssocSystem = QName.createQName("sys", "system", namespacePrefixResolver);

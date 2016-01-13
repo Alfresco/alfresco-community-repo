@@ -2259,6 +2259,29 @@ public class VersionServiceImplTest extends BaseVersionStoreTest
     }
     
     /**
+     * Check that the version type property is actually set when creating a new version.
+     * 
+     * @see https://issues.alfresco.com/jira/browse/MNT-14681
+     */
+    public void testVersionTypeIsSet()
+    {
+        ChildAssociationRef childAssociation = nodeService.createNode(this.rootNodeRef, ContentModel.ASSOC_CHILDREN,
+                QName.createQName("http://www.alfresco.org/test/versiontypeissettest/1.0", "versionTypeIsSetTest"), TEST_TYPE_QNAME);
+
+        NodeRef newNode = childAssociation.getChildRef();
+        assertNull(nodeService.getProperty(newNode, ContentModel.PROP_VERSION_TYPE));
+
+        Map<String, Serializable> versionProps = new HashMap<String, Serializable>(1);
+        versionProps.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
+
+        versionService.createVersion(newNode, versionProps);
+
+        Serializable versionTypeProperty = nodeService.getProperty(newNode, ContentModel.PROP_VERSION_TYPE);
+        assertNotNull(versionTypeProperty);
+        assertTrue(versionTypeProperty.toString().equals(VersionType.MINOR.toString()));
+    }
+    
+    /**
      * Check read permission for the frozen node
      */
     public void testHasPermission()

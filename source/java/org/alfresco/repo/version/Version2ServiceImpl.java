@@ -326,6 +326,12 @@ public class Version2ServiceImpl extends VersionServiceImpl implements VersionSe
                     nodeRef,
                     ContentModel.PROP_VERSION_LABEL,
                     version.getVersionLabel());
+
+            // Set the version type (MNT-14681 fix)
+            this.nodeService.setProperty(
+                    nodeRef,
+                    ContentModel.PROP_VERSION_TYPE,
+                    version.getVersionType());
         }
         finally
         {

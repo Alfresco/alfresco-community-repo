@@ -201,7 +201,7 @@ public class VersionableAspectTest extends TestCase
             }
         });
 
-        assertDocumentVersionAndName("1.0", name02);
+        assertDocumentVersionAndName("1.0", name02, VersionType.MAJOR);
 
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
@@ -214,7 +214,7 @@ public class VersionableAspectTest extends TestCase
             }
         });
 
-        assertDocumentVersionAndName("1.1", name11);
+        assertDocumentVersionAndName("1.1", name11, VersionType.MINOR);
     }
 
     public void testAutoVersionIncrementOnPropertiesUpdateByLockOwnerAlf14584() throws Exception
@@ -259,6 +259,11 @@ public class VersionableAspectTest extends TestCase
 
     private void assertDocumentVersionAndName(final String versionLabel, final String name)
     {
+        assertDocumentVersionAndName(versionLabel, name, null);
+    }
+
+    private void assertDocumentVersionAndName(final String versionLabel, final String name, final VersionType versionType)
+    {
         transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override
@@ -266,6 +271,13 @@ public class VersionableAspectTest extends TestCase
             {
                 Map<QName, Serializable> properties = getAndAssertProperties(document, versionLabel);
                 assertEquals(name, properties.get(ContentModel.PROP_NAME));
+
+                if (versionType != null)
+                {
+                    Serializable versionTypeProperty = nodeService.getProperty(document, ContentModel.PROP_VERSION_TYPE);
+                    assertNotNull(versionTypeProperty);
+                    assertTrue(versionTypeProperty.toString().equals(versionType.toString()));
+                }
 
                 return null;
             }

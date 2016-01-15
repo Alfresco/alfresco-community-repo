@@ -411,23 +411,31 @@ public class MultiTDemoTest extends TestCase
     private void createTestAuthoritiesForTenant(final String[] uniqueGroupNames, final String userName)
     {
         String tenantDomain = tenantService.getUserDomain(userName);
-        
+
         // Create groups for tenant
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<Object>()
+        TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
         {
-            public Object doWork() throws Exception
+            public Void doWork() throws Exception
             {
-                // find person
-                NodeRef personNodeRef = personService.getPerson(userName);
-                NodeRef homeSpaceRef = (NodeRef)nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
-                assertNotNull(homeSpaceRef);
-                
-                for (int i = 0; i < uniqueGroupNames.length; i++)
+                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
                 {
-                    authorityService.createAuthority(AuthorityType.GROUP, uniqueGroupNames[i]);
-                    permissionService.setPermission(homeSpaceRef, "GROUP_" + uniqueGroupNames[i], "Consumer", true);
-                }
-                
+                    @Override
+                    public Void execute() throws Throwable
+                    {
+                        // find person
+                        NodeRef personNodeRef = personService.getPerson(userName);
+                        NodeRef homeSpaceRef = (NodeRef) nodeService.getProperty(personNodeRef, ContentModel.PROP_HOMEFOLDER);
+                        assertNotNull(homeSpaceRef);
+
+                        for (int i = 0; i < uniqueGroupNames.length; i++)
+                        {
+                            authorityService.createAuthority(AuthorityType.GROUP, uniqueGroupNames[i]);
+                            permissionService.setPermission(homeSpaceRef, "GROUP_" + uniqueGroupNames[i], "Consumer", true);
+                        }
+
+                        return null;
+                    }
+                }, false);
                 return null;
             }
         }, userName, tenantDomain);

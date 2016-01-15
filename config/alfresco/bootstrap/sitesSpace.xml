@@ -22,6 +22,40 @@
                <view:aspects>
                   <sys:hidden/>
                </view:aspects>
+               <cm:contains>
+                  <cm:folder view:childName="cm:extensions">
+                     <view:acl>
+                        <view:ace view:access="ALLOWED">
+                           <view:authority>GROUP_ALFRESCO_MODEL_ADMINISTRATORS</view:authority>
+                           <view:permission>Collaborator</view:permission>
+                        </view:ace>
+                     </view:acl>
+                     <view:properties>
+                        <cm:description></cm:description>
+                        <cm:name>extensions</cm:name>
+                     </view:properties>
+                     <view:aspects>
+                        <sys:hidden/>
+                    </view:aspects>
+                  </cm:folder>
+               </cm:contains>
+               <cm:contains>
+                  <cm:folder view:childName="cm:module-deployments">
+                     <view:acl>
+                        <view:ace view:access="ALLOWED">
+                           <view:authority>GROUP_ALFRESCO_MODEL_ADMINISTRATORS</view:authority>
+                           <view:permission>Collaborator</view:permission>
+                        </view:ace>
+                     </view:acl>
+                     <view:properties>
+                        <cm:description></cm:description>
+                        <cm:name>module-deployments</cm:name>
+                     </view:properties>
+                     <view:aspects>
+                        <sys:hidden/>
+                    </view:aspects>
+                  </cm:folder>
+               </cm:contains>
             </cm:folder>
          </cm:contains>
       </view:associations>

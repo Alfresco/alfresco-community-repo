@@ -1304,4 +1304,54 @@
             <value>classpath:alfresco/dbscripts/upgrade/5.1/${db.script.dialect}/activiti-upgrade-5-19-0.sql</value>
         </property>
     </bean>
+
+    <bean id="patch.addSurfConfigFolders" class="org.alfresco.repo.admin.patch.impl.AddSurfConfigFoldersPatch" parent="basePatch" >
+        <property name="id"><value>patch.addSurfConfigFolders</value></property>
+        <property name="description"><value>patch.addSurfConfigFolders.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9014</value></property>
+        <property name="targetSchema"><value>9015</value></property>
+        <property name="dependsOn" >
+            <list>
+               <ref bean="patch.alfrescoModelAdministrators" />
+            </list>
+        </property>
+        <property name="siteService" ref="siteService" />
+        <property name="permissionService" ref="PermissionService" />
+        <property name="authorityService" ref="AuthorityService" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="hiddenAspect" ref="hiddenAspect" />
+        <property name="folderDetailsList" >
+          <list>
+            <bean class="org.alfresco.repo.admin.patch.impl.AddSurfConfigFoldersPatch$FolderDetails">
+                <property name="folderName">
+                    <value>extensions</value>
+                </property>
+                <property name="authority">
+                    <value>GROUP_ALFRESCO_MODEL_ADMINISTRATORS</value>
+                </property>
+                <property name="permission">
+                    <value>Collaborator</value>
+                </property>
+                <property name="applyPermissionIfFolderExist">
+                    <value>true</value>
+                </property>
+            </bean>
+            <bean class="org.alfresco.repo.admin.patch.impl.AddSurfConfigFoldersPatch$FolderDetails">
+                <property name="folderName">
+                    <value>module-deployments</value>
+                </property>
+                <property name="authority">
+                    <value>GROUP_ALFRESCO_MODEL_ADMINISTRATORS</value>
+                </property>
+                <property name="permission">
+                    <value>Collaborator</value>
+                </property>
+                <property name="applyPermissionIfFolderExist">
+                    <value>true</value>
+                </property>
+            </bean>
+          </list>
+        </property>
+    </bean>
 </beans>

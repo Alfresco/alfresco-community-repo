@@ -19,7 +19,7 @@
         <alfresco.share.version>5.1-SNAPSHOT</alfresco.share.version>
 
         <!-- Alfresco GoogleDocs integration version -->
-        <alfresco.googledocs.version>3.0.2</alfresco.googledocs.version>
+        <alfresco.googledocs.version>3.0.3</alfresco.googledocs.version>
 
         <!-- Alfresco Update Tool version bundled in the update installer -->
         <alfresco.updatetool.version>1.0-SNAPSHOT</alfresco.updatetool.version>

@@ -390,7 +390,7 @@ public class CustomModelServiceImplTest
     {
         final String modelName = makeUniqueName("testCustomModel");
 
-        Pair<String, String> namespacePair = getTestNamespacePrefixPair();
+        final Pair<String, String> namespacePair = getTestNamespacePrefixPair();
         M2Model model = M2Model.createModel(namespacePair.getSecond() + QName.NAMESPACE_PREFIX + modelName);
         model.createNamespace(namespacePair.getFirst(), namespacePair.getSecond());
         model.setAuthor("John Doe");
@@ -401,8 +401,15 @@ public class CustomModelServiceImplTest
         assertNotNull(modelDefinition);
         assertEquals(modelName, modelDefinition.getName().getLocalName());
 
-        assertTrue(customModelService.isNamespaceUriExists(namespacePair.getFirst()));
-        ModelDefinition modelDefinitionByUri = customModelService.getCustomModelByUri(namespacePair.getFirst());
+        ModelDefinition modelDefinitionByUri = transactionHelper.doInTransaction(new RetryingTransactionCallback<ModelDefinition>()
+        {
+            @Override
+            public ModelDefinition execute() throws Throwable
+            {
+                assertTrue(customModelService.isNamespaceUriExists(namespacePair.getFirst()));
+                return customModelService.getCustomModelByUri(namespacePair.getFirst());
+            }
+        });
         assertNotNull(modelDefinitionByUri);
         assertEquals(modelName, modelDefinitionByUri.getName().getLocalName());
     }
@@ -493,13 +500,14 @@ public class CustomModelServiceImplTest
 
         // Retrieve the aspect by the aspect QName
         QName aspectQName = QName.createQName("{" + namespacePair.getFirst() + "}" + aspectName);
-        AspectDefinition aspectDefinition = customModelService.getCustomAspect(aspectQName);
+        AspectDefinition aspectDefinition = getAspect(aspectQName);
+
         assertNotNull(aspectDefinition);
         assertEquals(1, getModel(modelName).getAspectDefinitions().size());
 
         // Retrieve the type by the type QName
         QName typeQName = QName.createQName("{" + namespacePair.getFirst()+ "}" + typeName);
-        TypeDefinition typeDefinition = customModelService.getCustomType(typeQName);
+        TypeDefinition typeDefinition = getType(typeQName);
         assertNotNull(typeDefinition);
         assertEquals(1, getModel(modelName).getTypeDefinitions().size());
 
@@ -510,7 +518,7 @@ public class CustomModelServiceImplTest
 
         // Retrieve the created aspect
         aspectQName = QName.createQName("{" + namespacePair.getFirst() + "}" + aspectName2);
-        aspectDefinition = customModelService.getCustomAspect(aspectQName);
+        aspectDefinition = getAspect(aspectQName);
         assertNotNull(aspectDefinition);
         assertEquals(aspectQName, aspectDefinition.getName());
         assertEquals(2, getModel(modelName).getAspectDefinitions().size());
@@ -522,7 +530,7 @@ public class CustomModelServiceImplTest
 
         // Retrieve the created type
         typeQName = QName.createQName("{" + namespacePair.getFirst() + "}" + typeName2);
-        typeDefinition = customModelService.getCustomType(typeQName);
+        typeDefinition = getType(typeQName);
         assertNotNull(typeDefinition);
         assertEquals(typeQName, typeDefinition.getName());
         assertEquals(2, getModel(modelName).getTypeDefinitions().size());
@@ -775,7 +783,7 @@ public class CustomModelServiceImplTest
 
         // Test that the cache is updated correctly. This means the cache should have removed the old namespace URI.
         QName aspectQName = QName.createQName("{" + namespacePair.getFirst() + "}" + aspectName);
-        AspectDefinition aspectDefinition = customModelService.getCustomAspect(aspectQName);
+        AspectDefinition aspectDefinition = getAspect(aspectQName);
         assertNull(aspectDefinition);
 
         transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
@@ -1059,6 +1067,30 @@ public class CustomModelServiceImplTest
             {
                 NodeRef nodeRef = customModelService.createDownloadNode(modelName, withShareExtModule);
                 return nodeRef;
+            }
+        });
+    }
+
+    private AspectDefinition getAspect(final QName aspectQName)
+    {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<AspectDefinition>()
+        {
+            @Override
+            public AspectDefinition execute() throws Throwable
+            {
+                return customModelService.getCustomAspect(aspectQName);
+            }
+        });
+    }
+
+    private TypeDefinition getType(final QName typeQName)
+    {
+        return transactionHelper.doInTransaction(new RetryingTransactionCallback<TypeDefinition>()
+        {
+            @Override
+            public TypeDefinition execute() throws Throwable
+            {
+                return customModelService.getCustomType(typeQName);
             }
         });
     }

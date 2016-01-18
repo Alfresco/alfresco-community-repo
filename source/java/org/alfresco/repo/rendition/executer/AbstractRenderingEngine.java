@@ -980,6 +980,9 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
         String renditionName = getRenditionName(tempRenditionNode, renditionLocation, renditionDefinition);
         nodeService.setProperty(renditionNode.getChildRef(), ContentModel.PROP_NAME, renditionName); // to manager
 
+        // Add temporary aspect for temporary rendition node
+        // When this node id deleted, will not appear in user's trashcan
+        nodeService.addAspect(tempRendition.getChildRef(), ContentModel.ASPECT_TEMPORARY, null);
         // Delete the temporary rendition.
         nodeService.removeChildAssociation(tempRendition);
         if (logger.isDebugEnabled())

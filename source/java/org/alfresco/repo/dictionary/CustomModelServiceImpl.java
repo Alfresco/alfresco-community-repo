@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,8 +32,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
@@ -63,7 +61,6 @@ import org.alfresco.service.cmr.dictionary.CustomModelException;
 import org.alfresco.service.cmr.dictionary.CustomModelService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.ModelDefinition;
-import org.alfresco.service.cmr.dictionary.NamespaceDefinition;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryException.DuplicateDefinitionException;
@@ -85,8 +82,6 @@ import org.alfresco.util.TempFileProvider;
 import org.alfresco.util.XMLUtil;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -95,7 +90,7 @@ import org.w3c.dom.Node;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class CustomModelServiceImpl extends AbstractLifecycleBean implements CustomModelService
+public class CustomModelServiceImpl implements CustomModelService
 {
     private static final Log logger = LogFactory.getLog(CustomModelServiceImpl.class);
 
@@ -146,7 +141,6 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
     private DownloadStorage downloadStorage;
 
     private String shareExtModulePath;
-    private ConcurrentMap<String, CompiledModel> uriToModelCache = new ConcurrentHashMap<>();
 
 
     public void setNodeService(NodeService nodeService)
@@ -230,7 +224,7 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
         PropertyCheck.mandatory(this, "searchService", searchService);
         PropertyCheck.mandatory(this, "repoModelsLocation", repoModelsLocation);
         PropertyCheck.mandatory(this, "namespaceDAO", namespaceDAO);
-        PropertyCheck.mandatory(this, "dictionaryServicee", dictionaryService);
+        PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
         PropertyCheck.mandatory(this, "retryingTransactionHelper", retryingTransactionHelper);
         PropertyCheck.mandatory(this, "repoAdminService", repoAdminService);
         PropertyCheck.mandatory(this, "authorityService", authorityService);
@@ -240,36 +234,10 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
         PropertyCheck.mandatory(this, "downloadStorage", downloadStorage);
     }
 
-    @Override
-    protected void onBootstrap(ApplicationEvent event)
-    {
-        // Load custom models
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Exception
-            {
-                List<CompiledModel> inactiveModels = getAllCustomM2Models(false);
-                for (CompiledModel model : inactiveModels)
-                {
-                    String uri = getModelNamespaceUriPrefix(model.getM2Model()).getFirst();
-                    uriToModelCache.putIfAbsent(uri, model);
-                }
-                return null;
-            }
-        }, true);
-    }
-
-    @Override
-    protected void onShutdown(ApplicationEvent event)
-    {
-        // Nothing to do
-    }
-
     private NodeRef getRootNode()
     {
         StoreRef storeRef = repoModelsLocation.getStoreRef();
-        NodeRef rootNode = nodeService.getRootNode(storeRef);
-        return rootNode;
+        return nodeService.getRootNode(storeRef);
     }
 
     @Override
@@ -293,8 +261,7 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
             throw new CustomModelException(MSG_MULTIPLE_MODELS, new Object[] { modelName });
         }
 
-        NodeRef modelNodeRef = nodeRefs.get(0);
-        return modelNodeRef;
+        return nodeRefs.get(0);
     }
 
     private M2Model getM2Model(final NodeRef modelNodeRef)
@@ -341,13 +308,24 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
     public ModelDefinition getCustomModelByUri(String namespaceUri)
     {
         ParameterCheck.mandatoryString("namespaceUri", namespaceUri);
-        CompiledModel compiledModel = uriToModelCache.get(namespaceUri);
+        CompiledModel compiledModel = getModelByUri(namespaceUri);
 
         if (compiledModel != null)
         {
             return compiledModel.getModelDefinition();
         }
+        return null;
+    }
 
+    private CompiledModel getModelByUri(String uri)
+    {
+        for (CompiledModel model : getAllCustomM2Models(false))
+        {
+            if (uri.equals(getModelNamespaceUriPrefix(model.getM2Model()).getFirst()))
+            {
+                return model;
+            }
+        }
         return null;
     }
 
@@ -361,7 +339,6 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
     {
         ParameterCheck.mandatoryString("modelName", modelName);
 
-        //TODO add cache
         final NodeRef modelNodeRef = getModelNodeRef(modelName);
 
         if (modelNodeRef == null || !nodeService.exists(modelNodeRef))
@@ -413,7 +390,7 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
 
         Collection<QName> models = dictionaryDAO.getModels(true);
 
-        List<String> dictionaryModels = new ArrayList<String>();
+        List<String> dictionaryModels = new ArrayList<>();
         for (QName model : models)
         {
             dictionaryModels.add(model.toPrefixString());
@@ -482,7 +459,7 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
     {
         ParameterCheck.mandatory("name", name);
 
-        CompiledModel compiledModel = uriToModelCache.get(name.getNamespaceURI());
+        CompiledModel compiledModel = getModelByUri(name.getNamespaceURI());
         if (compiledModel != null)
         {
             return compiledModel.getAspect(name);
@@ -510,7 +487,7 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
     {
         ParameterCheck.mandatory("name", name);
 
-        CompiledModel compiledModel = uriToModelCache.get(name.getNamespaceURI());
+        CompiledModel compiledModel = getModelByUri(name.getNamespaceURI());
         if (compiledModel != null)
         {
             return compiledModel.getType(name);
@@ -538,7 +515,7 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
     {
         ParameterCheck.mandatory("name", name);
 
-        CompiledModel compiledModel = uriToModelCache.get(name.getNamespaceURI());
+        CompiledModel compiledModel = getModelByUri(name.getNamespaceURI());
         if (compiledModel != null)
         {
             return compiledModel.getConstraint(name);
@@ -552,7 +529,6 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
     {
         ParameterCheck.mandatory("m2Model", m2Model);
 
-        // TODO make it more robust
         String modelName = m2Model.getName();
         int colonIndex = modelName.indexOf(QName.NAMESPACE_PREFIX);
         final String modelFileName = (colonIndex == -1) ? modelName : modelName.substring(colonIndex + 1);
@@ -569,11 +545,6 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
 
         // Return the created model definition
         CompiledModel compiledModel = createUpdateModel(modelFileName, m2Model, activate, MSG_CREATE_MODEL_ERR, false);
-        // Add the created model into the cache
-        // Note: for now, we only allow one namespace per model (see org.alfresco.rest.api.impl.CustomModelsImpl)
-        NamespaceDefinition nsd = compiledModel.getModelDefinition().getNamespaces().iterator().next();
-        uriToModelCache.putIfAbsent(nsd.getUri(), compiledModel);
-
         CustomModelDefinition modelDef = new CustomModelDefinitionImpl(compiledModel, activate, dictionaryService);
 
         if (logger.isDebugEnabled())
@@ -612,45 +583,20 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
         }
 
         // if the URI has changed, then check the new URI is not in use.
-        CompiledModel removedCachedModel = null;
         if (!existingNamespacePair.getFirst().equals(newNamespacePair.getFirst()))
         {
             validateModelNamespaceUri(newNamespacePair.getFirst());
-            // As the URI has changed and it's valid, remove the old one.
-            removedCachedModel = uriToModelCache.remove(existingNamespacePair.getFirst());
         }
 
-        CompiledModel compiledModel = null;
-        try
-        {
-            /*
-             * We set the requiresNewTx = true, in order to catch any exception
-             * thrown within the low level content model management.
-             * For example, deleting a property of an active model, where the
-             * property has been applied to a node will cause the
-             * ModelValidatorImpl to throw an exception.
-             * Without starting a new TX, we can't catch that exception.
-             */
-            compiledModel = createUpdateModel(modelFileName, m2Model, activate, MSG_UPDATE_MODEL_ERR, true);
-        }
-        catch (Exception ex)
-        {
-            // Put back the existing model if it was removed
-            if (removedCachedModel != null)
-            {
-                uriToModelCache.put(existingNamespacePair.getFirst(), removedCachedModel);
-
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Couldn't updated the model [" + modelFileName + "].");
-                }
-            }
-            throw ex;
-        }
-
-        NamespaceDefinition nsd = compiledModel.getModelDefinition().getNamespaces().iterator().next();
-        uriToModelCache.put(nsd.getUri(), compiledModel);
-
+        /*
+         * We set the requiresNewTx = true, in order to catch any exception
+         * thrown within the low level content model management.
+         * For example, deleting a property of an active model, where the
+         * property has been applied to a node will cause the
+         * ModelValidatorImpl to throw an exception.
+         * Without starting a new TX, we can't catch that exception.
+         */
+        CompiledModel compiledModel = createUpdateModel(modelFileName, m2Model, activate, MSG_UPDATE_MODEL_ERR, true);
         CustomModelDefinition modelDef = new CustomModelDefinitionImpl(compiledModel, activate, dictionaryService);
 
         if (logger.isDebugEnabled())
@@ -700,8 +646,8 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
      * Validates the properties' non-null default values against the defined property constraints.
      *
      * @param compiledModel the compiled model
-     * @throws CustomModelConstraintException if there is constraint evaluation
-     *             exception
+     * @throws CustomModelException.CustomModelConstraintException if there is constraint evaluation
+     *                                                             exception
      */
     private void validatePropsDefaultValues(CompiledModel compiledModel)
     {
@@ -732,8 +678,7 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
         try
         {
             // Validate model dependencies, constraints and etc. before creating a node
-            CompiledModel compiledModel = m2Model.compile(dictionaryDAO, namespaceDAO, true);
-            return compiledModel;
+            return m2Model.compile(dictionaryDAO, namespaceDAO, true);
         }
         catch (Exception ex)
         {
@@ -802,7 +747,7 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
             public Pair<Integer, Integer> getTotalResultCount()
             {
                 Integer total = Integer.valueOf(totalSize);
-                return new Pair<Integer, Integer>(total, total);
+                return new Pair<>(total, total);
             }
 
             @Override
@@ -849,8 +794,7 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
         Collection<TypeDefinition> modelTypes = customModelDefinition.getTypeDefinitions();
         Collection<AspectDefinition> modelAspects = customModelDefinition.getAspectDefinitions();
 
-        Collection<CompiledModel> allModels = uriToModelCache.values();
-        for (CompiledModel cm : allModels)
+        for (CompiledModel cm : getAllCustomM2Models(false))
         {
             // Ignore type/aspect dependency check within the model itself
             if (!customModelDefinition.getName().equals(cm.getModelDefinition().getName()))
@@ -914,9 +858,6 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
         {
             throw new CustomModelException.ActiveModelConstraintException(MSG_UNABLE_DELETE_ACTIVE_MODEL);
         }
-
-        // Get the model first, so it can be used to remove the compiled model from cache
-        final M2Model model = getM2Model(nodeRef);
         try
         {
             repoAdminService.undeployModel(modelName);
@@ -925,9 +866,6 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
         {
             throw new CustomModelException(MSG_UNABLE_MODEL_DELETE, new Object[] { modelName }, ex);
         }
-
-       // Remove from the cache
-        uriToModelCache.remove(getModelNamespaceUriPrefix(model).getFirst());
     }
 
     @Override
@@ -941,7 +879,14 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
             return true;
         }
 
-        return uriToModelCache.containsKey(modelNamespaceUri);
+        for (CompiledModel model : getAllCustomM2Models(false))
+        {
+            if (modelNamespaceUri.equals(getModelNamespaceUriPrefix(model.getM2Model()).getFirst()))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -949,17 +894,15 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
     {
         ParameterCheck.mandatoryString("modelNamespacePrefix", modelNamespacePrefix);
 
-        Collection<String> uris = namespaceDAO.getPrefixes();
-        if (uris.contains(modelNamespacePrefix))
+        Collection<String> prefixes = namespaceDAO.getPrefixes();
+        if (prefixes.contains(modelNamespacePrefix))
         {
             return true;
         }
 
-        // TODO Should we add a namespace prefix cache here?
-        for(CompiledModel cm : uriToModelCache.values())
+        for (CompiledModel model : getAllCustomM2Models(false))
         {
-            Pair<String, String> namespacePair = getModelNamespaceUriPrefix(cm.getM2Model());
-            if(modelNamespacePrefix.equals(namespacePair.getSecond()))
+            if (modelNamespacePrefix.equals(getModelNamespaceUriPrefix(model.getM2Model()).getSecond()))
             {
                 return true;
             }
@@ -1002,7 +945,7 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
         }
         M2Namespace ns = namespaces.iterator().next();
 
-        return new Pair<String, String>(ns.getUri(), ns.getPrefix());
+        return new Pair<>(ns.getUri(), ns.getPrefix());
     }
 
     private void validateModelNamespaceUri(String uri)
@@ -1280,7 +1223,7 @@ public class CustomModelServiceImpl extends AbstractLifecycleBean implements Cus
                     DownloadModel.TYPE_DOWNLOAD,
                     Collections.<QName, Serializable> singletonMap(ContentModel.PROP_NAME, name)).getChildRef();
 
-        Map<QName, Serializable> aspectProperties = new HashMap<QName, Serializable>(2);
+        Map<QName, Serializable> aspectProperties = new HashMap<>(2);
         aspectProperties.put(ContentModel.PROP_IS_INDEXED, Boolean.FALSE);
         aspectProperties.put(ContentModel.PROP_IS_CONTENT_INDEXED, Boolean.FALSE);
         nodeService.addAspect(newNodeRef, ContentModel.ASPECT_INDEX_CONTROL, aspectProperties);

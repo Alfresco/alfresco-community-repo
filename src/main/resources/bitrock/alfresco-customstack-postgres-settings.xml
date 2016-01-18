@@ -123,9 +123,9 @@
             </ruleList>
         </setInstallerVariable>
         <setInstallerVariable name="component(tomcat).parameter(tomcat_memory_settings_unix).value" value="-Xms512M -Xmx${java_xmx_setting}M"/>
-        <setInstallerVariable name="component(tomcat).parameter(tomcat_extra_opts_unix).value" value="-XX:+DisableExplicitGC -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -Djava.awt.headless=true -Dalfresco.home=@@BITROCK_INSTALLDIR@@ -Dcom.sun.management.jmxremote -XX:ReservedCodeCacheSize=128m"/>
+        <setInstallerVariable name="component(tomcat).parameter(tomcat_extra_opts_unix).value" value="-XX:+DisableExplicitGC -XX:+UseConcMarkSweepGC -XX:+UseParNewGC -Djava.awt.headless=true -Dalfresco.home=@@BITROCK_INSTALLDIR@@ -XX:ReservedCodeCacheSize=128m"/>
         <setInstallerVariable name="component(tomcat).parameter(tomcat_extra_opts_windows).value">
-            <value>++JvmOptions="-XX:+DisableExplicitGC" ++JvmOptions="-XX:+UseConcMarkSweepGC" ++JvmOptions="-XX:+UseParNewGC" ++JvmOptions="-XX:ReservedCodeCacheSize=128m" ++JvmOptions="-Dalfresco.home=@@BITROCK_INSTALLDIR@@" ++JvmOptions="-Dcom.sun.management.jmxremote"</value>
+            <value>++JvmOptions="-XX:+DisableExplicitGC" ++JvmOptions="-XX:+UseConcMarkSweepGC" ++JvmOptions="-XX:+UseParNewGC" ++JvmOptions="-XX:ReservedCodeCacheSize=128m" ++JvmOptions="-Dalfresco.home=@@BITROCK_INSTALLDIR@@" </value>
         </setInstallerVariable>
         <setInstallerVariable name="component(tomcat).parameter(tomcat_memory_settings_windows).value">
             <value>--JvmMs 512 --JvmMx ${java_xmx_setting}</value>

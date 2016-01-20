@@ -64,7 +64,6 @@
          <arg value="-DgroupId=${groupId}" />
          <arg value="-DartifactId=alfresco-solr4" />
          <arg value="-Dversion=${properties.alfresco.base.version}" />
-         <arg value="-Dclassifier=ssl" />
          <arg value="-Dpackaging=war" />
          <arg value="-Ddest=${ant.build.directory}/solr4.war" />
       </exec>
@@ -76,7 +75,7 @@
          <fileset dir="${ant.build.directory}/alfresco-repository/alfresco/keystore" />
       </copy>
 
-      <property name="solr.root.tmp" location="${basedir}/../../data/solr4" />
+      <property name="solr.root.tmp" location="${basedir}/../../../data/solr4" />
 
       <pathconvert property="solr.root" targetos="unix">
          <path location="${solr.root.tmp}"/>

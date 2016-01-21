@@ -374,8 +374,8 @@
                 <prop key="system.downloads_container.childname">${system.downloads_container.childname}</prop>
                 <prop key="system.certificate_container.childname">${system.certificate_container.childname}</prop>
                 <prop key="spaces.solr_facets.root.childname">${spaces.solr_facets.root.childname}</prop>
-                <prop key="spaces.virtualfolders.childname">${spaces.virtualfolders.childname}</prop>
-                <prop key="spaces.virtualdownloads.childname">${spaces.virtualdownloads.childname}</prop>
+                <prop key="spaces.smartfolders.childname">${spaces.smartfolders.childname}</prop>
+                <prop key="spaces.smartdownloads.childname">${spaces.smartdownloads.childname}</prop>
             </props>
         </property>
     </bean>
@@ -680,7 +680,7 @@
                 </props>
                 
                 <props>
-                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.virtualfolders.childname}</prop>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.smartfolders.childname}</prop>
                     <prop key="location">alfresco/bootstrap/example_virtualfoldertemplates.acp</prop>
                     <prop key="messages">alfresco/messages/bootstrap-example-virtualfoldertemplates</prop>
                 </props>

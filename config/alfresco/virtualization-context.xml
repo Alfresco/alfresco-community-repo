@@ -29,7 +29,7 @@
    </bean>
 
    <bean id="config.hash.store" class="org.alfresco.repo.virtual.ref.HashStoreConfiguration.HashStoreConfigurationBean">
-      <property name="classpathsHashes" value="${virtual.reference.classpath.hash}"/>
+      <property name="classpathsHashes" value="${smart.reference.classpath.hash}"/>
    </bean>
 
    <!-- VIRTUALIZATION CONTENT MODEL -->
@@ -44,24 +44,24 @@
       </property>
       <property name="nodeService" ref="nodeService" />
       <property name="namespacePrefixResolver" ref="namespaceService" />
-      <property name="templatesParentClasspath" value="${virtual.folders.config.system.templates.classpath}" />
+      <property name="templatesParentClasspath" value="${smart.folders.config.system.templates.classpath}" />
       <property name="templatesParentRepositoryPath">
          <bean factory-bean="config.NodeRefPathExpressionFactory" factory-method="createInstance">
-            <property name="path" value="${virtual.folders.config.system.templates.path}" />
+            <property name="path" value="${smart.folders.config.system.templates.path}" />
          </bean>
       </property>
-      <property name="repositoryTemplateTypeName" value="${virtual.folders.config.system.templates.template.type}" />
+      <property name="repositoryTemplateTypeName" value="${smart.folders.config.system.templates.template.type}" />
    </bean>
 
    <bean id="virtualization.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
       <property name="models">
          <list>
-            <value>${virtual.folders.model}</value>
+            <value>${smart.folders.model}</value>
          </list>
       </property>
       <property name="labels">
          <list>
-            <value>${virtual.folders.model.labels}</value>
+            <value>${smart.folders.model.labels}</value>
          </list>
       </property>
    </bean>
@@ -91,7 +91,7 @@
    </bean>
 
    <bean id="templateVirtualizationMethod" abstract="true" init-method="init">
-      <property name="vanillaProcessor" value="${virtual.folders.config.vanilla.processor.classpath}" />
+      <property name="vanillaProcessor" value="${smart.folders.config.vanilla.processor.classpath}" />
    </bean>
 
    <bean id="aspectVirtualizationMethod" abstract="true" parent="templateVirtualizationMethod" init-method="init">
@@ -99,23 +99,23 @@
    </bean>
 
    <bean id="customVirtualizationMethod" parent="aspectVirtualizationMethod" class="org.alfresco.repo.virtual.store.CustomVirtualizationMethod">
-      <property name="aspectName" value="${virtual.folders.config.custom.aspect}" />
-      <property name="associationName" value="${virtual.folders.config.custom.aspect.template.association}" />
+      <property name="aspectName" value="${smart.folders.config.custom.aspect}" />
+      <property name="associationName" value="${smart.folders.config.custom.aspect.template.association}" />
    </bean>
 
    <bean id="systemVirtualizationMethod" parent="aspectVirtualizationMethod" class="org.alfresco.repo.virtual.store.SystemVirtualizationMethod">
-      <property name="aspectName" value="${virtual.folders.config.system.aspect}" />
-      <property name="systemPathPropertyName" value="${virtual.folders.config.system.aspect.template.location.property}" />
+      <property name="aspectName" value="${smart.folders.config.system.aspect}" />
+      <property name="systemPathPropertyName" value="${smart.folders.config.system.aspect.template.location.property}" />
    </bean>
 
    <bean id="typeVirtualizationMethod" parent="templateVirtualizationMethod" class="org.alfresco.repo.virtual.store.TypeVirtualizationMethod">
       <property name="namespacePrefixResolver" ref="namespaceService" />
       <property name="templatesPath">
          <bean factory-bean="config.NodeRefPathExpressionFactory" factory-method="createInstance">
-            <property name="path" value="${virtual.folders.config.type.templates.path}" />
+            <property name="path" value="${smart.folders.config.type.templates.path}" />
          </bean>
       </property>
-      <property name="qnameFilters" value="${virtual.folders.config.type.templates.qname.filter}" />
+      <property name="qnameFilters" value="${smart.folders.config.type.templates.qname.filter}" />
    </bean>
 
    <bean id="virtualStore" class="org.alfresco.repo.virtual.store.VirtualStoreImpl">
@@ -185,7 +185,7 @@
    <bean id="nodeServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualNodeServiceExtension">
       <property name="downloadAssociationsFolder">
          <bean factory-bean="config.NodeRefPathExpressionFactory" factory-method="createInstance">
-            <property name="path" value="${virtual.download.associations.folder}" />
+            <property name="path" value="${smart.download.associations.folder}" />
          </bean>
       </property>
       <property name="virtualStore" ref="virtualStore" />
@@ -248,7 +248,7 @@
 
    <bean id="virtualFoldersBundle" class="org.alfresco.traitextender.SpringExtensionBundle">
       <property name="id" value="org.alfresco.virtual.folders" />
-      <property name="enabled" value="${virtual.folders.enabled}" />
+      <property name="enabled" value="${smart.folders.enabled}" />
       <property name="extensions">
          <list>
             <ref bean="nodeServiceExtension" />

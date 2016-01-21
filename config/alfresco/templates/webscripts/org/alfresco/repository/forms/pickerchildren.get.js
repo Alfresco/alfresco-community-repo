@@ -8,7 +8,7 @@ function main()
       argsMaxResults = args['size'],
       argsXPath = args['xpath'],
       argsRootNode = args['rootNode'],
-      argsSelectableMimeType=args['selectableMimeType'],
+      argsSelectableMimeType = args['selectableMimeType'],
       pathElements = url.service.split("/"),
       parent = null,
       rootNode = companyhome,
@@ -25,7 +25,7 @@ function main()
       logger.log("argsSearchTerm = " + argsSearchTerm);
       logger.log("argsMaxResults = " + argsMaxResults);
       logger.log("argsXPath = " + argsXPath);
-      logger.log("selectableMimeType = " + selectableMimeType);
+      logger.log("argsSelectableMimeType = " + argsSelectableMimeType);
    }
    try
    {

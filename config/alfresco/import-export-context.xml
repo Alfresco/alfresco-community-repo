@@ -681,8 +681,8 @@
                 
                 <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.smartfolders.childname}</prop>
-                    <prop key="location">alfresco/bootstrap/example_virtualfoldertemplates.acp</prop>
-                    <prop key="messages">alfresco/messages/bootstrap-example-virtualfoldertemplates</prop>
+                    <prop key="location">alfresco/bootstrap/example_smartfoldertemplates.acp</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-example-smartfoldertemplates</prop>
                 </props>
             </list>
         </property>

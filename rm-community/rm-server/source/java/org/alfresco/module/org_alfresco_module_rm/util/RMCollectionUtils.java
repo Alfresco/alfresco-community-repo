@@ -20,7 +20,9 @@ package org.alfresco.module.org_alfresco_module_rm.util;
 
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -98,6 +100,25 @@ public final class RMCollectionUtils
     }
 
     /**
+     * Returns a Serializable List containing all of the provided elements.
+     *
+     * @param elements the elements to put in a list.
+     * @param <T>      the element type.
+     * @return         a Serializable List containing all the provided elements.
+     */
+    @SafeVarargs
+    public static <T extends Serializable, LIST extends Serializable & List<T>>
+                  LIST asSerializableList(T... elements)
+    {
+        final LIST l = (LIST)new ArrayList<T>(elements.length);
+        for (T element : elements)
+        {
+            l.add(element);
+        }
+        return l;
+    }
+
+    /**
      * Returns a Set containing all of the provided elements. Duplicate elements will be removed as per the
      * {@code Set} contract.
      *
@@ -114,6 +135,20 @@ public final class RMCollectionUtils
             set.add(element);
         }
         return set;
+    }
+
+    /**
+     * Returns a Set containing all of the elements in the provided collection.
+     * Duplicate elements will be removed as per the
+     * {@code Set} contract.
+     *
+     * @param c   the elements to put in a Set.
+     * @param <T> the element type.
+     * @return    a Set containing all the provided elements (without duplicates).
+     */
+    public static <T> HashSet<T> asSet(Collection<T> c)
+    {
+        return new HashSet<>(c);
     }
 
     /**

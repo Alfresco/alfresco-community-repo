@@ -108,7 +108,7 @@
                   <cm:title>${spaces.nodeTemplatesSpace.name}</cm:title>
                   <cm:description>${spaces.nodeTemplatesSpace.description}</cm:description>
                </cm:folder>
-               <cm:folder view:childName="${spaces.virtualfolders.childname}">
+               <cm:folder view:childName="${spaces.smartfolders.childname}">
                   <view:acl view:inherit="false">
                      <view:ace view:access="ALLOWED">
                         <view:authority>GROUP_EVERYONE</view:authority>
@@ -121,7 +121,7 @@
                   <cm:title>${spaces.virtualfoldertemplates.name}</cm:title>
                   <cm:description>${spaces.virtualfoldertemplates.description}</cm:description>
                </cm:folder>
-               <cm:folder view:childName="${spaces.virtualdownloads.childname}">
+               <cm:folder view:childName="${spaces.smartdownloads.childname}">
                   <view:acl view:inherit="false">
                      <view:ace view:access="ALLOWED">
                         <view:authority>GROUP_EVERYONE</view:authority>

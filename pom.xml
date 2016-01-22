@@ -902,7 +902,7 @@
                               </goals>
                               <configuration>
                                   <systemPropertyVariables>
-                                    <virtual.folders.enabled>true</virtual.folders.enabled>
+                                    <smart.folders.enabled>true</smart.folders.enabled>
                                   </systemPropertyVariables>
                                   <forkMode>always</forkMode>
                                   <includes combine.self="override">

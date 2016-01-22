@@ -148,9 +148,7 @@ public final class RMCollectionUtils
      */
     public static <T> HashSet<T> asSet(Collection<T> c)
     {
-        final HashSet<T> set = new HashSet<>();
-        set.addAll(c);
-        return set;
+        return new HashSet<>(c);
     }
 
     /**

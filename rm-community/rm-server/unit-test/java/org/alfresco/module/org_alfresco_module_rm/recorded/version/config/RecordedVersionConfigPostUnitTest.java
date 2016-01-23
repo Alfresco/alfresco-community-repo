@@ -20,9 +20,9 @@ package org.alfresco.module.org_alfresco_module_rm.recorded.version.config;
 
 import static org.alfresco.module.org_alfresco_module_rm.script.slingshot.RecordedVersionConfigPost.RECORDED_VERSION;
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.ALL;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.doReturn;
-import static org.testng.Assert.assertEquals;
 
 import java.util.Map;
 

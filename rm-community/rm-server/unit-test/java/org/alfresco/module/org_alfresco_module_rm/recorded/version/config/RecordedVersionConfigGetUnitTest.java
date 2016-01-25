@@ -21,10 +21,10 @@ package org.alfresco.module.org_alfresco_module_rm.recorded.version.config;
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.ALL;
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.MAJOR_ONLY;
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.NONE;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,6 +1,6 @@
 <component>
     <name>aosmodule</name>
-    <description>Office Services Module</description>
+    <description>Alfresco Office Services</description>
     <detailedDescription>Select this module to allow applications that can talk to a SharePoint server to talk to your Alfresco installation.</detailedDescription>
     <canBeEdited>1</canBeEdited>
     <selected>1</selected>

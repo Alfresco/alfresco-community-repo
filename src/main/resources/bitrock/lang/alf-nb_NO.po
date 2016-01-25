@@ -394,9 +394,6 @@ msgstr "Velg databasebruker."
 msgid "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
 msgstr "Installasjonen vil forsøke å installere nye databaser og vil overskrive duplikater. Ønsker du å fortsette?"
 
-msgid "Office Services Module"
-msgstr "Office Services Module"
-
 msgid "Shortcuts Images"
 msgstr "Bilder av snarveier"
 

@@ -394,8 +394,8 @@ msgstr "Stel de gebruiker van de database in."
 msgid "Setup will attempt to install new databases and will overwrite any duplicates. Do you want you continue?"
 msgstr "Setup probeert nieuwe databases te installeren en duplicaten te overschrijven. Wilt u doorgaan?"
 
-msgid "SharePoint Imitation"
-msgstr "SharePoint Imitation"
+msgid "Alfresco Office Services Module"
+msgstr "Alfresco Office Services Module"
 
 msgid "Shortcuts Images"
 msgstr "Snelkoppelingen afbeeldingen "

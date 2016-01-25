@@ -1063,6 +1063,7 @@ public class TestCMIS extends EnterpriseTestApi
                 String siteName = "site" + System.currentTimeMillis();
                 SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
                 TestSite site = repoService.createSite(null, siteInfo);
+
                 String name = GUID.generate();
 				NodeRef folderNodeRef = repoService.createFolder(site.getContainerNodeRef(DOCUMENT_LIBRARY_CONTAINER_NAME), name);
                 folders.add(folderNodeRef);
@@ -2410,53 +2411,5 @@ public class TestCMIS extends EnterpriseTestApi
                 // ok
             }
         }
-    }
-    
-    @Test
-    public void testDoNotShowCheckedOutedNodeInFolder() throws Exception
-    {
-        final TestNetwork network = getTestFixture().getRandomNetwork();
-
-        String username = String.format(TEST_USER_NAME_PATTERN, System.currentTimeMillis());
-        PersonInfo personInfo = new PersonInfo(username, username, username, TEST_PASSWORD, null, null, null, null, null, null, null);
-        TestPerson person = network.createUser(personInfo);
-        String personId = person.getId();
-
-        final String siteName = String.format(TEST_SITE_NAME_PATTERN, System.currentTimeMillis());
-
-        TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-        {
-            @Override
-            public TestSite doWork() throws Exception
-            {
-                SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
-                return repoService.createSite(null, siteInfo);
-            }
-        }, personId, network.getId());
-
-        publicApiClient.setRequestContext(new RequestContext(network.getId(), personId));
-        CmisSession cmisSession = publicApiClient.createPublicApiCMISSession(Binding.atom, CMIS_VERSION_11);
-        Folder docLibrary = (Folder) cmisSession.getObjectByPath(String.format(DOCUMENT_LIBRARY_PATH_PATTERN, siteName));
-        
-        assertEquals(0, docLibrary.getChildren().getTotalNumItems());
-        
-        String name = String.format(TEST_DOCUMENT_NAME_PATTERN, GUID.generate());
-
-        Map<String, Object> properties = new HashMap<String, Object>();
-        properties.put(PropertyIds.OBJECT_TYPE_ID, TYPE_CMIS_DOCUMENT);
-        properties.put(PropertyIds.NAME, name);
-
-        ContentStreamImpl fileContent = new ContentStreamImpl();
-        ByteArrayInputStream stream = new ByteArrayInputStream(GUID.generate().getBytes());
-        fileContent.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
-        fileContent.setStream(stream);
-
-        docLibrary.createDocument(properties, fileContent, VersioningState.CHECKEDOUT);
-        // there should be only one document
-        assertEquals(1, docLibrary.getChildren().getTotalNumItems());
-        
-        Document obj = (Document)docLibrary.getChildren().iterator().next();
-        // and it should be a PWC
-        assertTrue(obj.isPrivateWorkingCopy());
     }
 }

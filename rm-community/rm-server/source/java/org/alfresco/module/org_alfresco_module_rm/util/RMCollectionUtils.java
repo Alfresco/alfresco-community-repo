@@ -106,6 +106,7 @@ public final class RMCollectionUtils
      * @param <T>      the element type.
      * @return         a Serializable List containing all the provided elements.
      */
+    @SuppressWarnings("unchecked")
     @SafeVarargs
     public static <T extends Serializable, LIST extends Serializable & List<T>>
                   LIST asSerializableList(T... elements)

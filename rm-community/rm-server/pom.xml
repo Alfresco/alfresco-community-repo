@@ -1,22 +1,31 @@
-<?xml version="1.0"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+
+   <modelVersion>4.0.0</modelVersion>
+   <artifactId>alfresco-rm-server</artifactId>
+   <name>Alfresco RM Server</name>
+   <packaging>amp</packaging>
+   <description>Manages the lifecycle of the alfresco-rm-server amp</description>
+
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-rm-parent</artifactId>
       <version>2.4-SNAPSHOT</version>
    </parent>
-   <modelVersion>4.0.0</modelVersion>
-   <artifactId>alfresco-rm-server</artifactId>
-   <name>Alfresco RM Server</name>
-   <!-- <packaging>amp</packaging> -->
+
    <properties>
-      <alfresco.client.contextPath>/alfresco</alfresco.client.contextPath>
+      <alfresco.data.location>${basedir}/target/alf_test_data</alfresco.data.location>
+      <alfresco.db.hibernate.dialect>org.hibernate.dialect.H2Dialect</alfresco.db.hibernate.dialect>
+      <alfresco.db.name>alfresco</alfresco.db.name>
+      <alfresco.db.username>alfresco</alfresco.db.username>
+      <alfresco.db.password>alfresco</alfresco.db.password>
+      <alfresco.db.host>localhost</alfresco.db.host>
+      <alfresco.repo.artifactId>alfresco</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <alfresco.mysql.version>5.1.31</alfresco.mysql.version>
-      <webapp.id.name>alfresco</webapp.id.name>
-      <webapp.id>${webapp.id.name}</webapp.id>
+      <alfresco.rm.artifactId>alfresco-rm-server</alfresco.rm.artifactId>
+      <skip.integrationtests>true</skip.integrationtests>
+      <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
    </properties>
    <build>
       <sourceDirectory>source/java</sourceDirectory>
@@ -28,14 +37,13 @@
       </resources>
       <testResources>
          <testResource>
-            <directory>test/resources</directory>
+            <directory>unit-test/resources</directory>
          </testResource>
          <testResource>
-            <directory>unit-test/resources</directory>
+            <directory>test/resources</directory>
          </testResource>
       </testResources>
       <plugins>
-         <!-- Additional source folder to be added: source/compatibility -->
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
@@ -65,21 +73,137 @@
             </executions>
          </plugin>
          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>prepare-package</phase>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+                  <configuration>
+                     <tasks>
+                        <copy todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
+                           <fileset dir="${project.build.outputDirectory}/alfresco"/>
+                        </copy>
+                        <move file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties"
+                           todir="${project.build.directory}/${project.build.finalName}"/>
+                     </tasks>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>properties-maven-plugin</artifactId>
+            <version>1.0-alpha-2</version>
+            <executions>
+               <execution>
+                  <phase>initialize</phase>
+                  <goals>
+                     <goal>read-project-properties</goal>
+                  </goals>
+                  <configuration>
+                     <files>
+                        <file>${basedir}/src/main/resources/local.properties</file>
+                     </files>
+                     <quiet>true</quiet>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+        <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-               <properties>
-                  <property>
-                     <name>usedefaultlisteners</name>
-                     <value>false</value>
-                  </property>
-                  <property>
-                     <name>listener</name>
-                     <value>org.uncommons.reportng.HTMLReporter, org.uncommons.reportng.JUnitXMLReporter</value>
-                  </property>
-               </properties>
-               <suiteXmlFiles>
-                  <suiteXmlFile>${project.build.testOutputDirectory}/testng.xml</suiteXmlFile>
-               </suiteXmlFiles>
+                <includes>
+                    <include>**/AllUnitTestSuite.class</include>
+                </includes>
+            </configuration>
+        </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-failsafe-plugin</artifactId>
+            <version>2.19</version>
+            <executions>
+               <execution>
+                  <id>integration-tests</id>
+                  <goals>
+                     <goal>integration-test</goal>
+                     <goal>verify</goal>
+                  </goals>
+                  <configuration>
+                      <skipTests>${skip.integrationtests}</skipTests>
+                      <includes>
+                         <include>**/AllTestSuite.class</include>
+                      </includes>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <!-- Fetch and unpack Alfresco Repository/Share WAR (alfresco.war or share.war) -->
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>unpack-alfresco</id>
+                  <phase>prepare-package</phase>
+                  <goals>
+                     <goal>unpack</goal>
+                  </goals>
+                  <configuration>
+                     <outputDirectory>${app.amp.client.war.folder}</outputDirectory>
+                     <artifactItems>
+                        <artifactItem>
+                           <groupId>${alfresco.groupId}</groupId>
+                           <artifactId>${app.amp.client.war.artifactId}</artifactId>
+                           <type>war</type>
+                           <version>${alfresco.version}</version>
+                        </artifactItem>
+                     </artifactItems>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
+         <!-- The current AMP artifact is installed into the Alfresco.war or share.war
+            using alfresco-maven-plugin -->
+         <plugin>
+            <groupId>org.alfresco.maven.plugin</groupId>
+            <artifactId>alfresco-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>attach-rm-jar</id>
+                  <goals>
+                     <goal>amp</goal>
+                  </goals>
+                  <configuration>
+                     <attachClasses>true</attachClasses>
+                     <includeDependencies>true</includeDependencies>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>install-rm-amp</id>
+                  <goals>
+                     <goal>install</goal>
+                  </goals>
+                  <phase>package</phase>
+                  <configuration>
+                     <backup>true</backup>
+                     <ampLocation>${project.build.directory}/${alfresco.rm.artifactId}-${alfresco.rm.version}.amp</ampLocation>
+                  </configuration>
+               </execution>
+               <execution>
+                  <id>amps-to-war-overlay</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>install</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <configuration>
+               <!-- We need to selectively not install web resources (i.e. /web folder in AMP),
+                  so these files can be picked up directly from the build project instead,
+                  enabling rapid application dev -->
             </configuration>
          </plugin>
          <plugin>
@@ -92,136 +216,160 @@
                   </goals>
                </execution>
             </executions>
+            <configuration>
+               <excludes>
+                  <exclude>**/alfresco-global.properties</exclude>
+               </excludes>
+            </configuration>
+         </plugin>
+         <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>2.4</version>
+            <executions>
+               <execution>
+                  <id>attach-sources</id>
+                  <goals>
+                     <goal>jar-no-fork</goal>
+                  </goals>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
+      <pluginManagement>
+         <plugins>
+            <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+            <plugin>
+               <groupId>org.eclipse.m2e</groupId>
+               <artifactId>lifecycle-mapping</artifactId>
+               <version>1.0.0</version>
+               <configuration>
+                  <lifecycleMappingMetadata>
+                     <pluginExecutions>
+                        <pluginExecution>
+                           <pluginExecutionFilter>
+                              <groupId>org.codehaus.mojo</groupId>
+                              <artifactId>properties-maven-plugin</artifactId>
+                              <versionRange>[1.0-alpha-2,)</versionRange>
+                              <goals>
+                                 <goal>read-project-properties</goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore></ignore>
+                           </action>
+                        </pluginExecution>
+                     </pluginExecutions>
+                  </lifecycleMappingMetadata>
+               </configuration>
+            </plugin>
+         </plugins>
+      </pluginManagement>
    </build>
+
+   <dependencies>
+      <dependency>
+         <groupId>com.google.code.gson</groupId>
+         <artifactId>gson</artifactId>
+         <version>2.3.1</version>
+      </dependency>
+      <!-- Alfresco dependencies -->
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-remote-api</artifactId>
+      </dependency>
+      <!-- Test dependencies -->
+      <dependency>
+         <groupId>io.takari.junit</groupId>
+         <artifactId>takari-cpsuite</artifactId>
+         <version>1.2.7</version>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework.extensions.surf</groupId>
+         <artifactId>spring-webscripts</artifactId>
+         <classifier>tests</classifier>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.mockito</groupId>
+         <artifactId>mockito-all</artifactId>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>org.springframework</groupId>
+         <artifactId>spring-test</artifactId>
+         <version>2.5</version>
+         <scope>test</scope>
+       </dependency>
+       <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-repository</artifactId>
+         <version>${alfresco.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-remote-api</artifactId>
+         <version>${alfresco.version}</version>
+         <classifier>tests</classifier>
+         <scope>test</scope>
+      </dependency>
+      <!-- Database drivers -->
+      <dependency>
+         <groupId>postgresql</groupId>
+         <artifactId>postgresql</artifactId>
+         <version>${alfresco.postgres.version}</version>
+      </dependency>
+      <dependency>
+         <groupId>mysql</groupId>
+         <artifactId>mysql-connector-java</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>${alfresco.groupId}</groupId>
+         <artifactId>alfresco-repository</artifactId>
+         <version>${alfresco.version}</version>
+         <classifier>h2scripts</classifier>
+         <exclusions>
+            <exclusion>
+               <groupId>*</groupId>
+               <artifactId>*</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+   </dependencies>
+
    <profiles>
       <profile>
-         <id>wipeDB</id>
-         <build>
-            <plugins>
-               <!-- Wipe the database before starting tests -->
-               <plugin>
-                  <groupId>org.codehaus.mojo</groupId>
-                  <artifactId>sql-maven-plugin</artifactId>
-                  <configuration>
-                     <autocommit>true</autocommit>
-                     <driver>${db.driver}</driver>
-                     <url>${db.master.url}</url>
-                     <username>${db.username}</username>
-                     <password>${db.password}</password>
-                  </configuration>
-                  <dependencies>
-                     <dependency>
-                        <groupId>postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                        <version>${alfresco.postgres.version}</version>
-                     </dependency>
-                     <dependency>
-                        <groupId>mysql</groupId>
-                        <artifactId>mysql-connector-java</artifactId>
-                        <version>${alfresco.mysql.version}</version>
-                     </dependency>
-                  </dependencies>
-                  <executions>
-                     <execution>
-                        <id>wipe-database</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                           <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                           <sqlCommand>drop database if exists alfresco</sqlCommand>
-                        </configuration>
-                     </execution>
-                     <execution>
-                        <id>create-database</id>
-                        <phase>process-test-resources</phase>
-                        <goals>
-                           <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                           <sqlCommand>create database alfresco</sqlCommand>
-                        </configuration>
-                     </execution>
-                  </executions>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-      <profile>
-         <id>fullBuild</id>
-         <build>
-            <plugins>
-               <plugin>
-                  <groupId>org.alfresco.maven.plugin</groupId>
-                  <artifactId>alfresco-maven-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <goals>
-                           <goal>amp</goal>
-                        </goals>
-                     </execution>
-                  </executions>
-               </plugin>
-               <plugin>
-                  <groupId>org.apache.tomcat.maven</groupId>
-                  <artifactId>tomcat7-maven-plugin</artifactId>
-                  <dependencies>
-                     <dependency>
-                        <groupId>postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                        <version>${alfresco.postgres.version}</version>
-                     </dependency>
-                     <dependency>
-                        <groupId>mysql</groupId>
-                        <artifactId>mysql-connector-java</artifactId>
-                        <version>${alfresco.mysql.version}</version>
-                     </dependency>
-                  </dependencies>
-               </plugin>
-               <plugin>
-                  <artifactId>maven-antrun-plugin</artifactId>
-                  <executions>
-                     <execution>
-                        <phase>prepare-package</phase>
-                        <goals>
-                           <goal>run</goal>
-                        </goals>
-                        <configuration>
-                           <tasks>
-                              <delete file="${project.build.outputDirectory}/alfresco/extension/dev-context.xml"/>
-                              <copy todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
-                                 <fileset dir="${project.build.outputDirectory}/alfresco"/>
-                              </copy>
-                              <move file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties"
-                                 todir="${project.build.directory}/${project.build.finalName}"/>
-                           </tasks>
-                        </configuration>
-                     </execution>
-                  </executions>
-               </plugin>
-            </plugins>
-         </build>
-      </profile>
-      <profile>
-         <id>appWarLocationSetting</id>
+         <id>use-mysql</id>
          <properties>
-            <app.war.location>${project.build.directory}/${project.build.finalName}-war</app.war.location>
+            <alfresco.db.name>${my.db.name}</alfresco.db.name>
+            <alfresco.db.port>${my.db.port}</alfresco.db.port>
+            <alfresco.db.hibernate.dialect>org.hibernate.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
+            <alfresco.db.params></alfresco.db.params>
+            <alfresco.db.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.db.url>
+            <alfresco.db.datasource.class>org.gjt.mm.mysql.Driver</alfresco.db.datasource.class>
          </properties>
       </profile>
       <profile>
-         <id>enterprise</id>
+         <id>use-postgres</id>
          <properties>
-            <webapp.id>alfresco-enterprise</webapp.id>
+            <alfresco.db.name>${my.db.name}</alfresco.db.name>
+            <alfresco.db.port>${my.db.port}</alfresco.db.port>
+            <alfresco.db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
+            <alfresco.db.params></alfresco.db.params>
+            <alfresco.db.url>jdbc:postgresql:${alfresco.db.name}</alfresco.db.url>
+            <alfresco.db.datasource.class>org.postgresql.Driver</alfresco.db.datasource.class>
          </properties>
       </profile>
       <profile>
-         <id>amp-with-solr</id>
-         <properties>
-            <skipTests>true</skipTests>
-            <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
-         </properties>
+         <id>start-alfresco</id>
          <build>
             <plugins>
                <!-- Fetch and unpack Alfresco Repository / Share / Solr in the target / folder -->
@@ -236,13 +384,13 @@
                            <goal>unpack</goal>
                         </goals>
                         <configuration>
-                           <outputDirectory>${alfresco.client.war.folder}</outputDirectory>
+                           <outputDirectory>${app.amp.client.war.folder}</outputDirectory>
                            <artifactItems>
                               <artifactItem>
-                                 <groupId>${alfresco.client.war.groupId}</groupId>
-                                 <artifactId>${alfresco.client.war}</artifactId>
+                                 <groupId>${alfresco.groupId}</groupId>
+                                 <artifactId>${alfresco.repo.artifactId}</artifactId>
                                  <type>war</type>
-                                 <version>${alfresco.client.war.version}</version>
+                                 <version>${alfresco.version}</version>
                               </artifactItem>
                            </artifactItems>
                         </configuration>
@@ -303,7 +451,7 @@
                            <name>solrHomePath</name>
                            <value>${alfresco.solr.home}</value>
                            <regex>\\</regex>
-                           <replacement>/</replacement>
+                           <replacement>\\\\</replacement>
                            <failIfNoMatch>false</failIfNoMatch>
                         </configuration>
                      </execution>
@@ -323,28 +471,29 @@
                      </execution>
                   </executions>
                   <configuration>
+                     <regex>false</regex>
                      <includes>
                         <include>${alfresco.solr.home}/context.xml</include>
                         <include>${alfresco.solr.home}/archive-SpacesStore/conf/solrcore.properties</include>
                         <include>${alfresco.solr.home}/workspace-SpacesStore/conf/solrcore.properties</include>
-                        <include>${alfresco.client.war.folder}/WEB-INF/web.xml</include>
+                        <include>${app.amp.client.war.folder}/WEB-INF/web.xml</include>
                      </includes>
                      <replacements>
                         <replacement>
                            <token>@@ALFRESCO_SOLR4_DIR@@</token>
-                           <value>${alfresco.solr.home}/</value>
+                           <value>${solrHomePath}/</value>
                         </replacement>
                         <replacement>
                            <token>@@ALFRESCO_SOLR4_MODEL_DIR@@</token>
-                           <value>${alfresco.solr.home}/alfrescoModels/</value>
+                           <value>${solrHomePath}/alfrescoModels/</value>
                         </replacement>
                         <replacement>
                            <token>@@ALFRESCO_SOLR4_CONTENT_DIR@@</token>
-                           <value>${alfresco.solr.home}/data/content/</value>
+                           <value>${solrHomePath}/data/content/</value>
                         </replacement>
                         <replacement>
                            <token>@@ALFRESCO_SOLR4_DATA_DIR@@</token>
-                           <value>${alfresco.solr.home}/data/index/</value>
+                           <value>${solrHomePath}/data/index/</value>
                         </replacement>
                         <replacement>
                            <token><![CDATA[<!-- Toggle securecomms placeholder start -->]]></token>
@@ -393,6 +542,7 @@
                </plugin>
             </plugins>
          </build>
+         <!--
          <dependencies>
             <dependency>
                <groupId>org.alfresco.maven</groupId>
@@ -400,98 +550,63 @@
                <version>${maven.alfresco.version}</version>
             </dependency>
          </dependencies>
+         -->
       </profile>
+
+      <profile>
+         <id>wipeDB</id>
+         <build>
+            <plugins>
+               <!-- Wipe the database before starting tests -->
+               <plugin>
+                  <groupId>org.codehaus.mojo</groupId>
+                  <artifactId>sql-maven-plugin</artifactId>
+                  <version>1.5</version>
+                  <configuration>
+                     <autocommit>true</autocommit>
+                     <driver>${alfresco.db.datasource.class}</driver>
+                     <url>${alfresco.db.master.url}</url>
+                     <username>${alfresco.db.username}</username>
+                     <password>${alfresco.db.password}</password>
+                  </configuration>
+                  <dependencies>
+                     <dependency>
+                        <groupId>postgresql</groupId>
+                        <artifactId>postgresql</artifactId>
+                        <version>${alfresco.postgres.version}</version>
+                     </dependency>
+                     <dependency>
+                        <groupId>mysql</groupId>
+                        <artifactId>mysql-connector-java</artifactId>
+                        <version>${alfresco.mysql.version}</version>
+                     </dependency>
+                  </dependencies>
+                  <executions>
+                     <execution>
+                        <id>wipe-database</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                           <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                           <sqlCommand>drop database if exists alfresco</sqlCommand>
+                        </configuration>
+                     </execution>
+                     <execution>
+                        <id>create-database</id>
+                        <phase>process-test-resources</phase>
+                        <goals>
+                           <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                           <sqlCommand>create database alfresco</sqlCommand>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+
    </profiles>
-   <dependencies>
-      <dependency>
-         <groupId>com.google.code.gson</groupId>
-         <artifactId>gson</artifactId>
-         <version>2.3.1</version>
-      </dependency>
-      <!-- Alfresco dependencies -->
-      <dependency>
-         <groupId>org.alfresco</groupId>
-         <artifactId>${webapp.id}</artifactId>
-         <version>${alfresco.base.version}</version>
-         <type>war</type>
-      </dependency>
-      <dependency>
-         <groupId>org.alfresco</groupId>
-         <artifactId>alfresco-remote-api</artifactId>
-      </dependency>
-      <!-- Test dependencies -->
-      <dependency>
-         <groupId>io.takari.junit</groupId>
-         <artifactId>takari-cpsuite</artifactId>
-         <version>1.2.7</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>junit</groupId>
-         <artifactId>junit</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework.extensions.surf</groupId>
-         <artifactId>spring-webscripts</artifactId>
-         <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.mockito</groupId>
-         <artifactId>mockito-all</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.springframework</groupId>
-         <artifactId>spring-test</artifactId>
-         <version>2.5</version>
-         <scope>test</scope>
-       </dependency>
-       <dependency>
-         <groupId>org.alfresco</groupId>
-         <artifactId>alfresco-repository</artifactId>
-         <version>${alfresco.base.version}</version>
-         <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.alfresco</groupId>
-         <artifactId>alfresco-remote-api</artifactId>
-         <version>${alfresco.base.version}</version>
-         <classifier>tests</classifier>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>org.alfresco.test</groupId>
-         <artifactId>alfresco-testng</artifactId>
-         <version>1.1</version>
-         <scope>test</scope>
-      </dependency>
-      <!-- Database drivers -->
-      <dependency>
-         <groupId>postgresql</groupId>
-         <artifactId>postgresql</artifactId>
-         <version>${alfresco.postgres.version}</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>mysql</groupId>
-         <artifactId>mysql-connector-java</artifactId>
-         <scope>test</scope>
-      </dependency>
-      <!-- Dependencies for the test result reports -->
-      <dependency>
-         <groupId>org.uncommons</groupId>
-         <artifactId>reportng</artifactId>
-         <version>1.1.4</version>
-         <scope>test</scope>
-      </dependency>
-      <dependency>
-         <groupId>com.google.inject</groupId>
-         <artifactId>guice</artifactId>
-         <version>3.0</version>
-         <scope>test</scope>
-      </dependency>
-   </dependencies>
 </project>

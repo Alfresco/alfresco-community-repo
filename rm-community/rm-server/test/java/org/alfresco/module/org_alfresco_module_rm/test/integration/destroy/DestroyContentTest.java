@@ -40,7 +40,6 @@ import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.test.AlfrescoTest;
 import org.alfresco.util.GUID;
 
 /**
@@ -81,7 +80,6 @@ public class DestroyContentTest extends BaseRMTestCase
      * Then the record folder and records are ghosted
      * And the content is destroyed
      */
-    @AlfrescoTest (jira="RM-2506")
     public void testRecordFolderDestroy() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
@@ -162,7 +160,6 @@ public class DestroyContentTest extends BaseRMTestCase
      * Then the record is ghosted
      * And the content is destroyed
      */
-    @AlfrescoTest (jira="RM-2506")
     public void testRecordDestroy() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
@@ -232,7 +229,6 @@ public class DestroyContentTest extends BaseRMTestCase
      * And the content is cleansed
      * And then content is destroyed
      */
-    @AlfrescoTest (jira="RM-2505")
     public void testRecordDestroyAndCleanse() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()
@@ -303,7 +299,6 @@ public class DestroyContentTest extends BaseRMTestCase
      * When a unclassified document (non-record) is deleted
      * Then it is deleted but the the content is not immediately destroyed
      */
-    @AlfrescoTest (jira="RM-2507")
     public void testContentDelete() throws Exception
     {
         doBehaviourDrivenTest(new BehaviourDrivenTest()

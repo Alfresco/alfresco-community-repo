@@ -30,7 +30,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -486,7 +485,12 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
         	typeqnames.add(type.getAlfrescoClass());
         }
-        PagingResults<FileInfo> pageOfNodeInfos = connector.getChildren(folderNodeRef, typeqnames, sortProps, pageRequest);
+        PagingResults<FileInfo> pageOfNodeInfos = connector.getFileFolderService().list(
+        		folderNodeRef, 
+        		typeqnames, 
+        		null, //ignoreAspectQNames, 
+        		sortProps, 
+        		pageRequest);
 
         if (max > 0)
         {
@@ -2304,7 +2308,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         List<ObjectData> result = new ArrayList<ObjectData>();
 
         // what kind of object is it?
-        CMISNodeInfo info = getOrCreateNodeInfo(objectId);
+        CMISNodeInfo info = getOrCreateNodeInfo(versionSeriesId, "Version Series");
 
         // when webservices binding is used, objectId points to null and versionSeriesId points to original node instead of PWC
         // see MNT-13839
@@ -2318,7 +2322,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             }
         }
 
-        if (!EnumSet.of(CMISObjectVariant.CURRENT_VERSION, CMISObjectVariant.PWC, CMISObjectVariant.VERSION).contains(info.getObjectVariant()))
+        if (!info.isVariant(CMISObjectVariant.CURRENT_VERSION))
         {
             // the version series id is the id of current version, which is a
             // document
@@ -2329,7 +2333,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         NodeRef nodeRef = info.getNodeRef();
         VersionHistory versionHistory = ((CMISNodeInfoImpl) info).getVersionHistory();
 
-        if (versionHistory == null || info.isPWC())
+        if (versionHistory == null)
         {
             // add current version
             result.add(connector.createCMISObject(info, filter, includeAllowableActions, IncludeRelationships.NONE,
@@ -2352,7 +2356,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                                 pwcInfo, filter, includeAllowableActions,
                                 IncludeRelationships.NONE, CMISConnector.RENDITION_NONE, false, false));
 
-                boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+            	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
                 if (isObjectInfoRequired)
                 {
                     getObjectInfo(repositoryId, pwcInfo.getObjectId(), IncludeRelationships.NONE);
@@ -2366,7 +2370,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 // MNT-9557 fix. Replace head version with current node info
                 if (versionHistory.getHeadVersion().equals(version))
                 {
-                    versionInfo = createNodeInfo(info.getCurrentNodeNodeRef());
+                    versionInfo = createNodeInfo(nodeRef);
                 }
 
                 result.add(

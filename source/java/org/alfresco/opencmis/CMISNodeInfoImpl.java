@@ -640,7 +640,7 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
     public boolean isLatestVersion()
     {
-        return (isCurrentVersion() && !hasPWC()) || isPWC();
+        return isCurrentVersion();
     }
 
     public boolean isLatestMajorVersion()
@@ -941,18 +941,16 @@ public class CMISNodeInfoImpl implements CMISNodeInfo
 
     private NodeRef getLatestNonMajorVersionNodeRef()
     {
-        if (isPWC())
-        {
-            return nodeRef;
-        } 
-        else if (hasPWC())
-        {
-            return connector.getCheckOutCheckInService().getWorkingCopy(getCurrentNodeNodeRef());
-        } 
-        else
-        {
+//        if (isPWC())
+//        {
+//            return nodeRef;
+//        } else if (hasPWC())
+//        {
+//            return connector.getCheckOutCheckInService().getWorkingCopy(getCurrentNodeNodeRef());
+//        } else
+//        {
             return getCurrentNodeNodeRef();
-        }
+//        }
     }
 
     // TODO lock here??

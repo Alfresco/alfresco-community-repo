@@ -71,14 +71,10 @@ import org.alfresco.opencmis.search.CMISQueryService;
 import org.alfresco.opencmis.search.CMISResultSet;
 import org.alfresco.opencmis.search.CMISResultSetColumn;
 import org.alfresco.opencmis.search.CMISResultSetRow;
-import org.alfresco.query.PagingRequest;
-import org.alfresco.query.PagingResults;
 import org.alfresco.repo.Client;
 import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.cache.SimpleCache;
-import org.alfresco.repo.dictionary.DictionaryDAO;
-import org.alfresco.repo.dictionary.DictionaryListener;
 import org.alfresco.repo.events.EventPreparator;
 import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.model.filefolder.GetChildrenCannedQuery;
@@ -245,7 +241,7 @@ import org.springframework.util.StringUtils;
  * @author Derek Hulley
  * @author steveglover
  */
-public class CMISConnector implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>, TenantDeployer, DictionaryListener
+public class CMISConnector implements ApplicationContextAware, ApplicationListener<ApplicationContextEvent>, TenantDeployer
 {
     private static Log logger = LogFactory.getLog(CMISConnector.class);
 
@@ -327,15 +323,12 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     private CmisActivityPoster activityPoster;
 
     private BehaviourFilter behaviourFilter;
-    private DictionaryDAO dictionaryDAO;
 
     private HiddenAspect hiddenAspect;
 
     private StoreRef storeRef;
     private String rootPath;
     private Map<String, List<String>> kindToRenditionNames;
-    private Set<String> ignoreChildren = Collections.emptySet();
-    private Set<QName> ignoreChildrenQNames = Collections.emptySet();
     
     // note: cache is tenant-aware (if using TransctionalCache impl)
     
@@ -467,11 +460,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         this.kindToRenditionNames = renditionKinds;
     }
 
-    public void setIgnoreChildren(Set<String> ignoreChildren)
-    {
-        this.ignoreChildren = ignoreChildren;
-    }
-
     public void setOpenHttpSession(boolean openHttpSession)
     {
         this.openHttpSession = openHttpSession;
@@ -508,11 +496,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
     {
         this.behaviourFilter = behaviourFilter;
-    }
-
-    public void setDictionaryDAO(DictionaryDAO dictionaryDAO)
-    {
-        this.dictionaryDAO = dictionaryDAO;
     }
 
     /**
@@ -832,7 +815,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
     	{
     		throw new AlfrescoRuntimeException("Failed to create CMIS temporary directory");
     	}
-        dictionaryDAO.registerListener(this);
     }
     
     public void init()
@@ -3946,15 +3928,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
         return descriptorService.getCurrentRepositoryDescriptor().getId();
     }
 
-    public PagingResults<FileInfo> getChildren(NodeRef folderNodeRef, Set<QName> typeqnames, List<Pair<QName, Boolean>> sortProps, PagingRequest pageRequest)
-    {
-        return fileFolderService.list(folderNodeRef, typeqnames, ignoreChildrenQNames, sortProps, pageRequest);
-    }
-    public PagingResults<FileInfo> getChildren(NodeRef folderNodeRef, List<Pair<QName, Boolean>> sortProps, PagingRequest pageRequest)
-    {
-        return fileFolderService.list(folderNodeRef, true, true, ignoreChildrenQNames, sortProps, pageRequest);
-    }
-
     /**
      * Creates the repository info object.
      */
@@ -4101,42 +4074,5 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
             singletonCache.put(KEY_CMIS_RENDITION_MAPPING_NODEREF, renditionMapping);
         }
         return renditionMapping;
-    }
-
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.DictionaryListener#onDictionaryInit()
-     */
-    @Override
-    public void onDictionaryInit()
-    {
-    }        
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.DictionaryListener#afterDictionaryInit()
-     */
-    @Override
-    public void afterDictionaryInit()
-    {
-        this.ignoreChildrenQNames = new HashSet<QName>(this.ignoreChildren.size(), 1);
-        for (String prefixString : this.ignoreChildren)
-        {
-            try
-            {
-                this.ignoreChildrenQNames.add(QName.createQName(prefixString, this.namespaceService));
-            }
-            catch (Exception e)
-            {
-                logger.warn("Couldn't create QName from " + prefixString, e);
-            }
-        }
-    }
-    /*
-     * (non-Javadoc)
-     * @see org.alfresco.repo.dictionary.DictionaryListener#afterDictionaryDestroy()
-     */
-    @Override
-    public void afterDictionaryDestroy()
-    {
     }
 }

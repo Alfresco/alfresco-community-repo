@@ -297,11 +297,11 @@
                                     <includes>solr4.war</includes>
                                 </artifactItem>
                                 <artifactItem>
-                                    <groupId>org.alfresco.sharepoint-imitation</groupId>
-                                    <artifactId>alfresco-sharepoint-imitation-distributionzip</artifactId>
-                                    <version>${alfresco.sharepoint-imitation.version}</version>
+                                    <groupId>org.alfresco.aos-module</groupId>
+                                    <artifactId>alfresco-aos-module-distributionzip</artifactId>
+                                    <version>${alfresco.aos-module.version}</version>
                                     <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/sharepoint-imitation</outputDirectory>
+                                    <outputDirectory>${project.build.directory}/distribution/aos-module</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

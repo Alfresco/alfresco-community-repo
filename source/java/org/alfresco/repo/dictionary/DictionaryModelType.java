@@ -84,6 +84,8 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
     /** The name of the lock used to ensure that DictionaryModelType updates do not run on more than one thread/node at the same time. */
     private static final QName LOCK_QNAME = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "DictionaryModelType");
     
+    private static final String MODEL_IN_USE = "cmm.service.model_in_use";
+    
     /** The dictionary DAO */
     private DictionaryDAO dictionaryDAO;
     
@@ -342,9 +344,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
             if (modelName != null)
             {
                 // Validate model delete against usages - content and/or workflows
-                if(!modelValidator.canDeleteModel(modelName))
+                if (!modelValidator.canDeleteModel(modelName))
                 {
-                    throw new AlfrescoRuntimeException("Cannot delete model " + modelName + ", it is being used");
+                    throw AlfrescoRuntimeException.create(MODEL_IN_USE, modelName);
                 }
 
                 Set<NodeRef> pendingModelDeletes = (Set<NodeRef>)AlfrescoTransactionSupport.getResource(KEY_PENDING_DELETE_MODELS);
@@ -650,10 +652,9 @@ public class DictionaryModelType implements ContentServicePolicies.OnContentUpda
                                     if (modelName != null)
                                     {
                                         // Validate model delete against usages - content and/or workflows
-                                        if(!modelValidator.canDeleteModel(modelName))
+                                        if (!modelValidator.canDeleteModel(modelName))
                                         {
-                                            throw new AlfrescoRuntimeException("Cannot delete model "
-                                                    + modelName + ", it is being used");
+                                            throw AlfrescoRuntimeException.create(MODEL_IN_USE, modelName);
                                         }
 
                                         // invalidate - to force lazy re-init

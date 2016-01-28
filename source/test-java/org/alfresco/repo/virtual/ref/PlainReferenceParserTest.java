@@ -109,7 +109,7 @@ public class PlainReferenceParserTest extends AbstractReferenceParserTest
         // testing parse for node protocol with an repository node as reference
         // parameter
         Reference reference = new PlainReferenceParser()
-        .parse("node:repository:node:workspace:SpacesStore:0029-222-333-444:r:repository:node:workspace:SpacesStore:0029-122-333-0023:ref:node:repository:node:workspace:SpacesStore:0029-222-333-444:r:repository:path:/Foo/Bar:s:vm_virtual:*");
+        .parse("node:repository:node:workspace:SpacesStore:0029-222-333-444:r:repository:node:workspace:SpacesStore:0029-122-333-0023:ref:node:repository:node:workspace:SpacesStore:0029-222-333-444:r:repository:path:/Foo/Bar:s:sf_smartFolder:*");
 
         RepositoryResource rr = new RepositoryResource(new RepositoryNodeRef(new NodeRef("workspace://SpacesStore/0029-122-333-0023")));
         List<Parameter> params = Arrays.<Parameter> asList(new ResourceParameter(rr),
@@ -137,11 +137,11 @@ public class PlainReferenceParserTest extends AbstractReferenceParserTest
         // testing parse for node protocol with an repository path and a string
         // as reference parameters
         reference = new PlainReferenceParser()
-        .parse("node:repository:node:workspace:SpacesStore:0029-222-333-444:r:repository:path:/Foo/Bar:s:vm_virtual");
+        .parse("node:repository:node:workspace:SpacesStore:0029-222-333-444:r:repository:path:/Foo/Bar:s:sf_smartFolder");
 
         rr = new RepositoryResource(new RepositoryPath("/Foo/Bar"));
         params = Arrays.<Parameter> asList(new ResourceParameter(rr),
-                                           new StringParameter("vm_virtual"));
+                                           new StringParameter("sf_smartFolder"));
         assertEquals(reference,
                      new Reference(Encodings.PLAIN.encoding,
                                    Protocols.NODE.protocol,

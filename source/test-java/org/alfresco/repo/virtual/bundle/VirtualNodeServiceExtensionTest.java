@@ -65,7 +65,7 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
 
     private static Log logger = LogFactory.getLog(VirtualNodeServiceExtensionTest.class);
 
-    private VirtualStore virtualStore;
+    private VirtualStore smartStore;
 
     private DownloadStorage downloadStorage;
 
@@ -82,7 +82,7 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
     {
         // TODO:is the store really needed when testing node service ? why ?
         super.setUp();
-        virtualStore = ctx.getBean("virtualStore",
+        smartStore = ctx.getBean("smartStore",
                                    VirtualStore.class);
         downloadStorage = ctx.getBean("downloadStorage",
                                       DownloadStorage.class);
@@ -192,18 +192,18 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
     public void testCreateNode() throws Exception
     {
 
-        assertTrue(virtualStore.canVirtualize(virtualFolder1NodeRef));
+        assertTrue(smartStore.canVirtualize(virtualFolder1NodeRef));
 
-        Reference semiVirtualFolder = virtualStore.virtualize(virtualFolder1NodeRef);
+        Reference semiVirtualFolder = smartStore.virtualize(virtualFolder1NodeRef);
         assertNotNull(semiVirtualFolder);
         assertTrue(semiVirtualFolder.getProtocol() instanceof VirtualProtocol);
 
-        Reference firstChild = virtualStore.getChildByName(semiVirtualFolder,
+        Reference firstChild = smartStore.getChildByName(semiVirtualFolder,
                                                            ContentModel.ASSOC_CONTAINS,
                                                            "Node1");
         assertNotNull(firstChild);
 
-        Reference secondChild = virtualStore.getChildByName(semiVirtualFolder,
+        Reference secondChild = smartStore.getChildByName(semiVirtualFolder,
                                                             ContentModel.ASSOC_CONTAINS,
                                                             "Node2");
         assertNotNull(secondChild);
@@ -402,7 +402,7 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
         assertNotNull(node2);
         Path node2Path = nodeService.getPath(node2);
         assertNotNull(node2Path);
-        assertEquals("/app:company_home/cm:TestFolder/cm:VirtualFolder1/vm:Node2",
+        assertEquals("/app:company_home/cm:TestFolder/cm:VirtualFolder1/sf:Node2",
                      node2Path.toPrefixString(environment.getNamespacePrefixResolver()));
     }
 
@@ -422,7 +422,7 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                                       ContentModel.ASSOC_CONTAINS,
                                                       "testfile.txt");
         Path path = nodeService.getPath(childRef);
-        assertEquals("/app:company_home/cm:TestFolder/cm:VirtualFolder1/vm:Node2/cm:testfile.txt",
+        assertEquals("/app:company_home/cm:TestFolder/cm:VirtualFolder1/sf:Node2/cm:testfile.txt",
                      path.toPrefixString(environment.getNamespacePrefixResolver()));
 
         NodeRef physicalNode = nodeService.getChildByName(virtualFolder1NodeRef,
@@ -446,7 +446,7 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                                         ContentModel.ASSOC_CONTAINS,
                                                         "testfile-1.txt");
         Path path_1 = nodeService.getPath(childRef_1);
-        assertEquals("/app:company_home/cm:TestFolder/cm:VirtualFolder1/vm:Node2/vm:Node2_1/cm:testfile-1.txt",
+        assertEquals("/app:company_home/cm:TestFolder/cm:VirtualFolder1/sf:Node2/sf:Node2_1/cm:testfile-1.txt",
                      path_1.toPrefixString(environment.getNamespacePrefixResolver()));
     }
 
@@ -522,7 +522,7 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
         List<ChildAssociationRef> actualAssocs = nodeService.getChildAssocs(actualParentNodeRef);
         NodeRef virtualChildNodeRef = virtualAssoc.getChildRef();
         assertTrue(Reference.isReference(virtualChildNodeRef));
-        NodeRef materialNodeRef = virtualStore.materialize(Reference.fromNodeRef(virtualChildNodeRef));
+        NodeRef materialNodeRef = smartStore.materialize(Reference.fromNodeRef(virtualChildNodeRef));
 
         for (ChildAssociationRef actualAssocRef : actualAssocs)
         {
@@ -992,8 +992,8 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                                         VIRTUAL_FOLDER_2_NAME,
                                                         TEST_TEMPLATE_4_JSON_SYS_PATH);
 
-        assertTrue(virtualStore.canVirtualize(virtualFolder));
-        Reference semiVirtualFolder = virtualStore.virtualize(virtualFolder);
+        assertTrue(smartStore.canVirtualize(virtualFolder));
+        Reference semiVirtualFolder = smartStore.virtualize(virtualFolder);
         assertNotNull(semiVirtualFolder);
 
         // access virtual entry

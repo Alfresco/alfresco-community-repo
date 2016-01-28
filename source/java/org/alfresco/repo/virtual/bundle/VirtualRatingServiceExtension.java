@@ -35,23 +35,23 @@ public class VirtualRatingServiceExtension extends SpringBeanExtension<RatingSer
             implements RatingServiceExtension
 {
 
-    private VirtualStore virtualStore;
+    private VirtualStore smartStore;
 
     public VirtualRatingServiceExtension()
     {
         super(RatingServiceTrait.class);
     }
 
-    public void setVirtualStore(VirtualStore virtualStore)
+    public void setSmartStore(VirtualStore smartStore)
     {
-        this.virtualStore = virtualStore;
+        this.smartStore = smartStore;
     }
 
   
 
     public void applyRating(NodeRef targetNode, float rating, String ratingSchemeName)
     {
-        NodeRef materialNode = virtualStore.materializeIfPossible(targetNode);
+        NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         getTrait().applyRating(materialNode,
                                rating,
                                ratingSchemeName);
@@ -59,48 +59,48 @@ public class VirtualRatingServiceExtension extends SpringBeanExtension<RatingSer
 
     public int getRatingsCount(NodeRef targetNode, String ratingSchemeName)
     {
-        NodeRef materialNode = virtualStore.materializeIfPossible(targetNode);
+        NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().getRatingsCount(materialNode,
                                           ratingSchemeName);
     }
 
     public float getTotalRating(NodeRef targetNode, String ratingSchemeName)
     {
-        NodeRef materialNode = virtualStore.materializeIfPossible(targetNode);
+        NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().getTotalRating(materialNode,
                                          ratingSchemeName);
     }
 
     public float getAverageRating(NodeRef targetNode, String ratingSchemeName)
     {
-        NodeRef materialNode = virtualStore.materializeIfPossible(targetNode);
+        NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().getAverageRating(materialNode,
                                            ratingSchemeName);
     }
 
     public Rating getRatingByCurrentUser(NodeRef targetNode, String ratingSchemeName)
     {
-        NodeRef materialNode = virtualStore.materializeIfPossible(targetNode);
+        NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().getRatingByCurrentUser(materialNode,
                                                  ratingSchemeName);
     }
 
     public List<Rating> getRatingsByCurrentUser(NodeRef targetNode)
     {
-        NodeRef materialNode = virtualStore.materializeIfPossible(targetNode);
+        NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().getRatingsByCurrentUser(materialNode);
     }
 
     public Rating removeRatingByCurrentUser(NodeRef targetNode, String ratingSchemeName)
     {
-        NodeRef materialNode = virtualStore.materializeIfPossible(targetNode);
+        NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().removeRatingByCurrentUser(materialNode,
                                                     ratingSchemeName);
     }
 
     public Serializable getRatingRollup(NodeRef targetNode, String ratingSchemeName, String ratingRollupName)
     {
-        NodeRef materialNode = virtualStore.materializeIfPossible(targetNode);
+        NodeRef materialNode = smartStore.materializeIfPossible(targetNode);
         return getTrait().getRatingRollup(materialNode,
                                           ratingSchemeName,
                                           ratingRollupName);

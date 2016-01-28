@@ -116,10 +116,10 @@
                      </view:ace>
                   </view:acl>
                   <app:uifacets />
-                  <cm:name>${spaces.virtualfoldertemplates.name}</cm:name>
+                  <cm:name>${spaces.smartfoldertemplates.name}</cm:name>
                   <app:icon>space-icon-default</app:icon>
-                  <cm:title>${spaces.virtualfoldertemplates.name}</cm:title>
-                  <cm:description>${spaces.virtualfoldertemplates.description}</cm:description>
+                  <cm:title>${spaces.smartfoldertemplates.name}</cm:title>
+                  <cm:description>${spaces.smartfoldertemplates.description}</cm:description>
                </cm:folder>
                <cm:folder view:childName="${spaces.smartdownloads.childname}">
                   <view:acl view:inherit="false">
@@ -129,10 +129,10 @@
                      </view:ace>
                   </view:acl>
                   <app:uifacets />
-                  <cm:name>${spaces.virtualdownloads.name}</cm:name>
+                  <cm:name>${spaces.smartdownloads.name}</cm:name>
                   <app:icon>space-icon-default</app:icon>
-                  <cm:title>${spaces.virtualdownloads.name}</cm:title>
-                  <cm:description>${spaces.virtualdownloads.description}</cm:description>
+                  <cm:title>${spaces.smartdownloads.name}</cm:title>
+                  <cm:description>${spaces.smartdownloads.description}</cm:description>
                </cm:folder>
             </cm:contains>
          </cm:folder>

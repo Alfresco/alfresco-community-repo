@@ -36,29 +36,29 @@ import org.alfresco.traitextender.SpringBeanExtension;
 public class VirtualLockServiceExtension extends SpringBeanExtension<LockServiceExtension, LockServiceTrait>
             implements LockServiceExtension
 {
-    private VirtualStore virtualStore;
+    private VirtualStore smartStore;
 
     public VirtualLockServiceExtension()
     {
         super(LockServiceTrait.class);
     }
 
-    public void setVirtualStore(VirtualStore virtualStore)
+    public void setSmartStore(VirtualStore smartStore)
     {
-        this.virtualStore = virtualStore;
+        this.smartStore = smartStore;
     }
 
     @Override
     public void lock(NodeRef nodeRef, LockType lockType) throws UnableToAquireLockException
     {
-        getTrait().lock(virtualStore.materializeIfPossible(nodeRef),
+        getTrait().lock(smartStore.materializeIfPossible(nodeRef),
                         lockType);
     }
 
     @Override
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire) throws UnableToAquireLockException
     {
-        getTrait().lock(virtualStore.materializeIfPossible(nodeRef),
+        getTrait().lock(smartStore.materializeIfPossible(nodeRef),
                         lockType,
                         timeToExpire);
     }
@@ -67,7 +67,7 @@ public class VirtualLockServiceExtension extends SpringBeanExtension<LockService
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, Lifetime lifetime)
                 throws UnableToAquireLockException
     {
-        getTrait().lock(virtualStore.materializeIfPossible(nodeRef),
+        getTrait().lock(smartStore.materializeIfPossible(nodeRef),
                         lockType,
                         timeToExpire,
                         lifetime);
@@ -77,7 +77,7 @@ public class VirtualLockServiceExtension extends SpringBeanExtension<LockService
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, Lifetime lifetime, String additionalInfo)
                 throws UnableToAquireLockException
     {
-        getTrait().lock(virtualStore.materializeIfPossible(nodeRef),
+        getTrait().lock(smartStore.materializeIfPossible(nodeRef),
                         lockType,
                         timeToExpire,
                         lifetime,
@@ -88,7 +88,7 @@ public class VirtualLockServiceExtension extends SpringBeanExtension<LockService
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, boolean lockChildren)
                 throws UnableToAquireLockException
     {
-        getTrait().lock(virtualStore.materializeIfPossible(nodeRef),
+        getTrait().lock(smartStore.materializeIfPossible(nodeRef),
                         lockType,
                         timeToExpire,
                         lockChildren);
@@ -98,7 +98,7 @@ public class VirtualLockServiceExtension extends SpringBeanExtension<LockService
     public void lock(Collection<NodeRef> nodeRefs, LockType lockType, int timeToExpire)
                 throws UnableToAquireLockException
     {
-        getTrait().lock(virtualStore.materializeIfPossible(nodeRefs),
+        getTrait().lock(smartStore.materializeIfPossible(nodeRefs),
                         lockType,
                         timeToExpire);
     }
@@ -106,13 +106,13 @@ public class VirtualLockServiceExtension extends SpringBeanExtension<LockService
     @Override
     public void unlock(NodeRef nodeRef) throws UnableToReleaseLockException
     {
-        getTrait().unlock(virtualStore.materializeIfPossible(nodeRef));
+        getTrait().unlock(smartStore.materializeIfPossible(nodeRef));
     }
 
     @Override
     public void unlock(NodeRef nodeRef, boolean lockChildren) throws UnableToReleaseLockException
     {
-        getTrait().unlock(virtualStore.materializeIfPossible(nodeRef),
+        getTrait().unlock(smartStore.materializeIfPossible(nodeRef),
                           lockChildren);
     }
 
@@ -120,7 +120,7 @@ public class VirtualLockServiceExtension extends SpringBeanExtension<LockService
     public void unlock(NodeRef nodeRef, boolean lockChildren, boolean allowCheckedOut)
                 throws UnableToReleaseLockException
     {
-        getTrait().unlock(virtualStore.materializeIfPossible(nodeRef),
+        getTrait().unlock(smartStore.materializeIfPossible(nodeRef),
                           lockChildren,
                           allowCheckedOut);
     }
@@ -128,32 +128,32 @@ public class VirtualLockServiceExtension extends SpringBeanExtension<LockService
     @Override
     public void unlock(Collection<NodeRef> nodeRefs) throws UnableToReleaseLockException
     {
-        getTrait().unlock(virtualStore.materializeIfPossible(nodeRefs));
+        getTrait().unlock(smartStore.materializeIfPossible(nodeRefs));
     }
 
     @Override
     public LockStatus getLockStatus(NodeRef nodeRef)
     {
-        return getTrait().getLockStatus(virtualStore.materializeIfPossible(nodeRef));
+        return getTrait().getLockStatus(smartStore.materializeIfPossible(nodeRef));
     }
 
     @Override
     public LockStatus getLockStatus(NodeRef nodeRef, String userName)
     {
-        return getTrait().getLockStatus(virtualStore.materializeIfPossible(nodeRef),
+        return getTrait().getLockStatus(smartStore.materializeIfPossible(nodeRef),
                                         userName);
     }
 
     @Override
     public LockType getLockType(NodeRef nodeRef)
     {
-        return getTrait().getLockType(virtualStore.materializeIfPossible(nodeRef));
+        return getTrait().getLockType(smartStore.materializeIfPossible(nodeRef));
     }
 
     @Override
     public void checkForLock(NodeRef nodeRef)
     {
-        getTrait().checkForLock(virtualStore.materializeIfPossible(nodeRef));
+        getTrait().checkForLock(smartStore.materializeIfPossible(nodeRef));
     }
 
     @Override
@@ -171,13 +171,13 @@ public class VirtualLockServiceExtension extends SpringBeanExtension<LockService
     @Override
     public String getAdditionalInfo(NodeRef nodeRef)
     {
-        return getTrait().getAdditionalInfo(virtualStore.materializeIfPossible(nodeRef));
+        return getTrait().getAdditionalInfo(smartStore.materializeIfPossible(nodeRef));
     }
 
     @Override
     public LockState getLockState(NodeRef nodeRef)
     {
-        return getTrait().getLockState(virtualStore.materializeIfPossible(nodeRef));
+        return getTrait().getLockState(smartStore.materializeIfPossible(nodeRef));
     }
 
     @Override

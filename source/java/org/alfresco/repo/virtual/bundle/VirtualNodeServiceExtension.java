@@ -75,7 +75,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 {
     private static Log logger = LogFactory.getLog(VirtualNodeServiceExtension.class);
 
-    private VirtualStore virtualStore;
+    private VirtualStore smartStore;
 
     private ActualEnvironment environment;
 
@@ -91,9 +91,9 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         this.environment = environment;
     }
 
-    public void setVirtualStore(VirtualStore virtualStore)
+    public void setSmartStore(VirtualStore smartStore)
     {
-        this.virtualStore = virtualStore;
+        this.smartStore = smartStore;
     }
 
     @Override
@@ -130,7 +130,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     {
         if (Reference.isReference(nodeRef))
         {
-            QName type = virtualStore.getType(Reference.fromNodeRef(nodeRef));
+            QName type = smartStore.getType(Reference.fromNodeRef(nodeRef));
             return type;
         }
         else
@@ -141,7 +141,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
     private Map<QName, Serializable> getVirtualProperties(Reference reference)
     {
-        return virtualStore.getProperties(reference);
+        return smartStore.getProperties(reference);
     }
 
     @Override
@@ -195,7 +195,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     {
         if (Reference.isReference(nodeRef))
         {
-            return Reference.fromNodeRef(nodeRef).execute(new GetPathMethod(virtualStore,
+            return Reference.fromNodeRef(nodeRef).execute(new GetPathMethod(smartStore,
                                                                             environment));
         }
         else
@@ -277,7 +277,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             try
             {
                 Reference parentReference = Reference.fromNodeRef(parentRef);
-                FilingData filingData = virtualStore.createFilingData(parentReference,
+                FilingData filingData = smartStore.createFilingData(parentReference,
                                                                       assocTypeQName,
                                                                       assocQName,
                                                                       nodeTypeQName,
@@ -351,7 +351,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
             if (isVirtualContextFolder(parentRef,
                                        environment))
             {
-                parentRef = virtualStore.materializeIfPossible(parentRef);
+                parentRef = smartStore.materializeIfPossible(parentRef);
             }
             return theTrait.createNode(parentRef,
                                        assocTypeQName,
@@ -373,7 +373,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                                                lName);
             if (Reference.isReference(nrAssocQName))
             {
-                nrAssocQName = virtualStore.materializeIfPossible(nrAssocQName);
+                nrAssocQName = smartStore.materializeIfPossible(nrAssocQName);
                 QName materialAssocQName = QName.createQName(assocQName.getNamespaceURI(),
                                                              nrAssocQName.getId());
                 return materialAssocQName;
@@ -519,7 +519,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                     }
 
                     NodeRef referenceNodeRef = reference.toNodeRef();
-                    Map<QName, Serializable> properties = virtualStore.getProperties(reference);
+                    Map<QName, Serializable> properties = smartStore.getProperties(reference);
                     Serializable name = properties.get(ContentModel.PROP_NAME);
                     QName assocChildName = QName
                                 .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
@@ -558,16 +558,16 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
         if (canVirtualize)
         {
-            Reference reference = virtualStore.virtualize(nodeRef);
-            List<ChildAssociationRef> virtualAssociations = virtualStore.getChildAssocs(reference,
+            Reference reference = smartStore.virtualize(nodeRef);
+            List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
                                                                                         RegexQNamePattern.MATCH_ALL,
                                                                                         RegexQNamePattern.MATCH_ALL,
                                                                                         Integer.MAX_VALUE,
                                                                                         false);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
-            if (virtualStore.canMaterialize(reference))
+            if (smartStore.canMaterialize(reference))
             {
-                NodeRef materialReference = virtualStore.materialize(reference);
+                NodeRef materialReference = smartStore.materialize(reference);
                 List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
                                                                                        RegexQNamePattern.MATCH_ALL,
                                                                                        RegexQNamePattern.MATCH_ALL,
@@ -592,17 +592,17 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
         if (canVirtualize)
         {
-            Reference reference = virtualStore.virtualize(nodeRef);
-            List<ChildAssociationRef> virtualAssociations = virtualStore.getChildAssocs(reference,
+            Reference reference = smartStore.virtualize(nodeRef);
+            List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
                                                                                         typeQNamePattern,
                                                                                         qnamePattern,
                                                                                         Integer.MAX_VALUE,
                                                                                         false);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
 
-            if (virtualStore.canMaterialize(reference))
+            if (smartStore.canMaterialize(reference))
             {
-                NodeRef materialReference = virtualStore.materialize(reference);
+                NodeRef materialReference = smartStore.materialize(reference);
                 List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
                                                                                        typeQNamePattern,
                                                                                        qnamePattern);
@@ -626,8 +626,8 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
         if (canVirtualize)
         {
-            Reference reference = virtualStore.virtualize(nodeRef);
-            List<ChildAssociationRef> virtualAssociations = virtualStore.getChildAssocs(reference,
+            Reference reference = smartStore.virtualize(nodeRef);
+            List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
                                                                                         typeQNamePattern,
                                                                                         qnamePattern,
                                                                                         maxResults,
@@ -636,9 +636,9 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
             if (associations.size() < maxResults)
             {
-                if (virtualStore.canMaterialize(reference))
+                if (smartStore.canMaterialize(reference))
                 {
-                    NodeRef materialReference = virtualStore.materialize(reference);
+                    NodeRef materialReference = smartStore.materialize(reference);
                     List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
                                                                                            typeQNamePattern,
                                                                                            qnamePattern,
@@ -662,7 +662,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
     private boolean canVirtualizeAssocNodeRef(NodeRef nodeRef)
     {
-        boolean canVirtualize = nodeRef.getId().contains("solr") ? false : virtualStore.canVirtualize(nodeRef);
+        boolean canVirtualize = nodeRef.getId().contains("solr") ? false : smartStore.canVirtualize(nodeRef);
         return canVirtualize;
     }
 
@@ -674,17 +674,17 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
         if (canVirtualize)
         {
-            Reference reference = virtualStore.virtualize(nodeRef);
-            List<ChildAssociationRef> virtualAssociations = virtualStore.getChildAssocs(reference,
+            Reference reference = smartStore.virtualize(nodeRef);
+            List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
                                                                                         typeQNamePattern,
                                                                                         qnamePattern,
                                                                                         Integer.MAX_VALUE,
                                                                                         preload);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
 
-            if (virtualStore.canMaterialize(reference))
+            if (smartStore.canMaterialize(reference))
             {
-                NodeRef materialReference = virtualStore.materialize(reference);
+                NodeRef materialReference = smartStore.materialize(reference);
                 List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
                                                                                        typeQNamePattern,
                                                                                        qnamePattern,
@@ -709,13 +709,13 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
         if (canVirtualize)
         {
-            Reference reference = virtualStore.virtualize(nodeRef);
-            List<ChildAssociationRef> virtualAssociations = virtualStore.getChildAssocs(reference,
+            Reference reference = smartStore.virtualize(nodeRef);
+            List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocs(reference,
                                                                                         childNodeTypeQNames);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
-            if (virtualStore.canMaterialize(reference))
+            if (smartStore.canMaterialize(reference))
             {
-                NodeRef materialReference = virtualStore.materialize(reference);
+                NodeRef materialReference = smartStore.materialize(reference);
                 List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocs(materialReference,
                                                                                        childNodeTypeQNames);
                 associations.addAll(actualAssociations);
@@ -738,14 +738,14 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
         if (canVirtualize)
         {
-            Reference reference = virtualStore.virtualize(nodeRef);
-            List<ChildAssociationRef> virtualAssociations = virtualStore.getChildAssocsByPropertyValue(reference,
+            Reference reference = smartStore.virtualize(nodeRef);
+            List<ChildAssociationRef> virtualAssociations = smartStore.getChildAssocsByPropertyValue(reference,
                                                                                                        propertyQName,
                                                                                                        value);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
-            if (virtualStore.canMaterialize(reference))
+            if (smartStore.canMaterialize(reference))
             {
-                NodeRef materialReference = virtualStore.materialize(reference);
+                NodeRef materialReference = smartStore.materialize(reference);
                 List<ChildAssociationRef> actualAssociations = theTrait.getChildAssocsByPropertyValue(materialReference,
                                                                                                       propertyQName,
                                                                                                       value);
@@ -767,11 +767,11 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     {
         // TODO: optimize
 
-        if (virtualStore.canVirtualize(nodeRef))
+        if (smartStore.canVirtualize(nodeRef))
         {
-            Reference virtualNode = virtualStore.virtualize(nodeRef);
+            Reference virtualNode = smartStore.virtualize(nodeRef);
 
-            Reference theChild = virtualStore.getChildByName(virtualNode,
+            Reference theChild = smartStore.getChildByName(virtualNode,
                                                              assocTypeQName,
                                                              childName);
 
@@ -781,7 +781,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
                 return childNodeRef;
             }
-            if (virtualStore.isVirtual(nodeRef))
+            if (smartStore.isVirtual(nodeRef))
             {
                 return null;
             }
@@ -969,9 +969,9 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         if (Reference.isReference(sourceRef))
         {
             Reference reference = Reference.fromNodeRef(sourceRef);
-            if (virtualStore.canMaterialize(reference))
+            if (smartStore.canMaterialize(reference))
             {
-                NodeRef materializedReferece = virtualStore.materialize(reference);
+                NodeRef materializedReferece = smartStore.materialize(reference);
                 targetAssocs = theTrait.getTargetAssocs(materializedReferece,
                                                         qnamePattern);
             }
@@ -1037,9 +1037,9 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
 
             List<AssociationRef> materialAssocs = new ArrayList<AssociationRef>();
 
-            if (virtualStore.canMaterialize(reference))
+            if (smartStore.canMaterialize(reference))
             {
-                List<AssociationRef> sourceAssocs = theTrait.getSourceAssocs(virtualStore.materialize(reference),
+                List<AssociationRef> sourceAssocs = theTrait.getSourceAssocs(smartStore.materialize(reference),
                                                                              qnamePattern);
                 for (AssociationRef associationRef : sourceAssocs)
                 {
@@ -1147,9 +1147,9 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         if (Reference.isReference(nodeRef))
         {
             Reference ref = Reference.fromNodeRef(nodeRef);
-            if (virtualStore.canMaterialize(ref))
+            if (smartStore.canMaterialize(ref))
             {
-                return virtualStore.materialize(ref);
+                return smartStore.materialize(ref);
             }
 
         }
@@ -1241,7 +1241,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     public void deleteNode(NodeRef nodeRef) throws InvalidNodeRefException
     {
         NodeServiceTrait theTrait = getTrait();
-        NodeRef materialNode = virtualStore.materializeIfPossible(nodeRef);
+        NodeRef materialNode = smartStore.materializeIfPossible(nodeRef);
         boolean isDownload = DownloadModel.TYPE_DOWNLOAD.equals(theTrait.getType(materialNode));
         theTrait.deleteNode(materialNode);
         if (isDownload)
@@ -1307,7 +1307,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
     private List<ChildAssociationRef> revertVirtualAssociation(ChildAssociationRef childAssocRef,
                 NodeServiceTrait theTrait, NodeRef childRef)
     {
-        childRef = virtualStore.materialize(Reference.fromNodeRef(childRef));
+        childRef = smartStore.materialize(Reference.fromNodeRef(childRef));
         ChildAssociationRef parent = theTrait.getPrimaryParent(childRef);
         final QName assocName = childAssocRef.getQName();
         List<ChildAssociationRef> assocsToRemove = theTrait.getChildAssocs(parent.getParentRef(),
@@ -1427,14 +1427,14 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         boolean canVirtualize = canVirtualizeAssocNodeRef(nodeRef);
         if (canVirtualize)
         {
-            Reference reference = virtualStore.virtualize(nodeRef);
-            Collection<ChildAssociationRef> virtualAssociations = virtualStore
+            Reference reference = smartStore.virtualize(nodeRef);
+            Collection<ChildAssociationRef> virtualAssociations = smartStore
                         .getChildAssocsWithoutParentAssocsOfType(reference,
                                                                  assocTypeQName);
             List<ChildAssociationRef> associations = new LinkedList<>(virtualAssociations);
-            if (virtualStore.canMaterialize(reference))
+            if (smartStore.canMaterialize(reference))
             {
-                NodeRef materialReference = virtualStore.materialize(reference);
+                NodeRef materialReference = smartStore.materialize(reference);
                 Collection<ChildAssociationRef> actualAssociations = theTrait
                             .getChildAssocsWithoutParentAssocsOfType(materialReference,
                                                                      assocTypeQName);

@@ -50,16 +50,16 @@ public class VirtualPermissionServiceExtension extends
 {
     private static Log logger = LogFactory.getLog(VirtualPermissionServiceExtension.class);
 
-    private VirtualStore virtualStore;
+    private VirtualStore smartStore;
 
     public VirtualPermissionServiceExtension()
     {
         super(PermissionServiceTrait.class);
     }
 
-    public void setVirtualStore(VirtualStore virtualStore)
+    public void setSmartStore(VirtualStore smartStore)
     {
-        this.virtualStore = virtualStore;
+        this.smartStore = smartStore;
     }
 
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
@@ -73,7 +73,7 @@ public class VirtualPermissionServiceExtension extends
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            AccessStatus virtualAccessStatus = virtualStore.hasPermission(reference,
+            AccessStatus virtualAccessStatus = smartStore.hasPermission(reference,
                                                                           perm);
             if (!AccessStatus.UNDETERMINED.equals(virtualAccessStatus))
             {
@@ -106,7 +106,7 @@ public class VirtualPermissionServiceExtension extends
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            AccessStatus virtualAccessStatus = virtualStore.hasPermission(reference,
+            AccessStatus virtualAccessStatus = smartStore.hasPermission(reference,
                                                                           perm);
             if (!AccessStatus.UNDETERMINED.equals(virtualAccessStatus))
             {
@@ -164,7 +164,7 @@ public class VirtualPermissionServiceExtension extends
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodePermissionEntry virtualSetPermissions = virtualStore.getSetPermissions(reference);
+            NodePermissionEntry virtualSetPermissions = smartStore.getSetPermissions(reference);
 
             NodeRef nodeToAdhereTo = establishPermisisonAdherence(reference);
             List<? extends PermissionEntry> actualPermissionEntries;
@@ -205,7 +205,7 @@ public class VirtualPermissionServiceExtension extends
 
     private NodeRef establishPermisisonAdherence(Reference reference)
     {
-        NodeRef nodeToAdhereTo = virtualStore.adhere(reference,
+        NodeRef nodeToAdhereTo = smartStore.adhere(reference,
                                                      VirtualStore.FILING_OR_MATERIAL_ADHERENCE);
         if (logger.isDebugEnabled())
         {
@@ -218,7 +218,7 @@ public class VirtualPermissionServiceExtension extends
     @Override
     public NodePermissionEntry explainPermission(NodeRef nodeRef, PermissionReference perm)
     {
-        return getTrait().explainPermission(virtualStore.materializeIfPossible(nodeRef),
+        return getTrait().explainPermission(smartStore.materializeIfPossible(nodeRef),
                                             perm);
     }
 
@@ -333,7 +333,7 @@ public class VirtualPermissionServiceExtension extends
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            Set<AccessPermission> virtualSetPermissions = virtualStore.getAllSetPermissions(reference);
+            Set<AccessPermission> virtualSetPermissions = smartStore.getAllSetPermissions(reference);
             NodeRef nodeToAdhereTo = establishPermisisonAdherence(reference);
             Set<AccessPermission> mergedEntries = new HashSet<>(virtualSetPermissions);
             if (nodeToAdhereTo != null)
@@ -356,7 +356,7 @@ public class VirtualPermissionServiceExtension extends
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            Set<AccessPermission> virtualSetPermissions = virtualStore.getAllSetPermissions(reference);
+            Set<AccessPermission> virtualSetPermissions = smartStore.getAllSetPermissions(reference);
             NodeRef nodeToAdhereTo = establishPermisisonAdherence(reference);
             Set<AccessPermission> actualSetPermissions;
             if (nodeToAdhereTo != null)

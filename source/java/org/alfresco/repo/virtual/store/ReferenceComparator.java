@@ -43,17 +43,17 @@ import org.springframework.extensions.surf.util.I18NUtil;
  */
 public class ReferenceComparator implements Comparator<Reference>
 {
-    private VirtualStore virtualStore;
+    private VirtualStore smartStore;
 
     private List<Pair<QName, Boolean>> sortProps;
 
     private Collator collator;
 
-    public ReferenceComparator(VirtualStore virtualStore, List<Pair<QName, Boolean>> sortProps)
+    public ReferenceComparator(VirtualStore smartStore, List<Pair<QName, Boolean>> sortProps)
     {
         this.sortProps = sortProps;
         this.collator = AlfrescoCollator.getInstance(I18NUtil.getContentLocale());
-        this.virtualStore = virtualStore;
+        this.smartStore = smartStore;
     }
 
     @Override
@@ -91,10 +91,10 @@ public class ReferenceComparator implements Comparator<Reference>
 
         int result = 0;
 
-        Map<QName, Serializable> properties1 = virtualStore.getProperties(ref1);
+        Map<QName, Serializable> properties1 = smartStore.getProperties(ref1);
         pv1 = properties1.get(sortPropQName);
 
-        Map<QName, Serializable> properties2 = virtualStore.getProperties(ref2);
+        Map<QName, Serializable> properties2 = smartStore.getProperties(ref2);
         pv2 = properties2.get(sortPropQName);
 
         if (pv1 == null)

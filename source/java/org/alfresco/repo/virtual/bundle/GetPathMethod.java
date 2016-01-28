@@ -33,14 +33,14 @@ import org.alfresco.service.cmr.repository.Path;
 
 public class GetPathMethod extends AbstractProtocolMethod<Path>
 {
-    private VirtualStore virtualStore;
+    private VirtualStore smartStore;
 
     private ActualEnvironment environment;
 
-    public GetPathMethod(VirtualStore virtualStore, ActualEnvironment actualEnvironment)
+    public GetPathMethod(VirtualStore smartStore, ActualEnvironment actualEnvironment)
     {
         super();
-        this.virtualStore = virtualStore;
+        this.smartStore = smartStore;
         this.environment = actualEnvironment;
     }
 
@@ -64,7 +64,7 @@ public class GetPathMethod extends AbstractProtocolMethod<Path>
             {
                 path = environment.getPath(actualNodeRef);
             }
-            Path virtualPath = virtualStore.getPath(reference);
+            Path virtualPath = smartStore.getPath(reference);
             return path.append(virtualPath);
         }
         catch (ReferenceEncodingException e)

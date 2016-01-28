@@ -40,7 +40,7 @@ import org.alfresco.service.namespace.QNamePattern;
 
 public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssociationRef>>
 {
-    private VirtualStore virtualStore;
+    private VirtualStore smartStore;
 
     private ActualEnvironment environment;
 
@@ -52,11 +52,11 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
 
     private QNamePattern typeQNamePattern;
 
-    public GetChildAssocsMethod(VirtualStore virtualStore, ActualEnvironment environment, boolean preload,
+    public GetChildAssocsMethod(VirtualStore smartStore, ActualEnvironment environment, boolean preload,
                 int maxResults, QNamePattern qnamePattern, QNamePattern typeQNamePattern)
     {
         super();
-        this.virtualStore = virtualStore;
+        this.smartStore = smartStore;
         this.environment = environment;
         this.preload = preload;
         this.maxResults = maxResults;
@@ -71,7 +71,7 @@ public class GetChildAssocsMethod extends AbstractProtocolMethod<List<ChildAssoc
         if (typeQNamePattern.isMatch(ContentModel.ASSOC_CONTAINS))
         {
             List<ChildAssociationRef> childAssocs = new LinkedList<>();
-            List<Reference> children = virtualStore.list(reference);
+            List<Reference> children = smartStore.list(reference);
             NodeRef nodeRefReference = reference.toNodeRef();
             int count = 0;
             for (Reference child : children)

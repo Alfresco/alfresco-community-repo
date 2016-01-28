@@ -42,14 +42,14 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
 {
     private static Log logger = LogFactory.getLog(VirtualStoreImplTest.class);
 
-    private VirtualStoreImpl virtualStore;
+    private VirtualStoreImpl smartStore;
 
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
 
-        virtualStore = ctx.getBean("virtualStore",
+        smartStore = ctx.getBean("smartStore",
                                    VirtualStoreImpl.class);
 
     }
@@ -96,7 +96,7 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
 
             // We use transactional-synchronized resources for caching. In
             // non-transactional contexts they might not be available.
-            virtualStore.resolveVirtualFolderDefinition(aVanillaRef);
+            smartStore.resolveVirtualFolderDefinition(aVanillaRef);
 
         }
         finally
@@ -123,11 +123,11 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
         NodeRef aNodeRef = createVirtualizedFolder(testRootFolder.getNodeRef(),
                                                    "TestVirtualStoreImpl_createVirtualizedFolder",
                                                    null);
-        assertFalse(virtualStore.canVirtualize(aNodeRef));
+        assertFalse(smartStore.canVirtualize(aNodeRef));
 
         try
         {
-            virtualStore.virtualize(aNodeRef);
+            smartStore.virtualize(aNodeRef);
             fail("Should not be able to virtualize non-virtualizable nodes.");
         }
         catch (VirtualizationException e)
@@ -140,19 +140,19 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
     public void testCanVirtualize() throws Exception
     {
         NodeRef solrFacetsNodeRef = new NodeRef("workspace://SpacesStore/solr_facets_root_space");
-        boolean canVirtualize = virtualStore.canVirtualize(solrFacetsNodeRef);
+        boolean canVirtualize = smartStore.canVirtualize(solrFacetsNodeRef);
         assertEquals(false,
                      canVirtualize);
     }
 
     private String asTypedPermission(String perm)
     {
-        return virtualStore.getUserPermissions().getPermissionTypeQName() + "." + perm;
+        return smartStore.getUserPermissions().getPermissionTypeQName() + "." + perm;
     }
 
     private void assertHasQueryNodePermission(AccessStatus accessStatus, String perm)
     {
-        VirtualUserPermissions virtualUserPermissions = virtualStore.getUserPermissions();
+        VirtualUserPermissions virtualUserPermissions = smartStore.getUserPermissions();
 
         assertEquals(AccessStatus.DENIED,
                      virtualUserPermissions.hasQueryNodePermission(perm));
@@ -162,7 +162,7 @@ public class VirtualStoreImplTest extends VirtualizationIntegrationTest
 
     private void assertHasVirtualNodePermission(AccessStatus accessStatus, String perm, boolean readonly)
     {
-        VirtualUserPermissions virtualUserPermissions = virtualStore.getUserPermissions();
+        VirtualUserPermissions virtualUserPermissions = smartStore.getUserPermissions();
 
         assertEquals(AccessStatus.DENIED,
                      virtualUserPermissions.hasVirtualNodePermission(perm,

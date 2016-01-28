@@ -42,11 +42,11 @@ public class VirtualCheckOutCheckInServiceExtension extends
         super(CheckOutCheckInServiceTrait.class);
     }
 
-    private VirtualStore virtualStore;
+    private VirtualStore smartStore;
 
-    public void setVirtualStore(VirtualStore virtualStore)
+    public void setSmartStore(VirtualStore smartStore)
     {
-        this.virtualStore = virtualStore;
+        this.smartStore = smartStore;
     }
 
     @Override
@@ -54,8 +54,8 @@ public class VirtualCheckOutCheckInServiceExtension extends
                 QName destinationAssocQName)
     {
         CheckOutCheckInServiceTrait theTrait = getTrait();
-        NodeRef materialNodeRef = virtualStore.materializeIfPossible(nodeRef);
-        NodeRef materialDestination = virtualStore.materializeIfPossible(destinationParentNodeRef);
+        NodeRef materialNodeRef = smartStore.materializeIfPossible(nodeRef);
+        NodeRef materialDestination = smartStore.materializeIfPossible(destinationParentNodeRef);
         NodeRef workingCopy = theTrait.checkout(materialNodeRef,
                                                 materialDestination,
                                                 destinationAssocTypeQName,
@@ -79,7 +79,7 @@ public class VirtualCheckOutCheckInServiceExtension extends
     public NodeRef checkout(NodeRef nodeRef)
     {
         CheckOutCheckInServiceTrait theTrait = getTrait();
-        NodeRef materialNodeRef = virtualStore.materializeIfPossible(nodeRef);
+        NodeRef materialNodeRef = smartStore.materializeIfPossible(nodeRef);
         NodeRef workingCopy = theTrait.checkout(materialNodeRef);
 
         return virtualizeOriginalIfNeeded(nodeRef,
@@ -91,7 +91,7 @@ public class VirtualCheckOutCheckInServiceExtension extends
                 boolean keepCheckedOut)
     {
         CheckOutCheckInServiceTrait theTrait = getTrait();
-        NodeRef materialWorkingCopy = virtualStore.materializeIfPossible(workingCopyNodeRef);
+        NodeRef materialWorkingCopy = smartStore.materializeIfPossible(workingCopyNodeRef);
         NodeRef materialOriginalNode = theTrait.checkin(materialWorkingCopy,
                                                         versionProperties,
                                                         contentUrl,
@@ -104,7 +104,7 @@ public class VirtualCheckOutCheckInServiceExtension extends
     public NodeRef checkin(NodeRef workingCopyNodeRef, Map<String, Serializable> versionProperties, String contentUrl)
     {
         CheckOutCheckInServiceTrait theTrait = getTrait();
-        NodeRef materialWorkingCopy = virtualStore.materializeIfPossible(workingCopyNodeRef);
+        NodeRef materialWorkingCopy = smartStore.materializeIfPossible(workingCopyNodeRef);
         NodeRef materialOriginalNode = theTrait.checkin(materialWorkingCopy,
                                                         versionProperties,
                                                         contentUrl);
@@ -133,7 +133,7 @@ public class VirtualCheckOutCheckInServiceExtension extends
     public NodeRef checkin(NodeRef workingCopyNodeRef, Map<String, Serializable> versionProperties)
     {
         CheckOutCheckInServiceTrait theTrait = getTrait();
-        NodeRef materialWorkingCopy = virtualStore.materializeIfPossible(workingCopyNodeRef);
+        NodeRef materialWorkingCopy = smartStore.materializeIfPossible(workingCopyNodeRef);
         NodeRef materialOriginalNode = theTrait.checkin(materialWorkingCopy,
                                                         versionProperties);
 
@@ -144,7 +144,7 @@ public class VirtualCheckOutCheckInServiceExtension extends
     @Override
     public NodeRef cancelCheckout(NodeRef workingCopyNodeRef)
     {
-        NodeRef materialOriginalNode = getTrait().cancelCheckout(virtualStore.materializeIfPossible(workingCopyNodeRef));
+        NodeRef materialOriginalNode = getTrait().cancelCheckout(smartStore.materializeIfPossible(workingCopyNodeRef));
         
         return virtualizeOriginalIfNeeded(workingCopyNodeRef,
                                           materialOriginalNode);
@@ -154,7 +154,7 @@ public class VirtualCheckOutCheckInServiceExtension extends
     public NodeRef getWorkingCopy(NodeRef nodeRef)
     {
         CheckOutCheckInServiceTrait theTrait = getTrait();
-        NodeRef materialWorkingCopy = theTrait.getWorkingCopy(virtualStore.materializeIfPossible(nodeRef));
+        NodeRef materialWorkingCopy = theTrait.getWorkingCopy(smartStore.materializeIfPossible(nodeRef));
 
         return virtualizeVersionIfNeeded(nodeRef,
                                          materialWorkingCopy);
@@ -181,7 +181,7 @@ public class VirtualCheckOutCheckInServiceExtension extends
     public NodeRef getCheckedOut(NodeRef nodeRef)
     {
         CheckOutCheckInServiceTrait theTrait = getTrait();
-        NodeRef materialChekedOut = theTrait.getCheckedOut(virtualStore.materializeIfPossible(nodeRef));
+        NodeRef materialChekedOut = theTrait.getCheckedOut(smartStore.materializeIfPossible(nodeRef));
         return virtualizeVersionIfNeeded(nodeRef,
                                          materialChekedOut);
     }
@@ -189,13 +189,13 @@ public class VirtualCheckOutCheckInServiceExtension extends
     @Override
     public boolean isWorkingCopy(NodeRef nodeRef)
     {
-        return getTrait().isWorkingCopy(virtualStore.materializeIfPossible(nodeRef));
+        return getTrait().isWorkingCopy(smartStore.materializeIfPossible(nodeRef));
     }
 
     @Override
     public boolean isCheckedOut(NodeRef nodeRef)
     {
-        return getTrait().isCheckedOut(virtualStore.materializeIfPossible(nodeRef));
+        return getTrait().isCheckedOut(smartStore.materializeIfPossible(nodeRef));
     }
 
 }

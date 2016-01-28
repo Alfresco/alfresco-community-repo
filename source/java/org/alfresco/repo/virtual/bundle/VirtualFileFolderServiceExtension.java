@@ -54,7 +54,7 @@ public class VirtualFileFolderServiceExtension
             extends VirtualSpringBeanExtension<FileFolderServiceExtension, FileFolderServiceTrait>
             implements FileFolderServiceExtension
 {
-    private VirtualStore virtualStore;
+    private VirtualStore smartStore;
 
     private ActualEnvironment environment;
 
@@ -63,9 +63,9 @@ public class VirtualFileFolderServiceExtension
         super(FileFolderServiceTrait.class);
     }
 
-    public void setVirtualStore(VirtualStore virtualStore)
+    public void setSmartStore(VirtualStore smartStore)
     {
-        this.virtualStore = virtualStore;
+        this.smartStore = smartStore;
     }
 
     public void setEnvironment(ActualEnvironment environment)
@@ -73,14 +73,14 @@ public class VirtualFileFolderServiceExtension
         this.environment = environment;
     }
 
-    public List<FileInfo> asFileInfos(List<Reference> references, VirtualStore virtualStore,
+    public List<FileInfo> asFileInfos(List<Reference> references, VirtualStore smartStore,
                 ActualEnvironment environment) throws VirtualizationException
     {
         List<FileInfo> fileInfos = new LinkedList<>();
         for (Reference reference : references)
         {
 
-            FileInfo fileInfo = asFileInfo(virtualStore,
+            FileInfo fileInfo = asFileInfo(smartStore,
                                            environment,
                                            reference);
 
@@ -90,11 +90,11 @@ public class VirtualFileFolderServiceExtension
         return fileInfos;
     }
 
-    public FileInfo asFileInfo(VirtualStore virtualStore, ActualEnvironment environment, Reference reference)
+    public FileInfo asFileInfo(VirtualStore smartStore, ActualEnvironment environment, Reference reference)
                 throws VirtualizationException
     {
-        Map<QName, Serializable> properties = virtualStore.getProperties(reference);
-        QName qNameType = virtualStore.getType(reference);
+        Map<QName, Serializable> properties = smartStore.getProperties(reference);
+        QName qNameType = smartStore.getType(reference);
         FileFolderServiceType type = getTrait().getType(qNameType);
 
         boolean isFolder = type.equals(FileFolderServiceType.FOLDER);
@@ -113,11 +113,11 @@ public class VirtualFileFolderServiceExtension
     {
         if (canVirtualize(contextNodeRef))
         {
-            Reference reference = virtualStore.virtualize(contextNodeRef);
+            Reference reference = smartStore.virtualize(contextNodeRef);
 
-            List<Reference> virtualNodes = virtualStore.list(reference);
+            List<Reference> virtualNodes = smartStore.list(reference);
             List<FileInfo> searchResult = asFileInfos(virtualNodes,
-                                                      virtualStore,
+                                                      smartStore,
                                                       environment);
 
             if (mergeActualNode(reference))
@@ -136,17 +136,17 @@ public class VirtualFileFolderServiceExtension
 
     protected boolean mergeActualNode(Reference reference) throws VirtualizationException
     {
-        return virtualStore.canMaterialize(reference);
+        return smartStore.canMaterialize(reference);
     }
 
     protected NodeRef actualNodeFrom(Reference reference) throws VirtualizationException
     {
-        return virtualStore.materialize(reference);
+        return smartStore.materialize(reference);
     }
 
     protected boolean canVirtualize(NodeRef nodeRef) throws VirtualizationException
     {
-        return virtualStore.canVirtualize(nodeRef);
+        return smartStore.canVirtualize(nodeRef);
     }
 
     private Set<QName>[] buildSearchAndIgnore(final boolean files, final boolean folders, Set<QName> ignoreQNames)
@@ -192,14 +192,14 @@ public class VirtualFileFolderServiceExtension
         if (canVirtualize(contextNodeRef))
         {
 
-            final Reference reference = virtualStore.virtualize(contextNodeRef);
+            final Reference reference = smartStore.virtualize(contextNodeRef);
 
             Set<QName>[] searchAndIgnore = buildSearchAndIgnore(files,
                                                                 folders,
                                                                 ignoreQNames);
             if (mergeActualNode(reference))
             {
-                PagingResults<Reference> virtualChildren = virtualStore.list(reference,
+                PagingResults<Reference> virtualChildren = smartStore.list(reference,
                                                                              false,
                                                                              true,
                                                                              files,
@@ -241,7 +241,7 @@ public class VirtualFileFolderServiceExtension
                 {
                     return new PageCollator<FileInfo>().collate(asFileInfoResults(environment,
                                                                                   virtualChildren,
-                                                                                  virtualStore).getPage(),
+                                                                                  smartStore).getPage(),
                                                                 superSource,
                                                                 pagingRequest,
                                                                 comparator);
@@ -255,7 +255,7 @@ public class VirtualFileFolderServiceExtension
             else
             {
 
-                PagingResults<Reference> children = virtualStore.list(reference,
+                PagingResults<Reference> children = smartStore.list(reference,
                                                                       true,
                                                                       true,
                                                                       files,
@@ -268,7 +268,7 @@ public class VirtualFileFolderServiceExtension
 
                 return asFileInfoResults(environment,
                                          children,
-                                         virtualStore);
+                                         smartStore);
 
             }
 
@@ -343,7 +343,7 @@ public class VirtualFileFolderServiceExtension
     {
         if (canVirtualize(rootNodeRef))
         {
-            final Reference reference = virtualStore.virtualize(rootNodeRef);
+            final Reference reference = smartStore.virtualize(rootNodeRef);
             List<Pair<QName, Boolean>> sortingPropoerties = sortProps;
             if (sortingPropoerties == null || sortingPropoerties.isEmpty())
             {
@@ -353,7 +353,7 @@ public class VirtualFileFolderServiceExtension
 
             if (mergeActualNode(reference))
             {
-                PagingResults<Reference> virtualChildren = virtualStore.list(reference,
+                PagingResults<Reference> virtualChildren = smartStore.list(reference,
                                                                              false,
                                                                              true,
                                                                              searchTypeQNames,
@@ -390,7 +390,7 @@ public class VirtualFileFolderServiceExtension
                 {
                     return new PageCollator<FileInfo>().collate(asFileInfoResults(environment,
                                                                                   virtualChildren,
-                                                                                  virtualStore).getPage(),
+                                                                                  smartStore).getPage(),
                                                                 superSource,
                                                                 pagingRequest,
                                                                 comparator);
@@ -403,7 +403,7 @@ public class VirtualFileFolderServiceExtension
             }
             else
             {
-                PagingResults<Reference> children = virtualStore.list(reference,
+                PagingResults<Reference> children = smartStore.list(reference,
                                                                       true,
                                                                       true,
                                                                       searchTypeQNames,
@@ -414,7 +414,7 @@ public class VirtualFileFolderServiceExtension
 
                 return asFileInfoResults(environment,
                                          children,
-                                         virtualStore);
+                                         smartStore);
             }
         }
 
@@ -451,18 +451,18 @@ public class VirtualFileFolderServiceExtension
         {
             if (canVirtualize(contextNodeRef))
             {
-                Reference reference = virtualStore.virtualize(contextNodeRef);
+                Reference reference = smartStore.virtualize(contextNodeRef);
                 List<Reference> virtualNodes = Collections.emptyList();
                 if (!includeSubFolders)
                 {
-                    virtualNodes = virtualStore.search(reference,
+                    virtualNodes = smartStore.search(reference,
                                                        namePattern,
                                                        fileSearch,
                                                        folderSearch,
                                                        false);
                 }
                 List<FileInfo> searchResult = asFileInfos(virtualNodes,
-                                                          virtualStore,
+                                                          smartStore,
                                                           environment);
 
                 if (mergeActualNode(reference))
@@ -488,7 +488,7 @@ public class VirtualFileFolderServiceExtension
     @Override
     public FileInfo rename(NodeRef sourceNodeRef, String newName) throws FileExistsException, FileNotFoundException
     {
-        return getTrait().rename(virtualStore.materializeIfPossible(sourceNodeRef),
+        return getTrait().rename(smartStore.materializeIfPossible(sourceNodeRef),
                                  newName);
     }
 

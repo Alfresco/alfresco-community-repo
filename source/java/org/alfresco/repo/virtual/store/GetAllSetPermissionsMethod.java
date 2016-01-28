@@ -56,8 +56,8 @@ public class GetAllSetPermissionsMethod extends AbstractProtocolMethod<Set<Acces
     public Set<AccessPermission> execute(VirtualProtocol virtualProtocol, Reference reference)
                 throws ProtocolMethodException
     {
-        Set<String> toAllow = userPermissions.getAllowVirtualNodes();
-        Set<String> toDeny = userPermissions.getDenyVirtualNodes();
+        Set<String> toAllow = userPermissions.getAllowSmartNodes();
+        Set<String> toDeny = userPermissions.getDenySmartNodes();
 
         VirtualFolderDefinition definition = resolver.resolveVirtualFolderDefinition(reference);
         FilingRule filingRule = definition.getFilingRule();
@@ -65,7 +65,7 @@ public class GetAllSetPermissionsMethod extends AbstractProtocolMethod<Set<Acces
                     || filingRule.filingNodeRefFor(new FilingParameters(reference)) == null;
         if (readonly)
         {
-            Set<String> deniedPermissions = userPermissions.getDenyReadonlyVirtualNodes();
+            Set<String> deniedPermissions = userPermissions.getDenyReadonlySmartNodes();
             toDeny = new HashSet<>(toDeny);
             toDeny.addAll(deniedPermissions);
             toAllow.add(PermissionService.READ);

@@ -57,7 +57,7 @@ public class SystemTemplateLocationsConstraint extends ListOfValuesConstraint
 {
     public static final String NULL_SYSTEM_TEMPLATE = "nullSystemTemplate";
 
-    public static final String NULL_SYSTEM_TEMPLATE_MESSAGE = "vm_virtualization.nullSystemTemplate.message";
+    public static final String NULL_SYSTEM_TEMPLATE_MESSAGE = "sf_smartFolder.nullSystemTemplate.message";
 
     private NodeService nodeService;
 

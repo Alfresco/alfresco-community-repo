@@ -49,7 +49,7 @@ function main()
    
    // The message depends on the search service in use
    var messageKey = "message.changeCategoryName.success";
-   if (search.searchSubsystem == "solr")
+   if (search.searchSubsystem == "solr" || search.searchSubsystem == "solr4")
    {
       messageKey = "message.changeCategoryName.solr.success";
    }

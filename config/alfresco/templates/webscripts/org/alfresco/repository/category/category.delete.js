@@ -41,7 +41,7 @@ function main()
    
    // The message depends on the search service in use
    var messageKey = "message.removeCategory.success";
-   if (search.searchSubsystem == "solr")
+   if (search.searchSubsystem == "solr" || search.searchSubsystem == "solr4")
    {
       messageKey = "message.removeCategory.solr.success";
    }

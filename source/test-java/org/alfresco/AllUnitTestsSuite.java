@@ -99,6 +99,7 @@ public class AllUnitTestsSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.solr.SolrQueryHTTPClientTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.solr.SolrStatsResultTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.solr.facet.SolrFacetComparatorTest.class));
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.solr.facet.FacetQNameUtilsTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.util.BeanExtenderUnitTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.solr.SpellCheckDecisionManagerTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.search.impl.solr.SolrStoreMappingWrapperTest.class));

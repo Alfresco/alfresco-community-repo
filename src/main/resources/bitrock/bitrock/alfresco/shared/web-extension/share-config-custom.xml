@@ -150,8 +150,8 @@
             <aspect name="audio:audio" />
             <aspect name="cm:indexControl" />
             <aspect name="dp:restrictable" />
-            <aspect name="vm:custom-virtualization" />
-            <aspect name="vm:system-virtualization" />
+            <aspect name="sf:customConfigSmartFolder" />
+            <aspect name="sf:systemConfigSmartFolder" />
          </visible>
 
          <!-- Aspects that a user can add. Same as "visible" if left empty -->
@@ -176,7 +176,7 @@
       -->
       <types>
          <type name="cm:content">
-            <subtype name="vm:virtualFolderTemplate" />
+            <subtype name="sf:smartFolderTemplate" />
          </type>
 
           <type name="cm:folder">

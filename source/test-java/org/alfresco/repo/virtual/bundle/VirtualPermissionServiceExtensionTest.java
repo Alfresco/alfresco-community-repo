@@ -57,7 +57,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
 
     private NodeRef virtualContent;
 
-    private VirtualStoreImpl virtualStore;
+    private VirtualStoreImpl smartStore;
 
     /** original user permissions to be restored on tear down */
     private VirtualUserPermissions savedUserPermissions;
@@ -68,7 +68,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         super.setUp();
         // we set our own virtual user permissions in order to be context xml
         // independent
-        virtualStore = VirtualPermissionServiceExtensionTest.ctx.getBean("virtualStore",
+        smartStore = VirtualPermissionServiceExtensionTest.ctx.getBean("smartStore",
                                                                          VirtualStoreImpl.class);
 
         permissionService = VirtualPermissionServiceExtensionTest.ctx.getBean("permissionServiceImpl",
@@ -115,19 +115,19 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
     protected void setUpTestPermissions()
     {
         // we save the original permissions
-        savedUserPermissions = virtualStore.getUserPermissions();
+        savedUserPermissions = smartStore.getUserPermissions();
 
         VirtualUserPermissions testPermissions = new VirtualUserPermissions(savedUserPermissions);
-        Set<String> allowVirtualNodes = new HashSet<>(savedUserPermissions.getAllowVirtualNodes());
+        Set<String> allowSmartNodes = new HashSet<>(savedUserPermissions.getAllowSmartNodes());
 
         // we force create children on virtual nodes
-        allowVirtualNodes.add(PermissionService.CREATE_CHILDREN);
+        allowSmartNodes.add(PermissionService.CREATE_CHILDREN);
 
-        testPermissions.setAllowVirtualNodes(allowVirtualNodes);
+        testPermissions.setAllowSmartNodes(allowSmartNodes);
 
         testPermissions.init();
 
-        virtualStore.setUserPermissions(testPermissions);
+        smartStore.setUserPermissions(testPermissions);
     }
 
     @Override
@@ -135,7 +135,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
     {
         if (savedUserPermissions != null)
         {
-            virtualStore.setUserPermissions(savedUserPermissions);
+            smartStore.setUserPermissions(savedUserPermissions);
             savedUserPermissions = null;
         }
 
@@ -617,7 +617,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
 
     private String asTypedPermission(String perm)
     {
-        return virtualStore.getUserPermissions().getPermissionTypeQName() + "." + perm;
+        return smartStore.getUserPermissions().getPermissionTypeQName() + "." + perm;
     }
 
 }

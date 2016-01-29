@@ -53,7 +53,7 @@
       <property name="repositoryTemplateTypeName" value="${smart.folders.config.system.templates.template.type}" />
    </bean>
 
-   <bean id="virtualization.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
+   <bean id="smartFolder.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
       <property name="models">
          <list>
             <value>${smart.folders.model}</value>
@@ -118,7 +118,7 @@
       <property name="qnameFilters" value="${smart.folders.config.type.templates.qname.filter}" />
    </bean>
 
-   <bean id="virtualStore" class="org.alfresco.repo.virtual.store.VirtualStoreImpl">
+   <bean id="smartStore" class="org.alfresco.repo.virtual.store.VirtualStoreImpl">
       <property name="environment" ref="actualEnvironment" />
       <property name="virtualizationMethods">
          <list>
@@ -128,17 +128,17 @@
          </list>
       </property>
       
-      <!-- Virtual user permissions define permission overriding rules for virtual entries through sets of     -->
+      <!-- Smart user permissions define permission overriding rules for smart entries through sets of     -->
       <!-- permissions that are forcibly allowed or denied over the permissions the node adheres to.           -->
-      <!-- Virtual nodes defined in virtual templates adhere to the actual node they are attached to unless    -->
-      <!-- otherwise specified in allowVirtualNodes or denyVirtualNodes.                                       -->
-      <!-- Virtual nodes that have no filling rule definition also consider permissions defined by the         -->
-      <!-- denyReadonlyVirtualNodes property.                                                                  -->
-      <!-- Query nodes that result from running queries defined by virtual nodes adhere to the node that they  -->
+      <!-- Smart nodes defined in smart templates adhere to the actual node they are attached to unless    -->
+      <!-- otherwise specified in allowSmartNodes or denySmartNodes.                                       -->
+      <!-- Smart nodes that have no filling rule definition also consider permissions defined by the         -->
+      <!-- denyReadonlySmartNodes property.                                                                  -->
+      <!-- Query nodes that result from running queries defined by smart nodes adhere to the node that they  -->
       <!-- stand for unless otherwise specified in the allow allowQueryNodes or denyQueryNodes properties.     -->
       <property name="userPermissions">
-         <bean id="virtualUserPermissions" class="org.alfresco.repo.virtual.store.VirtualUserPermissions"  init-method="init">
-            <property name="denyReadonlyVirtualNodes">
+         <bean id="smartUserPermissions" class="org.alfresco.repo.virtual.store.VirtualUserPermissions"  init-method="init">
+            <property name="denyReadonlySmartNodes">
                <set>
                   <value>Unlock</value>
                   <value>CancelCheckOut</value>
@@ -152,11 +152,11 @@
                   <value>CreateAssociations</value>
                </set>
             </property>
-            <property name="allowVirtualNodes">
+            <property name="allowSmartNodes">
                <set>
                </set>
             </property>
-            <property name="denyVirtualNodes">
+            <property name="denySmartNodes">
                <set>
                   <value>ChangePermissions</value>
                   <value>WriteProperties</value>
@@ -188,13 +188,13 @@
             <property name="path" value="${smart.download.associations.folder}" />
          </bean>
       </property>
-      <property name="virtualStore" ref="virtualStore" />
+      <property name="smartStore" ref="smartStore" />
       <property name="environment" ref="actualEnvironment" />
       <property name="extensionPoint" ref="nodeServiceExtensionPoint" />
    </bean>
 
    <bean id="fileFolderServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualFileFolderServiceExtension">
-      <property name="virtualStore" ref="virtualStore" />
+      <property name="smartStore" ref="smartStore" />
       <property name="environment" ref="actualEnvironment" />
       <property name="extensionPoint" ref="fileFolderServiceExtensionPoint" />
    </bean>
@@ -205,27 +205,27 @@
    </bean>
 
    <bean id="ratingServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualRatingServiceExtension">
-      <property name="virtualStore" ref="virtualStore" />
+      <property name="smartStore" ref="smartStore" />
       <property name="extensionPoint" ref="ratingServiceExtensionPoint" />
    </bean>
 
    <bean id="lockServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualLockServiceExtension">
-      <property name="virtualStore" ref="virtualStore" />
+      <property name="smartStore" ref="smartStore" />
       <property name="extensionPoint" ref="lockServiceExtensionPoint" />
    </bean>
 
    <bean id="permissionServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualPermissionServiceExtension">
-      <property name="virtualStore" ref="virtualStore" />
+      <property name="smartStore" ref="smartStore" />
       <property name="extensionPoint" ref="permissionServiceExtensionPoint" />
    </bean>
 
    <bean id="checkOutCheckInServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualCheckOutCheckInServiceExtension">
-      <property name="virtualStore" ref="virtualStore" />
+      <property name="smartStore" ref="smartStore" />
       <property name="extensionPoint" ref="checkOutCheckInServiceExtensionPoint" />
    </bean>
 
    <bean id="versionServiceExtension" class="org.alfresco.repo.virtual.bundle.VirtualVersionServiceExtension">
-      <property name="virtualStore" ref="virtualStore" />
+      <property name="smartStore" ref="smartStore" />
       <property name="extensionPoint" ref="versionServiceExtensionPoint" />
    </bean>
 
@@ -235,7 +235,7 @@
    </bean>
 
    <bean id="workflowPackageExtension" class="org.alfresco.repo.virtual.bundle.VirtualWorkflowPackageExtension">
-      <property name="virtualStore" ref="virtualStore" />
+      <property name="smartStore" ref="smartStore" />
       <property name="extensionPoint" ref="workflowPackageExtensionPoint" />
    </bean>
 
@@ -246,7 +246,7 @@
 
    <!-- BUNDLE -->
 
-   <bean id="virtualFoldersBundle" class="org.alfresco.traitextender.SpringExtensionBundle">
+   <bean id="smartFoldersBundle" class="org.alfresco.traitextender.SpringExtensionBundle">
       <property name="id" value="org.alfresco.virtual.folders" />
       <property name="enabled" value="${smart.folders.enabled}" />
       <property name="extensions">

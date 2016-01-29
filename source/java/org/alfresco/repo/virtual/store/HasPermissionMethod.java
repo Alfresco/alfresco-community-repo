@@ -59,7 +59,7 @@ public class HasPermissionMethod extends AbstractProtocolMethod<AccessStatus>
                     || filingRule.filingNodeRefFor(new FilingParameters(reference)) == null;
         if (readonly)
         {
-            Set<String> deniedPermissions = userPermissions.getDenyReadonlyVirtualNodes();
+            Set<String> deniedPermissions = userPermissions.getDenyReadonlySmartNodes();
             if (deniedPermissions.contains(permissionToCheck))
             {
                 return AccessStatus.DENIED;

@@ -13,34 +13,34 @@ import org.alfresco.traitextender.SpringBeanExtension;
 public class VirtualWorkflowPackageExtension extends
             SpringBeanExtension<WorkflowPackageExtension, WorkflowPackageTrait> implements WorkflowPackageExtension
 {
-    private VirtualStore virtualStore;
+    private VirtualStore smartStore;
 
     public VirtualWorkflowPackageExtension()
     {
         super(WorkflowPackageTrait.class);
     }
 
-    public void setVirtualStore(VirtualStore virtualStore)
+    public void setSmartStore(VirtualStore smartStore)
     {
-        this.virtualStore = virtualStore;
+        this.smartStore = smartStore;
     }
 
     @Override
     public NodeRef createPackage(NodeRef container)
     {
-        return getTrait().createPackage(virtualStore.materializeIfPossible(container));
+        return getTrait().createPackage(smartStore.materializeIfPossible(container));
     }
 
     @Override
     public void deletePackage(NodeRef container)
     {
-        getTrait().deletePackage(virtualStore.materializeIfPossible(container));
+        getTrait().deletePackage(smartStore.materializeIfPossible(container));
     }
 
     @Override
     public List<String> getWorkflowIdsForContent(NodeRef packageItem)
     {
-        return getTrait().getWorkflowIdsForContent(virtualStore.materializeIfPossible(packageItem));
+        return getTrait().getWorkflowIdsForContent(smartStore.materializeIfPossible(packageItem));
     }
 
     @Override

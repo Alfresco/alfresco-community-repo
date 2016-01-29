@@ -47,7 +47,7 @@ import org.alfresco.traitextender.SpringBeanExtension;
 public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionServiceExtension, VersionServiceTrait>
             implements VersionServiceExtension
 {
-    private VirtualStore virtualStore;
+    private VirtualStore smartStore;
 
     public class VirtualVersionHistory implements VersionHistory
     {
@@ -126,9 +126,9 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         super(VersionServiceTrait.class);
     }
 
-    public void setVirtualStore(VirtualStore virtualStore)
+    public void setSmartStore(VirtualStore smartStore)
     {
-        this.virtualStore = virtualStore;
+        this.smartStore = smartStore;
     }
 
     @Override
@@ -148,7 +148,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             return theTrait.isAVersion(materialNode);
         }
     }
@@ -164,7 +164,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             return theTrait.isVersioned(materialNode);
         }
     }
@@ -179,7 +179,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         if (Reference.isReference(frozenStateNodeRef))
         {
             Reference frozenReference = Reference.fromNodeRef(frozenStateNodeRef);
-            materialFrozenNodeRef = virtualStore.materialize(frozenReference);
+            materialFrozenNodeRef = smartStore.materialize(frozenReference);
         }
 
         Map<String, Serializable> virtualProperties = virtualVersion.getVersionProperties();
@@ -194,7 +194,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
             if (Reference.isReference(propFrozenNode))
             {
                 Reference propFrozenReference = Reference.fromNodeRef(propFrozenNode);
-                propActualFrozenNode = virtualStore.materialize(propFrozenReference);
+                propActualFrozenNode = smartStore.materialize(propFrozenReference);
             }
 
             actualProperties.put(Version2Model.PROP_FROZEN_NODE_REF,
@@ -218,7 +218,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
             if (Reference.isReference(propFrozenNode))
             {
                 Reference propFrozenReference = Reference.fromNodeRef(propFrozenNode);
-                propActualFrozenNode = virtualStore.materialize(propFrozenReference);
+                propActualFrozenNode = smartStore.materialize(propFrozenReference);
             }
             StoreRef propActualStoreRef = propFrozenNode.getStoreRef();
             actualProperties.put(VersionModel.PROP_FROZEN_NODE_STORE_PROTOCOL,
@@ -318,7 +318,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         }
         else
         {
-            NodeRef materialNode = virtualStore.materializeIfPossible(nodeRef);
+            NodeRef materialNode = smartStore.materializeIfPossible(nodeRef);
             Version actualVersion = theTrait.createVersion(materialNode,
                                                            versionProperties);
             Reference reference = Reference.fromNodeRef(nodeRef);
@@ -340,7 +340,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         }
         else
         {
-            NodeRef materialNode = virtualStore.materializeIfPossible(nodeRef);
+            NodeRef materialNode = smartStore.materializeIfPossible(nodeRef);
             Collection<Version> actualVersions = theTrait.createVersion(materialNode,
                                                                         versionProperties,
                                                                         versionChildren);
@@ -366,7 +366,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
             }
             else
             {
-                NodeRef materialNode = virtualStore.materializeIfPossible(nodeRef);
+                NodeRef materialNode = smartStore.materializeIfPossible(nodeRef);
                 materialNodeRefs.add(materialNode);
                 materializedNodeRefs.put(materialNode,
                                          Reference.fromNodeRef(nodeRef));
@@ -407,7 +407,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             VersionHistory actualVersionHistory = theTrait.getVersionHistory(materialNode);
             if (actualVersionHistory == null)
             {
@@ -434,7 +434,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             Reference versionedReference = Reference.fromNodeRef(nodeRef);
             Version actualVersion = theTrait.getCurrentVersion(materialNode);
             return virtualizeVersion(versionedReference,
@@ -453,7 +453,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             theTrait.revert(materialNode);
         }
     }
@@ -470,7 +470,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             theTrait.revert(materialNode,
                             deep);
         }
@@ -489,7 +489,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             Version actualVersion = VirtualVersionServiceExtension.this.materializeVersionIfReference(version);
             theTrait.revert(materialNode,
                             actualVersion);
@@ -509,7 +509,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             Version actualVersion = VirtualVersionServiceExtension.this.materializeVersionIfReference(version);
             theTrait.revert(materialNode,
                             actualVersion,
@@ -531,7 +531,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             return theTrait.restore(materialNode,
                                     parentNodeRef,
                                     assocTypeQName,
@@ -554,7 +554,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             return theTrait.restore(materialNode,
                                     parentNodeRef,
                                     assocTypeQName,
@@ -574,7 +574,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             theTrait.deleteVersionHistory(materialNode);
         }
     }
@@ -591,7 +591,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             Version actualVersion = materializeVersionIfReference(version);
             theTrait.deleteVersion(materialNode,
                                    actualVersion);
@@ -610,7 +610,7 @@ public class VirtualVersionServiceExtension extends SpringBeanExtension<VersionS
         else
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
-            NodeRef materialNode = virtualStore.materialize(reference);
+            NodeRef materialNode = smartStore.materialize(reference);
             theTrait.ensureVersioningEnabled(materialNode,
                                              versionProperties);
         }

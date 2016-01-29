@@ -34,17 +34,17 @@ import org.alfresco.service.namespace.QName;
  */
 public class VirtualUserPermissions
 {
-    private Set<String> allowVirtualNodes = Collections.emptySet();
+    private Set<String> allowSmartNodes = Collections.emptySet();
 
-    private Set<String> allowVirtualNodesFull = Collections.emptySet();
+    private Set<String> allowSmartNodesFull = Collections.emptySet();
 
-    private Set<String> denyVirtualNodes = Collections.emptySet();
+    private Set<String> denySmartNodes = Collections.emptySet();
 
-    private Set<String> denyVirtualNodesFull = Collections.emptySet();
+    private Set<String> denySmartNodesFull = Collections.emptySet();
 
-    private Set<String> denyReadonlyVirtualNodes = Collections.emptySet();
+    private Set<String> denyReadonlySmartNodes = Collections.emptySet();
 
-    private Set<String> denyReadonlyVirtualNodesFull = Collections.emptySet();
+    private Set<String> denyReadonlySmartNodesFull = Collections.emptySet();
 
     private Set<String> allowQueryNodes = Collections.emptySet();
 
@@ -63,11 +63,11 @@ public class VirtualUserPermissions
 
     public VirtualUserPermissions(VirtualUserPermissions userPermissions)
     {
-        this.allowVirtualNodes = new HashSet<>(userPermissions.allowVirtualNodes);
-        this.denyVirtualNodes = new HashSet<>(userPermissions.denyVirtualNodes);
+        this.allowSmartNodes = new HashSet<>(userPermissions.allowSmartNodes);
+        this.denySmartNodes = new HashSet<>(userPermissions.denySmartNodes);
         this.allowQueryNodes = new HashSet<>(userPermissions.allowQueryNodes);
         this.denyQueryNodes = new HashSet<>(userPermissions.denyQueryNodes);
-        this.denyReadonlyVirtualNodes = new HashSet<>(userPermissions.denyReadonlyVirtualNodes);
+        this.denyReadonlySmartNodes = new HashSet<>(userPermissions.denyReadonlySmartNodes);
         init();
     }
 
@@ -85,10 +85,10 @@ public class VirtualUserPermissions
     public void init()
     {
         this.allowQueryNodesFull = asFullNamePermissions(allowQueryNodes);
-        this.allowVirtualNodesFull = asFullNamePermissions(allowVirtualNodes);
+        this.allowSmartNodesFull = asFullNamePermissions(allowSmartNodes);
         this.denyQueryNodesFull = asFullNamePermissions(denyQueryNodes);
-        this.denyVirtualNodesFull = asFullNamePermissions(denyVirtualNodes);
-        this.denyReadonlyVirtualNodesFull = asFullNamePermissions(denyReadonlyVirtualNodes);
+        this.denySmartNodesFull = asFullNamePermissions(denySmartNodes);
+        this.denyReadonlySmartNodesFull = asFullNamePermissions(denyReadonlySmartNodes);
     }
 
     public QName getPermissionTypeQName()
@@ -100,17 +100,17 @@ public class VirtualUserPermissions
     {
         if (readonly)
         {
-            if (denyReadonlyVirtualNodesFull.contains(permission) || denyReadonlyVirtualNodes.contains(permission))
+            if (denyReadonlySmartNodesFull.contains(permission) || denyReadonlySmartNodes.contains(permission))
             {
                 return AccessStatus.DENIED;
             }
         }
 
-        if (denyVirtualNodesFull.contains(permission) || denyVirtualNodes.contains(permission))
+        if (denySmartNodesFull.contains(permission) || denySmartNodes.contains(permission))
         {
             return AccessStatus.DENIED;
         }
-        else if (allowVirtualNodesFull.contains(permission) || allowVirtualNodes.contains(permission))
+        else if (allowSmartNodesFull.contains(permission) || allowSmartNodes.contains(permission))
         {
             return AccessStatus.ALLOWED;
         }
@@ -136,34 +136,34 @@ public class VirtualUserPermissions
         }
     }
 
-    public Set<String> getAllowVirtualNodes()
+    public Set<String> getAllowSmartNodes()
     {
-        return this.allowVirtualNodes;
+        return this.allowSmartNodes;
     }
 
-    public void setAllowVirtualNodes(Set<String> allowFolders)
+    public void setAllowSmartNodes(Set<String> allowFolders)
     {
-        this.allowVirtualNodes = allowFolders;
+        this.allowSmartNodes = allowFolders;
     }
 
-    public Set<String> getDenyVirtualNodes()
+    public Set<String> getDenySmartNodes()
     {
-        return this.denyVirtualNodes;
+        return this.denySmartNodes;
     }
 
-    public void setDenyVirtualNodes(Set<String> denyFolders)
+    public void setDenySmartNodes(Set<String> denyFolders)
     {
-        this.denyVirtualNodes = denyFolders;
+        this.denySmartNodes = denyFolders;
     }
 
-    public void setDenyReadonlyVirtualNodes(Set<String> denyReadonlyVirtualNodes)
+    public void setDenyReadonlySmartNodes(Set<String> denyReadonlySmartNodes)
     {
-        this.denyReadonlyVirtualNodes = denyReadonlyVirtualNodes;
+        this.denyReadonlySmartNodes = denyReadonlySmartNodes;
     }
 
-    public Set<String> getDenyReadonlyVirtualNodes()
+    public Set<String> getDenyReadonlySmartNodes()
     {
-        return this.denyReadonlyVirtualNodes;
+        return this.denyReadonlySmartNodes;
     }
 
     public Set<String> getAllowQueryNodes()

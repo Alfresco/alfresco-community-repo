@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -27,17 +27,38 @@ import org.alfresco.service.cmr.model.FileInfo;
  */
 public interface WebDAVActivityPoster
 {
+    /**
+     * @param siteId
+     * @param tenantDomain
+     * @param path the path to the folder or <code>null</code> for files
+     * @param nodeInfo
+     * @throws WebDAVServerException
+     */
     void postFileFolderAdded(
                 String siteId,
                 String tenantDomain,
                 String path,
                 FileInfo nodeInfo) throws WebDAVServerException;
     
+    /**
+     * @param siteId
+     * @param tenantDomain
+     * @param nodeInfo
+     * @throws WebDAVServerException
+     */
     void postFileFolderUpdated(
                 String siteId,
                 String tenantDomain,
                 FileInfo nodeInfo) throws WebDAVServerException;
     
+    /**
+     * @param siteId
+     * @param tenantDomain
+     * @param parentPath
+     * @param parentNodeInfo
+     * @param contentNodeInfo
+     * @throws WebDAVServerException
+     */
     void postFileFolderDeleted(
                 String siteId,
                 String tenantDomain,

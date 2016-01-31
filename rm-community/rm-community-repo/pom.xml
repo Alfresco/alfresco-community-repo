@@ -2,14 +2,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
-   <artifactId>alfresco-rm-server</artifactId>
-   <name>Alfresco RM Server</name>
+   <artifactId>alfresco-rm-community-repo</artifactId>
+   <name>Alfresco Records Management Community Repo</name>
    <packaging>amp</packaging>
-   <description>Manages the lifecycle of the alfresco-rm-server amp</description>
 
    <parent>
       <groupId>org.alfresco</groupId>
-      <artifactId>alfresco-rm-parent</artifactId>
+      <artifactId>alfresco-rm-community</artifactId>
       <version>2.4-SNAPSHOT</version>
    </parent>
 
@@ -23,7 +22,7 @@
       <alfresco.repo.artifactId>alfresco</alfresco.repo.artifactId>
       <alfresco.postgres.version>9.1-901.jdbc4</alfresco.postgres.version>
       <alfresco.mysql.version>5.1.31</alfresco.mysql.version>
-      <alfresco.rm.artifactId>alfresco-rm-server</alfresco.rm.artifactId>
+      <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
    </properties>
@@ -369,7 +368,7 @@
          </properties>
       </profile>
       <profile>
-         <id>start-alfresco</id>
+         <id>start-repo</id>
          <build>
             <plugins>
                <!-- Fetch and unpack Alfresco Repository / Share / Solr in the target / folder -->

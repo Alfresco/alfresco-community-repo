@@ -352,6 +352,7 @@
             <alfresco.db.port>${my.db.port}</alfresco.db.port>
             <alfresco.db.hibernate.dialect>org.hibernate.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
             <alfresco.db.params></alfresco.db.params>
+            <alfresco.master.db.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.master.db.url>
             <alfresco.db.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.db.url>
             <alfresco.db.datasource.class>org.gjt.mm.mysql.Driver</alfresco.db.datasource.class>
          </properties>
@@ -363,6 +364,7 @@
             <alfresco.db.port>${my.db.port}</alfresco.db.port>
             <alfresco.db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
             <alfresco.db.params></alfresco.db.params>
+            <alfresco.db.master.url>jdbc:postgresql:template1</alfresco.db.master.url>
             <alfresco.db.url>jdbc:postgresql:${alfresco.db.name}</alfresco.db.url>
             <alfresco.db.datasource.class>org.postgresql.Driver</alfresco.db.datasource.class>
          </properties>

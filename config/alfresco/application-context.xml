@@ -56,6 +56,19 @@
     -->
     <import resource="classpath*:alfresco/extension/*-context.xml"/>
     <import resource="classpath*:alfresco/deprecated-context.xml"/>
+    
+    <!--
+        ACE-5041: Reload CMIS. Do this after module loading, and 'custom extension' contexts
+        so as to catch any new models that may be reasonably have been introduced in those files.
+        Keep the dev-context.xml last though to allow late overrides by devs. 
+     -->
+    <!-- <bean class="org.alfresco.opencmis.dictionary.CMISDictionaryReload" init-method="reload">
+        <constructor-arg ref="OpenCMISDictionaryService1.1"/>
+    </bean> -->
+    <bean class="org.alfresco.opencmis.dictionary.CMISDictionaryReload">
+        <constructor-arg ref="OpenCMISDictionaryService1.1"/>
+    </bean>
+         
     <import resource="classpath*:alfresco/extension/dev-context.xml" />
 
 </beans>

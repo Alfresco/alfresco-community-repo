@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -113,6 +113,7 @@ import org.apache.chemistry.opencmis.commons.data.ObjectData;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderData;
 import org.apache.chemistry.opencmis.commons.data.ObjectInFolderList;
 import org.apache.chemistry.opencmis.commons.data.ObjectList;
+import org.apache.chemistry.opencmis.commons.data.ObjectParentData;
 import org.apache.chemistry.opencmis.commons.data.Properties;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 import org.apache.chemistry.opencmis.commons.data.RepositoryInfo;
@@ -3501,6 +3502,73 @@ public class CMISTest
         }
         finally
         {
+            AuthenticationUtil.popAuthentication();
+        }
+    }
+    
+    /**
+     * MNT-14951: Test that the list of parents can be retrieved for a folder.
+     */
+    @Test
+    public void testCMISGetObjectParents() throws Exception
+    {
+        // setUp audit subsystem
+        setupAudit();
+        
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+        
+        try
+        {
+            final NodeRef folderWithTwoParents = transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<NodeRef>()
+            {
+                @Override
+                public NodeRef execute() throws Throwable
+                {
+                    NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+
+                    String folder1 = GUID.generate();
+                    FileInfo folderInfo1 = fileFolderService.create(companyHomeNodeRef, folder1, ContentModel.TYPE_FOLDER);
+                    assertNotNull(folderInfo1);
+                    
+                    String folder2 = GUID.generate();
+                    FileInfo folderInfo2 = fileFolderService.create(companyHomeNodeRef, folder2, ContentModel.TYPE_FOLDER);
+                    assertNotNull(folderInfo2);
+                    
+                    // Create folder11 as a subfolder of folder1
+                    String folder11 = GUID.generate();
+                    FileInfo folderInfo11 = fileFolderService.create(folderInfo1.getNodeRef(), folder11, ContentModel.TYPE_FOLDER);
+                    assertNotNull(folderInfo11);
+                    
+                    // Add folder2 as second parent for folder11
+                    nodeService.addChild(folderInfo2.getNodeRef(), folderInfo11.getNodeRef(), ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
+                    
+                    return folderInfo11.getNodeRef();
+                }
+            });
+            
+            withCmisService(new CmisServiceCallback<Void>()
+            {
+                @Override
+                public Void execute(CmisService cmisService)
+                {
+                    List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+                    assertNotNull(repositories);
+                    assertTrue(repositories.size() > 0);
+                    String repositoryId = repositories.iterator().next().getId();
+
+                    List<ObjectParentData> parents = cmisService.getObjectParents(repositoryId, folderWithTwoParents.getId(), null, Boolean.FALSE, IncludeRelationships.NONE,
+                                                                                  "cmis:none", Boolean.FALSE, null);
+                    // Check if the second parent was also returned.
+                    assertEquals(2, parents.size());
+
+                    return null;
+                }
+            }, CmisVersion.CMIS_1_1);
+        }
+        finally
+        {
+            auditSubsystem.destroy();
             AuthenticationUtil.popAuthentication();
         }
     }

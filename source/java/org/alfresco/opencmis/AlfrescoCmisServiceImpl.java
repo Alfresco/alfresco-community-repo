@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -848,27 +848,30 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
             List<CMISNodeInfo> parentInfos = info.getParents();
             if (!parentInfos.isEmpty())
             {
-                CMISNodeInfo parentInfo = addNodeInfo(parentInfos.get(0));
-
-                ObjectData object = connector.createCMISObject(
-                        parentInfo, filter, includeAllowableActions,
-                        includeRelationships, renditionFilter, false, false);
-            	boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
-                if (isObjectInfoRequired)
+                for (CMISNodeInfo parent : parentInfos)
                 {
-                    getObjectInfo(repositoryId, object.getId(), includeRelationships);
+                    CMISNodeInfo parentInfo = addNodeInfo(parent);
+
+                    ObjectData object = connector.createCMISObject(
+                            parentInfo, filter, includeAllowableActions,
+                            includeRelationships, renditionFilter, false, false);
+                    boolean isObjectInfoRequired = getContext().isObjectInfoRequired();
+                    if (isObjectInfoRequired)
+                    {
+                        getObjectInfo(repositoryId, object.getId(), includeRelationships);
+                    }
+
+                    ObjectParentDataImpl objectParent = new ObjectParentDataImpl();
+                    objectParent.setObject(object);
+
+                    // include relative path segment
+                    if (includeRelativePathSegment)
+                    {
+                        objectParent.setRelativePathSegment(info.getName());
+                    }
+
+                    result.add(objectParent);
                 }
-
-                ObjectParentDataImpl objectParent = new ObjectParentDataImpl();
-                objectParent.setObject(object);
-
-                // include relative path segment
-                if (includeRelativePathSegment)
-                {
-                    objectParent.setRelativePathSegment(info.getName());
-                }
-
-                result.add(objectParent);
             }
         }
         else if (info.isCurrentVersion() || info.isPWC())

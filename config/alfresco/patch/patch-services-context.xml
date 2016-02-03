@@ -112,6 +112,66 @@
     <!--===========================-->
     <!--====== LIVE PATCHES =======-->
     <!--===========================-->
+    
+    <bean id="patch.spacesBootstrapSmartTemplatesFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch">
+        <property name="id"><value>patch.spacesBootstrapSmartTemplatesFolder</value></property>
+        <property name="description"><value>patch.spacesBootstrapSmartTemplatesFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9015</value></property>
+        <property name="targetSchema"><value>9016</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath"><value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.smartfolders.childname}</value></property>
+        <property name="bootstrapView"><props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                <prop key="location">alfresco/bootstrap/spacesSmartFolderTemplates.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <bean id="patch.spacesBootstrapSmartFolderExample" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch">
+        <property name="id"><value>patch.spacesBootstrapSmartFolderExample</value></property>
+        <property name="description"><value>patch.spacesBootstrapSmartFolderExample.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9015</value></property>
+        <property name="targetSchema"><value>9016</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.smartfolders.childname}/smartFoldersExample.json</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.smartfolders.childname}</prop>
+                <prop key="location">alfresco/bootstrap/example_smartfoldertemplates.acp</prop>
+                <prop key="messages">alfresco/messages/bootstrap-example-smartfoldertemplates</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="patch.spacesBootstrapSmartDownloadFolder" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch">
+        <property name="id"><value>patch.spacesBootstrapSmartDownloadFolder</value></property>
+        <property name="description"><value>patch.spacesBootstrapSmartDownloadFolder.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9015</value></property>
+        <property name="targetSchema"><value>9016</value></property>
+        <property name="importerBootstrap">
+            <ref bean="spacesBootstrap" />
+        </property>
+        <property name="checkPath">
+            <value>/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.smartdownloads.childname}</value>
+        </property>
+        <property name="bootstrapView">
+            <props>
+                <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}</prop>
+                <prop key="location">alfresco/bootstrap/spacesSmartFolderDownloads.xml</prop>
+                <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+            </props>
+        </property>
+    </bean>
 
     <bean id="patch.exampleJavaScript" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id"><value>patch.exampleJavaScript</value></property>

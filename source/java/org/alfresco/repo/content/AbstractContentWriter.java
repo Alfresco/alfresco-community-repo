@@ -617,7 +617,7 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
     private void doGuessMimetype(String filename)
     {
         String mimetype;
-        if (filename.startsWith(MimetypeMap.MACOS_RESOURCE_FORK_FILE_NAME_PREFIX))
+        if (filename != null && filename.startsWith(MimetypeMap.MACOS_RESOURCE_FORK_FILE_NAME_PREFIX))
         {
             mimetype = MimetypeMap.MIMETYPE_APPLEFILE;
         }

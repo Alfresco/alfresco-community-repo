@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -58,6 +58,7 @@ public class ContentFullContextTestSuite extends TestSuite
         //suite.addTestSuite(MimetypeMapTest.class);
         suite.addTestSuite(RoutingContentServiceTest.class);
         suite.addTest(new JUnit4TestAdapter(RoutingContentStoreTest.class));
+        suite.addTestSuite(GuessMimetypeTest.class);
         
         try
         {

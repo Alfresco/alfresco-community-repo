@@ -32,6 +32,7 @@
       <resources>
          <resource>
             <directory>config</directory>
+            <filtering>${app.filtering.enabled}</filtering>
          </resource>
       </resources>
       <testResources>

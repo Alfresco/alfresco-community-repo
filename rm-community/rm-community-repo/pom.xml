@@ -82,13 +82,13 @@
                      <goal>run</goal>
                   </goals>
                   <configuration>
-                     <tasks>
+                     <target>
                         <copy todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
                            <fileset dir="${project.build.outputDirectory}/alfresco"/>
                         </copy>
                         <move file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties"
                            todir="${project.build.directory}/${project.build.finalName}"/>
-                     </tasks>
+                     </target>
                   </configuration>
                </execution>
             </executions>

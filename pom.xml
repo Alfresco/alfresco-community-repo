@@ -83,6 +83,7 @@
    <modules>
       <module>rm-community</module>
       <module>rm-enterprise</module>
+      <module>rm-automation</module>
    </modules>
 
    <properties>

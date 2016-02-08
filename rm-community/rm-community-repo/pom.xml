@@ -26,12 +26,14 @@
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
    </properties>
+
    <build>
       <sourceDirectory>source/java</sourceDirectory>
       <testSourceDirectory>test/java</testSourceDirectory>
       <resources>
          <resource>
             <directory>config</directory>
+            <filtering>${app.filtering.enabled}</filtering>
          </resource>
       </resources>
       <testResources>
@@ -80,13 +82,13 @@
                      <goal>run</goal>
                   </goals>
                   <configuration>
-                     <tasks>
+                     <target>
                         <copy todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
                            <fileset dir="${project.build.outputDirectory}/alfresco"/>
                         </copy>
                         <move file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties"
                            todir="${project.build.directory}/${project.build.finalName}"/>
-                     </tasks>
+                     </target>
                   </configuration>
                </execution>
             </executions>
@@ -94,7 +96,6 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>properties-maven-plugin</artifactId>
-            <version>1.0-alpha-2</version>
             <executions>
                <execution>
                   <phase>initialize</phase>
@@ -111,18 +112,17 @@
             </executions>
          </plugin>
         <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
+            <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-                <includes>
-                    <include>**/AllUnitTestSuite.class</include>
-                </includes>
+               <includes>
+                  <include>**/AllUnitTestSuite.class</include>
+               </includes>
             </configuration>
-        </plugin>
+         </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-failsafe-plugin</artifactId>
-            <version>2.19</version>
             <executions>
                <execution>
                   <id>integration-tests</id>
@@ -139,7 +139,6 @@
                </execution>
             </executions>
          </plugin>
-         <!-- Fetch and unpack Alfresco Repository/Share WAR (alfresco.war or share.war) -->
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-dependency-plugin</artifactId>
@@ -164,8 +163,6 @@
                </execution>
             </executions>
          </plugin>
-         <!-- The current AMP artifact is installed into the Alfresco.war or share.war
-            using alfresco-maven-plugin -->
          <plugin>
             <groupId>org.alfresco.maven.plugin</groupId>
             <artifactId>alfresco-maven-plugin</artifactId>
@@ -199,11 +196,6 @@
                   </goals>
                </execution>
             </executions>
-            <configuration>
-               <!-- We need to selectively not install web resources (i.e. /web folder in AMP),
-                  so these files can be picked up directly from the build project instead,
-                  enabling rapid application dev -->
-            </configuration>
          </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
@@ -224,7 +216,6 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>2.4</version>
             <executions>
                <execution>
                   <id>attach-sources</id>
@@ -237,11 +228,9 @@
       </plugins>
       <pluginManagement>
          <plugins>
-            <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
             <plugin>
                <groupId>org.eclipse.m2e</groupId>
                <artifactId>lifecycle-mapping</artifactId>
-               <version>1.0.0</version>
                <configuration>
                   <lifecycleMappingMetadata>
                      <pluginExecutions>
@@ -272,12 +261,10 @@
          <artifactId>gson</artifactId>
          <version>2.3.1</version>
       </dependency>
-      <!-- Alfresco dependencies -->
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-remote-api</artifactId>
       </dependency>
-      <!-- Test dependencies -->
       <dependency>
          <groupId>io.takari.junit</groupId>
          <artifactId>takari-cpsuite</artifactId>
@@ -320,7 +307,6 @@
          <classifier>tests</classifier>
          <scope>test</scope>
       </dependency>
-      <!-- Database drivers -->
       <dependency>
          <groupId>postgresql</groupId>
          <artifactId>postgresql</artifactId>
@@ -373,7 +359,6 @@
          <id>start-repo</id>
          <build>
             <plugins>
-               <!-- Fetch and unpack Alfresco Repository / Share / Solr in the target / folder -->
                <plugin>
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-dependency-plugin</artifactId>
@@ -396,7 +381,6 @@
                            </artifactItems>
                         </configuration>
                      </execution>
-                     <!-- Extract Solr config -->
                      <execution>
                         <id>unpack-alfresco-config</id>
                         <goals>
@@ -418,7 +402,6 @@
                      </execution>
                   </executions>
                </plugin>
-               <!-- The current AMP artifact is installed into the Alfresco folder using alfresco-maven-plugin -->
                <plugin>
                   <groupId>org.alfresco.maven.plugin</groupId>
                   <artifactId>alfresco-maven-plugin</artifactId>
@@ -432,15 +415,12 @@
                      </execution>
                   </executions>
                   <configuration>
-                     <!-- We need to selectively not install web resources so to enable rapid dev -->
                      <includeWebResources>false</includeWebResources>
                   </configuration>
                </plugin>
-               <!-- Fix the path when we are running on WINDOWS -->
                <plugin>
                   <groupId>org.codehaus.mojo</groupId>
                   <artifactId>build-helper-maven-plugin</artifactId>
-                  <version>1.8</version>
                   <executions>
                      <execution>
                         <id>regex-property</id>
@@ -458,7 +438,6 @@
                      </execution>
                   </executions>
                </plugin>
-               <!-- Replaces values in Solr config -->
                <plugin>
                   <groupId>com.google.code.maven-replacer-plugin</groupId>
                   <artifactId>replacer</artifactId>
@@ -543,26 +522,15 @@
                </plugin>
             </plugins>
          </build>
-         <!--
-         <dependencies>
-            <dependency>
-               <groupId>org.alfresco.maven</groupId>
-               <artifactId>alfresco-rad</artifactId>
-               <version>${maven.alfresco.version}</version>
-            </dependency>
-         </dependencies>
-         -->
       </profile>
 
       <profile>
          <id>wipeDB</id>
          <build>
             <plugins>
-               <!-- Wipe the database before starting tests -->
                <plugin>
                   <groupId>org.codehaus.mojo</groupId>
                   <artifactId>sql-maven-plugin</artifactId>
-                  <version>1.5</version>
                   <configuration>
                      <autocommit>true</autocommit>
                      <driver>${alfresco.db.datasource.class}</driver>
@@ -608,6 +576,5 @@
             </plugins>
          </build>
       </profile>
-
    </profiles>
 </project>

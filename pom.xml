@@ -66,7 +66,7 @@
    </modules>
 
    <properties>
-      <alfresco.base.version>5.0</alfresco.base.version>
+      <alfresco.base.version>5.0.2</alfresco.base.version>
 
       <!-- Database properties - default values to be overridden in settings.xml -->
       <db.driver>org.postgresql.Driver</db.driver>

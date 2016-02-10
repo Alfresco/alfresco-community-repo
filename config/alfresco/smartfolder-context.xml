@@ -53,19 +53,6 @@
       <property name="repositoryTemplateTypeName" value="${smart.folders.config.system.templates.template.type}" />
    </bean>
 
-   <bean id="smartFolder.dictionaryBootstrap" parent="dictionaryModelBootstrap" depends-on="dictionaryBootstrap">
-      <property name="models">
-         <list>
-            <value>${smart.folders.model}</value>
-         </list>
-      </property>
-      <property name="labels">
-         <list>
-            <value>${smart.folders.model.labels}</value>
-         </list>
-      </property>
-   </bean>
-
    <!-- VIRTUALIZATION INTERNALS -->
 
    <bean id="publicAPIfacet" class="org.alfresco.repo.virtual.PublicAPIFacet">

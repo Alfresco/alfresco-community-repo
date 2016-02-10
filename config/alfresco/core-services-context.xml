@@ -695,6 +695,10 @@
 
                 <!-- Content Publishing model -->
                 <value>alfresco/model/publishingModel.xml</value>
+
+                <!-- Smart Folders model -->
+                <value>alfresco/model/smartfolder-model.xml</value>
+
             </list>
         </property>
         <property name="labels">
@@ -709,6 +713,7 @@
                 <value>alfresco/messages/transfer-model</value>
                 <value>alfresco/messages/publishing-model</value>
                 <value>alfresco/messages/site-model</value>
+                <value>alfresco/messages/smartfolder-model</value>
             </list>
         </property>
     </bean>

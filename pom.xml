@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-enterprise-packaging</artifactId>
-        <version>5.1-SNAPSHOT</version>
+        <version>5.1</version>
     </parent>
     <artifactId>alfresco-one-installer-resources</artifactId>
     <packaging>jar</packaging>

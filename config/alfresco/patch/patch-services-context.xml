@@ -1415,4 +1415,15 @@
           </list>
         </property>
     </bean>
+
+    <bean id="patch.db-v4.2-migrate-activiti-workflows" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-v4.2-migrate-activiti-workflows</value></property>
+        <property name="description"><value>patch.db-v4.2-migrate-activiti-workflows.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9027</value></property>
+        <property name="targetSchema"><value>9028</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/migrate-activiti-workflows.sql</value>
+        </property>
+    </bean>
 </beans>

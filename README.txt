@@ -10,6 +10,8 @@ Configuring and starting Alfresco/Share:
   mvn clean install -Pstart-repo
   mvn clean install -Pstart-share
 
+  (these commands work best if run from the specific directories, e.g. start share from
+  rm-enterprise/rm-enterprise-share/ or rm-community/rm-community-share/ )
 
 
 Configuring a different DB other than H2 (e.g. MySQL or PostgreSQL):
@@ -37,3 +39,14 @@ Running integration test:
 In order to execute the integration tests run the following command (unit tests will be executed every time before you start Alfresco/Share):
 
 mvn clean install -Dskip.integrationtests=false
+
+
+Running UI Automation tests:
+----------------------------
+
+To run the automated UI tests, change to the rm-automation directory and run:
+   
+   mvn clean install -Dskip.automationtests=false
+   
+Depending on your local Firefox version, you may need to modify the rm-automation/pom.xml to use version 1.7 of selenium-grid
+

@@ -7,9 +7,10 @@ root = true
 # All files should use spaces.
 [*]
 indent_style = space
-end_of_line = crlf
-trim_trailing_whitespace = true
-indent_size = 3
 
-[*.java]
-indent_size = 4
+# Just JS for now.
+[*.js]
+indent_size = 3
+trim_trailing_whitespace = true
+
+#TODO: css, xml, ftl, etc.

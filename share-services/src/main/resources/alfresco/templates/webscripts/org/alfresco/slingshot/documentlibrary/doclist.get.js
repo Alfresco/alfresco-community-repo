@@ -202,7 +202,7 @@ function getDoclist()
       item = Evaluator.run(node);
       if (item !== null)
       {
-         item.isFavourite = (favourites[item.node.nodeRef] === true || (item.node.properties["sf:actualNodeRef"] && favourites[item.node.properties["sf:actualNodeRef"]] === true));
+         item.isFavourite = (favourites[item.node.nodeRef] === true || (item.node.properties["smf:actualNodeRef"] && favourites[item.node.properties["smf:actualNodeRef"]] === true));
          item.likes = Common.getLikes(node);
 
          // Does this collection of nodes have potentially differering paths?

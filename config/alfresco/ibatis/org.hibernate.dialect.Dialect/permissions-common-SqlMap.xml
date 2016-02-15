@@ -330,7 +330,7 @@
             authority_id = #{authorityId},
             allowed = #{allowed},
             applies = #{applies},
-            context_id = #{contextId},
+            context_id = #{contextId,jdbcType=BIGINT},
             version = #{version}
         where
             id = #{id}

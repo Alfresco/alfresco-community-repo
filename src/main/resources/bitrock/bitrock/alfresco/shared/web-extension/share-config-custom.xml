@@ -151,8 +151,8 @@
             <aspect name="audio:audio" />
             <aspect name="cm:indexControl" />
             <aspect name="dp:restrictable" />
-            <aspect name="sf:customConfigSmartFolder" />
-            <aspect name="sf:systemConfigSmartFolder" />
+            <aspect name="smf:customConfigSmartFolder" />
+            <aspect name="smf:systemConfigSmartFolder" />
          </visible>
 
          <!-- Aspects that a user can add. Same as "visible" if left empty -->
@@ -177,7 +177,7 @@
       -->
       <types>
          <type name="cm:content">
-            <subtype name="sf:smartFolderTemplate" />
+            <subtype name="smf:smartFolderTemplate" />
          </type>
 
           <type name="cm:folder">

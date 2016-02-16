@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Definition of new Model -->
-<model name="sf:smartFolder" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+<model name="smf:smartFolder" xmlns="http://www.alfresco.org/model/dictionary/1.0">
    <!-- Optional meta-data about the model -->
    <description>Smart Folder Model</description>
    <author>Alfresco</author>
@@ -16,11 +16,11 @@
 
     <!-- Introduction of new namespaces defined by this model -->
    <namespaces>
-     <namespace uri="http://www.alfresco.org/model/content/smartfolder/1.0" prefix="sf" />
+     <namespace uri="http://www.alfresco.org/model/content/smartfolder/1.0" prefix="smf" />
    </namespaces>
 
    <constraints>
-      <constraint name="sf:system-template-locations-constraint" type="REGISTERED">
+      <constraint name="smf:system-template-locations-constraint" type="REGISTERED">
          <parameter name="registeredName">
             <value>systemTemplateLocations</value>
          </parameter>
@@ -29,7 +29,7 @@
 
     <!--defined types -->
    <types>
-      <type name="sf:smartFolderTemplate">
+      <type name="smf:smartFolderTemplate">
          <title>Smart Folder Template</title>
          <parent>cm:content</parent>
       </type>
@@ -38,26 +38,26 @@
    <!--defined aspects -->
    <aspects>
 
-      <aspect name="sf:smartFolder">
+      <aspect name="smf:smartFolder">
          <title>Smart Folder</title>
          <description>A smart container node</description>
       </aspect>
 
-      <aspect name="sf:smartFolderChild">
+      <aspect name="smf:smartFolderChild">
             <title>Smart Folder Child</title>
       </aspect>
 
-      <aspect name="sf:virtualization">
+      <aspect name="smf:virtualization">
          <title>Virtualization</title>
          <properties>
          </properties>
       </aspect>
 
-      <aspect name="sf:customConfigSmartFolder">
+      <aspect name="smf:customConfigSmartFolder">
          <title>Custom Smart Folder</title>
-         <parent>sf:virtualization</parent>
+         <parent>smf:virtualization</parent>
          <associations>
-            <association name="sf:custom-template-association">
+            <association name="smf:custom-template-association">
                <title>Smart Folder Template</title>
                <source>
                   <mandatory>false</mandatory>
@@ -72,16 +72,16 @@
          </associations>
       </aspect>
 
-      <aspect name="sf:systemConfigSmartFolder">
+      <aspect name="smf:systemConfigSmartFolder">
          <title>System Smart Folder</title>
-         <parent>sf:virtualization</parent>
+         <parent>smf:virtualization</parent>
          <properties>
-            <property name="sf:system-template-location">
+            <property name="smf:system-template-location">
                <title>Smart Folder Template</title>
                <type>d:text</type>
                <mandatory>true</mandatory>
                <constraints>
-                  <constraint ref="sf:system-template-locations-constraint" />
+                  <constraint ref="smf:system-template-locations-constraint" />
                </constraints>
             </property>
          </properties>

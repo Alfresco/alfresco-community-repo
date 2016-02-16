@@ -181,22 +181,22 @@ smart.folders.model.labels=alfresco/messages/smartfolder-model
 #System virtualization method config
 
 #System virtualization method aspect.
-#smart.folders.config.system.aspect=sf:systemConfigSmartFolder
+#smart.folders.config.system.aspect=smf:systemConfigSmartFolder
 #System virtualization method aspect defined template location property.
-#smart.folders.config.system.aspect.template.location.property=sf:system-template-location
+#smart.folders.config.system.aspect.template.location.property=smf:system-template-location
 #Classpath to be explored for *.json entries defining system templates.
 #smart.folders.config.system.templates.classpath=/org/alfresco/repo/virtual/node
 #A company home relative name or qname path location of repository system templates.
 #smart.folders.config.system.templates.path=${spaces.dictionary.childname}/${spaces.smartfolders.childname}
 #Content sub type of repository system templates.
-#smart.folders.config.system.templates.template.type=sf:smartFolderTemplate
+#smart.folders.config.system.templates.template.type=smf:smartFolderTemplate
 
 #Custom virtualization method config
 
 #Custom virtualization method aspect.
-#smart.folders.config.custom.aspect=sf:customConfigSmartFolder
+#smart.folders.config.custom.aspect=smf:customConfigSmartFolder
 #Custom virtualization method aspect template content association.
-#smart.folders.config.custom.aspect.template.association=sf:custom-template-association
+#smart.folders.config.custom.aspect.template.association=smf:custom-template-association
 
 
 #Type virtualization method config

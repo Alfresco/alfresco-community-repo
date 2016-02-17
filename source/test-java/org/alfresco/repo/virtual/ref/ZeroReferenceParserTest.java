@@ -209,11 +209,11 @@ public class ZeroReferenceParserTest extends AbstractReferenceParserTest
 
         // testing parse for node protocol with an repository path and a string
         // as resource and respectively String parameters
-        reference = new ZeroReferenceParser().parse("7:0029-222-333-444:0:/Foo/Bar:s:sf_smartFolder");
+        reference = new ZeroReferenceParser().parse("7:0029-222-333-444:0:/Foo/Bar:s:smf_smartFolder");
 
         rr = new RepositoryResource(new RepositoryPath("/Foo/Bar"));
         params = Arrays.<Parameter> asList(new ResourceParameter(rr),
-                                           new StringParameter("sf_smartFolder"));
+                                           new StringParameter("smf_smartFolder"));
         assertEquals(reference,
                      new Reference(Encodings.ZERO.encoding,
                                    Protocols.NODE.protocol,

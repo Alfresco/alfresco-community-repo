@@ -402,7 +402,7 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
         assertNotNull(node2);
         Path node2Path = nodeService.getPath(node2);
         assertNotNull(node2Path);
-        assertEquals("/app:company_home/cm:TestFolder/cm:VirtualFolder1/sf:Node2",
+        assertEquals("/app:company_home/cm:TestFolder/cm:VirtualFolder1/smf:Node2",
                      node2Path.toPrefixString(environment.getNamespacePrefixResolver()));
     }
 
@@ -422,7 +422,7 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                                       ContentModel.ASSOC_CONTAINS,
                                                       "testfile.txt");
         Path path = nodeService.getPath(childRef);
-        assertEquals("/app:company_home/cm:TestFolder/cm:VirtualFolder1/sf:Node2/cm:testfile.txt",
+        assertEquals("/app:company_home/cm:TestFolder/cm:VirtualFolder1/smf:Node2/cm:testfile.txt",
                      path.toPrefixString(environment.getNamespacePrefixResolver()));
 
         NodeRef physicalNode = nodeService.getChildByName(virtualFolder1NodeRef,
@@ -446,7 +446,7 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
                                                         ContentModel.ASSOC_CONTAINS,
                                                         "testfile-1.txt");
         Path path_1 = nodeService.getPath(childRef_1);
-        assertEquals("/app:company_home/cm:TestFolder/cm:VirtualFolder1/sf:Node2/sf:Node2_1/cm:testfile-1.txt",
+        assertEquals("/app:company_home/cm:TestFolder/cm:VirtualFolder1/smf:Node2/smf:Node2_1/cm:testfile-1.txt",
                      path_1.toPrefixString(environment.getNamespacePrefixResolver()));
     }
 

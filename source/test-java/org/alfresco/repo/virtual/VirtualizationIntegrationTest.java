@@ -72,7 +72,7 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
 {
     private static Log logger = LogFactory.getLog(VirtualizationIntegrationTest.class);
 
-    private static final String PROP_VM_TEMPLATE_CLASSPATH = "prop_sf_system-template-location";
+    private static final String PROP_VM_TEMPLATE_CLASSPATH = "prop_smf_system-template-location";
 
     protected static final String VIRTUAL_FOLDER_1_NAME = "VirtualFolder1";
 
@@ -276,7 +276,7 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
     protected NodeRef createVirtualizedFolder(NodeRef parent, String name, String templateSysPath)
     {
         Item testItem = new Item("typeAndAspects",
-                                 "cm:folder,sf:systemConfigSmartFolder");
+                                 "cm:folder,smf:systemConfigSmartFolder");
         FormData testFormData = new FormData();
 
         testFormData.addFieldData(FORM_DATA_PROP_NAME,

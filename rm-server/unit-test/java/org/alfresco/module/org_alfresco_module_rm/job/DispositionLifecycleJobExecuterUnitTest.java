@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.job;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
@@ -227,5 +228,18 @@ public class DispositionLifecycleJobExecuterUnitTest extends BaseUnitTest
 
         // ensure no more interactions
         verifyNoMoreInteractions(mockedNodeService, mockedRecordsManagementActionService);
+    }
+
+    /**
+     * Brittle unit test that simply checks the generated query is an exact string when the supplied disposition actions
+     * are "CUTOFF" and "RETAIN" (see {@link #before}).
+     */
+    @Test
+    public void testGetQuery()
+    {
+        String actual = executer.getQuery();
+
+        String expected = "TYPE:\"rma:dispositionAction\" + (@rma\\:dispositionAction:(\"cutoff\" OR \"retain\")) AND ISUNSET:\"rma:dispositionActionCompletedAt\"  AND ( @rma\\:dispositionEventsEligible:true OR @rma\\:dispositionAsOf:[MIN TO NOW] ) ";
+        assertEquals(expected, actual);
     }
 }

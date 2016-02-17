@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -31,6 +31,7 @@ import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
@@ -45,6 +46,7 @@ import java.util.StringTokenizer;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.CMISConnector;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.executer.TransformActionExecuter;
@@ -1537,6 +1539,31 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     }
     
     /**
+     * @return Sorted list of <code>AccessPermission</code> based on <code>CMISConnector.AccessPermissionComparator</code>
+     *         and <code>AccessStatus</code> of the permission for an authority.
+     */
+    public static List<AccessPermission> getSortedACLs(Set<AccessPermission> acls)
+    {
+        ArrayList<AccessPermission> ordered = new ArrayList<AccessPermission>(acls);
+        Map<String, AccessPermission> deDuplicatedPermissions = new HashMap<String, AccessPermission>(acls.size());
+        Collections.sort(ordered, new CMISConnector.AccessPermissionComparator());
+        for (AccessPermission current : ordered)
+        {
+            String composedKey = current.getAuthority() + current.getPermission();
+            if (current.getAccessStatus() == AccessStatus.ALLOWED)
+            {
+                deDuplicatedPermissions.put(composedKey, current);
+            }
+            else if (current.getAccessStatus() == AccessStatus.DENIED)
+            {
+                deDuplicatedPermissions.remove(composedKey);
+            }
+        }
+
+        return new ArrayList<AccessPermission>(deDuplicatedPermissions.values());
+    }
+
+    /**
      * Helper to construct the response object for the various getPermissions() calls.
      * 
      * @param direct    True to only retrieve direct permissions, false to get inherited also
@@ -1549,7 +1576,8 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     {
         Set<AccessPermission> acls = this.services.getPermissionService().getAllSetPermissions(getNodeRef());
         List<Object> permissions = new ArrayList<Object>(acls.size());
-        for (AccessPermission permission : acls)
+        List<AccessPermission> ordered = getSortedACLs(acls);
+        for (AccessPermission permission : ordered)
         {
             if (!direct || permission.isSetDirectly())
             {

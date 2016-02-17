@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
@@ -444,8 +445,11 @@ public class JSONConversionComponent
     {
         Set<AccessPermission> acls = permissionService.getAllSetPermissions(nodeRef);
         JSONArray permissions = new JSONArray();
-        for (AccessPermission permission : acls)
-        {   
+
+        List<AccessPermission> ordered = ScriptNode.getSortedACLs(acls);
+
+        for (AccessPermission permission : ordered)
+        {
             StringBuilder buf = new StringBuilder(64);
             buf.append(permission.getAccessStatus())
                 .append(';')

@@ -790,7 +790,9 @@ public class SiteServiceTest extends AbstractSiteServiceTest
     public void testInvitationSanityCheck() throws Exception
     {
         String shortName  = GUID.generate();
+        String secondShortName  = GUID.generate();
         createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
+        createSite("myPreset", secondShortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 200);
         
         String inviteComments = "Please sir, let me in";
         String userName = USER_TWO;
@@ -805,10 +807,10 @@ public class SiteServiceTest extends AbstractSiteServiceTest
         String rejectURL = "page/reject-invite";
         
         //Create a new moderated invitation
-        String moderatedId = createModeratedInvitation(shortName, inviteComments, userName, roleName);
+        String moderatedId = createModeratedInvitation(secondShortName, inviteComments, userName, roleName);
         
         // Get the moderated invitation
-        sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations/" + moderatedId), 200);
+        sendRequest(new GetRequest(URL_SITES + "/" + secondShortName + "/invitations/" + moderatedId), 200);
         
         // search for the moderated invitation 
         sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations?inviteeUserName=" + userName), 200);
@@ -820,7 +822,7 @@ public class SiteServiceTest extends AbstractSiteServiceTest
         sendRequest(new GetRequest(URL_SITES + "/" + shortName + "/invitations"), 200);
         
         // cancel the moderated invitation
-        sendRequest(new DeleteRequest(URL_SITES + "/" + shortName + "/invitations/" + moderatedId), 200);   
+        sendRequest(new DeleteRequest(URL_SITES + "/" + secondShortName + "/invitations/" + moderatedId), 200);   
     }
     
     /**
@@ -1502,4 +1504,25 @@ public class SiteServiceTest extends AbstractSiteServiceTest
         }
         return false;
     }
+    
+    public void testMultipleInviteRequests() throws Exception
+    {
+        String shortName  = GUID.generate();
+        createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.MODERATED, 200);
+        String userName = USER_TWO;
+        String roleName = SiteModel.SITE_CONSUMER;
+        String inviteComments = "Request to join";
+ 
+        try {
+             //Create a new moderated invitation
+             String moderatedInvitationId = createModeratedInvitation(shortName, inviteComments, userName, roleName);
+             //Create another invitation
+             String newModeratedInvitationId = createModeratedInvitation(shortName, inviteComments, userName, roleName);
+             fail("A request to join this site is already in pending");
+        }
+        catch (AssertionFailedError e) {
+              // Ignore since we where expecting this
+        }
+    }
+    
 }

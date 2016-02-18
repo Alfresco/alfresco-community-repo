@@ -179,6 +179,9 @@ public class ContentDestructionComponent
               {
                   // destroy renditions content
                   destroyContent(child.getChildRef(), false);
+                  
+                  //delete the rendition node
+                  getNodeService().deleteNode(child.getChildRef());
               }
           }
        }

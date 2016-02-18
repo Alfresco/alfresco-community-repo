@@ -108,7 +108,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
      *
      * @return  job query string
      */
-    private String getQuery()
+    protected String getQuery()
     {
         if (query == null)
         {
@@ -133,8 +133,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             }
 
             sb.append("))");
-            sb.append(" AND ISNULL:\"rma:dispositionActionCompletedAt\" ");
-            sb.append(" + ( ");
+            sb.append(" AND ISUNSET:\"rma:dispositionActionCompletedAt\" ");
+            sb.append(" AND ( ");
             sb.append("@rma\\:dispositionEventsEligible:true ");
             sb.append("OR @rma\\:dispositionAsOf:[MIN TO NOW] ");
             sb.append(") ");

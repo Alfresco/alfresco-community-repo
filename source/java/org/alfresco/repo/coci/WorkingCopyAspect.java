@@ -34,6 +34,7 @@ import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
@@ -123,6 +124,12 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
                 NodeServicePolicies.OnRemoveAspectPolicy.QNAME,
                 ContentModel.ASPECT_WORKING_COPY,
                 new JavaBehaviour(this, "onRemoveAspect"));
+
+        this.policyComponent.bindAssociationBehaviour(
+                    NodeServicePolicies.OnDeleteAssociationPolicy.QNAME,
+                    ContentModel.ASPECT_CMIS_CREATED_CHECKEDOUT,
+                    ContentModel.ASSOC_WORKING_COPY_LINK,
+                    new JavaBehaviour(this, "onDeleteCmisCreatedCheckoutWorkingCopyAssociation"));
     }
     
     /**
@@ -141,16 +148,33 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
                 lockService.unlock(checkedOutNodeRef, false, true);
                 nodeService.removeAspect(checkedOutNodeRef, ContentModel.ASPECT_CHECKED_OUT);
 
-                if (nodeService.hasAspect(checkedOutNodeRef, ContentModel.ASPECT_CMIS_CREATED_CHECKEDOUT))
-                {
-                    nodeService.deleteNode(checkedOutNodeRef);
-                }
             }
             finally
             {
                 policyBehaviourFilter.enableBehaviour(checkedOutNodeRef, ContentModel.ASPECT_AUDITABLE);
             }
         }
+    }
+
+    /**
+     * onDeleteAssociation policy behaviour If the node has the aspect ASPECT_CMIS_CREATED_CHECKEDOUT and ASSOC_WORKING_COPY_LINK association is deleted, delete the node. Fix for MNT-14850.
+     * 
+     * @param nodeAssocRef ASSOC_WORKING_COPY_LINK association where the source is the checkedOut node and the target is the workingCopy
+     */
+    public void onDeleteCmisCreatedCheckoutWorkingCopyAssociation(AssociationRef nodeAssocRef)
+    {
+        NodeRef checkedOutNodeRef = nodeAssocRef.getSourceRef();
+        policyBehaviourFilter.disableBehaviour(checkedOutNodeRef, ContentModel.ASPECT_AUDITABLE);
+        try
+        {
+
+            nodeService.deleteNode(checkedOutNodeRef);
+        }
+        finally
+        {
+            policyBehaviourFilter.enableBehaviour(checkedOutNodeRef, ContentModel.ASPECT_AUDITABLE);
+        }
+
     }
     
     @Override

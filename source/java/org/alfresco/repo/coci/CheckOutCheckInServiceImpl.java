@@ -719,6 +719,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService,Extens
         
         behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
         behaviourFilter.disableBehaviour(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY);
+        behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_CMIS_CREATED_CHECKEDOUT);
         try
         {
             if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
@@ -746,6 +747,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService,Extens
         finally
         {
             behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+            behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_CMIS_CREATED_CHECKEDOUT);
         }
         
         return nodeRef;

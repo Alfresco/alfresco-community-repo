@@ -65,6 +65,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
     private static final String ERR_STATEMENT_INCLUDE_BEFORE_SQL = "schema.update.err.statement_include_before_sql";
     private static final String ERR_STATEMENT_VAR_ASSIGNMENT_BEFORE_SQL = "schema.update.err.statement_var_assignment_before_sql";
     private static final String ERR_STATEMENT_VAR_ASSIGNMENT_FORMAT = "schema.update.err.statement_var_assignment_format";
+    private static final String ERR_STATEMENT_VAR_ASSIGNMENT_NULL = "schema.update.err.statement_var_assignment_null";
     private static final String ERR_STATEMENT_TERMINATOR = "schema.update.err.statement_terminator";    
     private static final String ERR_DELIMITER_SET_BEFORE_SQL = "schema.update.err.delimiter_set_before_sql";
     private static final String ERR_DELIMITER_INVALID = "schema.update.err.delimiter_invalid";
@@ -310,6 +311,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
             StringBuilder sb = new StringBuilder(1024);
             String fetchVarName = null;
             String fetchColumnName = null;
+            Object defaultFetchValue = null;
             String batchTableName = null;
             boolean doBatch = false;
             int batchUpperLimit = 0;
@@ -371,13 +373,18 @@ public class ScriptExecutorImpl implements ScriptExecutor
                         throw AlfrescoRuntimeException.create(ERR_STATEMENT_VAR_ASSIGNMENT_BEFORE_SQL, (line - 1), scriptUrl);
                     }
                     String assignStr = sql.substring(9, sql.length());
-                    String[] assigns = assignStr.split("=");
+                    String[] fetchMapping = assignStr.split("!");
+                    String[] assigns = fetchMapping[0].split("=");
                     if (assigns.length != 2 || assigns[0].length() == 0 || assigns[1].length() == 0)
                     {
                         throw AlfrescoRuntimeException.create(ERR_STATEMENT_VAR_ASSIGNMENT_FORMAT, (line - 1), scriptUrl);
                     }
                     fetchVarName = assigns[0];
                     fetchColumnName = assigns[1];
+                    if (fetchMapping.length > 1 && fetchMapping[1].length() > 0)
+                    {
+                        defaultFetchValue = fetchMapping[1];
+                    }
                     continue;
                 }
                 // Handle looping control
@@ -533,12 +540,23 @@ public class ScriptExecutorImpl implements ScriptExecutor
                         Object fetchedVal = executeStatement(connection, sql, fetchColumnName, optional, line, scriptFile);
                         if (fetchVarName != null && fetchColumnName != null)
                         {
+                            if (fetchedVal == null)
+                            {
+                                fetchedVal = defaultFetchValue;
+                            }
+                            // We must have some value
+                            if (fetchedVal == null)
+                            {
+                                // The variable is null (not even empty)
+                                throw AlfrescoRuntimeException.create(ERR_STATEMENT_VAR_ASSIGNMENT_NULL, fetchVarName, fetchVarName, (line - 1), scriptUrl);
+                            }
                             varAssignments.put(fetchVarName, fetchedVal);
-                        }                        
-                    }                        
+                        }
+                    }
                     sb.setLength(0);
                     fetchVarName = null;
                     fetchColumnName = null;
+                    defaultFetchValue = null;
                     batchTableName = null;
                     doBatch = false;
                     batchUpperLimit = 0;

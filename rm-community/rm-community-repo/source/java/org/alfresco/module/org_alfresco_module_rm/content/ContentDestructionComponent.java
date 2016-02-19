@@ -168,8 +168,9 @@ public class ContentDestructionComponent
         // We want to remove the rn:renditioned aspect, but due to the possibility
         // that there is Alfresco 3.2-era data with the cm:thumbnailed aspect
         // applied, we must consider removing it too.
-        if (getNodeService().hasAspect(nodeRef, RenditionModel.ASPECT_RENDITIONED) ||
-                getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_THUMBNAILED))
+      if (includeRenditions
+              && (getNodeService().hasAspect(nodeRef, RenditionModel.ASPECT_RENDITIONED)
+                      || getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_THUMBNAILED)))
       {
           // get the rendition assoc types
           Set<QName> childAssocTypes = dictionaryService.getAspect(RenditionModel.ASPECT_RENDITIONED).getChildAssociations().keySet();

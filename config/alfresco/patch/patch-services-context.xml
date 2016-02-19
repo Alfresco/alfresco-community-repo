@@ -1414,16 +1414,4 @@
           </list>
         </property>
     </bean>
-    
-    <bean id="patch.db-V5.0-activiti-correct-tenant-id-MSSQL" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id" value="patch.db-V5.0-activiti-correct-tenant-id-MSSQL" />
-        <property name="description" value="patch.db-V5.0-activiti-correct-tenant-id-MSSQL.description" />
-        <property name="fixesFromSchema" value="0" />
-        <property name="fixesToSchema" value="9028" />
-        <property name="targetSchema" value="9029" />
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/activiti-correct-tenant-id-MSSQL.sql</value>
-        </property>
-    </bean>
-    
 </beans>

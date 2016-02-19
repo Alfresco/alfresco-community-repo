@@ -131,7 +131,7 @@ public class PropertyValueCleanupTest
             // Runnable
             String key1 = runnables[i].key1;
             String key2 = runnables[i].key2;
-            int maxKey3 = runnables[i].counter.get();
+            int maxKey3 = runnables[i].counter.get() - 1;       // The last number did not get in
             for (int j = 0; j < maxKey3; j++)
             {
                 Integer key3 = j;

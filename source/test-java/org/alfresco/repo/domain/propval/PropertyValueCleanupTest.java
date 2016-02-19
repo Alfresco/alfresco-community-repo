@@ -19,10 +19,12 @@
 package org.alfresco.repo.domain.propval;
 
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.attributes.AttributeService;
@@ -131,10 +133,9 @@ public class PropertyValueCleanupTest
             // Runnable
             String key1 = runnables[i].key1;
             String key2 = runnables[i].key2;
-            int maxKey3 = runnables[i].counter.get() - 1;       // The last number did not get in
-            for (int j = 0; j < maxKey3; j++)
+            List<Integer> key3s = new ArrayList<Integer>(runnables[i].key3s);       // Copy entire list
+            for (Integer key3 : key3s)
             {
-                Integer key3 = j;
                 // Get the attribute
                 byte[] propFetched = (byte[]) attributeService.getAttribute(key1, key2, key3);
                 assertTrue(
@@ -155,15 +156,17 @@ public class PropertyValueCleanupTest
     {
         private final String key1;
         private final String key2;
+        private List<Integer> key3s;
         private final byte[] prop;
         
         private AtomicBoolean running = new AtomicBoolean(true);
-        private AtomicInteger counter = new AtomicInteger(0);
+        private int counter = 0;
         
         private InsertSerializableAttributes() throws UnsupportedEncodingException
         {
             key1 = "PropertyValueCleanupTest";
             key2 = UUID.randomUUID().toString();
+            key3s = Collections.synchronizedList(new ArrayList<Integer>(200));
             prop = new String("Key is " + key2).getBytes("US-ASCII");
         }
         
@@ -172,10 +175,12 @@ public class PropertyValueCleanupTest
         {
             while (running.get())
             {
-                Integer key3 = counter.get();
+                Integer key3 = Integer.valueOf(counter);
                 attributeService.createAttribute(prop, key1, key2, key3);
+                // Record the successful addition
+                key3s.add(key3);
                 // Increment the counter
-                counter.incrementAndGet();
+                counter++;
                 // Wait a bit so that we don't drown the test
                 try { wait(10L); } catch (InterruptedException e) {}
             }

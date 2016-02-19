@@ -68,6 +68,18 @@ create table temp_del_double2
     PRIMARY KEY (id)
 ) ENGINE=MyISAM;
 
+-- Determine the maximum IDs in order to constrain deletion ranges and avoid deleting new data
+--ASSIGN:PROP_ROOT_MAX_ID=idmax!-1
+select max(id) as idmax from alf_prop_root;
+--ASSIGN:PROP_VAL_MAX_ID=idmax!-1
+select max(id) as idmax from alf_prop_value;
+--ASSIGN:PROP_STRING_MAX_ID=idmax!-1
+select max(id) as idmax from alf_prop_string_value;
+--ASSIGN:PROP_SERIALIZABLE_MAX_ID=idmax!-1
+select max(id) as idmax from alf_prop_serializable_value;
+--ASSIGN:PROP_DOUBLE_MAX_ID=idmax!-1
+select max(id) as idmax from alf_prop_double_value;
+
 -- get all active references to alf_prop_root
 --FOREACH alf_audit_app.id system.upgrade.clean_alf_prop_tables.batchsize
 insert into temp_prop_root_ref select disabled_paths_id as id from alf_audit_app where id >= ${LOWERBOUND} and id <= ${UPPERBOUND};
@@ -78,7 +90,7 @@ insert into temp_prop_root_ref select prop1_id from alf_prop_unique_ctx where pr
 
 -- determine the obsolete entries from alf_prop_root
 --FOREACH alf_prop_root.id system.upgrade.clean_alf_prop_tables.batchsize
-insert into temp_prop_root_obs select alf_prop_root.id from alf_prop_root left join temp_prop_root_ref on temp_prop_root_ref.id = alf_prop_root.id where temp_prop_root_ref.id is null and alf_prop_root.id >= ${LOWERBOUND} and alf_prop_root.id <= ${UPPERBOUND};
+insert into temp_prop_root_obs select alf_prop_root.id from alf_prop_root left join temp_prop_root_ref on temp_prop_root_ref.id = alf_prop_root.id where temp_prop_root_ref.id is null and alf_prop_root.id >= ${LOWERBOUND} and alf_prop_root.id <= ${UPPERBOUND} and alf_prop_root.id <= ${PROP_ROOT_MAX_ID};
 
 -- clear alf_prop_root which cascades DELETE to alf_prop_link
 --FOREACH temp_prop_root_obs.id system.upgrade.clean_alf_prop_tables.batchsize
@@ -102,7 +114,7 @@ insert into temp_prop_val_ref select value3_prop_id from alf_prop_unique_ctx whe
 
 -- determine the obsolete entries from alf_prop_value
 --FOREACH alf_prop_value.id system.upgrade.clean_alf_prop_tables.batchsize
-insert into temp_prop_val_obs select apv.id, apv.persisted_type, apv.long_value from alf_prop_value apv left join temp_prop_val_ref on (apv.id = temp_prop_val_ref.id) where temp_prop_val_ref.id is null and apv.id >= ${LOWERBOUND} and apv.id <= ${UPPERBOUND};
+insert into temp_prop_val_obs select apv.id, apv.persisted_type, apv.long_value from alf_prop_value apv left join temp_prop_val_ref on (apv.id = temp_prop_val_ref.id) where temp_prop_val_ref.id is null and apv.id >= ${LOWERBOUND} and apv.id <= ${UPPERBOUND} and apv.id <= ${PROP_VAL_MAX_ID};
 
 -- clear the obsolete entries
 --FOREACH temp_prop_val_obs.id system.upgrade.clean_alf_prop_tables.batchsize

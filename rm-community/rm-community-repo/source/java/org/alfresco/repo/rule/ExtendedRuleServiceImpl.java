@@ -228,24 +228,33 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
      * @param typeQName
      * @return
      */
-    private boolean shouldRuleBeAppliedToNode(Rule rule, NodeRef nodeRef, QName typeQName)
+    private boolean shouldRuleBeAppliedToNode(final Rule rule, final NodeRef nodeRef, final QName typeQName)
     {
-        boolean result = true;
-        NodeRef ruleNodeRef = getOwningNodeRef(rule);
-        if(filePlanService.isFilePlan(ruleNodeRef))
+        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
         {
-            // if this rule is defined at the root of the file plan then we do not want to apply
-            // it to holds/transfers/unfiled content...
-            result = !(RecordsManagementModel.TYPE_HOLD.equals(typeQName) ||
-                       RecordsManagementModel.TYPE_HOLD_CONTAINER.equals(typeQName) ||
-                       RecordsManagementModel.TYPE_TRANSFER.equals(typeQName) ||
-                       RecordsManagementModel.TYPE_TRANSFER_CONTAINER.equals(typeQName) ||
-                       RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER.equals(typeQName) ||
-                       RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER.equals(typeQName) ||
-                       nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_TRANSFERRING) ||
-                       nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FROZEN) ||
-                       !recordService.isFiled(nodeRef));
-        }
-        return result;
+            public Boolean doWork() throws Exception
+            {
+                boolean result = true;
+                NodeRef ruleNodeRef = getOwningNodeRef(rule);
+                if (filePlanService.isFilePlan(ruleNodeRef))
+                {
+                    // if this rule is defined at the root of the file plan then
+                    // we do not want to apply
+                    // it to holds/transfers/unfiled content...
+                    result = !(RecordsManagementModel.TYPE_HOLD.equals(typeQName)
+                            || RecordsManagementModel.TYPE_HOLD_CONTAINER.equals(typeQName)
+                            || RecordsManagementModel.TYPE_TRANSFER.equals(typeQName)
+                            || RecordsManagementModel.TYPE_TRANSFER_CONTAINER.equals(typeQName)
+                            || RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER
+                                    .equals(typeQName)
+                            || RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER.equals(typeQName)
+                            || nodeService.hasAspect(nodeRef,
+                                    RecordsManagementModel.ASPECT_TRANSFERRING)
+                            || nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FROZEN)
+                            || !recordService.isFiled(nodeRef));
+                }
+                return result;
+            }
+        });
     }
 }

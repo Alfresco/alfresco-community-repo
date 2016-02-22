@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -77,6 +77,8 @@ public class MoveMethodTest
     private NodeRef rootNode;
     private @Mock FileFolderService mockFileFolderService;
     private @Mock WebDAVLockService davLockService;
+    private @Mock ServiceRegistry mockServiceRegistry;
+    private @Mock ContentService mockContentService;
     private String destPath;
     private String sourcePath;
     private FileInfo sourceFileInfo;
@@ -200,7 +202,8 @@ public class MoveMethodTest
         moveMethod.moveOrCopy(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, "dest.doc");
         
         verify(mockFileFolderService).rename(sourceNodeRef, "dest.doc");
-        verify(davLockService).unlock(sourceNodeRef);
+        // sourceNodeRef is not locked, so unlock should not be called after rename
+        verify(davLockService, never()).unlock(sourceNodeRef);
         verify(mockFileFolderService, never()).create(destParentNodeRef, "dest.doc", ContentModel.TYPE_CONTENT);
     }
     
@@ -214,10 +217,67 @@ public class MoveMethodTest
         // Test: Perform the rename
         moveMethod.moveOrCopy(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, "dest.doc");
         
-        
         verify(mockFileFolderService).rename(sourceNodeRef, "dest.doc");
-        verify(davLockService).unlock(sourceNodeRef);
+        // sourceNodeRef is not locked, so unlock should not be called after rename
+        verify(davLockService, never()).unlock(sourceNodeRef);
         verify(mockFileFolderService, never()).create(destParentNodeRef, "dest.doc", ContentModel.TYPE_CONTENT);
+    }
+    
+    @Test
+    public void canMoveFileUnlock() throws Exception
+    {
+        moveMethod = new MoveMethod()
+        {
+            @Override
+            protected LockInfo checkNode(FileInfo fileInfo, boolean ignoreShared, boolean lockMethod) throws WebDAVServerException
+            {
+                LockInfoImpl lockInfo = new LockInfoImpl();
+                lockInfo.setExclusiveLockToken("opaque-lock-token");
+                lockInfo.setDepth(WebDAV.INFINITY);
+                lockInfo.setScope(WebDAV.XML_EXCLUSIVE);
+                return lockInfo;
+            }
+
+            @Override
+            protected LockInfo checkNode(FileInfo fileInfo) throws WebDAVServerException
+            {
+                return checkNode(fileInfo, false, false);
+            }
+        };
+        
+        moveMethod.setDetails(req, resp, davHelper, rootNode);
+        
+        sourceFileInfo = Mockito.mock(FileInfo.class);
+        when(sourceFileInfo.isFolder()).thenReturn(true);
+        
+        destPath = "/path/to/test.doc";
+        moveMethod.m_strDestinationPath = destPath;
+        
+        sourcePath = "/path/from/test.doc";
+        moveMethod.m_strPath = sourcePath;
+        
+        when(davHelper.getServiceRegistry()).thenReturn(mockServiceRegistry);
+        when(mockServiceRegistry.getContentService()).thenReturn(mockContentService);
+        
+        List<String> sourcePathSplit = Arrays.asList("path", "from", "test.doc");
+        when(davHelper.splitAllPaths(sourcePath)).thenReturn(sourcePathSplit);
+        
+        List<String> destPathSplit = Arrays.asList("path", "to", "dest.doc");
+        when(davHelper.splitAllPaths(destPath)).thenReturn(destPathSplit);
+        
+        when(mockFileFolderService.resolveNamePath(rootNode, sourcePathSplit)).thenReturn(sourceFileInfo);
+        
+        FileInfo destFileInfo = Mockito.mock(FileInfo.class);
+        when(mockFileFolderService.resolveNamePath(rootNode, destPathSplit)).thenReturn(destFileInfo);
+        
+        sourceParentNodeRef = new NodeRef("workspace://SpacesStore/parent1");
+        destParentNodeRef = new NodeRef("workspace://SpacesStore/parent2");
+        sourceNodeRef = new NodeRef("workspace://SpacesStore/sourcefile");
+        
+        moveMethod.moveOrCopy(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, "test.doc");
+        
+        verify(mockFileFolderService).moveFrom(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, "test.doc");
+        verify(davLockService).unlock(sourceNodeRef);
     }
 
     @Test
@@ -302,7 +362,6 @@ public class MoveMethodTest
                     moveMethod.moveOrCopy(atmpFI.getNodeRef(), companyHomeNodeRef, companyHomeNodeRef, bakFileName);
 
                     verify(mockFileFolderService).rename(atmpFI.getNodeRef(), bakFileName);
-                    verify(davLockService).unlock(atmpFI.getNodeRef());
                     verify(mockFileFolderService, never()).create(destParentNodeRef, bakFileName, ContentModel.TYPE_CONTENT);
 
                     // move webdav method tmp copy content to dwg

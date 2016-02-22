@@ -138,6 +138,11 @@ public class PropertyValueCleanupTest
             {
                 // Get the attribute
                 byte[] propFetched = (byte[]) attributeService.getAttribute(key1, key2, key3);
+                if (propFetched == null)
+                {
+                    // This is OK.  As long as we don't get a failure
+                    continue;
+                }
                 assertTrue(
                         "Arrays were not equal for " + key1 + ", " + key2 + ", " + key3,
                         Arrays.equals(runnables[i].prop, propFetched));

@@ -10,7 +10,7 @@
        
    <!-- Module compatibility component -->
    <bean name="rm.moduleCompatibilityComponent" class="org.alfresco.module.org_alfresco_module_rm.bootstrap.ModuleCompatibilityComponent">
-      <property name="descriptorService" ref="DescriptorService"/>
+      <property name="descriptorService" ref="descriptorComponent"/>
       <property name="moduleService" ref="ModuleService"/>
    </bean>
 

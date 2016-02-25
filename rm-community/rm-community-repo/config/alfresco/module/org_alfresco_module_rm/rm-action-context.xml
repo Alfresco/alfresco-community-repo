@@ -791,6 +791,7 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
 
    <!--  Move To -->
@@ -819,6 +820,7 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
 
    <!--  Link Record -->
@@ -847,6 +849,7 @@
       <property name="filePlanService" ref="FilePlanService" />
       <property name="publicAction" value="true"/>
       <property name="allowParameterSubstitutions" value="true"/>
+      <property name="retryingTransactionHelper" ref="retryingTransactionHelper" />
    </bean>
 
    <!--  Unlink Record -->

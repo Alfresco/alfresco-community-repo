@@ -26,7 +26,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 /**
  * Module compatibility component.
@@ -37,7 +37,7 @@ import org.springframework.context.event.ContextStartedEvent;
  * @author Roy Wetherall
  * @since 2.4
  */
-public class ModuleCompatibilityComponent implements ApplicationListener<ContextStartedEvent>
+public class ModuleCompatibilityComponent implements ApplicationListener<ContextRefreshedEvent>
 {
 	/** Logger */
     private static Log logger = LogFactory.getLog(ModuleCompatibilityComponent.class);
@@ -71,26 +71,50 @@ public class ModuleCompatibilityComponent implements ApplicationListener<Context
 	 * @see org.springframework.context.ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
 	 */
 	@Override
-	public void onApplicationEvent(ContextStartedEvent contextStartedEvent) 
+	public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) 
 	{
-		// get the license mode
-		LicenseMode licenseMode = descriptorService.getLicenseDescriptor().getLicenseMode();
+		// grab the application context
+		ApplicationContext applicationContext = contextRefreshedEvent.getApplicationContext();
 		
-		if (LicenseMode.ENTERPRISE.equals(licenseMode) &&
-			moduleService.getModule(RM_ENT_MODULE_ID) == null)
+		// get the license mode
+		LicenseMode licenseMode = descriptorService.getServerDescriptor().getLicenseMode();
+		
+		// determine whether RM Enterprise is installed or not
+		boolean isRMEnterprise = isRMEnterprise();
+		
+		// debug log
+		if (logger.isDebugEnabled())
+		{
+			logger.debug("Module compatibility information:");
+			logger.debug("   Repository licence mode = " + licenseMode.toString());
+			logger.debug("   RM Enterprise installed = " + isRMEnterprise);
+		}
+		
+		if (LicenseMode.ENTERPRISE.equals(licenseMode) && !isRMEnterprise)
 		{
 			// running enterprise rm on community core so close application context
-			closeApplicationContext(contextStartedEvent.getApplicationContext(), 
+			closeApplicationContext(
+					applicationContext, 
 					"Running Community Records Management Module on Enterprise Alfresco One is not a supported configuration.");
 			
 		}
-		else if (!LicenseMode.ENTERPRISE.equals(licenseMode) &&
-				 moduleService.getModule(RM_ENT_MODULE_ID) != null)
+		else if (!LicenseMode.ENTERPRISE.equals(licenseMode) && isRMEnterprise)
 		{
 			// running community rm on enterprise core so close application context
-			closeApplicationContext(contextStartedEvent.getApplicationContext(), 
+			closeApplicationContext(
+					applicationContext, 
 					"Running Enterprise Records Management module on Community Alfresco One is not a supported configuration.");
 		}
+	}
+	
+	/**
+	 * Indicates whether RM Enterprise module is installed or not.
+	 * 
+	 * @return	boolean	true if RM Enterprise is installed, false otherwise
+	 */
+	private boolean isRMEnterprise()
+	{
+		return (moduleService.getModule(RM_ENT_MODULE_ID) != null);
 	}
 	
 	/**

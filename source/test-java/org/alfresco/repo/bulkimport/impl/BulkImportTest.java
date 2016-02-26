@@ -462,9 +462,9 @@ public class BulkImportTest extends AbstractBulkImportTests
         assertNotNull(history);
 
 
-        assertEquals("Imported file should have 5 versions:", 5, history.getAllVersions().size());
+        assertEquals("Imported file should have 9 versions:", 9, history.getAllVersions().size());
 
-        Version[] versions = history.getAllVersions().toArray(new Version[5]);
+        Version[] versions = history.getAllVersions().toArray(new Version[9]);
 
         //compare the content of each version
         ContentReader contentReader;
@@ -488,6 +488,23 @@ public class BulkImportTest extends AbstractBulkImportTests
         assertNotNull(contentReader);
         assertEquals("This is version 1 of replaced on import fileWithVersions.txt.", contentReader.getContentString());
 
+        // versions from bulkimport3/initial
+        contentReader = this.contentService.getReader(versions[5].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is the final version of fileWithVersions.txt.", contentReader.getContentString());
+        
+        contentReader = this.contentService.getReader(versions[6].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 3 of fileWithVersions.txt.", contentReader.getContentString());
+        
+        contentReader = this.contentService.getReader(versions[7].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 2 of fileWithVersions.txt.", contentReader.getContentString());
+        
+        contentReader = this.contentService.getReader(versions[8].getFrozenStateNodeRef(), ContentModel.PROP_CONTENT);
+        assertNotNull(contentReader);
+        assertEquals("This is version 1 of fileWithVersions.txt.", contentReader.getContentString());
+        
         txn.commit();
         txn = transactionService.getUserTransaction();
         txn.begin();

@@ -170,6 +170,13 @@ public abstract class AbstractNodeImporter implements NodeImporter
             }
         }
 
+        // Step 3: read the parent filename from the item itself
+        if (result         == null &&
+           importableItem != null)
+        {
+           result = importableItem.getHeadRevision().getContentFile().getName();
+        }
+
         return(result);
     }
 
@@ -204,11 +211,7 @@ public abstract class AbstractNodeImporter implements NodeImporter
         //versionProperties.put(ContentModel.PROP_VERSION_LABEL.toPrefixString(), String.valueOf(versionEntry.getVersion()));
         versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR); // Load every version as a major version for now - see http://code.google.com/p/alfresco-bulk-filesystem-import/issues/detail?id=84
 
-        if(nodeState == NodeState.REPLACED)
-        {
-            versionService.deleteVersionHistory(nodeRef);
-        }
-
+        // handle versions
         for (final ImportableItem.VersionedContentAndMetadata versionEntry : importableItem.getVersionEntries())
         {
             MetadataLoader.Metadata metadata = loadMetadata(versionEntry);
@@ -220,18 +223,20 @@ public abstract class AbstractNodeImporter implements NodeImporter
             result += metadata.getProperties().size() + 4;  // Add 4 for "standard" metadata properties read from filesystem
         }
 
-        if (logger.isDebugEnabled()) logger.debug("Creating head revision of node " + nodeRef.toString());
-        ImportableItem.ContentAndMetadata contentAndMetadata = importableItem.getHeadRevision();
-        MetadataLoader.Metadata metadata = loadMetadata(contentAndMetadata);
-
-        // If cm:versionable isn't listed as one of the aspects for this node, add it - cm:versionable is required for nodes that have versions
-        if (!metadata.getAspects().contains(ContentModel.ASPECT_VERSIONABLE))
+        // handle head version, if exists
+        ImportableItem.ContentAndMetadata headRevContentAndMetadata = importableItem.getHeadRevision();
+        if(headRevContentAndMetadata != null && (headRevContentAndMetadata.contentFileExists()
+                || headRevContentAndMetadata.metadataFileExists()))
         {
-            if (logger.isWarnEnabled()) logger.warn("Metadata for file '" + getFileName(importableItem.getHeadRevision().getContentFile()) + "' was missing the cm:versionable aspect, yet it has " + importableItem.getVersionEntries().size() + " versions.  Adding cm:versionable.");
-            metadata.addAspect(ContentModel.ASPECT_VERSIONABLE);
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Creating head revision of node " + nodeRef.toString());
+            }
+
+            MetadataLoader.Metadata metadata = loadMetadata(headRevContentAndMetadata);
+            importContentAndMetadata(nodeRef, headRevContentAndMetadata, metadata);
+            versionService.createVersion(nodeRef, versionProperties);
         }
-        importContentAndMetadata(nodeRef, importableItem.getHeadRevision(), metadata);
-        versionService.createVersion(nodeRef, versionProperties);
 
         return(result);
     }

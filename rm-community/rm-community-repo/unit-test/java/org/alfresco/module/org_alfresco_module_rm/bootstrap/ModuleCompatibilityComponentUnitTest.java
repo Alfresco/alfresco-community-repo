@@ -26,8 +26,8 @@ import static org.mockito.Mockito.when;
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.cmr.module.ModuleDetails;
 import org.alfresco.service.cmr.module.ModuleService;
-import org.alfresco.service.descriptor.Descriptor;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.license.LicenseDescriptor;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -50,7 +50,7 @@ public class ModuleCompatibilityComponentUnitTest
 	@Mock private ContextRefreshedEvent mockedContextRefreshedEvent;
 	@Mock private ConfigurableApplicationContext mockedApplicationContext;
 	@Mock private ModuleDetails mockedModuleDetails;
-	@Mock private Descriptor mockedDescriptor;
+	@Mock private LicenseDescriptor mockedDescriptor;
 	
 	/** object under test */
 	@InjectMocks private ModuleCompatibilityComponent moduleCompatibilityComponent;
@@ -65,8 +65,8 @@ public class ModuleCompatibilityComponentUnitTest
 		
 		when(mockedContextRefreshedEvent.getApplicationContext())
 			.thenReturn(mockedApplicationContext);
-		when(mockedDescriptorService.getServerDescriptor())
-			.thenReturn(mockedDescriptor);
+		when(mockedDescriptorService.getLicenseDescriptor())
+			.thenReturn(mockedDescriptor);		
 	}
 	
 	/**

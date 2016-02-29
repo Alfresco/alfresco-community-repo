@@ -21,6 +21,7 @@ package org.alfresco.module.org_alfresco_module_rm.bootstrap;
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.cmr.module.ModuleService;
 import org.alfresco.service.descriptor.DescriptorService;
+import org.alfresco.service.license.LicenseDescriptor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ApplicationContext;
@@ -73,11 +74,18 @@ public class ModuleCompatibilityComponent implements ApplicationListener<Context
 	@Override
 	public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) 
 	{
+		// license mode
+		LicenseMode licenseMode = LicenseMode.UNKNOWN;
+		
 		// grab the application context
 		ApplicationContext applicationContext = contextRefreshedEvent.getApplicationContext();
 		
 		// get the license mode
-		LicenseMode licenseMode = descriptorService.getServerDescriptor().getLicenseMode();
+		LicenseDescriptor license = descriptorService.getLicenseDescriptor();
+		if (license != null)
+		{
+			licenseMode = license.getLicenseMode();
+		}
 		
 		// determine whether RM Enterprise is installed or not
 		boolean isRMEnterprise = isRMEnterprise();

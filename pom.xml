@@ -94,6 +94,12 @@
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
+	  
+	  <!-- license properties -->
+	  <license.org.name>Alfresco Software Limited</license.org.name>
+	  <license.update.dryrun>true</license.update.dryrun>
+	  <license.verbose>false</license.verbose>
+	  
    </properties>
 
    <build>

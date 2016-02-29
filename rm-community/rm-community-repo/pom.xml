@@ -232,8 +232,34 @@
 	        <artifactId>license-maven-plugin</artifactId>
 	        <version>1.8</version>
 	        <configuration>
-	          <verbose>false</verbose>
-	          <addSvnKeyWords>false</addSvnKeyWords>
+	          
+	          <verbose>${license.verbose}</verbose>
+	          <addSvnKeyWords>false</addSvnKeyWords>  
+	          
+	          <!-- header configuration -->            
+              <organizationName>${license.org.name}</organizationName>
+	          <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+              <canUpdateCopyright>true</canUpdateCopyright>
+              <canUpdateDescription>true</canUpdateDescription>
+	          
+	          <!--  licence configuration -->
+	          <addJavaLicenseAfterPackage>true</addJavaLicenseAfterPackage>
+              <licenseName>alfresco_community</licenseName>
+              <licenseResolver>file:/${project.parent.parent.basedir}/license</licenseResolver>
+              
+              <!-- dry run options -->
+              <dryRun>${license.update.dryrun}</dryRun>
+              <failOnMissingHeader>true</failOnMissingHeader>
+              <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+              
+              <!--  source roots to check -->
+              <roots>
+				<root>source</root>
+				<root>test</root>
+				<root>unit-test</root>
+				<root>config</root>
+			  </roots>
+			  
 	        </configuration>
 	        <executions>
 	          <execution>
@@ -242,15 +268,6 @@
 	              <goal>update-file-header</goal>
 	            </goals>
 	            <phase>process-sources</phase>
-	            <configuration>
-	              <licenseName>gpl_v3</licenseName>
-	              <roots>
-					<root>source</root>
-					<root>test</root>
-					<root>unit-test</root>
-					<root>config</root>
-				  </roots>
-	            </configuration>
 	          </execution>
 	        </executions>
 	      </plugin>
@@ -289,7 +306,7 @@
                         		</goals>
                         	</pluginExecutionFilter>
                         	<action>
-                        		<execute></execute>
+                        		<ignore></ignore>
                         	</action>
                         </pluginExecution>
                      </pluginExecutions>

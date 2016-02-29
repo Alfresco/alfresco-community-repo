@@ -225,6 +225,36 @@
                </execution>
             </executions>
          </plugin>
+         
+         <!--  License header generation -->
+         <plugin>
+	        <groupId>org.codehaus.mojo</groupId>
+	        <artifactId>license-maven-plugin</artifactId>
+	        <version>1.8</version>
+	        <configuration>
+	          <verbose>false</verbose>
+	          <addSvnKeyWords>false</addSvnKeyWords>
+	        </configuration>
+	        <executions>
+	          <execution>
+	            <id>first</id>
+	            <goals>
+	              <goal>update-file-header</goal>
+	            </goals>
+	            <phase>process-sources</phase>
+	            <configuration>
+	              <licenseName>gpl_v3</licenseName>
+	              <roots>
+					<root>source</root>
+					<root>test</root>
+					<root>unit-test</root>
+					<root>config</root>
+				  </roots>
+	            </configuration>
+	          </execution>
+	        </executions>
+	      </plugin>
+         
       </plugins>
       <pluginManagement>
          <plugins>
@@ -246,6 +276,21 @@
                            <action>
                               <ignore></ignore>
                            </action>
+                        </pluginExecution>
+                        <pluginExecution>
+                        	<pluginExecutionFilter>
+                        		<groupId>org.codehaus.mojo</groupId>
+                        		<artifactId>
+                        			license-maven-plugin
+                        		</artifactId>
+                        		<versionRange>[1.8,)</versionRange>
+                        		<goals>
+                        			<goal>update-file-header</goal>
+                        		</goals>
+                        	</pluginExecutionFilter>
+                        	<action>
+                        		<execute></execute>
+                        	</action>
                         </pluginExecution>
                      </pluginExecutions>
                   </lifecycleMappingMetadata>

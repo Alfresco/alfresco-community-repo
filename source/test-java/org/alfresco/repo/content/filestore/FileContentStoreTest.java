@@ -55,7 +55,7 @@ import static org.junit.Assert.fail;
 @Category(OwnJVMTestsCategory.class)
 public class FileContentStoreTest extends AbstractWritableContentStoreTest
 {
-    protected FileContentStore store;
+    private FileContentStore store;
     
     @Before
     public void before() throws Exception

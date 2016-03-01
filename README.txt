@@ -37,3 +37,11 @@ Running integration test:
 In order to execute the integration tests run the following command (unit tests will be executed every time before you start Alfresco/Share):
 
 mvn clean install -Dskip.integrationtests=false
+
+
+Updating License Headers:
+-------------------------
+
+In order to refesh out of date license source headers run the following command:
+
+mvn clean install -Dlicense.update.dryrun=false

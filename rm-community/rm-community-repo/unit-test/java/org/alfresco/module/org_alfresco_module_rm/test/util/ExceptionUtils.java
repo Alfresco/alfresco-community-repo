@@ -165,6 +165,21 @@ public class ExceptionUtils
         }
     }
 
+    /**
+     * Helper method to work around the difficulties of working with lambdas and checked exceptions.
+     * Use as follows:
+     * <pre>
+     *     expectedException(WebScriptException.class, () ->
+     *         // "Wash away" any checked exceptions in the inner code block.
+     *         smuggleCheckedExceptions( () -> methodThrowsException())
+     *     );
+     * </pre>
+     * @param code a block of code which is declared to throw a checked exception.
+     * @param <R>  the return type of the block of code.
+     * @param <T>  the type of the checked exception.
+     * @return the value returned by the block of code.
+     * @throws SmuggledException if the code block threw an exception of type T.
+     */
     public static <R, T extends Exception> R smuggleCheckedExceptions(final ThrowingSupplier<R, T> code)
     {
         try

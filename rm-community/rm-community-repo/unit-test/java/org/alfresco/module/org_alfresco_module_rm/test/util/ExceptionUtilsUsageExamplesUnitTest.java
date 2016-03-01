@@ -19,12 +19,14 @@
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.MissingThrowableException;
+import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.SmuggledException;
 import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.UnexpectedThrowableException;
 import org.junit.Test;
 
 import java.io.IOException;
 
 import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.smuggleCheckedExceptions;
 import static org.junit.Assert.*;
 
 /**
@@ -99,5 +101,20 @@ public class ExceptionUtilsUsageExamplesUnitTest
             onlySideEffectsHere("hello");
             return null;
         });
+    }
+
+    // If you use lambdas that throw checked exceptions, the standard Java 8 types are insufficient.
+    @Test public void smuggleCheckedExceptionsShouldHideCheckedExceptionsInAnUncheckedException()
+    {
+        SmuggledException e = expectedException(SmuggledException.class, () -> smuggleCheckedExceptions(() -> methodThrowsException()));
+
+        assertEquals(Exception.class, e.getCheckedException().getClass());
+        assertEquals("Checked", e.getCheckedException().getMessage());
+    }
+
+    /** This method declares that it throws `java.lang.Exception`. */
+    private Object methodThrowsException() throws Exception
+    {
+        throw new Exception("Checked");
     }
 }

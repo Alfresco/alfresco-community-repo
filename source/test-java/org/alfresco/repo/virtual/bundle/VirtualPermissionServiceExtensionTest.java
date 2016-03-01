@@ -27,7 +27,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.NodePermissionEntry;
@@ -36,13 +35,13 @@ import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.virtual.VirtualizationIntegrationTest;
 import org.alfresco.repo.virtual.store.VirtualStoreImpl;
 import org.alfresco.repo.virtual.store.VirtualUserPermissions;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.Test;
 
 public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegrationTest
@@ -62,6 +61,16 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
     /** original user permissions to be restored on tear down */
     private VirtualUserPermissions savedUserPermissions;
 
+    private NodeRef testSiteFolder = null, smartFolder = null, contributionDocsFolder = null;
+
+    private SiteService siteService;
+
+    private String sName = "mytestsite_ace_5162";
+
+    private NodeRef myContentSMF;
+
+    private NodeRef contributionsSMF;
+
     @Override
     protected void setUp() throws Exception
     {
@@ -69,10 +78,12 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         // we set our own virtual user permissions in order to be context xml
         // independent
         smartStore = VirtualPermissionServiceExtensionTest.ctx.getBean("smartStore",
-                                                                         VirtualStoreImpl.class);
+                                                                       VirtualStoreImpl.class);
 
         permissionService = VirtualPermissionServiceExtensionTest.ctx.getBean("permissionServiceImpl",
                                                                               PermissionServiceSPI.class);
+        siteService = VirtualPermissionServiceExtensionTest.ctx.getBean("siteService",
+                                                                        SiteService.class);
 
         user1 = "user1";
 
@@ -94,6 +105,15 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
                                              user2,
                                              PermissionService.DELETE_CHILDREN,
                                              false);
+
+        this.permissionService.setPermission(this.virtualFolder1NodeRef,
+                                             user1,
+                                             PermissionService.READ_PERMISSIONS,
+                                             true);
+        this.permissionService.setPermission(this.virtualFolder1NodeRef,
+                                             user2,
+                                             PermissionService.READ_PERMISSIONS,
+                                             true);
 
         this.permissionService.setPermission(this.virtualFolder1NodeRef,
                                              user1,
@@ -225,9 +245,6 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
                                                                         ContentModel.ASSOC_CONTAINS,
                                                                         "FilingFolder_filing_path");
 
-              
-      
-        
         assertEquals(AccessStatus.DENIED,
                      hasPermissionAs(filingFolderVirtualNodeRef,
                                      PermissionService.DELETE,
@@ -236,7 +253,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
         assertEquals(AccessStatus.DENIED,
                      hasPermissionAs(filingFolderVirtualNodeRef,
                                      asTypedPermission(PermissionService.DELETE),
-                                     user1) );
+                                     user1));
 
         assertEquals(AccessStatus.DENIED,
                      hasPermissionAs(filingFolderVirtualNodeRef,
@@ -249,7 +266,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
                                      user1));
 
     }
-    
+
     @Test
     public void testHasPermissionAdherence_folderPath() throws Exception
     {
@@ -270,12 +287,16 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
                                                                   "FilingFolder");
 
         NodeRef filingFolderNodeRef = filingFolderChildAssoc.getChildRef();
-        
+
+        this.permissionService.setPermission(filingFolderNodeRef,
+                                             user1,
+                                             PermissionService.READ_PERMISSIONS,
+                                             true);
         this.permissionService.setPermission(filingFolderNodeRef,
                                              user1,
                                              PermissionService.CREATE_CHILDREN,
                                              true);
-        
+
         this.permissionService.setPermission(filingFolderNodeRef,
                                              user2,
                                              PermissionService.CREATE_CHILDREN,
@@ -295,7 +316,7 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
                      hasPermissionAs(filingFolderNodeRef,
                                      PermissionService.CREATE_CHILDREN,
                                      user2));
-        
+
         assertEquals(AccessStatus.DENIED,
                      hasPermissionAs(filingFolderVirtualNodeRef,
                                      PermissionService.DELETE,
@@ -613,6 +634,243 @@ public class VirtualPermissionServiceExtensionTest extends VirtualizationIntegra
                                PermissionService.ALL_AUTHORITIES,
                                node2Entries);
 
+    }
+
+    @Test
+    public void testNodes_WithfilingPath_withNoReadPermissions_hasReadonlyPermission() throws Exception
+    {
+        final String[] deniedReadOnly = new String[] { PermissionService.UNLOCK, PermissionService.CANCEL_CHECK_OUT,
+                    PermissionService.CHANGE_PERMISSIONS, PermissionService.CREATE_CHILDREN, PermissionService.DELETE,
+                    PermissionService.WRITE, PermissionService.DELETE_NODE, PermissionService.WRITE_PROPERTIES,
+                    PermissionService.WRITE_CONTENT, PermissionService.CREATE_ASSOCIATIONS };
+
+        NodeRef virtualFolderT5 = createVirtualizedFolder(testRootFolder.getNodeRef(),
+                                                          "VirtualFolderT5",
+                                                          TEST_TEMPLATE_5_JSON_SYS_PATH);
+
+        NodeRef filingFolderVirtualNodeRef = nodeService.getChildByName(virtualFolderT5,
+                                                                        ContentModel.ASSOC_CONTAINS,
+                                                                        "FilingFolder_filing_path");
+
+        ChildAssociationRef filingFolderChildAssoc = createFolder(rootNodeRef,
+                                                                  "FilingFolder");
+
+        NodeRef filingFolderNodeRef = filingFolderChildAssoc.getChildRef();
+
+        this.permissionService.setPermission(filingFolderNodeRef,
+                                             user1,
+                                             PermissionService.READ_PERMISSIONS,
+                                             false);
+
+        this.permissionService.setPermission(filingFolderNodeRef,
+                                             user1,
+                                             PermissionService.CREATE_CHILDREN,
+                                             true);
+
+        this.permissionService.setPermission(filingFolderNodeRef,
+                                             user2,
+                                             PermissionService.CREATE_CHILDREN,
+                                             false);
+
+        assertEquals(AccessStatus.DENIED,
+                     hasPermissionAs(filingFolderNodeRef,
+                                     PermissionService.DELETE,
+                                     user1));
+
+        assertEquals(AccessStatus.ALLOWED,
+                     hasPermissionAs(filingFolderNodeRef,
+                                     PermissionService.CREATE_CHILDREN,
+                                     user1));
+
+        assertEquals(AccessStatus.DENIED,
+                     hasPermissionAs(filingFolderNodeRef,
+                                     PermissionService.CREATE_CHILDREN,
+                                     user2));
+
+        // for virtual folder
+
+        StringBuilder nonDeniedTrace = new StringBuilder();
+        for (int i = 0; i < deniedReadOnly.length; i++)
+        {
+            AccessStatus accessStatus = hasPermissionAs(filingFolderVirtualNodeRef,
+                                                        deniedReadOnly[i],
+                                                        user1);
+            if (!AccessStatus.DENIED.equals(accessStatus))
+            {
+                if (nonDeniedTrace.length() > 0)
+                {
+                    nonDeniedTrace.append(",");
+                }
+                nonDeniedTrace.append(deniedReadOnly[i]);
+            }
+        }
+
+        assertTrue("Non-denied permissions on RO virtual nodes : " + nonDeniedTrace,
+                   nonDeniedTrace.length() == 0);
+
+        this.permissionService.setPermission(filingFolderNodeRef,
+                                             user1,
+                                             PermissionService.DELETE_CHILDREN,
+                                             true);
+
+        this.permissionService.setPermission(filingFolderNodeRef,
+                                             user2,
+                                             PermissionService.DELETE_CHILDREN,
+                                             false);
+
+        this.permissionService.setPermission(filingFolderNodeRef,
+                                             user1,
+                                             PermissionService.READ_PROPERTIES,
+                                             true);
+
+        this.permissionService.setPermission(filingFolderNodeRef,
+                                             user1,
+                                             PermissionService.CREATE_CHILDREN,
+                                             false);
+
+        this.permissionService.setPermission(filingFolderNodeRef,
+                                             user1,
+                                             PermissionService.DELETE,
+                                             true);
+
+        assertEquals(AccessStatus.ALLOWED,
+                     hasPermissionAs(filingFolderNodeRef,
+                                     PermissionService.DELETE,
+                                     user1));
+
+        assertEquals(AccessStatus.DENIED,
+                     hasPermissionAs(filingFolderNodeRef,
+                                     PermissionService.CREATE_CHILDREN,
+                                     user1));
+
+        StringBuilder nonDeniedTrace1 = new StringBuilder();
+        for (int i = 0; i < deniedReadOnly.length; i++)
+        {
+            AccessStatus accessStatus = hasPermissionAs(filingFolderVirtualNodeRef,
+                                                        deniedReadOnly[i],
+                                                        user1);
+            if (!AccessStatus.DENIED.equals(accessStatus))
+            {
+                if (nonDeniedTrace1.length() > 0)
+                {
+                    nonDeniedTrace1.append(",");
+                }
+                nonDeniedTrace1.append(deniedReadOnly[i]);
+            }
+        }
+
+        assertTrue("Non-denied permissions on RO virtual nodes : " + nonDeniedTrace1,
+                   nonDeniedTrace1.length() == 0);
+
+    }
+
+    @Test
+    public void testPerm_ace_5162() throws Exception
+    {
+        final String[] deniedReadOnly = new String[] { PermissionService.UNLOCK, PermissionService.CANCEL_CHECK_OUT,
+                    PermissionService.CHANGE_PERMISSIONS, PermissionService.CREATE_CHILDREN, PermissionService.DELETE,
+                    PermissionService.WRITE, PermissionService.DELETE_NODE, PermissionService.WRITE_PROPERTIES,
+                    PermissionService.WRITE_CONTENT, PermissionService.CREATE_ASSOCIATIONS };
+
+        try
+        {
+            // Create a public site
+
+            siteService.createSite("testSitePreset",
+                                   sName,
+                                   sName,
+                                   sName,
+                                   SiteVisibility.PUBLIC);
+
+            testSiteFolder = siteService.createContainer(sName,
+                                                         "TestSiteFolder",
+                                                         ContentModel.TYPE_FOLDER,
+                                                         null);
+
+            smartFolder = createVirtualizedFolder(testSiteFolder,
+                                                  "SmartFolder",
+                                                  "C" + TEST_TEMPLATE_CLASSPATH + "testTemplate7.json");
+            contributionDocsFolder = createFolder(testSiteFolder,
+                                                  "Contribution Docs").getChildRef();
+            permissionService.setInheritParentPermissions(contributionDocsFolder,
+                                                          false);
+
+            myContentSMF = nodeService.getChildByName(smartFolder,
+                                                      ContentModel.ASSOC_CONTAINS,
+                                                      "My content");
+            assertNotNull(myContentSMF);
+
+            contributionsSMF = nodeService.getChildByName(myContentSMF,
+                                                          ContentModel.ASSOC_CONTAINS,
+                                                          "Contributions");
+            assertNotNull(contributionsSMF);
+
+            // test that the all denied permissions for read only virtual nodes
+            // apply for virtual nodes with filing path with no READ_PERMISSONS
+            // for authenticated user
+            StringBuilder nonDeniedTrace = new StringBuilder();
+            for (int i = 0; i < deniedReadOnly.length; i++)
+            {
+                AccessStatus accessStatus = hasPermissionAs(contributionsSMF,
+                                                            deniedReadOnly[i],
+                                                            user1);
+                if (!AccessStatus.DENIED.equals(accessStatus))
+                {
+                    if (nonDeniedTrace.length() > 0)
+                    {
+                        nonDeniedTrace.append(",");
+                    }
+                    nonDeniedTrace.append(deniedReadOnly[i]);
+                }
+            }
+
+            assertTrue("Non-denied permissions on RO virtual nodes : " + nonDeniedTrace,
+                       nonDeniedTrace.length() == 0);
+
+            // test that the admin user can see documents from virtual nodes
+            // with filing path with no inherited parent permissions
+            fileAndFolderService.create(contributionsSMF,
+                                        "T1",
+                                        ContentModel.TYPE_CONTENT);
+
+            NodeRef childContet = nodeService.getChildByName(contributionsSMF,
+                                                             ContentModel.ASSOC_CONTAINS,
+                                                             "T1");
+            assertNotNull(childContet);
+
+            assertTrue(nodeService.getChildAssocs(contributionsSMF).size() > 0);
+
+            // test that the user1 can't see documents from virtual nodes with
+            // filing path with no inherited parent permissions
+            RunAsWork<Boolean> hasChildAssocs = new RunAsWork<Boolean>()
+            {
+                @Override
+                public Boolean doWork() throws Exception
+                {
+                    return nodeService.getChildAssocs(contributionsSMF).size() > 0;
+                }
+            };
+
+            boolean value = AuthenticationUtil.runAs(hasChildAssocs,
+                                                     user1);
+            assertFalse(value);
+        }
+        finally
+        {
+            if (contributionDocsFolder != null)
+            {
+                nodeService.deleteNode(contributionDocsFolder);
+            }
+            if (smartFolder != null)
+            {
+                nodeService.deleteNode(smartFolder);
+            }
+            if (testSiteFolder != null)
+            {
+                nodeService.deleteNode(testSiteFolder);
+            }
+            siteService.deleteSite(sName);
+        }
     }
 
     private String asTypedPermission(String perm)

@@ -234,8 +234,8 @@
 	        <configuration>
 	          
 	          <verbose>${license.verbose}</verbose>
-	          <addSvnKeyWords>false</addSvnKeyWords>  
-	          
+	          <addSvnKeyWords>false</addSvnKeyWords> 
+		      
 	          <!-- header configuration -->            
               <organizationName>${license.org.name}</organizationName>
 	          <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
@@ -254,11 +254,23 @@
               
               <!--  source roots to check -->
               <roots>
-				<root>source</root>
-				<root>test</root>
-				<root>unit-test</root>
+				<root>source/java</root>
+				<root>unit-test/java</root>
+				<root>source/compatibility</root>
 				<root>config</root>
+				<root>test/java</root>
+				<root>test/resources</root>
 			  </roots>
+
+			  <!-- exculsions -->
+			  <excludes>			    
+            	<exclude>**/package-info.java</exclude>
+			  	<exclude>**/*.properties</exclude>
+			  	<exclude>**/*.css</exclude>
+			  	<exclude>**/*.xml</exclude>
+			  	<exclude>**/*.json</exclude>
+			  	<exclude>**/*.txt</exclude>
+			  </excludes>
 			  
 	        </configuration>
 	        <executions>

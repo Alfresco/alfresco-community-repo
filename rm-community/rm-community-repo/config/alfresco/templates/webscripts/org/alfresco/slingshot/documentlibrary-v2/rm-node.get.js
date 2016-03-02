@@ -1,3 +1,5 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary-v2/node.get.js">
+
 /*
  * #%L
  * This file is part of Alfresco.
@@ -18,4 +20,3 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/slingshot/documentlibrary-v2/node.get.js">

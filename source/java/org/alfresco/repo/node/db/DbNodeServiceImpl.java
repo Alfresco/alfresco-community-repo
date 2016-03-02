@@ -1521,6 +1521,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                     "   Child Assoc: " + assocRef);
         }
         // Delete the secondary association
+        invokeBeforeDeleteChildAssociation(childAssocRef);
         nodeDAO.deleteChildAssoc(assocId);
         invokeOnDeleteChildAssociation(childAssocRef);
         // Index

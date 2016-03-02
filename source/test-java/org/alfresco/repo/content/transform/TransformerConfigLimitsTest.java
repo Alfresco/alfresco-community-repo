@@ -210,15 +210,20 @@ public class TransformerConfigLimitsTest
     public void transformerUseTest()
     {
         mockProperties(transformerProperties,
-                "content.transformer.transformer1.maxSourceSizeKBytes",           "10",
-                "content.transformer.transformer1.maxSourceSizeKBytes.use.index", "20");
+            "content.transformer.transformer2.maxSourceSizeKBytes",           "10",
+            "content.transformer.transformer1.maxSourceSizeKBytes.use.index", "20",
+            // The following is ignored when "index" is specified, as the 'use' property is transformer wide.
+            "content.transformer.transformer1.maxSourceSizeKBytes",           "30");
         
         extractor = new TransformerConfigLimits(transformerProperties, mimetypeService);
         TransformationOptionLimits limits = extractor.getLimits(transformer1, "application/pdf", "image/png", null);
-        assertEquals(10, limits.getMaxSourceSizeKBytes());
+        assertEquals(30, limits.getMaxSourceSizeKBytes());
 
         limits = extractor.getLimits(transformer1, "application/pdf", "image/png", "index");
         assertEquals(20, limits.getMaxSourceSizeKBytes());
+
+        limits = extractor.getLimits(transformer2, "application/pdf", "image/png", "index");
+        assertEquals(10, limits.getMaxSourceSizeKBytes());
     }
     
     @Test
@@ -227,13 +232,18 @@ public class TransformerConfigLimitsTest
     {
         mockProperties(transformerProperties,
                 "content.transformer.default.extensions.pdf.png.maxSourceSizeKBytes",           "10",
-                "content.transformer.default.extensions.pdf.png.maxSourceSizeKBytes.use.index", "20");
+                "content.transformer.default.extensions.pdf.png.maxSourceSizeKBytes.use.index", "20",
+                // The following is ignored when "index" is specified, as the 'use' property is system wide.
+                "content.transformer.transformer2.maxSourceSizeKBytes", "30");
         
         extractor = new TransformerConfigLimits(transformerProperties, mimetypeService);
         TransformationOptionLimits limits = extractor.getLimits(transformer1, "application/pdf", "image/png", null);
         assertEquals(10, limits.getMaxSourceSizeKBytes());
 
-        limits = extractor.getLimits(transformer1, "application/pdf", "image/png", "index");
+        limits = extractor.getLimits(transformer2, "application/pdf", "image/png", "doclib");
+        assertEquals(30, limits.getMaxSourceSizeKBytes());
+
+        limits = extractor.getLimits(transformer2, "application/pdf", "image/png", "index");
         assertEquals(20, limits.getMaxSourceSizeKBytes());
     }
     
@@ -260,6 +270,7 @@ public class TransformerConfigLimitsTest
         mockProperties(transformerProperties,
                 "content.transformer.default.maxSourceSizeKBytes",           "10",
                 "content.transformer.default.maxSourceSizeKBytes.use.index", "20",
+                // The following is ignored when "index" is specified, as the 'use' property is system wide.
                 "content.transformer.transformer2.maxSourceSizeKBytes",      "30");
         
         extractor = new TransformerConfigLimits(transformerProperties, mimetypeService);
@@ -273,7 +284,7 @@ public class TransformerConfigLimitsTest
         assertEquals(20, limits.getMaxSourceSizeKBytes());
 
         limits = extractor.getLimits(transformer2, "application/pdf", "image/png", "index");
-        assertEquals(30, limits.getMaxSourceSizeKBytes());
+        assertEquals(20, limits.getMaxSourceSizeKBytes());
     }
 
     @Test

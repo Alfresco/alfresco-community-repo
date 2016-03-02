@@ -19,8 +19,10 @@
 package org.alfresco.repo.module.tool;
 
 import de.schlichtherle.truezip.file.*;
+import de.schlichtherle.truezip.fs.FsSyncException;
 import de.schlichtherle.truezip.fs.archive.zip.JarDriver;
 import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
+
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.module.ModuleVersionNumber;
 import org.alfresco.service.cmr.module.ModuleDetails;
@@ -192,14 +194,14 @@ public class ModuleManagementTool implements LogOutput
      *                          installation will be followed and reported, but the WAR file will not be modified.
      * @param forceInstall      indicates whether the installed files will be replaced regardless of the currently installed 
      *                          version of the AMP.  Generally used during development of the AMP.
-     * @param backupWAR         indicates whether we should backup the war we are modifying or not
+     * @param backupWAR         indicates whether we should backup the war we are modifying or not 
      */
     public void installModule(String ampFileLocation, String warFileLocation, boolean preview, boolean forceInstall, boolean backupWAR)
     {
+        TFile warFile = new TFile(warFileLocation);
         try
         {   
             outputVerboseMessage("Installing AMP '" + ampFileLocation + "' into WAR '" + warFileLocation + "'");
-            TFile warFile = new TFile(warFileLocation);
             if (!warFile.exists())
             {
                 throw new ModuleManagementToolException("The war file '" + warFile + "' does not exist.");     
@@ -273,9 +275,6 @@ public class ModuleManagementTool implements LogOutput
                 {
                     warFile.setLastModified(System.currentTimeMillis());
                 }
-                
-                // Update the zip filessync
-                TVFS.umount();
             }               
         }
         catch (AlfrescoRuntimeException exception)
@@ -285,6 +284,19 @@ public class ModuleManagementTool implements LogOutput
         catch (IOException exception)
         {
             throw new ModuleManagementToolException("An IO error was encountered during deployment of the AMP into the WAR", exception);
+        }
+        finally
+        {
+            try
+            {
+                TVFS.umount(warFile);
+            }
+            catch (FsSyncException e)
+            {
+                throw new ModuleManagementToolException(
+                            "Error when attempting to unmount WAR file: "+warFile.getPath(),
+                            e);
+            }
         }
     }
 

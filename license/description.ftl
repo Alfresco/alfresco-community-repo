@@ -1,1 +1,1 @@
-This file is part of Alfresco.
+Alfresco Records Management Module

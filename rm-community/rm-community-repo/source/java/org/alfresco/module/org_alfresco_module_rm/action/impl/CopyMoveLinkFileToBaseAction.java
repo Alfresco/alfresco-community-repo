@@ -116,7 +116,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      * @see org.alfresco.repo.action.executer.ActionExecuterAbstractBase#executeImpl(org.alfresco.service.cmr.action.Action, org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    protected synchronized void executeImpl(final Action action, final NodeRef actionedUponNodeRef)
+    protected synchronized void executeImpl(Action action, final NodeRef actionedUponNodeRef)
     {
         String actionName = action.getActionDefinitionName();
         if (isOkToProceedWithAction(actionedUponNodeRef, actionName))
@@ -139,24 +139,7 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
             if (recordFolder == null)
             {
             	final boolean finaltargetIsUnfiledRecords = targetIsUnfiledRecords;
-            	recordFolder = retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
-				{
-                	public NodeRef execute() throws Throwable
-                    {
-                		NodeRef result = null;
-                		try
-                		{
-                		    // get the reference to the record folder based on the relative path
-                			result = createOrResolvePath(action, actionedUponNodeRef, finaltargetIsUnfiledRecords);
-                		}
-                		catch (DuplicateChildNodeNameException ex)
-                		{
-                			throw new ConcurrencyFailureException("Cannot create or resolve path.", ex);
-                		}
-
-                		return result;
-                    }
-                }, false, true);
+                recordFolder = createOrResolvePath(action, actionedUponNodeRef, finaltargetIsUnfiledRecords);
             }
 
             // now we have the reference to the target folder we can do some final checks to see if the action is valid
@@ -282,23 +265,39 @@ public abstract class CopyMoveLinkFileToBaseAction extends RMActionExecuterAbstr
      * @param targetisUnfiledRecords  true is the target is in unfiled records
      * @return
      */
-    private NodeRef createOrResolvePath(Action action, NodeRef actionedUponNodeRef, boolean targetisUnfiledRecords)
+    private NodeRef createOrResolvePath(final Action action, final NodeRef actionedUponNodeRef, final boolean targetisUnfiledRecords)
     {
         // get the starting context
-        NodeRef context = getContext(action, actionedUponNodeRef, targetisUnfiledRecords);
+        final NodeRef context = getContext(action, actionedUponNodeRef, targetisUnfiledRecords);
         NodeRef path = context;
 
         // get the path we wish to resolve
         String pathParameter = (String)action.getParameterValue(PARAM_PATH);
-        String[] pathElementsArray = StringUtils.tokenizeToStringArray(pathParameter, "/", false, true);
+        final String[] pathElementsArray = StringUtils.tokenizeToStringArray(pathParameter, "/", false, true);
         if((pathElementsArray != null) && (pathElementsArray.length > 0))
         {
             // get the create parameter
             Boolean createValue = (Boolean)action.getParameterValue(PARAM_CREATE_RECORD_PATH);
-            boolean create = createValue == null ? false : createValue.booleanValue();
+            final boolean create = createValue == null ? false : createValue.booleanValue();
 
             // create or resolve the specified path
-            path = createOrResolvePath(action, context, actionedUponNodeRef, Arrays.asList(pathElementsArray), targetisUnfiledRecords, create, false);
+            path = retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
+            {
+                public NodeRef execute() throws Throwable
+                {
+                    NodeRef path = null;
+                    try
+                    {
+                        path = createOrResolvePath(action, context, actionedUponNodeRef, Arrays.asList(pathElementsArray), targetisUnfiledRecords,
+                                create, false);
+                    }
+                    catch (DuplicateChildNodeNameException ex)
+                    {
+                        throw new ConcurrencyFailureException("Cannot create or resolve path.", ex);
+                    }
+                    return path;
+                }
+            }, false, true);
         }
         return path;
     }

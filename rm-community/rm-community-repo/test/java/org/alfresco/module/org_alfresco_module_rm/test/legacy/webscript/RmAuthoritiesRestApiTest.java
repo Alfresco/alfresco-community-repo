@@ -347,6 +347,6 @@ public class RmAuthoritiesRestApiTest extends BaseRMWebScriptTestCase
     {
         String contentAsString = response.getContentAsString();
         assertNotNull(contentAsString);
-        assertTrue(contentAsString.equals("{}"));
+        assertTrue(contentAsString.contains("{}"));
     }
 }

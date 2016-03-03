@@ -20,10 +20,6 @@
       <suiteXmlFile>testng.xml</suiteXmlFile>
       <skip.automationtests>true</skip.automationtests>
       
-      <!-- license properties -->
-      <license.root>${project.parent.basedir}/license</license.root>
-      <license.name>alfresco_community</license.name>
-      
    </properties>
 
    <build>
@@ -71,6 +67,17 @@
                </execution>
             </executions>
          </plugin>
+         
+         <!-- License header generation -->
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>          
+            <configuration>                        
+               <licenseName>alfresco_community</licenseName>
+               <licenseResolver>file:${project.parent.basedir}/license</licenseResolver>
+               <descriptionTemplate>${project.parent.basedir}/license/description.ftl</descriptionTemplate>
+            </configuration>
+         </plugin> 
 	      
       </plugins>
       <pluginManagement>

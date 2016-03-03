@@ -25,7 +25,6 @@
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home> 
-      <license.root>${project.parent.parent.basedir}/license</license.root>
    </properties>
 
    <build>
@@ -231,8 +230,8 @@
             <plugin>
                <groupId>org.codehaus.mojo</groupId>
                <artifactId>license-maven-plugin</artifactId>          
-               <configuration>      
-                  <!-- source roots to check -->
+               <configuration>                        
+                  <licenseName>alfresco_community</licenseName>
                   <roots>
                      <root>source/java</root>
                      <root>unit-test/java</root>
@@ -242,16 +241,8 @@
                      <root>test/resources</root>
                   </roots>
                </configuration>
-               <executions>
-                  <execution>
-                     <id>first</id>
-                     <goals>
-                        <goal>update-file-header</goal>
-                     </goals>
-                     <phase>process-sources</phase>
-                  </execution>
-               </executions>
-            </plugin>         
+            </plugin>     
+                
       </plugins>
       <pluginManagement>
          <plugins>

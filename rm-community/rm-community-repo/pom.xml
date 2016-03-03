@@ -24,7 +24,8 @@
       <alfresco.mysql.version>5.1.31</alfresco.mysql.version>
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
-      <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
+      <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home> 
+      <license.root>${project.parent.parent.basedir}/license</license.root>
    </properties>
 
    <build>
@@ -229,60 +230,28 @@
             <!-- License header generation -->
             <plugin>
                <groupId>org.codehaus.mojo</groupId>
-               <artifactId>license-maven-plugin</artifactId>
-               <version>1.8</version>
-               <configuration>
-      
-               <verbose>${license.verbose}</verbose>
-               <addSvnKeyWords>false</addSvnKeyWords>
-               <!-- header configuration -->
-               <organizationName>${license.org.name}</organizationName>
-               <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
-               <canUpdateCopyright>true</canUpdateCopyright>
-               <canUpdateDescription>true</canUpdateDescription>
-      
-               <!-- licence configuration -->
-               <addJavaLicenseAfterPackage>true</addJavaLicenseAfterPackage>
-               <licenseName>alfresco_community</licenseName>
-               <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
-      
-               <!-- dry run options -->
-               <dryRun>${license.update.dryrun}</dryRun>
-               <failOnMissingHeader>true</failOnMissingHeader>
-               <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
-      
-               <!-- source roots to check -->
-               <roots>
-                  <root>source/java</root>
-                  <root>unit-test/java</root>
-                  <root>source/compatibility</root>
-                  <root>config</root>
-                  <root>test/java</root>
-                  <root>test/resources</root>
-               </roots>
-      
-               <!-- exculsions -->
-               <excludes>
-                  <exclude>**/package-info.java</exclude>
-                  <exclude>**/*.properties</exclude>
-                  <exclude>**/*.css</exclude>
-                  <exclude>**/*.xml</exclude>
-                  <exclude>**/*.json</exclude>
-                  <exclude>**/*.txt</exclude>
-               </excludes>
-      
-            </configuration>
-            <executions>
-               <execution>
-                  <id>first</id>
-                  <goals>
-                     <goal>update-file-header</goal>
-                  </goals>
-                  <phase>process-sources</phase>
-               </execution>
-            </executions>
-         </plugin>
-         
+               <artifactId>license-maven-plugin</artifactId>          
+               <configuration>      
+                  <!-- source roots to check -->
+                  <roots>
+                     <root>source/java</root>
+                     <root>unit-test/java</root>
+                     <root>source/compatibility</root>
+                     <root>config</root>
+                     <root>test/java</root>
+                     <root>test/resources</root>
+                  </roots>
+               </configuration>
+               <executions>
+                  <execution>
+                     <id>first</id>
+                     <goals>
+                        <goal>update-file-header</goal>
+                     </goals>
+                     <phase>process-sources</phase>
+                  </execution>
+               </executions>
+            </plugin>         
       </plugins>
       <pluginManagement>
          <plugins>

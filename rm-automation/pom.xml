@@ -13,11 +13,17 @@
    </parent>
 
    <properties>
+   
       <selenium.version>2.45.0</selenium.version>
       <spring.version>4.0.5.RELEASE</spring.version>
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
       <suiteXmlFile>testng.xml</suiteXmlFile>
       <skip.automationtests>true</skip.automationtests>
+      
+      <!-- license properties -->
+      <license.root>${project.parent.basedir}/license</license.root>
+      <license.name>alfresco_community</license.name>
+      
    </properties>
 
    <build>
@@ -62,54 +68,6 @@
                         </exec>
                      </target>
                   </configuration>
-               </execution>
-            </executions>
-         </plugin>
-      
-         <!-- License header generation -->
-         <plugin>
-            <groupId>org.codehaus.mojo</groupId>
-            <artifactId>license-maven-plugin</artifactId>
-            <version>1.8</version>
-            <configuration>
-      
-               <verbose>${license.verbose}</verbose>
-               <addSvnKeyWords>false</addSvnKeyWords>
-      
-               <!-- header configuration -->
-               <organizationName>${license.org.name}</organizationName>
-               <descriptionTemplate>${project.parent.basedir}/license/description.ftl</descriptionTemplate>
-               <canUpdateCopyright>true</canUpdateCopyright>
-               <canUpdateDescription>true</canUpdateDescription>
-      
-               <!-- licence configuration -->
-               <addJavaLicenseAfterPackage>true</addJavaLicenseAfterPackage>
-               <licenseName>alfresco_community</licenseName>
-               <licenseResolver>file:${project.parent.basedir}/license</licenseResolver>
-      
-               <!-- dry run options -->
-               <dryRun>${license.update.dryrun}</dryRun>
-               <failOnMissingHeader>true</failOnMissingHeader>
-               <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
-      
-               <!-- exculsions -->
-               <excludes>
-                  <exclude>**/package-info.java</exclude>
-                  <exclude>**/*.properties</exclude>
-                  <exclude>**/*.css</exclude>
-                  <exclude>**/*.xml</exclude>
-                  <exclude>**/*.json</exclude>
-                  <exclude>**/*.txt</exclude>
-               </excludes>
-      
-            </configuration>
-            <executions>
-               <execution>
-                  <id>first</id>
-                  <goals>
-                     <goal>update-file-header</goal>
-                  </goals>
-                  <phase>process-sources</phase>
                </execution>
             </executions>
          </plugin>

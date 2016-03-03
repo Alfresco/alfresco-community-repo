@@ -25,5 +25,7 @@
 
    <properties>
       <alfresco.version>5.1.d-EA</alfresco.version>
+	  <license.root>${project.parent.basedir}/license</license.root>
+	  <license.name>alfresco_community</license.name>
    </properties>
 </project>

@@ -96,9 +96,12 @@
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
 	  
 	  <!-- license properties -->
+	  <license.root>${project.basedir}/license</license.root>
 	  <license.org.name>Alfresco Software Limited</license.org.name>
+	  <license.name>alfresco_enterprise</license.name>
 	  <license.update.dryrun>true</license.update.dryrun>
 	  <license.verbose>false</license.verbose>
+	  <license.plugin.version>1.8</license.plugin.version>
 	  
    </properties>
 
@@ -174,6 +177,54 @@
                </includes>
             </configuration>
          </plugin>
+		 
+		 <!-- License header generation -->
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <version>${license.plugin.version}</version>
+            <configuration>
+      
+               <verbose>${license.verbose}</verbose>
+               <addSvnKeyWords>false</addSvnKeyWords>
+      
+               <!-- header configuration -->
+               <organizationName>${license.org.name}</organizationName>
+               <descriptionTemplate>${license.root}/description.ftl</descriptionTemplate>
+               <canUpdateCopyright>true</canUpdateCopyright>
+               <canUpdateDescription>true</canUpdateDescription>
+      
+               <!-- licence configuration -->
+               <licenseName>${license.name}</licenseName>
+               <licenseResolver>file:${license.root}</licenseResolver>
+      
+               <!-- dry run options -->
+               <dryRun>${license.update.dryrun}</dryRun>
+               <failOnMissingHeader>true</failOnMissingHeader>
+               <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+      
+               <!-- exculsions -->
+               <excludes>
+                  <exclude>**/package-info.java</exclude>
+                  <exclude>**/*.properties</exclude>
+                  <exclude>**/*.css</exclude>
+                  <exclude>**/*.xml</exclude>
+                  <exclude>**/*.json</exclude>
+                  <exclude>**/*.txt</exclude>
+               </excludes>
+      
+            </configuration>
+            <executions>
+               <execution>
+                  <id>first</id>
+                  <goals>
+                     <goal>update-file-header</goal>
+                  </goals>
+                  <phase>process-sources</phase>
+               </execution>
+            </executions>
+         </plugin>
+		 
       </plugins>
       <pluginManagement>
          <plugins>

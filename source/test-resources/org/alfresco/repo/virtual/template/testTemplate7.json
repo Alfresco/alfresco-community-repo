@@ -1,0 +1,35 @@
+{
+    "name":"Smart Folders Example",
+    "nodes":[
+        {
+            "id":"1",
+            "name":"My content",
+            "description":"My files in this repository",
+            "nodes":[
+                {
+                    "id":"13",
+                    "name":"Contributions",
+                    "description":"My 'dublin core' contributions - add new documents here to contribute",
+                    "search":{
+                        "language":"fts-alfresco",
+                        "query":"+ASPECT:'cm:dublincore' AND (PATH:'/app:company_home/st:sites/cm:mytestsite_ace_5162/cm:TestSiteFolder/cm:Contribution_x0020_Docs/*')"
+                    },
+                    "filing":{
+                        "path":"/app:company_home/st:sites/cm:mytestsite_ace_5162/cm:TestSiteFolder/cm:Contribution_x0020_Docs",
+                        "classification":{
+                            "type":"cm:content",
+                            "aspects":[
+                                "cm:dublincore"
+                            ]
+                        },
+                        "properties":{
+                            "cm:contributor":"%CURRENT_USER%",
+                            "cm:rights":"Alfresco",
+                            "cm:publisher":"Alfresco"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

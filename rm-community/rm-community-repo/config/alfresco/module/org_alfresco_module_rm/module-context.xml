@@ -7,6 +7,12 @@
        http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
        http://www.springframework.org/schema/aop
        http://www.springframework.org/schema/aop/spring-aop-3.0.xsd ">
+       
+   <!-- Module compatibility component -->
+   <bean name="rm.moduleCompatibilityComponent" class="org.alfresco.module.org_alfresco_module_rm.bootstrap.ModuleCompatibilityComponent">
+      <property name="descriptorService" ref="descriptorComponent"/>
+      <property name="moduleService" ref="ModuleService"/>
+   </bean>
 
    <!--  Authentication Helper -->
    <bean name="rm.authenticationUtil" class="org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil"/>

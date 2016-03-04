@@ -43,11 +43,6 @@
          <id>alfresco-internal</id>
          <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
       </repository>
-      <!-- We need this repository as 5.1 is not released yet. Once it is released we can delete this repository configuration. -->
-      <repository>
-         <id>alfresco-internal-staging</id>
-         <url>https://artifacts.alfresco.com/nexus/content/repositories/5.1-EA</url>
-      </repository>
    </repositories>
 
    <pluginRepositories>

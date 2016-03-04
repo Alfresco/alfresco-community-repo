@@ -33,6 +33,7 @@ import org.alfresco.repo.virtual.config.NodeRefPathExpression;
 import org.alfresco.repo.virtual.ref.GetActualNodeRefMethod;
 import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
@@ -58,7 +59,6 @@ public class TemplateFilingRule implements FilingRule
     private Set<String> aspects;
 
     private Map<String, String> stringProperties;
-
 
     public TemplateFilingRule(ActualEnvironment environment, String path, String type, Set<String> aspects,
                 Map<String, String> properties)
@@ -180,11 +180,16 @@ public class TemplateFilingRule implements FilingRule
             String[] pathElements = NodeRefPathExpression.splitAndNormalizePath(path);
             for (int i = 0; i < pathElements.length; i++)
             {
-                pathElements[i]=ISO9075.decode(pathElements[i]);
+                pathElements[i] = ISO9075.decode(pathElements[i]);
             }
             fParentRef = env.findQNamePath(pathElements);
         }
 
+        if (!env.hasPermission(fParentRef,
+                               PermissionService.READ_PERMISSIONS))
+        {
+            fParentRef = null;
+        }
         if (failIfNotFound && fParentRef == null)
         {
             throw new VirtualizationException("The filing path " + path + " could not be resolved.");

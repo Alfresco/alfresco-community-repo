@@ -44,6 +44,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.namespace.NamespacePrefixResolver;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
@@ -60,14 +61,14 @@ public class AlfrescoEnviroment implements ActualEnvironment
     private NamespacePrefixResolver namespacePrefixResolver;
 
     private Repository repositoryHelper;
-    
+
     private NodeRefResolver nodeRefResolver;
 
     public void setNodeRefResolver(NodeRefResolver nodeRefResolver)
     {
         this.nodeRefResolver = nodeRefResolver;
     }
-    
+
     public void setAlfrescoAPIFacet(AlfrescoAPIFacet apiFacet)
     {
         this.apiFacet = apiFacet;
@@ -82,7 +83,7 @@ public class AlfrescoEnviroment implements ActualEnvironment
     {
         return this.serviceRegistry;
     }
-    
+
     public void setRepositoryHelper(Repository repository)
     {
         this.repositoryHelper = repository;
@@ -298,5 +299,12 @@ public class AlfrescoEnviroment implements ActualEnvironment
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver(cl);
         Resource resource = resolver.getResource("classpath:" + classpath);
         return resource.exists();
+    }
+
+    @Override
+    public boolean hasPermission(NodeRef nodeRef, String perm)
+    {
+        return apiFacet.getPermissionService().hasPermission(nodeRef,
+                                                             perm).equals(AccessStatus.ALLOWED);
     }
 }

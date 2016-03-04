@@ -74,7 +74,7 @@ public class VirtualPermissionServiceExtension extends
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
             AccessStatus virtualAccessStatus = smartStore.hasPermission(reference,
-                                                                          perm);
+                                                                        perm);
             if (!AccessStatus.UNDETERMINED.equals(virtualAccessStatus))
             {
                 return virtualAccessStatus;
@@ -107,7 +107,7 @@ public class VirtualPermissionServiceExtension extends
         {
             Reference reference = Reference.fromNodeRef(nodeRef);
             AccessStatus virtualAccessStatus = smartStore.hasPermission(reference,
-                                                                          perm);
+                                                                        perm);
             if (!AccessStatus.UNDETERMINED.equals(virtualAccessStatus))
             {
                 return virtualAccessStatus;
@@ -206,10 +206,13 @@ public class VirtualPermissionServiceExtension extends
     private NodeRef establishPermisisonAdherence(Reference reference)
     {
         NodeRef nodeToAdhereTo = smartStore.adhere(reference,
-                                                     VirtualStore.FILING_OR_MATERIAL_ADHERENCE);
+                                                   VirtualStore.FILING_OR_MATERIAL_ADHERENCE);
         if (logger.isDebugEnabled())
         {
-            logger.debug("Could not establish permission adherence for " + reference.toString());
+            if (nodeToAdhereTo == null)
+            {
+                logger.debug("Could not establish permission adherence for " + reference.toString());
+            }
         }
 
         return nodeToAdhereTo;

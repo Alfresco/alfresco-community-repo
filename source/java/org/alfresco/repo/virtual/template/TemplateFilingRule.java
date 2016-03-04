@@ -176,7 +176,6 @@ public class TemplateFilingRule implements FilingRule
         }
         else
         {
-
             String[] pathElements = NodeRefPathExpression.splitAndNormalizePath(path);
             for (int i = 0; i < pathElements.length; i++)
             {
@@ -185,10 +184,26 @@ public class TemplateFilingRule implements FilingRule
             fParentRef = env.findQNamePath(pathElements);
         }
 
-        if (!env.hasPermission(fParentRef,
-                               PermissionService.READ_PERMISSIONS))
+        boolean noReadPermissions = false;
+        if (fParentRef != null && !env.hasPermission(fParentRef,
+                                                     PermissionService.READ_PERMISSIONS))
         {
             fParentRef = null;
+            noReadPermissions = true;
+        }
+        if (logger.isDebugEnabled())
+        {
+            if (fParentRef == null)
+            {
+                if (noReadPermissions)
+                {
+                    logger.debug("Current user does not have READ_PERMISSIONS for filing path" + path + ".");
+                }
+                else
+                {
+                    logger.debug("The filing path " + path + " doesn't exist.");
+                }
+            }
         }
         if (failIfNotFound && fParentRef == null)
         {

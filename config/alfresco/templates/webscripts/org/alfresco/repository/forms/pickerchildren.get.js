@@ -51,6 +51,9 @@ function main()
          // force the argsMaxResults var to be treated as a number
          maxResults = parseInt(argsMaxResults, 10) || maxResults;
       }
+      
+      //consider argsSearchTerm null if empty string
+      argsSearchTerm = (argsSearchTerm != null && argsSearchTerm.length == 0) ? null : argsSearchTerm ;
 
       // if the last path element is 'doclib' or 'siblings' find parent node
       if (pathElements.length > 0)
@@ -180,28 +183,28 @@ function main()
             if (nodeRef == "alfresco://category/root")
             {
                parent = rootNode;
-               categoryResults = classification.getRootCategories(catAspect);
+               categoryResults = classification.getRootCategories(catAspect, argsSearchTerm, maxResults, 0);
             }
             else
             {
                parent = resolveNode(nodeRef);
                categoryResults = parent.children;
-            }
-            
-            if (argsSearchTerm != null)
-            {
-               var filteredResults = [];
-               for each (result in categoryResults)
+               if (argsSearchTerm != null)
                {
-                  if (result.properties.name.indexOf(argsSearchTerm) == 0)
+                  var filteredResults = [];
+                  for each (result in categoryResults)
                   {
-                     filteredResults.push(result);
+                     if (result.properties.name.indexOf(argsSearchTerm) == 0)
+                     {
+                        filteredResults.push(result);
+                     }
                   }
+                  categoryResults = filteredResults.slice(0);
                }
-               categoryResults = filteredResults.slice(0);
+               categoryResults.sort(sortByName);
+               categoryResults = categoryResults.slice(0, maxResults);
             }
-            categoryResults.sort(sortByName);
-            
+
             // make each result an object and indicate it is selectable in the UI
             for each (var result in categoryResults)
             {

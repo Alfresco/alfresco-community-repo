@@ -73,7 +73,7 @@
          <dependency>
             <groupId>${alfresco.groupId}</groupId>
             <artifactId>alfresco-platform-distribution</artifactId>
-            <version>5.1-20160302.012107-260</version>
+            <version>${alfresco.version}</version>
             <type>pom</type>
             <scope>import</scope>
          </dependency>
@@ -253,55 +253,55 @@
             </plugin>
 			
 			<!-- License header generation -->
-			 <plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-				<version>1.8</version>
-				<configuration>
-		  
-				   <verbose>${license.verbose}</verbose>
-				   <addSvnKeyWords>false</addSvnKeyWords>
-		  
-				   <!-- header configuration -->
-				   <organizationName>Alfresco Software Limited</organizationName>
-				   <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
-				   <canUpdateCopyright>true</canUpdateCopyright>
-				   <canUpdateDescription>true</canUpdateDescription>
-		  
-				   <!-- licence configuration -->
-				   <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
-		  
-				   <!-- dry run options -->
-				   <dryRun>${license.update.dryrun}</dryRun>
-				   <failOnMissingHeader>true</failOnMissingHeader>
-				   <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
-				   
-				   <!-- default root -->
-				   <roots>
-				      <root>src</root>
-				   </roots>
-		  
-				   <!-- exculsions -->
-				   <excludes>
-					  <exclude>**/package-info.java</exclude>
-					  <exclude>**/*.properties</exclude>
-					  <exclude>**/*.css</exclude>
-					  <exclude>**/*.xml</exclude>
-					  <exclude>**/*.json</exclude>
-					  <exclude>**/*.txt</exclude>
-				   </excludes>
-		  
-				</configuration>
-				<executions>
-				   <execution>
-					  <id>first</id>
-					  <goals>
-						 <goal>update-file-header</goal>
-					  </goals>
-					  <phase>process-sources</phase>
-				   </execution>
-				</executions>
-			 </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.8</version>
+                <configuration>
+
+                <verbose>${license.verbose}</verbose>
+                <addSvnKeyWords>false</addSvnKeyWords>
+
+                <!-- header configuration -->
+                <organizationName>Alfresco Software Limited</organizationName>
+                <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+                <canUpdateCopyright>true</canUpdateCopyright>
+                <canUpdateDescription>true</canUpdateDescription>
+
+                <!-- licence configuration -->
+                <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
+
+                <!-- dry run options -->
+                <dryRun>${license.update.dryrun}</dryRun>
+                <failOnMissingHeader>true</failOnMissingHeader>
+                <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+
+                <!-- default root -->
+                <roots>
+                    <root>src</root>
+                </roots>
+
+                <!-- exculsions -->
+                <excludes>
+                    <exclude>**/package-info.java</exclude>
+                    <exclude>**/*.properties</exclude>
+                    <exclude>**/*.css</exclude>
+                    <exclude>**/*.xml</exclude>
+                    <exclude>**/*.json</exclude>
+                    <exclude>**/*.txt</exclude>
+                </excludes>
+
+                </configuration>
+                    <executions>
+                        <execution>
+                            <id>first</id>
+                            <goals>
+                                <goal>update-file-header</goal>
+                            </goals>
+                            <phase>process-sources</phase>
+                        </execution>
+                    </executions>
+                </plugin>
          </plugins>
       </pluginManagement>
    </build>

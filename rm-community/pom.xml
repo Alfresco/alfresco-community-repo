@@ -25,6 +25,5 @@
 
    <properties>
       <alfresco.version>5.1.d-EA</alfresco.version>
-	  <license.name>alfresco_community</license.name>
    </properties>
 </project>

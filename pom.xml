@@ -7,7 +7,7 @@
         <version>6</version>
     </parent>
     <artifactId>alfresco-full-installation</artifactId>
-    <version>AlfrescoOne-201602</version>
+    <version>5.1.0</version>
     <packaging>pom</packaging>
     <name>Alfresco Full Installation</name>
 

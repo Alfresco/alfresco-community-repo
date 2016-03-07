@@ -4,7 +4,7 @@
     <parent>
         <groupId>org.alfresco</groupId>
         <artifactId>alfresco-full-installation</artifactId>
-        <version>AlfrescoOne-201602</version>
+        <version>5.1.0</version>
     </parent>
     <artifactId>alfresco-community-installer</artifactId>
     <packaging>pom</packaging>

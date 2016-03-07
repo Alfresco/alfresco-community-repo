@@ -116,6 +116,19 @@ public interface CategoryService
      */
     @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName"})
     PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName);
+    
+    /**
+     * Get a paged list of the root categories for an aspect/classification
+     * 
+     * @param storeRef
+     * @param aspectName
+     * @param pagingRequest
+     * @param sortByName
+     * @param filter
+     * @return
+     */
+    @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName", "filter"})
+    PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName, String filter);
 
     /**
      * Get the root categories for an aspect/classification with names that start with filter

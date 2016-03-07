@@ -25,7 +25,9 @@ package org.alfresco.module.org_alfresco_module_rm.caveat;
  * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ * #L%
  */
+
 
 import static org.apache.commons.lang.exception.ExceptionUtils.getFullStackTrace;
 

@@ -45,6 +45,7 @@ import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.content.ContentServicePolicies;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.NodeServicePolicies;
+import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
@@ -219,9 +220,14 @@ public class RMCaveatConfigComponentImpl implements ContentServicePolicies.OnCon
 
     /**
      * @see org.alfresco.repo.content.ContentServicePolicies.OnContentUpdatePolicy#onContentUpdate(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     * RM-2770 - this method has to be fired on transaction commit to be able to validate the content when the content store is encrypted
      */
     @Override
-    @Behaviour(kind = BehaviourKind.CLASS)
+    @Behaviour
+    (
+            kind = BehaviourKind.CLASS, 
+            notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
+    )
     public void onContentUpdate(NodeRef nodeRef, boolean newContent)
     {
         if (logger.isInfoEnabled())

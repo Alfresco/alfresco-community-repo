@@ -89,6 +89,11 @@
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
       <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
+
+	  <!-- license properties -->
+	  <license.update.dryrun>true</license.update.dryrun>
+	  <license.verbose>false</license.verbose>
+
    </properties>
 
    <build>
@@ -241,6 +246,58 @@
                <artifactId>sql-maven-plugin</artifactId>
                <version>1.5</version>
             </plugin>
+
+			<!-- License header generation -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>license-maven-plugin</artifactId>
+                <version>1.8</version>
+                <configuration>
+
+                <verbose>${license.verbose}</verbose>
+                <addSvnKeyWords>false</addSvnKeyWords>
+
+                <!-- header configuration -->
+                <organizationName>Alfresco Software Limited</organizationName>
+                <descriptionTemplate>${project.parent.parent.basedir}/license/description.ftl</descriptionTemplate>
+                <canUpdateCopyright>true</canUpdateCopyright>
+                <canUpdateDescription>true</canUpdateDescription>
+
+                <!-- licence configuration -->
+                <licenseResolver>file:${project.parent.parent.basedir}/license</licenseResolver>
+
+                <!-- dry run options -->
+                <dryRun>${license.update.dryrun}</dryRun>
+                <failOnMissingHeader>true</failOnMissingHeader>
+                <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+
+                <!-- default root -->
+                <roots>
+                    <root>src</root>
+                </roots>
+
+                <!-- exculsions -->
+                <excludes>
+                    <exclude>**/package-info.java</exclude>
+                    <exclude>**/*.properties</exclude>
+                    <exclude>**/*.css</exclude>
+                    <exclude>**/*.xml</exclude>
+                    <exclude>**/*.json</exclude>
+                    <exclude>**/*.txt</exclude>
+                    <exclude>**/*.html</exclude>
+                </excludes>
+
+                </configuration>
+                    <executions>
+                        <execution>
+                            <id>first</id>
+                            <goals>
+                                <goal>update-file-header</goal>
+                            </goals>
+                            <phase>process-sources</phase>
+                        </execution>
+                    </executions>
+                </plugin>
          </plugins>
       </pluginManagement>
    </build>

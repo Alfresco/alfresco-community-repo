@@ -24,7 +24,7 @@
       <alfresco.mysql.version>5.1.31</alfresco.mysql.version>
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
-      <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
+      <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home> 
    </properties>
 
    <build>
@@ -224,7 +224,25 @@
                   </goals>
                </execution>
             </executions>
-         </plugin>
+            </plugin>
+         
+            <!-- License header generation -->
+            <plugin>
+               <groupId>org.codehaus.mojo</groupId>
+               <artifactId>license-maven-plugin</artifactId>          
+               <configuration>                        
+                  <licenseName>alfresco_community</licenseName>
+                  <roots>
+                     <root>source/java</root>
+                     <root>unit-test/java</root>
+                     <root>source/compatibility</root>
+                     <root>config</root>
+                     <root>test/java</root>
+                     <root>test/resources</root>
+                  </roots>
+               </configuration>
+            </plugin>     
+                
       </plugins>
       <pluginManagement>
          <plugins>
@@ -246,6 +264,21 @@
                            <action>
                               <ignore></ignore>
                            </action>
+                        </pluginExecution>
+                        <pluginExecution>
+                        	<pluginExecutionFilter>
+                        		<groupId>org.codehaus.mojo</groupId>
+                        		<artifactId>
+                        			license-maven-plugin
+                        		</artifactId>
+                        		<versionRange>[1.8,)</versionRange>
+                        		<goals>
+                        			<goal>update-file-header</goal>
+                        		</goals>
+                        	</pluginExecutionFilter>
+                        	<action>
+                        		<ignore></ignore>
+                        	</action>
                         </pluginExecution>
                      </pluginExecutions>
                   </lifecycleMappingMetadata>

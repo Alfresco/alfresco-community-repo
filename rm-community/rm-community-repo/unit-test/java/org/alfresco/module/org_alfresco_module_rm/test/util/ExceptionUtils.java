@@ -1,4 +1,3 @@
- 
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 /*
@@ -173,74 +172,6 @@ public class ExceptionUtils
         else
         {
             throw new UnexpectedThrowableException(expected, thrownByCode);
-        }
-    }
-
-    /**
-     * Helper method to work around the difficulties of working with lambdas and checked exceptions.
-     * Use as follows:
-     * <pre>
-     *     expectedException(WebScriptException.class, () ->
-     *         // "Wash away" any checked exceptions in the inner code block.
-     *         smuggleCheckedExceptions( () -> methodThrowsException())
-     *     );
-     * </pre>
-     * @param code a block of code which is declared to throw a checked exception.
-     * @param <R>  the return type of the block of code.
-     * @param <T>  the type of the checked exception.
-     * @return the value returned by the block of code.
-     * @throws SmuggledException if the code block threw an exception of type T.
-     */
-    public static <R, T extends Exception> R smuggleCheckedExceptions(final ThrowingSupplier<R, T> code)
-    {
-        try
-        {
-            return code.get();
-        }
-        catch (RuntimeException e)
-        {
-            throw e;
-        }
-        catch (Exception e)
-        {
-            throw new SmuggledException(e);
-        }
-    }
-
-    /**
-     * Equivalent to `java.util.function.Supplier` but its method declares that it
-     * throws checked exceptions.
-     *
-     * @param <R> The result type of this supplier.
-     * @param <T> The exception type declared to be thrown by this supplier.
-     */
-    @FunctionalInterface
-    public interface ThrowingSupplier<R, T extends Exception>
-    {
-        /** Gets the value */
-        R get() throws T;
-    }
-
-    /**
-     * A wrapper for checked exceptions so that they can be handled as unchecked exceptions, namely by not requiring
-     * try/catch blocks etc.
-     * <p/>
-     * This type is expected to be most useful when handling Java 8 lambdas containing code which throws checked
-     * exceptions.
-     */
-    public static class SmuggledException extends RuntimeException
-    {
-        private static final long serialVersionUID = -606404592461576013L;
-        private final Exception e;
-
-        public SmuggledException(Exception e)
-        {
-            this.e = e;
-        }
-
-        public Exception getCheckedException()
-        {
-            return this.e;
         }
     }
 }

@@ -41,6 +41,7 @@ In order to execute the integration tests run the following command (unit tests 
 mvn clean install -Dskip.integrationtests=false
 
 
+
 Running UI Automation tests:
 ----------------------------
 
@@ -50,3 +51,10 @@ To run the automated UI tests, change to the rm-automation directory and run:
    
 Depending on your local Firefox version, you may need to modify the rm-automation/pom.xml to use version 1.7 of selenium-grid
 
+
+Updating License Headers:
+-------------------------
+
+In order to refesh out of date license source headers run the following command:
+
+mvn clean install -Dlicense.update.dryrun=false

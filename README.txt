@@ -45,8 +45,17 @@ Running UI Automation tests:
 ----------------------------
 
 To run the automated UI tests, change to the rm-automation directory and run:
-   
+
    mvn clean install -Dskip.automationtests=false
-   
+
 Depending on your local Firefox version, you may need to modify the rm-automation/pom.xml to use version 1.7 of selenium-grid
 
+SNAPSHOT dependencies:
+----------------------
+
+If you're building Enterprise RM, the base project (Community) is pulled in via a snapshot dependency configured in maven.
+This dependency will either be loaded from your local .m2 cache or from Nexus if the version in your .m2 doesn't exist or is old
+(Old in maven terms is anything over 24hrs old). If maven fetches it from Nexus, your code it's unlikely to be the correct version.
+You want to always use the version in your local cache - this means either doing a daily build at the root project level
+that pushes a new copy of the correct version into your cache, or alternatively you could run mvn with the
+--no-snapshot-dependency (or -nsu) option, which won't try to download a newer version.

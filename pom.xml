@@ -13,10 +13,10 @@
 
     <properties>
         <!-- Alfresco Platform version -->
-        <alfresco.platform.version>5.1.1-SNAPSHOT</alfresco.platform.version>
+        <alfresco.platform.version>5.2.1-SNAPSHOT</alfresco.platform.version>
 
         <!-- Alfresco Share version -->
-        <alfresco.share.version>5.1.1-SNAPSHOT</alfresco.share.version>
+        <alfresco.share.version>5.2.1-SNAPSHOT</alfresco.share.version>
 
         <!-- Alfresco GoogleDocs integration version -->
         <alfresco.googledocs.version>3.0.3</alfresco.googledocs.version>

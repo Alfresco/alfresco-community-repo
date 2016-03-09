@@ -46,6 +46,12 @@
         <version>${project.version}</version>
         <type>war</type>
       </dependency>
+      <dependency>
+        <groupId>${alfresco.groupId}</groupId>
+        <artifactId>alfresco-platform</artifactId>
+        <version>${project.version}</version>
+        <type>war</type>
+      </dependency>
       <!-- Core -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
@@ -167,12 +173,6 @@
       <!-- == Extra platform JARs/WARs -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-web-service-client</artifactId>
-        <version>${project.version}</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-webeditor</artifactId>
         <version>${project.version}</version>
         <scope>provided</scope>
@@ -187,12 +187,12 @@
       <dependency>
         <groupId>org.alfresco.surf</groupId>
         <artifactId>spring-surf</artifactId>
-        <version>${project.version}</version>
+        <version>${dependency.surf.version}</version>
       </dependency>
       <dependency>
         <groupId>org.alfresco.surf</groupId>
         <artifactId>spring-surf-api</artifactId>
-        <version>${project.version}</version>
+        <version>${dependency.surf.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

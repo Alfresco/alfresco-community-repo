@@ -221,7 +221,7 @@ public class TransformationOptionLimits implements Serializable
         kbytes.append(sb, OPT_MAX_SOURCE_SIZE_K_BYTES, OPT_READ_LIMIT_K_BYTES);
         pages.append(sb, OPT_MAX_PAGES, OPT_PAGE_LIMIT);
         sb.append("}");
-        return sb.length() == 2 ? "no limits" : sb.toString();
+        return sb.length() == 2 ? "" : sb.toString();
     }
 
     /**

@@ -19,7 +19,6 @@
 package org.alfresco.repo.content.transform;
 
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -138,27 +137,5 @@ public class DoubleMap<K1, K2, V>
         }
         
         map.put(key2, t);
-    }
-    
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder();
-        for (Entry<K1, Map<K2, V>> outerEntry: mapMap.entrySet())
-        {
-            for (Entry<K2, V> innerEntry: outerEntry.getValue().entrySet())
-            {
-                if (sb.length() > 0)
-                {
-                    sb.append("\n");
-                }
-                sb.append(outerEntry.getKey()).
-                    append(", ").
-                    append(innerEntry.getKey()).
-                    append(" = ").
-                    append(innerEntry.getValue());
-            }
-        }
-        return sb.toString();
     }
 }

@@ -27,7 +27,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -49,7 +48,7 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
     // Entries are added lower down the hierarchy when a search takes place.
     private Map<String, Map<String, DoubleMap<String, String, TransformationOptionLimits>>> limitsMap;
 
-    // The 'use' value that had properties defined, including ANY for the default.
+    // The 'use' value that had properties defined, including null for the default.
     private Set<String> uses;
 
     public TransformerConfigLimits(TransformerProperties transformerProperties, MimetypeService mimetypeService)
@@ -58,7 +57,7 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
     }
 
     /**
-     * Sets the transformer limits created from properties.  
+     * Sets the transformer limits created from system properties.  
      */
     private void setLimits(TransformerProperties transformerProperties, MimetypeService mimetypeService)
     {
@@ -80,39 +79,24 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
         // Populate the limitsMap for each 'use'.
         for (String use: uses)
         {
+            // Add the system wide default just in case it is not included, as we always need this one
+            TransformationOptionLimits limits = getOrCreateTransformerOptionLimits(DEFAULT_TRANSFORMER, ANY, ANY, use);
+
             Collection<TransformerSourceTargetSuffixValue> properties = getPropertiesForUse(use, allUseMap);
-            setLimits(use, properties);
-        }
-        logger.debug(this);
-    }
-
-    /**
-     * Sets the transformer limits for a single use from properties. Method extracted so that
-     * it is possible to write a simpler unit test, that changes to the order of the
-     * properties. The order changed between Java 6, 7 and 8, resulting in MNT-14295. The original
-     * outer method cannot be used as it creates the list from a map (allUseMap) that it also
-     * creates and the order of values from that map cannot be controlled from a test.
-     */
-    void setLimits(String use, Collection<TransformerSourceTargetSuffixValue> properties)
-    {
-        // Add the system wide default just in case it is not included, as we always need this one
-        getOrCreateTransformerOptionLimits(DEFAULT_TRANSFORMER, ANY, ANY, use);
-
-        TransformationOptionLimits limits;
-        for (int pass=0; pass<=3; pass++)
-        {
-            for (TransformerSourceTargetSuffixValue property: properties)
+            for (int pass=0; pass<=3; pass++)
             {
-                int origLevel = getLevel(property.transformerName, property.sourceMimetype);
-                if (pass == origLevel)
+                for (TransformerSourceTargetSuffixValue property: properties)
                 {
-                    logger.debug(property);
-                    String transformerName = (property.transformerName == null)
-                            ? DEFAULT_TRANSFORMER : property.transformerName;
-                    limits = getOrCreateTransformerOptionLimits(transformerName,
-                            property.sourceMimetype, property.targetMimetype, use);
-                    setTransformationLimitsFromProperties(limits, property.value, property.suffix);
-                    debug("V", transformerName, property.sourceMimetype, property.targetMimetype, use, limits);
+                    int origLevel = getLevel(property.transformerName, property.sourceMimetype);
+                    if (pass == origLevel)
+                    {
+                        String transformerName = (property.transformerName == null)
+                                ? DEFAULT_TRANSFORMER : property.transformerName;
+                        limits = getOrCreateTransformerOptionLimits(transformerName,
+                                property.sourceMimetype, property.targetMimetype, use);
+                        setTransformationLimitsFromProperties(limits, property.value, property.suffix);
+                        debug("V", transformerName, property.sourceMimetype, property.targetMimetype, use, limits);
+                    }
                 }
             }
         }
@@ -221,29 +205,6 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
         return limits;
     }
     
-    
-    @Override
-    public String toString()
-    {
-        StringBuilder sb = new StringBuilder();
-        for (Entry<String, Map<String, DoubleMap<String, String, TransformationOptionLimits>>> useEntry: limitsMap.entrySet())
-        {
-            for (Entry<String, DoubleMap<String, String, TransformationOptionLimits>> transformerEntry: useEntry.getValue().entrySet())
-            {
-                if (sb.length() > 0)
-                {
-                    sb.append("\n");
-                }
-                sb.append(useEntry.getKey()).
-                    append(", ").
-                    append(transformerEntry.getKey()).
-                    append(" =>\n").
-                    append(transformerEntry.getValue());
-            }
-        }
-        return sb.toString();
-    }
-
     /**
      * Creates a new TransformationOptionLimits for the use, transformer and mimetype combination,
      * defaulting values from lower levels.
@@ -298,32 +259,37 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
         long l = Long.parseLong(value);
         if (suffix == TransformerConfig.MAX_SOURCE_SIZE_K_BYTES)
         {
+            limits.setReadLimitKBytes(-1);
             limits.setMaxSourceSizeKBytes(l);
         }
         else if (suffix == TransformerConfig.TIMEOUT_MS)
         {
+            limits.setReadLimitTimeMs(-1);
             limits.setTimeoutMs(l);
         }
         else if (suffix == TransformerConfig.MAX_PAGES)
         {
+            limits.setPageLimit(-1);
             limits.setMaxPages((int)l);
         }
         else if (suffix == TransformerConfig.READ_LIMIT_K_BYTES)
         {
+            limits.setMaxSourceSizeKBytes(-1);
             limits.setReadLimitKBytes(l);
         }
         else if (suffix == TransformerConfig.READ_LIMIT_TIME_MS)
         {
+            limits.setTimeoutMs(-1);
             limits.setReadLimitTimeMs(l);
         }
         else // if (suffix == TransformerConfig.PAGE_LIMIT)
         {
+            limits.setMaxPages(-1);
             limits.setPageLimit((int)l);
         }
     }
     
-    private void debug(String msg, String transformerName, String sourceMimetype,
-        String targetMimetype, String use, TransformationOptionLimits limits)
+    private void debug(String msg, String transformerName, String sourceMimetype, String targetMimetype, String use, TransformationOptionLimits limits)
     {
         if (logger.isDebugEnabled())
         {
@@ -346,9 +312,10 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
                 sb.append('.');
                 sb.append(use);
                 sb.append('=');
-                sb.append(limits);
+                sb.append(limits.getMaxSourceSizeKBytes());
             }
             String line = sb.toString();
+//          System.err.println(line);
             logger.debug(line);
         }
     }

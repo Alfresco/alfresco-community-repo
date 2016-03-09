@@ -348,7 +348,7 @@ class TransformerSourceTargetSuffixKey
                 ? ""
                 : TransformerConfig.EXTENSIONS+sourceExt+'.'+targetExt)+
                 suffix+
-                (use == null || ANY.equals(use) ? "" : TransformerConfig.USE + use);
+                (use == null ? "" : TransformerConfig.USE + use);
     }
 
     @Override

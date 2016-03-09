@@ -18,9 +18,14 @@
  */
 package org.alfresco.repo.content.transform;
 
+import static org.alfresco.repo.content.transform.TransformerConfig.ANY;
 import static org.alfresco.repo.content.transform.TransformerPropertyNameExtractorTest.mockMimetypes;
 import static org.alfresco.repo.content.transform.TransformerPropertyNameExtractorTest.mockProperties;
 import static org.junit.Assert.assertEquals;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
@@ -61,6 +66,44 @@ public class TransformerConfigLimitsTest
                 "text/plain",       "txt");
     }
 
+    private TransformerConfigLimits newTransformerConfigLimits(String[][] data)
+    {
+        // Mock up an extractor with no properties
+        mockProperties(transformerProperties);
+        TransformerConfigLimits extractor = new TransformerConfigLimits(transformerProperties, mimetypeService);
+
+        // Work out the uses, but keep the order
+        List<String> uses = new ArrayList<>();
+        for (int i=0; i < data.length; i++)
+        {
+            if (!uses.contains(data[i][4]))
+            {
+                uses.add(data[i][4]);
+            }
+        }
+        
+        // Load data for each use - keep the order
+        for (String use: uses)
+        {
+            Collection<TransformerSourceTargetSuffixValue> properties = new ArrayList<>();
+            for (int i=0; i < data.length; i++)
+            {
+                if (use.equals(data[i][4]))
+                {
+                    properties.add(new TransformerSourceTargetSuffixValue(
+                        data[i][0], data[i][1], data[i][2], data[i][3], data[i][4], data[i][5],
+                        mimetypeService));
+                }
+            }
+            if (properties.size() > 0)
+            {
+                extractor.setLimits(use, properties);
+            }
+        }
+        
+        return extractor;
+    }
+    
     @Test
     // A value is specified for a transformer and mimetypes
     public void transformerMimetypesTest()
@@ -185,6 +228,58 @@ public class TransformerConfigLimitsTest
         assertEquals(15, txtToPngLimits.getMaxSourceSizeKBytes());
         assertEquals(120000L, txtToPngLimits.getTimeoutMs());
         assertEquals(1, txtToPngLimits.getPageLimit());
+    }
+    
+    // MNT-14295 With Java 7 the order in which properties were supplied changed from
+    // what happen with Java 6 and happens with 8. When combined with a bug to do with
+    // always clearing the max value when setting a limit or the limit when setting
+    // the max value, the initial map of TransformerConfigLimits would be different.
+    // Java 7 was used as the runtime for 4.2 and the 5.0 but Java 8 became the default
+    // from 5.0.1.
+    // None of the other unit tests in this class failed as a none of them provided
+    // both max and limit values.
+    @Test
+    public void propertyOrderJava7Test()
+    {
+        // Load extractor with properties in the order seen when running Java 7
+        //     "content.transformer.default.timeoutMs", "120000",
+        //     "content.transformer.default.readLimitTimeMs", "-1");
+        extractor = newTransformerConfigLimits(new String[][]
+        {
+            {"transformer.default", ANY, ANY, ".timeoutMs",       ANY, "120000"},
+            {"transformer.default", ANY, ANY, ".readLimitTimeMs", ANY, "-1"}
+        });
+
+        TransformationOptionLimits limits = extractor.getLimits(transformer1, "text/plain", "image/png", null);
+        assertEquals(120000L, limits.getTimeoutMs());
+        assertEquals(-1L, limits.getReadLimitTimeMs());
+    }
+
+    @Test
+    public void propertyOrderJava8or6Test()
+    {
+        // Load extractor with properties in the order seen when running Java 8
+        //     "content.transformer.default.timeoutMs", "120000",
+        //     "content.transformer.default.readLimitTimeMs", "-1");
+        extractor = newTransformerConfigLimits(new String[][]
+        {
+            {"transformer.default", ANY, ANY, ".readLimitTimeMs", ANY, "-1"},
+            {"transformer.default", ANY, ANY, ".timeoutMs",       ANY, "120000"}
+        });
+
+        TransformationOptionLimits limits = extractor.getLimits(transformer1, "text/plain", "image/png", null);
+        assertEquals(120000L, limits.getTimeoutMs());
+        assertEquals(-1L, limits.getReadLimitTimeMs());
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void bothMaxAndLimitSetTest()
+    {
+        mockProperties(transformerProperties,
+            "content.transformer.default.readLimitTimeMs", "990000",
+            "content.transformer.default.timeoutMs", "120000");
+        
+        extractor = new TransformerConfigLimits(transformerProperties, mimetypeService);
     }
     
     // ---------------------------------------

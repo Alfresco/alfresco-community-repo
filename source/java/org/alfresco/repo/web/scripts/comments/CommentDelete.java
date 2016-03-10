@@ -54,9 +54,17 @@ public class CommentDelete extends AbstractCommentsWebScript
 
         JSONObject jsonPageParams = parseJSONFromString(pageParams);
 
-        NodeRef parentNodeRef = new NodeRef((String) getOrNull(jsonPageParams, JSON_KEY_NODEREF));
+        String parentNodeRefStr = getOrNull(jsonPageParams, JSON_KEY_NODEREF);
+        NodeRef parentNodeRef = null;
+        if (parentNodeRefStr != null)
+        {
+            parentNodeRef = new NodeRef((String) getOrNull(jsonPageParams, JSON_KEY_NODEREF));
+        }
 
-        this.behaviourFilter.disableBehaviour(parentNodeRef, ContentModel.ASPECT_AUDITABLE);
+        if (parentNodeRef != null)
+        {
+            this.behaviourFilter.disableBehaviour(parentNodeRef, ContentModel.ASPECT_AUDITABLE);
+        }
 
         try
         {
@@ -83,7 +91,10 @@ public class CommentDelete extends AbstractCommentsWebScript
         }
         finally
         {
-            this.behaviourFilter.enableBehaviour(parentNodeRef, ContentModel.ASPECT_AUDITABLE);
+            if (parentNodeRef != null)
+            {
+                this.behaviourFilter.enableBehaviour(parentNodeRef, ContentModel.ASPECT_AUDITABLE);
+            }
         }
     }
 

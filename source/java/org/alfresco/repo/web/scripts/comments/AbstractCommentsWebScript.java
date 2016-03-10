@@ -183,14 +183,21 @@ public abstract class AbstractCommentsWebScript extends DeclarativeWebScript
         JSONParser parser = new JSONParser();
         try
         {
-            json = (JSONObject) parser.parse(input);
+            if (input != null)
+            {
+                json = (JSONObject) parser.parse(input);
+                return json;
+            }
         }
         catch (ParseException pe)
         {
-            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + pe.getMessage());
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Invalid JSON: " + pe.getMessage());
+            }
         }
 
-        return json;
+        return null;
     }
 
     /**
@@ -207,10 +214,18 @@ public abstract class AbstractCommentsWebScript extends DeclarativeWebScript
         String jsonActivityData = "";
         String siteId = "";
         String page = "";
-        String title = "";
+        String title = ""
+
+        if (nodeRef == null)
+        {
+            // in case we don't have an parent nodeRef provided we do not need
+            // to post activity for parent node
+            return;
+        }
+
         String strNodeRef = nodeRef.toString();
+
         SiteInfo siteInfo = getSiteInfo(req, COMMENT_CREATED_ACTIVITY.equals(activityType));
-       
 
         // post an activity item, but only if we've got a site
         if (siteInfo != null)

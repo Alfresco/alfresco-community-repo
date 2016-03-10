@@ -21,9 +21,7 @@ package org.alfresco.repo.web.scripts.comment;
 import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
@@ -37,10 +35,8 @@ import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.PermissionServiceSPI;
 import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionEntry;
-import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.alfresco.repo.web.scripts.comments.AbstractCommentsWebScript;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;

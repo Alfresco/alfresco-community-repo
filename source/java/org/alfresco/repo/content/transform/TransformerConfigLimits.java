@@ -27,10 +27,12 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.TransformationOptionLimits;
+import org.alfresco.service.cmr.repository.TransformationOptionPair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -43,12 +45,14 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
 {
     private static Log logger = LogFactory.getLog(TransformerConfigLimits.class);
     
+    private static final String NOT_THROWN_MESSAGE = "Both max and limit should not be set.";
+
     // Map using use, transformer, source mimetype and target mimetype to a set of limits.
     // Entries higher up the hierarchy are added so that values may be defaulted down.
     // Entries are added lower down the hierarchy when a search takes place.
     private Map<String, Map<String, DoubleMap<String, String, TransformationOptionLimits>>> limitsMap;
 
-    // The 'use' value that had properties defined, including null for the default.
+    // The 'use' value that had properties defined, including ANY for the default.
     private Set<String> uses;
 
     public TransformerConfigLimits(TransformerProperties transformerProperties, MimetypeService mimetypeService)
@@ -57,7 +61,7 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
     }
 
     /**
-     * Sets the transformer limits created from system properties.  
+     * Sets the transformer limits created from properties.  
      */
     private void setLimits(TransformerProperties transformerProperties, MimetypeService mimetypeService)
     {
@@ -79,24 +83,60 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
         // Populate the limitsMap for each 'use'.
         for (String use: uses)
         {
-            // Add the system wide default just in case it is not included, as we always need this one
-            TransformationOptionLimits limits = getOrCreateTransformerOptionLimits(DEFAULT_TRANSFORMER, ANY, ANY, use);
-
             Collection<TransformerSourceTargetSuffixValue> properties = getPropertiesForUse(use, allUseMap);
+            
+            // Add the system wide default just in case it is not included, as we always need this one
+            getOrCreateTransformerOptionLimits(DEFAULT_TRANSFORMER, ANY, ANY, use);
+            
+            TransformationOptionLimits limits;
             for (int pass=0; pass<=3; pass++)
             {
-                for (TransformerSourceTargetSuffixValue property: properties)
+                for (TransformerSourceTargetSuffixValue property1: properties)
                 {
-                    int origLevel = getLevel(property.transformerName, property.sourceMimetype);
+                    int origLevel = getLevel(property1.transformerName, property1.sourceMimetype);
                     if (pass == origLevel)
                     {
-                        String transformerName = (property.transformerName == null)
-                                ? DEFAULT_TRANSFORMER : property.transformerName;
+                        logger.debug(property1);
+                        String transformerName = (property1.transformerName == null)
+                                ? DEFAULT_TRANSFORMER : property1.transformerName;
                         limits = getOrCreateTransformerOptionLimits(transformerName,
-                                property.sourceMimetype, property.targetMimetype, use);
-                        setTransformationLimitsFromProperties(limits, property.value, property.suffix);
-                        debug("V", transformerName, property.sourceMimetype, property.targetMimetype, use, limits);
+                                property1.sourceMimetype, property1.targetMimetype, use);
+                        setTransformationLimitsFromProperties(limits, property1.value, property1.suffix);
+                        debug("V", transformerName, property1.sourceMimetype, property1.targetMimetype, use, limits);
                     }
+                }
+            }
+        }
+        logger.debug(this);
+    }
+
+    /**
+     * Sets the transformer limits for a single use from properties. Method extracted so that
+     * it is possible to write a simpler unit test, that changes to the order of the
+     * properties. The order changed between Java 6, 7 and 8, resulting in MNT-14295. The original
+     * outer method cannot be used as it creates the list from a map (allUseMap) that it also
+     * creates and the order of values from that map cannot be controlled from a test.
+     */
+    void setLimits(String use, Collection<TransformerSourceTargetSuffixValue> properties)
+    {
+        // Add the system wide default just in case it is not included, as we always need this one
+        getOrCreateTransformerOptionLimits(DEFAULT_TRANSFORMER, ANY, ANY, use);
+
+        TransformationOptionLimits limits;
+        for (int pass=0; pass<=3; pass++)
+        {
+            for (TransformerSourceTargetSuffixValue property: properties)
+            {
+                int origLevel = getLevel(property.transformerName, property.sourceMimetype);
+                if (pass == origLevel)
+                {
+                    logger.debug(property);
+                    String transformerName = (property.transformerName == null)
+                            ? DEFAULT_TRANSFORMER : property.transformerName;
+                    limits = getOrCreateTransformerOptionLimits(transformerName,
+                            property.sourceMimetype, property.targetMimetype, use);
+                    setTransformationLimitsFromProperties(limits, property.value, property.suffix);
+                    debug("V", transformerName, property.sourceMimetype, property.targetMimetype, use, limits);
                 }
             }
         }
@@ -205,6 +245,29 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
         return limits;
     }
     
+    
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        for (Entry<String, Map<String, DoubleMap<String, String, TransformationOptionLimits>>> useEntry: limitsMap.entrySet())
+        {
+            for (Entry<String, DoubleMap<String, String, TransformationOptionLimits>> transformerEntry: useEntry.getValue().entrySet())
+            {
+                if (sb.length() > 0)
+                {
+                    sb.append("\n");
+                }
+                sb.append(useEntry.getKey()).
+                    append(", ").
+                    append(transformerEntry.getKey()).
+                    append(" =>\n").
+                    append(transformerEntry.getValue());
+            }
+        }
+        return sb.toString();
+    }
+
     /**
      * Creates a new TransformationOptionLimits for the use, transformer and mimetype combination,
      * defaulting values from lower levels.
@@ -253,43 +316,50 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
         return level;
     }
     
+    /**
+     * Sets a TransformationOptionLimits value. This may be a size in K bytes,
+     * a time in ms or number of pages. It may also be a maximum or limit value.
+     * When the maximum and limit are both set and the same, the maximum value
+     * wins.
+     */
     private void setTransformationLimitsFromProperties(TransformationOptionLimits limits,
             String value, String suffix)
     {
-        long l = Long.parseLong(value);
-        if (suffix == TransformerConfig.MAX_SOURCE_SIZE_K_BYTES)
+        long newValue = Long.parseLong(value);
+        TransformationOptionPair optionPair =
+            suffix == TransformerConfig.MAX_SOURCE_SIZE_K_BYTES ||
+            suffix == TransformerConfig.READ_LIMIT_K_BYTES
+          ? limits.getKBytesPair()
+          : suffix == TransformerConfig.TIMEOUT_MS ||
+            suffix == TransformerConfig.READ_LIMIT_TIME_MS
+          ? limits.getTimePair()
+          : limits.getPagesPair();
+       
+        // If max rather than limit value
+        if (suffix == TransformerConfig.MAX_SOURCE_SIZE_K_BYTES ||
+            suffix == TransformerConfig.TIMEOUT_MS ||
+            suffix == TransformerConfig.MAX_PAGES)
         {
-            limits.setReadLimitKBytes(-1);
-            limits.setMaxSourceSizeKBytes(l);
+            long limit = optionPair.getLimit();
+            if (limit < 0 || limit >= newValue)
+            {
+                optionPair.setLimit(-1, NOT_THROWN_MESSAGE);
+                optionPair.setMax(newValue, NOT_THROWN_MESSAGE);
+            }
         }
-        else if (suffix == TransformerConfig.TIMEOUT_MS)
+        else
         {
-            limits.setReadLimitTimeMs(-1);
-            limits.setTimeoutMs(l);
-        }
-        else if (suffix == TransformerConfig.MAX_PAGES)
-        {
-            limits.setPageLimit(-1);
-            limits.setMaxPages((int)l);
-        }
-        else if (suffix == TransformerConfig.READ_LIMIT_K_BYTES)
-        {
-            limits.setMaxSourceSizeKBytes(-1);
-            limits.setReadLimitKBytes(l);
-        }
-        else if (suffix == TransformerConfig.READ_LIMIT_TIME_MS)
-        {
-            limits.setTimeoutMs(-1);
-            limits.setReadLimitTimeMs(l);
-        }
-        else // if (suffix == TransformerConfig.PAGE_LIMIT)
-        {
-            limits.setMaxPages(-1);
-            limits.setPageLimit((int)l);
+            long max = optionPair.getMax();
+            if (max < 0 || max > newValue)
+            {
+                optionPair.setMax(-1, NOT_THROWN_MESSAGE);
+                optionPair.setLimit(newValue, NOT_THROWN_MESSAGE);
+            }
         }
     }
     
-    private void debug(String msg, String transformerName, String sourceMimetype, String targetMimetype, String use, TransformationOptionLimits limits)
+    private void debug(String msg, String transformerName, String sourceMimetype,
+        String targetMimetype, String use, TransformationOptionLimits limits)
     {
         if (logger.isDebugEnabled())
         {
@@ -312,10 +382,9 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
                 sb.append('.');
                 sb.append(use);
                 sb.append('=');
-                sb.append(limits.getMaxSourceSizeKBytes());
+                sb.append(limits);
             }
             String line = sb.toString();
-//          System.err.println(line);
             logger.debug(line);
         }
     }

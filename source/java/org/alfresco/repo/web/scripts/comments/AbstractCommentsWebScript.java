@@ -214,7 +214,7 @@ public abstract class AbstractCommentsWebScript extends DeclarativeWebScript
         String jsonActivityData = "";
         String siteId = "";
         String page = "";
-        String title = ""
+        String title = "";
 
         if (nodeRef == null)
         {

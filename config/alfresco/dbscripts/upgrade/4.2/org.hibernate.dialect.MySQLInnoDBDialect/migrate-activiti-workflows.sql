@@ -8,16 +8,16 @@
 -- Migrate old workflow details into act_hi_varinst
 
 --ASSIGN:START_INDEX=VALUE_
-SELECT VALUE_ FROM act_ge_property WHERE NAME_ = 'next.dbid';
+SELECT VALUE_ FROM ACT_GE_PROPERTY WHERE NAME_ = 'next.dbid';
 
 --count the current items in act_hi_varinst, before migration
 --ASSIGN:INITIAL_ROW_COUNT=ROW_COUNT
-select count(*) as ROW_COUNT from act_hi_varinst;
+select count(*) as ROW_COUNT from ACT_HI_VARINST;
 
 -- insert from act_hi_detail into act_hi_varinst, the id will be generated starting from the next.dbid
 -- only the most recent version of a variable must by migrated
 -- the most recent version of a variable is considered the be the one with the highest revision and timestamp
-INSERT INTO act_hi_varinst(
+INSERT INTO ACT_HI_VARINST(
     ID_,
     PROC_INST_ID_,
     EXECUTION_ID_,
@@ -55,13 +55,13 @@ AND
 
 --update act_ge_property
 --ASSIGN:TOTAL_ROW_COUNT=ROW_COUNT
-select count(*) as ROW_COUNT from act_hi_varinst;
+select count(*) as ROW_COUNT from ACT_HI_VARINST;
 
 --increase the next.dbid value so that following ids will be created starting with the new value
-update act_ge_property set value_ = value_ + ${TOTAL_ROW_COUNT} - ${INITIAL_ROW_COUNT} where NAME_ = 'next.dbid';
+update ACT_GE_PROPERTY set VALUE_ = VALUE_ + ${TOTAL_ROW_COUNT} - ${INITIAL_ROW_COUNT} where NAME_ = 'next.dbid';
 
 --revision is currently increased each time a block id is reserved, so we're simulating this behaviour
-update act_ge_property set rev_ = value_ DIV 100 + 1 where NAME_ = 'next.dbid';	
+update ACT_GE_PROPERTY set REV_ = VALUE_ DIV 100 + 1 where NAME_ = 'next.dbid';	
 
 --
 -- Record script finish

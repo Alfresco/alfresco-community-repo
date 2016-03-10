@@ -65,6 +65,8 @@ import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnail;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.workflow.jscript.JscriptWorkflowInstance;
 import org.alfresco.scripts.ScriptException;
@@ -195,6 +197,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     protected ServiceRegistry services = null;
     private NodeService nodeService = null;
     private FileFolderService fileFolderService = null;
+    private RetryingTransactionHelper retryingTransactionHelper = null;
     private Boolean isDocument = null;
     private Boolean isContainer = null;
     private Boolean isLinkToDocument = null;
@@ -261,6 +264,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         this.services = services;
         this.nodeService = services.getNodeService();
         this.fileFolderService = services.getFileFolderService();
+        this.retryingTransactionHelper = services.getTransactionService().getRetryingTransactionHelper();
         this.scope = scope;
     }
     
@@ -2029,18 +2033,41 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     }
     
     /**
-     * Remove this node. Any references to this Node or its NodeRef should be discarded!
+     * Remove this node. Any references to this Node or its NodeRef should be
+     * discarded!
      * 
-     * Beware: Any unsaved property changes will be lost when this is called.  To preserve property changes call {@link #save()} first.
-     *    
+     * Beware: Any unsaved property changes will be lost when this is called. To
+     * preserve property changes call {@link save()} first.
+     * 
      */
     public boolean remove()
+    {
+        return remove(false);
+    }
+
+    /**
+     * Remove this node in a new transaction or not as specified.
+     * Any references to this Node or its NodeRef should be discarded!
+     * 
+     * Beware: Any unsaved property changes will be lost when this is called. To
+     * preserve property changes call {@link save()} first.
+     * 
+     */
+    public boolean remove(boolean newTransaction)
     {
         boolean success = false;
         
         if (nodeService.exists(this.nodeRef))
         {
-            this.nodeService.deleteNode(this.nodeRef);
+            retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    nodeService.deleteNode(nodeRef);
+                    return null;
+                }
+            }, false, newTransaction);
             success = true;
         }
         

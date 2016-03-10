@@ -16,7 +16,7 @@
   <parent>
     <artifactId>alfresco-parent</artifactId>
     <groupId>org.alfresco</groupId>
-    <version>5.1-SNAPSHOT</version>
+    <version>5.2-SNAPSHOT</version>
     <relativePath>../../../pom.xml</relativePath>
   </parent>
   
@@ -43,6 +43,12 @@
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco</artifactId>
+        <version>${project.version}</version>
+        <type>war</type>
+      </dependency>
+      <dependency>
+        <groupId>${alfresco.groupId}</groupId>
+        <artifactId>alfresco-platform</artifactId>
         <version>${project.version}</version>
         <type>war</type>
       </dependency>
@@ -167,12 +173,6 @@
       <!-- == Extra platform JARs/WARs -->
       <dependency>
         <groupId>${alfresco.groupId}</groupId>
-        <artifactId>alfresco-web-service-client</artifactId>
-        <version>${project.version}</version>
-        <scope>provided</scope>
-      </dependency>
-      <dependency>
-        <groupId>${alfresco.groupId}</groupId>
         <artifactId>alfresco-webeditor</artifactId>
         <version>${project.version}</version>
         <scope>provided</scope>
@@ -185,14 +185,14 @@
       </dependency>
       <!-- == Extra platform JARs/WARs -->
       <dependency>
-        <groupId>org.springframework.extensions.surf</groupId>
+        <groupId>org.alfresco.surf</groupId>
         <artifactId>spring-surf</artifactId>
-        <version>${project.version}</version>
+        <version>${dependency.surf.version}</version>
       </dependency>
       <dependency>
-        <groupId>org.springframework.extensions.surf</groupId>
+        <groupId>org.alfresco.surf</groupId>
         <artifactId>spring-surf-api</artifactId>
-        <version>${project.version}</version>
+        <version>${dependency.surf.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

@@ -104,16 +104,16 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         final long maxCommitTime = System.currentTimeMillis() - minAge;
         long fromCommitTime = nodeDAO.getMinUnusedTxnCommitTime().longValue();
         
-        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        txnHelper.setMaxRetries(5);                             // Limit number of retries
-        txnHelper.setRetryWaitIncrementMs(1000);                // 1 second to allow other cleanups time to get through
-
         long loopPurgeSize = purgeSize;
         Long purgeCount = new Long(0);
         while (true)
         {
             // Ensure we keep the lock
             refreshLock();
+            
+            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+            txnHelper.setMaxRetries(5);                             // Limit number of retries
+            txnHelper.setRetryWaitIncrementMs(1000);                // 1 second to allow other cleanups time to get through
 
             long toCommitTime = fromCommitTime + loopPurgeSize;
             if(toCommitTime > maxCommitTime)
@@ -212,16 +212,16 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
 
         final long maxCommitTime = System.currentTimeMillis() - minAge;
     	long fromCommitTime = nodeDAO.getMinUnusedTxnCommitTime().longValue();
-    	
-        RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
-        txnHelper.setMaxRetries(5);                             // Limit number of retries
-        txnHelper.setRetryWaitIncrementMs(1000);                // 1 second to allow other cleanups time to get through
 
     	// delete unused transactions in batches of size 'purgeTxnBlockSize'
         while (true)
         {
             // Ensure we keep the lock
             refreshLock();
+            
+            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+            txnHelper.setMaxRetries(5);                             // Limit number of retries
+            txnHelper.setRetryWaitIncrementMs(1000);                // 1 second to allow other cleanups time to get through
 
             long toCommitTime = fromCommitTime + purgeSize;
             if(toCommitTime >= maxCommitTime)
@@ -231,7 +231,7 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
 
             // Purge transactions
             try
-            {
+            {               
                 DeleteTransactionsCallback purgeTxnsCallback = new DeleteTransactionsCallback(nodeDAO, fromCommitTime, toCommitTime);
                 long purgeCount = txnHelper.doInTransaction(purgeTxnsCallback, false, true);
                 if (purgeCount > 0)

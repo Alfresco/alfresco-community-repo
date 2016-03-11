@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -83,10 +82,10 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.traitextender.AJProxyTrait;
 import org.alfresco.traitextender.Extend;
 import org.alfresco.traitextender.ExtendedTrait;
 import org.alfresco.traitextender.Extensible;
-import org.alfresco.traitextender.AJProxyTrait;
 import org.alfresco.traitextender.Trait;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.GUID;
@@ -3277,6 +3276,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     }
     
 
+    @SuppressWarnings("unchecked")
     @Override
     public <M extends Trait> ExtendedTrait<M> getTrait(Class<? extends M> traitAPI)
     {

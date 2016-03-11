@@ -1,6 +1,7 @@
 package org.alfresco.filesys.repo;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -16,14 +17,12 @@ import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.hslf.HSLFSlideShow;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.poifs.filesystem.DirectoryEntry;
 import org.apache.poi.poifs.filesystem.EntryUtils;
 import org.apache.poi.poifs.filesystem.FilteringDirectoryNode;
 import org.apache.poi.poifs.filesystem.NPOIFSFileSystem;
-
-import java.io.File;
 
 /**
  * Compares content for to see if content is equal.
@@ -144,7 +143,8 @@ public class CIFSContentComparator implements ContentComparator
         }
         return retVal;
     }
-
+    
+ 
     // Comparator for MS Project
     private class MPPContentComparator implements ContentComparator
     {
@@ -384,6 +384,7 @@ public class CIFSContentComparator implements ContentComparator
                     }
 
                     Collection<String> excludes = new HashSet<String>();
+                    excludes.add("Current User");
 
                     leftIs = existingContent.getContentInputStream();
                     HSLFSlideShow slideShow1 = new HSLFSlideShow(leftIs);
@@ -394,7 +395,7 @@ public class CIFSContentComparator implements ContentComparator
 
                     if (lastEditUsername1.equals(lastEditUsername2))
                     {
-                        logger.debug("powerpoint files are different size");
+                        logger.debug("powerpoint files are edited by different users");
                         // Different size
                         return false;
                     }

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
@@ -55,11 +56,15 @@ public class UnserializerValidatorBootstrap extends AbstractLifecycleBean
 
     private static Log logger = LogFactory.getLog(UnserializerValidatorBootstrap.class);
     
+    /** The name of the global enablement property. */
+    public static final String PROPERTY_UNSERIALIZER_VALIDATOR_ENABLED = "unserializer.validator.enabled";
+    
     private static final String ERR_UNEXPECTED_ERROR = "unserializer.validator.err.unexpectederror";
     
     // Bootstrap performed?
     private boolean bootstrapPerformed = false;
 
+    private Properties properties = null;
     /**
      * @deprecated Was never used
      */
@@ -76,6 +81,11 @@ public class UnserializerValidatorBootstrap extends AbstractLifecycleBean
     public boolean hasPerformedBootstrap()
     {
         return bootstrapPerformed;
+    }
+
+    public void setProperties(Properties properties)
+    {
+        this.properties = properties;
     }
 
     private boolean classInPath(String className)
@@ -195,10 +205,7 @@ public class UnserializerValidatorBootstrap extends AbstractLifecycleBean
         return false;
     }
 
-    /**
-     * Bootstrap unserializer validator.
-     */
-    public void bootstrap()
+    private void validate()
     {
         if (classInPath("org.apache.xalan.xsltc.trax.TemplatesImpl") && classInPath("org.springframework.core.SerializableTypeWrapper"))
         {
@@ -219,6 +226,40 @@ public class UnserializerValidatorBootstrap extends AbstractLifecycleBean
         {
             throw new AlfrescoRuntimeException(
                     "Bootstrap failed: org.apache.commons.collections.functors.* unsafe serialization classes found in classpath.");
+        }
+    }
+
+    private boolean isUnserializerValidatorEnabled()
+    {
+        return getBooleanProperty(PROPERTY_UNSERIALIZER_VALIDATOR_ENABLED, true);
+    }
+
+    private boolean getBooleanProperty(String name, boolean defaultValue)
+    {
+        boolean value = defaultValue;
+        if (properties != null)
+        {
+            String property = properties.getProperty(name);
+            if (property != null)
+            {
+                value = !property.trim().equalsIgnoreCase("false");
+            }
+        }
+        return value;
+    }
+
+    /**
+     * Bootstrap unserializer validator.
+     */
+    public void bootstrap()
+    {
+        if (isUnserializerValidatorEnabled())
+        {
+            validate();
+        }
+        else
+        {
+            logger.warn("Unserializer validator is disabled");
         }
 
         // a bootstrap was performed

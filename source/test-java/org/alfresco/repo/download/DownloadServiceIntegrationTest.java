@@ -41,6 +41,7 @@ import org.alfresco.service.cmr.download.DownloadService;
 import org.alfresco.service.cmr.download.DownloadStatus;
 import org.alfresco.service.cmr.download.DownloadStatus.Status;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -107,6 +108,7 @@ public class DownloadServiceIntegrationTest
     // Test Content 
 	private NodeRef rootFolder;
 	private NodeRef rootFile;
+	private NodeRef secondaryNode;
 
     private NodeRef level1Folder1;
 
@@ -167,7 +169,12 @@ public class DownloadServiceIntegrationTest
 
        testNodes.createNodeWithTextContent(level1Folder2, "level2File.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 2 file content");
        allEntries.add("rootFolder/level1Folder2/level2File.txt");
-
+       
+       secondaryNode = testNodes.createNodeWithTextContent(COMPANY_HOME, "secondaryNodeFile.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Secondary node");
+       ChildAssociationRef assoc = NODE_SERVICE.addChild(rootFolder, secondaryNode, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
+       Assert.assertFalse(assoc.isPrimary());
+       allEntries.add("rootFolder/secondaryNodeFile.txt");
+       
        fileToCheckout = testNodes.createNodeWithTextContent(level1Folder2, "fileToCheckout.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getAdminUserName(), "Level 2 file content");
        // Add the lock and version aspects to the created node
        NODE_SERVICE.addAspect(fileToCheckout, ContentModel.ASPECT_VERSIONABLE, null);
@@ -217,7 +224,7 @@ public class DownloadServiceIntegrationTest
     	    status = getDownloadStatus(downloadNode);
     	}
     	
-    	Assert.assertEquals(5l, status.getTotalFiles());
+    	Assert.assertEquals(6l, status.getTotalFiles());
     	
     	long elapsedTime = waitForDownload(downloadNode);
         

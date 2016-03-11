@@ -1,4 +1,4 @@
-<model name="test:lucenetest" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+<model name="lucene-test:lucenetest" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
    <description>Test Model for Lucene tests</description>
    <author>Alfresco</author>
@@ -11,21 +11,21 @@
    </imports>
    
     <namespaces>
-        <namespace uri="http://www.alfresco.org/test/lucenetest" prefix="test"/>
+        <namespace uri="http://www.alfresco.org/test/lucenetest" prefix="lucene-test"/>
     </namespaces>
 
     <types>
-        <type name="test:testSuperType">
+        <type name="lucene-test:testSuperType">
             <title>Test Super Type</title>
             <parent>sys:container</parent>
             <properties>
-                <property name="test:neverIndexed">
+                <property name="lucene-test:neverIndexed">
                     <type>d:any</type>
                     <mandatory>false</mandatory>
                     <multiple>false</multiple>
                     <index enabled="false"/>
                 </property>
-                <property name="test:createdDate">
+                <property name="lucene-test:createdDate">
                     <type>d:date</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -35,7 +35,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:orderDouble">
+                <property name="lucene-test:orderDouble">
                     <type>d:double</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -45,7 +45,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:orderFloat">
+                <property name="lucene-test:orderFloat">
                     <type>d:float</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -55,7 +55,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:orderLong">
+                <property name="lucene-test:orderLong">
                     <type>d:long</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -65,7 +65,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:orderInt">
+                <property name="lucene-test:orderInt">
                     <type>d:int</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -75,7 +75,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-				<property name="test:orderText">
+				<property name="lucene-test:orderText">
                     <type>d:text</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -85,7 +85,7 @@
                         <tokenised>both</tokenised>
                     </index>
                 </property>
-				<property name="test:orderMLText">
+				<property name="lucene-test:orderMLText">
                     <type>d:mltext</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -97,7 +97,7 @@
                 </property>
             </properties>
             <associations>
-                <child-association name="test:assoc">
+                <child-association name="lucene-test:assoc">
                     <source>
                         <mandatory>false</mandatory>
                         <many>true</many>
@@ -111,11 +111,11 @@
             </associations>
         </type>
         
-        <type name="test:testType">
+        <type name="lucene-test:testType">
             <title>Test Type</title>
-            <parent>test:testSuperType</parent>
+            <parent>lucene-test:testSuperType</parent>
             <properties>
-                <property name="test:text-indexed-stored-tokenised-atomic">
+                <property name="lucene-test:text-indexed-stored-tokenised-atomic">
                     <type>d:text</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -125,7 +125,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:text-indexed-unstored-tokenised-atomic">
+                <property name="lucene-test:text-indexed-unstored-tokenised-atomic">
                     <type>d:text</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -135,7 +135,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:text-indexed-stored-tokenised-nonatomic">
+                <property name="lucene-test:text-indexed-stored-tokenised-nonatomic">
                     <type>d:text</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -145,7 +145,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:int-ista">
+                <property name="lucene-test:int-ista">
                     <type>d:int</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -155,7 +155,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:long-ista">
+                <property name="lucene-test:long-ista">
                     <type>d:long</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -165,7 +165,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:float-ista">
+                <property name="lucene-test:float-ista">
                     <type>d:float</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -175,7 +175,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:double-ista">
+                <property name="lucene-test:double-ista">
                     <type>d:double</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -185,7 +185,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:date-ista">
+                <property name="lucene-test:date-ista">
                     <type>d:date</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -195,7 +195,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:datetime-ista">
+                <property name="lucene-test:datetime-ista">
                     <type>d:datetime</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -205,7 +205,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:boolean-ista">
+                <property name="lucene-test:boolean-ista">
                     <type>d:boolean</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -215,7 +215,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:qname-ista">
+                <property name="lucene-test:qname-ista">
                     <type>d:qname</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -225,7 +225,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:category-ista">
+                <property name="lucene-test:category-ista">
                     <type>d:category</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -235,7 +235,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:noderef-ista">
+                <property name="lucene-test:noderef-ista">
                     <type>d:noderef</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -245,7 +245,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-                <property name="test:verbatim">
+                <property name="lucene-test:verbatim">
                     <type>d:text</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -255,7 +255,7 @@
                         <tokenised>false</tokenised>
                     </index>
                 </property>
-				<property name="test:ml">
+				<property name="lucene-test:ml">
                     <type>d:mltext</type>
                     <mandatory>true</mandatory>
                     <multiple>false</multiple>
@@ -265,7 +265,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-				<property name="test:null">
+				<property name="lucene-test:null">
                     <type>d:text</type>
                     <mandatory>false</mandatory>
                     <multiple>false</multiple>
@@ -275,7 +275,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-				<property name="test:path-ista">
+				<property name="lucene-test:path-ista">
                     <type>d:path</type>
                     <mandatory>false</mandatory>
                     <multiple>false</multiple>
@@ -285,7 +285,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-				<property name="test:locale-ista">
+				<property name="lucene-test:locale-ista">
                     <type>d:locale</type>
                     <mandatory>false</mandatory>
                     <multiple>false</multiple>
@@ -296,7 +296,7 @@
                     </index>
                 </property>
 				<!-- Any -->
-				<property name="test:any-many-ista">
+				<property name="lucene-test:any-many-ista">
                     <type>d:any</type>
                     <mandatory>false</mandatory>
                     <multiple>true</multiple>
@@ -307,7 +307,7 @@
                     </index>
                 </property>
 				<!-- Complex multiples -->
-				<property name="test:content-many-ista">
+				<property name="lucene-test:content-many-ista">
                     <type>d:any</type>
                     <mandatory>false</mandatory>
                     <multiple>true</multiple>
@@ -317,7 +317,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-				<property name="test:mltext-many-ista">
+				<property name="lucene-test:mltext-many-ista">
                     <type>d:mltext</type>
                     <mandatory>false</mandatory>
                     <multiple>true</multiple>
@@ -327,7 +327,7 @@
                         <tokenised>true</tokenised>
                     </index>
                 </property>
-				<property name="test:period-ista">
+				<property name="lucene-test:period-ista">
                     <type>d:period</type>
                     <mandatory>false</mandatory>
                     <multiple>false</multiple>
@@ -339,16 +339,16 @@
                 </property>
             </properties>
             <mandatory-aspects>
-                <aspect>test:testAspect</aspect>
+                <aspect>lucene-test:testAspect</aspect>
             </mandatory-aspects>
         </type>
     </types>
    
    <aspects>
-      <aspect name="test:aspectWithChildren">
+      <aspect name="lucene-test:aspectWithChildren">
          <title>Aspect With Children</title>
          <associations>
-             <child-association name="test:unused">
+             <child-association name="lucene-test:unused">
                  <source>
                      <mandatory>false</mandatory>
                      <many>true</many>
@@ -361,14 +361,14 @@
              </child-association>
          </associations>
       </aspect>
-      <aspect name="test:testSuperAspect">
+      <aspect name="lucene-test:testSuperAspect">
          <title>Test Super Aspect</title>
       </aspect>
-      <aspect name="test:testAspect">
+      <aspect name="lucene-test:testAspect">
          <title>Titled</title>
-         <parent>test:testSuperAspect</parent>
+         <parent>lucene-test:testSuperAspect</parent>
 			<properties>
-				<property name="test:aspectProperty">
+				<property name="lucene-test:aspectProperty">
 					<type>d:text</type>
 					<mandatory>false</mandatory>
 					<multiple>false</multiple>

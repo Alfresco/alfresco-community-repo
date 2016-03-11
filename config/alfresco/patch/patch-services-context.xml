@@ -1325,6 +1325,16 @@
         </property>
     </bean>
 
+    <bean id="patch.db-V5.0-update-activiti-default-timestamp-column" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id" value="patch.db-V5.0-update-activiti-default-timestamp-column" />
+        <property name="description" value="patch.db-V5.0-update-activiti-default-timestamp-column.description" />
+        <property name="fixesFromSchema" value="0" />
+        <property name="fixesToSchema" value="9012" />
+        <property name="targetSchema" value="9013" />
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/update-activiti-default-timestamp-column.sql</value>
+        </property>
+    </bean>
     <bean id="patch.imapSpacesTemplates4" class="org.alfresco.repo.admin.patch.impl.GenericBootstrapPatch" parent="basePatch" >
         <property name="id" value="patch.imapSpacesTemplates4" />
         <property name="description" value="patch.imapSpacesLocaleTemplates2.description" />
@@ -1341,16 +1351,6 @@
                 <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                 <prop key="uuidBinding">UPDATE_EXISTING</prop>
             </props>
-        </property>
-    </bean>
-    <bean id="patch.db-V5.0-update-activiti-default-timestamp-column" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id" value="patch.db-V5.0-update-activiti-default-timestamp-column" />
-        <property name="description" value="patch.db-V5.0-update-activiti-default-timestamp-column.description" />
-        <property name="fixesFromSchema" value="0" />
-        <property name="fixesToSchema" value="9012" />
-        <property name="targetSchema" value="9013" />
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/5.0/${db.script.dialect}/update-activiti-default-timestamp-column.sql</value>
         </property>
     </bean>
     
@@ -1414,6 +1414,17 @@
           </list>
         </property>
     </bean>
+
+    <bean id="patch.db-v4.2-migrate-activiti-workflows" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
+        <property name="id"><value>patch.db-v4.2-migrate-activiti-workflows</value></property>
+        <property name="description"><value>patch.db-v4.2-migrate-activiti-workflows.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>10000</value></property>
+        <property name="targetSchema"><value>10001</value></property>
+        <property name="scriptUrl">
+            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/migrate-activiti-workflows.sql</value>
+        </property>
+    </bean>
     
     <bean id="patch.db-V5.0-activiti-correct-tenant-id-MSSQL" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
         <property name="id" value="patch.db-V5.0-activiti-correct-tenant-id-MSSQL" />
@@ -1426,14 +1437,4 @@
         </property>
     </bean>
     
-    <bean id="patch.db-v4.2-migrate-activiti-workflows" class="org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch" parent="basePatch">
-        <property name="id"><value>patch.db-v4.2-migrate-activiti-workflows</value></property>
-        <property name="description"><value>patch.db-v4.2-migrate-activiti-workflows.description</value></property>
-        <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>10000</value></property>
-        <property name="targetSchema"><value>10001</value></property>
-        <property name="scriptUrl">
-            <value>classpath:alfresco/dbscripts/upgrade/4.2/${db.script.dialect}/migrate-activiti-workflows.sql</value>
-        </property>
-    </bean>
 </beans>

@@ -20,6 +20,7 @@ package org.alfresco.repo.domain.schema.script;
 
 import java.io.File;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -28,6 +29,7 @@ import org.apache.commons.logging.LogFactory;
  * to invoke multiple SQL scripts in a particular directory.
  * 
  * @author Matt Ward
+ * @author Derek Hulley
  */
 public class ScriptBundleExecutorImpl implements ScriptBundleExecutor
 {
@@ -40,7 +42,7 @@ public class ScriptBundleExecutorImpl implements ScriptBundleExecutor
     }
 
     @Override
-    public void exec(String dir, String... scripts)
+    public void exec(boolean logOnly, String dir, String... scripts)
     {
         for (String name : scripts)
         {
@@ -49,13 +51,28 @@ public class ScriptBundleExecutorImpl implements ScriptBundleExecutor
             {
                 scriptExecutor.executeScriptUrl(file.getPath());
             }
-            catch (Throwable e)
+            catch (Exception e)
             {
-                log.error("Unable to run SQL script: dir=" + dir + ", name="+name, e);
-                // Do not run any more scripts.
-                break;
+                String msg = "Unable to run SQL script: dir=" + dir + ", name=" + name;
+                if (logOnly)
+                {
+                    log.error(msg, e);
+                    // Do not run any more scripts.
+                    break;
+                }
+                else
+                {
+                    // Client opted to rethrow
+                    throw new AlfrescoRuntimeException(msg, e);
+                }
             }
         }
+    }
+
+    @Override
+    public void exec(String dir, String... scripts)
+    {
+        this.exec(true, dir, scripts);
     }
     
     @Override
@@ -63,12 +80,12 @@ public class ScriptBundleExecutorImpl implements ScriptBundleExecutor
     {
         try
         {
-            exec(dir, scripts);
+            exec(true, dir, scripts);
         }
         finally
         {            
             // Always run the post-script.
-            exec(dir, postScript);
+            exec(true, dir, postScript);
         }
     }
 }

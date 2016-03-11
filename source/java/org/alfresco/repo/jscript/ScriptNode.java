@@ -2542,6 +2542,24 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     }
     
     /**
+     * Gets the check-out of a working copy document
+     * @return the original Node that was checked out or null if it's not a working copy
+     */
+    public ScriptNode getCheckedOut()
+    {
+        NodeRef original = this.services.getCheckOutCheckInService().getCheckedOut(this.nodeRef);
+
+        if(original != null)
+        {
+            return newInstance(original, this.services, this.scope);
+        }
+        else
+        {
+            return null;
+        }
+    }
+
+    /**
      * Cancel the check-out of a working copy document. The working copy will be deleted and any changes made to it
      * are lost. Note that this method can only be called on a working copy Node. The reference to this working copy
      * Node should be discarded.

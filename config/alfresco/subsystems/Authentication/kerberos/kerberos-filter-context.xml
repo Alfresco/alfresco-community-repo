@@ -66,6 +66,12 @@
       <property name="remoteUserMapper">
          <ref bean="RemoteUserMapper" />
       </property>
+      <property name="fallbackEnabled">
+         <value>${kerberos.authentication.sso.fallback.enabled}</value>
+      </property>
+      <property name="fallback">
+         <ref bean="kerberos_SSOFallbackBasicAuthenticationDriver"/>
+      </property>
    </bean>
 
    <bean id="webscriptAuthenticationFilter" class="org.alfresco.web.app.servlet.WebScriptSSOAuthenticationFilter">
@@ -134,6 +140,9 @@
       </property>
       <property name="remoteUserMapper">
          <ref bean="RemoteUserMapper" />
+      </property>
+      <property name="fallbackEnabled">
+         <value>${kerberos.authentication.sso.fallback.enabled}</value>
       </property>
       <property name="fallback">
          <ref bean="kerberos_SSOFallbackBasicAuthenticationDriver"/>

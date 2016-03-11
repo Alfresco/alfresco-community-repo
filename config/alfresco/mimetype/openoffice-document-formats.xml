@@ -405,6 +405,15 @@
     </export-filters>
   </document-format>
   
+  <document-format><name>Microsoft Visio 2013</name>
+    <family>Presentation</family>
+    <mime-type>application/vnd.visio2013</mime-type>
+    <file-extension>vsdx</file-extension>
+    <export-filters>
+      <entry><family>Presentation</family><string>MS Visio</string></entry>
+    </export-filters>
+  </document-format>
+  
   <document-format><name>OpenDocument Drawing</name>
     <family>Presentation</family>
     <mime-type>application/vnd.oasis.opendocument.graphics</mime-type>

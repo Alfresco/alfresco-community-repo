@@ -58,7 +58,7 @@ public final class ImportableItem
     
     public boolean isValid()
     {
-        return(headRevision.contentFileExists() || headRevision.metadataFileExists());
+        return(headRevision.contentFileExists() || headRevision.metadataFileExists() || hasVersionEntries());
     }
     
     public ContentAndMetadata getHeadRevision()

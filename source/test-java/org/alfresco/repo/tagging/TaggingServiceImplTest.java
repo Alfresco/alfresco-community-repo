@@ -53,6 +53,8 @@ import org.alfresco.service.cmr.action.ActionTrackingService;
 import org.alfresco.service.cmr.action.ExecutionSummary;
 import org.alfresco.service.cmr.audit.AuditService;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -99,6 +101,7 @@ public class TaggingServiceImplTest extends TestCase
     /** Services */
     private TaggingService taggingService;
     private NodeService nodeService;
+    private FileFolderService fileFolderService;
     private CopyService copyService;
     private CheckOutCheckInService checkOutCheckInService;
     private ScriptService scriptService;
@@ -150,6 +153,7 @@ public class TaggingServiceImplTest extends TestCase
         // Get services
         this.taggingService = (TaggingService)ctx.getBean("TaggingService");
         this.nodeService = (NodeService) ctx.getBean("NodeService");
+        this.fileFolderService = (FileFolderService) ctx.getBean("FileFolderService");
         this.copyService = (CopyService) ctx.getBean("CopyService");
         this.checkOutCheckInService = (CheckOutCheckInService) ctx.getBean("CheckoutCheckinService");
         this.actionService = (ActionService)ctx.getBean("ActionService");
@@ -2105,13 +2109,38 @@ public class TaggingServiceImplTest extends TestCase
             @Override
             public Void execute() throws Throwable
             {
-                 Map<String, Object> model = new HashMap<String, Object>(0);
-                 model.put("folder", folder);
-                 
-                 ScriptLocation location = new ClasspathScriptLocation("org/alfresco/repo/tagging/script/test_alf_17260.js");
-                 scriptService.executeScript(location, model);
-                 
-                 // Let the script run
+                for (int j = 0; j < 10; j++)
+                {
+                    final int k = j;
+                    RetryingTransactionCallback<NodeRef> createFoldersAndTags = new RetryingTransactionCallback<NodeRef>()
+                    {
+                        @Override
+                        public NodeRef execute() throws Throwable
+                        {
+                            NodeRef folder1 = fileFolderService.create(folder, "Test1", ContentModel.TYPE_FOLDER).getNodeRef();
+                            NodeRef folder2 = fileFolderService.create(folder, "Test2", ContentModel.TYPE_FOLDER).getNodeRef();
+
+                            for (int i = 0; i < 102; i++)
+                            {
+                                NodeRef file = fileFolderService.create(folder1, k + "_test_" + i + ".text", ContentModel.TYPE_CONTENT).getNodeRef();
+                                taggingService.addTag(file, k + "testTag" + i);
+                            }
+
+                            List<ChildAssociationRef> childRefs = nodeService.getChildAssocs(folder1);
+                            for (ChildAssociationRef childRef : childRefs)
+                            {
+                                taggingService.clearTags(childRef.getChildRef());
+                            }
+                            QName assocQName = nodeService.getPrimaryParent(folder1).getTypeQName();
+                            nodeService.moveNode(folder1, folder2, ContentModel.ASSOC_CONTAINS, assocQName);
+                            return folder2;
+                        }
+                    };
+                    
+                    NodeRef folder2 = transactionService.getRetryingTransactionHelper().doInTransaction(createFoldersAndTags);
+                    nodeService.deleteNode(folder2);
+                }
+                
                  return null;
             }
         });

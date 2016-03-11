@@ -18,13 +18,17 @@
  */
 package org.alfresco.repo.web.scripts.workflow;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.workflow.WorkflowConstants;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.workflow.WorkflowInstance;
+import org.alfresco.service.cmr.workflow.WorkflowTask;
+import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -120,18 +124,39 @@ public class WorkflowInstanceDelete extends AbstractWorkflowWebscript
         }
         else
         {
+            String ownerName = null;
+            // Determine if the current user is the initiator of the workflow.
+            // Get the username of the initiator.
             NodeRef initiator = wi.getInitiator();
-            // determine if the current user is the initiator of the workflow
-            if (initiator != null)
+            if (initiator != null && nodeService.exists(initiator))
             {
-                // get the username of the initiator
-                String userName = (String)nodeService.getProperty(initiator, ContentModel.PROP_USERNAME);
-                
-                // if the current user started the workflow allow the cancel action
-                if (currentUserName.equals(userName))
+                ownerName = (String) nodeService.getProperty(initiator, ContentModel.PROP_USERNAME);
+            }
+            else
+            {
+                /*
+                 * Fix for MNT-14411 : Re-created user can't cancel created task.
+                 * If owner value can't be found on workflow properties
+                 * because initiator nodeRef no longer exists get owner from
+                 * initiatorhome nodeRef owner property.
+                 */
+                WorkflowTask startTask = workflowService.getStartTask(wi.getId());
+                Map<QName, Serializable> props = startTask.getProperties();
+                ownerName = (String) props.get(ContentModel.PROP_OWNER);
+                if (ownerName == null)
                 {
-                    canEnd = true;
+                    NodeRef initiatorHomeNodeRef = (NodeRef) props.get(QName.createQName("", WorkflowConstants.PROP_INITIATOR_HOME));
+                    if (initiatorHomeNodeRef != null)
+                    {
+                        ownerName = (String) nodeService.getProperty(initiatorHomeNodeRef, ContentModel.PROP_OWNER);
+                    }
                 }
+            }
+
+            // if the current user started the workflow allow the cancel action
+            if (currentUserName.equals(ownerName))
+            {
+                canEnd = true;
             }
         }
         return canEnd;

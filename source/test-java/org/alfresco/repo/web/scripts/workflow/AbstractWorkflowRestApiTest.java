@@ -1269,6 +1269,38 @@ public abstract class AbstractWorkflowRestApiTest extends BaseWebScriptTest
         // Try deleting an non-existent workflow instance, should result in 404
         sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + instanceId), Status.STATUS_NOT_FOUND);
     }
+    
+    public void testWorkflowInstanceDeleteAsRecreatedUser() throws Exception
+    {
+        // Create task as USER1 and assign it to another user 
+        personManager.setUser(USER1);
+        WorkflowDefinition adhocDef = workflowService.getDefinitionByName(getAdhocWorkflowDefinitionName());
+        Map<QName, Serializable> params = new HashMap<QName, Serializable>();
+        params.put(WorkflowModel.ASSOC_ASSIGNEE, personManager.get(USER2));
+        Date dueDate = new Date();
+        params.put(WorkflowModel.PROP_DUE_DATE, dueDate);
+        params.put(WorkflowModel.PROP_PRIORITY, 1);
+        params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
+        params.put(WorkflowModel.PROP_CONTEXT, packageRef);
+
+        WorkflowPath adhocPath = workflowService.startWorkflow(adhocDef.getId(), params);
+        
+        // Check the workflow was created 
+        assertNotNull(workflowService.getWorkflowById(adhocPath.getInstance().getId()));
+       
+        // Delete USER1
+        personManager.deletePerson(USER1);
+        
+        // Recreate USER1
+        personManager.createPerson(USER1);
+        
+        // Delete workflow
+        personManager.setUser(USER1);
+        sendRequest(new DeleteRequest(URL_WORKFLOW_INSTANCES + "/" + adhocPath.getInstance().getId()), Status.STATUS_OK);
+        
+        // Check the workflow was deleted
+        assertNull(workflowService.getWorkflowById(adhocPath.getInstance().getId()));
+    }
 
     public void testReviewProcessFlow() throws Exception 
     {

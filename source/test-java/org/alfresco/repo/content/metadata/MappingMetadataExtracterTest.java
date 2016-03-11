@@ -18,8 +18,10 @@
  */
 package org.alfresco.repo.content.metadata;
 
+import java.io.File;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,11 +34,13 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.ContentMinimalContextTestSuite;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
+import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.content.metadata.MetadataExtracter.OverwritePolicy;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.TempFileProvider;
 import org.springframework.context.ApplicationContext;
 
 /**
@@ -271,6 +275,45 @@ public class MappingMetadataExtracterTest extends TestCase
     }
     
     /**
+     * @see <a href="https://issues.alfresco.com/jira/browse/MNT-13919">MNT-13919</a>
+     */
+    public void testEmbedSupportDifferentFromExtract()
+    {
+        DummyMetadataEmbedder embedder = new DummyMetadataEmbedder();
+        Map<QName, Serializable> propertiesToEmbed = new HashMap<QName, Serializable>();
+        
+        // make a writer for the target of the embed, we won't actually use it
+        File targetFile = TempFileProvider.createTempFile(
+                getClass().getSimpleName() + "_" + getName() + "_embed",
+                ".txt");
+        FileContentWriter writer = new FileContentWriter(targetFile);
+        writer.setMimetype(DummyMetadataEmbedder.MIMETYPE_EMBEDDABLE);
+        
+        try
+        {
+            embedder.embed(propertiesToEmbed, reader, writer);
+        }
+        catch (AlfrescoRuntimeException e)
+        {
+            if (e.getMessage().contains("Metadata extracter does not support embedding mimetype"))
+            {
+                fail("Embed mimetype should not be tied to extracter's extract mimetypes");
+            }
+            else
+            {
+                fail(e.getMessage());
+            }
+        }
+        finally
+        {
+            if (targetFile != null && targetFile.exists())
+            {
+                targetFile.delete();
+            }
+        }
+    }
+    
+    /**
      * A spoofed-up extracter that extracts the following:
      * <pre>
      * <b>a:</b>  - A        -->  my:a1, my:a2
@@ -387,5 +430,28 @@ public class MappingMetadataExtracterTest extends TestCase
     {
         private static final JunkValue INSTANCE = new JunkValue();
         private static final long serialVersionUID = 1L;
+    }
+    
+    /**
+     * Mock metadata embedder which has a set of supported embed mimetypes different than
+     * the supported extract mimetypes.
+     */
+    private class DummyMetadataEmbedder extends AbstractMappingMetadataExtracter
+    {
+        private static final String MIMETYPE_EXTRACTABLE = "extractableMimetype";
+        private static final String MIMETYPE_EMBEDDABLE = "embeddableMimetype";
+        
+        public DummyMetadataEmbedder()
+        {
+            super(Collections.singleton(MIMETYPE_EXTRACTABLE), 
+                    Collections.singleton(MIMETYPE_EMBEDDABLE));
+            init();
+        }
+        
+        @Override
+        protected Map<String, Serializable> extractRaw(ContentReader reader) throws Throwable
+        {
+            return null;
+        }
     }
 }

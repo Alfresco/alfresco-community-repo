@@ -391,8 +391,8 @@ public class ExporterComponent
             // explicitly included ?
             if (parameters.getIncludedPaths() != null)
             {
-            	String nodePathPrefixString = nodeService.getPath(nodeRef).toPrefixString(namespaceService);
-            	if (! (isIncludedPath(parameters.getIncludedPaths(), nodePathPrefixString)))
+                String nodePathPrefixString = nodeService.getPath(nodeRef).toPrefixString(namespaceService);
+                if (! (isIncludedPath(parameters.getIncludedPaths(), nodePathPrefixString)))
                 {
                     return;
                 }
@@ -515,7 +515,7 @@ public class ExporterComponent
             // Export node children
             if (parameters.isCrawlChildNodes())
             {
-            	// sort associations into assoc type buckets filtering out unneccessary associations
+                // sort associations into assoc type buckets filtering out unneccessary associations
                 Map<QName, List<ChildAssociationRef>> assocTypes = new HashMap<QName, List<ChildAssociationRef>>();
                 List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef);
                 for (ChildAssociationRef childAssoc : childAssocs)
@@ -540,7 +540,7 @@ public class ExporterComponent
                     }
                     if (isExcludedURI(parameters.getExcludeNamespaceURIs(), childAssoc.getQName().getNamespaceURI()))
                     {
-                    	continue;
+                        continue;
                     }
                     
                     List<ChildAssociationRef> assocRefs = assocTypes.get(childAssocType);
@@ -551,7 +551,7 @@ public class ExporterComponent
                     }
                     assocRefs.add(childAssoc);
                 }
-                	
+                
                 // output each association type bucket
                 if (assocTypes.size() > 0)
                 {
@@ -592,7 +592,7 @@ public class ExporterComponent
             else
             {
                 exporter.endNode(nodeRef);
-            }            
+            }
         }
         
         /**
@@ -688,7 +688,7 @@ public class ExporterComponent
          */
         private void walkNodeSecondaryLinks(NodeRef nodeRef, ExporterCrawlerParameters parameters, Exporter exporter)
         {
-        	// sort associations into assoc type buckets filtering out unneccessary associations
+            // sort associations into assoc type buckets filtering out unneccessary associations
             Map<QName, List<ChildAssociationRef>> assocTypes = new HashMap<QName, List<ChildAssociationRef>>();
             List<ChildAssociationRef> childAssocs = nodeService.getChildAssocs(nodeRef);
             for (ChildAssociationRef childAssoc : childAssocs)
@@ -724,7 +724,7 @@ public class ExporterComponent
                 }
                 assocRefs.add(childAssoc);
             }
-            	
+            
             // output each association type bucket
             if (assocTypes.size() > 0)
             {
@@ -758,7 +758,7 @@ public class ExporterComponent
          */
         private void walkNodeAssociations(NodeRef nodeRef, ExporterCrawlerParameters parameters, Exporter exporter)
         {
-        	// sort associations into assoc type buckets filtering out unneccessary associations
+            // sort associations into assoc type buckets filtering out unneccessary associations
             Map<QName, List<AssociationRef>> assocTypes = new HashMap<QName, List<AssociationRef>>();
             List<AssociationRef> assocs = nodeService.getTargetAssocs(nodeRef, RegexQNamePattern.MATCH_ALL);
             for (AssociationRef assoc : assocs)
@@ -781,7 +781,7 @@ public class ExporterComponent
                 }
                 assocRefs.add(assoc);
             }
-            	
+            
             // output each association type bucket
             if (assocTypes.size() > 0)
             {

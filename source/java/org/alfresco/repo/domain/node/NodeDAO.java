@@ -836,6 +836,11 @@ public interface NodeDAO extends NodeBulkLoader
     public Long getMaxTxnCommitTime();
     
     /**
+     * @return              Returns the minimum commit time for deleted nodes or <tt>null</tt> if there are no transactions
+     */
+    public Long getMinTxnCommitTimeForDeletedNodes();
+    
+    /**
      * @return              Returns the minimum id or <tt>0</tt> if there are no transactions
      */
     public Long getMinTxnId();

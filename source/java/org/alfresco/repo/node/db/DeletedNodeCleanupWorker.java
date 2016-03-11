@@ -102,7 +102,14 @@ public class DeletedNodeCleanupWorker extends AbstractNodeCleanupWorker
         final List<String> results = new ArrayList<String>(100);
 
         final long maxCommitTime = System.currentTimeMillis() - minAge;
-        long fromCommitTime = nodeDAO.getMinUnusedTxnCommitTime().longValue();
+        long fromCommitTime = nodeDAO.getMinTxnCommitTimeForDeletedNodes().longValue();
+        
+        if ( fromCommitTime == 0L )
+        {
+              String msg = "There are no old nodes to purge.";
+              results.add(msg);
+              return results;
+        }
         
         long loopPurgeSize = purgeSize;
         Long purgeCount = new Long(0);

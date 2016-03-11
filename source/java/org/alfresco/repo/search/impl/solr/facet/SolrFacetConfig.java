@@ -365,7 +365,10 @@ public class SolrFacetConfig extends AbstractLifecycleBean
 
         private static QName resolveToQName(NamespaceService namespaceService, String qnameStr)
         {
-            QName typeQName = QName.resolveToQName(namespaceService, qnameStr);
+            // Note that in resolving the QName string here, we expect there to be some facet QNames which are not
+            // really QNames. These are SOLR/SearchService 'specials', examples being "SITE" or "TAG".
+            // These will be resolved here to a QName with no namespace.
+            QName typeQName =  FacetQNameUtils.createQName( qnameStr, namespaceService);
             if (logger.isDebugEnabled())
             {
                 logger.debug("Resolved facet field [" + qnameStr + "] into [" + typeQName + "]");

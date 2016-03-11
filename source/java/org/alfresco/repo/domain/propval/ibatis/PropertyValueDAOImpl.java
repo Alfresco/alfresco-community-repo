@@ -699,24 +699,35 @@ public class PropertyValueDAOImpl extends AbstractPropertyValueDAOImpl
     public void cleanupUnusedValues()
     {
         // execute clean up in case of previous failures
-        scriptExecutor.exec("alfresco/dbscripts/utility/${db.script.dialect}", "CleanAlfPropTablesPostExec.sql");
         try
         {
-            scriptExecutor.exec("alfresco/dbscripts/utility/${db.script.dialect}", "CleanAlfPropTables.sql");
+            scriptExecutor.exec("alfresco/dbscripts/utility/${db.script.dialect}", "CleanAlfPropTablesPostExec.sql");
+        }
+        catch (RuntimeException e)
+        {
+            logger.error("The pre-exec cleanup script failed: ", e);
+        }
+        // Run the main script
+        try
+        {
+            scriptExecutor.exec(false, "alfresco/dbscripts/utility/${db.script.dialect}", "CleanAlfPropTables.sql");
+        }
+        catch (RuntimeException e)
+        {
+            logger.error("The cleanup script failed: ", e);
+            throw e;
         }
         finally
         {
             try
             {
                 // execute clean up 
-                scriptExecutor.exec("alfresco/dbscripts/utility/${db.script.dialect}", "CleanAlfPropTablesPostExec.sql");
+                scriptExecutor.exec(false, "alfresco/dbscripts/utility/${db.script.dialect}", "CleanAlfPropTablesPostExec.sql");
             }
-            catch (Exception e)
+            catch (RuntimeException e)
             {
-                if (logger.isErrorEnabled())
-                {
-                    logger.error("The cleanup failed with an error: ", e);
-                }
+                logger.error("The post-exec cleanup script failed: ", e);
+                // We do not rethrow this as we want to preserve the original failure
             }
             clearCaches();
         }

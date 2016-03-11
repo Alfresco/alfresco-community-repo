@@ -90,6 +90,7 @@ public class IntegrityTest extends TestCase
     public static final QName TEST_PROP_TEXT_A = QName.createQName(NAMESPACE, "prop-text-a");
     public static final QName TEST_PROP_TEXT_B = QName.createQName(NAMESPACE, "prop-text-b");
     public static final QName TEST_PROP_TEXT_C = QName.createQName(NAMESPACE, "prop-text-c");
+    public static final QName TEST_PROP_TEXT_D = QName.createQName(NAMESPACE, "prop-text-d");
     public static final QName TEST_PROP_INT_A = QName.createQName(NAMESPACE, "prop-int-a");
     public static final QName TEST_PROP_INT_B = QName.createQName(NAMESPACE, "prop-int-b");
     public static final QName TEST_PROP_INT_C = QName.createQName(NAMESPACE, "prop-int-c");
@@ -256,6 +257,21 @@ public class IntegrityTest extends TestCase
     {
         allProperties.put(TEST_PROP_TEXT_A, "");
         NodeRef nodeRef = createNode("abc", TEST_TYPE_WITH_PROPERTIES, allProperties);
+        checkIntegrityNoFailure();
+        checkIntegrityNoFailure();
+    }
+    
+    public void testCreateWithIncorrectListValue() throws Exception
+    {
+        allProperties.put(TEST_PROP_TEXT_D, "DEF");
+        NodeRef nodeRef = createNode("def", TEST_TYPE_WITH_PROPERTIES, allProperties);
+        checkIntegrityExpectFailure("Failed to detect incorrect LoV without trailing space", 1);
+    }
+    
+    public void testCreateWithcorrectListValue() throws Exception
+    {
+        allProperties.put(TEST_PROP_TEXT_D, " HIJ ");
+        NodeRef nodeRef = createNode("def", TEST_TYPE_WITH_PROPERTIES, allProperties);
         checkIntegrityNoFailure();
     }
     

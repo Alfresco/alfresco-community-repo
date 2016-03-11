@@ -15,6 +15,22 @@
       <namespace uri="http://www.alfresco.org/test/IntegrityTest" prefix="test"/>
    </namespaces>
 
+   <constraints>
+      <constraint name="test:lov1" type="LIST">
+         <title>lov11 title</title>
+         <description>lov1 description</description>
+         <parameter name="allowedValues">
+             <list>
+                 <value>ABC</value>
+                 <value>DEF </value>
+                 <value> EFG</value>
+                 <value> HIJ </value>
+             </list>
+         </parameter>
+         <parameter name="caseSensitive"><value>true</value></parameter>
+      </constraint>
+   </constraints>
+
    <types>
       <!-- Type without anyting -->
       <type name="test:typeWithoutAnything">
@@ -36,6 +52,13 @@
             <property name="test:prop-text-c">
                <type>d:text</type>
                <mandatory enforced="false">true</mandatory>
+            </property>
+            <property name="test:prop-text-d">
+               <type>d:text</type>
+               <mandatory enforced="false">false</mandatory>
+               <constraints>
+                  <constraint ref="test:lov1"/>
+               </constraints>
             </property>
          </properties>
       </type>

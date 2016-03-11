@@ -2807,7 +2807,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         // general properties
         info.setObject(object);
         info.setId(object.getId());
-        info.setName(ni.getName());
+        info.setName(getStringProperty(object, PropertyIds.NAME));
         info.setCreatedBy(getStringProperty(object, PropertyIds.CREATED_BY));
         info.setCreationDate(getDateTimeProperty(object, PropertyIds.CREATION_DATE));
         info.setLastModificationDate(getDateTimeProperty(object, PropertyIds.LAST_MODIFICATION_DATE));

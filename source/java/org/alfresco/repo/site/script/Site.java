@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -902,8 +902,21 @@ public class Site implements Serializable
      */
     public ScriptInvitation<?> inviteModerated(String inviteeComments, String inviteeUserName, String inviteeRole)
     {
-    	Invitation invitation = invitationService.inviteModerated(inviteeComments, inviteeUserName, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole);
-    	return scriptInvitationFactory.toScriptInvitation(invitation);
+         InvitationSearchCriteriaImpl crit = new InvitationSearchCriteriaImpl();   
+         crit.setResourceName(getShortName());
+         crit.setResourceType(Invitation.ResourceType.WEB_SITE);
+         crit.setInvitee(inviteeUserName);
+ 
+         List<Invitation> invitations = invitationService.searchInvitation(crit);
+         if(invitations.isEmpty()) 
+         {
+            Invitation invitation = invitationService.inviteModerated(inviteeComments, inviteeUserName, Invitation.ResourceType.WEB_SITE, getShortName(), inviteeRole);
+            return scriptInvitationFactory.toScriptInvitation(invitation);
+         }
+         else
+         {
+             throw new InvitationException("A request to join this site is in pending"); 
+         }
     }
     
     /**

@@ -88,12 +88,12 @@
       <maven.build.testSourceVersion>1.8</maven.build.testSourceVersion>
       <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
       <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-      <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>	  
-	  
+      <argLine>-Xmx1024m -XX:MaxPermSize=256m -Duser.language=en -Dcom.sun.management.jmxremote</argLine>
+
 	  <!-- license properties -->
 	  <license.update.dryrun>true</license.update.dryrun>
 	  <license.verbose>false</license.verbose>
-	  
+
    </properties>
 
    <build>
@@ -167,7 +167,7 @@
                   <include>**/*UnitTest.java</include>
                </includes>
             </configuration>
-         </plugin> 
+         </plugin>
       </plugins>
       <pluginManagement>
          <plugins>
@@ -246,7 +246,7 @@
                <artifactId>sql-maven-plugin</artifactId>
                <version>1.5</version>
             </plugin>
-			
+
 			<!-- License header generation -->
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
@@ -284,6 +284,7 @@
                     <exclude>**/*.xml</exclude>
                     <exclude>**/*.json</exclude>
                     <exclude>**/*.txt</exclude>
+                    <exclude>**/*.html</exclude>
                 </excludes>
 
                 </configuration>

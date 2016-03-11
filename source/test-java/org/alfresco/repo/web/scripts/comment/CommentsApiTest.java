@@ -18,13 +18,18 @@
  */
 package org.alfresco.repo.web.scripts.comment;
 
+import java.io.IOException;
 import java.text.MessageFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -35,6 +40,7 @@ import org.alfresco.repo.security.permissions.impl.SimplePermissionEntry;
 import org.alfresco.repo.security.authentication.MutableAuthenticationDao;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.repo.web.scripts.comments.AbstractCommentsWebScript;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -52,10 +58,15 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.PropertyMap;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
+import org.springframework.extensions.webscripts.WebScriptException;
 
 /**
  * TODO: Fix the loose transaction handling.
@@ -63,10 +74,14 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 public class CommentsApiTest extends BaseWebScriptTest
 {
     private static final String URL_POST_COMMENT = "api/node/{0}/{1}/{2}/comments";
+    private static final String URL_DELETE_COMMENT = "api/comment/node/{0}/{1}/{2}?site={3}&itemtitle={4}&page={5}&pageParams={6}";
     private static final String JSON = "application/json";
     private static final String SITE_SHORT_NAME = "SomeTestSiteShortName";
     private static final String USER_ONE = "SomeTestUserOne";
     private static final String USER_TWO = "SomeTestUserTwo";
+    
+    private static final String JSON_KEY_NODEREF = "nodeRef";
+    private static final String JSON_KEY_ITEM = "item";
     
     private String requestBodyJson = "{\"title\" : \"Test Title\", \"content\" : \"Test Comment\"}";
     
@@ -212,7 +227,16 @@ public class CommentsApiTest extends BaseWebScriptTest
         deleteUser(USER_TWO);
     }
     
-    private void addComment(NodeRef nodeRef, String user, int status) throws Exception
+    /**
+     * add a comment to given node ref
+     * 
+     * @param nodeRef
+     * @param user
+     * @param status
+     * @return
+     * @throws Exception
+     */
+    private Response addComment(NodeRef nodeRef, String user, int status) throws Exception
     {
         Response response = null;
 
@@ -222,12 +246,28 @@ public class CommentsApiTest extends BaseWebScriptTest
         // Not allowed if you're not an admin
         AuthenticationUtil.setFullyAuthenticatedUser(user);
 
-        StringBuilder body = new StringBuilder("{");
-        body.append("\"title\" : \"Test Title\", ");
-        body.append("\"content\" : \"Test Comment\"");
-        body.append("}");
+        // add comment and save response (comment nodeRef)
 
-        response = sendRequest(new PostRequest(MessageFormat.format(URL_POST_COMMENT, new Object[] {nodeRef.getStoreRef().getProtocol(), nodeRef.getStoreRef().getIdentifier(), nodeRef.getId()}), body.toString(), JSON), status);
+        StringBuilder body = new StringBuilder("{");
+        body.append("\"itemTitle\" : \"Test Title\", ");
+        body.append("\"content\" : \"Test Comment\", ");
+        body.append("\"pageParams\" : \"{\\\"nodeRef\\\" : \\\"");
+        body.append(nodeRef.getStoreRef().getProtocol());
+        body.append(":\\/\\/");
+        body.append(nodeRef.getStoreRef().getIdentifier());
+        body.append("\\/");
+        body.append(nodeRef.getId());
+        body.append("\\\"}");
+        if (nodeRef.equals(sitePage))
+        {
+            body.append("\",\"site\" : \"");
+            body.append(SITE_SHORT_NAME);
+        }
+        body.append("\"}");
+        response = sendRequest(
+                new PostRequest(MessageFormat.format(URL_POST_COMMENT, new Object[] { nodeRef.getStoreRef().getProtocol(),
+                        nodeRef.getStoreRef().getIdentifier(), nodeRef.getId() }), body.toString(), JSON), status);
+
         assertEquals(status, response.getStatus());
 
         // Normally, webscripts are in their own transaction.  The test infrastructure here forces us to have a transaction
@@ -240,6 +280,8 @@ public class CommentsApiTest extends BaseWebScriptTest
         {
             txn.commit();
         }
+
+        return response;
     }
     
     private String getCurrentVersion(NodeRef nodeRef) throws Exception
@@ -332,6 +374,51 @@ public class CommentsApiTest extends BaseWebScriptTest
     }
     
     /**
+     * MNT-15679
+     */
+    public void testDeleteCommentDoesNotChangeModifiedDate() throws Exception
+    {
+        // in site page
+        permissionService.setPermission(sitePage, USER_TWO, PermissionService.ALL_PERMISSIONS, true);
+        String modifierBefore = (String) nodeService.getProperty(sitePage, ContentModel.PROP_MODIFIER);
+        Date modifiedDateBefore = (Date) nodeService.getProperty(sitePage, ContentModel.PROP_MODIFIED);
+
+        Response response1 = addComment(sitePage, USER_TWO, 200);
+
+        JSONObject jsonResponse1 = parseResponseJSON(response1);
+        String nodeRefComment1 = getOrNull(jsonResponse1, JSON_KEY_NODEREF);
+        if (nodeRefComment1 != null)
+        {
+            NodeRef commentNodeRef1 = new NodeRef(nodeRefComment1);
+            deleteComment(commentNodeRef1, sitePage, USER_TWO, 200);
+        }
+
+        Date modifiedDateAfter = (Date) nodeService.getProperty(sitePage, ContentModel.PROP_MODIFIED);
+        String modifierAfter = (String) nodeService.getProperty(sitePage, ContentModel.PROP_MODIFIER);
+        assertEquals(modifiedDateBefore.getTime(), modifiedDateAfter.getTime());
+        assertEquals(modifierBefore, modifierAfter);
+
+        // in repository - on nodeRef
+        permissionService.setPermission(nodeRef, USER2, PermissionService.ALL_PERMISSIONS, true);
+        modifierBefore = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        modifiedDateBefore = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        Response response2 = addComment(nodeRef, USER2, 200);
+
+        JSONObject jsonResponse2 = parseResponseJSON(response2);
+        String nodeRefComment2 = getOrNull(jsonResponse2, JSON_KEY_NODEREF);
+        if (nodeRefComment2 != null)
+        {
+            NodeRef commentNodeRef2 = new NodeRef(nodeRefComment2);
+            deleteComment(commentNodeRef2, nodeRef, USER2, 200);
+        }
+
+        modifiedDateAfter = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        modifierAfter = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+        assertEquals(modifiedDateBefore.getTime(), modifiedDateAfter.getTime());
+        assertEquals(modifierBefore, modifierAfter);
+    }
+    
+    /**
      * MNT-12082
      */
     public void testConsumerCanNotComment() throws Exception
@@ -388,4 +475,105 @@ public class CommentsApiTest extends BaseWebScriptTest
            authenticationService.deleteAuthentication(user);
         }        
     }
+
+   
+    /**
+     * delete comment
+     * 
+     * @param commentNodeRef
+     * @param parentNodeRef
+     * @param user
+     * @param status
+     * @throws Exception
+     */
+    private void deleteComment(NodeRef commentNodeRef, NodeRef parentNodeRef, String user, int status) throws Exception
+    {
+        Response response = null;
+
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        // Not allowed if you're not an admin
+        AuthenticationUtil.setFullyAuthenticatedUser(user);
+
+        String itemTitle = "Test Title";
+        String page = "document-details";
+
+        StringBuilder pageParamsBuilder = new StringBuilder("{");
+        pageParamsBuilder.append("\"nodeRef\" : \"");
+        pageParamsBuilder.append(parentNodeRef.toString());
+        pageParamsBuilder.append("\", ");
+        pageParamsBuilder.append("}");
+        String pageParams = pageParamsBuilder.toString();
+
+        String URL = MessageFormat.format(URL_DELETE_COMMENT, new Object[] { commentNodeRef.getStoreRef().getProtocol(),
+                commentNodeRef.getStoreRef().getIdentifier(), commentNodeRef.getId(), SITE_SHORT_NAME, itemTitle, page, pageParams });
+        response = sendRequest(new DeleteRequest(URL), status);
+        assertEquals(status, response.getStatus());
+
+        // Normally, webscripts are in their own transaction. The test
+        // infrastructure here forces us to have a transaction
+        // around the calls. if the WebScript fails, then we should rollback.
+        if (response.getStatus() == 500)
+        {
+            txn.rollback();
+        }
+        else
+        {
+            txn.commit();
+        }
+    }
+    
+    /**
+     * returns value from JSON for a given key
+     * @param json
+     * @param key
+     * @return
+     */
+    protected String getOrNull(JSONObject json, String key)
+    {
+        if (json != null && json.containsKey(key))
+        {
+            return (String) json.get(key);
+        }
+        
+        JSONObject itemJsonObject = (JSONObject) json.get(JSON_KEY_ITEM);
+        if (itemJsonObject != null && itemJsonObject.containsKey(key))
+        {
+            return (String) itemJsonObject.get(key);
+        }
+        return null;
+    }
+    
+    /**
+     * parse JSON
+     * @param response
+     * @return
+     */
+    protected JSONObject parseResponseJSON(Response response)
+    {
+        JSONObject json = null;
+        String contentType = response.getContentType();
+        if (contentType != null && contentType.indexOf(';') != -1)
+        {
+            contentType = contentType.substring(0, contentType.indexOf(';'));
+        }
+        if (MimetypeMap.MIMETYPE_JSON.equals(contentType))
+        {
+            JSONParser parser = new JSONParser();
+            try
+            {
+                json = (JSONObject) parser.parse(response.getContentAsString());
+            }
+            catch (IOException io)
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + io.getMessage());
+            }
+            catch (ParseException pe)
+            {
+                throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + pe.getMessage());
+            }
+        }
+        return json;
+    } 
 }

@@ -1606,18 +1606,28 @@
       </list>
     </property>
   </bean>
-  
+
     <!--                              -->
     <!--      CommentService REST API    -->
     <!--                              -->
-    <bean id="webscript.org.alfresco.repository.comments.comments.post"
-          class="org.alfresco.repo.web.scripts.comments.CommentsPost"
-          parent="webscript">
+    <!-- abstract comment web script -->
+    <!-- class="org.alfresco.repo.web.scripts.comments.AbstractCommentsWebScript" -->
+    <bean id="abstractCommentsWebScript" parent="webscript" abstract="true">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="behaviourFilter" ref="policyBehaviourFilter" />
         <property name="activityService" ref="activityService"/>
     </bean>
-   
+
+    <bean id="webscript.org.alfresco.repository.comments.comment.delete"
+        class="org.alfresco.repo.web.scripts.comments.CommentDelete"
+        parent="abstractCommentsWebScript">
+    </bean>
+
+    <bean id="webscript.org.alfresco.repository.comments.comments.post"
+        class="org.alfresco.repo.web.scripts.comments.CommentsPost"
+        parent="abstractCommentsWebScript">
+    </bean>
+
    <!--                                                                                                       -->
    <!-- Multi-Tenant Admin                                                                                    -->
    <!--                                                                                                       -->

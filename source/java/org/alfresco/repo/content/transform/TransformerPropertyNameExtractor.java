@@ -25,7 +25,7 @@ import static org.alfresco.repo.content.transform.TransformerConfig.PREFIX;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -89,7 +89,7 @@ public abstract class TransformerPropertyNameExtractor
             boolean includeSummary, boolean includeExtensions, boolean includeUse, TransformerProperties transformerProperties, MimetypeService mimetypeService)
     {
         Map<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue> transformerSourceTargetSuffixValues =
-                new HashMap<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue>();
+                new LinkedHashMap<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue>();
         
         List<String> propertyNames = new ArrayList<String>(transformerProperties.getPropertyNames());
         Collections.sort(propertyNames);

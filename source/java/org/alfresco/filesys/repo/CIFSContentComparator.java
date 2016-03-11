@@ -171,6 +171,7 @@ public class CIFSContentComparator implements ContentComparator
              * Use POI to compare the content of the MPP file, exluding certain properties
              */
             InputStream leftIs = null;
+
             try
             {  
                 Collection<String> excludes = new HashSet<String>();
@@ -179,10 +180,35 @@ public class CIFSContentComparator implements ContentComparator
                 excludes.add("Props9");
                 
                 leftIs = existingContent.getContentInputStream();
-                NPOIFSFileSystem fs1 = new NPOIFSFileSystem(leftIs);
-                NPOIFSFileSystem fs2 = new NPOIFSFileSystem(newFile);
-                
-                return isContentIdentical(fs1, fs2, excludes);
+
+                // this call guarantees that leftIs is closed.
+                NPOIFSFileSystem fs2 = new NPOIFSFileSystem(leftIs);
+                // this call keeps an open file handle and needs closing.
+                NPOIFSFileSystem fs1 = new NPOIFSFileSystem(newFile);  
+                try
+                {
+
+                    return isContentIdentical(fs1, fs2, excludes);
+                }
+                finally
+                {
+                	try
+                	{
+                		fs1.close();
+                	}
+                	catch (IOException e)
+                	{
+                		// ignore
+                	}
+                	try
+                	{
+                		fs2.close();
+                	}
+                	catch (IOException e)
+                	{
+                		// ignore
+                	}
+                }
             }
             catch (ContentIOException ce)
             {
@@ -252,8 +278,24 @@ public class CIFSContentComparator implements ContentComparator
                 wb1.writeProtectWorkbook("", "CIFSContentComparator");
                 wb2.writeProtectWorkbook("", "CIFSContentComparator");
                 
-                wb1.write(new FileOutputStream(tpm1));
-                wb2.write(new FileOutputStream(tpm2));
+                FileOutputStream os = new FileOutputStream(tpm1);
+                try
+                {
+                	wb1.write(os);
+                }
+                finally
+                {
+                	os.close();
+                }
+                FileOutputStream os2 = new FileOutputStream(tpm2);
+                try
+                {
+                	wb2.write(os2);
+                }
+                finally
+                {
+                	os2.close();
+                }
                 
                 NPOIFSFileSystem fs1 = new NPOIFSFileSystem(tpm1);
                 NPOIFSFileSystem fs2 = new NPOIFSFileSystem(tpm2);
@@ -359,12 +401,40 @@ public class CIFSContentComparator implements ContentComparator
                     else
                     {
                         //make sure that nothing has been changed except lastEditUsername
-
                         tpm1 = TempFileProvider.createTempFile("CIFSContentComparator1", "ppt");
+                        FileOutputStream os = new FileOutputStream(tpm1);
+                        try
+                        {
+                            slideShow1.write(os);
+                        }
+                        finally
+                        {
+                            try
+                            {
+                            	os.close();
+                            }
+                            catch (IOException ie)
+                            {
+                                // ignore
+                            }
+                        }
                         tpm2 = TempFileProvider.createTempFile("CIFSContentComparator2", "ppt");
-
-                        slideShow1.write(new FileOutputStream(tpm1));
-                        slideShow1.write(new FileOutputStream(tpm2));
+                        FileOutputStream os2 = new FileOutputStream(tpm2);
+                        try
+                        {
+                            slideShow2.write(os2);
+                        }
+                        finally
+                        {
+                            try
+                            {
+                                os2.close();
+                            }
+                            catch (IOException ie)
+                            {
+                                // ignore
+                            }
+                        }
 
                         NPOIFSFileSystem fs1 = new NPOIFSFileSystem(tpm1);
                         NPOIFSFileSystem fs2 = new NPOIFSFileSystem(tpm2);

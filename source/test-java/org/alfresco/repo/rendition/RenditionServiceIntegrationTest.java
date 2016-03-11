@@ -264,6 +264,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         final QName renditionName = QName.createQName(NamespaceService.RENDITION_MODEL_1_0_URI,
                 "htmlRenderingDefinition");
 
+        int numberOfItemsInTrashcanBeforeRendition = getNumberOfItemsInTrashcan();
         this.renditionNode = transactionHelper
                 .doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<NodeRef>()
                 {
@@ -294,8 +295,24 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                     }
                 });
 
+        //testcase for MNT-14386
+        int numberOfItemsInTrashcanAfterRendition = getNumberOfItemsInTrashcan();
+        assertEquals(numberOfItemsInTrashcanBeforeRendition, numberOfItemsInTrashcanAfterRendition);
+
     }
-    
+
+    /**
+     * This method returns the number of items from trashcan
+     * 
+     * @return int
+     */
+    private int getNumberOfItemsInTrashcan()
+    {
+        NodeRef archiveRootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE);
+        return nodeService.countChildAssocs(archiveRootNodeRef, true);
+
+    }
+
     public void testRenderFreeMarkerTemplateOneTransaction() throws Exception
     {
         this.setComplete();
@@ -1934,7 +1951,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         assertEquals(MimetypeMap.MIMETYPE_FLASH, webpreviewRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
         assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, avatarRenditionDef.getParameterValue(AbstractRenderingEngine.PARAM_MIME_TYPE));
     }
-    
+
     /**
      * This test checks that for a node with an existing rendition, that if you update its content with content
      * that cannot be renditioned (thumbnailed), that existing rendition nodes for failed re-renditions are removed.

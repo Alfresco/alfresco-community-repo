@@ -230,10 +230,22 @@
         </property>
     </bean>
 
-    <bean id="dataSourceCheck" class="org.alfresco.repo.domain.schema.DataSourceCheck">
-        <constructor-arg index="0" value="${db.url}" />
-        <constructor-arg index="1" value="${db.username}" />
-        <constructor-arg index="2" ref="dataSource" />
+    <bean id="dataSourceCheck" class="org.alfresco.repo.domain.schema.DataSourceCheck" init-method="init" depends-on="resourceBundles">
+        <property name="dbUrl">
+            <value>${db.url}</value>
+        </property>
+        <property name="dbUsername">
+            <value>${db.username}</value>
+        </property>
+        <property name="transactionIsolation" >
+            <value>${db.txn.isolation}</value>
+        </property>
+        <property name="dataSource">
+            <ref bean="dataSource"/>
+        </property>
+        <property name="localSessionFactory">
+            <ref bean="&amp;sessionFactory"></ref>  <!-- inject the actual factory, not a session -->
+        </property>
     </bean>
 
     <!-- transaction service -->

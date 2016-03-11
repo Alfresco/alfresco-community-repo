@@ -819,7 +819,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         
         // Create a root node
         Long nodeTypeQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_STOREROOT).getFirst();
-        NodeEntity rootNode = newNodeImpl(store, null, nodeTypeQNameId, null, aclId, null);
+        NodeEntity rootNode = newNodeImpl(store, null, nodeTypeQNameId, null, aclId, null, true);
         Long rootNodeId = rootNode.getId();
         addNodeAspects(rootNodeId, Collections.singleton(ContentModel.ASPECT_ROOT));
 
@@ -1292,7 +1292,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Create the node (it is not a root node)
         Long nodeTypeQNameId = qnameDAO.getOrCreateQName(nodeTypeQName).getFirst();
         Long nodeLocaleId = localeDAO.getOrCreateLocalePair(nodeLocale).getFirst();
-        NodeEntity node = newNodeImpl(store, uuid, nodeTypeQNameId, nodeLocaleId, childAclId, auditableProps);
+        NodeEntity node = newNodeImpl(store, uuid, nodeTypeQNameId, nodeLocaleId, childAclId, auditableProps, false);
         Long nodeId = node.getId();
         
         // Protect the node's cm:auditable if it was explicitly set
@@ -1332,6 +1332,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
      * @param nodeLocaleId                  the node's locale or <tt>null</tt> to use the default locale
      * @param aclId                         an ACL ID if available
      * @param auditableProps                <tt>null</tt> to auto-generate or provide a value to explicitly set
+     * @param allowAuditableAspect          Should we override the behaviour by potentially not adding the auditable aspect
      * @throws NodeExistsException          if the target reference is already taken by a live node
      */
     private NodeEntity newNodeImpl(
@@ -1340,7 +1341,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 Long nodeTypeQNameId,
                 Long nodeLocaleId,
                 Long aclId,
-                AuditablePropertiesEntity auditableProps) throws InvalidTypeException
+                AuditablePropertiesEntity auditableProps,
+                boolean allowAuditableAspect) throws InvalidTypeException
     {
         NodeEntity node = new NodeEntity();
         // Store
@@ -1385,6 +1387,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             node.setAuditableProperties(auditableProps);
             addAuditableAspect = true;
         }
+
+        if (!allowAuditableAspect) addAuditableAspect = false;
         
         Long id = null;
         Savepoint savepoint = controlDAO.createSavepoint("newNodeImpl");
@@ -1491,6 +1495,11 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         if (!childStore.getId().equals(newParentStore.getId()))
         {
 
+            //Delete the ASPECT_AUDITABLE from the source node so it doesn't get copied across
+            //A new aspect would have already been created in the newNodeImpl method.
+            // ... make sure we have the cm:auditable data from the originating node
+            AuditablePropertiesEntity auditableProps = childNode.getAuditableProperties();
+
             // Create a new node
             newChildNode = newNodeImpl(
                     newParentStore,
@@ -1498,39 +1507,12 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     childNode.getTypeQNameId(),
                     childNode.getLocaleId(),
                     childNode.getAclId(),
-                    null);
+                    auditableProps,
+                    false);
             Long newChildNodeId = newChildNode.getId();
-
-            QName nodeTypeQName = qnameDAO.getQName(childNode.getTypeQNameId()).getSecond();
-            boolean isAuditable = AuditablePropertiesEntity.hasAuditableAspect(nodeTypeQName, dictionaryService);
-            AuditablePropertiesEntity auditableProps = null;
-
-            if (isAuditable)
-            {
-                //Delete the ASPECT_AUDITABLE from the source node so it doesn't get copied across
-                //A new aspect would have already been created in the newNodeImpl method.
-                // ... make sure we have the cm:auditable data from the originating node
-                auditableProps = childNode.getAuditableProperties();
-
-                Set<Long> aspectIdsToDelete = qnameDAO.convertQNamesToIds(
-                        Collections.singleton(ContentModel.ASPECT_AUDITABLE),
-                        true);
-                deleteNodeAspects(childNodeId, aspectIdsToDelete);
-            }
 
             //copy all the data over to new node
             moveNodeData(childNode.getId(), newChildNodeId);
-
-            if (isAuditable && auditableProps != null)
-            {
-                Node node = getNodeNotNull(newChildNodeId, false);
-                NodeUpdateEntity nodeUpdate = new NodeUpdateEntity();
-                nodeUpdate.setId(newChildNodeId);
-                nodeUpdate.setAuditableProperties(auditableProps);
-                nodeUpdate.setUpdateAuditableProperties(true);
-                nodeUpdate.setVersion(node.getVersion());
-                updateNode(nodeUpdate);
-            }
 
             // The new node will have new data not present in the cache, yet
             invalidateNodeCaches(newChildNodeId);
@@ -2053,7 +2035,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         String uuid = node.getUuid();
         Long deletedQNameId = qnameDAO.getOrCreateQName(ContentModel.TYPE_DELETED).getFirst();
         Long defaultLocaleId = localeDAO.getOrCreateDefaultLocalePair().getFirst();
-        Node deletedNode = newNodeImpl(store, uuid, deletedQNameId, defaultLocaleId, null, null);
+        Node deletedNode = newNodeImpl(store, uuid, deletedQNameId, defaultLocaleId, null, null, true);
         Long deletedNodeId = deletedNode.getId();
         // Store the original ID as a property
         Map<QName, Serializable> trackingProps = Collections.singletonMap(ContentModel.PROP_ORIGINAL_ID, (Serializable) nodeId);

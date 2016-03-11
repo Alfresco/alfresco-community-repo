@@ -28,6 +28,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ParameterDefinition;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.CopyService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -144,17 +145,13 @@ public class TransitionSimpleWorkflowActionExecuter extends ActionExecuterAbstra
 		    else
 		    {     
 		        // copy the node to the specified folder
-		        String qname = QName.createValidLocalName(name);
-		        NodeRef newNode = copyService.copy(
+		        ChildAssociationRef originalAssoc = nodeService.getPrimaryParent(actionedUponNodeRef);
+		        copyService.copyAndRename(
 		                actionedUponNodeRef, 
 		                destinationFolder, 
-		                ContentModel.ASSOC_CONTAINS,
-		                QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, qname), 
+		                originalAssoc.getTypeQName(),
+		                originalAssoc.getQName(),
 		                true);
-		         
-		        // the copy service does not copy the name of the node so we
-		        // need to update the property on the copied item
-		        nodeService.setProperty(newNode, ContentModel.PROP_NAME, name);
 		    }		            
 		}
 	}

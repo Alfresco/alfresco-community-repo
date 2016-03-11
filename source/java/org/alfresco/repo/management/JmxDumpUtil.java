@@ -60,7 +60,7 @@ public class JmxDumpUtil
     private static final String NULL_VALUE = "<null>";
 
     /** Place holder for unreadable values. */
-    private static final String UNREADABLE_VALUE = "<not readable>";
+    public static final String UNREADABLE_VALUE = "<not readable>";
 
     private static final String OS_NAME = "os.name";
 

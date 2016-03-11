@@ -335,6 +335,7 @@ public class Repository01TestSuite extends TestSuite
     static void tests52(TestSuite suite)
     {
         suite.addTestSuite(org.alfresco.repo.subscriptions.SubscriptionServiceImplTest.class);
+        suite.addTestSuite(org.alfresco.repo.content.metadata.MappingMetadataExtracterTest.class);
     }
     
     static void tests53(TestSuite suite)

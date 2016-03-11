@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowDeployment;
 import org.alfresco.service.cmr.workflow.WorkflowException;
@@ -832,7 +833,15 @@ public class WorkflowInterpreter extends BaseInterpreter
                 {
                     tenantService.checkDomainUser(command[1]);
                 }
-                setCurrentUserName(command[1]);
+                NodeRef personRef = personService.getPerson(command[1]);
+                if (personRef == null)
+                {
+                    throw new WorkflowException("User " + command[1] + " does not exist.");
+                }
+
+                PersonInfo info = personService.getPerson(personRef);
+                String userName = info.getUserName();
+                setCurrentUserName(userName);
             }
             out.println("using user " + getCurrentUserName());
         }

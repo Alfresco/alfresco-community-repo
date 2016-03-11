@@ -43,6 +43,8 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -78,6 +80,8 @@ public class WebDAVMethodTest
     private @Mock PutMethod putMethod;
     private @Mock DeleteMethod deleteMethod;
     private @Mock UnlockMethod unlockMethod;
+
+    private static Log logger = LogFactory.getLog(WebDAVMethodTest.class);
 
     public static final String TEST_RUN = System.currentTimeMillis()+"";
     public static final String TEST_TENANT_DOMAIN = TEST_RUN+".my.test";
@@ -435,19 +439,27 @@ public class WebDAVMethodTest
                 public Object execute() throws Throwable
                 {
                     try
+                {
+                    // LOCK document.
+                    lockMethod.executeImpl();
+                    
+                    //wait for the lock to expire up to 5 seconds
+                    int timeout = 5;
+                    while( timeout > 0 && !lockMethod.lockInfo.isExpired())
                     {
-                        // LOCK document.
-                        lockMethod.executeImpl();
-                        Thread.sleep(2000);
-                        
-                        // LOCK against an expired lock.
-                        lockMethod.executeImpl();
+                        Thread.sleep(1000);
+                        timeout--;
                     }
-                    catch (WebDAVServerException e)
-                    {
-                        Assert.fail("Document was not locked again, when lock has expired.");
-                    }
-                    return null;
+                    
+                    // LOCK against an expired lock.
+                    lockMethod.executeImpl();
+                }
+                catch (WebDAVServerException e)
+                {
+                    logger.debug(e);
+                    Assert.fail("Document was not locked again, when lock has expired.");
+                }
+                return null;
                 }
             });
     

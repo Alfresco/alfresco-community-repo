@@ -126,6 +126,17 @@
          </associations>
       </type>
 
+      <type name="test:contentWithMandatoryAspect">
+         <title>Custom content type</title>
+         <description>Custom content type basic parent content</description>
+         <parent>cm:content</parent>
+         <properties />
+         <associations />
+         <mandatory-aspects>
+            <aspect>test:mandatoryAspect</aspect>
+         </mandatory-aspects>
+      </type>
+
 	</types>
    
    	<aspects>
@@ -149,6 +160,19 @@
 
 			 </properties>
 		  </aspect>
-	   </aspects>
+
+       <aspect name="test:mandatoryAspect">
+          <title>Custom Aspect</title>
+          <description>Just basic text aspect</description>
+          <properties>
+             <property name="test:mandatoryAspectText">
+                <title>aspect text</title>
+                <description>Text for aspect content</description>
+                <type>d:text</type>
+             </property>
+          </properties>
+       </aspect>
+
+    </aspects>
    
 </model>

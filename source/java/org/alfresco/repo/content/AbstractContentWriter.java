@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -613,11 +613,18 @@ public abstract class AbstractContentWriter extends AbstractContentAccessor impl
             guessingOnCloseListener.filename = filename;
         }
     }
+
     private void doGuessMimetype(String filename)
     {
-        String mimetype = mimetypeService.guessMimetype(
-                filename, getReader()
-        );
+        String mimetype;
+        if (filename.startsWith(MimetypeMap.MACOS_RESOURCE_FORK_FILE_NAME_PREFIX))
+        {
+            mimetype = MimetypeMap.MIMETYPE_APPLEFILE;
+        }
+        else
+        {
+            mimetype = mimetypeService.guessMimetype(filename, getReader());
+        }
         setMimetype(mimetype);
     }
     

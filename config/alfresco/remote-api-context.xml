@@ -11,8 +11,7 @@
     
     <bean id="webDAVLockService" class="org.alfresco.repo.webdav.WebDAVLockServiceImpl">
       <property name="lockService">
-         <!-- TODO: change from LockService to lockService to be reviewed -->
-         <ref bean="lockService" />
+         <ref bean="LockService" />
       </property>
       <property name="nodeService">
          <ref bean="NodeService" />

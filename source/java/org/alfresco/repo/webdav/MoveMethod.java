@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -23,7 +23,8 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -31,9 +32,6 @@ import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.dom4j.DocumentHelper;
-import org.dom4j.io.XMLWriter;
-import org.xml.sax.Attributes;
 
 /**
  * Implements the WebDAV MOVE method
@@ -192,9 +190,10 @@ public class MoveMethod extends HierarchicalMethod
                 throw new WebDAVServerException(HttpServletResponse.SC_NOT_FOUND);
             }
         }
+        LockInfo lockInfo = null;
         if (isMove)
         {
-            checkNode(sourceFileInfo);
+            lockInfo = checkNode(sourceFileInfo);
         }
         // ALF-7079 fix, if destination exists then its content is updated with source content and source is deleted if
         // this is a move
@@ -210,7 +209,7 @@ public class MoveMethod extends HierarchicalMethod
                     // don't delete source that is node with version history
                     fileFolderService.setHidden(sourceNodeRef, true);
                     // As per the WebDAV spec, we make sure the node is unlocked once moved
-                    getDAVHelper().getLockService().unlock(sourceNodeRef);
+                    unlock(sourceNodeRef, lockInfo);
                 }
                 else
                 {
@@ -243,7 +242,7 @@ public class MoveMethod extends HierarchicalMethod
             fileFolderService.setHidden(sourceNodeRef, true);
 
             // As per the WebDAV spec, we make sure the node is unlocked once moved
-            getDAVHelper().getLockService().unlock(sourceNodeRef);
+            unlock(sourceNodeRef, lockInfo);
         }
         else if (sourceParentNodeRef.equals(destParentNodeRef)) 
         { 
@@ -268,7 +267,7 @@ public class MoveMethod extends HierarchicalMethod
             }
 
            // As per the WebDAV spec, we make sure the node is unlocked once moved
-           getDAVHelper().getLockService().unlock(sourceNodeRef);
+           unlock(sourceNodeRef, lockInfo);
         }
         else
         {
@@ -287,7 +286,7 @@ public class MoveMethod extends HierarchicalMethod
             fileFolderService.moveFrom(sourceNodeRef, sourceParentNodeRef, destParentNodeRef, name);  
 
             // As per the WebDAV spec, we make sure the node is unlocked once moved
-            getDAVHelper().getLockService().unlock(sourceNodeRef);
+            unlock(sourceNodeRef, lockInfo);
         }
     }
     
@@ -309,6 +308,33 @@ public class MoveMethod extends HierarchicalMethod
         {
             ContentWriter contentWriter = contentService.getWriter(destFileInfo.getNodeRef(), ContentModel.PROP_CONTENT, true);
             contentWriter.putContent(reader);
+        }
+    }
+    
+    /**
+     * Unlock only if the node was locked in the first place.
+     */
+    private void unlock(final NodeRef nodeRef, LockInfo lockInfo)
+    {
+        if (lockInfo != null && lockInfo.isLocked())
+        {
+            if (lockInfo.isExpired())
+            {
+                // If the lock expired unlock as system user
+                AuthenticationUtil.runAs(new RunAsWork<Void>()
+                {
+                    public Void doWork() throws Exception
+                    {
+                        getDAVHelper().getLockService().unlock(nodeRef);
+                        return null;
+                    }
+                }, AuthenticationUtil.getSystemUserName());
+            }
+            // else unlock as current user
+            else
+            {
+                getDAVHelper().getLockService().unlock(nodeRef);
+            }
         }
     }
 }

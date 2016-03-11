@@ -520,6 +520,7 @@
                 <deleteFile path="${installdir}/awe.log*"/>
                 <deleteFile path="${installdir}/share.log*"/>
                 <deleteFile path="${installdir}/solr.log*"/>
+                <deleteFile path="${installdir}/applied-updates*" />
                 <deleteFile path="${alfresco_data_directory}"/>
             </actionList>
             <ruleList>

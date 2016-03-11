@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -519,6 +519,33 @@ public class AuthorityServiceTest extends TestCase
         }
     }
 
+    public void testCreateGroupAuth()
+    {
+        String auth;
+        String groupName = "FOOBAR"; 
+        String prefixedGroupName = "GROUP_FOOBAR";
+        
+        auth = pubAuthorityService.createAuthority(AuthorityType.GROUP, groupName);
+        assertTrue(pubAuthorityService.authorityExists(prefixedGroupName));
+        pubAuthorityService.deleteAuthority(auth);
+        
+        auth = pubAuthorityService.createAuthority(AuthorityType.GROUP, prefixedGroupName);
+        assertTrue(pubAuthorityService.authorityExists(prefixedGroupName));  
+        pubAuthorityService.deleteAuthority(auth);
+        
+        try
+        {
+            String duplicatedGroupName = "GROUP_GROUP_FOOBAR";
+            pubAuthorityService.createAuthority(AuthorityType.GROUP, duplicatedGroupName);
+            fail("Should not be able to create a double-prefixed group authority");
+                     
+        }
+        catch(AuthorityException ae)
+        {
+            // Ignore since we where expecting this
+        }
+    }
+        
     public void testCreateOwnerAuth()
     {
         try

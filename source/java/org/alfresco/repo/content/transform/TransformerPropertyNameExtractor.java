@@ -197,10 +197,14 @@ public abstract class TransformerPropertyNameExtractor
     }
 
     /**
-     * Optionally adds a new TransformerSourceTargetValue. If the supplied value is constructed from
-     * from a mimetypes property a new value is always added and will replace any existing value. If 
-     * from an extensions property the value is only added if there is not a current value.
-     * In other words properties that include mimetypes win out over those that use extensions.
+     * Optionally adds a new TransformerSourceTargetValue and discards some when
+	 * there is another 'better' property.<p>
+     * 
+     * If there is a property for the max value and another for the limit the lower
+     * one wins. If equal, the max value wins.<p>
+     * 
+     * If the supplied value is constructed from a mimetypes value it wins over one
+     * constructed from an extensions property.
      */
     private void addTransformerSourceTargetValue(
             Map<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue> transformerSourceTargetSuffixValues,
@@ -213,7 +217,35 @@ public abstract class TransformerPropertyNameExtractor
 
         if (mimetypeProperty || !transformerSourceTargetSuffixValues.containsKey(key))
         {
-            transformerSourceTargetSuffixValues.put(key, transformerSourceTargetSuffixValue);
+            TransformerSourceTargetSuffixKey siblingKey = transformerSourceTargetSuffixValue.getSiblingKey();
+            TransformerSourceTargetSuffixValue sibling = transformerSourceTargetSuffixValues.get(siblingKey);
+            
+            boolean doAdd = true;
+            if (sibling != null)
+            {
+                doAdd = false;
+                long newValue = Long.parseLong(value);
+                if (newValue > 0)
+                {
+                    long oldValue = Long.parseLong(sibling.value);
+                    
+                    // If max rather than limit value
+                    boolean isMax =
+                        suffix == TransformerConfig.MAX_SOURCE_SIZE_K_BYTES ||
+                        suffix == TransformerConfig.TIMEOUT_MS ||
+                        suffix == TransformerConfig.MAX_PAGES;
+                    if (oldValue < 0 || (isMax && oldValue >= newValue) || (!isMax && oldValue > newValue))
+                    {
+                        transformerSourceTargetSuffixValues.remove(siblingKey);
+                        doAdd = true;
+                    }
+                }
+            }
+
+            if (doAdd)
+            {
+                transformerSourceTargetSuffixValues.put(key, transformerSourceTargetSuffixValue);
+            }
         }
     }
 
@@ -348,7 +380,7 @@ class TransformerSourceTargetSuffixKey
                 ? ""
                 : TransformerConfig.EXTENSIONS+sourceExt+'.'+targetExt)+
                 suffix+
-                (use == null ? "" : TransformerConfig.USE + use);
+                (use == null || ANY.equals(use) ? "" : TransformerConfig.USE + use);
     }
 
     @Override
@@ -433,6 +465,30 @@ class TransformerSourceTargetSuffixValue extends TransformerSourceTargetSuffixKe
     public TransformerSourceTargetSuffixKey key()
     {
         return new TransformerSourceTargetSuffixKey(transformerName, sourceExt, targetExt, suffix, use);
+    }
+    
+    /**
+     * @return the key of the sibling property for the max value if this is the limit value and one
+     * for the limit value if the max value.
+     */
+    public TransformerSourceTargetSuffixKey getSiblingKey()
+    {
+        String siblingSuffix = 
+            suffix == TransformerConfig.MAX_SOURCE_SIZE_K_BYTES
+          ?           TransformerConfig.READ_LIMIT_K_BYTES
+          : suffix == TransformerConfig.READ_LIMIT_K_BYTES
+          ?           TransformerConfig.MAX_SOURCE_SIZE_K_BYTES
+              
+          : suffix == TransformerConfig.TIMEOUT_MS
+          ?           TransformerConfig.READ_LIMIT_TIME_MS
+          : suffix == TransformerConfig.READ_LIMIT_TIME_MS
+          ?           TransformerConfig.TIMEOUT_MS
+                
+          : suffix == TransformerConfig.MAX_PAGES
+          ?           TransformerConfig.PAGE_LIMIT
+          :           TransformerConfig.MAX_PAGES;
+
+        return new TransformerSourceTargetSuffixKey(transformerName, sourceExt, targetExt, siblingSuffix, use);
     }
     
     public String toString()

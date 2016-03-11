@@ -19,9 +19,6 @@
 package org.alfresco.repo.attributes;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.domain.propval.PropertyValueDAO;
-import org.alfresco.repo.lock.JobLockService;
-import org.alfresco.repo.lock.LockAcquisitionException;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;

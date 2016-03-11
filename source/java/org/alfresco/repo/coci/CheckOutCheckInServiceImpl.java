@@ -488,6 +488,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService,Extens
             nodeService.addAspect(workingCopy, ContentModel.ASPECT_LOCKABLE, null);
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_CHECKED_OUT, null);
             nodeService.createAssociation(nodeRef, workingCopy, ContentModel.ASSOC_WORKING_COPY_LINK);
+            nodeService.removeAspect(workingCopy, ContentModel.ASPECT_CMIS_CREATED_CHECKEDOUT);
         }
         finally
         {
@@ -648,12 +649,16 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService,Extens
                 }
             }
         }
-            
-        if (versionProperties != null && nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE))
+
+        if (versionProperties != null && 
+            nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) &&
+            !nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CMIS_CREATED_CHECKEDOUT))
         {
             // Create the new version
             this.versionService.createVersion(nodeRef, versionProperties);
         }
+        
+        nodeService.removeAspect(nodeRef, ContentModel.ASPECT_CMIS_CREATED_CHECKEDOUT);
         
         if (keepCheckedOut == false)
         {
@@ -728,6 +733,11 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService,Extens
 
             // Invoke policy
             invokeOnCancelCheckOut(nodeRef);
+
+            if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_CMIS_CREATED_CHECKEDOUT))
+            {
+                nodeService.deleteNode(nodeRef);
+            }
         }
         catch (UnableToReleaseLockException exception)
         {
@@ -740,7 +750,7 @@ public class CheckOutCheckInServiceImpl implements CheckOutCheckInService,Extens
         
         return nodeRef;
     }
-    
+        
     @Override
     @Extend(traitAPI=CheckOutCheckInServiceTrait.class,extensionAPI=CheckOutCheckInServiceExtension.class)
     public NodeRef getWorkingCopy(NodeRef nodeRef)

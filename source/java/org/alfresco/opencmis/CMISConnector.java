@@ -1447,9 +1447,8 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
                 nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, null);
             }
 
-            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(5);
-            versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MAJOR);
-            versionProperties.put(VersionModel.PROP_DESCRIPTION, "Initial Version");
+            // MNT-14687 : Creating a document as checkedout and then cancelling the checkout should delete the document
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_CMIS_CREATED_CHECKEDOUT, null);
 
             getCheckOutCheckInService().checkout(nodeRef);
         }

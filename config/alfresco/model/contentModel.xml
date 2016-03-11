@@ -1015,6 +1015,10 @@
          </mandatory-aspects>
       </aspect>
    
+      <aspect name="cm:cmisCreatedCheckedOut">
+         <title>CMIS Created Checked Out</title>
+      </aspect>
+   
       <aspect name="cm:versionable">
          <title>Versionable</title>
          <properties>

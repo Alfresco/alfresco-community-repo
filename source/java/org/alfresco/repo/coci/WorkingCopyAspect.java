@@ -140,6 +140,11 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
             {
                 lockService.unlock(checkedOutNodeRef, false, true);
                 nodeService.removeAspect(checkedOutNodeRef, ContentModel.ASPECT_CHECKED_OUT);
+
+                if (nodeService.hasAspect(checkedOutNodeRef, ContentModel.ASPECT_CMIS_CREATED_CHECKEDOUT))
+                {
+                    nodeService.deleteNode(checkedOutNodeRef);
+                }
             }
             finally
             {

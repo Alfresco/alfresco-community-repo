@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -135,6 +136,23 @@ public final class Classification extends BaseScopableProcessorExtension
     {
         Object[] cats = buildCategoryNodes(services.getCategoryService().getRootCategories(
                             storeRef, createQName(aspect)));
+        return Context.getCurrentContext().newArray(getScope(), cats);
+    }
+
+    /**
+     * Get ordered, filtered and paged root categories in a classification.
+     * 
+     * @param aspect
+     * @param filter
+     * @param maxItems
+     * @param skipCount (offset)
+     * @return
+     */
+    public Scriptable getRootCategories(String aspect, String filter, int maxItems, int skipCount)
+    {
+        PagingRequest pagingRequest = new PagingRequest(skipCount, maxItems);
+        List<ChildAssociationRef> rootCategories = services.getCategoryService().getRootCategories(storeRef, createQName(aspect), pagingRequest, true, filter).getPage();
+        Object[] cats = buildCategoryNodes(rootCategories);
         return Context.getCurrentContext().newArray(getScope(), cats);
     }
 

@@ -371,6 +371,11 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
     public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName)
     {
+        return getRootCategories(storeRef, aspectName, pagingRequest, sortByName, null);
+    }
+
+    public PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName, String filter)
+    {
         final List<ChildAssociationRef> assocs = new LinkedList<ChildAssociationRef>();
         Set<NodeRef> nodeRefs = getClassificationNodes(storeRef, aspectName);
 
@@ -382,7 +387,7 @@ public class LuceneCategoryServiceImpl implements CategoryService
 
         OUTER: for(NodeRef nodeRef : nodeRefs)
         {
-        	Collection<ChildAssociationRef> children = getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, null);
+        	Collection<ChildAssociationRef> children = getChildren(nodeRef, Mode.SUB_CATEGORIES, Depth.IMMEDIATE, sortByName, filter);
         	for(ChildAssociationRef child : children)
         	{
         		count++;

@@ -31,6 +31,7 @@ import javax.transaction.UserTransaction;
 import junit.framework.TestCase;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.dictionary.M2Aspect;
@@ -782,6 +783,22 @@ public class ADMLuceneCategoryTest extends TestCase
      
         
         tx.rollback();
+        
+        tx = transactionService.getUserTransaction();
+        tx.begin();
+        for ( int i=0; i<=5; i++)
+        {
+            categoryService.createRootCategory(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), "FirstTestCategory" + i);
+            categoryService.createRootCategory(rootNodeRef.getStoreRef(), QName.createQName(TEST_NAMESPACE, "assetClass"), "SecondTestCategory" + i);
+        }
+        tx.commit();
+        tx = transactionService.getUserTransaction();
+        tx.begin();
+        PagingRequest pagingRequest = new PagingRequest(10);
+        assertEquals(10,categoryService.getRootCategories(rootNodeRef.getStoreRef(),QName.createQName(TEST_NAMESPACE, "assetClass"), pagingRequest, true, null).getPage().size());
+        assertEquals(6,categoryService.getRootCategories(rootNodeRef.getStoreRef(),QName.createQName(TEST_NAMESPACE, "assetClass"), pagingRequest, true, "FirstTestCategory").getPage().size());
+        assertEquals(6,categoryService.getRootCategories(rootNodeRef.getStoreRef(),QName.createQName(TEST_NAMESPACE, "assetClass"), pagingRequest, true, "SecondTestCategory").getPage().size());
+        tx.commit();
     }
 
     /**

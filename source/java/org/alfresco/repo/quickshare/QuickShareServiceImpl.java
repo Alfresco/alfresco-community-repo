@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -535,9 +535,19 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
                 {
                     logger.warn("SharedId mismatch: expected="+sharedId+",actual="+nodeSharedId);
                 }
-                
-                nodeService.removeAspect(nodeRef, QuickShareModel.ASPECT_QSHARE);
-                
+
+                // Disable audit to preserve modifier and modified date
+                // And not to create version
+                // see MNT-15654
+                behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                try
+                {
+                    nodeService.removeAspect(nodeRef, QuickShareModel.ASPECT_QSHARE);
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                }
                 return null;
             }
         }, tenantDomain);

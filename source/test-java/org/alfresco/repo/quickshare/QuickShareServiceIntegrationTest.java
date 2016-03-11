@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -431,5 +431,36 @@ public class QuickShareServiceIntegrationTest
             }
         });
     }
-    
+
+    /**
+     * Test for MNT-15654
+     * <p> The node is created and shared by user1. Then unshared by user2
+     * <p> The modifier should not change to user2 after unsharing.
+     */
+    @Test
+    public void testModifierAfterUnSharing()
+    {
+        AuthenticationUtil.runAs(new RunAsWork<Void>(){
+            @Override
+            public Void doWork() throws Exception
+            {
+                permissionService.setPermission(testNode, user2.getUsername(), PermissionService.CONSUMER, true);
+                return null;
+            }
+        }, user1.getUsername());
+
+        QuickShareDTO dto = share(testNode, user1.getUsername());
+        unshare(dto.getId(), user2.getUsername());
+
+        String modifier = AuthenticationUtil.runAsSystem(new RunAsWork<String>(){
+            @Override
+            public String doWork() throws Exception
+            {
+                return (String )nodeService.getProperty(testNode, ContentModel.PROP_MODIFIER);
+            }
+        });
+
+        assertEquals("The modifier has changed after sharing.", user1.getUsername(), modifier);
+    }
+
 }

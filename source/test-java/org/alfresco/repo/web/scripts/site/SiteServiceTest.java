@@ -19,17 +19,23 @@
 package org.alfresco.repo.web.scripts.site;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import junit.framework.AssertionFailedError;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -37,13 +43,16 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessPermission;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.PropertyMap;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -59,12 +68,16 @@ import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
  * 
  * @author Roy Wetherall
  */
-public class SiteServiceTest extends AbstractSiteServiceTest
+public class SiteServiceTest extends BaseWebScriptTest
 {    
+    private MutableAuthenticationService authenticationService;
+    private AuthenticationComponent authenticationComponent;
+    private PersonService personService;
     private SiteService siteService;
     private NodeService nodeService;
     private PermissionService permissionService;
     private AuthorityService authorityService;
+    private FileFolderService fileFolderService;
     
     private static final String USER_ONE = "SiteTestOne";
     private static final String USER_TWO = "SiteTestTwo";
@@ -77,15 +90,25 @@ public class SiteServiceTest extends AbstractSiteServiceTest
     private static final String URL_MEMBERSHIPS = "/memberships";
     private static final String URL_SITES_ADMIN = "/api/admin-sites";
     
+    private List<String> createdSites = new ArrayList<String>(5);
+    
     @Override
     protected void setUp() throws Exception
     {
         super.setUp();
         
+        this.authenticationService = (MutableAuthenticationService)getServer().getApplicationContext().getBean("AuthenticationService");
+        this.authenticationComponent = (AuthenticationComponent)getServer().getApplicationContext().getBean("authenticationComponent");
+        this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         this.permissionService = (PermissionService)getServer().getApplicationContext().getBean("PermissionService");
         this.authorityService = (AuthorityService)getServer().getApplicationContext().getBean("AuthorityService");
+        this.fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
+
+        // sets the testMode property to true via spring injection. This will prevent emails
+        // from being sent from within this test case.
+        this.authenticationComponent.setSystemUserAsCurrentUser();
         
         // Create users
         createUser(USER_ONE);
@@ -101,10 +124,36 @@ public class SiteServiceTest extends AbstractSiteServiceTest
         this.authenticationComponent.setCurrentUser(USER_ONE);
     }
     
+    private void createUser(String userName)
+    {
+        if (this.authenticationService.authenticationExists(userName) == false)
+        {
+            this.authenticationService.createAuthentication(userName, "PWD".toCharArray());
+            
+            PropertyMap ppOne = new PropertyMap(4);
+            ppOne.put(ContentModel.PROP_USERNAME, userName);
+            ppOne.put(ContentModel.PROP_FIRSTNAME, "firstName");
+            ppOne.put(ContentModel.PROP_LASTNAME, "lastName");
+            ppOne.put(ContentModel.PROP_EMAIL, "email@email.com");
+            ppOne.put(ContentModel.PROP_JOBTITLE, "jobTitle");
+            
+            this.personService.createPerson(ppOne);
+        }
+    }
+    private void deleteUser(String username)
+    {
+       this.personService.deletePerson(username);
+       if(this.authenticationService.authenticationExists(username))
+       {
+          this.authenticationService.deleteAuthentication(username);
+       }
+    }
+    
     @Override
     protected void tearDown() throws Exception
     {
         super.tearDown();
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
         // Clear the users
         deleteUser(USER_ONE);
@@ -112,8 +161,17 @@ public class SiteServiceTest extends AbstractSiteServiceTest
         deleteUser(USER_THREE);
         deleteUser(USER_NUMERIC);
         deleteUser(USER_FOUR_AS_SITE_ADMIN);
-    }
 
+        // Tidy-up any site's create during the execution of the test
+        for (String shortName : this.createdSites)
+        {
+            sendRequest(new DeleteRequest(URL_SITES + "/" + shortName), 0);
+        }
+        
+        // Clear the list
+        this.createdSites.clear();        
+    }
+    
     public void testCreateSite() throws Exception
     {
         String shortName  = GUID.generate();
@@ -131,6 +189,20 @@ public class SiteServiceTest extends AbstractSiteServiceTest
         
         // Check for duplicate names
         createSite("myPreset", shortName, "myTitle", "myDescription", SiteVisibility.PUBLIC, 400); 
+    }
+    
+    private JSONObject createSite(String sitePreset, String shortName, String title, String description, SiteVisibility visibility, int expectedStatus)
+        throws Exception
+    {
+        JSONObject site = new JSONObject();
+        site.put("sitePreset", sitePreset);
+        site.put("shortName", shortName);
+        site.put("title", title);
+        site.put("description", description);
+        site.put("visibility", visibility.toString());                
+        Response response = sendRequest(new PostRequest(URL_SITES, site.toString(), "application/json"), expectedStatus); 
+        this.createdSites.add(shortName);
+        return new JSONObject(response.getContentAsString());
     }
     
     public void testGetSites() throws Exception

@@ -74,6 +74,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     private boolean m_isActive = true;
             
     private AuthenticationDriver fallbackDelegate;
+    private boolean m_isFallbackEnabled = true;
             
     protected static final String MIME_HTML_TEXT = "text/html";
 
@@ -106,7 +107,7 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     }
 
     /**
-     * Activates or deactivates the fallback authentication support for this filter
+     * Sets the fallback authentication support for this filter
      * 
      * @param delegate AuthenticationDriver
      */
@@ -114,13 +115,23 @@ public abstract class BaseSSOAuthenticationFilter extends BaseAuthenticationFilt
     {
         this.fallbackDelegate = delegate;
     }
-    
+
+    /**
+     * Activates or deactivates the fallback authentication support for this filter
+     * 
+     * @param fallbackEnabled
+     */
+    public final void setFallbackEnabled(boolean fallbackEnabled)
+    {
+        this.m_isFallbackEnabled = fallbackEnabled;
+    }
+
     /** 
      * @return <code>true</code> if fallback authentication enabled
      */
     public final boolean isFallbackEnabled()
     {
-        return fallbackDelegate != null;
+        return m_isFallbackEnabled && fallbackDelegate != null;
     }
 
     /*

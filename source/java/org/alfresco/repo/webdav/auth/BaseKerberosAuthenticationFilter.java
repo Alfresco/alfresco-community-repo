@@ -358,7 +358,7 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
                         req.getRemoteAddr() + ":" + req.getRemotePort() + ")");
             
             // Send back a request for SPNEGO authentication
-            logonStartAgain(context, req, resp);
+            logonStartAgain(context, req, resp, true);
             return false;
         }
         else
@@ -643,13 +643,27 @@ public abstract class BaseKerberosAuthenticationFilter extends BaseSSOAuthentica
      * @throws IOException
      */
     public void logonStartAgain(ServletContext context, HttpServletRequest req, HttpServletResponse resp) throws IOException
-	{
+    {
+        logonStartAgain(context, req, resp, false);
+    }
+    
+    /**
+     * The logon to start again
+     *
+     * @param context ServletContext
+     * @param req HttpServletRequest
+     * @param resp HttpServletResponse
+     * @param ignoreFallback ignore fallback
+     * @throws IOException
+     */
+    private void logonStartAgain(ServletContext context, HttpServletRequest req, HttpServletResponse resp, boolean ignoreFallback) throws IOException
+        {
         if (getLogger().isDebugEnabled())
             getLogger().debug("Issuing login challenge to browser.");
         // Force the logon to start again
         resp.setHeader("WWW-Authenticate", "Negotiate");
         
-        if (isFallbackEnabled())
+        if (!ignoreFallback && isFallbackEnabled())
         {
             includeFallbackAuth(context, req, resp);
         }

@@ -217,7 +217,7 @@ public class ModuleManagementTool implements LogOutput
             
             // Get the details of the installing module
             String propertiesLocation = ampFileLocation + "/module.properties";
-            ModuleDetails installingModuleDetails = ModuleDetailsHelper.createModuleDetailsFromPropertyLocation(propertiesLocation);
+            ModuleDetails installingModuleDetails = ModuleDetailsHelper.createModuleDetailsFromPropertyLocation(propertiesLocation, this);
             if (installingModuleDetails == null)
             {
                 throw new ModuleManagementToolException("No module.properties file has been found in the installing .amp file '" + ampFileLocation + "'");

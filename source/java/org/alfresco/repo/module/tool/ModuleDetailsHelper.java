@@ -46,11 +46,22 @@ public class ModuleDetailsHelper
      */
     public static ModuleDetails createModuleDetailsFromPropertiesStream(InputStream is) throws IOException
     {
+        return createModuleDetailsFromPropertiesStream(is, null);
+    }
+
+    /**
+     * Factory method to create module details from a stream of a properties file
+     * @param is                the properties input stream, which will be closed during the call
+     * @param log               logger
+     * @return                  Returns the initialized module details
+     */
+    public static ModuleDetails createModuleDetailsFromPropertiesStream(InputStream is, LogOutput log) throws IOException
+    {
         try
         {
             Properties properties = new Properties();
             properties.load(is);
-            return new ModuleDetailsImpl(properties);
+            return new ModuleDetailsImpl(properties, log);
         }
         finally
         {
@@ -67,6 +78,19 @@ public class ModuleDetailsHelper
      */
     public static ModuleDetails createModuleDetailsFromPropertyLocation(String location) throws IOException
     {
+        return createModuleDetailsFromPropertyLocation(location, null);
+    }
+
+    /**
+     * Creates a module details helper object based on a file location.
+     * 
+     * @param location  file location
+     * @param log       logger
+     * @return          Returns the module details or null if the location points to nothing
+     * @throws IOException 
+     */
+    public static ModuleDetails createModuleDetailsFromPropertyLocation(String location, LogOutput log) throws IOException
+    {
         ModuleDetails result = null;
         TFileInputStream is;
         try
@@ -82,7 +106,7 @@ public class ModuleDetailsHelper
 
         try
         {
-            result = createModuleDetailsFromPropertiesStream(is);
+            result = createModuleDetailsFromPropertiesStream(is, log);
         }
         catch (IOException exception)
         {

@@ -264,6 +264,21 @@ public class TransformerPropertySetter
         String transformerName = null;
         String suffix = null;
         String separator = null;
+        
+        int k = propertyName.lastIndexOf(TransformerConfig.USE);
+        if (k != -1)
+        {
+            int l = k+TransformerConfig.USE.length();
+            
+            if (propertyName.length()-l > 0)
+            {
+                propertyName = propertyName.substring(0, k);
+            }
+            else
+            {
+                throw unexpectedProperty("Missing use value after ...use. ", line);
+            }
+        }
 
         suffixesLoop:
         for (String aSuffix: TransformerConfig.ALL_SUFFIXES)

@@ -232,6 +232,17 @@ public class TransformerPropertySetterTest
                 "content.transformer.default.maxPages", "-1"));
     }
 
+
+    @Test
+    public void defaultUseTransformerTest()
+    {
+        setter.setProperties(
+                "content.transformer.default.maxSourceSizeKBytes.use.doclib=67");
+        
+        verify(transformerProperties).setProperties(expectedProperties(
+                "content.transformer.default.maxSourceSizeKBytes.use.doclib", "67"));
+    }
+
     @Test
     public void commentAndWhiteSpaceTest()
     {

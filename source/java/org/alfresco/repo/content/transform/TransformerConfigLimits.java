@@ -102,13 +102,45 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
         }
     }
 
-    // Returns the 'effective' properties for the given 'use'. These will be made up from the
-    // properties defined for that use plus default properties that don't have a matching use
-    // property.
+    /**
+     * Returns the 'effective' properties for the given 'use'.
+     * 
+     * These will be made up from the properties defined for that use plus default properties
+     * that don't have a matching use property, as long as there is not a matching use at a
+     * higher level.<p>
+     * 
+     * <li>If there is a system wide property with the use value, all other properties without
+     *     the same use value are ignored.</li>
+     * <li>If there is a transformer wide property with this use value, all other transformer
+     *     wide properties for the same transformer without a use value are ignored.
+     * <li>If there is mimetype property with the use value, the default property for
+     *     the same combination is ignored.</li>
+     * @param use value such as "doclib" or "index"
+     * @param allUseMap the complete set of transformer properties that includes blank and all
+     *        use values. 
+     * @return a set of properties for the specific use.
+     */
     private Collection<TransformerSourceTargetSuffixValue> getPropertiesForUse(String use,
             Map<TransformerSourceTargetSuffixKey, TransformerSourceTargetSuffixValue> allUseMap)
     {
         Collection<TransformerSourceTargetSuffixValue> properties = new ArrayList<TransformerSourceTargetSuffixValue>();
+        
+        boolean systemWideUse = false;
+        Set<String> transformerWideUse = new HashSet<>();
+        for (TransformerSourceTargetSuffixValue property: allUseMap.values())
+        {
+            String propertyUse = property.use == null ? ANY : property.use;
+            if (propertyUse.equals(use))
+            {
+                if (DEFAULT_TRANSFORMER.equals(property.transformerName))
+                {
+                    systemWideUse = true;
+                    break;
+                }
+                
+                transformerWideUse.add(property.transformerName);
+            }
+        }
 
         for (TransformerSourceTargetSuffixValue property: allUseMap.values())
         {
@@ -117,14 +149,21 @@ public class TransformerConfigLimits extends TransformerPropertyNameExtractor
             {
                 properties.add(property);
             }
-            else if (propertyUse.equals(ANY) &&
-                    getProperty(property.transformerName, property.sourceExt, property.targetExt,
-                            property.suffix, use, allUseMap) == null)
+            else if (!systemWideUse && propertyUse.equals(ANY))
             {
-                properties.add(property);
+                if (DEFAULT_TRANSFORMER.equals(property.transformerName) ||
+                    !transformerWideUse.contains(property.transformerName))
+                {
+                    // If there is NOT a similar 'use' property... 
+                    if (getProperty(property.transformerName, property.sourceExt, property.targetExt,
+                                property.suffix, use, allUseMap) == null)
+                    {
+                        properties.add(property);
+                    }
+                }
             }
         }
-
+        
         return properties;
     }
 

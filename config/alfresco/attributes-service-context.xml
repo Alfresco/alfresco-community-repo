@@ -18,13 +18,18 @@
         </property>
         <property name="jobDataAsMap">
             <map>
-                <entry key="propertyValueDAO">
-                    <ref bean="propertyValueDAO" />
+                <entry key="propTablesCleaner">
+                    <ref bean="propTablesCleaner" />
                 </entry>
             </map>
         </property>
     </bean>
-    
+
+    <bean id="propTablesCleaner" class="org.alfresco.repo.attributes.PropTablesCleaner">
+        <property name="jobLockService" ref="JobLockService"/>
+        <property name="propertyValueDAO" ref="propertyValueDAO"/>
+    </bean>
+
     <bean id="propTablesCleanupTrigger" class="org.alfresco.util.CronTriggerBean">
         <property name="jobDetail">
             <ref bean="propTablesCleanupJobDetail" />

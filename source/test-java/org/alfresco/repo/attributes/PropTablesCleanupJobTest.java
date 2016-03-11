@@ -1,10 +1,9 @@
 package org.alfresco.repo.attributes;
 
-import static org.junit.Assert.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.alfresco.repo.domain.propval.PropertyValueDAO;
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,14 +24,14 @@ public class PropTablesCleanupJobTest
 {
     private PropTablesCleanupJob cleanupJob;
     private @Mock JobExecutionContext jobCtx;
-    private @Mock PropertyValueDAO propValueDAO;
+    private @Mock PropTablesCleaner propTablesCleaner;
     private JobDetail jobDetail;
     
     @Before
     public void setUp() throws Exception
     {
         jobDetail = new JobDetail("propTablesCleanupJob", PropTablesCleanupJob.class);
-        jobDetail.getJobDataMap().put(PropTablesCleanupJob.PROPERTY_VALUE_DAO_KEY, propValueDAO);
+        jobDetail.getJobDataMap().put("propTablesCleaner", propTablesCleaner);
         cleanupJob = new PropTablesCleanupJob();
         
         when(jobCtx.getJobDetail()).thenReturn(jobDetail);
@@ -43,20 +42,20 @@ public class PropTablesCleanupJobTest
     {
         cleanupJob.execute(jobCtx);
         
-        verify(propValueDAO).cleanupUnusedValues();
+        verify(propTablesCleaner).execute();
     }
     
-    @Test(expected=IllegalArgumentException.class)
-    public void testMissingPropertyValueDAO() throws JobExecutionException
+    @Test(expected=AlfrescoRuntimeException.class)
+    public void testMissingPropTablesCleaner() throws JobExecutionException
     {
-        jobDetail.getJobDataMap().put(PropTablesCleanupJob.PROPERTY_VALUE_DAO_KEY, null);
+        jobDetail.getJobDataMap().put("propTablesCleaner", null);
         cleanupJob.execute(jobCtx);
     }
     
-    @Test(expected=ClassCastException.class)
-    public void testWrongTypeForPropertyValueDAO() throws JobExecutionException
+    @Test(expected=AlfrescoRuntimeException.class)
+    public void testWrongTypeForPropTablesCleaner() throws JobExecutionException
     {
-        jobDetail.getJobDataMap().put(PropTablesCleanupJob.PROPERTY_VALUE_DAO_KEY, "This is not a PropertyValueDAO");
+        jobDetail.getJobDataMap().put("propTablesCleaner", "This is not a PropTablesCleaner");
         cleanupJob.execute(jobCtx);
     }
 

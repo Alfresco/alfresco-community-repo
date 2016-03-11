@@ -1685,7 +1685,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         ftsQueryWithCount(searcher, qname + ":(<3.4 TO 4])", 0);
         ftsQueryWithCount(searcher, qname + ":(<3.4 TO 3.4>)", 0);
 
-        ftsQueryWithCount(searcher, "lucene-test:float_x002D_ista:3.40", 1);
+        ftsQueryWithCount(searcher, "lucene\\-test:float_x002D_ista:3.40", 1);
 
         ftsQueryWithCount(searcher, "lazy", 1);
         ftsQueryWithCount(searcher, "laz*", 1);
@@ -4276,7 +4276,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@test\\:int\\-ista:\"0001\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@lucene-test\\:int\\-ista:\"0001\"", null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
@@ -7871,7 +7871,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         nspr.registerNamespace(NamespaceService.DICTIONARY_MODEL_PREFIX, NamespaceService.DICTIONARY_MODEL_1_0_URI);
         nspr.registerNamespace(NamespaceService.SYSTEM_MODEL_PREFIX, NamespaceService.SYSTEM_MODEL_1_0_URI);
         nspr.registerNamespace("namespace", "namespace");
-        nspr.registerNamespace("test", TEST_NAMESPACE);
+        nspr.registerNamespace("lucene-test", TEST_NAMESPACE);
         nspr.registerNamespace(NamespaceService.DEFAULT_PREFIX, defaultURI);
         return nspr;
     }

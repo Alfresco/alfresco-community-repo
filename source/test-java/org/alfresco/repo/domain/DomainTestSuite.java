@@ -27,6 +27,7 @@ import org.alfresco.repo.domain.mimetype.MimetypeDAOTest;
 import org.alfresco.repo.domain.node.NodeDAOTest;
 import org.alfresco.repo.domain.patch.AppliedPatchDAOTest;
 import org.alfresco.repo.domain.permissions.AclCrudDAOTest;
+import org.alfresco.repo.domain.propval.PropertyValueCleanupTest;
 import org.alfresco.repo.domain.propval.PropertyValueDAOTest;
 import org.alfresco.repo.domain.qname.QNameDAOTest;
 import org.alfresco.repo.domain.query.CannedQueryDAOTest;
@@ -52,6 +53,7 @@ import org.junit.runners.Suite;
     LocaleDAOTest.class,
     QNameDAOTest.class,
     PropertyValueDAOTest.class,
+    PropertyValueCleanupTest.class,
     AuditDAOTest.class,
     AppliedPatchDAOTest.class,
     AclCrudDAOTest.class,

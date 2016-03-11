@@ -18,8 +18,6 @@
  */
 package org.alfresco.repo.domain.propval;
 
-import static org.junit.Assert.*;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -36,19 +34,25 @@ import javax.naming.CompositeName;
 import org.alfresco.repo.domain.propval.PropertyValueDAO.PropertyFinderCallback;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
-import org.junit.experimental.categories.Category;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.extensions.surf.util.ISO8601DateFormat;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  * @see PropertyValueDAO
@@ -68,8 +72,7 @@ public class PropertyValueDAOTest
     @Before
     public void setUp() throws Exception
     {
-        ServiceRegistry serviceRegistry = (ServiceRegistry) ctx.getBean(ServiceRegistry.SERVICE_REGISTRY);
-        transactionService = serviceRegistry.getTransactionService();
+        transactionService = (TransactionService) ctx.getBean("TransactionService");
         txnHelper = transactionService.getRetryingTransactionHelper();
         txnHelper.setMaxRetries(0);
         

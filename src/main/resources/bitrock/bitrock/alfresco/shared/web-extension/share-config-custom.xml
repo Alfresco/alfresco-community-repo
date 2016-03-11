@@ -95,9 +95,8 @@
    <config evaluator="string-compare" condition="Replication">
       <share-urls>
          <!--
-            To discover a Repository Id, browse to the remote server's CMIS landing page at:
-              http://{server}:{port}/alfresco/service/cmis/index.html
-            The Repository Id field is found under the "CMIS Repository Information" expandable panel.
+            To locate your current repositoryId go to Admin Console > General > Repository Information:
+              http://localhost:8080/alfresco/s/enterprise/admin/admin-repositoryinfo        
 
             Example config entry:
               <share-url repositoryId="622f9533-2a1e-48fe-af4e-ee9e41667ea4">http://new-york-office:8080/share/</share-url>

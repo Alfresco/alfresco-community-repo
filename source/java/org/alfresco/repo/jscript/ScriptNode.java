@@ -63,6 +63,7 @@ import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.thumbnail.script.ScriptThumbnail;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.repo.workflow.jscript.JscriptWorkflowInstance;
 import org.alfresco.scripts.ScriptException;
@@ -2012,7 +2013,16 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         
         if (nodeService.exists(this.nodeRef))
         {
-            this.nodeService.deleteNode(this.nodeRef);
+            RetryingTransactionCallback<Void> deleteNode = new RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    nodeService.deleteNode(nodeRef);
+                    return null;
+                }
+            };
+            services.getTransactionService().getRetryingTransactionHelper().doInTransaction(deleteNode, false, true);
             success = true;
         }
         

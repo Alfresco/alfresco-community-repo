@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.repo.search.impl.solr.facet.Exceptions.UnrecognisedFacetId;
+import org.alfresco.repo.search.impl.solr.facet.FacetQNameUtils;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties.CustomProperties;
 import org.alfresco.repo.search.impl.solr.facet.SolrFacetProperties;
 import org.alfresco.service.namespace.QName;

@@ -13,7 +13,7 @@
         <property name="description"><value>patch.siteLoadPatch.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>${version.schema}</value></property>
-        <property name="targetSchema"><value>10000</value></property>
+        <property name="targetSchema"><value>100000</value></property>
         <property name="disabled"><value>${sample.site.disabled}</value></property>
         <property name="dependsOn" >
             <list>

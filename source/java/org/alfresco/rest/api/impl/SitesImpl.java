@@ -272,9 +272,9 @@ public class SitesImpl implements Sites
         return siteMember;
     }
 
-	public SiteMember getSiteMember(String personId, String siteId)
-	{
-		SiteMember siteMember = null;
+    public SiteMember getSiteMember(String personId, String siteId)
+    {
+        SiteMember siteMember = null;
 
 		personId = people.validatePerson(personId);
     	SiteInfo siteInfo = validateSite(siteId);
@@ -286,7 +286,7 @@ public class SitesImpl implements Sites
     	}
     	siteId = siteInfo.getShortName();
 
-		logger.debug("Getting member role for "+siteId+ " person "+personId);
+        logger.debug("Getting member role for "+siteId+ " person "+personId);
     	String role = siteService.getMembersRole(siteId, personId);
     	if(role != null)
     	{
@@ -297,9 +297,9 @@ public class SitesImpl implements Sites
             logger.debug("Getting member role but role is null");
     		throw new RelationshipResourceNotFoundException(personId, siteId);
     	}
-
-		return siteMember;
-	}
+        
+        return siteMember;
+    }
 
 	public SiteMember addSiteMember(String siteId, SiteMember siteMember)
 	{

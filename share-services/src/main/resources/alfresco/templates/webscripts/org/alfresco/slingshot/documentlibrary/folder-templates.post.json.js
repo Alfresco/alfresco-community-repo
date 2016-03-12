@@ -30,6 +30,7 @@ function main()
    copy.properties["cm:description"] = json.get("prop_cm_description").toString();
    copy.properties["cm:title"] = json.get("prop_cm_title").toString();
    copy.save();
+   model.persistedObject = copy.getNodeRef().toString();
    model.name = json.get("prop_cm_name").toString();
 }
 

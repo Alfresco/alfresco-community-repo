@@ -40,8 +40,10 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * JUnit test for folder-templates API
@@ -123,7 +125,7 @@ public class FolderTemplateTest  extends BaseWebScriptTest
         body.put("prop_cm_description", newDescription);
         body.put("prop_cm_title", newTitle);
         
-        sendRequest(new PostRequest(url,  body.toString(), "application/json"), Status.STATUS_OK);
+        Response response = sendRequest(new PostRequest(url,  body.toString(), "application/json"), Status.STATUS_OK);
         
         // Check the new folder
         String newFolderQuery = "/app:company_home/" + destinationName + "/" + newName;
@@ -144,5 +146,16 @@ public class FolderTemplateTest  extends BaseWebScriptTest
         assertEquals("The folder's title should be " + newTitle +
                 ", but was " + newFolder.getProperties().get(ContentModel.PROP_TITLE),
                 newTitle, newFolder.getProperties().get(ContentModel.PROP_TITLE));
+        
+        // check the response
+        JSONParser jsonParser = new JSONParser();
+        Object contentJsonObject = jsonParser.parse(response
+                .getContentAsString());
+        JSONObject jsonData = (JSONObject) contentJsonObject;
+        String persistedObject = (String) jsonData.get("persistedObject");
+        assertEquals("The response's persistedObject should be "
+                + newFolder.getNodeRef().toString() + " but it was "
+                + persistedObject, newFolder.getNodeRef().toString(),
+                persistedObject);
     }
 }

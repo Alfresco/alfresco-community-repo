@@ -15,15 +15,27 @@
  */
 function runAction(p_params)
 {
-   var results;
+   var results, resultId, resultNodeRef;
 
    try
    {
       // Initialise to the destNode (will be updated to the original if a working copy)...
       var originalDoc = p_params.destNode;
+      resultId = originalDoc.name;
+      resultNodeRef = originalDoc.nodeRef.toString();
+
       if (p_params.destNode.hasAspect("cm:workingcopy"))
       {
          // If the node is a working copy then cancel the checkout and set the original...
+         var checkedoutNode = p_params.destNode.getCheckedOut();
+         if (checkedoutNode === null)
+         {
+            status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not find original node: " + url.extension);
+            return;
+         }
+         resultId = checkedoutNode.name;
+         resultNodeRef = checkedoutNode.nodeRef.toString();
+
          originalDoc = p_params.destNode.cancelCheckout();
          if (originalDoc === null)
          {
@@ -38,6 +50,9 @@ function runAction(p_params)
          {
             // original document: edit offline case
             originalDoc = assocs["{http://www.alfresco.org/model/content/1.0}workingcopylink"][0].cancelCheckout();
+
+            resultId = originalDoc.name;
+            resultNodeRef = originalDoc.nodeRef.toString();
          }
          else
          {
@@ -46,9 +61,6 @@ function runAction(p_params)
             p_params.destNode.unlock();
          }
       }
-
-      var resultId = originalDoc.name,
-         resultNodeRef = originalDoc.nodeRef.toString();
 
       // Construct the result object
       results = [

@@ -178,7 +178,7 @@
         <property name="description"><value>patch.exampleJavaScript.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
         <property name="fixesToSchema"><value>${version.schema}</value></property>
-        <property name="targetSchema"><value>10000</value></property>
+        <property name="targetSchema"><value>100000</value></property>
         <property name="importerBootstrap">
             <ref bean="spacesBootstrap" />
         </property>

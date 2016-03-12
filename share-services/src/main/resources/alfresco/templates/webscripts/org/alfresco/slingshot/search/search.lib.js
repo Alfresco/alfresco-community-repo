@@ -1027,8 +1027,21 @@ function getSearchResults(params)
 	  var fqs = [];
       if (params.filters != null)
       {
+         var filters = [];
+         if(params.encodedFilters)
+         {
+            var encodedFilters = params.encodedFilters.split(",");
+            for(var i=0; i<encodedFilters;i++)
+            {
+               encodedFilters[i] = decodeURIComponent(encodedFilters[i]);
+               filters.push(encodedFilters[i]);
+            }
+         }
+         else
+         {
          // comma separated list of filter pairs - filter|value|value|...
          var filters = params.filters.split(",");
+         }
          for (var f=0; f<filters.length; f++)
          {
             var filterParts = filters[f].split("|");

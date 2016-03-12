@@ -16,6 +16,7 @@ function main()
       startIndex: (args.startIndex !== null) ? parseInt(args.startIndex, 10) : 0,
       facetFields: args.facetFields,
       filters: args.filters,
+      encodedFilters: args.encodedFilters,
       spell: (args.spellcheck !== null) ? (args.spellcheck == "true") : false
    };
    

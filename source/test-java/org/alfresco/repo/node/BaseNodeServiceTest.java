@@ -75,6 +75,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 import org.hibernate.dialect.DB2Dialect;
 import org.hibernate.dialect.Dialect;
 import org.springframework.context.ApplicationContext;
@@ -1450,7 +1451,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
                 pathARef.getChildRef(),
                 ASSOC_TYPE_QNAME_TEST_CHILDREN,
                 QName.createQName("pathC"));
-
+        
         // remove the path B association
         boolean removedB = nodeService.removeChildAssociation(pathBRef);
         assertTrue("Association was not removed", removedB);
@@ -1460,58 +1461,19 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         // remove the path C association
         boolean removedC = nodeService.removeChildAssociation(pathCRef);
         assertTrue("Association was not removed", removedC);
-        removedC = nodeService.removeSecondaryChildAssociation(pathCRef);
+        removedC = nodeService.removeSeconaryChildAssociation(pathCRef);
         assertFalse("Non-existent association was apparently removed", removedC);
         
         // Now verify that primary associations are caught
         try
         {
-            nodeService.removeSecondaryChildAssociation(pathPrimaryRef);
+            nodeService.removeSeconaryChildAssociation(pathPrimaryRef);
             fail("Primary association not detected");
         }
         catch (IllegalArgumentException e)
         {
             // Expected
         }
-    }
-
-    public void testRemoveChildPolicyFires() throws Exception
-    {
-        ChildAssociationRef pathPrimaryRef = nodeService.createNode(
-                rootNodeRef,
-                ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                QName.createQName("parent_child"),
-                ContentModel.TYPE_CONTAINER);
-        NodeRef parentRef = pathPrimaryRef.getParentRef();
-        ChildAssociationRef pathARef = nodeService.createNode(
-                parentRef,
-                ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                QName.createQName("patha"),
-                ContentModel.TYPE_CONTAINER);
-        ChildAssociationRef pathBRef = nodeService.addChild(
-                parentRef,
-                pathARef.getChildRef(),
-                ContentModel.ASSOC_ARCHIVED_LINK,
-                QName.createQName("pathb"));
-        ChildAssociationRef pathCRef = nodeService.addChild(
-                parentRef,
-                pathARef.getChildRef(),
-                ASSOC_TYPE_QNAME_TEST_CHILDREN,
-                QName.createQName("pathc"));
-
-        BeforeDeletePolicyTester beforeDeletePolicy = new BeforeDeletePolicyTester();
-        this.policyComponent.bindAssociationBehaviour(
-                NodeServicePolicies.BeforeDeleteChildAssociationPolicy.QNAME,
-                beforeDeletePolicy,
-                new JavaBehaviour(beforeDeletePolicy,  "beforeDeleteChildAssociation"));
-
-        boolean removed = nodeService.removeSecondaryChildAssociation(pathBRef);
-        assertTrue("Association was removed", removed);
-        assertEquals("The BeforeDeleteChildAssociationPolicy must fire on removeSecondaryChildAssociation",pathBRef, beforeDeletePolicy.childRef);
-
-        removed = nodeService.removeChildAssociation(pathCRef);
-        assertTrue("Association was removed", removed);
-        assertEquals("The BeforeDeleteChildAssociationPolicy must fire on removeChildAssociation", pathCRef, beforeDeletePolicy.childRef);
     }
     
     public void testRemoveChildByRef() throws Exception
@@ -2610,17 +2572,7 @@ public abstract class BaseNodeServiceTest extends BaseSpringTest
         }
     };
 
-    public static class BeforeDeletePolicyTester implements NodeServicePolicies.BeforeDeleteChildAssociationPolicy
-    {
-        ChildAssociationRef childRef;
-
-        @Override
-        public void beforeDeleteChildAssociation(ChildAssociationRef childAssocRef)
-        {
-            this.childRef = childAssocRef;
-        }
-    }
-
+    
     public void testMoveNode() throws Exception
     {
         Map<QName, ChildAssociationRef> assocRefs = buildNodeGraph();

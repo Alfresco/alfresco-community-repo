@@ -258,6 +258,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
     {
         // Register the test model
         dictionaryDAO.putModel(model);
+        namespaceDao.addPrefix("test", TEST_NAMESPACE);
     }
 
     public void setUp() throws Exception
@@ -1518,7 +1519,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         sp.addQueryTemplate("ANDY", "%cm:content");
         sp.setNamespace(NamespaceService.CONTENT_MODEL_1_0_URI);
         sp.excludeDataInTheCurrentTransaction(true);
-        sp.addSort("lucene-test:neverIndexed", false);
+        sp.addSort("test:neverIndexed", false);
         results = searcher.query(sp);
         assertEquals(16, results.length());
         results.close();
@@ -1685,7 +1686,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         ftsQueryWithCount(searcher, qname + ":(<3.4 TO 4])", 0);
         ftsQueryWithCount(searcher, qname + ":(<3.4 TO 3.4>)", 0);
 
-        ftsQueryWithCount(searcher, "lucene\\-test:float_x002D_ista:3.40", 1);
+        ftsQueryWithCount(searcher, "test:float_x002D_ista:3.40", 1);
 
         ftsQueryWithCount(searcher, "lazy", 1);
         ftsQueryWithCount(searcher, "laz*", 1);
@@ -4227,11 +4228,11 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         assertEquals(1, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PRIMARYASSOCTYPEQNAME:\"lucene-test:assoc\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "PRIMARYASSOCTYPEQNAME:\"test:assoc\"", null);
         assertEquals(11, results.length());
         results.close();
 
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASSOCTYPEQNAME:\"lucene-test:assoc\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "ASSOCTYPEQNAME:\"test:assoc\"", null);
         assertEquals(11, results.length());
         results.close();
 
@@ -4276,7 +4277,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         results.close();
 
         qname = QName.createQName(TEST_NAMESPACE, "int-ista");
-        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@lucene-test\\:int\\-ista:\"0001\"", null);
+        results = searcher.query(rootNodeRef.getStoreRef(), "lucene", "\\@test\\:int\\-ista:\"0001\"", null);
         assertEquals(1, results.length());
         assertNotNull(results.getRow(0).getValue(qname));
         results.close();
@@ -7871,7 +7872,7 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
         nspr.registerNamespace(NamespaceService.DICTIONARY_MODEL_PREFIX, NamespaceService.DICTIONARY_MODEL_1_0_URI);
         nspr.registerNamespace(NamespaceService.SYSTEM_MODEL_PREFIX, NamespaceService.SYSTEM_MODEL_1_0_URI);
         nspr.registerNamespace("namespace", "namespace");
-        nspr.registerNamespace("lucene-test", TEST_NAMESPACE);
+        nspr.registerNamespace("test", TEST_NAMESPACE);
         nspr.registerNamespace(NamespaceService.DEFAULT_PREFIX, defaultURI);
         return nspr;
     }

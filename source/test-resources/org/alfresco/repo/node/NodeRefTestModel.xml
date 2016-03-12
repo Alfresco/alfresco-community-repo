@@ -1,4 +1,4 @@
-<model name="node-ref-test:nodeservice"
+<model name="test:nodeservice"
 	xmlns="http://www.alfresco.org/model/dictionary/1.0">
 	
 	<description>Test Model for NodeService tests</description>
@@ -14,31 +14,31 @@
 	
 	<namespaces>
 		<namespace uri="http://www.alfresco.org/test/NodeRefTestModel"
-			prefix="node-ref-test"/>
+			prefix="test"/>
 	</namespaces>
 	
 	<types>
-		<type name="node-ref-test:testType">
+		<type name="test:testType">
 			<title>Content</title>
 			<parent>cm:content</parent>
 			<archive>false</archive>
 			<properties>
-				<property name="node-ref-test:category1">
+				<property name="test:category1">
 					<type>d:category</type>
 					<mandatory>false</mandatory>
 					<multiple>false</multiple>
 				</property>
-				<property name="node-ref-test:categories1">
+				<property name="test:categories1">
 					<type>d:category</type>
 					<mandatory>false</mandatory>
 					<multiple>true</multiple>
 				</property>
-				<property name="node-ref-test:noderef1">
+				<property name="test:noderef1">
 					<type>d:noderef</type>
 					<mandatory>false</mandatory>
 					<multiple>false</multiple>
 				</property>
-				<property name="node-ref-test:noderefs1">
+				<property name="test:noderefs1">
 					<type>d:noderef</type>
 					<mandatory>false</mandatory>
 					<multiple>true</multiple>
@@ -49,10 +49,10 @@
 	
 	<aspects>
 		
-		<aspect name="node-ref-test:singleCategory">
+		<aspect name="test:singleCategory">
 			<title>Single Category</title>
 			<properties>
-				<property name="node-ref-test:category">
+				<property name="test:category">
 					<type>d:category</type>
 					<mandatory>false</mandatory>
 					<multiple>false</multiple>
@@ -60,10 +60,10 @@
 			</properties>
 		</aspect>
 		
-		<aspect name="node-ref-test:multipleCategories">
+		<aspect name="test:multipleCategories">
 			<title>Multiple Categories</title>
 			<properties>
-				<property name="node-ref-test:categories">
+				<property name="test:categories">
 					<type>d:category</type>
 					<mandatory>false</mandatory>
 					<multiple>true</multiple>
@@ -71,10 +71,10 @@
 			</properties>
 		</aspect>
 		
-		<aspect name="node-ref-test:singleNodeRef">
+		<aspect name="test:singleNodeRef">
 			<title>Single Node Ref</title>
 			<properties>
-				<property name="node-ref-test:noderef">
+				<property name="test:noderef">
 					<type>d:noderef</type>
 					<mandatory>false</mandatory>
 					<multiple>false</multiple>
@@ -82,10 +82,10 @@
 			</properties>
 		</aspect>
 		
-		<aspect name="node-ref-test:multipleNodeRefs">
+		<aspect name="test:multipleNodeRefs">
 			<title>Mutliple Node Refs</title>
 			<properties>
-				<property name="node-ref-test:noderefs">
+				<property name="test:noderefs">
 					<type>d:noderef</type>
 					<mandatory>false</mandatory>
 					<multiple>true</multiple>

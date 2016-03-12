@@ -176,7 +176,9 @@
                         <configuration>
                             <workingDirectory>${project.build.directory}/classes/bitrock</workingDirectory>
                             <target>
-                                <ant antfile="${project.build.directory}/classes/build-installers.xml" />
+                                <ant antfile="${project.build.directory}/classes/build-installers.xml">
+				    <property name="installer.version.name" value="${installer.version.name}" />
+                                </ant>
                             </target>
                         </configuration>
                     </execution>

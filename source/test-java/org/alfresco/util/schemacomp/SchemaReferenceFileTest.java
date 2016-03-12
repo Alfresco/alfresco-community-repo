@@ -64,7 +64,10 @@ public class SchemaReferenceFileTest
     @After
     public void tearDown()
     {
-        ctx.close();
+        if(ctx != null)
+        {
+            ctx.close();
+        }
     }
 
     @Test

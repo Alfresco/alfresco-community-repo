@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,10 +18,13 @@
  */
 package org.alfresco.repo.web.scripts.permission;
 
+import java.util.HashSet;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -29,14 +32,19 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONException;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 
 /**
  * Test for RestAPI permission services
@@ -51,8 +59,12 @@ public class PermissionServiceTest extends BaseWebScriptTest
     private PersonService personService;
     private NodeService nodeService;
     private PermissionService permissionService;
+    private FileFolderService fileFolderService;
+    private SiteService siteService;
 
-    private static final String USER_ONE = "USER" + GUID.generate();
+    private static final String USER_ONE = "USER_ONE_" + GUID.generate();
+    private static final String USER_TWO = "USER_TWO_" + GUID.generate();
+    private static final String USER_THREE = "USER_THREE_" + GUID.generate();
     private static final String URL_DOCLIB_PERMISSIONS = "/slingshot/doclib/permissions";
     
     @Override
@@ -65,6 +77,8 @@ public class PermissionServiceTest extends BaseWebScriptTest
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.nodeService = (NodeService)getServer().getApplicationContext().getBean("NodeService");
         this.permissionService = (PermissionService)getServer().getApplicationContext().getBean("PermissionService");
+        this.fileFolderService = (FileFolderService)getServer().getApplicationContext().getBean("FileFolderService");
+        this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         // Create users
@@ -176,5 +190,171 @@ public class PermissionServiceTest extends BaseWebScriptTest
        {
           this.authenticationService.deleteAuthentication(username);
        }
+    }
+
+    /**
+     * Test for MNT-15509 Grant or/and Deny the same permission on multiple ancestors of a
+     * file and check if the file has duplicate inherited permissions
+     */
+    public void testMultipleInheritedPermissions() throws Exception
+    {
+        // Create the site
+        String siteName = GUID.generate();
+        siteService.createSite("Testing", siteName, siteName, null, SiteVisibility.PUBLIC);
+
+        // Ensure we have a doclib
+        NodeRef siteContainer = siteService.createContainer(siteName, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
+
+        // Create Folder1
+        // Give USER_ONE COORDINATOR role to Folder1
+        // Give USER_TWO CONTRIBUTOR role to Folder1
+        // Deny USER_THREE CONSUMER role to Folder1
+        NodeRef folder1 = fileFolderService.create(siteContainer, "Folder1", ContentModel.TYPE_FOLDER).getNodeRef();
+        permissionService.setPermission(folder1, USER_ONE, PermissionService.COORDINATOR, true);
+        permissionService.setPermission(folder1, USER_TWO, PermissionService.CONTRIBUTOR, true);
+        permissionService.setPermission(folder1, USER_THREE, PermissionService.CONSUMER, false);
+        permissionService.setInheritParentPermissions(folder1, true);
+
+        // Create Folder2 in Folder1 
+        // Give USER_ONE COORDINATOR role to Folder2
+        // Deny USER_TWO CONTRIBUTOR role to Folder2
+        // Give USER_THREE CONSUMER role to Folder2
+        NodeRef folder2 = fileFolderService.create(folder1, "Folder2", ContentModel.TYPE_FOLDER).getNodeRef();
+        permissionService.setPermission(folder2, USER_ONE, PermissionService.COORDINATOR, true);
+        permissionService.setPermission(folder2, USER_TWO, PermissionService.CONTRIBUTOR, false);
+        permissionService.setPermission(folder2, USER_THREE, PermissionService.CONSUMER, true);
+        permissionService.setInheritParentPermissions(folder2, true);
+
+        // Create Folder3 in Folder2
+        // Give USER_ONE CONSUMER role to Folder3 twice
+        NodeRef folder3 = fileFolderService.create(folder2, "Folder3", ContentModel.TYPE_FOLDER).getNodeRef();
+        permissionService.setPermission(folder3, USER_ONE, PermissionService.CONSUMER, true);
+        permissionService.setPermission(folder3, USER_ONE, PermissionService.CONSUMER, true);
+        permissionService.setPermission(folder3, USER_ONE, PermissionService.COORDINATOR, true);
+        permissionService.setInheritParentPermissions(folder3, true);
+
+        // Get Folder3's inherited permissions
+        Response response = sendRequest(
+                new GetRequest(URL_DOCLIB_PERMISSIONS + "/" + StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getProtocol() + "/"
+                        + StoreRef.STORE_REF_WORKSPACE_SPACESSTORE.getIdentifier() + "/" + folder3.getId()), Status.STATUS_OK);
+        
+        JSONObject jsonResponse = new JSONObject(response.getContentAsString());
+        
+        //Check if the request returns duplicate direct permissions
+        HashSet<AccessPermission> directPermissions = new HashSet<>();
+        JSONArray directPermissionsArray = jsonResponse.getJSONArray("direct");
+        for (int i = 0; i < directPermissionsArray.length(); i++)
+        {
+            AccessPermission permission = new AccessPermission(directPermissionsArray.getJSONObject(i));
+            
+            assertTrue(directPermissions.add(permission));
+        }
+        
+        //used to check allow/deny permission inheritance
+        AccessPermission denyPermissionInheritedTest = null;
+        AccessPermission allowPermissionInheritedTest = null;
+
+        // Check if the request returns duplicate inherited permissions
+        HashSet<AccessPermission> inheritedPermissions = new HashSet<>();
+        JSONArray inheritedPermissionsArray = jsonResponse.getJSONArray("inherited");
+        for (int i = 0; i < inheritedPermissionsArray.length(); i++)
+        {
+            AccessPermission permission = new AccessPermission(inheritedPermissionsArray.getJSONObject(i));
+            if (USER_TWO.equals(permission.getAuthority().getName()) && PermissionService.CONTRIBUTOR.equals(permission.getRole()))
+            {
+                denyPermissionInheritedTest = permission;
+            }
+            if (USER_THREE.equals(permission.getAuthority().getName()) && PermissionService.CONSUMER.equals(permission.getRole()))
+            {
+                allowPermissionInheritedTest = permission;
+            }
+            assertTrue(inheritedPermissions.add(permission));
+        }
+
+        // Check if on folder3 USER_TWO inherits DENY for CONTRIBUTOR role from
+        // folder 2 although on folder 1 was ALLOW
+        assertNull(denyPermissionInheritedTest);
+        
+        // Check if on folder3 USER_THREE inherits ALLOW for CONSUMER role from
+        // folder 2 although on folder 1 was DENY
+        assertNotNull(allowPermissionInheritedTest);
+    }
+}
+
+class AccessPermission
+{
+    private PermissionAuthority authority;
+    private String role;
+
+    public AccessPermission(JSONObject jsonPermission) throws JSONException
+    {
+        authority = new PermissionAuthority(jsonPermission.getJSONObject("authority"));
+        role = jsonPermission.getString("role");
+    }
+
+    public PermissionAuthority getAuthority()
+    {
+        return this.authority;
+    }
+
+    public String getRole()
+    {
+        return this.role;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == null || !(obj instanceof AccessPermission))
+        {
+            return false;
+        }
+
+        return (role.equals(((AccessPermission) obj).getRole()) && authority.equals(((AccessPermission) obj).getAuthority()));
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return authority.hashCode() + role.hashCode();
+    }
+}
+
+class PermissionAuthority
+{
+    private String name;
+    private String displayName;
+
+    public PermissionAuthority(JSONObject jsonAuth) throws JSONException
+    {
+        name = jsonAuth.getString("name");
+        displayName = jsonAuth.getString("displayName");
+    }
+
+    public String getName()
+    {
+        return this.name;
+    }
+
+    public String getDisplayName()
+    {
+        return this.displayName;
+    }
+
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (obj == null || !(obj instanceof PermissionAuthority))
+        {
+            return false;
+        }
+
+        return (name.equals(((PermissionAuthority) obj).getName()) && displayName.equals(((PermissionAuthority) obj).getDisplayName()));
+    }
+
+    @Override
+    public int hashCode()
+    {
+        return name.hashCode() + displayName.hashCode();
     }
 }

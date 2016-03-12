@@ -33,8 +33,18 @@ function runAction(p_params)
             status.setCode(status.STATUS_INTERNAL_SERVER_ERROR, "Could not find original node: " + url.extension);
             return;
          }
-         resultId = checkedoutNode.name;
-         resultNodeRef = checkedoutNode.nodeRef.toString();
+
+         if (checkedoutNode.hasAspect("cm:cmisCreatedCheckedOut"))
+         {
+            var parent = checkedoutNode.parent;
+            resultId = parent.name;
+            resultNodeRef = parent.nodeRef.toString();
+         }
+         else
+         {
+            resultId = checkedoutNode.name;
+            resultNodeRef = checkedoutNode.nodeRef.toString();
+         }
 
          originalDoc = p_params.destNode.cancelCheckout();
          if (originalDoc === null)

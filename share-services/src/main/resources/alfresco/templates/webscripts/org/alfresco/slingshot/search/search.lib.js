@@ -1031,7 +1031,7 @@ function getSearchResults(params)
          if(params.encodedFilters)
          {
             var encodedFilters = params.encodedFilters.split(",");
-            for(var i=0; i<encodedFilters;i++)
+            for(var i=0; i<encodedFilters.length;i++)
             {
                encodedFilters[i] = decodeURIComponent(encodedFilters[i]);
                filters.push(encodedFilters[i]);

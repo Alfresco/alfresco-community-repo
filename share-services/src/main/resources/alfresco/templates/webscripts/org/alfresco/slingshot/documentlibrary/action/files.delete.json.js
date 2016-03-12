@@ -49,7 +49,7 @@ function runAction(p_params)
             result.id = fileNode.name;
             result.type = fileNode.isContainer ? "folder" : "document";
             // remove() call must come last
-            result.success = fileNode.remove();
+            result.success = fileNode.remove(true);
          }
       }
       catch (e)

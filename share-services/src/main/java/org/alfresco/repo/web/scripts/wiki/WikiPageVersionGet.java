@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -69,7 +69,7 @@ public class WikiPageVersionGet extends AbstractWikiWebScript
    protected Map<String, Object> executeImpl(SiteInfo site, String pageTitle,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
-      Map<String, Object> model = new HashMap<String, Object>();
+      Map<String, Object> model = new HashMap<>();
       
       // Grab the version string
       Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();

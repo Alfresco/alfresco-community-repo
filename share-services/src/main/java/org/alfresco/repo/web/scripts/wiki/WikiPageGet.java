@@ -55,7 +55,7 @@ public class WikiPageGet extends AbstractWikiWebScript
       boolean minWikiData = strMinWikiData != null ? Boolean.parseBoolean(strMinWikiData) : false;
        
       final ResourceBundle rb = getResources();
-      Map<String, Object> model = new HashMap<String, Object>();
+      Map<String, Object> model = new HashMap<>();
       
       // Try to find the page
       WikiPageInfo page = wikiService.getWikiPage(site.getShortName(), pageTitle);
@@ -78,8 +78,8 @@ public class WikiPageGet extends AbstractWikiWebScript
       
       // Identify all the internal page links, valid and not
       // TODO This may be a candidate for the service in future
-      List<String> links = new ArrayList<String>();
-      List<String> pageTitles = new ArrayList<String>();
+      List<String> links = new ArrayList<>();
+      List<String> pageTitles = new ArrayList<>();
       if (page.getContents() != null)
       {
          Matcher m = LINK_PATTERN.matcher(page.getContents());
@@ -111,7 +111,7 @@ public class WikiPageGet extends AbstractWikiWebScript
       model.put("minWikiData", minWikiData);
       
       // Double wrap
-      Map<String, Object> result = new HashMap<String, Object>();
+      Map<String, Object> result = new HashMap<>();
       result.put("result", model);
       return result;
    }

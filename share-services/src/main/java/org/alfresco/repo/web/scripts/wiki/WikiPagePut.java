@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -45,8 +45,10 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  */
 public class WikiPagePut extends AbstractWikiWebScript
 {
-   private static final String DEFAULT_PAGE_CONTENT = "This is a new page. It has no content";
-   
+   // Implementation note: the wiki page webscripts do not follow the standard Alfresco convention whereby
+   // POST = CREATE and PUT = UPDATE.
+   // In this case, put is used for both create and update.
+
    private VersionService versionService;
    public void setVersionService(VersionService versionService) 
    {
@@ -57,7 +59,7 @@ public class WikiPagePut extends AbstractWikiWebScript
    protected Map<String, Object> executeImpl(SiteInfo site, String pageTitle,
          WebScriptRequest req, JSONObject json, Status status, Cache cache) 
    {
-      Map<String, Object> model = new HashMap<String, Object>();
+      Map<String, Object> model = new HashMap<>();
       
       // Grab the details of the change
       // Fetch the contents
@@ -86,12 +88,8 @@ public class WikiPagePut extends AbstractWikiWebScript
       List<String> tags = null;
       if (json.containsKey("tags"))
       {
-         tags = new ArrayList<String>();
-         if (json.get("tags").equals(""))
-         {
-            // Empty list given as a string, eg "tags":""
-         }
-         else
+         tags = new ArrayList<>();
+         if (!json.get("tags").equals(""))
          {
             // Array of tags
             JSONArray tagsA = (JSONArray)json.get("tags");
@@ -110,7 +108,7 @@ public class WikiPagePut extends AbstractWikiWebScript
          page = wikiService.createWikiPage(site.getShortName(), title, contents);
          
          // Add tags if given
-         if (tags != null && tags.size() > 0)
+         if (tags != null && !tags.isEmpty())
          {
             page.getTags().addAll(tags);
             wikiService.updateWikiPage(page);
@@ -154,7 +152,7 @@ public class WikiPagePut extends AbstractWikiWebScript
       model.put("siteId", site.getShortName());
       
       // Double wrap
-      Map<String, Object> result = new HashMap<String, Object>();
+      Map<String, Object> result = new HashMap<>();
       result.put("result", model);
       return result;
    }
@@ -178,22 +176,12 @@ public class WikiPagePut extends AbstractWikiWebScript
          return true;
       }
       
-      // Check the label
-      if (version.getVersionLabel().equals(currentVersion))
-      {
-         // Match, no changes
-         return true;
-      }
-      else
-      {
-         // Someone else has edited it
-         return false;
-      }
+      return version.getVersionLabel().equals(currentVersion);
    }
    
    private void makeVersioned(WikiPageInfo page)
    {
-      Map<QName,Serializable> versionProps = new HashMap<QName, Serializable>();
+      Map<QName,Serializable> versionProps = new HashMap<>();
       versionProps.put(ContentModel.PROP_AUTO_VERSION, true);
       versionProps.put(ContentModel.PROP_AUTO_VERSION_PROPS, true);
       versionService.ensureVersioningEnabled(page.getNodeRef(), versionProps);

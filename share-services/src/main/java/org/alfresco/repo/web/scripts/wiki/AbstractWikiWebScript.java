@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -179,7 +179,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
     
     protected NodeRef personForModel(String username)
     {
-       if (username == null || username.length() == 0)
+       if (username == null || username.isEmpty())
        {
           return null;
        }
@@ -187,8 +187,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        try
        {
           // Will turn into a Script Node needed of the person
-          NodeRef person = personService.getPerson(username);
-          return person;
+           return personService.getPerson(username);
        }
        catch(NoSuchPersonException e)
        {
@@ -199,7 +198,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
     
     protected Map<String, Object> renderWikiPage(WikiPageInfo page)
     {
-       Map<String, Object> res = new HashMap<String, Object>();
+       Map<String, Object> res = new HashMap<>();
        res.put("page", page);
        res.put("node", page.getNodeRef());
        res.put("name", page.getSystemName());
@@ -214,14 +213,11 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        res.put("modified", page.getModifiedAt());
        
        // For most things, we want blank instead of null
-       for (String key : res.keySet())
+       for (Map.Entry<String, Object> entry : res.entrySet())
        {
-          if (res.get(key) == null)
-          {
-             res.put(key, "");
-          }
+           if (entry.getValue() == null) entry.setValue("");
        }
-       
+
        // FTL needs a script node of the people, or null if unavailable
        res.put("createdBy", personForModel(page.getCreator()));
        res.put("modifiedBy", personForModel(page.getModifier()));
@@ -237,8 +233,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
        if (templateVars == null)
        {
-          String error = "No parameters supplied";
-          throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
+           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "No parameters supplied");
        }
        
        
@@ -256,13 +251,9 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
           {
              json = (JSONObject)parser.parse(req.getContent().getContent());
           }
-          catch (IOException io)
+          catch (IOException | ParseException io)
           {
              throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + io.getMessage());
-          }
-          catch (ParseException pe)
-          {
-             throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Invalid JSON: " + pe.getMessage());
           }
        }
        
@@ -290,8 +281,7 @@ public abstract class AbstractWikiWebScript extends DeclarativeWebScript
        }
        if (siteName == null)
        {
-          String error = "No site given";
-          throw new WebScriptException(Status.STATUS_BAD_REQUEST, error);
+           throw new WebScriptException(Status.STATUS_BAD_REQUEST, "No site given");
        }
        
        // Grab the requested site

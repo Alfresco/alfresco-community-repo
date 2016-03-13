@@ -1,13 +1,15 @@
+<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/rma/admin/rmconstraint/rmconstraint-utils.js">
+
 /*
  * #%L
  * Alfresco Records Management Module
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software.
+ * This file is part of the Alfresco software. 
  * 
- * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail.  Otherwise, the software is
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
  * provided under the following open source license terms:
  * 
  * Alfresco is free software: you can redistribute it and/or modify
@@ -24,7 +26,6 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-<import resource="classpath:/alfresco/templates/webscripts/org/alfresco/rma/admin/rmconstraint/rmconstraint-utils.js">
 
 /**
  * Create a new RM Constraint List

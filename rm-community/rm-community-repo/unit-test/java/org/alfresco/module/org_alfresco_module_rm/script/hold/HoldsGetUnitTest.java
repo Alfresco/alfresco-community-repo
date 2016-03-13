@@ -1,13 +1,16 @@
+ 
+package org.alfresco.module.org_alfresco_module_rm.script.hold;
+
 /*
  * #%L
  * Alfresco Records Management Module
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software.
+ * This file is part of the Alfresco software. 
  * 
- * If the software was purchased under a paid Alfresco license, the terms of
- * the paid license agreement will prevail.  Otherwise, the software is
+ * If the software was purchased under a paid Alfresco license, the terms of 
+ * the paid license agreement will prevail.  Otherwise, the software is 
  * provided under the following open source license terms:
  * 
  * Alfresco is free software: you can redistribute it and/or modify
@@ -24,13 +27,13 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.script.hold;
 
-import static org.alfresco.module.org_alfresco_module_rm.test.util.WebScriptExceptionMatcher.fileNotFound;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doReturn;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.WebScriptExceptionMatcher.fileNotFound;
 
 import java.util.Collections;
 import java.util.Map;

@@ -256,7 +256,6 @@
 
                 <verbose>${license.verbose}</verbose>
                 <addSvnKeyWords>false</addSvnKeyWords>
-                <addJavaLicenseAfterPackage>false</addJavaLicenseAfterPackage>
 
                 <!-- header configuration -->
                 <organizationName>Alfresco Software Limited</organizationName>

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.getAdminUserName;
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAs;

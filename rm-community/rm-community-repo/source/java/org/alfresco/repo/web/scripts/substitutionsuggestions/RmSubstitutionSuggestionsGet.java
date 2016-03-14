@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.web.scripts.substitutionsuggestions;
+package org.alfresco.repo.web.scripts.substitutionsuggestions;
 
 import java.util.ArrayList;
 import java.util.HashMap;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.rule.ruletrigger;
+package org.alfresco.repo.rule.ruletrigger;
 
 import java.util.Set;
 

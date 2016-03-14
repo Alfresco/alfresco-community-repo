@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.action.impl;
+package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import static org.apache.commons.lang.StringUtils.isBlank;
 

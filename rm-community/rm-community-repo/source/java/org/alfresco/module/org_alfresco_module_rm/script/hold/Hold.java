@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.script.hold;
+package org.alfresco.module.org_alfresco_module_rm.script.hold;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 

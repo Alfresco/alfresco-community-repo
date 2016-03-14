@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.security.permissions.processor;
+package org.alfresco.repo.security.permissions.processor;
 
 import java.util.ArrayList;
 import java.util.List;

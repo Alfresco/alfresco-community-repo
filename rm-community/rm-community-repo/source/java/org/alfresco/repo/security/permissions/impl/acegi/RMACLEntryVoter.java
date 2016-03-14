@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.security.permissions.impl.acegi;
+package org.alfresco.repo.security.permissions.impl.acegi;
 
 import java.lang.reflect.Method;
 

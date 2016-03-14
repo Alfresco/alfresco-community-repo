@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.forms;
+package org.alfresco.module.org_alfresco_module_rm.forms;
 
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.runAsSystem;
 

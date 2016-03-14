@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.destroy;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.destroy;
 
 import java.io.InputStream;
 import java.io.Serializable;

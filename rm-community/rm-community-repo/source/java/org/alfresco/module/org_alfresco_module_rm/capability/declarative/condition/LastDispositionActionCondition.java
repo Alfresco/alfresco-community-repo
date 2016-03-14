@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition;
+package org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.AbstractCapabilityCondition;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;

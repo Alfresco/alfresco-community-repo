@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.relationship;
+package org.alfresco.module.org_alfresco_module_rm.relationship;
 
 /**
  * Enum representing the relationship types

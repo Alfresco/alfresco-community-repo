@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator;
+package org.alfresco.module.org_alfresco_module_rm.jscript.app.evaluator;
 
 import org.alfresco.module.org_alfresco_module_rm.jscript.app.BaseEvaluator;
 import org.alfresco.module.org_alfresco_module_rm.vital.VitalRecordService;

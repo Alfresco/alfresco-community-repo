@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
+package org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService;

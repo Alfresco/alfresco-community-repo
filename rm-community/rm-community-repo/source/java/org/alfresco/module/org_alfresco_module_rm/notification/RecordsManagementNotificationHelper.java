@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.notification;
+package org.alfresco.module.org_alfresco_module_rm.notification;
 
 import java.io.Serializable;
 import java.util.Date;

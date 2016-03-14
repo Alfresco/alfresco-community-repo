@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.security.permissions.impl;
+package org.alfresco.repo.security.permissions.impl;
 
 import static org.apache.commons.lang.StringUtils.isNotBlank;
 

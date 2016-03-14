@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.security;
+package org.alfresco.module.org_alfresco_module_rm.security;
 
 import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority.EXTENDED_READER;
 import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority.EXTENDED_WRITER;

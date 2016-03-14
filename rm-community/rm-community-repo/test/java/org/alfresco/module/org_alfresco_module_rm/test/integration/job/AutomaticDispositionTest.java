@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.job;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.job;
 
 import java.io.Serializable;
 import java.util.HashMap;

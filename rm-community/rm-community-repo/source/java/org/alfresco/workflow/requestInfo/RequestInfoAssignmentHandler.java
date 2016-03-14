@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.workflow.requestInfo;
+package org.alfresco.workflow.requestInfo;
 
 import java.util.ArrayList;
 import java.util.List;

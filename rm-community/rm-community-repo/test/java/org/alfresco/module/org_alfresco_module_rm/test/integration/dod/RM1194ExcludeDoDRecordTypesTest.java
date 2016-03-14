@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.dod;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.dod;
 
 import java.util.Set;
 

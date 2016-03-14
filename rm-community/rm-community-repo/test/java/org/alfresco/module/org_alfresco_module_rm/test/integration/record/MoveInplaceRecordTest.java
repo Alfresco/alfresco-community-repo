@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.record;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
 
 import static org.apache.commons.collections.ListUtils.removeAll;
 

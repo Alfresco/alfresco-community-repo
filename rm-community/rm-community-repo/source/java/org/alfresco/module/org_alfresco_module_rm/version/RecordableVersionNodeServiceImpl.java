@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.version;
+package org.alfresco.module.org_alfresco_module_rm.version;
 
 import static org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl.RECORD_MODEL_URIS;
 

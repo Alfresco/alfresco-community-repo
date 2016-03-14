@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.util;
+package org.alfresco.module.org_alfresco_module_rm.util;
 
 /**
  * Alfresco Transaction Support delegation bean.

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;

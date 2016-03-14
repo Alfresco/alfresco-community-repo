@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.admin;
+package org.alfresco.module.org_alfresco_module_rm.admin;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.content;
+package org.alfresco.module.org_alfresco_module_rm.content;
 
 import java.io.File;
 import java.util.Set;

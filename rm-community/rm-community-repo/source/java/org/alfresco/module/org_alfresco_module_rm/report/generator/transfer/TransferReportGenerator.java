@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.report.generator.transfer;
+package org.alfresco.module.org_alfresco_module_rm.report.generator.transfer;
 
 import java.io.Serializable;
 import java.util.ArrayList;

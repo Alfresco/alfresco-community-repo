@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.patch.v20;
+package org.alfresco.module.org_alfresco_module_rm.patch.v20;
 
 import java.io.InputStream;
 import java.io.Serializable;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.action.parameter;
+package org.alfresco.repo.action.parameter;
 
 import java.io.Serializable;
 import java.util.ArrayList;

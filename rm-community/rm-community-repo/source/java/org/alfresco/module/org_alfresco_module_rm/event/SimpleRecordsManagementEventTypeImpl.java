@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.event;
+package org.alfresco.module.org_alfresco_module_rm.event;
 
 import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.extensions.surf.util.I18NUtil;

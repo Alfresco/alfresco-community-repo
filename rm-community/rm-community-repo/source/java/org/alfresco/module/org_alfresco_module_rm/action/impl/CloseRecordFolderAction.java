@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.action.impl;
+package org.alfresco.module.org_alfresco_module_rm.action.impl;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;

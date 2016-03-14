@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.action;
+package org.alfresco.module.org_alfresco_module_rm.action;
 
 import java.io.Serializable;
 import java.util.Map;

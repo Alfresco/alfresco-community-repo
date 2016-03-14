@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.web.scripts.roles;
+package org.alfresco.repo.web.scripts.roles;
 
 import java.util.HashMap;
 import java.util.Map;

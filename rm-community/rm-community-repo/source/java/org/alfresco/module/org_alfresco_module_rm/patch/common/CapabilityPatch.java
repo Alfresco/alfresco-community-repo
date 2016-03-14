@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.patch.common;
+package org.alfresco.module.org_alfresco_module_rm.patch.common;
 
 import java.util.Set;
 

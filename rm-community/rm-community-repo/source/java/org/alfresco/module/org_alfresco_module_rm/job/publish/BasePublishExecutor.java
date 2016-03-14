@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.job.publish;
+package org.alfresco.module.org_alfresco_module_rm.job.publish;
 
 /**
  * Base publish executor implementation

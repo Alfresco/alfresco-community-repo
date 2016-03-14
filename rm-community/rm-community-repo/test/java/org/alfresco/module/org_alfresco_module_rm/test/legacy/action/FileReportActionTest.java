@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.legacy.action;
+package org.alfresco.module.org_alfresco_module_rm.test.legacy.action;
 
 import org.alfresco.module.org_alfresco_module_rm.action.impl.FileReportAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;

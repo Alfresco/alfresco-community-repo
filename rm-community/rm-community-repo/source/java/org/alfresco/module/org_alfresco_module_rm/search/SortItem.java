@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.search;
+package org.alfresco.module.org_alfresco_module_rm.search;
 
 import org.alfresco.service.namespace.QName;
 

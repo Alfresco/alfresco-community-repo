@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.patch.v22;
+package org.alfresco.module.org_alfresco_module_rm.patch.v22;
 
 import org.alfresco.module.org_alfresco_module_rm.patch.common.CapabilityPatch;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;

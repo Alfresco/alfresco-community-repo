@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.action;
+package org.alfresco.module.org_alfresco_module_rm.action;
 
 import org.alfresco.service.cmr.action.ActionConditionDefinition;
 

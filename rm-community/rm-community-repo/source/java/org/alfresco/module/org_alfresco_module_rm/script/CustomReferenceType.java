@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.script;
+package org.alfresco.module.org_alfresco_module_rm.script;
 
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipType;
 

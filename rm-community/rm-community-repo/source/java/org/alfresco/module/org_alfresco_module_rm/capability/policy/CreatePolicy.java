@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.capability.policy;
+package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.CreateCapability;
 import org.alfresco.service.cmr.repository.NodeRef;

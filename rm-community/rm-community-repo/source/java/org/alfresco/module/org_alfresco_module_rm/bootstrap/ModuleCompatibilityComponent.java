@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.bootstrap;
+package org.alfresco.module.org_alfresco_module_rm.bootstrap;
 
 import org.alfresco.service.cmr.admin.RepoUsage.LicenseMode;
 import org.alfresco.service.cmr.module.ModuleService;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.email;
+package org.alfresco.module.org_alfresco_module_rm.email;
 
 import java.util.List;
 

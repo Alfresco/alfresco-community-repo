@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.relationship;
+package org.alfresco.module.org_alfresco_module_rm.relationship;
 
 import org.alfresco.service.cmr.repository.NodeRef;
 

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_dod5015.caveat;
+package org.alfresco.module.org_alfresco_module_dod5015.caveat;
 
 /**
  * Compatibility Implementation.

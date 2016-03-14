@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
+package org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
 
 import java.util.Date;
 

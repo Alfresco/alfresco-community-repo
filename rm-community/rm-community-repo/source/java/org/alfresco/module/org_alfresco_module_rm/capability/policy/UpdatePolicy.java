@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.capability.policy;
+package org.alfresco.module.org_alfresco_module_rm.capability.policy;
 
 import java.io.Serializable;
 import java.util.Map;

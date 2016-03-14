@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.action.evaluator;
+package org.alfresco.module.org_alfresco_module_rm.action.evaluator;
 
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionConditionEvaluatorAbstractBase;
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.CapabilityCondition;

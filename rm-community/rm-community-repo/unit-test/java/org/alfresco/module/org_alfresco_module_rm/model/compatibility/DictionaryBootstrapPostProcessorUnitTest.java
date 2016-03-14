@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.model.compatibility;
+package org.alfresco.module.org_alfresco_module_rm.model.compatibility;
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;

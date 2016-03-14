@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.rule;
+package org.alfresco.repo.rule;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.disposition;
+package org.alfresco.module.org_alfresco_module_rm.disposition;
 
 import java.util.Comparator;
 import java.util.Date;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.web.scripts.dictionary;
+package org.alfresco.repo.web.scripts.dictionary;
 
 import java.util.ArrayList;
 import java.util.Collection;

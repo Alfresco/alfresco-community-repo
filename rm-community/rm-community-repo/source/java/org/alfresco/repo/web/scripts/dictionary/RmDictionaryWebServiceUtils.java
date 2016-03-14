@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.web.scripts.dictionary;
+package org.alfresco.repo.web.scripts.dictionary;
 
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;

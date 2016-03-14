@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.legacy.action;
+package org.alfresco.module.org_alfresco_module_rm.test.legacy.action;
 
 import java.io.Serializable;
 import java.util.ArrayList;

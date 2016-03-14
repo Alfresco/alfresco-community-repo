@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.vital;
+package org.alfresco.module.org_alfresco_module_rm.vital;
 
 import java.io.Serializable;
 import java.util.HashMap;

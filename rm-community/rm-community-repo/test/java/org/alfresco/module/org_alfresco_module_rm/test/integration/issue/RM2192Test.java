@@ -24,6 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
 import static org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.ROLE_RECORDS_MANAGER;

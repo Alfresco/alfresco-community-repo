@@ -24,6 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.repo.security.permissions.processor.impl;
 
 import org.alfresco.repo.security.permissions.processor.PermissionProcessorRegistry;

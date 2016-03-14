@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.search;
+
+package  org.alfresco.module.org_alfresco_module_rm.search;
 
 import java.util.ArrayList;
 import java.util.List;

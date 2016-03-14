@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.rule;
+
+package  org.alfresco.repo.rule;
 
 import java.util.HashSet;
 import java.util.Set;

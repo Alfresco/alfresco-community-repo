@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.script;
+
+package  org.alfresco.module.org_alfresco_module_rm.script;
 
 import java.io.File;
 import java.io.IOException;

@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.patch.v21;
+
+package  org.alfresco.module.org_alfresco_module_rm.patch.v21;
 
 import java.util.Arrays;
 import java.util.HashSet;

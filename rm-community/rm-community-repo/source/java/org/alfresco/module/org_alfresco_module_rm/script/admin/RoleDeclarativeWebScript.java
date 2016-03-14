@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.script.admin;
+
+package  org.alfresco.module.org_alfresco_module_rm.script.admin;
 
 import java.util.HashSet;
 import java.util.Map;

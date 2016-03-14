@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.action.constraint;
+
+package  org.alfresco.module.org_alfresco_module_rm.action.constraint;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.relationship;
+
+package  org.alfresco.module.org_alfresco_module_rm.relationship;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel.ASPECT_FROZEN;
 import static org.alfresco.util.ParameterCheck.mandatory;

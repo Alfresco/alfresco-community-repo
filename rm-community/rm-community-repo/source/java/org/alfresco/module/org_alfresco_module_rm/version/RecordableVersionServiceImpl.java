@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.version;
+
+package  org.alfresco.module.org_alfresco_module_rm.version;
 
 import static org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel.CUSTOM_REF_VERSIONS;
 import static org.codehaus.plexus.util.StringUtils.isNotBlank;

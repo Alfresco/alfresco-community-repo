@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.caveat;
+
+package  org.alfresco.module.org_alfresco_module_rm.caveat;
 
 /**
  * A class to hold I18N keys for messages related to constraint validation.

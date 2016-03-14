@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.workflow.requestInfo;
+
+package  org.alfresco.workflow.requestInfo;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.jscript.app;
+
+package  org.alfresco.module.org_alfresco_module_rm.jscript.app;
 
 import static org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel.READ_RECORDS;
 import static org.alfresco.service.cmr.security.AccessStatus.ALLOWED;

@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.security.authority;
+
+package  org.alfresco.repo.security.authority;
 
 import java.util.Set;
 import java.util.regex.Pattern;

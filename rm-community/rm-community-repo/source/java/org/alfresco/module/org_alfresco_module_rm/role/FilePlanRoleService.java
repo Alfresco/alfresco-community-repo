@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.role;
+
+package  org.alfresco.module.org_alfresco_module_rm.role;
 
 import java.util.Arrays;
 import java.util.List;

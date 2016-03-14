@@ -24,6 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.util;
 
 import static org.alfresco.util.ParameterCheck.mandatory;

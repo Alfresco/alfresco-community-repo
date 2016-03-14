@@ -24,6 +24,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.module.org_alfresco_module_rm.compatibility;
 
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;

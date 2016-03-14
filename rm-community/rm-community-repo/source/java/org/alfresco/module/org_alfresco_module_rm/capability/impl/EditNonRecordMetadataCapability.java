@@ -1,16 +1,13 @@
- 
-package org.alfresco.module.org_alfresco_module_rm.capability.impl;
-
 /*
  * #%L
  * Alfresco Records Management Module
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
+ * This file is part of the Alfresco software.
  * 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
  * 
  * Alfresco is free software: you can redistribute it and/or modify
@@ -27,14 +24,14 @@ package org.alfresco.module.org_alfresco_module_rm.capability.impl;
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
+package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.declarative.DeclarativeCapability;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.util.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
+
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Edit non record metadata capability

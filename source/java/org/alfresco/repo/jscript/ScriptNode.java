@@ -1726,10 +1726,23 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         {
             Serializable value = (Serializable) this.properties.get(key);
             
+            QName qname = createQName(key);
+            
+            // MNT-15798
+            if (ContentModel.PROP_CONTENT.equals(qname) && isScriptContent(value))
+            {
+                ScriptContentData contentData = (ScriptContentData) value;
+                // Do not persist the contentData if it was not touched
+                if (!contentData.isDirty())
+                {
+                    continue;
+                }
+            }
+            
             // perform the conversion from script wrapper object to repo serializable values
             value = getValueConverter().convertValueForRepo(value);
             
-            props.put(createQName(key), value);
+            props.put(qname, value);
         }
         this.nodeService.setProperties(this.nodeRef, props);
     }
@@ -3768,6 +3781,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         {
             this.contentData = contentData;
             this.property = property;
+            this.isDirty = ContentData.hasContent(contentData);
         }
 
         /* (non-Javadoc)
@@ -3815,6 +3829,15 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         }
         
         /**
+         * @return <code>true</code> if the contentData has a binary (content URL) associated and the updates on contentData and related properties should be saved. 
+         *         <code>false</code> if the contentData has a temporary value and no actual binary to be persisted.
+         */
+        public boolean isDirty()
+        {
+            return this.isDirty;
+        }
+        
+        /**
          * Set the content stream
          * 
          * @param content    Content string to set
@@ -3827,7 +3850,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             writer.putContent(content);
             
             // update cached variables after putContent()
-            this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
+            updateContentData(true);
         }
         
         /**
@@ -3844,7 +3867,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             writer.putContent(content.getInputStream());
 
             // update cached variables after putContent()
-            this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
+            updateContentData(true);
         }
         
         /**
@@ -3885,7 +3908,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             writer.putContent(is);
             
             // update cached variables after putContent()
-            this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
+            updateContentData(true);
         }
 
         /**
@@ -3900,7 +3923,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             writer.putContent(inputStream);
 
             // update cached variables after putContent()
-            this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
+            updateContentData(true);
         }
 
         /**
@@ -3923,7 +3946,7 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             writer.setEncoding(null);
             
             // update cached variables after putContent()
-            this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
+            updateContentData(true);
         }
         
         /**
@@ -3976,18 +3999,14 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         {
             this.contentData = ContentData.setEncoding(this.contentData, encoding);
             services.getNodeService().setProperty(nodeRef, this.property, this.contentData);
-            
-            // update cached variables after putContent()
-            this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
+            updateContentData(false);
         }
 
         public void setMimetype(String mimetype)
         {
             this.contentData = ContentData.setMimetype(this.contentData, mimetype);
             services.getNodeService().setProperty(nodeRef, this.property, this.contentData);
-            
-            // update cached variables after putContent()
-            this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
+            updateContentData(false);
         }
         
         /**
@@ -4047,8 +4066,18 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
             return encoding;
         }
         
+        /**
+         * Update cached contentData and the isDirty flag
+         */
+        private void updateContentData(boolean touchContent)
+        {
+            this.contentData = (ContentData) services.getNodeService().getProperty(nodeRef, this.property);
+            this.isDirty = touchContent ? true : this.isDirty;
+        }
+        
         private ContentData contentData;
         private QName property;
+        private boolean isDirty;
     }
     
     /**

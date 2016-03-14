@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,6 +35,7 @@ import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.DictionaryRepositoryBootstrap;
 import org.alfresco.repo.dictionary.RepositoryLocation;
 import org.alfresco.repo.i18n.MessageService;
+import org.alfresco.repo.jscript.ScriptNode.ScriptContentData;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -47,6 +48,7 @@ import org.alfresco.repo.version.VersionableAspect;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -80,6 +82,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestName;
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ScriptableObject;
 
 
 /**
@@ -544,5 +548,94 @@ public class ScriptNodeTest
         assertEquals("Incorrect Auto Version Props property.", autoVersionProps, NODE_SERVICE.getProperty(testNode, ContentModel.PROP_AUTO_VERSION_PROPS));
 
         revertBootstrap();
+    }
+    
+    /**
+     * MNT-15798 - Content Data should be created only when it has a binary, not as a side effect of getters on ScriptNode.
+     */
+    @Test
+    public void testContentDataCreation()
+    {
+        Repository repositoryHelper = (Repository) APP_CONTEXT_INIT.getApplicationContext().getBean("repositoryHelper");
+        NodeRef companyHome = repositoryHelper.getCompanyHome();
+
+        NodeRef newNode1 = testNodes.createNode(companyHome, "theTestContent1", ContentModel.TYPE_CONTENT, AuthenticationUtil.getFullyAuthenticatedUser()); 
+
+        // test on content data
+        ScriptNode sn = new ScriptNode(newNode1, SERVICE_REGISTRY);
+        sn.setScope(getScope());
+
+        ContentData contentData = (ContentData) NODE_SERVICE.getProperty(newNode1, ContentModel.PROP_CONTENT);
+        assertNull(contentData);
+
+        sn.setMimetype(MimetypeMap.MIMETYPE_PDF);
+        sn.save();
+        contentData = (ContentData) NODE_SERVICE.getProperty(newNode1, ContentModel.PROP_CONTENT);
+        assertNull(contentData);
+
+        sn.setContent("Marks to prove it.");
+        sn.save();
+        contentData = (ContentData) NODE_SERVICE.getProperty(newNode1, ContentModel.PROP_CONTENT);
+        assertNotNull(contentData);
+        assertEquals(true, ContentData.hasContent(contentData));
+
+        // test on ScriptContentData
+        NodeRef newNode2 = testNodes.createNode(companyHome, "theTestContent2.txt", ContentModel.TYPE_CONTENT, AuthenticationUtil.getFullyAuthenticatedUser()); 
+        ScriptNode sn2 = new ScriptNode(newNode2, SERVICE_REGISTRY);
+        sn2.setScope(getScope());
+
+        ScriptContentData scd = sn2.new ScriptContentData(null, ContentModel.PROP_CONTENT);
+        //set the "mocked" script content data on the script node
+        sn2.getProperties().put(ContentModel.PROP_CONTENT.toString(), scd);
+        
+        assertEquals(false, scd.isDirty());
+
+        scd.guessMimetype("theTestContent2.pdf");
+        assertEquals(false, scd.isDirty());
+
+        scd.setMimetype("text/plain");
+        assertEquals(false, scd.isDirty());
+        
+        scd.setEncoding("UTF-8");
+        assertEquals(false, scd.isDirty());
+        
+        sn2.save();
+        contentData = (ContentData) NODE_SERVICE.getProperty(newNode2, ContentModel.PROP_CONTENT);
+        assertNull(contentData);
+        
+        scd.setContent("Marks to prove it.");
+        assertEquals(true, scd.isDirty());
+
+        scd.setEncoding("ISO-8859-1");
+        assertEquals(true, scd.isDirty());
+        
+        sn2.save();
+        contentData = (ContentData) NODE_SERVICE.getProperty(newNode2, ContentModel.PROP_CONTENT);
+        assertNotNull(contentData);
+        
+        NODE_SERVICE.removeProperty(newNode1, ContentModel.PROP_CONTENT);
+        NODE_SERVICE.removeProperty(newNode2, ContentModel.PROP_CONTENT);
+    }
+
+    private ScriptableObject getScope() 
+    {
+        // Create a scope for the value conversion. This scope will be an empty scope exposing basic Object and Function, sufficient for value-conversion.
+        // In case no context is active for the current thread, we can safely enter end exit one to get hold of a scope
+        ScriptableObject scope;
+        Context ctx = Context.getCurrentContext();
+        boolean closeContext = false;
+        if (ctx == null) 
+        {
+            ctx = Context.enter();
+            closeContext = true;
+        }
+        scope = ctx.initStandardObjects();
+        scope.setParentScope(null);
+
+        if (closeContext) 
+        {
+            Context.exit();
+        }
+        return scope;
     }
 }

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.script.hold;
+package org.alfresco.module.org_alfresco_module_rm.script.hold;
 
 import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.times;

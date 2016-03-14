@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
+package org.alfresco.module.org_alfresco_module_rm.test.legacy.webscript;
 
 import java.io.IOException;
 import java.io.Serializable;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.transfer;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.transfer;
 
 import static org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction.PARAM_EVENT_NAME;
 import static org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.ROLE_RECORDS_MANAGER;

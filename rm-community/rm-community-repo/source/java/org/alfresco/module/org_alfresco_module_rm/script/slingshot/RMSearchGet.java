@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.script.slingshot;
+package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;

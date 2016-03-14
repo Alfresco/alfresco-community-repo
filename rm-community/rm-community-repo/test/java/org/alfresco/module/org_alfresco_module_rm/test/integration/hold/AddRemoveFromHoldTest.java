@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.hold;
 
 import java.util.ArrayList;
 import java.util.List;

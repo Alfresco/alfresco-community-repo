@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.security;
+package org.alfresco.module.org_alfresco_module_rm.security;
 
 import java.util.HashSet;
 import java.util.Set;

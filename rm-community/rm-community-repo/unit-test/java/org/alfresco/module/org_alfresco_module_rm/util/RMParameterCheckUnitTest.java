@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.util;
+package org.alfresco.module.org_alfresco_module_rm.util;
 
 import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils;
 import org.junit.Test;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.dod5015;
+package org.alfresco.module.org_alfresco_module_rm.dod5015;
 
 import org.alfresco.module.org_alfresco_module_rm.model.rma.type.RmSiteType;
 

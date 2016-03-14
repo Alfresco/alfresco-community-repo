@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.model.security;
+package org.alfresco.module.org_alfresco_module_rm.model.security;
 
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 

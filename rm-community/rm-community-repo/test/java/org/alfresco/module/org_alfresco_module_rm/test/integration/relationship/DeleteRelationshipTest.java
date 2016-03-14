@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.relationship;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.relationship;
 
 import java.util.HashSet;
 import java.util.Set;

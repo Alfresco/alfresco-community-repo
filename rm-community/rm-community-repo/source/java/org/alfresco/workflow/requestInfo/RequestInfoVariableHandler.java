@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.workflow.requestInfo;
+package org.alfresco.workflow.requestInfo;
 
 import org.activiti.engine.delegate.DelegateExecution;
 import org.activiti.engine.delegate.DelegateTask;

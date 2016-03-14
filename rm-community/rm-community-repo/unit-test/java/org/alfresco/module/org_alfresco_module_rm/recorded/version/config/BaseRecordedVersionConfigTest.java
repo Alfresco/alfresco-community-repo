@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.recorded.version.config;
+package org.alfresco.module.org_alfresco_module_rm.recorded.version.config;
 
 import java.util.Map;
 

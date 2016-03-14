@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.freeze;
+package org.alfresco.module.org_alfresco_module_rm.freeze;
 
 import java.util.Date;
 import java.util.Set;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.action.evaluator;
+package org.alfresco.module.org_alfresco_module_rm.action.evaluator;
 
 /**
  * Disposition action relative position enumeration class. <br>

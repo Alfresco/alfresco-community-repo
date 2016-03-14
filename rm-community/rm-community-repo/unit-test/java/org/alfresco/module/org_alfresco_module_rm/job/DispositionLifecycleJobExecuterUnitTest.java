@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.job;
+package org.alfresco.module.org_alfresco_module_rm.job;
 
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateQName;
 import static org.junit.Assert.assertEquals;

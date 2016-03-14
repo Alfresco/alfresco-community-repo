@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.action.constraint;
+package org.alfresco.module.org_alfresco_module_rm.action.constraint;
 
 import java.util.Collections;
 import java.util.HashMap;

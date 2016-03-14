@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.action.dm;
+package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
 import java.util.List;
 

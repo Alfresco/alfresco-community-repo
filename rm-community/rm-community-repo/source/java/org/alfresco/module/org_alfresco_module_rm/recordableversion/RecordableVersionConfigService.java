@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.recordableversion;
+package org.alfresco.module.org_alfresco_module_rm.recordableversion;
 
 import java.util.List;
 

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.capability;
+package org.alfresco.module.org_alfresco_module_rm.capability;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;

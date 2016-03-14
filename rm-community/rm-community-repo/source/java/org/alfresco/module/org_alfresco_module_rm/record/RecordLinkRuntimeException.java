@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.record;
+package org.alfresco.module.org_alfresco_module_rm.record;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 

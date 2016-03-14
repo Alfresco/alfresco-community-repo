@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.security.authority;
+package org.alfresco.repo.security.authority;
 
 /**
  * Interface for defining constants

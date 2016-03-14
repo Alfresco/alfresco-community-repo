@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.audit.event;
+package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
 import java.io.Serializable;
 import java.util.Map;

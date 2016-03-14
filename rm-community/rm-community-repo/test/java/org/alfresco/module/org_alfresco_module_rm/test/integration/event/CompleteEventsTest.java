@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.event;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.event;
 
 import java.io.Serializable;
 import java.util.ArrayList;

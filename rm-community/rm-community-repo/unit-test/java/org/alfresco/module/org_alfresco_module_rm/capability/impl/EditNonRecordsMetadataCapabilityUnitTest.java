@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.capability.impl;
+package org.alfresco.module.org_alfresco_module_rm.capability.impl;
 
 import static org.mockito.Mockito.when;
 

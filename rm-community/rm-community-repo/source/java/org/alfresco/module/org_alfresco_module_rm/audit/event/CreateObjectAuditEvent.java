@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.audit.event;
+package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
 import org.alfresco.repo.node.NodeServicePolicies.OnCreateNodePolicy;
 import org.alfresco.repo.policy.annotation.Behaviour;

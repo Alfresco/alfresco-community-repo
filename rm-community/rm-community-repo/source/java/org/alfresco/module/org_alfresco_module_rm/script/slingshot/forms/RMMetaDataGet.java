@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.script.slingshot.forms;
+package org.alfresco.module.org_alfresco_module_rm.script.slingshot.forms;
 
 import java.io.Serializable;
 import java.util.ArrayList;

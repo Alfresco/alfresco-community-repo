@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
+package org.alfresco.module.org_alfresco_module_rm.model.rma.aspect;
 
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;

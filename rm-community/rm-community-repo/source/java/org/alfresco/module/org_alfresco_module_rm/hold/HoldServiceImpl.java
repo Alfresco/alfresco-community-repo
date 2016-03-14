@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.hold;
+package org.alfresco.module.org_alfresco_module_rm.hold;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.action.parameter;
+package org.alfresco.repo.action.parameter;
 
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;

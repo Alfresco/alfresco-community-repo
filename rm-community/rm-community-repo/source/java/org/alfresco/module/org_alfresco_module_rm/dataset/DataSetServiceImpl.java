@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.dataset;
+package org.alfresco.module.org_alfresco_module_rm.dataset;
 
 import java.io.IOException;
 import java.io.InputStream;

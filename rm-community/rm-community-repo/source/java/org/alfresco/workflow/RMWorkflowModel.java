@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.workflow;
+package org.alfresco.workflow;
 
 import org.alfresco.service.namespace.QName;
 

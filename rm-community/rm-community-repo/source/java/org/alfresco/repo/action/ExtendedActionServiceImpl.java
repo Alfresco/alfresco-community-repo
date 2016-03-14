@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.action;
+package org.alfresco.repo.action;
 
 import java.util.ArrayList;
 import java.util.List;

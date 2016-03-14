@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.dod5015.model.dod.aspect;
+package org.alfresco.module.org_alfresco_module_rm.dod5015.model.dod.aspect;
 
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;

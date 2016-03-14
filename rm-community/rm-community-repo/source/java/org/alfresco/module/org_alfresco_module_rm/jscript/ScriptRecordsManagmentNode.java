@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.jscript;
+package org.alfresco.module.org_alfresco_module_rm.jscript;
 
 import java.util.Collections;
 import java.util.Map;

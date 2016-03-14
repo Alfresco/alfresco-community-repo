@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.util;
+package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import java.util.Optional;
 import java.util.function.Supplier;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.model.rma.type;
+package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import static org.alfresco.util.ParameterCheck.mandatory;
 

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.util;
+package org.alfresco.module.org_alfresco_module_rm.util;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;

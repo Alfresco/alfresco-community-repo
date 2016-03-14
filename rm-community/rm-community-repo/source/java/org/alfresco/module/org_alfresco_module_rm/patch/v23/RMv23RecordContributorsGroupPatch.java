@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.patch.v23;
+package org.alfresco.module.org_alfresco_module_rm.patch.v23;
 
 import org.alfresco.module.org_alfresco_module_rm.bootstrap.RecordContributorsGroupBootstrapComponent;
 import org.alfresco.module.org_alfresco_module_rm.patch.AbstractModulePatch;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
 import java.util.ArrayList;
 import java.util.Iterator;

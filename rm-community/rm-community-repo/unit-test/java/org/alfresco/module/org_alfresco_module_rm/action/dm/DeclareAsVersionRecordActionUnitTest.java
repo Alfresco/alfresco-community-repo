@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.action.dm;
+package org.alfresco.module.org_alfresco_module_rm.action.dm;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.recordfolder;
+package org.alfresco.module.org_alfresco_module_rm.recordfolder;
 
 import java.io.Serializable;
 import java.util.ArrayList;

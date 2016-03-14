@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.script.admin;
+package org.alfresco.module.org_alfresco_module_rm.script.admin;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.bootstrap;
+package org.alfresco.module.org_alfresco_module_rm.bootstrap;
 
 import org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuter;
 import org.alfresco.repo.module.ImporterModuleComponent;

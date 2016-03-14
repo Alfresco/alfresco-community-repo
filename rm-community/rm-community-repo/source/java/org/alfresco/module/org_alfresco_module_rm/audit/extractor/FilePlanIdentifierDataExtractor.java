@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.audit.extractor;
+package org.alfresco.module.org_alfresco_module_rm.audit.extractor;
 
 import java.io.Serializable;
 

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.content;
+package org.alfresco.module.org_alfresco_module_rm.content;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

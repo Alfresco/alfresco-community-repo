@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.record;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.record;
 
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_FILE_PLAN;
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel.PROP_RECORDABLE_VERSION_POLICY;

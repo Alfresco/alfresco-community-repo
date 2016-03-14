@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.query;
+package org.alfresco.module.org_alfresco_module_rm.query;
 
 import java.util.HashMap;
 import java.util.Map;

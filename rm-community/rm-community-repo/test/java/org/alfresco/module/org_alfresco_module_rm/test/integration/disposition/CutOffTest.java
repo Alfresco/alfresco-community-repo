@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.disposition;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.disposition;
 
 import java.io.Serializable;
 import java.util.HashMap;

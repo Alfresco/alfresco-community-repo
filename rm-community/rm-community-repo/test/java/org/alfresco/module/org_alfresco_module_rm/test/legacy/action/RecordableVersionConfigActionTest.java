@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.legacy.action;
+package org.alfresco.module.org_alfresco_module_rm.test.legacy.action;
 
 import static org.alfresco.module.org_alfresco_module_rm.action.dm.RecordableVersionConfigAction.NAME;
 import static org.alfresco.module.org_alfresco_module_rm.action.dm.RecordableVersionConfigAction.PARAM_VERSION;

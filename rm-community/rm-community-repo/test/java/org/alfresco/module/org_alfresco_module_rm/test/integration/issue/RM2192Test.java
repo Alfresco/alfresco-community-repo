@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
+package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
 import static org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService.ROLE_RECORDS_MANAGER;
 import static org.alfresco.repo.site.SiteModel.SITE_MANAGER;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.repo.security.permissions.processor.impl;
+package org.alfresco.repo.security.permissions.processor.impl;
 
 import org.alfresco.repo.security.permissions.processor.PermissionPreProcessor;
 

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.util;
+package org.alfresco.module.org_alfresco_module_rm.util;
 
 import org.apache.commons.lang.StringUtils;
 

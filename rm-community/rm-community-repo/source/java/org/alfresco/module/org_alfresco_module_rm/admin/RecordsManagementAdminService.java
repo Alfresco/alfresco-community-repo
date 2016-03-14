@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.admin;
+package org.alfresco.module.org_alfresco_module_rm.admin;
 
 import java.util.List;
 import java.util.Map;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.content.cleanser;
+package org.alfresco.module.org_alfresco_module_rm.content.cleanser;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

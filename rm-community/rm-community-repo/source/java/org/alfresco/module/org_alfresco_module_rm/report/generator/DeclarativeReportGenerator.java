@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.report.generator;
+package org.alfresco.module.org_alfresco_module_rm.report.generator;
 
 import java.io.Serializable;
 import java.text.SimpleDateFormat;

@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.script.hold;
+package org.alfresco.module.org_alfresco_module_rm.script.hold;
 
 import java.io.IOException;
 import java.util.ArrayList;

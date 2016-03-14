@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.version;
+package org.alfresco.module.org_alfresco_module_rm.version;
 
 import org.alfresco.service.namespace.QName;
 

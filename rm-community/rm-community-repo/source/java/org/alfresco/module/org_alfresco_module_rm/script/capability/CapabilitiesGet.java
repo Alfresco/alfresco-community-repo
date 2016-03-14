@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.script.capability;
+package org.alfresco.module.org_alfresco_module_rm.script.capability;
 
 import java.util.ArrayList;
 import java.util.List;

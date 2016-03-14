@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.patch.compatibility;
+package org.alfresco.module.org_alfresco_module_rm.patch.compatibility;
 
 import org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuterImpl;
 import org.alfresco.repo.module.AbstractModuleComponent;

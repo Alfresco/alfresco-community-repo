@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.recorded.version.config;
+package org.alfresco.module.org_alfresco_module_rm.recorded.version.config;
 
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.ALL;
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.MAJOR_ONLY;

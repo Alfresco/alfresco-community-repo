@@ -25,7 +25,7 @@
  * #L%
  */
 
-package  org.alfresco.module.org_alfresco_module_rm.version;
+package org.alfresco.module.org_alfresco_module_rm.version;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

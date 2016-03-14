@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
+
+package  org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 
 import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;

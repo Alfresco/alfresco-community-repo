@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.disposition.property;
+
+package  org.alfresco.module.org_alfresco_module_rm.disposition.property;
 
 import java.io.Serializable;
 import java.util.Date;

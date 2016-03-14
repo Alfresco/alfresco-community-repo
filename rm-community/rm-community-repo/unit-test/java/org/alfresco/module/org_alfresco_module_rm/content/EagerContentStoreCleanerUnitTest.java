@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.content;
+
+package  org.alfresco.module.org_alfresco_module_rm.content;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;

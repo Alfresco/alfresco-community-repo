@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.action.evaluator;
+
+package  org.alfresco.module.org_alfresco_module_rm.action.evaluator;
 
 /**
  * Disposition action relative position enumeration class. <br>

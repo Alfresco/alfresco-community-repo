@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.repo.web.scripts.rule;
+
+package  org.alfresco.repo.web.scripts.rule;
 
 import java.util.ArrayList;
 import java.util.HashMap;

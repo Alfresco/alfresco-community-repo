@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
+
+package  org.alfresco.module.org_alfresco_module_rm.test.legacy.service;
 
 import java.util.HashSet;
 import java.util.Set;

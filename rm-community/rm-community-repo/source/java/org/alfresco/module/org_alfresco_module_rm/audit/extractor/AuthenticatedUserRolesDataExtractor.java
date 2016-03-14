@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.audit.extractor;
+
+package  org.alfresco.module.org_alfresco_module_rm.audit.extractor;
 
 import java.io.Serializable;
 import java.util.Set;

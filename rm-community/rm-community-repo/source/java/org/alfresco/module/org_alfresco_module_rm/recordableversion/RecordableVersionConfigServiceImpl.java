@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.recordableversion;
+
+package  org.alfresco.module.org_alfresco_module_rm.recordableversion;
 
 import static org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionPolicy.NONE;
 import static org.alfresco.util.ParameterCheck.mandatory;

@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.patch.compatibility;
+
+package  org.alfresco.module.org_alfresco_module_rm.patch.compatibility;
 
 import org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuterImpl;
 import org.alfresco.repo.module.AbstractModuleComponent;

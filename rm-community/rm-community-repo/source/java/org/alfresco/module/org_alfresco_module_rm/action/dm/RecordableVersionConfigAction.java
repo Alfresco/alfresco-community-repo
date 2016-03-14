@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.module.org_alfresco_module_rm.action.dm;
+
+package  org.alfresco.module.org_alfresco_module_rm.action.dm;
 
 import static org.alfresco.model.ContentModel.ASPECT_VERSIONABLE;
 import static org.alfresco.model.ContentModel.TYPE_CONTENT;

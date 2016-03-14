@@ -24,7 +24,8 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
-package org.alfresco.workflow;
+
+package  org.alfresco.workflow;
 
 import org.alfresco.service.namespace.QName;
 

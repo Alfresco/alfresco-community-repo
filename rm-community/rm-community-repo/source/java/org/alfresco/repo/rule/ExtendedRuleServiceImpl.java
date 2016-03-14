@@ -195,7 +195,7 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
                     	else
                     	{
                     		// run as current user
-                    		ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+                    		super.executeRule(rule, nodeRef, executedRules);
                     	}
         	        }
                 }

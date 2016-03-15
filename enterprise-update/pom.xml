@@ -13,7 +13,7 @@
 
     <properties>
         <unpacked.update.tool>${project.build.directory}/dependency/alfresco-update-tool-distribution-${alfresco.updatetool.version}</unpacked.update.tool>
-		<unpacked.alfresco.enterprise.distribution>${project.build.directory}/dependency/alfresco-enterprise-${project.version}</unpacked.alfresco.enterprise.distribution>
+		<unpacked.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}</unpacked.alfresco.platform.distribution>
     </properties>
     <dependencies>
         <!-- Alfresco platform WAR file -->
@@ -89,11 +89,11 @@
             <type>zip</type>
         </dependency>
 
-		<!-- Update Tool distribution package -->
+		<!-- Platform dependencies -->
 		<dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-enterprise-distribution</artifactId>
-            <version>${project.version}</version>
+            <artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
+            <version>${alfresco.platform.version}</version>
             <type>zip</type>
         </dependency>
 		
@@ -157,9 +157,9 @@
                         <configuration>
                             <artifactItems>
                                 <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-enterprise-distribution</artifactId>
-                                    <version>${project.version}</version>
+								  <groupId>org.alfresco</groupId>
+									<artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
+									<version>${alfresco.platform.version}</version>
                                     <overWrite>true</overWrite>
                                     <type>zip</type>
                                 </artifactItem>

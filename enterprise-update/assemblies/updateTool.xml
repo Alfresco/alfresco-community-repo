@@ -36,7 +36,7 @@
 		
 		<!-- Repack bits of the distribution zip Over time we will probably add more -->
 		<fileSet>
-            <directory>${unpacked.alfresco.enterprise.distribution}</directory>
+            <directory>${unpacked.alfresco.platform.distribution}</directory>
             <outputDirectory>resources/distribution/platform</outputDirectory>
             <includes>
                 <include>README.txt</include>
@@ -45,8 +45,8 @@
         </fileSet>
 		
 	    <fileSet>
-            <directory>${unpacked.alfresco.enterprise.distribution}/bin</directory>
-            <outputDirectory>resources/distribution/common</outputDirectory>
+            <directory>${unpacked.alfresco.platform.distribution}/bin</directory>
+            <outputDirectory>resources/distribution/common/bin</outputDirectory>
             <includes>
                 <include>alfresco-mmt.jar</include>
 				<include>alfresco-spring-encryptor.jar</include>

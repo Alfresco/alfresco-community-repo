@@ -66,6 +66,11 @@ public class PackagingIntegrationTest
         // Is the content sub-package present?
         assertPathPresent(paths, dirs[0] + "/resources/war/alfresco.war");
         assertPathPresent(paths, dirs[0] + "/resources/war/share.war");
+        
+        // Is the mmt in the correct place ?
+        assertPathPresent(paths, dirs[0] + "/resources/distribution/common/bin/alfresco-mmt.jar");
+        assertPathPresent(paths, dirs[0] + "/resources/distribution/common/bin/alfresco-spring-encryptor.jar");
+        
     }
         
     private void assertPathPresent(Set<String> pathsToCheck, String expectedPath)

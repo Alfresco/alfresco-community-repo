@@ -34,7 +34,6 @@ import java.util.Set;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.Group;
 
-
 /**
  * Utility test case to generate a report of the capabilities in the system.
  *
@@ -53,7 +52,7 @@ public class GenerateCapabilityReport extends BaseRMTestCase
                 FileWriter writer = new FileWriter("c:\\mywork\\capabilityReport.csv");
                 BufferedWriter out = new BufferedWriter(writer);
                 try
-                {                
+                {
                     Set<Capability> capabilities = capabilityService.getCapabilities(true);
                     for (Capability capability : capabilities)
                     {
@@ -63,7 +62,7 @@ public class GenerateCapabilityReport extends BaseRMTestCase
                         {
                             groupId = group.getId();
                         }
-                        
+
                         out.write(groupId);
                         out.write(",");
                         out.write(capability.getName());
@@ -76,7 +75,7 @@ public class GenerateCapabilityReport extends BaseRMTestCase
                 {
                     out.close();
                 }
-                
+
                 return null;
             }
         });

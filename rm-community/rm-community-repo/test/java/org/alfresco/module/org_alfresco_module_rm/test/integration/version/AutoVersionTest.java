@@ -38,15 +38,14 @@ import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 
-
 /**
- * Test recorded version histories when interacting with cm:versionable aspect 
+ * Test recorded version histories when interacting with cm:versionable aspect
  * and the auto-version behvaiour.
- *  
+ *
  * @author Roy Wetherall
  * @since 2.3.1
  */
-public class AutoVersionTest extends RecordableVersionsBaseTest 
+public class AutoVersionTest extends RecordableVersionsBaseTest
 {
     /**
      * Given a versionable document
@@ -59,36 +58,36 @@ public class AutoVersionTest extends RecordableVersionsBaseTest
         doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
         {
             private NodeRef myDocument;
-            
+
             public void given() throws Exception
             {
                 // create a document
                 myDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
-                
+
                 // make versionable
-                nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, null);                                      
+                nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, null);
             }
-            
+
             public void when()
-            {   
+            {
                 // specialise document
                 nodeService.setType(myDocument, TYPE_CUSTOM_TYPE);
-            }            
-            
+            }
+
             public void then()
             {
                 VersionHistory versionHistory = versionService.getVersionHistory(myDocument);
-                
+
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());
-                
+
                 NodeRef frozenState = versionHistory.getHeadVersion().getFrozenStateNodeRef();
                 assertEquals(ContentModel.TYPE_CONTENT, nodeService.getType(frozenState));
                 assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(myDocument));
             }
-        });        
-    }  
-    
+        });
+    }
+
     /**
      * Given a versionable document with initial version turned off
      * When I specialise the type of the document
@@ -99,32 +98,32 @@ public class AutoVersionTest extends RecordableVersionsBaseTest
         doBehaviourDrivenTest(new BehaviourDrivenTest(dmCollaborator)
         {
             private NodeRef myDocument;
-            
+
             public void given() throws Exception
             {
                 // create a document
                 myDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
-                
+
                 // make versionable
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_INITIAL_VERSION, false);
-                nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, props);                                      
+                nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, props);
             }
-            
+
             public void when()
-            {   
+            {
                 // specialise document
                 nodeService.setType(myDocument, TYPE_CUSTOM_TYPE);
-            }            
-            
+            }
+
             public void then()
             {
-                VersionHistory versionHistory = versionService.getVersionHistory(myDocument);                
+                VersionHistory versionHistory = versionService.getVersionHistory(myDocument);
                 assertNull(versionHistory);
             }
-        });        
-    } 
-    
+        });
+    }
+
     /**
      * Given a versionable document with initial version turned off
      * And auto version on type change is set on
@@ -137,48 +136,48 @@ public class AutoVersionTest extends RecordableVersionsBaseTest
         {
             private ExtendedVersionableAspect extendedVersionableAspect;
             private NodeRef myDocument;
-            
+
             public void given() throws Exception
             {
                 // turn auto version on type change on
                 extendedVersionableAspect = (ExtendedVersionableAspect)applicationContext.getBean("rm.extendedVersionableAspect");
                 assertNotNull(extendedVersionableAspect);
                 extendedVersionableAspect.setAutoVersionOnTypeChange(true);
-                
+
                 // create a document
                 myDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
-                
+
                 // make versionable
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_INITIAL_VERSION, false);
-                nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, props);                                      
+                nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, props);
             }
-            
+
             public void when()
-            {   
+            {
                 // specialise document
                 nodeService.setType(myDocument, TYPE_CUSTOM_TYPE);
-            }            
-            
+            }
+
             public void then()
             {
-                VersionHistory versionHistory = versionService.getVersionHistory(myDocument);                
+                VersionHistory versionHistory = versionService.getVersionHistory(myDocument);
                 assertNotNull(versionHistory);
                 assertEquals(1, versionHistory.getAllVersions().size());
-                
+
                 NodeRef frozenState = versionHistory.getHeadVersion().getFrozenStateNodeRef();
                 assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(frozenState));
                 assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(myDocument));
             }
-            
+
             public void after() throws Exception
             {
                 // reset auto version on type to default off
                 extendedVersionableAspect.setAutoVersionOnTypeChange(false);
             }
-        });        
-    } 
-    
+        });
+    }
+
     /**
      * Given a versionable document with initial version turned on
      * And auto version on type change is set on
@@ -191,51 +190,51 @@ public class AutoVersionTest extends RecordableVersionsBaseTest
         {
             private ExtendedVersionableAspect extendedVersionableAspect;
             private NodeRef myDocument;
-            
+
             public void given() throws Exception
             {
                 // turn auto version on type change on
                 extendedVersionableAspect = (ExtendedVersionableAspect)applicationContext.getBean("rm.extendedVersionableAspect");
                 assertNotNull(extendedVersionableAspect);
                 extendedVersionableAspect.setAutoVersionOnTypeChange(true);
-                
+
                 // create a document
                 myDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
-                
+
                 // make versionable
                 Map<QName, Serializable> props = new HashMap<QName, Serializable>(1);
                 props.put(ContentModel.PROP_INITIAL_VERSION, true);
-                nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, props);                                      
+                nodeService.addAspect(myDocument, ContentModel.ASPECT_VERSIONABLE, props);
             }
-            
+
             public void when()
-            {   
+            {
                 // specialise document
                 nodeService.setType(myDocument, TYPE_CUSTOM_TYPE);
-            }            
-            
+            }
+
             public void then()
             {
-                VersionHistory versionHistory = versionService.getVersionHistory(myDocument);                
+                VersionHistory versionHistory = versionService.getVersionHistory(myDocument);
                 assertNotNull(versionHistory);
                 assertEquals(2, versionHistory.getAllVersions().size());
-                
+
                 NodeRef frozenState = versionHistory.getHeadVersion().getFrozenStateNodeRef();
                 assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(frozenState));
                 assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(myDocument));
-                
+
                 frozenState = versionHistory.getVersion("1.0").getFrozenStateNodeRef();
                 assertEquals(ContentModel.TYPE_CONTENT, nodeService.getType(frozenState));
                 assertEquals(TYPE_CUSTOM_TYPE, nodeService.getType(myDocument));
             }
-            
+
             public void after() throws Exception
             {
                 // reset auto version on type to default off
                 extendedVersionableAspect.setAutoVersionOnTypeChange(false);
             }
-        });        
-    } 
-    
-    
+        });
+    }
+
+
 }

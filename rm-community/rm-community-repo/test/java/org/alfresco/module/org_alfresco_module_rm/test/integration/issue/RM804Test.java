@@ -33,7 +33,6 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.site.SiteRole;
 
-
 /**
  * Unit test for RM-804 .. site managers are able to delete file plans
  *

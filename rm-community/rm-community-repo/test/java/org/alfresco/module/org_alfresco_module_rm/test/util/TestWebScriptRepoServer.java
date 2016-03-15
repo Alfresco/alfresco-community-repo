@@ -1,16 +1,13 @@
- 
-package org.alfresco.module.org_alfresco_module_rm.test.util;
-
 /*
  * #%L
  * Alfresco Records Management Module
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
+ * This file is part of the Alfresco software.
  * 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
  * 
  * Alfresco is free software: you can redistribute it and/or modify
@@ -28,6 +25,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.util;
  * #L%
  */
 
+package org.alfresco.module.org_alfresco_module_rm.test.util;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -40,13 +38,12 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.EqualsHelper;
-import org.springframework.extensions.webscripts.TestWebScriptServer;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-
+import org.springframework.extensions.webscripts.TestWebScriptServer;
 
 /**
  * Stand-alone Web Script Test Server
- * 
+ *
  * @author davidc
  */
 public class TestWebScriptRepoServer extends TestWebScriptServer
@@ -81,15 +78,15 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
         "classpath:alfresco/web-scripts-application-context.xml",
         "classpath:alfresco/web-scripts-application-context-test.xml"
     };
-    
+
     /** A static reference to the application context being used */
     private static ClassPathXmlApplicationContext ctx;
     private static String appendedTestConfiguration;
-    
+
     private RetryingTransactionHelper retryingTransactionHelper;
     private AuthenticationService authenticationService;
-    
-    
+
+
     /**
      * Sets helper that provides transaction callbacks
      */
@@ -97,7 +94,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
     {
         this.retryingTransactionHelper = retryingTransactionHelper;
     }
-    
+
     /**
      * @param authenticationService
      */
@@ -121,13 +118,13 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
     {
         return getTestServer(null);
     }
-    
+
     /**
      * Start up a context and get the server bean.
      * <p>
      * This method will close and restart the application context only if the configuration has
      * changed.
-     * 
+     *
      * @param appendTestConfigLocation      additional context file to include in the application context
      * @return  Test Server
      */
@@ -156,7 +153,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
                 // There is already a context with the required configuration
             }
         }
-        
+
         // Check if we need to start/restart the context
         if (TestWebScriptRepoServer.ctx == null)
         {
@@ -175,15 +172,15 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
             TestWebScriptRepoServer.ctx = new ClassPathXmlApplicationContext(configLocations);
             TestWebScriptRepoServer.appendedTestConfiguration = appendTestConfigLocation;
         }
-        
+
         // Get the bean
         TestWebScriptServer testServer = (org.alfresco.repo.web.scripts.TestWebScriptRepoServer)TestWebScriptRepoServer.ctx.getBean("webscripts.test");
         return testServer;
     }
-    
+
     /**
      * Interpret a single command using the BufferedReader passed in for any data needed.
-     * 
+     *
      * @param line The unparsed command
      * @return The textual output of the command.
      */
@@ -217,7 +214,7 @@ public class TestWebScriptRepoServer extends TestWebScriptServer
         {
             executeCommand("user " + getDefaultUserName());
         }
-        
+
         // execute command in context of currently selected user
         return AuthenticationUtil.runAs(new RunAsWork<String>()
         {

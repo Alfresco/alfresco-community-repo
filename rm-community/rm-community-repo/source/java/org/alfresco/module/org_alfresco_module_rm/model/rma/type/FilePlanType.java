@@ -1,16 +1,13 @@
- 
-package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
-
 /*
  * #%L
  * Alfresco Records Management Module
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
+ * This file is part of the Alfresco software.
  * 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
  * 
  * Alfresco is free software: you can redistribute it and/or modify
@@ -28,6 +25,7 @@ package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
  * #L%
  */
 
+package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -42,6 +40,7 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -181,8 +180,11 @@ public class FilePlanType extends    BaseBehaviourBean
         {
             public Object doWork()
             {
-                if (nodeService.hasAspect(filePlan, ASPECT_FILE_PLAN_COMPONENT) &&
-                    nodeService.getProperty(filePlan, PROP_IDENTIFIER) == null)
+                // ensure rules are not inherited
+                nodeService.addAspect(filePlan, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+                
+                // set the identifier 
+                if (nodeService.getProperty(filePlan, PROP_IDENTIFIER) == null)
                 {
                     String id = getIdentifierService().generateIdentifier(filePlan);
                     nodeService.setProperty(filePlan, RecordsManagementModel.PROP_IDENTIFIER, id);

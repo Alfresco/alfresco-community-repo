@@ -148,7 +148,7 @@
                     </not>
                   </or>
                   <then>
-                    <fail message="Missing Alfresco Base version. Example: -Dbase.installer.version=Enterprise-5.0/5.0.3/build-00084/ALL/alfresco-enterprise-5.0.3-installer-linux-x64.bin" />
+                    <fail message="Missing Alfresco Base version. Example: -Dbase.installer.version=https://nightlybuilds.alfresco.com/Enterprise-5.1/5.1/LATEST/ALL/alfresco-one-installer-LATEST-linux-x64.bin" />
                   </then>
                 </if>
 
@@ -162,19 +162,19 @@
                   </then>
                 </if>
                 <echo>Downloading Base Alfresco installer ${base.installer.version}...</echo>
-                <get src="https://releases.alfresco.com/${base.installer.version}" dest="${base.installer.location}"/>
+                <get src="${base.installer.version}" dest="${base.installer.location}"/>
                 <chmod file="${base.installer.location}" perm="a+x" verbose="true" />
-				
-				<!-- MER TEMP KLUDGE WHILE 5.1.0 is not released -->
-				<echo>Kludging Base version ...</echo>
+
+                <!-- MER TEMP KLUDGE WHILE 5.1.0 is not released -->
+                <echo>Kludging Base version ...</echo>
                 <path id="kludge.installer.name"> 
                 <fileset dir="../enterprise-installer/target"> 
                     <include name="alfresco-*.bin"/> 
                 </fileset>
                 </path>
-				<!-- This is the kludge set the base installer to this version -->
+                <!-- This is the kludge set the base installer to this version -->
                 <property name="base.installer.location" refid="kludge.installer.name" />
-				<!-- MER END KLUDGE REMOVE AFTER 5.0.1 is available -->
+                <!-- MER END KLUDGE REMOVE AFTER 5.0.1 is available -->
 
                 <echo>Installing the base Version of Alfresco... to ${base.alfresco.instance}</echo>
                 <exec executable="${base.installer.location}" dir="target" failonerror="true">

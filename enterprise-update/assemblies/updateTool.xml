@@ -16,7 +16,7 @@
         <!-- Pack the bin files except for the .sh files -->
         <fileSet>
             <directory>${unpacked.update.tool}/bin</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory></outputDirectory>
             <includes>
                 <include>*.bat</include>
             </includes>
@@ -25,7 +25,7 @@
         
         <fileSet>
             <directory>${unpacked.update.tool}/bin</directory>
-            <outputDirectory>/</outputDirectory>
+            <outputDirectory></outputDirectory>
             <includes>
                 <include>*.sh</include>
             </includes>

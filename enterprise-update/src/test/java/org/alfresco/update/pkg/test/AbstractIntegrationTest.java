@@ -38,7 +38,9 @@ public abstract class AbstractIntegrationTest
     private void initVersion()
     {
         // This is set by maven, see pom.xml
+        System.out.println("MER");
         version = System.getProperty("version");
+        System.out.println("SSS");
         assertNotNull("'version' system property not set. If using an IDE, then add an appropriate VM argument to "
                     + "your run configuration, e.g. -Dversion=5.0.3-SNAPSHOT", version);
     }

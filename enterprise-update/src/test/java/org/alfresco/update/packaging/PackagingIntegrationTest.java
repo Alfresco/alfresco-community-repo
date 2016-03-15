@@ -5,7 +5,9 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.ZipEntry;
@@ -31,18 +33,14 @@ import org.junit.Test;
 public class PackagingIntegrationTest
 {
     private File updatePackage;
-    private File contentsPackage;
+
     
     @Before
     public void setUp() throws Exception
     {
         String pkgName = System.getProperty("alfresco.update.package");
-        assertNotNull("Could not determine package name.");
-        updatePackage = new File(pkgName);
-        
-        String contentsPkgName = System.getProperty("alfresco.contents.package");
-        assertNotNull("Could not determine content package name.");
-        contentsPackage = new File(contentsPkgName);
+        assertNotNull("Could not determine package name.", pkgName);
+        updatePackage = new File(pkgName);   
     }
 
     @Test
@@ -54,25 +52,13 @@ public class PackagingIntegrationTest
         Set<String> paths = listFiles(updatePackage);
         
         // Are the binaries present?
-        assertPathPresent(paths, "bin/alfresco-update-tool.jar");
-        assertPathPresent(paths, "bin/apply_updates.sh");
-        assertPathPresent(paths, "bin/apply_updates.bat");
+        assertPathPresent(paths, "lib/alfresco-update-tool.jar");
+        assertPathPresent(paths, "apply_updates.sh");
+        assertPathPresent(paths, "apply_updates.bat");
 
         // Is the content sub-package present?
-        assertPathPresent(paths, "update/"+contentsPackage.getName());
-    }
-    
-    @Test
-    public void testContentsPackageStructureIsAsExpected() throws ZipException, IOException
-    {
-        // Check the package exists before we go any further
-        assertTrue("Contents package does not exist.", contentsPackage.exists());
-        
-        Set<String> paths = listFiles(contentsPackage);
-        
-        // Are the webapps present?
-        assertPathPresent(paths, "assets/web-server/webapps/alfresco.war");
-        assertPathPresent(paths, "assets/web-server/webapps/share.war");
+        assertPathPresent(paths, "resources");
+         assertPathPresent(paths, "alfresco.war");
     }
     
     private void assertPathPresent(Set<String> pathsToCheck, String expectedPath)
@@ -84,21 +70,21 @@ public class PackagingIntegrationTest
     private Set<String> listFiles(File file) throws ZipException, IOException
     {
         Set<String> paths = new TreeSet<String>();
-        
-        ZipFile zipFile = new ZipFile(file);
-        try
+            
+        File[] files = file.listFiles();
+            
+        for(File x : files)
         {
-            Enumeration<? extends ZipEntry> e = zipFile.entries();
-            while (e.hasMoreElements())
+            if(x.isFile())
             {
-                ZipEntry entry = e.nextElement();
-                paths.add(entry.getName());
+                paths.add(x.getAbsolutePath());
+            }
+            if(x.isDirectory())
+            {
+                paths.addAll(listFiles(x));
             }
         }
-        finally
-        {
-            zipFile.close();
-        }
+              
         return paths;
     }
 }

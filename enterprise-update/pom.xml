@@ -13,6 +13,7 @@
 
     <properties>
         <unpacked.update.tool>${project.build.directory}/dependency/alfresco-update-tool-distribution-${alfresco.updatetool.version}</unpacked.update.tool>
+		<unpacked.alfresco.enterprise.distribution>${project.build.directory}/dependency/alfresco-enterprise-${project.version}</unpacked.alfresco.enterprise.distribution>
     </properties>
     <dependencies>
         <!-- Alfresco platform WAR file -->
@@ -88,6 +89,14 @@
             <type>zip</type>
         </dependency>
 
+		<!-- Update Tool distribution package -->
+		<dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-enterprise-distribution</artifactId>
+            <version>${project.version}</version>
+            <type>zip</type>
+        </dependency>
+		
         <!-- Testing dependencies -->
         <dependency>
             <groupId>junit</groupId>
@@ -133,6 +142,24 @@
                                     <groupId>org.alfresco</groupId>
                                     <artifactId>alfresco-update-tool-distribution</artifactId>
                                     <version>${alfresco.updatetool.version}</version>
+                                    <overWrite>true</overWrite>
+                                    <type>zip</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+					<execution>
+                        <id>unpack-alfresco-enterprise-distribution</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-enterprise-distribution</artifactId>
+                                    <version>${project.version}</version>
                                     <overWrite>true</overWrite>
                                     <type>zip</type>
                                 </artifactItem>

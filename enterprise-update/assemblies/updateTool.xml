@@ -33,6 +33,16 @@
             <!-- Add the correct execute permissions to *.sh file(s) -->
             <fileMode>0755</fileMode>
         </fileSet>
+		
+		<!-- Repack bits of the distribution zip Over time we will probably add more -->
+		<fileSet>
+            <directory>${unpacked.alfresco.enterprise.distribution}</directory>
+            <outputDirectory>resources/distribution/platform</outputDirectory>
+            <includes>
+                <include>README.txt</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
         
         <fileSet>
             <directory>${unpacked.update.tool}/bin</directory>

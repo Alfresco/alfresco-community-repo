@@ -7,7 +7,6 @@
     <id>update-tool</id>
     <formats>
         <format>zip</format>
-        <format>tgz</format>
     </formats>
 	
     <includeBaseDirectory>true</includeBaseDirectory>

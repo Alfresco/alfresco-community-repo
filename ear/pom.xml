@@ -65,6 +65,19 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-share-distribution</artifactId>
+            <version>${alfresco.share.version}</version>
+            <type>zip</type>
+            <scope>provided</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>*</groupId>
+                    <artifactId>*</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
 
         <!-- jar to be packaged in myfaces websphere zip -->
         <dependency>
@@ -198,7 +211,7 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>unpack-distribution</id>
+                        <id>unpack-platform-distribution</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>unpack-dependencies</goal>
@@ -206,7 +219,21 @@
                         <configuration>
                             <includeArtifactIds>alfresco-platform-enterprise-distributionzip</includeArtifactIds>
                             <excludeTransitive>true</excludeTransitive>
-                            <excludes>alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/solr4/,alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/web-server/webapps/</excludes>
+                            <excludes>alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/solr4/,alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/web-server/webapps/,alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/modules/</excludes>
+                        </configuration>
+                    </execution>
+
+                    <execution>
+                        <id>unpack-share-distribution</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>unpack-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <includeArtifactIds>alfresco-share-distribution</includeArtifactIds>
+                            <excludeTransitive>true</excludeTransitive>
+                            <excludes>*</excludes>
+                            <includes>alfresco-share-distribution-${alfresco.share.version}/web-extension-samples/</includes>
                         </configuration>
                     </execution>
 

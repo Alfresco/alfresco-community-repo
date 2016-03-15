@@ -163,7 +163,7 @@
                   </then>
                 </if>
                 <echo>Downloading Base Alfresco installer ${base.installer.version}...</echo>
-                <get src="https://releases.alfresco.com/${base.installer.version}" dest="target/base-alf-installer.bin"/>
+                <get src="https://releases.alfresco.com/${base.installer.version}" dest="${base.installer.location}"/>
                 <chmod file="${base.installer.location}" perm="a+x" verbose="true" />
 
                 <echo>Installing the base Version of Alfresco... to ${base.alfresco.instance}</echo>

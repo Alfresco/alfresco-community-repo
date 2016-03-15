@@ -27,8 +27,7 @@
 
     <!-- Arguments to install alfresco -->
     <installer.args>--mode unattended --alfresco_admin_password admin --jdbc_username alfresco --jdbc_password alfresco
-      --tomcat_server_domain ${HOSTNAME}
-      --enable-components javaalfresco,postgres,libreofficecomponent,alfrescosolr,alfrescosolr4,aosmodule,alfrescowcmqs,alfrescogoogledocs
+      --tomcat_server_domain ${HOSTNAME} --disable-components postgres --enable-components javaalfresco,libreofficecomponent,alfrescosolr,alfrescosolr4,aosmodule,alfrescowcmqs,alfrescogoogledocs
       --alfrescocustomstack_services_startup demand
     </installer.args>
 

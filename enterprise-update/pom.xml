@@ -37,9 +37,27 @@
             <version>${alfresco.platform.version}</version>
             <type>war</type>
         </dependency>
-
-		<!-- Update Tool Itself -->
+		
+		<!-- Update Tool distribution package -->
         <dependency>
+            <groupId>org.alfresco.integrations</groupId>
+            <artifactId>alfresco-googledocs-repo</artifactId>
+            <version>${alfresco.googledocs.version}</version>
+            <classifier>enterprise</classifier>
+            <type>amp</type>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.alfresco.integrations</groupId>
+            <artifactId>alfresco-googledocs-share</artifactId>
+            <version>${alfresco.googledocs.version}</version>
+            <classifier>enterprise</classifier>
+            <type>amp</type>
+        </dependency>
+        
+		
+		<!-- Update Tool distribution package -->
+		<dependency>
             <groupId>org.alfresco</groupId>	
             <artifactId>alfresco-update-tool-distribution</artifactId>
             <version>${alfresco.updatetool.version}</version>

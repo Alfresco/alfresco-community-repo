@@ -78,6 +78,26 @@
             </includes>
         </dependencySet>
         
+        <!-- Google docs AMP -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/amp/platform</outputDirectory>
+            <includes>
+                <include>org.alfresco.integrations:alfresco-googledocs-repo:amp:enterprise:*</include>
+            </includes>   
+        </dependencySet>
+       
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/amp/share</outputDirectory>
+            <includes>
+                <include>org.alfresco.integrations:alfresco-googledocs-share:amp:enterprise:*</include>
+            </includes>
+        </dependencySet>
+        
+        
     </dependencySets>
     
 </assembly>

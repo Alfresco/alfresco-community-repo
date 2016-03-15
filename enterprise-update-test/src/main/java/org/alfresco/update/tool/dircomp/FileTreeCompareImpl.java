@@ -23,6 +23,8 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Class capable of comparing two trees of files to determine which directories or
@@ -216,6 +218,9 @@ public class FileTreeCompareImpl implements FileTreeCompare
         // a known token allows us to remove differences (that we're not interested in) in the files.
         Map<String, String> replacements = new HashMap<>();
         replacements.put(tree.toAbsolutePath().toString(), replacementToken("comparison_root"));
+        
+        // Create a pattern for module.installDate
+        Pattern installDatePattern = Pattern.compile("module.installDate=.*[\n\r\f]*$");
 
         File processed = Files.createTempFile(orig.getName(), ".tmp").toFile();
         try(Reader r = new FileReader(orig);
@@ -224,13 +229,21 @@ public class FileTreeCompareImpl implements FileTreeCompare
             PrintWriter pw = new PrintWriter(w))
         {
             String line;
+           
             while ((line = br.readLine()) != null)
-            {
+            {   
                 for (String replKey : replacements.keySet())
                 {
                     String replVal = replacements.get(replKey);
                     line = line.replace(replKey, replVal);
                 }
+                Matcher m = installDatePattern.matcher(line);
+                if(m.matches())
+                {
+                    // replace module.installDate
+                    line = m.replaceFirst("module.installDate=<install-date>");
+                }
+                
                 pw.println(line);
             }
         }

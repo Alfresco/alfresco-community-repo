@@ -16,6 +16,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -199,6 +200,12 @@ public class FileTreeCompareImplTest
 
         // Check that two identical trees are... identical!
         ResultSet resultSet = comparator.compare(tree1, tree2);
+        
+        System.out.println("Comparison results:");
+        for (Result r : resultSet.results)
+        {
+            System.out.println("\t"+r);
+        }
         assertEquals(0, resultSet.stats.differenceCount);
         assertEquals(0, resultSet.stats.ignoredFileCount);
         assertEquals(4, resultSet.stats.resultCount);
@@ -212,17 +219,33 @@ public class FileTreeCompareImplTest
         File t2File = new File(tree2.toFile(), "different.txt");
         t2File.deleteOnExit();
         FileUtils.write(t2File, sampleText(tree2.toAbsolutePath().toString()));
+        
+        // Now add a module.properties that are different in their "installDate" property only.
+        File t3File = new File(tree1.toFile(), "module.properties");
+        t3File.deleteOnExit();
+        Date date = new Date();
+        FileUtils.write(t3File, sampleModuleProperties("2016-02-29T16\\:26\\:18.053Z"));
+        
+        File t4File = new File(tree2.toFile(), "module.properties");
+        t4File.deleteOnExit();
+        FileUtils.write(t4File, sampleModuleProperties("2016-02-28T14\\:30\\:14.035Z"));
+        
 
         // Perform the comparison
         comparator = new FileTreeCompareImpl(new HashSet<String>(), new HashSet<String>());
         resultSet = comparator.compare(tree1, tree2);
+        System.out.println("Comparison results:");
+        for (Result r : resultSet.results)
+        {
+            System.out.println("\t"+r);
+        }
 
         // We should see a difference
         assertEquals(0, resultSet.stats.suppressedDifferenceCount);
-        assertEquals(1, resultSet.stats.differenceCount);
+        assertEquals(2, resultSet.stats.differenceCount);
         assertEquals(0, resultSet.stats.ignoredFileCount);
-        assertEquals(5, resultSet.stats.resultCount);
-        assertEquals(5, resultSet.results.size());
+        assertEquals(6, resultSet.stats.resultCount);
+        assertEquals(6, resultSet.results.size());
 
         Iterator<Result> rit = resultSet.results.iterator();
         assertResultEquals(tree1.resolve("different.txt"), tree2.resolve("different.txt"), false, rit.next());
@@ -230,17 +253,18 @@ public class FileTreeCompareImplTest
         // Perform the comparison again, but after allowing the files to be different.
         Set<String> allowedDiffsPaths = new HashSet<>();
         allowedDiffsPaths.add(toPlatformPath("**/*.txt"));
+        allowedDiffsPaths.add(toPlatformPath("**/module.properties"));
 
-        // Perform the comparison
+        // Perform the comparison, this time with some allowed differences
         comparator = new FileTreeCompareImpl(new HashSet<String>(), allowedDiffsPaths);
         resultSet = comparator.compare(tree1, tree2);
 
         // We should see a difference - but it is in the 'suppressed' list.
-        assertEquals(1, resultSet.stats.suppressedDifferenceCount);
+        assertEquals(2, resultSet.stats.suppressedDifferenceCount);
         assertEquals(0, resultSet.stats.differenceCount);
         assertEquals(0, resultSet.stats.ignoredFileCount);
-        assertEquals(5, resultSet.stats.resultCount);
-        assertEquals(5, resultSet.results.size());
+        assertEquals(6, resultSet.stats.resultCount);
+        assertEquals(6, resultSet.results.size());
 
         rit = resultSet.results.iterator();
         assertResultEquals(tree1.resolve("different.txt"), tree2.resolve("different.txt"), true, rit.next());
@@ -254,6 +278,23 @@ public class FileTreeCompareImplTest
         sb.append(" ...and here is some more text.\n");
         sb.append("...but wait! here's an absolute path again:"+absPath+", yes.");
         sb.append("The End.");
+        return sb.toString();
+    }
+    
+    private String sampleModuleProperties(String installDateAsString)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("module.id=org.alfresco.integrations.share.google.docs\n");
+        sb.append("module.version=3.0.3\n");
+        sb.append("module.buildnumber=4ent\n");
+        sb.append("module.title=Alfresco / Google Docs Share Module\n");
+        sb.append("module.description=The Share side artifacts of the Alfresco / Google Docs Integration.\n");
+        sb.append("module.repo.version.min=5.0.0\n");
+        sb.append("module.repo.version.max=5.99.99\n");
+        sb.append("module.installState=INSTALLED\n");
+        // this is the problem we are trying to solve
+        sb.append("module.installDate=" + installDateAsString + "\n");
+
         return sb.toString();
     }
 

@@ -77,7 +77,7 @@ public class TgzFormatIntegrationTest extends AbstractIntegrationTest
                 public boolean handle(TarArchiveEntry entry)
                 {
                     System.out.println("Handling tar entry: "+entry.getName());
-                    if (entry.getName().equals(ARTIFACT_NAME+version+"/apply_updates.sh"))
+                    if (entry.getName().contains("/apply_updates.sh"))
                     {
                         System.out.println("Found the unix shell wrapper script.");
                         

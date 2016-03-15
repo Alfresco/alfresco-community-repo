@@ -81,19 +81,26 @@ public class HtmlResultFormatterTest
         ignores.add("META-INF/MANIFEST.MF");
         ignores.add("META-INF/maven/**");
         ignores.add("README.txt");
-
-        // Temporary ignores, until we sort out custom diffing or pre-processing before diffs.
-        ignores.add("**/*.sh");
-        ignores.add("**/*.bat");
         ignores.add("uninstall.app/**");
-        ignores.add("common/bin/**");
-        ignores.add("common/include/**");
-        ignores.add("common/lib/**/*.pc");
-        ignores.add("common/lib/**/*.la");
-        ignores.add("libreoffice.app/Contents/Resources/bootstraprc");
-        ignores.add("postgresql/bin/**");
 
-        FileTreeCompare comparator = new FileTreeCompareImpl(ignores);
+        // All the patterns will be applied to these files, e.g. they will all have differences
+        // in absolute path references ignored.
+        Set<String> ignoreSpecialDifferences = new HashSet<>();
+        ignoreSpecialDifferences.add("common/bin/**");
+        ignoreSpecialDifferences.add("common/include/**/*.h");
+        ignoreSpecialDifferences.add("common/lib/**/*.pc");
+        ignoreSpecialDifferences.add("common/lib/**/*.la");
+        ignoreSpecialDifferences.add("libreoffice.app/Contents/Resources/bootstraprc");
+        ignoreSpecialDifferences.add("postgresql/bin/**");
+        ignoreSpecialDifferences.add("**/*.sh");
+        ignoreSpecialDifferences.add("**/*.bat");
+        ignoreSpecialDifferences.add("**/*.ini");
+        ignoreSpecialDifferences.add("**/*.properties");
+        ignoreSpecialDifferences.add("**/*.xml");
+        ignoreSpecialDifferences.add("**/*.sample");
+        ignoreSpecialDifferences.add("**/*.txt");
+
+        FileTreeCompare comparator = new FileTreeCompareImpl(ignores, ignoreSpecialDifferences);
         ResultSet resultSet = comparator.compare(path1, path2);
         
         Path file = Files.createTempFile(getClass().getSimpleName(), ".html");

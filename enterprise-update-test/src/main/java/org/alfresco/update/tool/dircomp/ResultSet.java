@@ -33,6 +33,10 @@ public class ResultSet
          */
         int differenceCount;
         /**
+         * The number of files discovered to have differences, but where we do not care.
+         */
+        int suppressedDifferenceCount;
+        /**
          * The number of files that were completely ignored due to being in the ignore list.
          */
         int ignoredFileCount;

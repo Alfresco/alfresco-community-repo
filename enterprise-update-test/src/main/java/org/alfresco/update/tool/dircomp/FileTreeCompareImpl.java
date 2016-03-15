@@ -7,13 +7,10 @@
  */
 package org.alfresco.update.tool.dircomp;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import org.alfresco.update.tool.dircomp.exception.FileTreeCompareException;
 import org.apache.commons.io.FileUtils;
@@ -39,19 +36,21 @@ public class FileTreeCompareImpl implements FileTreeCompare
 {
     private static final Logger log = LogManager.getLogger(FileTreeCompareImpl.class);
     private final Set<String> ignorePaths = new HashSet<>();
+    private final Set<String> allowedDiffsPaths = new HashSet<>();
     private final AntPathMatcher pathMatcher = new AntPathMatcher(File.separator);
 
     public FileTreeCompareImpl()
     {
-        this(new HashSet<String>());
+        this(new HashSet<String>(), new HashSet<String>());
     }
     
-    public FileTreeCompareImpl(Set<String> ignorePaths)
+    public FileTreeCompareImpl(Set<String> ignorePaths, Set<String> allowedDiffsPath)
     {
         // This config MUST be present before any TFile objects etc. are created.
         TConfig config = TConfig.get();
         config.setArchiveDetector(new TArchiveDetector("war|jar", new ZipDriver(IOPoolLocator.SINGLETON)));
         this.ignorePaths.addAll(ignorePaths);
+        this.allowedDiffsPaths.addAll(allowedDiffsPath);
     }
     
     @Override
@@ -102,22 +101,41 @@ public class FileTreeCompareImpl implements FileTreeCompare
                 if (Files.isRegularFile(result.p1) && Files.isRegularFile(result.p2))
                 {
                     contentMatches = FileUtils.contentEquals(result.p1.toFile(), result.p2.toFile());
-                    if (!contentMatches && isSpecialArchive(pathToFind))
+                    if (!contentMatches)
                     {
-                        Path archive1 = extract(result.p1);
-                        Path archive2 = extract(result.p2);
-                        result.subTree1 = archive1;
-                        result.subTree2 = archive2;
-                        final int diffBefore = stats.differenceCount;
-                        compare(stats, result.subResults, archive1, archive2);
-                        final int diffAfter = stats.differenceCount;
-                        if (diffAfter == diffBefore)
+                        if (pathMatchesAllowedDiffsPattern(pathToFind))
                         {
-                            // No significant differences were found in the (recursive) subtree comparison.
-                            // We can therefore mark the special archive files matching in both trees.
-                            contentMatches = true;
+                            File f1 = preprocessFile(tree1, result.p1.toFile());
+                            File f2 = preprocessFile(tree2, result.p2.toFile());
+                            contentMatches = FileUtils.contentEquals(f1, f2);
+                            if (contentMatches)
+                            {
+                                // If the preprocessed files match, then although the files didn't
+                                // match when first compared byte-for-byte, they do match as far as we are concerned.
+                                // But add to the stats that this is what has happened.
+                                stats.suppressedDifferenceCount++;
+                            }
+//                        f1.delete();
+//                        f2.delete();
+                        }
+                        else if (isSpecialArchive(pathToFind))
+                        {
+                            Path archive1 = extract(result.p1);
+                            Path archive2 = extract(result.p2);
+                            result.subTree1 = archive1;
+                            result.subTree2 = archive2;
+                            final int diffBefore = stats.differenceCount;
+                            compare(stats, result.subResults, archive1, archive2);
+                            final int diffAfter = stats.differenceCount;
+                            if (diffAfter == diffBefore)
+                            {
+                                // No significant differences were found in the (recursive) subtree comparison.
+                                // We can therefore mark the special archive files matching in both trees.
+                                contentMatches = true;
+                            }
                         }
                     }
+
                 }
                 else if (Files.isDirectory(result.p1) && Files.isDirectory(result.p2))
                 {
@@ -151,6 +169,38 @@ public class FileTreeCompareImpl implements FileTreeCompare
         }
     }
 
+    private File preprocessFile(Path tree, File orig) throws IOException
+    {
+        // Create a set of replacements that we intend to make. Replacing them with
+        // a known token allows us to remove differences (that we're not interested in) in the files.
+        Map<String, String> replacements = new HashMap<>();
+        replacements.put(tree.toAbsolutePath().toString(), replacementToken("comparison_root"));
+
+        File processed = Files.createTempFile(orig.getName(), ".tmp").toFile();
+        try(Reader r = new FileReader(orig);
+            BufferedReader br = new BufferedReader(r);
+            Writer w = new FileWriter(processed);
+            PrintWriter pw = new PrintWriter(w))
+        {
+            String line;
+            while ((line = br.readLine()) != null)
+            {
+                for (String replKey : replacements.keySet())
+                {
+                    String replVal = replacements.get(replKey);
+                    line = line.replace(replKey, replVal);
+                }
+                pw.println(line);
+            }
+        }
+        return processed;
+    }
+
+    private String replacementToken(String label)
+    {
+        return String.format("@$@$@$@${{TREE_COMPARE_%s}}", label);
+    }
+
     private boolean isSpecialArchive(Path pathToFind)
     {
         return pathToFind.getFileName().toString().toLowerCase().endsWith(".war") ||
@@ -158,24 +208,39 @@ public class FileTreeCompareImpl implements FileTreeCompare
     }
 
     /**
+     * If the set of paths to allow <em>certain</em> differences ({@link #allowedDiffsPaths})
+     * contains a pattern matching the specified path, then true is returned.
+     * <p>
+     * Patterns are ant-style patterns.
+     *
+     * @param path   The path to check
+     * @return       True if there is a pattern in the allowedDiffsPaths set matching the path.
+     */
+    private boolean pathMatchesAllowedDiffsPattern(String path)
+    {
+        return pathMatchesPattern(path, allowedDiffsPaths);
+    }
+
+    /**
+     * @see #pathMatchesAllowedDiffsPattern(String)
+     */
+    private boolean pathMatchesAllowedDiffsPattern(Path path)
+    {
+        return pathMatchesAllowedDiffsPattern(path.toString());
+    }
+
+    /**
      * If the set of paths to ignore ({@link #ignorePaths}) contains
      * a pattern matching the specified path, then true is returned.
      * <p>
      * Patterns are ant-style patterns.
-     * 
+     *
      * @param path   The path to check
      * @return       True if there is a path in the ignorePaths set that is a prefix of the path.
      */
     private boolean pathMatchesIgnorePattern(String path)
     {
-        for (String pattern : ignorePaths)
-        {
-            if (pathMatcher.match(pattern, path))
-            {
-                return true;
-            }
-        }
-        return false;
+        return pathMatchesPattern(path, ignorePaths);
     }
 
     /**
@@ -184,6 +249,18 @@ public class FileTreeCompareImpl implements FileTreeCompare
     private boolean pathMatchesIgnorePattern(Path path)
     {
         return pathMatchesIgnorePattern(path.toString());
+    }
+
+    private boolean pathMatchesPattern(String path, Set<String> patterns)
+    {
+        for (String pattern : patterns)
+        {
+            if (pathMatcher.match(pattern, path))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private Path extract(Path archivePath) throws IOException

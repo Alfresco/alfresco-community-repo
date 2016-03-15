@@ -32,10 +32,12 @@ public class HtmlResultFormatter implements ResultFormatter
             pw.println("<head>");
             pw.println("<title>File tree comparison results</title>");
             pw.println("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" integrity=\"sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7\" crossorigin=\"anonymous\">");
+            pw.println("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css\">");
             pw.println("</head>");
             pw.println("<body>");
             pw.println("<p>Files examined: <strong>"+resultSet.stats.resultCount+"</strong></p>");
             pw.println("<p>Files with differences: <strong>"+resultSet.stats.differenceCount+"</strong></p>");
+            pw.println("<p>Files with <em>allowed</em> differences: <strong>"+resultSet.stats.suppressedDifferenceCount+"</strong></p>");
             pw.println("<p>Ignored files: <strong>"+resultSet.stats.ignoredFileCount+"</strong></p>");
             String passOrFail;
             if (resultSet.stats.differenceCount > 0)

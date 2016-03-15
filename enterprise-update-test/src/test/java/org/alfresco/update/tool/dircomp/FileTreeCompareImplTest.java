@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.AntPathMatcher;
@@ -153,7 +154,7 @@ public class FileTreeCompareImplTest
         ignorePaths.add("c/c2/**");
         ignorePaths.add("d/**");
         ignorePaths.add("e/**");
-        comparator = new FileTreeCompareImpl(ignorePaths);
+        comparator = new FileTreeCompareImpl(ignorePaths, new HashSet<String>());
 
         // Perform the comparison
         ResultSet resultSet = comparator.compare(tree1, tree2);
@@ -185,8 +186,76 @@ public class FileTreeCompareImplTest
         assertEquals(7, results.size());
         
         // TODO: What about paths within war/jar/zip files?
+        // ...at the moment, if we specify a path of "mydir/README.txt" to be ignored,
+        // this will be ignored in the main tree, e.g. <tree1>/mydir/README.txt but also
+        // within sub-trees if there is a match, e.g. <expanded alfresco.war>/mydir/README.txt
     }
-    
+
+    @Test
+    public void canSpecifyFilesThatShouldHaveCertainDifferencesAllowed() throws IOException
+    {
+        Path tree1 = pathFromClasspath("dir_compare/allowed_differences/tree1");
+        Path tree2 = pathFromClasspath("dir_compare/allowed_differences/tree2");
+
+        // Check that two identical trees are... identical!
+        ResultSet resultSet = comparator.compare(tree1, tree2);
+        assertEquals(0, resultSet.stats.differenceCount);
+        assertEquals(0, resultSet.stats.ignoredFileCount);
+        assertEquals(4, resultSet.stats.resultCount);
+        assertEquals(4, resultSet.results.size());
+
+        // Now add files that are different only in there use of tree1 and tree2's absolute paths.
+        File t1File = new File(tree1.toFile(), "different.txt");
+        t1File.deleteOnExit();
+        FileUtils.write(t1File, sampleText(tree1.toAbsolutePath().toString()));
+
+        File t2File = new File(tree2.toFile(), "different.txt");
+        t2File.deleteOnExit();
+        FileUtils.write(t2File, sampleText(tree2.toAbsolutePath().toString()));
+
+        // Perform the comparison
+        comparator = new FileTreeCompareImpl();
+        resultSet = comparator.compare(tree1, tree2);
+
+        // We should see a difference
+        assertEquals(0, resultSet.stats.suppressedDifferenceCount);
+        assertEquals(1, resultSet.stats.differenceCount);
+        assertEquals(0, resultSet.stats.ignoredFileCount);
+        assertEquals(5, resultSet.stats.resultCount);
+        assertEquals(5, resultSet.results.size());
+
+        Iterator<Result> rit = resultSet.results.iterator();
+        assertResultEquals(tree1.resolve("different.txt"), tree2.resolve("different.txt"), false, rit.next());
+
+        // Perform the comparison again, but after allowing the files to be different.
+        Set<String> allowedDiffsPaths = new HashSet<>();
+        allowedDiffsPaths.add("**/*.txt");
+
+        // Perform the comparison
+        comparator = new FileTreeCompareImpl(new HashSet<String>(), allowedDiffsPaths);
+        resultSet = comparator.compare(tree1, tree2);
+
+        // We should see a difference - but it is in the 'suppressed' list.
+        assertEquals(1, resultSet.stats.suppressedDifferenceCount);
+        assertEquals(0, resultSet.stats.differenceCount);
+        assertEquals(0, resultSet.stats.ignoredFileCount);
+        assertEquals(5, resultSet.stats.resultCount);
+        assertEquals(5, resultSet.results.size());
+
+        rit = resultSet.results.iterator();
+        assertResultEquals(tree1.resolve("different.txt"), tree2.resolve("different.txt"), true, rit.next());
+    }
+
+    private String sampleText(String absPath)
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("This is some example text\n");
+        sb.append("...in tree: "+absPath);
+        sb.append(" ...and here is some more text.\n");
+        sb.append("The End.");
+        return sb.toString();
+    }
+
     @Test
     public void canDiffTreesContainingWarFiles()
     {

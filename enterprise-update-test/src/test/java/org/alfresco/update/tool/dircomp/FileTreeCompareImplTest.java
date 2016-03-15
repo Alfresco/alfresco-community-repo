@@ -284,6 +284,7 @@ public class FileTreeCompareImplTest
     private String sampleModuleProperties(String installDateAsString)
     {
         StringBuilder sb = new StringBuilder();
+        sb.append("# " + installDateAsString + "\n");
         sb.append("module.id=org.alfresco.integrations.share.google.docs\n");
         sb.append("module.version=3.0.3\n");
         sb.append("module.buildnumber=4ent\n");

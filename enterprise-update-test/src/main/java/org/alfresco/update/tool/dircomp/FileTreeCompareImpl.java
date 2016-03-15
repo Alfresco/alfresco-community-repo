@@ -233,6 +233,7 @@ public class FileTreeCompareImpl implements FileTreeCompare
         
         // Create a pattern for module.installDate
         Pattern installDatePattern = Pattern.compile("module.installDate=.*[\n\r\f]*$");
+        Pattern commentPattern = Pattern.compile("^#.*");
 
         File processed = Files.createTempFile(orig.getName(), ".tmp").toFile();
         try(Reader r = new FileReader(orig);
@@ -254,6 +255,12 @@ public class FileTreeCompareImpl implements FileTreeCompare
                 {
                     // replace module.installDate
                     line = m.replaceFirst("module.installDate=<install-date>");
+                }
+                Matcher cp = commentPattern.matcher(line);
+                if(cp.matches())
+                {
+                    // replace module.installDate
+                    line = "# {comment suppressed}\n";
                 }
                 
                 pw.println(line);

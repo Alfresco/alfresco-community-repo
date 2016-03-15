@@ -136,6 +136,9 @@ public class FileTreeCompareImpl implements FileTreeCompare
                             File f1 = preprocessFile(tree1, result.p1.toFile());
                             File f2 = preprocessFile(tree2, result.p2.toFile());
                             contentMatches = FileUtils.contentEquals(f1, f2);
+                            // Delete the files now that we no longer need them. The originals are still available.
+                            f1.delete();
+                            f2.delete();
                             if (contentMatches)
                             {
                                 // If the preprocessed files match, then although the files didn't
@@ -143,8 +146,6 @@ public class FileTreeCompareImpl implements FileTreeCompare
                                 // But add to the stats that this is what has happened.
                                 stats.suppressedDifferenceCount++;
                             }
-//                        f1.delete();
-//                        f2.delete();
                         }
                         else if (isSpecialArchive(pathToFind))
                         {

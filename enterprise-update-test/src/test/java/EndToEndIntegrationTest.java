@@ -136,13 +136,13 @@ public class EndToEndIntegrationTest
     /**
      * Run the diff tool
      * 
-     * @param path1
-     * @param path2
+     * @param freshInstallation
+     * @param updatedInstallation
      */
-    public void compare(File path1, File path2) throws IOException
+    public void compare(File freshInstallation, File updatedInstallation) throws IOException
     {
         FileTreeCompare comparator = new FileTreeCompareImpl();
-        ResultSet resultSet = comparator.compare(path1.toPath(), path2.toPath());
+        ResultSet resultSet = comparator.compare(updatedInstallation.toPath(), freshInstallation.toPath());
 
         File dircompDir = new File(targetDir, "installation-diff");
         dircompDir.mkdirs();

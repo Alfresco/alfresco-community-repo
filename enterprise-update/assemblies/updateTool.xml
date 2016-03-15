@@ -81,7 +81,7 @@
             <outputDirectory>resources/war</outputDirectory>
             <outputFileNameMapping>alfresco.war</outputFileNameMapping>
             <includes>
-                <include>org.alfresco:alfresco*:war</include>
+                <include>org.alfresco:alfresco-platform-enterprise:war</include>
             </includes>
         </dependencySet>
         
@@ -92,7 +92,7 @@
             <outputDirectory>resources/war</outputDirectory>
             <outputFileNameMapping>share.war</outputFileNameMapping>
             <includes>
-                <include>org.alfresco:share*:war</include>
+                <include>org.alfresco:share:war</include>
             </includes>
         </dependencySet>
         
@@ -103,7 +103,7 @@
             <outputDirectory>resources/war</outputDirectory>
             <outputFileNameMapping>solr4.war</outputFileNameMapping>
             <includes>
-                <include>org.alfresco:alfresco-solr4*:war</include>
+                <include>org.alfresco:alfresco-solr4:war</include>
             </includes>
         </dependencySet>
         

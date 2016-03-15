@@ -7,13 +7,13 @@
         <artifactId>alfresco-full-installation</artifactId>
         <version>5.1.1-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-enterprise-update-package</artifactId>
+    <artifactId>alfresco-one-update-package</artifactId>
     <packaging>jar</packaging>
-    <name>Alfresco Enterprise Update Package</name> 
+    <name>Alfresco One Update Package</name> 
 
     <properties>
         <unpacked.update.tool>${project.build.directory}/dependency/alfresco-update-tool-distribution-${alfresco.updatetool.version}</unpacked.update.tool>
-		<unpacked.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}</unpacked.alfresco.platform.distribution>
+		<unpacked.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-one-platform-distributionzip-${alfresco.platform.version}</unpacked.alfresco.platform.distribution>
 		<unpacked.alfresco.share.distribution>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}</unpacked.alfresco.share.distribution>
 		<unpacked.alfresco.wcmqs.distribution>${project.build.directory}/dependency/wcmqs-${project.version}</unpacked.alfresco.wcmqs.distribution>
 		<unpacked.org.alfresco.aos.distribution>${project.build.directory}/dependency/aos-${alfresco.aos-module.version}</unpacked.org.alfresco.aos.distribution>
@@ -89,7 +89,7 @@
 		<!-- Platform dependencies -->
 		<dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
+            <artifactId>alfresco-one-platform-distributionzip</artifactId>
             <version>${alfresco.platform.version}</version>
             <type>zip</type>
         </dependency>
@@ -181,7 +181,7 @@
                             <artifactItems>
                                 <artifactItem>
 								  <groupId>org.alfresco</groupId>
-									<artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
+									<artifactId>alfresco-one-platform-distributionzip</artifactId>
 									<version>${alfresco.platform.version}</version>
                                     <overWrite>true</overWrite>
                                     <type>zip</type>

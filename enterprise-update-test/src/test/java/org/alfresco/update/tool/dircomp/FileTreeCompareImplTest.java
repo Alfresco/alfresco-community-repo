@@ -252,6 +252,7 @@ public class FileTreeCompareImplTest
         sb.append("This is some example text\n");
         sb.append("...in tree: "+absPath);
         sb.append(" ...and here is some more text.\n");
+        sb.append("...but wait! here's an absolute path again:"+absPath+", yes.");
         sb.append("The End.");
         return sb.toString();
     }

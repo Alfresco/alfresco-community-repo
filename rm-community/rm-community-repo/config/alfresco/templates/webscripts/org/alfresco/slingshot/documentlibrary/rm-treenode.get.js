@@ -6,10 +6,10 @@
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
+ * This file is part of the Alfresco software.
  * 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
  * 
  * Alfresco is free software: you can redistribute it and/or modify
@@ -49,7 +49,7 @@ function getTreenode()
          skipPermissionCheck = args["perms"] == "false",
          evalChildFolders = false,
          item, rmNode, capabilities, cap;
-   
+
       // Use helper function to get the arguments
       var parsedArgs = ParseArgs.getParsedArgs();
       if (parsedArgs === null)
@@ -85,16 +85,16 @@ function getTreenode()
             {
                //capabilities = {};
                rmNode = rmService.getRecordsManagementNode(item);
-               
+
                //for each (cap in rmNode.capabilitiesSet("Create"))
                //{
                //   capabilities[cap.name] = true;
                //}
-               
+
                //
 
                hasCreateCapability = rmNode.hasCapability("Create");
-               
+
                if (evalChildFolders)
                {
                   hasSubfolders = item.childFileFolders(false, true, "fm:forum").length > 0;
@@ -112,9 +112,9 @@ function getTreenode()
             }
          }
       }
-   
+
       items.sort(sortByName);
-   
+
       return (
       {
          parent: parsedArgs.pathNode,
@@ -144,20 +144,20 @@ function itemIsAllowed(item)
    {
       return false;
    }
-   
+
    var typeShort = String(item.typeShort);
-   
+
    // Don't show Hold and Transfer top-level containers
    if (typeShort == "rma:holdContainer" || typeShort == "rma:transferContainer" || typeShort == "rma:unfiledRecordContainer")
    {
       return false;
    }
-   
+
    // Must be a "dod:" or "rma:" namespaced type
    if (typeShort.indexOf("dod:") !== 0 && typeShort.indexOf("rma") !== 0)
    {
       return false;
    }
-   
+
    return true;
 }

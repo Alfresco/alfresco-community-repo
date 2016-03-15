@@ -40,6 +40,7 @@ import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.annotation.Behaviour;
 import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
+import org.alfresco.repo.rule.RuleModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -179,8 +180,11 @@ public class FilePlanType extends    BaseBehaviourBean
         {
             public Object doWork()
             {
-                if (nodeService.hasAspect(filePlan, ASPECT_FILE_PLAN_COMPONENT) &&
-                    nodeService.getProperty(filePlan, PROP_IDENTIFIER) == null)
+                // ensure rules are not inherited
+                nodeService.addAspect(filePlan, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);
+                
+                // set the identifier 
+                if (nodeService.getProperty(filePlan, PROP_IDENTIFIER) == null)
                 {
                     String id = getIdentifierService().generateIdentifier(filePlan);
                     nodeService.setProperty(filePlan, RecordsManagementModel.PROP_IDENTIFIER, id);

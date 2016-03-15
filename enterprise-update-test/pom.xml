@@ -142,12 +142,17 @@
                 
                 <echo>Is base.installer.version provided ?</echo>
                 <if>
-                  <equals arg1="${base.installer.version}" arg2=""/>
+                  <or>
+                    <equals arg1="${base.installer.version}" arg2=""/>
+                    <not>
+                        <matches string="${base.installer.version}" pattern="^*.bin$"/>
+                    </not>
+                  </or>
                   <then>
-                    <fail message="Missing Alfresco Base version. Example: -Dbase.installer.version=Enterprise-5.0/5.0.3" />
+                    <fail message="Missing Alfresco Base version. Example: -Dbase.installer.version=Enterprise-5.0/5.0.3/build-00084/ALL/alfresco-enterprise-5.0.3-installer-linux-x64.bin" />
                   </then>
                 </if>
-                                
+
                 <!-- Download and install the base version of alfresco -->
                 <if>
                   <not>
@@ -159,7 +164,7 @@
                 </if>
                 <echo>Downloading Base Alfresco installer ${base.installer.version}...</echo>
                 <exec executable="wget" dir="target">
-                    <arg line="-r -nv -nd -np -A bin -O base-alf-installer.bin https://releases.alfresco.com/${base.installer.version}/" />
+                    <arg line="-nv -nd -np -O base-alf-installer.bin https://releases.alfresco.com/${base.installer.version}" />
                 </exec>
                 <chmod file="${base.installer.location}" perm="a+x" verbose="true" />
 
@@ -167,7 +172,7 @@
                 <exec executable="${base.installer.location}" dir="target" failonerror="true">
                   <arg line="${installer.args} --prefix ${base.alfresco.instance} " />
                 </exec>
-                
+
                 <if>
                   <not>
                     <isset property="this.installer.location" />
@@ -178,7 +183,7 @@
                             <include name="alfresco-*.bin"/> 
                         </fileset>
                     </path>
-                    <property name="this.installer.location" location="${this.installer.name}" />
+                    <property name="this.installer.location" refid="this.installer.name" />
                   </then>
                 </if>
 

@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import org.junit.Before;
 import org.junit.Test;
 
-public class EndToEndTest
+public class EndToEndIntegrationTest
 {
     private final static String JAR_FILE_NAME = "alfresco-update-tool.jar";
     

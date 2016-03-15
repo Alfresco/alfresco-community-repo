@@ -48,7 +48,7 @@ public class FileTreeCompareImpl implements FileTreeCompare
     {
         // This config MUST be present before any TFile objects etc. are created.
         TConfig config = TConfig.get();
-        config.setArchiveDetector(new TArchiveDetector("war|jar", new ZipDriver(IOPoolLocator.SINGLETON)));
+        config.setArchiveDetector(new TArchiveDetector("war|jar|amp", new ZipDriver(IOPoolLocator.SINGLETON)));
         this.ignorePaths.addAll(ignorePaths);
         this.allowedDiffsPaths.addAll(allowedDiffsPath);
     }
@@ -204,7 +204,8 @@ public class FileTreeCompareImpl implements FileTreeCompare
     private boolean isSpecialArchive(Path pathToFind)
     {
         return pathToFind.getFileName().toString().toLowerCase().endsWith(".war") ||
-                pathToFind.getFileName().toString().toLowerCase().endsWith(".jar");
+                pathToFind.getFileName().toString().toLowerCase().endsWith(".jar") ||
+                pathToFind.getFileName().toString().toLowerCase().endsWith(".amp");
     }
 
     /**

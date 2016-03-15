@@ -120,7 +120,7 @@
                 <include>README.txt</include>
                 <include>package.properties</include>
             </includes>
-             <lineEnding>unix</lineEnding>
+             <lineEnding>dos</lineEnding>
         </fileSet>
         
         <fileSet>

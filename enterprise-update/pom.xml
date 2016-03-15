@@ -147,10 +147,6 @@
                             <workingDirectory>${project.build.directory}</workingDirectory>
                             <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <runOrder>alphabetical</runOrder>
-                            <systemPropertyVariables>
-                                <alfresco.update.package>${project.artifactId}-${installer.version.name}.zip</alfresco.update.package>
-                                <alfresco.contents.package>update-contents-${installer.version.name}.zip</alfresco.contents.package>
-                            </systemPropertyVariables>
                             <excludes>
                                 <exclude>none</exclude>
                             </excludes>
@@ -158,6 +154,7 @@
                                 <include>**/*IntegrationTest.java</include>
                             </includes>
                             <systemPropertyVariables>
+                                <alfresco.update.package>${project.artifactId}-${installer.version.name}.zip</alfresco.update.package>
                                 <version>${version}</version>
                                 <alfresco.target.dir>${project.build.directory}</alfresco.target.dir>
                             </systemPropertyVariables>

@@ -1,5 +1,4 @@
-Alfresco Community (Build: ${installer.version.name})
-===============================
+Alfresco One Community (Build: ${installer.version.name})
 
 Contains:
 	- Alfresco Platform:	${alfresco.platform.version}

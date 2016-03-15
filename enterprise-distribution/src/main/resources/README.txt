@@ -1,4 +1,4 @@
-Alfresco One (Build: ${installer.version.name})
+Alfresco One Enterprise (Build: ${installer.version.name})
 ===============================
 
 Contains:

@@ -1,16 +1,13 @@
- 
-package org.alfresco.module.org_alfresco_module_rm.script;
-
 /*
  * #%L
  * Alfresco Records Management Module
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
+ * This file is part of the Alfresco software.
  * 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
  * 
  * Alfresco is free software: you can redistribute it and/or modify
@@ -28,6 +25,7 @@ package org.alfresco.module.org_alfresco_module_rm.script;
  * #L%
  */
 
+package org.alfresco.module.org_alfresco_module_rm.script;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -41,18 +39,18 @@ import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.springframework.extensions.surf.util.ISO8601DateFormat;
-import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.DeclarativeWebScript;
-import org.springframework.extensions.webscripts.Status;
-import org.springframework.extensions.webscripts.WebScriptException;
-import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.extensions.surf.util.ISO8601DateFormat;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.DeclarativeWebScript;
+import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptException;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * This class provides the implementation for the rmaction webscript.

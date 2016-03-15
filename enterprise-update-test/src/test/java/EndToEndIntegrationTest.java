@@ -64,7 +64,7 @@ public class EndToEndIntegrationTest
         String basePath = System.getProperty("unpacked.update.package");
         if (basePath == null)
         {
-            basePath = "./test-data/alfresco-one-update-package"; 
+            basePath = "./test-data/alfresco-enterprise-update-package"; 
         }
         File base = new File(targetDir, basePath);
         assertTrue(base.isDirectory());

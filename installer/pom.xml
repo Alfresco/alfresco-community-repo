@@ -310,14 +310,6 @@
                                     <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
                                     <includes>alfresco/extension/**</includes>
                                 </artifactItem>
-                                <!-- Alfresco Office Services Module -->
-                                <artifactItem>
-                                    <groupId>org.alfresco.aos-module</groupId>
-                                    <artifactId>alfresco-aos-module-distributionzip</artifactId>
-                                    <version>${alfresco.aos-module.version}</version>
-                                    <type>zip</type>
-                                    <outputDirectory>${project.build.directory}/distribution/aos-module</outputDirectory>
-                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -340,14 +332,6 @@
                                     <artifactId>alfresco-googledocs-share</artifactId>
                                     <version>${alfresco.googledocs.version}</version>
                                     <type>amp</type>
-                                </artifactItem>
-                                <!-- Alfresco SPP -->
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-spp</artifactId>
-                                    <version>${alfresco.platform.version}</version>
-                                    <type>amp</type>
-                                    <destFileName>alfresco-spp.amp</destFileName>
                                 </artifactItem>
                             </artifactItems>
                         </configuration>

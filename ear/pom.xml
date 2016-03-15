@@ -36,6 +36,13 @@
             <version>${alfresco.share.version}</version>
             <type>war</type>
         </dependency>
+
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-enterprise-vti-bin</artifactId>
+            <version>${alfresco.platform.version}</version>
+            <type>war</type>
+        </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-server-root</artifactId>
@@ -47,21 +54,8 @@
         <!-- Distribution zip -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-one-platform-distributionzip</artifactId>
+            <artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
             <version>${alfresco.platform.version}</version>
-            <type>zip</type>
-            <scope>provided</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>*</groupId>
-                    <artifactId>*</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-share-distribution</artifactId>
-            <version>${alfresco.share.version}</version>
             <type>zip</type>
             <scope>provided</scope>
             <exclusions>
@@ -188,6 +182,11 @@
                         </webModule>
                         <webModule>
                             <groupId>org.alfresco</groupId>
+                            <artifactId>alfresco-enterprise-vti-bin</artifactId>
+                            <bundleFileName>_vti_bin.war</bundleFileName>
+                        </webModule>
+                        <webModule>
+                            <groupId>org.alfresco</groupId>
                             <artifactId>alfresco-server-root</artifactId>
                             <bundleFileName>ROOT.war</bundleFileName>
                         </webModule>
@@ -199,29 +198,15 @@
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
-                        <id>unpack-platform-distribution</id>
+                        <id>unpack-distribution</id>
                         <phase>prepare-package</phase>
                         <goals>
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeArtifactIds>alfresco-one-platform-distributionzip</includeArtifactIds>
+                            <includeArtifactIds>alfresco-platform-enterprise-distributionzip</includeArtifactIds>
                             <excludeTransitive>true</excludeTransitive>
-                            <excludes>alfresco-one-platform-distributionzip-${alfresco.platform.version}/solr4/,alfresco-one-platform-distributionzip-${alfresco.platform.version}/web-server/webapps/,alfresco-one-platform-distributionzip-${alfresco.platform.version}/modules/</excludes>
-                        </configuration>
-                    </execution>
-
-                    <execution>
-                        <id>unpack-share-distribution</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>unpack-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <includeArtifactIds>alfresco-share-distribution</includeArtifactIds>
-                            <excludeTransitive>true</excludeTransitive>
-                            <excludes>*</excludes>
-                            <includes>alfresco-share-distribution-${alfresco.share.version}/web-extension-samples/</includes>
+                            <excludes>alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/solr4/,alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/web-server/webapps/</excludes>
                         </configuration>
                     </execution>
 
@@ -239,7 +224,7 @@
                                     <version>1.0.1</version>
                                 </artifactItem>
                             </artifactItems>
-                            <outputDirectory>${project.build.directory}/dependency/alfresco-one-platform-distributionzip-${alfresco.platform.version}/web-server/lib</outputDirectory>
+                            <outputDirectory>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}/web-server/lib</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>

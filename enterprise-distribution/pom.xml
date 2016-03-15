@@ -6,20 +6,21 @@
         <artifactId>alfresco-full-installation</artifactId>
         <version>5.1.1-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-one-distribution</artifactId>
+    <artifactId>alfresco-enterprise-distribution</artifactId>
     <packaging>jar</packaging>
     <name>Alfresco Full Distribution (Enterprise Edition)</name>
 
     <!-- To replace in share-config-custom.xml -->
     <properties>
         <BITROCK_TOMCAT_PORT>8080</BITROCK_TOMCAT_PORT>
+        <alfresco.platform.edition>enterprise</alfresco.platform.edition>
     </properties>
 
     <dependencies>
         <!-- Platform Distribution -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-one-platform-distributionzip</artifactId>
+            <artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
             <version>${alfresco.platform.version}</version>
             <type>zip</type>
             <exclusions>
@@ -81,7 +82,7 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-one-platform-distributionzip</artifactId>
+                                    <artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
                                     <version>${alfresco.platform.version}</version>
                                     <type>zip</type>
                                 </artifactItem>

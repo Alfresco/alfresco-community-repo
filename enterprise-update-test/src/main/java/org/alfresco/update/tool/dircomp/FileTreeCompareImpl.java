@@ -55,10 +55,11 @@ public class FileTreeCompareImpl implements FileTreeCompare
             // Add default ignores
             ignorePaths = new HashSet<>();
             ignorePaths.add(toPlatformPath("alf_data/postgresql/**"));
-            ignorePaths.add(toPlatformPath("alf_data/solr4/**"));
+            ignorePaths.add(toPlatformPath("alf_data/oouser/user/**"));
+            ignorePaths.add(toPlatformPath("common/**"));
             ignorePaths.add(toPlatformPath("META-INF/MANIFEST.MF"));
             ignorePaths.add(toPlatformPath("META-INF/maven/**"));
-            ignorePaths.add(toPlatformPath("README.txt"));
+            ignorePaths.add(toPlatformPath("licenses/notice.txt"));
             ignorePaths.add(toPlatformPath("uninstall.app/**"));
             ignorePaths.add(toPlatformPath("uninstall/**"));
             ignorePaths.add(toPlatformPath("uninstall.exe"));
@@ -69,8 +70,11 @@ public class FileTreeCompareImpl implements FileTreeCompare
             ignorePaths.add(toPlatformPath("applied-updates/**"));
             ignorePaths.add(toPlatformPath("~build/**"));
             ignorePaths.add(toPlatformPath("properties.ini"));
+            ignorePaths.add(toPlatformPath("**/log.txt"));
+            ignorePaths.add(toPlatformPath("**/solrcore.properties"));
             ignorePaths.add(toPlatformPath("**/modifications.install"));
             ignorePaths.add(toPlatformPath("tomcat/webapps/ROOT.war"));
+           
         }
         if (allowedDiffsPaths == null)
         {

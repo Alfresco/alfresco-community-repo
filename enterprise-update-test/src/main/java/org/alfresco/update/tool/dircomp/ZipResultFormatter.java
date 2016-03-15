@@ -66,7 +66,8 @@ public class ZipResultFormatter implements ResultFormatter
     
     private String getEntryName(Path path)
     {
-       return "differences/" + path.toAbsolutePath().toString().replace('\\', '/').trim();
+       // eg differences/xml-data/foo/bar
+       return "differences" + path.normalize().toString().replace('\\', '/').trim();
     }
 
 }

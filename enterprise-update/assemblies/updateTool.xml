@@ -38,8 +38,16 @@
             <directory>${unpacked.alfresco.platform.distribution}</directory>
             <outputDirectory>resources/distribution/platform</outputDirectory>
             <includes>
-                <include>README.txt</include>
                 <include>package.properties</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
+		
+		<fileSet>
+            <directory>${unpacked.alfresco.one.distribution}</directory>
+            <outputDirectory>resources/distribution/platform</outputDirectory>
+            <includes>
+                <include>README.txt</include>
             </includes>
             <lineEnding>keep</lineEnding>
         </fileSet>

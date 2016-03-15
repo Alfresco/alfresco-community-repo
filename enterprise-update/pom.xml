@@ -17,6 +17,7 @@
 		<unpacked.alfresco.share.distribution>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}</unpacked.alfresco.share.distribution>
 		<unpacked.alfresco.wcmqs.distribution>${project.build.directory}/dependency/wcmqs-${project.version}</unpacked.alfresco.wcmqs.distribution>
 		<unpacked.org.alfresco.aos.distribution>${project.build.directory}/dependency/aos-${alfresco.aos-module.version}</unpacked.org.alfresco.aos.distribution>
+		<unpacked.alfresco.one.distribution>${project.build.directory}/dependency/alfresco-one-distribution-${project.version}</unpacked.alfresco.one.distribution>
 
 		<!-- e.g. pull the update scripts from src/main/resources/script/5.0 -->
 		<unpacked.update.script>${project.build.directory}/classes/script/${version.major}.${version.minor}</unpacked.update.script>
@@ -100,6 +101,14 @@
             <artifactId>alfresco-share-distribution</artifactId>
             <version>${alfresco.share.version}</version>
             <type>zip</type>
+        </dependency>
+		
+		<!-- Full Installer dependencies -->
+	    <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-one-distribution</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
         </dependency>
 		
         <!-- Testing dependencies -->
@@ -226,7 +235,27 @@
                                 </artifactItem>
                             </artifactItems>
                         </configuration>
-                    </execution>					
+                    </execution>	
+
+					<execution>
+                        <id>unpack-one-distribution</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+								    <groupId>org.alfresco</groupId>
+									<artifactId>alfresco-one-distribution</artifactId>
+									<version>${project.version}</version>
+                                    <overWrite>true</overWrite>
+                                    <type>jar</type>
+									<outputDirectory>${unpacked.alfresco.one.distribution}</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>						
                 </executions>
             </plugin>
             

@@ -9,7 +9,9 @@
 import org.alfresco.update.tool.dircomp.FileTreeCompare;
 import org.alfresco.update.tool.dircomp.FileTreeCompareImpl;
 import org.alfresco.update.tool.dircomp.HtmlResultFormatter;
+import org.alfresco.update.tool.dircomp.Result;
 import org.alfresco.update.tool.dircomp.ResultSet;
+import org.alfresco.update.tool.dircomp.ZipResultFormatter;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -21,6 +23,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.zip.ZipOutputStream;
 
 import static org.junit.Assert.assertTrue;
 
@@ -157,6 +160,17 @@ public class EndToEndIntegrationTest
             BufferedOutputStream bos = new BufferedOutputStream(fos))
         {
             formatter.format(resultSet, bos);
+        }
+
+        File zipFile = new File(dircompDir, "installation-diff-report.zip");
+        zipFile.createNewFile();
+        
+        ZipResultFormatter zformatter = new ZipResultFormatter();
+        
+        try (FileOutputStream fos = new FileOutputStream(zipFile);
+             ZipOutputStream zos = new ZipOutputStream(fos))
+        {
+            zformatter.format(resultSet, zos);
         }
     }
 

@@ -209,6 +209,7 @@
             <useProjectArtifact>false</useProjectArtifact>
             <useStrictFiltering>true</useStrictFiltering>
             <outputDirectory>resources/amp/platform</outputDirectory>
+			<outputFileNameMapping>alfresco-share-services.amp</outputFileNameMapping>
             <includes>
                 <include>org.alfresco:alfresco-share-services:amp:*</include>
             </includes>   

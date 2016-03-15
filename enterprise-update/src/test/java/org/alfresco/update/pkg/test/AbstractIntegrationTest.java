@@ -15,13 +15,11 @@ import org.junit.Before;
 public abstract class AbstractIntegrationTest
 {
     protected File targetDir;
-    protected String version;
     
     @Before
     public void setUp() throws Exception
     {
         initTargetDir();
-        initVersion();
     }
     
     private void initTargetDir()
@@ -35,15 +33,6 @@ public abstract class AbstractIntegrationTest
         assertTrue("target dir does not exist :" + targetDir, this.targetDir.exists());
     }
     
-    private void initVersion()
-    {
-        // This is set by maven, see pom.xml
-        System.out.println("MER");
-        version = System.getProperty("version");
-        System.out.println("SSS");
-        assertNotNull("'version' system property not set. If using an IDE, then add an appropriate VM argument to "
-                    + "your run configuration, e.g. -Dversion=5.0.3-SNAPSHOT", version);
-    }
     
     protected boolean runningOnWindows()
     {

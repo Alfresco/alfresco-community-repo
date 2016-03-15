@@ -26,8 +26,7 @@ import org.junit.Test;
  * <p>
  * To run these tests in Eclipse, add the following to the "VM arguments" for the junit Run Configuration:
  * <pre>
- *   -Dalfresco.update.package=target/alfresco-enterprise-update-package-2015-1-EA-SNAPSHOT.zip
- *   -Dalfresco.contents.package=target/update-contents-2015-1-EA-SNAPSHOT.zip
+ *   -Dalfresco.update.package.zip=target/alfresco-enterprise-update-package-2015-1-EA-SNAPSHOT.zip
  * </pre>
  * 
  * ...or similar, depending on current version etc. There probably is a better way.
@@ -37,12 +36,11 @@ import org.junit.Test;
 public class PackagingIntegrationTest
 {
     private File updatePackage;
-    private File contentsPackage;
     
     @Before
     public void setUp() throws Exception
     {
-        String pkgName = System.getProperty("alfresco.update.package");
+        String pkgName = System.getProperty("alfresco.update.package.zip");
         assertNotNull("Could not determine package name.", pkgName);
         updatePackage = new File(pkgName);        
     }

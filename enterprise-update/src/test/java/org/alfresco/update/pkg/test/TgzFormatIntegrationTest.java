@@ -8,6 +8,7 @@
 package org.alfresco.update.pkg.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedInputStream;
@@ -30,16 +31,26 @@ import org.junit.Test;
 /**
  * Tests for the tgz format packaging.
  * 
+ * To run these tests in Eclipse, add the following to the "VM arguments" for the junit Run Configuration:
+ * <pre>
+ *   -Dalfresco.update.package.tgz=target/alfresco-enterprise-update-package-2015-1-EA-SNAPSHOT.zip
+ * </pre>
+ * 
  * @author Matt Ward
  */
 public class TgzFormatIntegrationTest extends AbstractIntegrationTest
 {
     private boolean found;
     
+    File updatePackage;
+    
     @Before
     public void setUp() throws Exception
     {
         super.setUp();
+        String pkgName = System.getProperty("alfresco.update.package.tgz");
+        assertNotNull("Could not determine package name.", pkgName);
+        updatePackage = new File(pkgName);        
     }
     
     public final String ARTIFACT_NAME="alfresco-enterprise-update-package-";
@@ -54,12 +65,11 @@ public class TgzFormatIntegrationTest extends AbstractIntegrationTest
             return;
         }
         
-        File archive = new File(targetDir, ARTIFACT_NAME+version+".tgz");
-        assertTrue("File does not exist: "+archive, archive.exists());
+        assertTrue("File does not exist: "+ updatePackage, updatePackage.exists());
         FileInputStream fis = null;
         try
         {
-            fis = new FileInputStream(archive);
+            fis = new FileInputStream(updatePackage);
 
             handleArchiveEntries(fis, new ArchiveEntryHandler()
             {                

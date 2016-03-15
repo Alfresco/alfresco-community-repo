@@ -53,10 +53,18 @@ public class FileTreeCompareImpl implements FileTreeCompare
             // Add default ignores
             ignorePaths = new HashSet<>();
             ignorePaths.add(toPlatformPath("alf_data/postgresql/**"));
+            ignorePaths.add(toPlatformPath("alf_data/solr4/**"));
             ignorePaths.add(toPlatformPath("META-INF/MANIFEST.MF"));
             ignorePaths.add(toPlatformPath("META-INF/maven/**"));
             ignorePaths.add(toPlatformPath("README.txt"));
             ignorePaths.add(toPlatformPath("uninstall.app/**"));
+            ignorePaths.add(toPlatformPath("uninstall/**"));
+            ignorePaths.add(toPlatformPath("uninstall.exe"));
+            ignorePaths.add(toPlatformPath("uninstall.dat"));
+            ignorePaths.add(toPlatformPath("libreoffice.app/**"));
+            ignorePaths.add(toPlatformPath("libreoffice/**"));
+            ignorePaths.add(toPlatformPath("java/**"));
+            ignorePaths.add(toPlatformPath("applied-updates/**"));
         }
         if (allowedDiffsPaths == null)
         {

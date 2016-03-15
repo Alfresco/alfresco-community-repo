@@ -27,16 +27,16 @@
 
 package org.alfresco.module.org_alfresco_module_rm.test.util;
 
+import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.smuggleCheckedExceptions;
+import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+
 import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.MissingThrowableException;
 import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.SmuggledException;
 import org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.UnexpectedThrowableException;
 import org.junit.Test;
-
-import java.io.IOException;
-
-import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.expectedException;
-import static org.alfresco.module.org_alfresco_module_rm.test.util.ExceptionUtils.smuggleCheckedExceptions;
-import static org.junit.Assert.*;
 
 /**
  * Unit tests showing usage of {@link ExceptionUtils}.

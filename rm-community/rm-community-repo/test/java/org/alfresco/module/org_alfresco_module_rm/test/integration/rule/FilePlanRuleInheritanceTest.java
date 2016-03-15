@@ -66,10 +66,10 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
     }
     
     /** 
-     * Given that a singel rule is set on the parent folder of the file plan root
+     * Given that a single rule is set on the parent folder of the file plan root
      * And that it is configured to apply to children
-     * When we ask for the rules on the file plan, inclusing those inherited
-     * Then it will not include thos defined on the parent folder
+     * When we ask for the rules on the file plan, including those inherited
+     * Then it will not include those defined on the parent folder
      */
     public void testFilePlanDoesNotInheritRulesFromParentFolder()
     {

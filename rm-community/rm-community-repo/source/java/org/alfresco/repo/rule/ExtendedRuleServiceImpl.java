@@ -171,39 +171,37 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
         if (nodeService.exists(nodeRef))
         {
             QName typeQName = nodeService.getType(nodeRef);
-            if (shouldRuleBeAppliedToNode(rule, nodeRef, typeQName))        
+
+            // check if this is a rm rule on a rm artifact
+            if (filePlanService.isFilePlanComponent(nodeRef) &&
+            	isFilePlanComponentRule(rule))
             {
-                // check if this is a rm rule on a rm artifact
-                if (filePlanService.isFilePlanComponent(nodeRef) &&
-                	isFilePlanComponentRule(rule))
-                {
-                	// ignore and
-                    if (!isIgnoredType(typeQName))
-        	        {
-        	        	if (runAsAdmin)
-        	            {
-        	            	AuthenticationUtil.runAs(new RunAsWork<Void>()
+            	// ignore and
+                if (!isIgnoredType(typeQName))
+    	        {
+    	        	if (runAsAdmin)
+    	            {
+    	            	AuthenticationUtil.runAs(new RunAsWork<Void>()
+                        {
+                            @Override
+                            public Void doWork()
                             {
-                                @Override
-                                public Void doWork()
-                                {
-                                    ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
-                                    return null;
-                                }
-                            }, AuthenticationUtil.getAdminUserName());
-                    	}
-                    	else
-                    	{
-                    		// run as current user
-                    		super.executeRule(rule, nodeRef, executedRules);
-                    	}
-        	        }
-                }
-                else
-                {
-                    // just execute the rule as the current user
-                    super.executeRule(rule, nodeRef, executedRules);
-                }
+                                ExtendedRuleServiceImpl.super.executeRule(rule, nodeRef, executedRules);
+                                return null;
+                            }
+                        }, AuthenticationUtil.getAdminUserName());
+                	}
+                	else
+                	{
+                		// run as current user
+                		super.executeRule(rule, nodeRef, executedRules);
+                	}
+    	        }
+            }
+            else
+            {
+                // just execute the rule as the current user
+                super.executeRule(rule, nodeRef, executedRules);
             }
         }
     }
@@ -227,45 +225,5 @@ public class ExtendedRuleServiceImpl extends RuleServiceImpl
     private boolean isIgnoredType(QName typeQName)
     {
         return ignoredTypes.contains(typeQName);
-    }
-
-    /**
-     * Check if the rule is associated with the file plan component that the node it is being
-     * applied to isn't a hold container, a hold, a transfer container, a transfer, an unfiled
-     * record container, an unfiled record folder or unfiled content
-     *
-     * @param rule
-     * @param nodeRef
-     * @param typeQName
-     * @return
-     */
-    private boolean shouldRuleBeAppliedToNode(final Rule rule, final NodeRef nodeRef, final QName typeQName)
-    {
-        return AuthenticationUtil.runAsSystem(new RunAsWork<Boolean>()
-        {
-            public Boolean doWork() throws Exception
-            {
-                boolean result = true;
-                NodeRef ruleNodeRef = getOwningNodeRef(rule);
-                if (filePlanService.isFilePlan(ruleNodeRef))
-                {
-                    // if this rule is defined at the root of the file plan then
-                    // we do not want to apply
-                    // it to holds/transfers/unfiled content...
-                    result = !(RecordsManagementModel.TYPE_HOLD.equals(typeQName)
-                            || RecordsManagementModel.TYPE_HOLD_CONTAINER.equals(typeQName)
-                            || RecordsManagementModel.TYPE_TRANSFER.equals(typeQName)
-                            || RecordsManagementModel.TYPE_TRANSFER_CONTAINER.equals(typeQName)
-                            || RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER
-                                    .equals(typeQName)
-                            || RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER.equals(typeQName)
-                            || nodeService.hasAspect(nodeRef,
-                                    RecordsManagementModel.ASPECT_TRANSFERRING)
-                            || nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FROZEN)
-                            || !recordService.isFiled(nodeRef));
-                }
-                return result;
-            }
-        });
     }
 }

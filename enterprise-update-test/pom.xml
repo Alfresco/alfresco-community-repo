@@ -163,9 +163,7 @@
                   </then>
                 </if>
                 <echo>Downloading Base Alfresco installer ${base.installer.version}...</echo>
-                <exec executable="wget" dir="target">
-                    <arg line="-nv -nd -np -O base-alf-installer.bin https://releases.alfresco.com/${base.installer.version}" />
-                </exec>
+                <get src="https://releases.alfresco.com/${base.installer.version}" dest="target/base-alf-installer.bin"/>
                 <chmod file="${base.installer.location}" perm="a+x" verbose="true" />
 
                 <echo>Installing the base Version of Alfresco... to ${base.alfresco.instance}</echo>

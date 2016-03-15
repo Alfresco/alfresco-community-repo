@@ -16,8 +16,10 @@
     <!--Jean-Pierre will rework this for us -->
     <!--Todo this should be 5.1.0 but that does not exist yet -->
     <update.base.version>5.1.0</update.base.version>
-    <base.alfresco.installer.url>https://nightlybuilds.alfresco.com/Enterprise-5.1/5.1/LATEST/ALL/alfresco-one-installer-20160203-SNAPSHOT-664-linux-x64.bin</base.alfresco.installer.url>
-    <this.alfresco.installer.url>https://nightlybuilds.alfresco.com/Enterprise-5.1/5.1/LATEST/ALL/alfresco-one-installer-20160203-SNAPSHOT-664-linux-x64.bin</this.alfresco.installer.url>
+    <base.alfresco.installer.url>https://nightlybuilds.alfresco.com/Enterprise-5.1/5.1/LATEST/ALL/alfresco-one-installer-20160212-SNAPSHOT-665-linux-x64.bin</base.alfresco.installer.url>
+    
+    <!-- this needs to match the update package - at the moment this is just set to get something working -->
+    <this.alfresco.installer.url>https://nightlybuilds.alfresco.com/Enterprise-5.1/5.1/LATEST/ALL/alfresco-one-installer-20160212-SNAPSHOT-665-linux-x64.bin</this.alfresco.installer.url>
 
     <!-- Where to put the two deployed instances of alfresco -->
     <base.alfresco.instance>${project.build.directory}/test-data/base-alf-installation</base.alfresco.instance>

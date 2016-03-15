@@ -41,16 +41,44 @@ public class FileTreeCompareImpl implements FileTreeCompare
 
     public FileTreeCompareImpl()
     {
-        this(new HashSet<String>(), new HashSet<String>());
+        this(null, null);
     }
     
-    public FileTreeCompareImpl(Set<String> ignorePaths, Set<String> allowedDiffsPath)
+    public FileTreeCompareImpl(Set<String> ignorePaths, Set<String> allowedDiffsPaths)
     {
         // This config MUST be present before any TFile objects etc. are created.
         TConfig config = TConfig.get();
         config.setArchiveDetector(new TArchiveDetector("war|jar|amp", new ZipDriver(IOPoolLocator.SINGLETON)));
+        if (ignorePaths == null)
+        {
+            // Add default ignores
+            ignorePaths = new HashSet<>();
+            ignorePaths.add("alf_data/postgresql/**");
+            ignorePaths.add("META-INF/MANIFEST.MF");
+            ignorePaths.add("META-INF/maven/**");
+            ignorePaths.add("README.txt");
+            ignorePaths.add("uninstall.app/**");
+        }
+        if (allowedDiffsPaths == null)
+        {
+            // Add default paths where certain differences are allowed, e.g. absolute path references.
+            allowedDiffsPaths = new HashSet<>();
+            allowedDiffsPaths.add("common/bin/**");
+            allowedDiffsPaths.add("common/include/**/*.h");
+            allowedDiffsPaths.add("common/lib/**/*.pc");
+            allowedDiffsPaths.add("common/lib/**/*.la");
+            allowedDiffsPaths.add("libreoffice.app/Contents/Resources/bootstraprc");
+            allowedDiffsPaths.add("postgresql/bin/**");
+            allowedDiffsPaths.add("**/*.sh");
+            allowedDiffsPaths.add("**/*.bat");
+            allowedDiffsPaths.add("**/*.ini");
+            allowedDiffsPaths.add("**/*.properties");
+            allowedDiffsPaths.add("**/*.xml");
+            allowedDiffsPaths.add("**/*.sample");
+            allowedDiffsPaths.add("**/*.txt");
+        }
         this.ignorePaths.addAll(ignorePaths);
-        this.allowedDiffsPaths.addAll(allowedDiffsPath);
+        this.allowedDiffsPaths.addAll(allowedDiffsPaths);
     }
     
     @Override

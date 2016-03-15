@@ -6,19 +6,23 @@
  * agreement is prohibited. 
  */
 
-import static org.junit.Assert.*;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.util.ArrayList;
-
+import org.alfresco.update.tool.dircomp.FileTreeCompare;
+import org.alfresco.update.tool.dircomp.FileTreeCompareImpl;
+import org.alfresco.update.tool.dircomp.HtmlResultFormatter;
+import org.alfresco.update.tool.dircomp.ResultSet;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.junit.Assert.assertTrue;
 
 public class EndToEndIntegrationTest
 {
@@ -132,14 +136,47 @@ public class EndToEndIntegrationTest
     /**
      * Run the diff tool
      * 
-     * @param src
-     * @param dest
+     * @param path1
+     * @param path2
      */
-    public void compare(File src, File dest)
+    public void compare(File path1, File path2) throws IOException
     {
-        //assertTrue("test not implemented", false);
+        FileTreeCompare comparator = new FileTreeCompareImpl();
+        ResultSet resultSet = comparator.compare(path1.toPath(), path2.toPath());
+
+        File dircompDir = new File(targetDir, "installation-diff");
+        dircompDir.mkdirs();
+
+        // Format the results as an HTML report.
+        File file = new File(dircompDir, "installation-diff-report.html");
+        file.createNewFile();
+
+        HtmlResultFormatter formatter = new HtmlResultFormatter();
+        formatter.setDifferencesOnly(true);
+        try(FileOutputStream fos = new FileOutputStream(file);
+            BufferedOutputStream bos = new BufferedOutputStream(fos))
+        {
+            formatter.format(resultSet, bos);
+        }
     }
-    
+
+    /**
+     * Utility/harness to allow easy testing of {@link #compare(File, File)}.
+     * <p>
+     * Uncomment @Ignore, but do not check in.
+     *
+     * @throws IOException
+     */
+    @Ignore
+    @Test
+    public void bigDiff() throws IOException
+    {
+        Path path1 = Paths.get("/Users/MWard/dev2/alf-installs/alf-5.1-b667");
+        Path path2 = Paths.get("/Users/MWard/dev2/alf-installs/alf-5.1-b669");
+
+        compare(path1.toFile(), path2.toFile());
+    }
+
     /* 
     * Method to execute a command 
     * 

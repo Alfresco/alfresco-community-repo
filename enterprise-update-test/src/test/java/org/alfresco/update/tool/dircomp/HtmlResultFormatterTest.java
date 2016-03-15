@@ -68,51 +68,6 @@ public class HtmlResultFormatterTest
 //            System.out.println("File: "+file);
         }
     }
-
-    @Ignore
-    @Test
-    public void bigDiff() throws IOException
-    {
-        Path path1 = Paths.get("/Users/MWard/dev2/alf-installs/alf-5.1-b667");
-        Path path2 = Paths.get("/Users/MWard/dev2/alf-installs/alf-5.1-b669");
-        
-        Set<String> ignores = new HashSet<>();
-        ignores.add("alf_data/postgresql/**");
-        ignores.add("META-INF/MANIFEST.MF");
-        ignores.add("META-INF/maven/**");
-        ignores.add("README.txt");
-        ignores.add("uninstall.app/**");
-
-        // All the patterns will be applied to these files, e.g. they will all have differences
-        // in absolute path references ignored.
-        Set<String> ignoreSpecialDifferences = new HashSet<>();
-        ignoreSpecialDifferences.add("common/bin/**");
-        ignoreSpecialDifferences.add("common/include/**/*.h");
-        ignoreSpecialDifferences.add("common/lib/**/*.pc");
-        ignoreSpecialDifferences.add("common/lib/**/*.la");
-        ignoreSpecialDifferences.add("libreoffice.app/Contents/Resources/bootstraprc");
-        ignoreSpecialDifferences.add("postgresql/bin/**");
-        ignoreSpecialDifferences.add("**/*.sh");
-        ignoreSpecialDifferences.add("**/*.bat");
-        ignoreSpecialDifferences.add("**/*.ini");
-        ignoreSpecialDifferences.add("**/*.properties");
-        ignoreSpecialDifferences.add("**/*.xml");
-        ignoreSpecialDifferences.add("**/*.sample");
-        ignoreSpecialDifferences.add("**/*.txt");
-
-        FileTreeCompare comparator = new FileTreeCompareImpl(ignores, ignoreSpecialDifferences);
-        ResultSet resultSet = comparator.compare(path1, path2);
-        
-        Path file = Files.createTempFile(getClass().getSimpleName(), ".html");
-        HtmlResultFormatter formatter = new HtmlResultFormatter();
-        formatter.setDifferencesOnly(true);
-        try(FileOutputStream fos = new FileOutputStream(file.toFile());
-            BufferedOutputStream bos = new BufferedOutputStream(fos))
-        {
-            formatter.format(resultSet, bos);
-        }
-        System.out.println("File: "+file);
-    }
     
     private void addResult(List<Result> results, String p1, String p2, boolean contentMatch)
     {

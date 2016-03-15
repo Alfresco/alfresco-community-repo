@@ -1,4 +1,4 @@
-<model name="test:nodearchive" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+<model name="node-arch-test:nodearchive" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
    <description>Test Model for nodearchive tests</description>
    <author>Alfresco</author>
@@ -11,16 +11,16 @@
    </imports>
    
    <namespaces>
-      <namespace uri="http://www.alfresco.org/test/nodearchive" prefix="test"/>
+      <namespace uri="http://www.alfresco.org/test/nodearchive" prefix="node-arch-test"/>
    </namespaces>
    
    <types>
-      <type name="test:content">
+      <type name="node-arch-test:content">
          <title>Content</title>
          <parent>sys:base</parent>
          <archive>true</archive>
          <properties>
-            <property name="test:content">
+            <property name="node-arch-test:content">
                <type>d:content</type>
                <mandatory>true</mandatory>
                <index enabled="true">
@@ -31,7 +31,7 @@
             </property>
          </properties>
          <associations>
-            <child-association name="test:contains">
+            <child-association name="node-arch-test:contains">
                <source>
                   <mandatory>false</mandatory>
                   <many>false</many>
@@ -45,17 +45,17 @@
             </child-association>
          </associations>
          <mandatory-aspects>
-            <aspect>test:titled</aspect>
+            <aspect>node-arch-test:titled</aspect>
          </mandatory-aspects>
       </type>
    </types>
    
    <aspects>
    
-      <aspect name="test:titled">
+      <aspect name="node-arch-test:titled">
          <title>Titled</title>
          <properties>
-            <property name="test:title">
+            <property name="node-arch-test:title">
                <type>d:text</type>
                <mandatory>true</mandatory>
                <index enabled="true">
@@ -64,7 +64,7 @@
                   <tokenised>true</tokenised>
                </index>
             </property>
-            <property name="test:description">
+            <property name="node-arch-test:description">
                <type>d:text</type>
             </property>
          </properties>

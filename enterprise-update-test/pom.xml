@@ -16,6 +16,9 @@
     <unpacked.update.package>${project.build.directory}/dependency/alfresco-enterprise-update-package-${project.version}</unpacked.update.package>
 
     <unpacked.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}</unpacked.alfresco.platform.distribution>
+    
+    <!-- This is a temp guess at a temp fix -->
+    <enterprise.build.plan>ALF-EPACK3-106</enterprise.build.plan>
   </properties>
 
   <dependencies>

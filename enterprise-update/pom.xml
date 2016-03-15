@@ -15,7 +15,7 @@
         <unpacked.update.tool>${project.build.directory}/dependency/alfresco-update-tool-distribution-${alfresco.updatetool.version}</unpacked.update.tool>
     </properties>
     <dependencies>
-        <!-- WAR files -->
+        <!-- Alfresco platform WAR file -->
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-platform-enterprise</artifactId>
@@ -23,6 +23,7 @@
             <type>war</type>
         </dependency>
 
+        <!-- Share WAR file -->
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>share</artifactId>
@@ -52,6 +53,14 @@
             <artifactId>alfresco-googledocs-share</artifactId>
             <version>${alfresco.googledocs.version}</version>
             <classifier>enterprise</classifier>
+            <type>amp</type>
+        </dependency>
+        
+        <!-- Share Services AMP for alfresco.war -->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-share-services</artifactId>
+            <version>${alfresco.share.version}</version>
             <type>amp</type>
         </dependency>
         

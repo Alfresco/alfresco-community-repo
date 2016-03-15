@@ -9,73 +9,169 @@
     </parent>
     <packaging>pom</packaging>
 
-	<properties>
-		<!--Todo calculate this -->
-		<!--Todo this should be 5.1.0 but that does not exist yet -->
-		<update.base.version>20160203-SNAPSHOT-664</update.base.version>
-		<unpacked.update.package>${project.build.directory}/dependency/alfresco-enterprise-update-package-${project.version}</unpacked.update.package>
-		<unpacked.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}</unpacked.alfresco.platform.distribution>
-		<unpacked.base.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${update.base.version}</unpacked.base.alfresco.platform.distribution>
-	</properties>
+  <properties>
+    <!--Todo calculate this -->
+    <!--Todo this should be 5.1.0 but that does not exist yet -->
+    <update.base.version>5.1.0</update.base.version>
+    <unpacked.update.package>${project.build.directory}/dependency/alfresco-enterprise-update-package-${project.version}</unpacked.update.package>
 
-	<dependencies>
+    <unpacked.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}</unpacked.alfresco.platform.distribution>
+  </properties>
 
-	</dependencies>
+  <dependencies>
 
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<executions>
-					<!-- unpack the enterprise distribution for this version -->
-					<execution>
-						<id>unpack-alfresco-enterprise-distribution</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.alfresco</groupId>
-									<artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
-									<version>${alfresco.platform.version}</version>
-									<overWrite>true</overWrite>
-									<type>zip</type>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-					<!--  unpack the enterprise distribution for the base version -->
-					<!-- Todo -->
-					
-					<!--  unpack the update package -->
-					<execution>
-                        <id>unpack-update-package</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-enterprise-update-package</artifactId>
-                                    <version>${project.version}</version>
-                                    <overWrite>true</overWrite>
-                                    <type>zip</type>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-				</executions>
-			</plugin>
-		</plugins>
-	</build>
+    <!-- Testing dependencies -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.12</version>
+      <scope>test</scope>
+    </dependency>
 
-	<profiles>
+  </dependencies>
 
-	</profiles>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-dependency-plugin</artifactId>
+        <executions>
+
+          <!-- unpack the update package for this version -->
+          <execution>
+            <id>unpack-update-package</id>
+            <phase>generate-resources</phase>
+            <goals>
+              <goal>unpack</goal>
+            </goals>
+            <configuration>
+              <artifactItems>
+                <artifactItem>
+                  <groupId>org.alfresco</groupId>
+                  <artifactId>alfresco-enterprise-update-package</artifactId>
+                  <version>${project.version}</version>
+                  <overWrite>true</overWrite>
+                  <type>zip</type>
+                </artifactItem>
+              </artifactItems>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!-- Download and install the latest enterprise alfresco installer from bamboo -->
+      <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>fetch-installer</id>
+            <phase>generate-test-resources</phase>
+            <goals>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <target>
+                <taskdef resource="net/sf/antcontrib/antlib.xml" />
+
+                <if>
+                  <not>
+                    <isset property="installer.location" />
+                  </not>
+                  <then>
+                    <property name="installer.location"
+                      location="${basedir}/target/alf-installer.bin" />
+                    <echo>Downloading Alfresco installer to
+                      ${installer.location}...</echo>
+                    <sshexec username="tomcat" host="pbam01.alfresco.com"
+                      keyfile="${user.home}/.ssh/id_rsa" outputproperty="installerPath"
+                      command="ls -rt /data/bamboo/artifacts/${enterprise.build.plan}/ALL/alfresco-enterprise-*-installer-linux-x64.??? | tail -1 | tr ' ' '?' " />
+                    <scp file="tomcat@pbam01.alfresco.com:${installerPath}"
+                      localTofile="${installer.location}" keyfile="${user.home}/.ssh/id_rsa" />
+                  </then>
+                </if>
+                <chmod file="${installer.location}" perm="a+x"
+                  verbose="true" />
+                <echo>Installing Alfresco...</echo>
+                <exec executable="${installer.location}" dir="target"
+                  failonerror="true">
+                  <arg
+                    line="--mode unattended --alfresco_admin_password admin --disable-components postgres,alfrescowcmqs --jdbc_username alfresco --jdbc_password alfresco --prefix ${basedir}/target/alf-installation --tomcat_server_domain ${HOSTNAME}" />
+                </exec>
+              </target>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.ant</groupId>
+            <artifactId>ant-jsch</artifactId>
+            <version>1.8.2</version>
+          </dependency>
+          <dependency>
+            <groupId>ant-contrib</groupId>
+            <artifactId>ant-contrib</artifactId>
+            <version>1.0b3</version>
+            <exclusions>
+              <exclusion>
+                <groupId>ant</groupId>
+                <artifactId>ant</artifactId>
+              </exclusion>
+            </exclusions>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+      <!-- Configure unit and integration tests -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <executions>
+          <execution>
+            <id>default-test</id>
+            <phase>test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <excludes>
+                <exclude>**/*IntegrationTest.java</exclude>
+              </excludes>
+              <redirectTestOutputToFile>true</redirectTestOutputToFile>
+              <runOrder>alphabetical</runOrder>
+            </configuration>
+          </execution>
+          <execution>
+            <id>integration-test</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <workingDirectory>${project.build.directory}</workingDirectory>
+              <redirectTestOutputToFile>true</redirectTestOutputToFile>
+              <runOrder>alphabetical</runOrder>
+              <excludes>
+                <exclude>none</exclude>
+              </excludes>
+              <includes>
+                <include>**/*IntegrationTest.java</include>
+              </includes>
+              <systemPropertyVariables>
+                <alfresco.update.package.zip>${project.artifactId}-${installer.version.name}.zip</alfresco.update.package.zip>
+                <alfresco.target.dir>${project.build.directory}</alfresco.target.dir>
+              </systemPropertyVariables>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+
+
+    </plugins>
+  </build>
+
+  <profiles>
+
+  </profiles>
 
 </project>

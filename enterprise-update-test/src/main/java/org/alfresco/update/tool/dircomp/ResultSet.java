@@ -13,7 +13,7 @@ import java.util.List;
 public class ResultSet
 {
     final List<Result> results = new ArrayList<>();
-    final Stats stats = new Stats();
+    public final Stats stats = new Stats();
 
     /**
      * Class for aggregating basic statistics relating to the directory tree comparisons.
@@ -27,18 +27,18 @@ public class ResultSet
         /**
          * The number of files (including directories) examined.
          */
-        int resultCount;
+        public int resultCount;
         /**
-         * The number of files discovered to have differences.
+         * The number of files discovered to have differences that are not allowed or ignored.
          */
-        int differenceCount;
+        public int differenceCount;
         /**
-         * The number of files discovered to have differences, but where we do not care.
+         * The number of files discovered to have differences, but the difference is allowed.
          */
-        int suppressedDifferenceCount;
+        public int suppressedDifferenceCount;
         /**
          * The number of files that were completely ignored due to being in the ignore list.
          */
-        int ignoredFileCount;
+        public int ignoredFileCount;
     }
 }

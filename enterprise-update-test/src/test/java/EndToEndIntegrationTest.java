@@ -107,7 +107,7 @@ public class EndToEndIntegrationTest
        
        // Run the diff tool
        compare(referenceInstance, updateThisOne);
-
+  
     }  
     
     /**
@@ -172,6 +172,10 @@ public class EndToEndIntegrationTest
         {
             zformatter.format(resultSet, zos);
         }
+        
+        
+        assertTrue("update test has found unexpected differences, see the installation-diff-report for further details", resultSet.stats.differenceCount == 0);
+
     }
 
     /**

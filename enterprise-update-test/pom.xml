@@ -19,24 +19,18 @@
 
   <properties>
     <!-- The version have to follow the following pattern 
-        Enterprise-5.[0,1]/5.[0.1].[0-9]
+        Enterprise-5.[0,1]/5.[0.1].[0]
      -->
     <base.installer.version></base.installer.version>
     
     <!-- Where to put the two deployed instances of alfresco -->
     <base.alfresco.instance>${project.build.directory}/test-data/base-alf-installation</base.alfresco.instance>
     <this.alfresco.instance>${project.build.directory}/test-data/this-alf-installation</this.alfresco.instance>
-    
-    <!-- Arguments to install alfresco -->
-    <base.installer.args>--mode unattended --alfresco_admin_password admin --jdbc_username alfresco --jdbc_password alfresco
-      --tomcat_server_domain ${HOSTNAME} --disable-components postgres --enable-components javaalfresco,libreofficecomponent,alfrescosolr,alfrescosolr4,alfrescowcmqs,alfrescogoogledocs
-      --alfrescocustomstack_services_startup demand
-    </base.installer.args>
-   
-    <this.installer.args>--mode unattended --alfresco_admin_password admin --jdbc_username alfresco --jdbc_password alfresco
+       
+    <installer.args>--mode unattended --alfresco_admin_password admin --jdbc_username alfresco --jdbc_password alfresco
       --tomcat_server_domain ${HOSTNAME} --disable-components postgres --enable-components javaalfresco,libreofficecomponent,alfrescosolr,alfrescosolr4,aosmodule,alfrescowcmqs,alfrescogoogledocs
       --alfrescocustomstack_services_startup demand
-    </this.installer.args>
+    </installer.args>
 
     <unpacked.update.package>${project.build.directory}/test-data/alfresco-enterprise-update-package</unpacked.update.package>
   </properties>
@@ -170,10 +164,21 @@
                 <echo>Downloading Base Alfresco installer ${base.installer.version}...</echo>
                 <get src="https://releases.alfresco.com/${base.installer.version}" dest="${base.installer.location}"/>
                 <chmod file="${base.installer.location}" perm="a+x" verbose="true" />
+				
+				<!-- MER TEMP KLUDGE WHILE 5.1.0 is not released -->
+				<echo>Kludging Base version ...</echo>
+                <path id="kludge.installer.name"> 
+                <fileset dir="../enterprise-installer/target"> 
+                    <include name="alfresco-*.bin"/> 
+                </fileset>
+                </path>
+				<!-- This is the kludge set the base installer to this version -->
+                <property name="base.installer.location" refid="kludge.installer.name" />
+				<!-- MER END KLUDGE REMOVE AFTER 5.0.1 is available -->
 
                 <echo>Installing the base Version of Alfresco... to ${base.alfresco.instance}</echo>
                 <exec executable="${base.installer.location}" dir="target" failonerror="true">
-                  <arg line="${base.installer.args} --prefix ${base.alfresco.instance} " />
+                  <arg line="${installer.args} --prefix ${base.alfresco.instance} " />
                 </exec>
 
                 <if>
@@ -192,7 +197,7 @@
 
                 <echo>Installing newly generated version of Alfresco...</echo>
                 <exec executable="${this.installer.location}" dir="target" failonerror="true">
-                  <arg line="${this.installer.args} --prefix ${this.alfresco.instance} " />
+                  <arg line="${installer.args} --prefix ${this.alfresco.instance} " />
                 </exec>
               </target>
               

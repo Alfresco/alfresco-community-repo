@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.rule.Rule;
 import org.alfresco.service.cmr.rule.RuleService;
+import org.springframework.extensions.webscripts.GUID;
 
 /**
  * File plan rule inheritance test
@@ -233,6 +234,50 @@ public class FilePlanRuleInheritanceTest extends BaseRMTestCase
             {
                 // rules aren't inhreited from file plan root
                 assertEquals(0, rules.size());
+            }
+        }); 
+    }
+    
+    /** 
+     *  Given that a single rule is set on the file plan root
+     *  And that it is configured to apply to children
+     *  When we ask for the rules on a record category including those inherited 
+     *  Then it will include those defined on the file plan root
+     */
+    public void testFilePlanRulesInheritedOnRecordCategory()
+    {
+        doBehaviourDrivenTest(new BehaviourDrivenTest()
+        {
+            private NodeRef filePlan = null;
+            private NodeRef recordCategory = null;
+            private List<Rule> rules = null;
+            
+            public void given()
+            {
+                filePlan = createFilePlan();
+                recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                
+                // create a rule that applies to childre
+                Action completeRecordAction = actionService.createAction(DeclareRecordAction.NAME);                
+                Rule rule = new Rule();
+                rule.setRuleType("inbound");
+                rule.setAction(completeRecordAction);
+                rule.applyToChildren(true);
+                
+                // save rule on file plan root
+                ruleService.saveRule(filePlan, rule);
+            }
+            
+            public void when()
+            {
+                // get rules, including those inherited
+                rules = ruleService.getRules(recordCategory, true);
+            }   
+            
+            public void then()
+            {
+                // rules aren't inhreited from file plan root
+                assertEquals(1, rules.size());
             }
         }); 
     }

@@ -38,7 +38,7 @@ public class FileTreeCompareImplTest
     @Before
     public void setUp() throws Exception
     {
-        comparator = new FileTreeCompareImpl();
+        comparator = new FileTreeCompareImpl(new HashSet<String>(), new HashSet<String>());
     }
 
     @Test
@@ -214,7 +214,7 @@ public class FileTreeCompareImplTest
         FileUtils.write(t2File, sampleText(tree2.toAbsolutePath().toString()));
 
         // Perform the comparison
-        comparator = new FileTreeCompareImpl();
+        comparator = new FileTreeCompareImpl(new HashSet<String>(), new HashSet<String>());
         resultSet = comparator.compare(tree1, tree2);
 
         // We should see a difference

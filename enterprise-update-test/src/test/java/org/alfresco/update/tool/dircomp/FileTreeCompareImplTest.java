@@ -1,0 +1,298 @@
+/*
+ * Copyright 2016 Alfresco Software, Ltd.  All rights reserved.
+ *
+ * License rights for this program may be obtained from Alfresco Software, Ltd. 
+ * pursuant to a written agreement and any use of this program without such an 
+ * agreement is prohibited. 
+ */
+package org.alfresco.update.tool.dircomp;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.util.AntPathMatcher;
+
+/**
+ * Tests for the {@link FileTreeCompareImpl} class.
+ * 
+ * @author Matt Ward
+ */
+public class FileTreeCompareImplTest
+{
+    FileTreeCompareImpl comparator;
+    
+    @Before
+    public void setUp() throws Exception
+    {
+        comparator = new FileTreeCompareImpl();
+    }
+
+    @Test
+    public void canGetSortedPathSet() throws IOException
+    {
+        Path tree = pathFromClasspath("dir_compare/simple_file_folders/tree1");
+        SortedPathSet paths = comparator.sortedPaths(tree);
+        Iterator<Path> it = paths.iterator();
+        
+        System.out.println("Paths:");
+        for (Path p : paths)
+        {
+            System.out.println("\t"+p);
+        }
+        
+        assertEquals(11, paths.size());
+        
+        assertEquals("a", unixPathStr(tree, it.next()));
+        assertEquals("b", unixPathStr(tree, it.next()));
+        assertEquals("b/blah.txt", unixPathStr(tree, it.next()));
+        assertEquals("c", unixPathStr(tree, it.next()));
+        assertEquals("c/c1", unixPathStr(tree, it.next()));
+        assertEquals("c/c1/commands.bat", unixPathStr(tree, it.next()));
+        assertEquals("c/c1/commands.sh", unixPathStr(tree, it.next()));
+        assertEquals("c/c2", unixPathStr(tree, it.next()));
+        assertEquals("c/c2/Aardvark.java", unixPathStr(tree, it.next()));
+        assertEquals("c/c2/Banana.java", unixPathStr(tree, it.next()));
+        assertEquals("d", unixPathStr(tree, it.next()));
+    }
+    
+    private String unixPathStr(Path root, Path path)
+    {
+        // Allow test to run on Windows also
+        String pathStr = path.toString();
+        pathStr = pathStr.replace(File.separatorChar, '/');
+        return pathStr;
+    }
+
+    @Test
+    public void canDiffSimpleTreesOfFilesAndFolders()
+    {
+        Path tree1 = pathFromClasspath("dir_compare/simple_file_folders/tree1");
+        Path tree2 = pathFromClasspath("dir_compare/simple_file_folders/tree2");
+        
+        ResultSet resultSet = comparator.compare(tree1, tree2);
+        
+        System.out.println("Comparison results:");
+        for (Result r : resultSet.results)
+        {
+            System.out.println("\t"+r);
+        }
+        
+        // One result for each relative file/folder
+        assertEquals(13, resultSet.results.size());
+        assertEquals(13, resultSet.stats.resultCount);
+
+        Iterator<Result> rit = resultSet.results.iterator();
+        // TODO: currently all of the files are in one, other or both but where they
+        // are in both, the file *contents* are identical.
+        // TODO: evolve test data and functionality to cope with different file contents.
+        assertResultEquals(tree1.resolve("a"), tree2.resolve("a"), true, rit.next());
+        assertResultEquals(null, tree2.resolve("a/story.txt"), false, rit.next());
+        assertResultEquals(tree1.resolve("b"), tree2.resolve("b"), true, rit.next());
+        assertResultEquals(tree1.resolve("b/blah.txt"), tree2.resolve("b/blah.txt"), true, rit.next());
+        assertResultEquals(tree1.resolve("c"), tree2.resolve("c"), true, rit.next());
+        assertResultEquals(tree1.resolve("c/c1"), tree2.resolve("c/c1"), true, rit.next());
+        assertResultEquals(tree1.resolve("c/c1/commands.bat"), tree2.resolve("c/c1/commands.bat"), true, rit.next());
+        assertResultEquals(tree1.resolve("c/c1/commands.sh"), tree2.resolve("c/c1/commands.sh"), true, rit.next());
+        assertResultEquals(tree1.resolve("c/c2"), tree2.resolve("c/c2"), true, rit.next());
+        // Aardvark.java appears in both trees but is not the same!
+        assertResultEquals(tree1.resolve("c/c2/Aardvark.java"), tree2.resolve("c/c2/Aardvark.java"), false, rit.next());
+        assertResultEquals(tree1.resolve("c/c2/Banana.java"), null, false, rit.next());
+        assertResultEquals(tree1.resolve("d"), null, false, rit.next());
+        assertResultEquals(null, tree2.resolve("e"), false, rit.next());
+    }
+
+    /**
+     * A "learning test" allowing me to check my assumptions and document the expected behaviour.
+     */
+    @Test
+    public void testAntPathMatcher()
+    {
+        AntPathMatcher matcher = new AntPathMatcher();
+        assertTrue(matcher.match("**/common/lib/**/*.pc", "prefix/common/lib/pkgconfig/ImageMagick++-6.Q16.pc"));
+        assertFalse(matcher.match("**/common/lib/**/*.pc", "/absolute/prefix/common/lib/pkgconfig/ImageMagick++-6.Q16.pc"));
+        assertTrue(matcher.match("/**/common/lib/**/*.pc", "/absolute/prefix/common/lib/pkgconfig/ImageMagick++-6.Q16.pc"));
+        assertTrue(matcher.match("common/lib/**/*.pc", "common/lib/pkgconfig/Wand.pc"));
+        assertTrue(matcher.match("**/*.pc", "common/lib/pkgconfig/Wand.pc"));
+        assertFalse(matcher.match("*.pc", "common/lib/pkgconfig/Wand.pc"));
+
+        assertTrue(matcher.match("libreoffice.app/Contents/Resources/bootstraprc", "libreoffice.app/Contents/Resources/bootstraprc"));
+        assertTrue(matcher.match("*.sh", "alfresco.sh"));
+        assertFalse(matcher.match("*.sh", "a/different/alfresco.sh"));
+
+        // What about path separators?
+        assertTrue(matcher.match("**\\common\\lib\\**\\*.pc", "prefix\\common\\lib\\pkgconfig\\ImageMagick++-6.Q16.pc"));
+        assertTrue(matcher.match("\\**\\common\\lib\\**\\*.pc", "\\absolute\\prefix\\common\\lib\\pkgconfig\\ImageMagick++-6.Q16.pc"));
+
+        // Path separator must be set before this will work
+        assertFalse(matcher.match("**/common/lib/**/*.pc", "prefix\\common\\lib\\pkgconfig\\ImageMagick++-6.Q16.pc"));
+        matcher.setPathSeparator("\\");
+        assertTrue(matcher.match("**/common/lib/**/*.pc", "prefix\\common\\lib\\pkgconfig\\ImageMagick++-6.Q16.pc"));
+    }
+
+    @Test
+    public void canIgnoreSpecifiedPaths()
+    {
+        Path tree1 = pathFromClasspath("dir_compare/simple_file_folders/tree1");
+        Path tree2 = pathFromClasspath("dir_compare/simple_file_folders/tree2");
+        
+        Set<String> ignorePaths = new HashSet<>();
+        ignorePaths.add("b/blah.txt");
+        ignorePaths.add("c/c2/**");
+        ignorePaths.add("d/**");
+        ignorePaths.add("e/**");
+        comparator = new FileTreeCompareImpl(ignorePaths);
+
+        // Perform the comparison
+        ResultSet resultSet = comparator.compare(tree1, tree2);
+        
+        System.out.println("Comparison results:");
+        for (Result r : resultSet.results)
+        {
+            System.out.println("\t"+r);
+        }
+        
+        Iterator<Result> rit = resultSet.results.iterator();
+        assertResultEquals(tree1.resolve("a"), tree2.resolve("a"), true, rit.next());
+        assertResultEquals(null, tree2.resolve("a/story.txt"), false, rit.next());
+        assertResultEquals(tree1.resolve("b"), tree2.resolve("b"), true, rit.next());
+        // No b/blah.txt here.
+        assertResultEquals(tree1.resolve("c"), tree2.resolve("c"), true, rit.next());
+        assertResultEquals(tree1.resolve("c/c1"), tree2.resolve("c/c1"), true, rit.next());
+        assertResultEquals(tree1.resolve("c/c1/commands.bat"), tree2.resolve("c/c1/commands.bat"), true, rit.next());
+        assertResultEquals(tree1.resolve("c/c1/commands.sh"), tree2.resolve("c/c1/commands.sh"), true, rit.next());
+        // No c/c2, c/c2/Aardvark.java, c/c2/Banana.java, d or e here.
+
+        List<Result> results = resultSet.results;
+        assertResultNotPresent(tree1.resolve("b/blah.txt"), tree2.resolve("b/blah.txt"), true, results);
+        assertResultNotPresent(tree1.resolve("c/c2"), tree2.resolve("c/c2"), true, results);
+        assertResultNotPresent(tree1.resolve("c/c2/Aardvark.java"), tree2.resolve("c/c2/Aardvark.java"), false, results);
+        assertResultNotPresent(tree1.resolve("c/c2/Banana.java"), null, false, results);
+        assertResultNotPresent(tree1.resolve("d"), null, false, results);
+        assertResultNotPresent(null, tree2.resolve("e"), false, results);
+        assertEquals(7, results.size());
+        
+        // TODO: What about paths within war/jar/zip files?
+    }
+    
+    @Test
+    public void canDiffTreesContainingWarFiles()
+    {
+        Path tree1 = pathFromClasspath("dir_compare/file_folders_plus_war/tree1");
+        Path tree2 = pathFromClasspath("dir_compare/file_folders_plus_war/tree2");
+        
+        ResultSet resultSet = comparator.compare(tree1, tree2);
+        
+        System.out.println("Comparison results:");
+        for (Result r : resultSet.results)
+        {
+            System.out.println("\t"+r);
+        }
+
+        // The 14 top-level results + 17 sub-results.
+        assertEquals(31, resultSet.stats.resultCount);
+
+        // One result for each relative file/folder
+        assertEquals(14, resultSet.results.size());
+
+
+        Iterator<Result> rit = resultSet.results.iterator();
+        // TODO: currently all of the files are in one, other or both but where they
+        // are in both, the file *contents* are identical.
+        // TODO: evolve test data and functionality to cope with different file contents.
+        assertResultEquals(tree1.resolve("a"), tree2.resolve("a"), true, rit.next());
+        assertResultEquals(null, tree2.resolve("a/story.txt"), false, rit.next());
+        assertResultEquals(tree1.resolve("b"), tree2.resolve("b"), true, rit.next());
+        
+        // Examine the results of the war file comparison
+        Result result = rit.next();
+        // The WAR files are different.
+        assertResultEquals(
+                    tree1.resolve("b/alfresco-testdata-webapp.war"),
+                    tree2.resolve("b/alfresco-testdata-webapp.war"),
+                    false,
+                    result);
+        List<Result> subResults = result.subResults;
+        System.out.println("subResults:");
+        for (Result r : subResults)
+        {
+            System.out.println("\t"+r);
+        }
+        Iterator<Result> subIt = subResults.iterator();
+        Path subTree1 = result.subTree1;
+        Path subTree2 = result.subTree2;
+        assertEquals(17, subResults.size());
+        assertResultEquals(subTree1.resolve("META-INF"), subTree2.resolve("META-INF"), true, subIt.next());
+        assertResultEquals(subTree1.resolve("META-INF/MANIFEST.MF"), subTree2.resolve("META-INF/MANIFEST.MF"), false, subIt.next());
+        assertResultEquals(subTree1.resolve("META-INF/maven"), subTree2.resolve("META-INF/maven"), true, subIt.next());
+        assertResultEquals(subTree1.resolve("META-INF/maven/org.alfresco.dummy"), subTree2.resolve("META-INF/maven/org.alfresco.dummy"), true, subIt.next());
+        assertResultEquals(subTree1.resolve("META-INF/maven/org.alfresco.dummy/alfresco-testdata-webapp"), subTree2.resolve("META-INF/maven/org.alfresco.dummy/alfresco-testdata-webapp"), true, subIt.next());
+        assertResultEquals(subTree1.resolve("META-INF/maven/org.alfresco.dummy/alfresco-testdata-webapp/pom.properties"), subTree2.resolve("META-INF/maven/org.alfresco.dummy/alfresco-testdata-webapp/pom.properties"), false, subIt.next());
+        assertResultEquals(subTree1.resolve("META-INF/maven/org.alfresco.dummy/alfresco-testdata-webapp/pom.xml"), subTree2.resolve("META-INF/maven/org.alfresco.dummy/alfresco-testdata-webapp/pom.xml"), true, subIt.next());
+        assertResultEquals(subTree1.resolve("WEB-INF"), subTree2.resolve("WEB-INF"), true, subIt.next());
+        assertResultEquals(subTree1.resolve("WEB-INF/classes"), subTree2.resolve("WEB-INF/classes"), true, subIt.next());
+        assertResultEquals(subTree1.resolve("WEB-INF/classes/org"), subTree2.resolve("WEB-INF/classes/org"), true, subIt.next());
+        assertResultEquals(subTree1.resolve("WEB-INF/classes/org/alfresco"), subTree2.resolve("WEB-INF/classes/org/alfresco"), true, subIt.next());
+        assertResultEquals(subTree1.resolve("WEB-INF/classes/org/alfresco/testdata"), subTree2.resolve("WEB-INF/classes/org/alfresco/testdata"), true, subIt.next());
+        assertResultEquals(subTree1.resolve("WEB-INF/classes/org/alfresco/testdata/webapp"), subTree2.resolve("WEB-INF/classes/org/alfresco/testdata/webapp"), true, subIt.next());
+        assertResultEquals(null, subTree2.resolve("WEB-INF/classes/org/alfresco/testdata/webapp/Another.class"), false, subIt.next());
+        assertResultEquals(subTree1.resolve("WEB-INF/classes/org/alfresco/testdata/webapp/ExampleJavaClass.class"), subTree2.resolve("WEB-INF/classes/org/alfresco/testdata/webapp/ExampleJavaClass.class"), true, subIt.next());
+        assertResultEquals(subTree1.resolve("WEB-INF/web.xml"), subTree2.resolve("WEB-INF/web.xml"), true, subIt.next());
+        assertResultEquals(subTree1.resolve("index.jsp"), subTree2.resolve("index.jsp"), false, subIt.next());
+        
+        // Back up to the top-level comparisons
+        assertResultEquals(tree1.resolve("b/blah.txt"), tree2.resolve("b/blah.txt"), true, rit.next());
+        assertResultEquals(tree1.resolve("c"), tree2.resolve("c"), true, rit.next());
+        assertResultEquals(tree1.resolve("c/c1"), tree2.resolve("c/c1"), true, rit.next());
+        assertResultEquals(tree1.resolve("c/c1/commands.bat"), tree2.resolve("c/c1/commands.bat"), true, rit.next());
+        assertResultEquals(tree1.resolve("c/c1/commands.sh"), tree2.resolve("c/c1/commands.sh"), true, rit.next());
+        assertResultEquals(tree1.resolve("c/c2"), tree2.resolve("c/c2"), true, rit.next());
+        // Aardvark.java appears in both trees but is not the same!
+        assertResultEquals(tree1.resolve("c/c2/Aardvark.java"), tree2.resolve("c/c2/Aardvark.java"), false, rit.next());
+        assertResultEquals(tree1.resolve("c/c2/Banana.java"), null, false, rit.next());
+        assertResultEquals(tree1.resolve("d"), null, false, rit.next());
+        assertResultEquals(null, tree2.resolve("e"), false, rit.next());
+    }
+
+    private void assertResultNotPresent(Path p1, Path p2, boolean contentEqual, List<Result> results)
+    {
+        Result r  = new Result();
+        r.p1 = p1;
+        r.p2 = p2;
+        r.equal = contentEqual;
+        assertFalse("Result should not be present: "+r, results.contains(r));
+    }
+    
+    private void assertResultEquals(Path p1, Path p2, boolean contentEqual, Result result)
+    {
+        Result expected = new Result();
+        expected.p1 = p1;
+        expected.p2 = p2;
+        expected.equal = contentEqual;
+        assertEquals(expected, result);
+    }
+
+    private Path pathFromClasspath(String path)
+    {
+        try
+        {
+            return Paths.get(getClass().getClassLoader().getResource(path).toURI());
+        }
+        catch (URISyntaxException error)
+        {
+            throw new RuntimeException("");
+        }
+    }
+}

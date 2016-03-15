@@ -16,7 +16,8 @@
 		<unpacked.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}</unpacked.alfresco.platform.distribution>
 		<unpacked.alfresco.share.distribution>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}</unpacked.alfresco.share.distribution>
 		<unpacked.alfresco.wcmqs.distribution>${project.build.directory}/dependency/wcmqs-${project.version}</unpacked.alfresco.wcmqs.distribution>
-		
+		<unpacked.org.alfresco.aos.distribution>${project.build.directory}/dependency/aos-${alfresco.aos-module.version}</unpacked.org.alfresco.aos.distribution>
+
 		<!-- e.g. pull the update scripts from src/main/resources/script/5.0 -->
 		<unpacked.update.script>${project.build.directory}/classes/script/${version.major}.${version.minor}</unpacked.update.script>
     </properties>
@@ -206,6 +207,26 @@
                             </artifactItems>
                         </configuration>
                     </execution>
+					
+					<execution>
+                        <id>unpack-aos-distribution</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+								  <groupId>org.alfresco.aos-module</groupId>
+									<artifactId>alfresco-aos-module-distributionzip</artifactId>
+									<version>${alfresco.aos-module.version}</version>
+                                    <overWrite>true</overWrite>
+                                    <type>zip</type>
+									<outputDirectory>${unpacked.org.alfresco.aos.distribution}</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>					
                 </executions>
             </plugin>
             

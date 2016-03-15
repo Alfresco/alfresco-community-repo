@@ -77,11 +77,22 @@
             <lineEnding>keep</lineEnding>
         </fileSet>
 		
+		<!-- AOS VTI.WAR -->
 		<fileSet>
-            <directory>${unpacked.alfresco.enterprise.distribution}/web-server/webapps</directory>
+            <directory>${unpacked.org.alfresco.aos.distribution}</directory>
             <outputDirectory>resources/war</outputDirectory>
             <includes>
-                <include>_vti_bin.war</include>
+                <include>*.war</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
+		
+		<!-- AOS AMP -->
+		<fileSet>
+            <directory>${unpacked.org.alfresco.aos.distribution}</directory>
+            <outputDirectory>resources/amp/platform</outputDirectory>
+            <includes>
+                <include>*.amp</include>
             </includes>
             <lineEnding>keep</lineEnding>
         </fileSet>

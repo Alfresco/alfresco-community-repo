@@ -44,6 +44,27 @@
             <lineEnding>keep</lineEnding>
         </fileSet>
 		
+		<!-- Platform Only distribution - currently the same as full platform -->
+		<fileSet>
+            <directory>${unpacked.alfresco.platform.distribution}</directory>
+            <outputDirectory>resources/distribution/platform_only</outputDirectory>
+            <includes>
+                <include>README.txt</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
+		
+		<!-- Share only distribution -->
+		<fileSet>
+            <directory>${unpacked.alfresco.share.distribution}</directory>
+            <outputDirectory>resources/distribution/share_only</outputDirectory>
+            <includes>
+                <include>README.txt</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
+		
+		<!-- Common distribution -->
 	    <fileSet>
             <directory>${unpacked.alfresco.platform.distribution}/bin</directory>
             <outputDirectory>resources/distribution/common/bin</outputDirectory>

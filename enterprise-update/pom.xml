@@ -14,6 +14,7 @@
     <properties>
         <unpacked.update.tool>${project.build.directory}/dependency/alfresco-update-tool-distribution-${alfresco.updatetool.version}</unpacked.update.tool>
 		<unpacked.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}</unpacked.alfresco.platform.distribution>
+		<unpacked.alfresco.share.distribution>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}</unpacked.alfresco.share.distribution>
     </properties>
     <dependencies>
         <!-- Alfresco platform WAR file -->
@@ -97,6 +98,14 @@
             <type>zip</type>
         </dependency>
 		
+		<!-- Share dependencies -->
+	    <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-share-distribution</artifactId>
+            <version>${alfresco.share.version}</version>
+            <type>zip</type>
+        </dependency>
+		
         <!-- Testing dependencies -->
         <dependency>
             <groupId>junit</groupId>
@@ -160,6 +169,24 @@
 								  <groupId>org.alfresco</groupId>
 									<artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
 									<version>${alfresco.platform.version}</version>
+                                    <overWrite>true</overWrite>
+                                    <type>zip</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+					<execution>
+                        <id>unpack-alfresco-share-distribution</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+								  <groupId>org.alfresco</groupId>
+									<artifactId>alfresco-share-distribution</artifactId>
+									<version>${alfresco.share.version}</version>
                                     <overWrite>true</overWrite>
                                     <type>zip</type>
                                 </artifactItem>

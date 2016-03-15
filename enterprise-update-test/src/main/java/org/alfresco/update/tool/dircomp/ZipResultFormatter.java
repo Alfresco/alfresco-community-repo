@@ -48,11 +48,10 @@ public class ZipResultFormatter implements ResultFormatter
             File file = path.toFile();
             if(file.isFile())
             {
-                String entryName = path.toAbsolutePath().toString().replace('\\', '/');
-                ZipEntry zipEntry = new ZipEntry(entryName);
+                ZipEntry zipEntry = new ZipEntry(getEntryName(path));
                 zipEntry.setTime(file.lastModified());
                 try (FileInputStream ins = new FileInputStream(file))
-                {
+                {   
                     zos.putNextEntry(zipEntry);
                     int len;
                     while ((len = ins.read(buffer)) > 0) 
@@ -63,6 +62,11 @@ public class ZipResultFormatter implements ResultFormatter
                 }
             }
         }
+    }
+    
+    private String getEntryName(Path path)
+    {
+       return "differences/" + path.toAbsolutePath().toString().replace('\\', '/').trim();
     }
 
 }

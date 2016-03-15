@@ -223,7 +223,7 @@ public class FileTreeCompareImpl implements FileTreeCompare
         // Create a set of replacements that we intend to make. Replacing them with
         // a known token allows us to remove differences (that we're not interested in) in the files.
         Map<String, String> replacements = new HashMap<>();
-        replacements.put(tree.toAbsolutePath().toString(), replacementToken("comparison_root"));
+        replacements.put(tree.toRealPath().toString(), replacementToken("comparison_root"));
         
         // Create a pattern for module.installDate
         Pattern installDatePattern = Pattern.compile("module.installDate=.*[\n\r\f]*$");

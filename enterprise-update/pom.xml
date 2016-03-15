@@ -209,11 +209,15 @@
                     </execution>
                 </executions>
                 <configuration>
-                <file>${unpacked.update.tool}/README.txt</file>
+                <filesToInclude>${unpacked.update.tool}/README.txt,${unpacked.update.tool}/package.properties</filesToInclude>
                 <replacements>
                    <replacement>
                        <token>@Version@</token>
                        <value>${version}</value>
+                   </replacement>         
+                   <replacement>
+                       <token>@UpdateAssistantVersion@</token>
+                       <value>${alfresco.updatetool.version}</value>
                    </replacement>         
                 </replacements>
                 </configuration>

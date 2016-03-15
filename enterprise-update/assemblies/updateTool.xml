@@ -77,6 +77,15 @@
             </includes>
             <lineEnding>keep</lineEnding>
         </fileSet>
+		
+		<fileSet>
+            <directory>${unpacked.alfresco.enterprise.distribution}/web-server/webapps</directory>
+            <outputDirectory>resources/war</outputDirectory>
+            <includes>
+                <include>_vti_bin.war</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
         
         <fileSet>
             <directory>${unpacked.update.tool}/bin</directory>

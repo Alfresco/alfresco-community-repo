@@ -41,17 +41,20 @@ public class TgzFormatIntegrationTest extends AbstractIntegrationTest
     {
         super.setUp();
     }
+    
+    public final String ARTIFACT_NAME="alfresco-enterprise-update-package-";
 
     @Test
     public void applyUpdatesScriptHasExecutableBitsSet() throws FileNotFoundException, ArchiveException, IOException, CompressorException
     {
+        
         if (runningOnWindows())
         {
             // This is a Unix only test.
             return;
         }
         
-        File archive = new File(targetDir, "alfresco-enterprise-update-package-"+version+".tgz");
+        File archive = new File(targetDir, ARTIFACT_NAME+version+".tgz");
         assertTrue("File does not exist: "+archive, archive.exists());
         FileInputStream fis = null;
         try
@@ -64,7 +67,7 @@ public class TgzFormatIntegrationTest extends AbstractIntegrationTest
                 public boolean handle(TarArchiveEntry entry)
                 {
                     System.out.println("Handling tar entry: "+entry.getName());
-                    if (entry.getName().equals("apply_updates.sh"))
+                    if (entry.getName().equals(ARTIFACT_NAME+version+"/apply_updates.sh"))
                     {
                         System.out.println("Found the unix shell wrapper script.");
                         

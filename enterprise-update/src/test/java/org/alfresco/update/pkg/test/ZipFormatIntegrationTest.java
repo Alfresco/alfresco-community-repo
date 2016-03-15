@@ -9,6 +9,7 @@ package org.alfresco.update.pkg.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertNotNull;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -34,20 +35,23 @@ import org.junit.Test;
  */
 public class ZipFormatIntegrationTest extends AbstractIntegrationTest
 {   
-    public final String ARTIFACT_NAME="alfresco-enterprise-update-package-";
-
+    
+    File updatePackage;
+    
     @Before
     public void setUp() throws Exception
     {
         super.setUp();
+        String pkgName = System.getProperty("alfresco.update.package.zip");
+        assertNotNull("Could not determine package name.", pkgName);
+        updatePackage = new File(pkgName);        
     }
     
     @Test
     public void applyUpdatesScriptHasExecutableBitsSet() throws FileNotFoundException, ArchiveException, IOException, CompressorException
-    {	    
-        File archive = new File(targetDir, ARTIFACT_NAME+version+".zip");
-        assertTrue("File does not exist: "+archive, archive.exists());
-        try (ZipFile zipFile = new ZipFile(archive))
+    {
+        assertTrue("File does not exist: "+ updatePackage, updatePackage.exists());
+        try (ZipFile zipFile = new ZipFile(updatePackage))
         {
             Enumeration<ZipArchiveEntry> e = zipFile.getEntries();
             boolean found = false;

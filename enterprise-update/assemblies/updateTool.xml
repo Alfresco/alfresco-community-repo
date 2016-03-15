@@ -67,6 +67,17 @@
             </includes>
         </dependencySet>
         
+        <!--  SOLR4 Web App -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/war</outputDirectory>
+            <outputFileNameMapping>solr4.war</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:alfresco-solr4*:war</include>
+            </includes>
+        </dependencySet>
+        
     </dependencySets>
     
 </assembly>

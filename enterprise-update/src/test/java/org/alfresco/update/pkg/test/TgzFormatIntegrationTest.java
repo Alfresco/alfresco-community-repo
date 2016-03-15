@@ -64,7 +64,7 @@ public class TgzFormatIntegrationTest extends AbstractIntegrationTest
                 public boolean handle(TarArchiveEntry entry)
                 {
                     System.out.println("Handling tar entry: "+entry.getName());
-                    if (entry.getName().equals("bin/apply_updates.sh"))
+                    if (entry.getName().equals("apply_updates.sh"))
                     {
                         System.out.println("Found the unix shell wrapper script.");
                         
@@ -78,7 +78,7 @@ public class TgzFormatIntegrationTest extends AbstractIntegrationTest
                 }
             });
             
-            assertTrue("bin/apply_updates.sh is a required file.", found);
+            assertTrue("apply_updates.sh is a required file.", found);
         }
         finally
         {

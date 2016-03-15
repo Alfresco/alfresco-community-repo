@@ -17,7 +17,7 @@
         <license.file.location>${binaries.folder}/build-classpath/license.xml</license.file.location>
         <bitrock.arguments>
            project.version=${installer.version.name} 
-           project.fullName='Alfresco One' 
+           project.fullName='Alfresco One Enterprise' 
            project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
            project.osxSigningPkcs12Password=${p12Password} 
            project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 
@@ -32,7 +32,7 @@
         </bitrock.arguments>
 
         <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->
-        <alfresco.package.name>alfresco-enterprise</alfresco.package.name>
+        <alfresco.package.name>alfresco-one-enterprise</alfresco.package.name>
         <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
     </properties>
 

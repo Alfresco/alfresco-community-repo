@@ -150,10 +150,10 @@ public class FileTreeCompareImplTest
         Path tree2 = pathFromClasspath("dir_compare/simple_file_folders/tree2");
         
         Set<String> ignorePaths = new HashSet<>();
-        ignorePaths.add("b/blah.txt");
-        ignorePaths.add("c/c2/**");
-        ignorePaths.add("d/**");
-        ignorePaths.add("e/**");
+        ignorePaths.add(toPlatformPath("b/blah.txt"));
+        ignorePaths.add(toPlatformPath("c/c2/**"));
+        ignorePaths.add(toPlatformPath("d/**"));
+        ignorePaths.add(toPlatformPath("e/**"));
         comparator = new FileTreeCompareImpl(ignorePaths, new HashSet<String>());
 
         // Perform the comparison
@@ -229,7 +229,7 @@ public class FileTreeCompareImplTest
 
         // Perform the comparison again, but after allowing the files to be different.
         Set<String> allowedDiffsPaths = new HashSet<>();
-        allowedDiffsPaths.add("**/*.txt");
+        allowedDiffsPaths.add(toPlatformPath("**/*.txt"));
 
         // Perform the comparison
         comparator = new FileTreeCompareImpl(new HashSet<String>(), allowedDiffsPaths);
@@ -363,5 +363,10 @@ public class FileTreeCompareImplTest
         {
             throw new RuntimeException("");
         }
+    }
+    
+    private String toPlatformPath(String path)
+    {
+        return path.replace("/", File.separator);
     }
 }

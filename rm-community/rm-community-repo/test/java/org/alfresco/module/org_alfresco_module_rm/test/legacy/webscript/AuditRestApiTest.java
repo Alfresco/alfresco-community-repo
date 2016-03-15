@@ -40,7 +40,6 @@ import org.alfresco.util.GUID;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 
-
 public class AuditRestApiTest extends BaseRMWebScriptTestCase
 {
     /** URL for the REST APIs */

@@ -65,7 +65,6 @@ import org.mockito.Spy;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-
 /**
  * Hold service implementation unit test
  *

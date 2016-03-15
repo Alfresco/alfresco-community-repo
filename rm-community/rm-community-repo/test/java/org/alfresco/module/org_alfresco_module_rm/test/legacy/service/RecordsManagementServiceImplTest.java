@@ -38,7 +38,6 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 
-
 /**
  * Records management service test.
  *

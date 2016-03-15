@@ -11,6 +11,9 @@
     <packaging>jar</packaging>
     <name>Alfresco Enterprise Update Package</name> 
 
+    <properties>
+        <unpacked.update.tool>${project.build.directory}/dependency/alfresco-update-tool-distribution-${alfresco.updatetool.version}</unpacked.update.tool>
+    </properties>
     <dependencies>
         <!-- WAR files -->
         <dependency>
@@ -27,19 +30,13 @@
             <type>war</type>
         </dependency>
 
-        <!-- Update Tool Itself -->
+		<!-- Update Tool Itself -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-update-tool</artifactId>
-            <version>${alfresco.updatetool.version}</version>
-            <type>jar</type>
-        </dependency>
-    
-        <dependency>
-            <groupId>org.alfresco</groupId>
+		
             <artifactId>alfresco-update-tool-distribution</artifactId>
             <version>${alfresco.updatetool.version}</version>
-            <type>jar</type>
+            <type>zip</type>
         </dependency>
 
         <!-- Test dependencies -->
@@ -54,6 +51,35 @@
     <build>
         <finalName>${project.artifactId}-${installer.version.name}</finalName>
         <plugins>
+            <!--
+                The assembly plugin doesn't offer the flexibility we need when using dependencySets to unpack
+                dependencies, so unpacking first using the dependency plugin.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>unpack-update-tool-distribution</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-update-tool-distribution</artifactId>
+                                    <version>${alfresco.updatetool.version}</version>
+                                    <overWrite>true</overWrite>
+                                    <type>zip</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>

@@ -7,46 +7,38 @@
     <id>update-tool</id>
     <formats>
         <format>zip</format>
+        <format>tgz</format>
     </formats>
 	
     <includeBaseDirectory>false</includeBaseDirectory>
 	
+    <fileSets>
+        <!-- Pack the bin files except for the .sh files -->
+        <fileSet>
+            <directory>${unpacked.update.tool}/bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <excludes>
+                <exclude>*.sh</exclude>
+            </excludes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
+        
+        <fileSet>
+            <directory>${unpacked.update.tool}/bin</directory>
+            <outputDirectory>bin</outputDirectory>
+            <includes>
+                <include>*.sh</include>
+            </includes>
+            <lineEnding>unix</lineEnding>
+            <!-- Add the correct execute permissions to *.sh file(s) -->
+            <fileMode>0755</fileMode>
+        </fileSet>
+    </fileSets>
+    
 	<files>
 	    <file>
 			<source>${project.basedir}/target/update-contents-${installer.version.name}.zip</source>
 			<outputDirectory>update</outputDirectory>
 		</file>
 	</files>
-	
-	<dependencySets>
-	
-		<!-- The update tool itself -->
-		<dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>bin</outputDirectory>
-            <outputFileNameMapping>alfresco-update-tool.jar</outputFileNameMapping>
-            <includes>
-                <include>org.alfresco:alfresco-update-tool:jar</include>
-            </includes>
-        </dependencySet>
-
-		<dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory></outputDirectory>
-			<unpack>true</unpack>
-			<unpackOptions>
-			   <lineEnding>keep</lineEnding>
-			   <excludes>
-				   <exclude>META-INF/**</exclude>
-			   </excludes>
-			</unpackOptions>
-            <includes>
-                <include>org.alfresco:alfresco-update-tool-distribution:jar</include>
-            </includes>
-        </dependencySet>
-
-    </dependencySets>
-
 </assembly>

@@ -9,4 +9,73 @@
     </parent>
     <packaging>pom</packaging>
 
+	<properties>
+		<!--Todo calculate this -->
+		<!--Todo this should be 5.1.0 but that does not exist yet -->
+		<update.base.version>20160203-SNAPSHOT-664</update.base.version>
+		<unpacked.update.package>${project.build.directory}/dependency/alfresco-enterprise-update-package-${project.version}</unpacked.update.package>
+		<unpacked.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}</unpacked.alfresco.platform.distribution>
+		<unpacked.base.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${update.base.version}</unpacked.base.alfresco.platform.distribution>
+	</properties>
+
+	<dependencies>
+
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<!-- unpack the enterprise distribution for this version -->
+					<execution>
+						<id>unpack-alfresco-enterprise-distribution</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.alfresco</groupId>
+									<artifactId>alfresco-platform-enterprise-distributionzip</artifactId>
+									<version>${alfresco.platform.version}</version>
+									<overWrite>true</overWrite>
+									<type>zip</type>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+					<!--  unpack the enterprise distribution for the base version -->
+					<!-- Todo -->
+					
+					<!--  unpack the update package -->
+					<execution>
+                        <id>unpack-update-package</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-enterprise-update-package</artifactId>
+                                    <version>${project.version}</version>
+                                    <overWrite>true</overWrite>
+                                    <type>zip</type>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+	<profiles>
+
+	</profiles>
+
 </project>

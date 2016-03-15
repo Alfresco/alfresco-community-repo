@@ -56,6 +56,7 @@ public class FileTreeCompareImpl implements FileTreeCompare
             ignorePaths = new HashSet<>();
             ignorePaths.add(toPlatformPath("alf_data/postgresql/**"));
             ignorePaths.add(toPlatformPath("alf_data/oouser/user/**"));
+            ignorePaths.add(toPlatformPath("alf_data/solr/*.war"));
             ignorePaths.add(toPlatformPath("common/**"));
             ignorePaths.add(toPlatformPath("META-INF/MANIFEST.MF"));
             ignorePaths.add(toPlatformPath("META-INF/maven/**"));
@@ -73,6 +74,7 @@ public class FileTreeCompareImpl implements FileTreeCompare
             ignorePaths.add(toPlatformPath("**/log.txt"));
             ignorePaths.add(toPlatformPath("**/solrcore.properties"));
             ignorePaths.add(toPlatformPath("**/modifications.install"));
+            ignorePaths.add(toPlatformPath("tomcat/webapps/ROOT.war"));
             ignorePaths.add(toPlatformPath("tomcat/webapps/ROOT.war"));
            
         }

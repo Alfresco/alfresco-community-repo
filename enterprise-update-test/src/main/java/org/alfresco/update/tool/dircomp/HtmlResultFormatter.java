@@ -18,7 +18,7 @@ import java.util.List;
  */
 public class HtmlResultFormatter implements ResultFormatter
 {
-    private int maxPathDisplayLength = 80;
+    private int maxPathDisplayLength = 50;
     private boolean differencesOnly;
     
     

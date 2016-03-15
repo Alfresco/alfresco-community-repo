@@ -7,23 +7,22 @@
  */
 package org.alfresco.update.tool.dircomp;
 
-import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.*;
-
-import org.alfresco.update.tool.dircomp.exception.FileTreeCompareException;
-import org.apache.commons.io.FileUtils;
-
 import de.schlichtherle.truezip.file.TArchiveDetector;
 import de.schlichtherle.truezip.file.TConfig;
 import de.schlichtherle.truezip.file.TFile;
 import de.schlichtherle.truezip.file.TVFS;
 import de.schlichtherle.truezip.fs.archive.zip.ZipDriver;
 import de.schlichtherle.truezip.socket.sl.IOPoolLocator;
+import org.alfresco.update.tool.dircomp.exception.FileTreeCompareException;
+import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.AntPathMatcher;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.*;
 
 /**
  * Class capable of comparing two trees of files to determine which directories or
@@ -53,34 +52,39 @@ public class FileTreeCompareImpl implements FileTreeCompare
         {
             // Add default ignores
             ignorePaths = new HashSet<>();
-            ignorePaths.add("alf_data/postgresql/**");
-            ignorePaths.add("META-INF/MANIFEST.MF");
-            ignorePaths.add("META-INF/maven/**");
-            ignorePaths.add("README.txt");
-            ignorePaths.add("uninstall.app/**");
+            ignorePaths.add(toPlatformPath("alf_data/postgresql/**"));
+            ignorePaths.add(toPlatformPath("META-INF/MANIFEST.MF"));
+            ignorePaths.add(toPlatformPath("META-INF/maven/**"));
+            ignorePaths.add(toPlatformPath("README.txt"));
+            ignorePaths.add(toPlatformPath("uninstall.app/**"));
         }
         if (allowedDiffsPaths == null)
         {
             // Add default paths where certain differences are allowed, e.g. absolute path references.
             allowedDiffsPaths = new HashSet<>();
-            allowedDiffsPaths.add("common/bin/**");
-            allowedDiffsPaths.add("common/include/**/*.h");
-            allowedDiffsPaths.add("common/lib/**/*.pc");
-            allowedDiffsPaths.add("common/lib/**/*.la");
-            allowedDiffsPaths.add("libreoffice.app/Contents/Resources/bootstraprc");
-            allowedDiffsPaths.add("postgresql/bin/**");
-            allowedDiffsPaths.add("**/*.sh");
-            allowedDiffsPaths.add("**/*.bat");
-            allowedDiffsPaths.add("**/*.ini");
-            allowedDiffsPaths.add("**/*.properties");
-            allowedDiffsPaths.add("**/*.xml");
-            allowedDiffsPaths.add("**/*.sample");
-            allowedDiffsPaths.add("**/*.txt");
+            allowedDiffsPaths.add(toPlatformPath("common/bin/**"));
+            allowedDiffsPaths.add(toPlatformPath("common/include/**/*.h"));
+            allowedDiffsPaths.add(toPlatformPath("common/lib/**/*.pc"));
+            allowedDiffsPaths.add(toPlatformPath("common/lib/**/*.la"));
+            allowedDiffsPaths.add(toPlatformPath("libreoffice.app/Contents/Resources/bootstraprc"));
+            allowedDiffsPaths.add(toPlatformPath("postgresql/bin/**"));
+            allowedDiffsPaths.add(toPlatformPath("**/*.sh"));
+            allowedDiffsPaths.add(toPlatformPath("**/*.bat"));
+            allowedDiffsPaths.add(toPlatformPath("**/*.ini"));
+            allowedDiffsPaths.add(toPlatformPath("**/*.properties"));
+            allowedDiffsPaths.add(toPlatformPath("**/*.xml"));
+            allowedDiffsPaths.add(toPlatformPath("**/*.sample"));
+            allowedDiffsPaths.add(toPlatformPath("**/*.txt"));
         }
         this.ignorePaths.addAll(ignorePaths);
         this.allowedDiffsPaths.addAll(allowedDiffsPaths);
     }
-    
+
+    private String toPlatformPath(String path)
+    {
+        return path.replace("/", File.separator);
+    }
+
     @Override
     public ResultSet compare(Path p1, Path p2)
     {

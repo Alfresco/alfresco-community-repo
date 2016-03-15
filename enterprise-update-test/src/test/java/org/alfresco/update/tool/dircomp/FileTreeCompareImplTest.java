@@ -133,14 +133,14 @@ public class FileTreeCompareImplTest
         assertTrue(matcher.match("*.sh", "alfresco.sh"));
         assertFalse(matcher.match("*.sh", "a/different/alfresco.sh"));
 
-        // What about path separators?
+        // Windows matcher
+        // It seems that changing the path separator on an instance that's already been
+        // used isn't a good idea due to pattern caching.
+        matcher = new AntPathMatcher("\\");
         assertTrue(matcher.match("**\\common\\lib\\**\\*.pc", "prefix\\common\\lib\\pkgconfig\\ImageMagick++-6.Q16.pc"));
         assertTrue(matcher.match("\\**\\common\\lib\\**\\*.pc", "\\absolute\\prefix\\common\\lib\\pkgconfig\\ImageMagick++-6.Q16.pc"));
 
-        // Path separator must be set before this will work
-        assertFalse(matcher.match("**/common/lib/**/*.pc", "prefix\\common\\lib\\pkgconfig\\ImageMagick++-6.Q16.pc"));
-        matcher.setPathSeparator("\\");
-        assertTrue(matcher.match("**/common/lib/**/*.pc", "prefix\\common\\lib\\pkgconfig\\ImageMagick++-6.Q16.pc"));
+        assertTrue(matcher.match("b\\blah.txt", "b\\blah.txt"));
     }
 
     @Test

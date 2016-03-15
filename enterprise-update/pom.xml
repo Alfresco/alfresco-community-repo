@@ -7,9 +7,9 @@
         <artifactId>alfresco-full-installation</artifactId>
         <version>5.1.1-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-enterprise-update-package</artifactId>
+    <artifactId>alfresco-one-update-package</artifactId>
     <packaging>jar</packaging>
-    <name>Alfresco Enterprise Update Package</name> 
+    <name>Alfresco One Update Package</name> 
 
     <properties>
         <unpacked.update.tool>${project.build.directory}/dependency/alfresco-update-tool-distribution-${alfresco.updatetool.version}</unpacked.update.tool>

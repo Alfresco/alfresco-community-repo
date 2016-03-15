@@ -32,7 +32,7 @@
       --alfrescocustomstack_services_startup demand
     </installer.args>
 
-    <unpacked.update.package>${project.build.directory}/test-data/alfresco-enterprise-update-package</unpacked.update.package>
+    <unpacked.update.package>${project.build.directory}/test-data/alfresco-one-update-package</unpacked.update.package>
   </properties>
 
   <dependencies>
@@ -105,7 +105,7 @@
               <artifactItems>
                 <artifactItem>
                   <groupId>org.alfresco</groupId>
-                  <artifactId>alfresco-enterprise-update-package</artifactId>
+                  <artifactId>alfresco-one-update-package</artifactId>
                   <version>${project.version}</version>
                   <overWrite>true</overWrite>
                   <outputDirectory>${unpacked.update.package}</outputDirectory>

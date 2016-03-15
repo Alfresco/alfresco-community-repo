@@ -95,6 +95,17 @@
             </includes>
              <lineEnding>unix</lineEnding>
         </fileSet>
+        
+        <fileSet>
+            <directory>${unpacked.update.script}</directory>
+            <outputDirectory>/resources/script</outputDirectory>
+            <includes>
+                <include>*.auas</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
+        
+        
     </fileSets>
     
 

@@ -15,6 +15,9 @@
         <unpacked.update.tool>${project.build.directory}/dependency/alfresco-update-tool-distribution-${alfresco.updatetool.version}</unpacked.update.tool>
 		<unpacked.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}</unpacked.alfresco.platform.distribution>
 		<unpacked.alfresco.share.distribution>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}</unpacked.alfresco.share.distribution>
+		
+		<!-- e.g. pull the update scripts from src/main/resources/script/5.0 -->
+		<unpacked.update.script>${project.build.directory}/classes/script/${version.major}.${version.minor}</unpacked.update.script>
     </properties>
     <dependencies>
         <!-- Alfresco platform WAR file -->

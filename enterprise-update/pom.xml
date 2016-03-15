@@ -39,7 +39,7 @@
             <type>zip</type>
         </dependency>
 
-        <!-- Test dependencies -->
+        <!-- Testing dependencies -->
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -50,6 +50,19 @@
 
     <build>
         <finalName>${project.artifactId}-${installer.version.name}</finalName>
+        <sourceDirectory>src/main/java</sourceDirectory>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+        <testSourceDirectory>src/test/java</testSourceDirectory>
+        <testResources>
+            <testResource>
+                 <directory>src/test/resources</directory> 
+            </testResource>
+        </testResources>
+        
         <plugins>
             <!--
                 The assembly plugin doesn't offer the flexibility we need when using dependencySets to unpack
@@ -116,16 +129,26 @@
                     </execution>
                 </executions>
             </plugin>
-
+            
+            <!-- Configure unit and integration tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>**/*IntegrationTest.java</exclude>
-                    </excludes>
-                </configuration>
                 <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*IntegrationTest.java</exclude>
+                            </excludes>
+                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                            <runOrder>alphabetical</runOrder>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>integration-test</id>
                         <phase>integration-test</phase>
@@ -135,7 +158,7 @@
                         <configuration>
                             <skip>false</skip>
                             <workingDirectory>${project.build.directory}</workingDirectory>
-                            <redirectTestOutputToFile>false</redirectTestOutputToFile>
+                            <redirectTestOutputToFile>true</redirectTestOutputToFile>
                             <runOrder>alphabetical</runOrder>
                             <systemPropertyVariables>
                                 <alfresco.update.package>${project.artifactId}-${installer.version.name}.zip</alfresco.update.package>

@@ -43,6 +43,16 @@
             </includes>
             <lineEnding>keep</lineEnding>
         </fileSet>
+		
+	    <fileSet>
+            <directory>${unpacked.alfresco.enterprise.distribution}/bin</directory>
+            <outputDirectory>resources/distribution/common</outputDirectory>
+            <includes>
+                <include>alfresco-mmt.jar</include>
+				<include>alfresco-spring-encryptor.jar</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
         
         <fileSet>
             <directory>${unpacked.update.tool}/bin</directory>

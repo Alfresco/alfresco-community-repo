@@ -96,41 +96,19 @@ public class TgzFormatIntegrationTest extends AbstractIntegrationTest
     
     private void handleArchiveEntries(InputStream raw, ArchiveEntryHandler handler) throws ArchiveException, IOException, CompressorException
     {
-        CompressorInputStream gzIs = null;
-        BufferedInputStream bis = null;
-        TarArchiveInputStream aris = null;
-        BufferedInputStream bgzIs = null;
         try
+        (
+            BufferedInputStream bis = new BufferedInputStream(raw);
+            CompressorInputStream gzIs = new CompressorStreamFactory().createCompressorInputStream(bis);
+            BufferedInputStream bgzIs = new BufferedInputStream(gzIs);
+            TarArchiveInputStream aris = (TarArchiveInputStream) new ArchiveStreamFactory().createArchiveInputStream(bgzIs);
+        )
         {
-            bis = new BufferedInputStream(raw);
-            gzIs = new CompressorStreamFactory().createCompressorInputStream(bis);
-            bgzIs = new BufferedInputStream(gzIs);
-            aris = (TarArchiveInputStream) new ArchiveStreamFactory().createArchiveInputStream(bgzIs);
-            
             TarArchiveEntry entry = null;
             boolean carryOn = true;
             while (carryOn && (entry = aris.getNextTarEntry()) != null)
             {
                 carryOn = handler.handle(entry);
-            }
-        }
-        finally
-        {
-            if (aris != null)
-            {
-                aris.close();
-            }
-            if (bgzIs != null)
-            {
-                bgzIs.close();
-            }
-            if (gzIs != null)
-            {
-                gzIs.close();
-            }
-            if (bis != null)
-            {
-                bis.close();
             }
         }
     }

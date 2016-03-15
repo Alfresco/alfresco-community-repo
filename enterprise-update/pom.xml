@@ -26,7 +26,7 @@
         <!-- Share WAR file -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>share</artifactId>
+            <artifactId>share-enterprise</artifactId>
             <version>${alfresco.share.version}</version>
             <type>war</type>
         </dependency>

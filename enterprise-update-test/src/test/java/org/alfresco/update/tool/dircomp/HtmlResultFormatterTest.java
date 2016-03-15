@@ -55,7 +55,12 @@ public class HtmlResultFormatterTest
         addResult(results, null, "/t2/a/b/c/blah.txt", false);
         addResult(results, "/t1/dir-only-in-p1", null, false);
         addResult(results, null, "/t2/dir-only-in-p2", false);
-        
+
+        resultSet.stats.suppressedDifferenceCount = 2;
+        resultSet.stats.differenceCount = 4;
+        resultSet.stats.ignoredFileCount = 0;
+        resultSet.stats.resultCount = results.size();
+
         try(ByteArrayOutputStream os = new ByteArrayOutputStream())
         {
             HtmlResultFormatter formatter = new HtmlResultFormatter();

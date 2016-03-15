@@ -25,6 +25,8 @@ public class HtmlResultFormatter implements ResultFormatter
     @Override
     public void format(ResultSet resultSet, OutputStream out)
     {
+        boolean failed = resultSet.stats.differenceCount > 0;
+
         try(PrintWriter pw = new PrintWriter(out))
         {
             pw.println("<!DOCTYPE HTML>");
@@ -32,26 +34,37 @@ public class HtmlResultFormatter implements ResultFormatter
             pw.println("<head>");
             pw.println("<title>File tree comparison results</title>");
             pw.println("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css\" integrity=\"sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7\" crossorigin=\"anonymous\">");
-            pw.println("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css\">");
+            pw.println("<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css\" integrity=\"sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r\" crossorigin=\"anonymous\">");
             pw.println("</head>");
             pw.println("<body>");
-            pw.println("<p>Files examined: <strong>"+resultSet.stats.resultCount+"</strong></p>");
-            pw.println("<p>Files with differences: <strong>"+resultSet.stats.differenceCount+"</strong></p>");
-            pw.println("<p>Files with <em>allowed</em> differences: <strong>"+resultSet.stats.suppressedDifferenceCount+"</strong></p>");
-            pw.println("<p>Ignored files: <strong>"+resultSet.stats.ignoredFileCount+"</strong></p>");
+            pw.println("<div class=\"container\">");
+
             String passOrFail;
-            if (resultSet.stats.differenceCount > 0)
+            String alertClass;
+            if (failed)
             {
-                passOrFail = "<span style=\"color: red\"><strong>FAILED</strong></span>";
+                alertClass = "alert-danger";
+                passOrFail = "FAILED";
             }
             else
             {
-                passOrFail = "<span style=\"color: green\"><strong>PASSED</strong></span>";
+                alertClass = "alert-success";
+                passOrFail = "PASSED";
             }
-            pw.println("<p>Status: "+passOrFail+"</p>");
 
+            pw.println("<div class=\"page-header\">\n" +
+                    "  <h1>Fresh installation vs updated installation <small>Diff tool results</small></h1>\n" +
+                    "</div>");
+            pw.println("<div class=\"alert "+alertClass+"\" role=\"alert\">");
+            pw.println("   <p>Status: "+passOrFail+"</p>");
+            pw.println("   <p>Files examined: <strong>"+resultSet.stats.resultCount+"</strong></p>");
+            pw.println("   <p>Files with differences: <strong>"+resultSet.stats.differenceCount+"</strong></p>");
+            pw.println("   <p>Files with <em>allowed</em> differences: <strong>"+resultSet.stats.suppressedDifferenceCount+"</strong></p>");
+            pw.println("   <p>Ignored files: <strong>"+resultSet.stats.ignoredFileCount+"</strong></p>");
+            pw.println("</div>");
             outputResultsTable(resultSet.results, pw, 0);
-            
+
+            pw.println("</div><!-- end container -->");
             pw.println("</body>");
             pw.println("</html>");
         }

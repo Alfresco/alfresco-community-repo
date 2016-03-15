@@ -48,14 +48,15 @@ public class ZipResultFormatter implements ResultFormatter
             File file = path.toFile();
             if(file.isFile())
             {
-                String entryName = path.toString().replace('\\', '/');
+                String entryName = path.toAbsolutePath().toString().replace('\\', '/');
                 ZipEntry zipEntry = new ZipEntry(entryName);
                 zipEntry.setTime(file.lastModified());
                 try (FileInputStream ins = new FileInputStream(file))
                 {
                     zos.putNextEntry(zipEntry);
                     int len;
-                    while ((len = ins.read(buffer)) > 0) {
+                    while ((len = ins.read(buffer)) > 0) 
+                    {
                         zos.write(buffer, 0, len);
                     }
                     zos.closeEntry();

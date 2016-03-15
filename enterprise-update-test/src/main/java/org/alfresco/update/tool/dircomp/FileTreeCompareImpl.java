@@ -67,6 +67,10 @@ public class FileTreeCompareImpl implements FileTreeCompare
             ignorePaths.add(toPlatformPath("libreoffice/**"));
             ignorePaths.add(toPlatformPath("java/**"));
             ignorePaths.add(toPlatformPath("applied-updates/**"));
+            ignorePaths.add(toPlatformPath("~build/**"));
+            ignorePaths.add(toPlatformPath("properties.ini"));
+            ignorePaths.add(toPlatformPath("**/modifications.install"));
+            ignorePaths.add(toPlatformPath("tomcat/webapps/ROOT.war"));
         }
         if (allowedDiffsPaths == null)
         {
@@ -85,6 +89,8 @@ public class FileTreeCompareImpl implements FileTreeCompare
             allowedDiffsPaths.add(toPlatformPath("**/*.xml"));
             allowedDiffsPaths.add(toPlatformPath("**/*.sample"));
             allowedDiffsPaths.add(toPlatformPath("**/*.txt"));
+            allowedDiffsPaths.add(toPlatformPath("tomcat/conf/Catalina/localhost/solr4.xml"));
+            allowedDiffsPaths.add(toPlatformPath("tomcat/conf/Catalina/localhost/solr.xml"));
         }
         this.ignorePaths.addAll(ignorePaths);
         this.allowedDiffsPaths.addAll(allowedDiffsPaths);

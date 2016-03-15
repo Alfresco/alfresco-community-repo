@@ -10,22 +10,22 @@
         <format>tgz</format>
     </formats>
 	
-    <includeBaseDirectory>false</includeBaseDirectory>
+    <includeBaseDirectory>true</includeBaseDirectory>
 	
     <fileSets>
         <!-- Pack the bin files except for the .sh files -->
         <fileSet>
             <directory>${unpacked.update.tool}/bin</directory>
-            <outputDirectory>bin</outputDirectory>
-            <excludes>
-                <exclude>*.sh</exclude>
-            </excludes>
+            <outputDirectory>/</outputDirectory>
+            <includes>
+                <include>*.bat</include>
+            </includes>
             <lineEnding>keep</lineEnding>
         </fileSet>
         
         <fileSet>
             <directory>${unpacked.update.tool}/bin</directory>
-            <outputDirectory>bin</outputDirectory>
+            <outputDirectory>/</outputDirectory>
             <includes>
                 <include>*.sh</include>
             </includes>
@@ -33,12 +33,40 @@
             <!-- Add the correct execute permissions to *.sh file(s) -->
             <fileMode>0755</fileMode>
         </fileSet>
+        
+        <fileSet>
+            <directory>${unpacked.update.tool}/bin</directory>
+            <outputDirectory>lib</outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+        </fileSet>
     </fileSets>
     
-	<files>
-	    <file>
-			<source>${project.basedir}/target/update-contents-${installer.version.name}.zip</source>
-			<outputDirectory>update</outputDirectory>
-		</file>
-	</files>
+
+      <dependencySets>
+        <!-- alfresco web app -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/war</outputDirectory>
+            <outputFileNameMapping>alfresco.war</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:alfresco*:war</include>
+            </includes>
+        </dependencySet>
+        
+        <!--  share web app -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/war</outputDirectory>
+            <outputFileNameMapping>share.war</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:share*:war</include>
+            </includes>
+        </dependencySet>
+        
+    </dependencySets>
+    
 </assembly>

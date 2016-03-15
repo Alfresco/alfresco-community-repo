@@ -96,20 +96,7 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
-                    <execution>
-                        <id>update</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <appendAssemblyId>false</appendAssemblyId>
-                            <descriptors>
-                                <descriptor>assemblies/update.xml</descriptor>
-                            </descriptors>
-                            <finalName>update-contents-${installer.version.name}</finalName>
-                        </configuration>
-                    </execution>
+
                     <execution>
                         <id>update-tool</id>
                         <phase>package</phase>

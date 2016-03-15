@@ -41,6 +41,15 @@
                 <include>*.jar</include>
             </includes>
         </fileSet>
+        
+        <fileSet>
+            <directory>${unpacked.update.tool}</directory>
+            <outputDirectory></outputDirectory>
+            <includes>
+                <include>README.txt</include>
+            </includes>
+             <lineEnding>unix</lineEnding>
+        </fileSet>
     </fileSets>
     
 

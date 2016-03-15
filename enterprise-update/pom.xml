@@ -119,6 +119,29 @@
             </plugin>
             
             <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <version>1.5.3</version>
+                <executions>
+                    <execution>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>                   
+                    </execution>
+                </executions>
+                <configuration>
+                <file>${unpacked.update.tool}/README.txt</file>
+                <replacements>
+                   <replacement>
+                       <token>@Version@</token>
+                       <value>${version}</value>
+                   </replacement>         
+                </replacements>
+                </configuration>
+            </plugin>
+            
+            <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <executions>
 

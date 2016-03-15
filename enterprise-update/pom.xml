@@ -15,6 +15,7 @@
         <unpacked.update.tool>${project.build.directory}/dependency/alfresco-update-tool-distribution-${alfresco.updatetool.version}</unpacked.update.tool>
 		<unpacked.alfresco.platform.distribution>${project.build.directory}/dependency/alfresco-platform-enterprise-distributionzip-${alfresco.platform.version}</unpacked.alfresco.platform.distribution>
 		<unpacked.alfresco.share.distribution>${project.build.directory}/dependency/alfresco-share-distribution-${alfresco.share.version}</unpacked.alfresco.share.distribution>
+		<unpacked.alfresco.wcmqs.distribution>${project.build.directory}/dependency/wcmqs-${project.version}</unpacked.alfresco.wcmqs.distribution>
 		
 		<!-- e.g. pull the update scripts from src/main/resources/script/5.0 -->
 		<unpacked.update.script>${project.build.directory}/classes/script/${version.major}.${version.minor}</unpacked.update.script>
@@ -69,20 +70,11 @@
             <type>amp</type>
         </dependency>
         
-        <!--  wcmqs platform amp -->
         <dependency>
             <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-wcmqs</artifactId>
+            <artifactId>alfresco-wcmqs-distribution</artifactId>
             <version>${alfresco.share.version}</version>
-            <type>amp</type>
-        </dependency>
-        
-        <!-- wcmqs share amp -->
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-wcmqs-share</artifactId>
-            <version>${alfresco.share.version}</version>
-            <type>amp</type>
+            <type>zip</type>
         </dependency>
 		
 		<!-- Update Tool distribution package -->
@@ -142,6 +134,24 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
+				    <execution>
+                        <id>unpack-wcmqs-distribution</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                            <artifactItems>
+                                <artifactItem>
+                                    <groupId>org.alfresco</groupId>
+                                    <artifactId>alfresco-wcmqs-distribution</artifactId>
+                                    <version>${alfresco.share.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${unpacked.alfresco.wcmqs.distribution}</outputDirectory>
+                                </artifactItem>
+                            </artifactItems>
+                        </configuration>
+                    </execution>
                     <execution>
                         <id>unpack-update-tool-distribution</id>
                         <phase>generate-resources</phase>

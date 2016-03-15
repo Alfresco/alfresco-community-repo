@@ -113,8 +113,32 @@
             </includes>
             <lineEnding>keep</lineEnding>
         </fileSet>
-        
-        
+		
+		<!-- WQS Assets -->
+		<fileSet>
+            <directory>${unpacked.alfresco.wcmqs.distribution}</directory>
+            <outputDirectory>resources/amp/platform</outputDirectory>
+            <includes>
+                <include>alfresco-wcmqs.amp</include>
+            </includes>
+        </fileSet>
+		
+		<fileSet>
+            <directory>${unpacked.alfresco.wcmqs.distribution}</directory>
+            <outputDirectory>resources/amp/share</outputDirectory>
+            <includes>
+                <include>alfresco-wcmqs-share.amp</include>
+            </includes>
+        </fileSet>
+		
+		<fileSet>
+            <directory>${unpacked.alfresco.wcmqs.distribution}</directory>
+            <outputDirectory>resources/war</outputDirectory>
+            <includes>
+                <include>*.war</include>
+            </includes>
+        </fileSet>
+		
     </fileSets>
     
 
@@ -179,28 +203,7 @@
             <includes>
                 <include>org.alfresco.integrations:alfresco-googledocs-share:amp:enterprise:*</include>
             </includes>
-        </dependencySet>
-        
-        <!-- WQS Platform AMP-->
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>resources/amp/platform</outputDirectory>
-            <includes>
-                <include>org.alfresco:alfresco-wcmqs:amp:*</include>
-            </includes>   
-        </dependencySet>
-       
-        <!-- WQS Share AMP-->
-        <dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>resources/amp/share</outputDirectory>
-            <includes>
-                <include>org.alfresco:alfresco-wcmqs-share:amp:*</include>
-            </includes>
-        </dependencySet>
-        
+        </dependencySet>       
         
     </dependencySets>
     

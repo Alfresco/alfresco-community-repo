@@ -84,6 +84,16 @@
             </includes>
             <lineEnding>keep</lineEnding>
         </fileSet>
+        
+        <!-- Solr4 schema file -->
+        <fileSet>
+            <directory>${unpacked.solr4.distribution}/archive-SpacesStore/conf</directory>
+            <outputDirectory>resources/distribution/common/solr4/archive-SpacesStore/conf</outputDirectory>
+            <includes>
+                <include>schema.xml</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
 		
 		<!-- AOS VTI.WAR -->
 		<fileSet>

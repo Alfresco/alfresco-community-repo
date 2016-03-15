@@ -116,6 +116,26 @@
             </includes>
         </dependencySet>
         
+        <!-- WQS Platform AMP-->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/amp/platform</outputDirectory>
+            <includes>
+                <include>org.alfresco:alfresco-wcmqs:amp:*</include>
+            </includes>   
+        </dependencySet>
+       
+        <!-- WQS Share AMP-->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/amp/share</outputDirectory>
+            <includes>
+                <include>org.alfresco:alfresco-wcmqs-share:amp:*</include>
+            </includes>
+        </dependencySet>
+        
         
     </dependencySets>
     

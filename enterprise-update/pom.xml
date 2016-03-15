@@ -39,7 +39,7 @@
             <type>war</type>
         </dependency>
 		
-		<!-- Update Tool distribution package -->
+		<!-- GoogleDocs AMP -->
         <dependency>
             <groupId>org.alfresco.integrations</groupId>
             <artifactId>alfresco-googledocs-repo</artifactId>
@@ -55,7 +55,7 @@
             <classifier>enterprise</classifier>
             <type>amp</type>
         </dependency>
-        
+
         <!-- Share Services AMP for alfresco.war -->
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -64,6 +64,21 @@
             <type>amp</type>
         </dependency>
         
+        <!--  wcmqs platform amp -->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-wcmqs</artifactId>
+            <version>${alfresco.share.version}</version>
+            <type>amp</type>
+        </dependency>
+        
+        <!-- wcmqs share amp -->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-wcmqs-share</artifactId>
+            <version>${alfresco.share.version}</version>
+            <type>amp</type>
+        </dependency>
 		
 		<!-- Update Tool distribution package -->
 		<dependency>
@@ -86,7 +101,7 @@
         <finalName>${project.artifactId}-${installer.version.name}</finalName>
         <sourceDirectory>src/main/java</sourceDirectory>
         <resources>
-            <resource>
+            <resource> 
                 <directory>src/main/resources</directory>
             </resource>
         </resources>

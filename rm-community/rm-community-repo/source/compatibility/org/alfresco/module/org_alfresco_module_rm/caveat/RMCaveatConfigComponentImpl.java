@@ -1,16 +1,13 @@
- 
-package org.alfresco.module.org_alfresco_module_rm.caveat;
-
 /*
  * #%L
  * Alfresco Records Management Module
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
+ * This file is part of the Alfresco software.
  * 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
  * 
  * Alfresco is free software: you can redistribute it and/or modify
@@ -28,6 +25,7 @@ package org.alfresco.module.org_alfresco_module_rm.caveat;
  * #L%
  */
 
+package org.alfresco.module.org_alfresco_module_rm.caveat;
 
 import static org.apache.commons.lang.exception.ExceptionUtils.getFullStackTrace;
 
@@ -45,8 +43,6 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import net.sf.acegisecurity.AccessDeniedException;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
@@ -84,6 +80,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import net.sf.acegisecurity.AccessDeniedException;
 
 /**
  * RM Caveat Config component impl

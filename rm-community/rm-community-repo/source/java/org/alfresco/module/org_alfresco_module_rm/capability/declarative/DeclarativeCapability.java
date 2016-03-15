@@ -1,16 +1,13 @@
- 
-package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
-
 /*
  * #%L
  * Alfresco Records Management Module
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
+ * This file is part of the Alfresco software.
  * 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
  * 
  * Alfresco is free software: you can redistribute it and/or modify
@@ -28,13 +25,12 @@ package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
  * #L%
  */
 
+package org.alfresco.module.org_alfresco_module_rm.capability.declarative;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.capability.AbstractCapability;
@@ -47,6 +43,8 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * Declarative capability implementation.

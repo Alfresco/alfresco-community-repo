@@ -1,16 +1,13 @@
- 
-package org.alfresco.module.org_alfresco_module_rm.capability;
-
 /*
  * #%L
  * Alfresco Records Management Module
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
+ * This file is part of the Alfresco software.
  * 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
  * 
  * Alfresco is free software: you can redistribute it and/or modify
@@ -28,6 +25,7 @@ package org.alfresco.module.org_alfresco_module_rm.capability;
  * #L%
  */
 
+package org.alfresco.module.org_alfresco_module_rm.capability;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -38,13 +36,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-
-import net.sf.acegisecurity.AccessDeniedException;
-import net.sf.acegisecurity.Authentication;
-import net.sf.acegisecurity.ConfigAttribute;
-import net.sf.acegisecurity.ConfigAttributeDefinition;
-import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
-import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.search.SimpleResultSetMetaData;
@@ -69,6 +60,13 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
+
+import net.sf.acegisecurity.AccessDeniedException;
+import net.sf.acegisecurity.Authentication;
+import net.sf.acegisecurity.ConfigAttribute;
+import net.sf.acegisecurity.ConfigAttributeDefinition;
+import net.sf.acegisecurity.afterinvocation.AfterInvocationProvider;
+import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
  * RM After Invocation Provider

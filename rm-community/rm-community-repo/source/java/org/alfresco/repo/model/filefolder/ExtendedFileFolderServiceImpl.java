@@ -1,18 +1,13 @@
-/**
- *
- */
-package org.alfresco.repo.model.filefolder;
-
 /*
  * #%L
  * Alfresco Records Management Module
  * %%
  * Copyright (C) 2005 - 2016 Alfresco Software Limited
  * %%
- * This file is part of the Alfresco software. 
+ * This file is part of the Alfresco software.
  * 
- * If the software was purchased under a paid Alfresco license, the terms of 
- * the paid license agreement will prevail.  Otherwise, the software is 
+ * If the software was purchased under a paid Alfresco license, the terms of
+ * the paid license agreement will prevail.  Otherwise, the software is
  * provided under the following open source license terms:
  * 
  * Alfresco is free software: you can redistribute it and/or modify
@@ -30,6 +25,7 @@ package org.alfresco.repo.model.filefolder;
  * #L%
  */
 
+package org.alfresco.repo.model.filefolder;
 
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.service.cmr.model.FileInfo;

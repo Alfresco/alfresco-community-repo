@@ -23,8 +23,8 @@
 
         <!-- Alfresco Update Tool version bundled in the update installer -->
         <alfresco.updatetool.version>1.0-SNAPSHOT</alfresco.updatetool.version>
-		
-		<!-- Alfresco Office Services Module -->
+        
+        <!-- Alfresco Office Services Module -->
         <alfresco.aos-module.version>1.1</alfresco.aos-module.version>
 
         <!-- Versions of binaries packaged in the installer -->
@@ -81,7 +81,7 @@
                 <module>enterprise-distribution</module>
                 <module>enterprise-update</module>
                 <module>enterprise-installer</module>
-				<module>enterprise-update-test</module>
+		<module>enterprise-update-test</module>
             </modules>
         </profile>
         <profile>

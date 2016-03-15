@@ -6,7 +6,7 @@
         <artifactId>alfresco-full-installation</artifactId>
         <version>5.1.1-SNAPSHOT</version>
     </parent>
-    <artifactId>alfresco-enterprise-installer</artifactId>
+    <artifactId>alfresco-one-installer</artifactId>
     <packaging>pom</packaging>
     <name>Alfresco Enterprise Full Installers</name>
 
@@ -17,7 +17,7 @@
         <license.file.location>${binaries.folder}/build-classpath/license.xml</license.file.location>
         <bitrock.arguments>
            project.version=${installer.version.name} 
-           project.fullName='Alfresco One Enterprise' 
+           project.fullName='Alfresco One' 
            project.osxSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd-osx.p12 
            project.osxSigningPkcs12Password=${p12Password} 
            project.windowsSigningPkcs12File=${signing.key.location}/Alfresco-Software-Ltd.p12 
@@ -25,15 +25,14 @@
            alfresco_edition=enterprise 
            alfresco_package='${alfresco.package.name}' 
            alfrescogoogledocs_component_enabled=1 
-           alfrescosharepoint_component_enabled=0 
            alfrescosolr_component_enabled=1 
            alfrescowcmqs_component_enabled=1 
            project.outputDirectory=${project.build.directory} 
         </bitrock.arguments>
 
         <!-- Override alfresco.package.name for the installer naming (Different from the zip distribution naming) -->
-        <alfresco.package.name>alfresco-one-enterprise</alfresco.package.name>
-        <alfresco.distribution.name>alfresco-enterprise-distribution</alfresco.distribution.name>
+        <alfresco.package.name>alfresco-one</alfresco.package.name>
+        <alfresco.distribution.name>alfresco-one-distribution</alfresco.distribution.name>
     </properties>
 
     <dependencies>
@@ -68,13 +67,13 @@
                             <artifactItems>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-installer-resources</artifactId>
+                                    <artifactId>alfresco-one-installer-resources</artifactId>
                                     <version>${alfresco.platform.version}</version>
                                     <outputDirectory>${project.build.directory}/classes</outputDirectory>
                                 </artifactItem>
                                 <artifactItem>
                                     <groupId>org.alfresco</groupId>
-                                    <artifactId>alfresco-enterprise-distribution</artifactId>
+                                    <artifactId>alfresco-one-distribution</artifactId>
                                     <version>${project.version}</version>
                                     <type>zip</type>
                                     <outputDirectory>${project.build.directory}/distribution</outputDirectory>
@@ -112,6 +111,14 @@
                                     <outputDirectory>${project.build.directory}/wcmqs</outputDirectory>
                                     <includes>alfresco/extension/**</includes>
                                 </artifactItem>
+                                <!-- Alfresco Office Services Module -->
+                                <artifactItem>
+                                    <groupId>org.alfresco.aos-module</groupId>
+                                    <artifactId>alfresco-aos-module-distributionzip</artifactId>
+                                    <version>${alfresco.aos-module.version}</version>
+                                    <type>zip</type>
+                                    <outputDirectory>${project.build.directory}/distribution/aos-module</outputDirectory>
+                                </artifactItem>
                             </artifactItems>
                         </configuration>
                     </execution>
@@ -143,27 +150,6 @@
                 </executions>
             </plugin>
 
-            <!-- Override local resources - alfresco-global.properties, etc. -->
-            <plugin>
-                <artifactId>maven-resources-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>override-local-resources</id>
-                        <phase>prepare-package</phase>
-                        <goals>
-                            <goal>resources</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}</outputDirectory>
-                            <overwrite>true</overwrite>
-                            <nonFilteredFileExtensions>
-                                <nonFilteredFileExtension>properties</nonFilteredFileExtension>
-                            </nonFilteredFileExtensions>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <executions>
@@ -190,7 +176,9 @@
                         <configuration>
                             <workingDirectory>${project.build.directory}/classes/bitrock</workingDirectory>
                             <target>
-                                <ant antfile="${project.build.directory}/classes/build-installers.xml" />
+                                <ant antfile="${project.build.directory}/classes/build-installers.xml">
+				    <property name="installer.version.name" value="${installer.version.name}" />
+                                </ant>
                             </target>
                         </configuration>
                     </execution>

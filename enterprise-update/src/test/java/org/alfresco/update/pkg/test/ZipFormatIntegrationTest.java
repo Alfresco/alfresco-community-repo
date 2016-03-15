@@ -8,23 +8,17 @@
 package org.alfresco.update.pkg.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.Enumeration;
 
 import org.apache.commons.compress.archivers.ArchiveException;
-import org.apache.commons.compress.archivers.ArchiveStreamFactory;
 import org.apache.commons.compress.archivers.zip.ZipArchiveEntry;
-import org.apache.commons.compress.archivers.zip.ZipArchiveInputStream;
+import org.apache.commons.compress.archivers.zip.ZipFile;
 import org.apache.commons.compress.compressors.CompressorException;
-import org.apache.commons.compress.compressors.CompressorInputStream;
-import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -39,89 +33,38 @@ import org.junit.Test;
  * @author Matt Ward
  */
 public class ZipFormatIntegrationTest extends AbstractIntegrationTest
-{
-   private boolean found;
-    
+{   
+    public final String ARTIFACT_NAME="alfresco-enterprise-update-package-";
+
     @Before
     public void setUp() throws Exception
     {
         super.setUp();
     }
     
-    public final String ARTIFACT_NAME="alfresco-enterprise-update-package-";
-
-    // TODO - Test step commented out below
     @Test
     public void applyUpdatesScriptHasExecutableBitsSet() throws FileNotFoundException, ArchiveException, IOException, CompressorException
-    {
-	               
+    {	    
         File archive = new File(targetDir, ARTIFACT_NAME+version+".zip");
         assertTrue("File does not exist: "+archive, archive.exists());
-        FileInputStream fis = null;
-        try
+        try (ZipFile zipFile = new ZipFile(archive))
         {
-            fis = new FileInputStream(archive);
-
-            handleArchiveEntries(fis, new ArchiveEntryHandler()
-            {                
-                @Override
-                public boolean handle(ZipArchiveEntry entry)
+            Enumeration<ZipArchiveEntry> e = zipFile.getEntries();
+            boolean found = false;
+            while (!found && e.hasMoreElements())
+            {
+                ZipArchiveEntry entry = e.nextElement();
+                File f = new File(entry.getName());
+                if (f.getName().equalsIgnoreCase("apply_updates.sh"))
                 {
-                    System.out.println("Handling tar entry: "+entry.getName());
-                    if (entry.getName().equals(ARTIFACT_NAME+version+"/apply_updates.sh"))
-                    {
-                        System.out.println("Found the unix shell wrapper script.");
-                        
-                        final int expectedPerms = 0755;
-                        // Other bits may be set, but check 755 octal are set.
-                        System.out.println("File has permissions: "+Integer.toString(entry.getUnixMode(), 8));
-                        
-                        /**
-                         *  TODO - TEST STEP COMMENTED OUT
-                         *  I can't get this to work on windows or the build boxes - the mode is 0
-                         *  However it does appear to work in real life!
-                         *  I've also tried replacing the apache.commons zip file utilities with 
-                         *  the Java IO classes
-                         */                      
-//                        assertEquals(expectedPerms, entry.getUnixMode() & expectedPerms);          
-                        found = true;
-                    }
-                    return !found;
+                    found = true;
+                    System.out.println("Found the unix shell wrapper script.");
+                    final int expectedPerms = 0755;
+                    // Other bits may be set, but check 755 octal are set.
+                    System.out.println("File has permissions: "+Integer.toString(entry.getUnixMode(), 8));  
+                    assertEquals(expectedPerms, entry.getUnixMode() & expectedPerms);
                 }
-            });
-            
-            assertTrue("apply_updates.sh is a required file.", found);
-        }
-        finally
-        {
-            if (fis != null)
-            {
-                fis.close();
-            }
-        }
-    }
-
-    private static interface ArchiveEntryHandler
-    {
-        boolean handle(ZipArchiveEntry entry);
-    }
-    
-    private void handleArchiveEntries(InputStream raw, ArchiveEntryHandler handler) throws ArchiveException, IOException, CompressorException
-    {
-        try
-        (
-            BufferedInputStream bis = new BufferedInputStream(raw);
-            //CompressorInputStream gzIs = new CompressorStreamFactory().createCompressorInputStream(bis);
-            BufferedInputStream bgzIs = new BufferedInputStream(bis);
-            ZipArchiveInputStream aris = (ZipArchiveInputStream) new ArchiveStreamFactory().createArchiveInputStream(bgzIs);
-        )
-        {
-            ZipArchiveEntry entry = null;
-            boolean carryOn = true;
-            while (carryOn && (entry = aris.getNextZipEntry()) != null)
-            {
-                carryOn = handler.handle(entry);
-            }
+            }          
         }
     }
 }

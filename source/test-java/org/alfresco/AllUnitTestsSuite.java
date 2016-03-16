@@ -65,7 +65,6 @@ public class AllUnitTestsSuite extends TestSuite
         suite.addTest(new JUnit4TestAdapter(org.alfresco.service.cmr.repository.TransformationOptionLimitsTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.service.cmr.repository.TransformationOptionPairTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.tools.RenameUserTest.class));
-        suite.addTestSuite(org.alfresco.util.DynamicallySizedThreadPoolExecutorTest.class);
         suite.addTestSuite(org.alfresco.util.FileNameValidatorTest.class);
         suite.addTestSuite(org.alfresco.util.JSONtoFmModelTest.class);
         suite.addTestSuite(org.alfresco.util.ModelUtilTest.class);

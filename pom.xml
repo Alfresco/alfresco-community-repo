@@ -84,6 +84,11 @@
                 <module>enterprise-distribution</module>
                 <module>enterprise-update</module>
                 <module>enterprise-installer</module>
+            </modules>
+        </profile>
+		<profile>
+            <id>update-test</id>
+            <modules>
 				<module>enterprise-update-test</module>
             </modules>
         </profile>

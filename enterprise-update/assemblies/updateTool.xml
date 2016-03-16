@@ -9,44 +9,231 @@
         <format>zip</format>
     </formats>
 	
-    <includeBaseDirectory>false</includeBaseDirectory>
+    <includeBaseDirectory>true</includeBaseDirectory>
 	
-	<files>
-	    <file>
-			<source>${project.basedir}/target/update-contents-${installer.version.name}.zip</source>
-			<outputDirectory>update</outputDirectory>
-		</file>
-	</files>
-	
-	<dependencySets>
-	
-		<!-- The update tool itself -->
-		<dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
-            <outputDirectory>bin</outputDirectory>
-            <outputFileNameMapping>alfresco-update-tool.jar</outputFileNameMapping>
-            <includes>
-                <include>org.alfresco:alfresco-update-tool:jar</include>
-            </includes>
-        </dependencySet>
-
-		<dependencySet>
-            <useProjectArtifact>false</useProjectArtifact>
-            <useStrictFiltering>true</useStrictFiltering>
+    <fileSets>
+        <!-- Pack the bin files except for the .sh files -->
+        <fileSet>
+            <directory>${unpacked.update.tool}/bin</directory>
             <outputDirectory></outputDirectory>
-			<unpack>true</unpack>
-			<unpackOptions>
-			   <lineEnding>keep</lineEnding>
-			   <excludes>
-				   <exclude>META-INF/**</exclude>
-			   </excludes>
-			</unpackOptions>
             <includes>
-                <include>org.alfresco:alfresco-update-tool-distribution:jar</include>
+                <include>*.bat</include>
+            </includes>
+            <lineEnding>dos</lineEnding>
+        </fileSet>
+        
+        <fileSet>
+            <directory>${unpacked.update.tool}/bin</directory>
+            <outputDirectory></outputDirectory>
+            <includes>
+                <include>*.sh</include>
+            </includes>
+            <lineEnding>unix</lineEnding>
+            <!-- Add the correct execute permissions to *.sh file(s) -->
+            <fileMode>0755</fileMode>
+        </fileSet>
+		
+		<!-- Repack bits of the distribution zip Over time we will probably add more -->
+		<fileSet>
+            <directory>${unpacked.alfresco.platform.distribution}</directory>
+            <outputDirectory>resources/distribution/platform</outputDirectory>
+            <includes>
+                <include>package.properties</include>
+            </includes>
+            <lineEnding>dos</lineEnding>
+        </fileSet>
+		
+		<fileSet>
+            <directory>${unpacked.alfresco.one.distribution}</directory>
+            <outputDirectory>resources/distribution/platform</outputDirectory>
+            <includes>
+                <include>README.txt</include>
+            </includes>
+            <lineEnding>dos</lineEnding>
+        </fileSet>
+		
+		<!-- Platform Only distribution - currently the same as full platform -->
+		<fileSet>
+            <directory>${unpacked.alfresco.platform.distribution}</directory>
+            <outputDirectory>resources/distribution/platform_only</outputDirectory>
+            <includes>
+                <include>README.txt</include>
+                <include>package.properties</include>
+            </includes>
+            <lineEnding>dos</lineEnding>
+        </fileSet>
+		
+		<!-- Share only distribution -->
+		<fileSet>
+            <directory>${unpacked.alfresco.share.distribution}</directory>
+            <outputDirectory>resources/distribution/share_only</outputDirectory>
+            <includes>
+                <include>README.txt</include>
+                <include>package.properties</include>
+            </includes>
+            <lineEnding>dos</lineEnding>
+        </fileSet>
+		
+		<!-- Common distribution -->
+	    <fileSet>
+            <directory>${unpacked.alfresco.platform.distribution}/bin</directory>
+            <outputDirectory>resources/distribution/common/bin</outputDirectory>
+            <includes>
+                <include>alfresco-mmt.jar</include>
+				<include>alfresco-spring-encryptor.jar</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
+        
+        <!-- Solr4 schema file -->
+        <fileSet>
+            <directory>${unpacked.solr4.distribution}/archive-SpacesStore/conf</directory>
+            <outputDirectory>resources/distribution/common/solr4/archive-SpacesStore/conf</outputDirectory>
+            <includes>
+                <include>schema.xml</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
+		
+		<!-- AOS VTI.WAR -->
+		<fileSet>
+            <directory>${unpacked.org.alfresco.aos.distribution}</directory>
+            <outputDirectory>resources/war</outputDirectory>
+            <includes>
+                <include>*.war</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
+		
+		<!-- AOS AMP -->
+		<fileSet>
+            <directory>${unpacked.org.alfresco.aos.distribution}</directory>
+            <outputDirectory>resources/amp/platform</outputDirectory>
+            <includes>
+                <include>*.amp</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
+        
+        <fileSet>
+            <directory>${unpacked.update.tool}/bin</directory>
+            <outputDirectory>lib</outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+        </fileSet>
+        
+        <fileSet>
+            <directory>${unpacked.update.tool}</directory>
+            <outputDirectory></outputDirectory>
+            <includes>
+                <include>README.txt</include>
+                <include>package.properties</include>
+            </includes>
+             <lineEnding>dos</lineEnding>
+        </fileSet>
+        
+        <fileSet>
+            <directory>${unpacked.update.script}</directory>
+            <outputDirectory>/resources/script</outputDirectory>
+            <includes>
+                <include>*.auas</include>
+            </includes>
+            <lineEnding>keep</lineEnding>
+        </fileSet>
+		
+		<!-- WQS Assets -->
+		<fileSet>
+            <directory>${unpacked.alfresco.wcmqs.distribution}</directory>
+            <outputDirectory>resources/amp/platform</outputDirectory>
+            <includes>
+                <include>alfresco-wcmqs.amp</include>
+            </includes>
+        </fileSet>
+		
+		<fileSet>
+            <directory>${unpacked.alfresco.wcmqs.distribution}</directory>
+            <outputDirectory>resources/amp/share</outputDirectory>
+            <includes>
+                <include>alfresco-wcmqs-share.amp</include>
+            </includes>
+        </fileSet>
+		
+		<fileSet>
+            <directory>${unpacked.alfresco.wcmqs.distribution}</directory>
+            <outputDirectory>resources/war</outputDirectory>
+            <includes>
+                <include>*.war</include>
+            </includes>
+        </fileSet>
+		
+    </fileSets>
+    
+
+      <dependencySets>
+        <!-- alfresco web app -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/war</outputDirectory>
+            <outputFileNameMapping>alfresco.war</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:alfresco-platform-enterprise:war</include>
             </includes>
         </dependencySet>
-
+        
+        <!--  share web app -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/war</outputDirectory>
+            <outputFileNameMapping>share.war</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:share:war</include>
+            </includes>
+        </dependencySet>
+        
+        <!--  SOLR4 Web App -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/war</outputDirectory>
+            <outputFileNameMapping>solr4.war</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:alfresco-solr4:war</include>
+            </includes>
+        </dependencySet>
+        
+        <!-- Google docs AMP -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/amp/platform</outputDirectory>
+            <includes>
+                <include>org.alfresco.integrations:alfresco-googledocs-repo:amp:enterprise:*</include>
+            </includes>   
+        </dependencySet>
+        
+        <!--  Share Services AMP -->
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/amp/platform</outputDirectory>
+			<outputFileNameMapping>alfresco-share-services.amp</outputFileNameMapping>
+            <includes>
+                <include>org.alfresco:alfresco-share-services:amp:*</include>
+            </includes>   
+        </dependencySet>
+       
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <useStrictFiltering>true</useStrictFiltering>
+            <outputDirectory>resources/amp/share</outputDirectory>
+            <includes>
+                <include>org.alfresco.integrations:alfresco-googledocs-share:amp:enterprise:*</include>
+            </includes>
+        </dependencySet>       
+        
     </dependencySets>
-
+    
 </assembly>

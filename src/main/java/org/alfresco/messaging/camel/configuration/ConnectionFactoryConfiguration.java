@@ -18,8 +18,11 @@
  */
 package org.alfresco.messaging.camel.configuration;
 
+import java.security.SecureRandom;
+
+import javax.jms.ConnectionFactory;
+
 import org.alfresco.encryption.AlfrescoKeyStore;
-import org.alfresco.encryption.ssl.SSLEncryptionParameters;
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.ActiveMQSslConnectionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +30,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import javax.jms.ConnectionFactory;
-import java.security.SecureRandom;
 
 /**
  * Configures the ActiveMQ connection factory for use.
@@ -51,6 +51,12 @@ public class ConnectionFactoryConfiguration {
     @Autowired(required = false) @Qualifier("ssl.trustStore")
     private AlfrescoKeyStore trustStore;
 
+    @Value("${messaging.broker.username}")
+    private String username;
+
+    @Value("${messaging.broker.password}")
+    private String password;
+
     @Bean
     public ConnectionFactory activeMqConnectionFactory() {
         if (useSSL) {
@@ -61,13 +67,15 @@ public class ConnectionFactoryConfiguration {
     }
 
     protected ConnectionFactory createConnectionFactory() {
-        return new ActiveMQConnectionFactory(brokerUrl);
+        return new ActiveMQConnectionFactory(username, password, brokerUrl);
     }
 
     protected ConnectionFactory createSecureConnectionFactory() {
         ActiveMQSslConnectionFactory factory = new ActiveMQSslConnectionFactory(brokerUrl);
         factory.setKeyAndTrustManagers(keyStore.createKeyManagers(),
                                        trustStore.createTrustManagers(), new SecureRandom());
+        factory.setUserName(username);
+        factory.setPassword(password);
         return factory;
     }
 }

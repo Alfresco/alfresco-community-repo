@@ -1,4 +1,4 @@
-<model name="test:policycomponenttest" xmlns="http://www.alfresco.org/model/dictionary/1.0">
+<model name="poltest:policycomponenttest" xmlns="http://www.alfresco.org/model/dictionary/1.0">
 
    <imports>
       <import uri="http://www.alfresco.org/model/dictionary/1.0" prefix="d"/>
@@ -6,55 +6,55 @@
    </imports>
    
    <namespaces>
-      <namespace uri="http://www.alfresco.org/test/policycomponenttest/1.0" prefix="test"/>
+      <namespace uri="http://www.alfresco.org/test/policycomponenttest/1.0" prefix="poltest"/>
    </namespaces>
 
    <types>
       
-      <type name="test:base">
+      <type name="poltest:base">
          <parent>sys:base</parent>
          <properties>
-            <property name="test:base_a">
+            <property name="poltest:base_a">
                <type>d:text</type>
             </property>
          </properties>
          <associations>
-            <association name="test:base_assoc_a">
+            <association name="poltest:base_assoc_a">
                <target>
-                  <class>test:base</class>
+                  <class>poltest:base</class>
                </target>
             </association>
          </associations>
       </type>
    
-      <type name="test:file">
-         <parent>test:base</parent>
+      <type name="poltest:file">
+         <parent>poltest:base</parent>
          <properties>
-            <property name="test:file_b">
+            <property name="poltest:file_b">
                <type>d:text</type>
             </property>
-            <property name="test:file_c">
+            <property name="poltest:file_c">
                <type>d:text</type>
             </property>
          </properties>
          <overrides>
-            <property name="test:base_a">
+            <property name="poltest:base_a">
                <default>an overriden default value</default>
             </property>
          </overrides>
       </type>
 
-      <type name="test:folder">
-         <parent>test:base</parent>
+      <type name="poltest:folder">
+         <parent>poltest:base</parent>
          <properties>
-            <property name="test:folder_d">
+            <property name="poltest:folder_d">
                <type>d:text</type>
             </property>
          </properties>
          <associations>
-            <association name="test:folder_assoc_d">
+            <association name="poltest:folder_assoc_d">
                <target>
-                  <class>test:folder</class>
+                  <class>poltest:folder</class>
                </target>
             </association>
          </associations>            
@@ -89,9 +89,9 @@
    </types>
    
    <aspects>
-      <aspect name="test:aspect">
+      <aspect name="poltest:aspect">
          <properties>
-            <property name="test:aspect_a">
+            <property name="poltest:aspect_a">
                <type>d:int</type>
             </property>
          </properties>

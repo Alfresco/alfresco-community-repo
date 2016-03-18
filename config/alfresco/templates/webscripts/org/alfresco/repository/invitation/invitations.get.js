@@ -12,6 +12,7 @@ function main()
    var invitationType = args["invitationType"];
    var resourceType = args["resourceType"];
    var resourceName = args["resourceName"];
+   var resultsLimit = args["resultsLimit"];
    
    var props = {};
    
@@ -30,6 +31,10 @@ function main()
    if (resourceName != null)
    {
       props.resourceName = resourceName
+   }
+   if (resultsLimit != null)
+   {
+      props.resultsLimit = resultsLimit
    }
    
    var invites = invitations.listInvitations(props);

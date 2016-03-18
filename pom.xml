@@ -22,7 +22,9 @@
    </organization>
 
    <scm>
-      <connection>https://gitlab.alfresco.com/records-management/records-management.git</connection>
+      <connection>scm:git:https://gitlab.alfresco.com/records-management/records-management.git</connection>
+      <developerConnection>scm:git:https://gitlab.alfresco.com/records-management/records-management.git</developerConnection>
+      <url>https://gitlab.alfresco.com/records-management/records-management</url>
    </scm>
 
    <issueManagement>
@@ -232,11 +234,6 @@
                <version>2.19</version>
             </plugin>
             <plugin>
-               <groupId>org.apache.maven.plugins</groupId>
-               <artifactId>maven-source-plugin</artifactId>
-               <version>2.4</version>
-            </plugin>
-            <plugin>
                <groupId>org.codehaus.mojo</groupId>
                <artifactId>build-helper-maven-plugin</artifactId>
                <version>${maven.buildhelper.version}</version>
@@ -245,6 +242,25 @@
                <groupId>org.codehaus.mojo</groupId>
                <artifactId>sql-maven-plugin</artifactId>
                <version>1.5</version>
+            </plugin>
+            
+            <!-- Maven Release Plugin (Use a recent version for better Git Support) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <tagNameFormat>V@{project.version}</tagNameFormat>
+                </configuration>
+            </plugin>
+            
+            <!-- Disable doclint until RM-3150 is fixed -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <configuration>
+                    <additionalparam>-Xdoclint:none</additionalparam>
+                </configuration>
             </plugin>
 
 			<!-- License header generation -->

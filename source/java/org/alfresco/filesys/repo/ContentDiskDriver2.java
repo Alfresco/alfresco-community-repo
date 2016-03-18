@@ -2988,6 +2988,15 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
             
             lockKeeper.removeLock(target);
             
+            if(nodeService.hasAspect(target, ContentModel.ASPECT_NO_CONTENT))
+            {
+                if(logger.isDebugEnabled())
+                {
+                    logger.debug("removed no content aspect");
+                }
+                nodeService.removeAspect(target, ContentModel.ASPECT_NO_CONTENT);
+            }
+            
             if(tempFile.isChanged()) 
             {
                 tempFile.flushFile();
@@ -3085,16 +3094,6 @@ public class ContentDiskDriver2 extends  AlfrescoDiskDriver implements ExtendedD
                     writer.setMimetype(mimetype);
                     writer.setEncoding(encoding);
                     writer.putContent(tempFile.getFile());
-                    
-                    // remove ASPECT_NO_CONTENT after content is present
-                    if(nodeService.hasAspect(target, ContentModel.ASPECT_NO_CONTENT))
-                    {
-                        if(logger.isDebugEnabled())
-                        {
-                            logger.debug("removed no content aspect");
-                        }
-                        nodeService.removeAspect(target, ContentModel.ASPECT_NO_CONTENT);
-                    }
                 } // if content changed
             }
         }

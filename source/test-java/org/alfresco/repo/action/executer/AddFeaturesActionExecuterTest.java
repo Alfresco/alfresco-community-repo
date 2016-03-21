@@ -18,15 +18,21 @@
  */
 package org.alfresco.repo.action.executer;
 
+import java.util.List;
+import java.util.Locale;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ActionImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
+import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * Add features action execution test
@@ -108,5 +114,38 @@ public class AddFeaturesActionExecuterTest extends BaseSpringTest
         
         // Check that the node now has the classifiable aspect applied
         assertTrue(this.nodeService.hasAspect(this.nodeRef, ContentModel.ASPECT_CLASSIFIABLE));
+    }
+    
+    /**
+     * MNT-15802
+     */
+    public void testCheckLocalizedParamDefintionWithConstraint()
+    {
+        // test for other than default locale
+        I18NUtil.setLocale(Locale.GERMAN);
+
+        ActionDefinition actionDef = executer.getActionDefinition();
+
+        List<ParameterDefinition> paramDef = actionDef.getParameterDefinitions();
+        assertNotNull(paramDef);
+
+        String constraintName = paramDef.get(0).getParameterConstraintName();
+        assertNotNull(constraintName);
+        assertEquals(AddFeaturesActionExecuter.PARAM_CONSTRAINT, constraintName);
+
+        // test for other than default locale
+        I18NUtil.setLocale(Locale.ITALY);
+
+        actionDef = executer.getActionDefinition();
+
+        paramDef = actionDef.getParameterDefinitions();
+        assertNotNull(paramDef);
+
+        constraintName = paramDef.get(0).getParameterConstraintName();
+        assertNotNull(constraintName);
+        assertEquals(AddFeaturesActionExecuter.PARAM_CONSTRAINT, constraintName);
+
+        I18NUtil.setLocale(Locale.getDefault());
+
     }
 }

@@ -48,6 +48,8 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
     implements InitializingBean
 {    
 
+    static final int DEFAULT_MAX_LIST_INVITATIONS_RETURN_SIZE = 200;
+
     /** The invitation service */
     private InvitationService invitationService;
     
@@ -101,7 +103,13 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
      * List the open invitations.
      * props specifies optional properties to constrain the search.
      * 
-     * @param props props
+     * By default, if no "resultsLimit" property is specified in the props argument,
+     * this method will return a maximum of DEFAULT_MAX_LIST_INVITATIONS_RETURN_SIZE (200) results
+     * 
+     * @param props inviteeUserName
+     * @param props resourceName
+     * @param props resourceType
+     * @param props invitationType
      *
      * @return the invitations
      */
@@ -109,7 +117,9 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
     public ScriptInvitation<?>[] listInvitations(Scriptable props)
     {
         InvitationSearchCriteriaImpl crit = new InvitationSearchCriteriaImpl();
-
+        
+        int resultsLimit = DEFAULT_MAX_LIST_INVITATIONS_RETURN_SIZE;
+        
         if (props.has("resourceName", props))
         {
             crit.setResourceName((String)props.get("resourceName", props));
@@ -127,6 +137,21 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
             String invitationType = (String)props.get("invitationType", props);
             crit.setInvitationType(InvitationType.valueOf(invitationType));
         }
+        if (props.has("resultsLimit", props))
+        {
+            String resultsLimitStr = (String) props.get("resultsLimit", props);
+            try
+            {
+                if (resultsLimitStr != null && !resultsLimitStr.isEmpty())
+                {
+                    resultsLimit = Integer.parseInt(resultsLimitStr);
+                }
+            }
+            catch (Exception e)
+            {
+                // ignore any parse exceptions; no need to log them
+            }
+        }
     
         //MNT-9905 Pending Invites created by one site manager aren't visible to other site managers
         String currentUser = AuthenticationUtil.getRunAsUser();
@@ -136,12 +161,12 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
         if (siteShortName != null && (SiteModel.SITE_MANAGER).equals(siteService.getMembersRole(siteShortName, currentUser)))
         {
             final InvitationSearchCriteriaImpl criteria = crit;
-
+            final int resultsLimitFinal = resultsLimit;
             RunAsWork<List<Invitation>> runAsSystem = new RunAsWork<List<Invitation>>()
             {
                 public List<Invitation> doWork() throws Exception
                 {
-                    return invitationService.searchInvitation(criteria);
+                    return invitationService.searchInvitation(criteria, resultsLimitFinal);
                 }
             };
 
@@ -149,7 +174,7 @@ public class ScriptInvitationService extends BaseScopableProcessorExtension
         }
         else
         {
-            invitations = invitationService.searchInvitation(crit);
+            invitations = invitationService.searchInvitation(crit, resultsLimit);
         }
         
         ScriptInvitation<?>[] ret = new ScriptInvitation[invitations.size()];

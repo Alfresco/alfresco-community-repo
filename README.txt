@@ -68,3 +68,8 @@ This dependency will either be loaded from your local .m2 cache or from Nexus if
 You want to always use the version in your local cache - this means either doing a daily build at the root project level
 that pushes a new copy of the correct version into your cache, or alternatively you could run mvn with the
 --no-snapshot-dependency (or -nsu) option, which won't try to download a newer version.
+
+Code Formatting:
+----------------
+
+This project follows the usual Alfresco Coding Standards. If you use Eclipse or IntelliJ, there are settings inside the ide-config directory for you to import.

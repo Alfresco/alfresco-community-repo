@@ -125,9 +125,19 @@ public class PublicApiAlfrescoCmisService extends AlfrescoCmisServiceImpl
     @Override
     public RepositoryInfo getRepositoryInfo(String repositoryId, ExtensionsData extension)
     {
-        checkRepositoryId(repositoryId);
+    	Network network = null;
+    	
+    	try
+    	{
+            checkRepositoryId(repositoryId);
+            network = networksService.getNetwork(repositoryId);
+    	}
+    	catch(Exception e)
+    	{
+    		// ACE-2540: Avoid information leak. Same response if repository does not exist or if user is not a member
+            throw new CmisObjectNotFoundException("Unknown repository '" + repositoryId + "'!");
+    	}
 
-        Network network = networksService.getNetwork(repositoryId);
         return getRepositoryInfo(network);
     }
 

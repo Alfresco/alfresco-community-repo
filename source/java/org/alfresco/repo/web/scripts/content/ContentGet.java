@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -26,6 +26,7 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -158,7 +159,11 @@ public class ContentGet extends StreamContent implements ServletContextAware
             if (userAgent.contains("msie") || userAgent.contains(" trident/"))
             {
                 String mimeType = contentService.getReader(nodeRef, propertyQName).getMimetype();
-                if (!mimetypeService.getMimetypes(FilenameUtils.getExtension(name)).contains(mimeType))
+                    // If we have an unknown mime type (usually marked as binary)
+                    // it is better to stay with the file extension we currently have
+                    // see MNT-14412
+                    if (!mimeType.toLowerCase().equals(MimetypeMap.MIMETYPE_BINARY)
+                            && !mimetypeService.getMimetypes(FilenameUtils.getExtension(name)).contains(mimeType))
                 {
                     name = FilenameUtils.removeExtension(name) + FilenameUtils.EXTENSION_SEPARATOR_STR + mimetypeService.getExtension(mimeType); 
                 }

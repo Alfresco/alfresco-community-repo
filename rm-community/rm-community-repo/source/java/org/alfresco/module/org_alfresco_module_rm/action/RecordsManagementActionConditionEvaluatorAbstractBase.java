@@ -189,7 +189,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
             ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setDescriptionKey(getDescriptionKey());
             ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setAdhocPropertiesAllowed(getAdhocPropertiesAllowed());
             ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setConditionEvaluator(name);
-            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setParameterDefinitions(getParameterDefintions());
+            ((RecordsManagementActionConditionDefinitionImpl)actionConditionDefinition).setLocalizedParameterDefinitions(getLocalizedParameterDefinitions());
         }
         return this.actionConditionDefinition;
     }

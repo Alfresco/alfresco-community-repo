@@ -94,4 +94,11 @@ public class DelegateAction extends RMActionExecuterAbstractBase
     {
         return delegateActionExecuter.getActionDefinition().getParameterDefinitions();
     }
+
+    @Override
+    protected void addParameterDefinitions(List<ParameterDefinition> paramList)
+    {
+        super.addParameterDefinitions(paramList);
+        paramList.addAll(delegateActionExecuter.getActionDefinition().getParameterDefinitions());
+    }
 }

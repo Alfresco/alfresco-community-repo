@@ -33,6 +33,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestActionPropertySubs;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.ParameterDefinition;
 
 /**
  * Extended action service test.
@@ -177,5 +178,55 @@ public class ExtendedActionServiceTest extends BaseRMTestCase
                 return null;
             }
         });
+    }
+
+    /**
+     * RM-3000 
+     * Tests if the actions extending DelegateAction inherit the parameter definitions from their delegate action 
+     */
+    public void testDelegateActions()
+    {
+        /*
+         * set-property-value is the delegate action for setPropertyValue.
+         */
+        assertTrue(inheritsAllParameterDefinitions("setPropertyValue", "set-property-value"));
+
+        /*
+         * rmscript is the delegate action for executeScript.
+         */
+        assertTrue(inheritsAllParameterDefinitions("executeScript", "rmscript"));
+
+        /*
+         * mail is the delegate action for sendEmail.
+         */
+        assertTrue(inheritsAllParameterDefinitions("sendEmail", "mail"));
+    }
+    
+    /**
+     * Checks if the action definition rmAction inherits all the parameter definitions from delegateAction.
+     * @param rmAction The name of the action definition extending DelegateAction.
+     * @param delegateAction The name of the delegate action.
+     * @return true if rmAction inherits all the parameter definitions from delegateAction. false otherwise.
+     */
+    private boolean inheritsAllParameterDefinitions(String rmAction, String delegateAction)
+    {
+        /*
+         * Get the parameter definition list for rmAction
+         */
+        ActionDefinition rmActionDefinition = actionService.getActionDefinition(rmAction);
+        assertNotNull(rmActionDefinition);
+        List<ParameterDefinition> rmParameterDefinitions = rmActionDefinition.getParameterDefinitions();
+
+        /*
+         * Get the parameter definition list for the delegate action
+         */
+        ActionDefinition delegateActionDefinition = actionService.getActionDefinition(delegateAction);
+        assertNotNull(delegateActionDefinition);
+        List<ParameterDefinition> delegateParameterDefinitions = delegateActionDefinition.getParameterDefinitions();
+
+        /*
+         * Check if rmActionDefinition contains all the elements in  rmActionDefinition
+         */
+        return rmParameterDefinitions.containsAll(delegateParameterDefinitions);
     }
 }

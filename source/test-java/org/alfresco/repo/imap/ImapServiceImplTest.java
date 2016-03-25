@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -60,6 +60,7 @@ import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderUtil;
@@ -237,6 +238,7 @@ public class ImapServiceImplTest extends TestCase
         {
             e.printStackTrace();
         }
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
 
     private void importInternal(String acpName, NodeRef space)
@@ -276,11 +278,18 @@ public class ImapServiceImplTest extends TestCase
         return present;
     }
     
-    private void reauthenticate(String name, String password)
+    private void reauthenticate(final String name, final String password)
     {
-        authenticationService.invalidateTicket(authenticationService.getCurrentTicket());
-        authenticationService.clearCurrentSecurityContext();
-        authenticationService.authenticate(name, password.toCharArray());
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute()
+            {
+                authenticationService.invalidateTicket(authenticationService.getCurrentTicket());
+                authenticationService.clearCurrentSecurityContext();
+                authenticationService.authenticate(name, password.toCharArray());
+                return null;
+            }
+        });
     }
 
     public void testGetFolder() throws Exception

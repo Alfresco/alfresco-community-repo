@@ -648,6 +648,11 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
      */
     protected void renderPdfDocumentLongRunningTest(AbstractNodeModifyingRunnable nodeModifyingRunnable) throws Exception
     {
+        renderPdfDocumentLongRunningTest(nodeModifyingRunnable, false);
+    }
+    
+    protected void renderPdfDocumentLongRunningTest(AbstractNodeModifyingRunnable nodeModifyingRunnable, boolean joinNodeModifyingThread) throws Exception
+    {
         this.setComplete();
         this.endTransaction();
         
@@ -697,6 +702,11 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
         // Give a moment for roll back of rendition and commit of node modification to occur
         Thread.sleep(3000);
         
+        if (joinNodeModifyingThread)
+        {
+            nodeModifyingThread.join();
+        }
+        
         // Note that the node modification is retried on failure by RetryingTransactionHelper
         // and will always succeed after the rendition is complete, but due to the 
         // sleep in AbstractNodeModifyingRunnable isModificationUnblocked will still 
@@ -732,7 +742,7 @@ public class RenditionServiceIntegrationTest extends BaseAlfrescoSpringTest
                     checkOutCheckInService.checkout(nodeWithDocContent);
                 }
             };
-            renderPdfDocumentLongRunningTest(new CheckoutRunnable(nodeWithDocContent));
+            renderPdfDocumentLongRunningTest(new CheckoutRunnable(nodeWithDocContent), true);
         }
         finally
         {

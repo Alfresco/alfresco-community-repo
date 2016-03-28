@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2016 Alfresco Software Limited.
+ * Copyright (C) 2005-2011 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -612,20 +612,6 @@ public class PublishingRestApiTest extends BaseWebScriptTest
         {
             json.put(UNPUBLISH_NODES, publishNodes);
         }
-        
-        //schedule in the next second and 1/2
-        Calendar schedule = Calendar.getInstance();
-        schedule.add(Calendar.MILLISECOND, 1500);
-        Date scheduledTime = schedule.getTime();
-        String scheduledTimeZone = schedule.getTimeZone().getID();
-        
-        JSONObject scheduleJson = new JSONObject();
-        scheduleJson.put(WebScriptUtil.DATE_TIME, ISO8601DateFormat.format(scheduledTime));
-        scheduleJson.put(WebScriptUtil.FORMAT, WebScriptUtil.ISO8601);
-        scheduleJson.put(WebScriptUtil.TIME_ZONE, scheduledTimeZone);
-        
-        json.put(SCHEDULED_TIME, scheduleJson);
-        
         if (statusMessage != null)
         {
             json.put(STATUS_UPDATE, buildStatusUpdate(statusMessage, node, statusChannels));

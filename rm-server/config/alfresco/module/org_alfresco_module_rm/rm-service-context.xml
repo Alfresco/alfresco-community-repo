@@ -770,6 +770,7 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="contentService" ref="contentService"/>
+        <property name="transactionService" ref="transactionService"/>
         <property name="dictionaryRepositoryBootstrap" ref="dictionaryRepositoryBootstrap"/>
         <property name="customisableTypes">
            <list>

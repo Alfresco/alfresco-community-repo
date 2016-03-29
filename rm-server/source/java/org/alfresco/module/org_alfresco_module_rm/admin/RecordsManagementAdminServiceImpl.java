@@ -63,6 +63,7 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
@@ -83,6 +84,7 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -157,6 +159,9 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 
     /** Policy component */
     private PolicyComponent policyComponent;
+    
+    /** Transaction service */
+    private TransactionService transactionService;
 
     /** Policy delegates */
     private ClassPolicyDelegate<BeforeCreateReference> beforeCreateReferenceDelegate;
@@ -220,6 +225,14 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     {
         this.dictonaryRepositoryBootstrap = dictonaryRepositoryBootstrap;
     }
+	
+	/**
+	 * @param transactionService   transaction service
+	 */
+	public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
 
 	/**
 	 * Initialisation method
@@ -253,8 +266,26 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event)
     {
-        // initialise custom properties
-        initCustomMap();          
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // initialise custom properties
+                initCustomMap();
+                
+                return null;
+            }
+         });                 
+    }
+    
+    /**
+     * Helper method to indicate whether the custom map is initialised or not.
+     * 
+     * @return  boolean true if initialised, false otherwise
+     */
+    public boolean isCustomMapInit()
+    {
+        return isCustomMapInit;
     }
 
 	/**

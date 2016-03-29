@@ -168,7 +168,6 @@
       <!-- init caveatConfig behaviours  -->
       <property name="caveatConfigService" ref="caveatConfigService"/>
       <property name="customEmailMappingService" ref="customEmailMappingService"/>
-      <property name="recordsManagementAdminService" ref="RecordsManagementAdminService"/>
    </bean>
 
    <!-- Java script interface for rm caveat config-->

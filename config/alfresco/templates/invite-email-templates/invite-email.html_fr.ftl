@@ -40,7 +40,7 @@
                                                 </td>
                                                 <td>
                                                    <div style="font-size: 22px; padding-bottom: 4px;">
-                                                      Vous avez été invité à rejoindre le site '${args["siteName"]}'
+                                                      Vous avez été invité à rejoindre le site '${args["siteName"]?html}'
                                                    </div>
                                                    <div style="font-size: 13px;">
                                                       ${date?datetime?string.full}
@@ -52,7 +52,7 @@
                                              <p>Bonjour ${inviteePerson.properties["cm:firstName"]!""},</p>
                                              
                                              <p>${inviterPerson.properties["cm:firstName"]!""} ${inviterPerson.properties["cm:lastName"]!""} 
-                                             vous invite à rejoindre le site ${args["siteName"]} avec un rôle de ${args["inviteeSiteRole"]}.</p>
+                                             vous invite à rejoindre le site ${args["siteName"]?html} avec un rôle de ${args["inviteeSiteRole"]}.</p>
                                              
                                              <p>Cliquez sur ce lien pour accepter l'invitation de ${inviterPerson.properties["cm:firstName"]!""} :<br />
                                              <br /><a href="${args["acceptLink"]}">${args["acceptLink"]}</a></p>

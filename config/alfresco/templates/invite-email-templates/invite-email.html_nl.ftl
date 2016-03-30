@@ -49,25 +49,25 @@
                                              </tr>
                                           </table>
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
-                                             <p>Hi ${inviteePerson.properties["cm:firstName"]!""},</p>
+                                             <p>Hi ${inviteePerson.properties["cm:firstName"]?html!""},</p>
       
-                                             <p>${inviterPerson.properties["cm:firstName"]!""} ${inviterPerson.properties["cm:lastName"]!""} 
+                                             <p>${inviterPerson.properties["cm:firstName"]?html!""} ${inviterPerson.properties["cm:lastName"]?html!""} 
                                              heeft u uitgenodigd voor de site <b>${args["siteName"]?html}</b> met de rol van ${args["inviteeSiteRole"]}.</p>
                                              
-                                             <p>Klik op deze koppeling om de uitnodiging van ${inviterPerson.properties["cm:firstName"]!""} te accepteren:<br />
+                                             <p>Klik op deze koppeling om de uitnodiging van ${inviterPerson.properties["cm:firstName"]?html!""} te accepteren:<br />
                                              <br /><a href="${args["acceptLink"]}">${args["acceptLink"]}</a></p>
                                              
                                              <#if args["inviteeGenPassword"]?exists>
                                              <p>Er is een account voor u gemaakt met deze aanmeldingsgegevens:<br />
-                                             <br />Gebruikersnaam: <b>${args["inviteeUserName"]}</b>
-                                             <br />Wachtwoord: <b>${args["inviteeGenPassword"]}</b>
+                                             <br />Gebruikersnaam: <b>${args["inviteeUserName"]?html}</b>
+                                             <br />Wachtwoord: <b>${args["inviteeGenPassword"]?html}</b>
                                              </p>
                                              
                                              <p><b>U wordt geadviseerd het wachtwoord te wijzigen wanneer u zich voor de eerste keer aanmeldt.</b><br />
                                              U kunt dit doen door naar <b>Mijn profiel</b> te gaan en <b>Wachtwoord wijzigen</b> te selecteren. </p>
                                              </#if>
                                              
-                                             <p>Klik op deze koppeling als u de uitnodiging van ${inviterPerson.properties["cm:firstName"]!""}, wilt afwijzen:<br />
+                                             <p>Klik op deze koppeling als u de uitnodiging van ${inviterPerson.properties["cm:firstName"]?html!""}, wilt afwijzen:<br />
                                              <br /><a href="${args["rejectLink"]}">${args["rejectLink"]}</a></p>
                                              
                                              <p>Hoogachtend,<br />

@@ -49,25 +49,25 @@
                                              </tr>
                                           </table>
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
-                                             <p>${inviteePerson.properties["cm:firstName"]!""} 様</p>
+                                             <p>${inviteePerson.properties["cm:firstName"]?html!""} 様</p>
                                              
-                                             <p>${inviterPerson.properties["cm:lastName"]!""} ${inviterPerson.properties["cm:firstName"]!""} 
+                                             <p>${inviterPerson.properties["cm:lastName"]?html!""} ${inviterPerson.properties["cm:firstName"]?html!""} 
                                              さんから、${args["siteName"]?html} サイトに「${args["inviteeSiteRole"]}」の役割で参加するよう招待を受けました。</p>
                                              
-                                             <p>次のリンクをクリックすると、${inviterPerson.properties["cm:firstName"]!""} さんの招待を承諾できます。<br />
+                                             <p>次のリンクをクリックすると、${inviterPerson.properties["cm:firstName"]?html!""} さんの招待を承諾できます。<br />
                                              <br /><a href="${args["acceptLink"]}">${args["acceptLink"]}</a></p>
                                              
                                              <#if args["inviteeGenPassword"]?exists>
                                              <p>あなたのアカウントが作成されました。ログイン情報は次のとおりです。<br />
-                                             <br />ユーザー名: ${args["inviteeUserName"]}
-                                             <br />パスワード: ${args["inviteeGenPassword"]}
+                                             <br />ユーザー名: ${args["inviteeUserName"]?html}
+                                             <br />パスワード: ${args["inviteeGenPassword"]?html}
                                              </p>
                                              
                                              <p>パスワードは、初回ログイン時に変更するようにしてください。
                                              パスワードを変更するには、[<b>あなたのプロフィール</b>]に移動して、[<b>パスワードの変更</b>]をクリックします。</p>
                                              </#if>
                                              
-                                             <p>${inviterPerson.properties["cm:firstName"]!""} さんの招待を辞退する場合は、次のリンクをクリックしてください。<br />
+                                             <p>${inviterPerson.properties["cm:firstName"]?html!""} さんの招待を辞退する場合は、次のリンクをクリックしてください。<br />
                                              <br /><a href="${args["rejectLink"]}">${args["rejectLink"]}</a></p>
                                              
                                              <p>ご利用ありがとうございます。<br />

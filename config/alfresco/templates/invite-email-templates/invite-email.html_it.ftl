@@ -49,25 +49,25 @@
                                              </tr>
                                           </table>
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
-                                             <p>Caro ${inviteePerson.properties["cm:firstName"]!""},</p>
+                                             <p>Caro ${inviteePerson.properties["cm:firstName"]?html!""},</p>
                                              
-                                             <p>${inviterPerson.properties["cm:firstName"]!""} ${inviterPerson.properties["cm:lastName"]!""} 
+                                             <p>${inviterPerson.properties["cm:firstName"]?html!""} ${inviterPerson.properties["cm:lastName"]?html!""} 
                                              ti ha  inviatato a partecipare al sito ${args["siteName"]?html} con il ruolo di ${args["inviteeSiteRole"]}.</p>
                                              
-                                             <p>Fare clic sul collegamento per accettare l’invito dell'${inviterPerson.properties["cm:firstName"]!""}':<br />
+                                             <p>Fare clic sul collegamento per accettare l’invito dell'${inviterPerson.properties["cm:firstName"]?html!""}':<br />
                                              <br /><a href="${args["acceptLink"]}">${args["acceptLink"]}</a></p>
                                              
                                              <#if args["inviteeGenPassword"]?exists>
                                              <p>Account creato. I dettagli di accesso sono:<br />
-                                             <br />Nome utente: ${args["inviteeUserName"]}
-                                             <br />Password: ${args["inviteeGenPassword"]}
+                                             <br />Nome utente: ${args["inviteeUserName"]?html}
+                                             <br />Password: ${args["inviteeGenPassword"]?html}
                                              </p>
                                              
                                              <p>Si consiglia di cambiare la password quando si effettua l'eccesso per la prima volta.
                                              È possibile effettuare questa operazione andando a <b>Il mio profilo</b> e selezionando <b>Cambia password</b>.</p>
                                              </#if>
                                              
-                                             <p>Per rifiutare l’invito dell’${inviterPerson.properties["cm:firstName"]!""}, fare clic su questo collegamento:<br />
+                                             <p>Per rifiutare l’invito dell’${inviterPerson.properties["cm:firstName"]?html!""}, fare clic su questo collegamento:<br />
                                              <br /><a href="${args["rejectLink"]}">${args["rejectLink"]}</a></p>
                                              
                                              <p>Cordiali saluti,<br />

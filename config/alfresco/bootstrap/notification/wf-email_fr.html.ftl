@@ -58,10 +58,10 @@
                                                 </#if>
                                              </p>
                                              
-                                             <p><b>"${args.workflowTitle}"</b></p>
+                                             <p><b>"${args.workflowTitle?html}"</b></p>
                                              
                                              <#if (args.workflowDescription)??>                                             
-                                             	<p>${args.workflowDescription}</p>                                             
+                                             	<p>${args.workflowDescription?html}</p>                                             
                                              </#if>
                                              
                                              <p>

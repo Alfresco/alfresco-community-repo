@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <!-- RM v2.4 Patches -->
+
+   <bean id="rm.filePlanContainerRuleInheritancePatch"
+         parent="rm.parentModulePatch"
+         class="org.alfresco.module.org_alfresco_module_rm.patch.v24.RMv24FilePlanContainerRuleInheritancePatch">
+      <property name="description" value="Break rule inheritance for existing file plan containers."/>
+      <property name="fixesToSchema" value="2400"/>
+      <property name="targetSchema" value="2401"/>
+	  <property name="filePlanService" ref="filePlanService"/>
+      <property name="nodeService" ref="nodeService"/>
+   </bean>
+   
+</beans>

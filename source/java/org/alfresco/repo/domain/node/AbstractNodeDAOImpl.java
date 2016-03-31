@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -1390,6 +1390,37 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
 
         if (!allowAuditableAspect) addAuditableAspect = false;
         
+        Long id = newNodeImplInsert(node);
+        node.setId(id);
+        
+        Set<QName> nodeAspects = null;
+        if (addAuditableAspect)
+        {
+            Long auditableAspectQNameId = qnameDAO.getOrCreateQName(ContentModel.ASPECT_AUDITABLE).getFirst();
+            insertNodeAspect(id, auditableAspectQNameId);
+            nodeAspects = Collections.<QName>singleton(ContentModel.ASPECT_AUDITABLE);
+        }
+        else
+        {
+            nodeAspects = Collections.<QName>emptySet();
+        }
+        
+        // Lock the node and cache
+        node.lock();
+        nodesCache.setValue(id, node);
+        //  Pre-populate some of the other caches so that we don't immediately query
+        setNodeAspectsCached(id, nodeAspects);
+        setNodePropertiesCached(id, Collections.<QName, Serializable>emptyMap());
+        
+        if (isDebugEnabled)
+        {
+            logger.debug("Created new node: \n" + "   " + node);
+        }
+        return node;
+    }
+    
+    protected Long newNodeImplInsert(NodeEntity node)
+    {
         Long id = null;
         Savepoint savepoint = controlDAO.createSavepoint("newNodeImpl");
         try
@@ -1425,32 +1456,8 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                 throw new NodeExistsException(dbTargetNode.getNodePair(), e);
             }
         }
-        node.setId(id);
         
-        Set<QName> nodeAspects = null;
-        if (addAuditableAspect)
-        {
-            Long auditableAspectQNameId = qnameDAO.getOrCreateQName(ContentModel.ASPECT_AUDITABLE).getFirst();
-            insertNodeAspect(id, auditableAspectQNameId);
-            nodeAspects = Collections.<QName>singleton(ContentModel.ASPECT_AUDITABLE);
-        }
-        else
-        {
-            nodeAspects = Collections.<QName>emptySet();
-        }
-        
-        // Lock the node and cache
-        node.lock();
-        nodesCache.setValue(id, node);
-        //  Pre-populate some of the other caches so that we don't immediately query
-        setNodeAspectsCached(id, nodeAspects);
-        setNodePropertiesCached(id, Collections.<QName, Serializable>emptyMap());
-        
-        if (isDebugEnabled)
-        {
-            logger.debug("Created new node: \n" + "   " + node);
-        }
-        return node;
+        return id;
     }
 
     @Override

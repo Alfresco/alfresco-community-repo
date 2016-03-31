@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -35,6 +35,7 @@ import javax.sql.DataSource;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoMySQLClusterNDBDialect;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.util.LogUtil;
 import org.alfresco.util.TempFileProvider;
@@ -535,6 +536,23 @@ public class ScriptExecutorImpl implements ScriptExecutor
                         {
                             // note: enable bootstrap on MySQL 5.5 (eg. for auto-generated SQL, such as JBPM)
                             sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=InnoDB");
+                        }
+                        
+                        if (this.dialect != null && this.dialect instanceof AlfrescoMySQLClusterNDBDialect)
+                        {
+                            // note: enable bootstrap on MySQL Cluster NDB
+                            /*
+                        	 * WARNING: Experimental/unsupported - see AlfrescoMySQLClusterNDBDialect !
+                    		 */
+                        	sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=NDB"); // belts-and-braces
+                            sql = sql.replaceAll("(?i)ENGINE=InnoDB", "ENGINE=NDB");
+                            
+                            sql = sql.replaceAll("(?i) BIT ", " BOOLEAN ");
+                            sql = sql.replaceAll("(?i) BIT,", " BOOLEAN,");
+                            
+                            sql = sql.replaceAll("(?i) string_value text", " string_value VARCHAR(1024)");
+                            
+                            sql = sql.replaceAll("(?i) VARCHAR(4000)", "TEXT(4000)");
                         }
                         
                         Object fetchedVal = executeStatement(connection, sql, fetchColumnName, optional, line, scriptFile);

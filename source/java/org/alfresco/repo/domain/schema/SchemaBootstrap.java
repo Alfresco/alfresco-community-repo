@@ -1,6 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
-
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -70,6 +69,7 @@ import org.alfresco.repo.admin.patch.AppliedPatch;
 import org.alfresco.repo.admin.patch.Patch;
 import org.alfresco.repo.admin.patch.impl.SchemaUpgradeScriptPatch;
 import org.alfresco.repo.content.filestore.FileContentWriter;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoMySQLClusterNDBDialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoOracle9Dialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSybaseAnywhereDialect;
@@ -1478,6 +1478,23 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                             sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=InnoDB");
                         }
                         
+                        if (this.dialect != null && this.dialect instanceof AlfrescoMySQLClusterNDBDialect)
+                        {
+                            // note: enable bootstrap on MySQL Cluster NDB
+                            /*
+                        	 * WARNING: Experimental/unsupported - see AlfrescoMySQLClusterNDBDialect !
+                    		 */
+                        	sql = sql.replaceAll("(?i)TYPE=InnoDB", "ENGINE=NDB"); // belts-and-braces
+                            sql = sql.replaceAll("(?i)ENGINE=InnoDB", "ENGINE=NDB");
+                            
+                            sql = sql.replaceAll("(?i) BIT ", " BOOLEAN ");
+                            sql = sql.replaceAll("(?i) BIT,", " BOOLEAN,");
+                            
+                            sql = sql.replaceAll("(?i) string_value text", " string_value VARCHAR(1024)");
+                            
+                            sql = sql.replaceAll("(?i) VARCHAR(4000)", "TEXT(4000)");
+                        }
+                        
                         Object fetchedVal = executeStatement(connection, sql, fetchColumnName, optional, line, scriptFile);
                         if (fetchVarName != null && fetchColumnName != null)
                         {
@@ -1634,6 +1651,12 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // string_value text,
             // serializable_value blob,
             maxStringLength = Integer.MAX_VALUE;
+        }
+        else if (dialect instanceof AlfrescoMySQLClusterNDBDialect)
+        {
+            // string_value varchar(1024),
+            // serializable_value blob,
+            maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
         }
         else if (dialect instanceof AlfrescoOracle9Dialect)
         {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.AbstractNodeDAOImpl;
@@ -37,6 +38,7 @@ import org.alfresco.repo.domain.node.Node;
 import org.alfresco.repo.domain.node.NodeAspectsEntity;
 import org.alfresco.repo.domain.node.NodeAssocEntity;
 import org.alfresco.repo.domain.node.NodeEntity;
+import org.alfresco.repo.domain.node.NodeExistsException;
 import org.alfresco.repo.domain.node.NodeIdAndAclId;
 import org.alfresco.repo.domain.node.NodePropertyEntity;
 import org.alfresco.repo.domain.node.NodePropertyKey;
@@ -1719,7 +1721,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     }
     
     /**
-     * MySQL-specific DAO overrides
+     * MySQL (InnoDB) specific DAO overrides
      */
     public static class MySQL extends NodeDAOImpl
     {
@@ -1741,6 +1743,58 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             txnQuery.setMaxCommitTime(toCommitTime);
             int numDeleted = template.delete(DELETE_TXNS_UNUSED_MYSQL, txnQuery);
             return numDeleted;
+        }
+    }
+    
+    /**
+     * MySQL Cluster NDB specific DAO overrides
+     *
+     * WARNING: Experimental/unsupported - see AlfrescoMySQLClusterNDBDialect !
+     * 
+     * @author janv
+     */
+    public static class MySQLClusterNDB extends MySQL
+    {
+        @Override
+        protected Long newNodeImplInsert(NodeEntity node)
+        {
+        	Long id = null;
+            try
+            {
+            	// We need to handle existing deleted nodes.
+                NodeRef targetNodeRef = node.getNodeRef();
+                Node dbTargetNode = selectNodeByNodeRef(targetNodeRef);
+                if (dbTargetNode != null)
+                {
+	                if (dbTargetNode.getDeleted(qnameDAO))
+	                {
+	                    Long dbTargetNodeId = dbTargetNode.getId();
+	                    // This is OK.  It happens when we create a node that existed in the past.
+	                    // Remove the row completely
+	                    deleteNodeProperties(dbTargetNodeId, (Set<Long>) null);
+	                    deleteNodeById(dbTargetNodeId);
+	                }
+	                else
+	                {
+	                    // A live node exists.
+	                	throw new NodeExistsException(dbTargetNode.getNodePair(), null);
+	                }
+                }
+                
+                id = insertNode(node);
+            }
+            catch (Throwable e)
+            {
+            	if (e instanceof NodeExistsException)
+            	{
+            		throw e;
+            	}
+            	
+                // There does not appear to be any row that could prevent an insert
+                throw new AlfrescoRuntimeException("Failed to insert new node: " + node, e);
+            }
+            
+            return id;
         }
     }
 

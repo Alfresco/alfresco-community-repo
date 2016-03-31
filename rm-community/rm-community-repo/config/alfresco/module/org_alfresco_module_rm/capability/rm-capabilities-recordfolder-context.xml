@@ -112,9 +112,10 @@
       <property name="conditions">
          <map>
             <entry key="capabilityCondition.filling" value="true"/>
-            <entry key="capabilityCondition.cutoff" value="false"/>
             <entry key="capabilityCondition.frozen" value="false"/>
+      <!--  <entry key="capabilityCondition.cutoff" value="false"/>
             <entry key="capabilityCondition.closed" value="false"/>
+           -->   
          </map>
       </property>
    </bean>
@@ -128,6 +129,12 @@
          <list>
             <ref bean="rmDeleteRecordFolderCapability"/>
          </list>
+      </property>
+      <property name="conditions">
+         <map>
+            <entry key="capabilityCondition.cutoff" value="false"/>
+            <entry key="capabilityCondition.closed" value="false"/>
+         </map>
       </property>
       <property name="targetCapability" ref="rmCreateRecordFolderCapability"/>
    </bean>

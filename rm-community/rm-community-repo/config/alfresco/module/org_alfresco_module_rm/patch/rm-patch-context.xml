@@ -9,7 +9,7 @@
       <property name="description" value="RM patch executer"/>
       <property name="sinceVersion" value="2.2"/>
       <property name="executeOnceOnly" value="false"/>
-      <property name="moduleSchema" value="2001"/>
+      <property name="moduleSchema" value="2401"/>
       <property name="attributeService" ref="AttributeService" />
       <property name="dependsOn">
          <list>
@@ -28,10 +28,7 @@
 
    <!-- import patch implementations -->
 
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v20-context.xml"/>
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v21-context.xml"/>
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v22-context.xml"/>
-   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v23-context.xml"/>
+   <import resource="classpath:alfresco/module/org_alfresco_module_rm/patch/rm-patch-v*-context.xml"/>
 
    <!-- compatibility beans -->
 

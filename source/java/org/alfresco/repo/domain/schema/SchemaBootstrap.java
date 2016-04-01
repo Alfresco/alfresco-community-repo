@@ -172,6 +172,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     public static final int DEFAULT_LOCK_RETRY_WAIT_SECONDS = 5;
     
     public static final int DEFAULT_MAX_STRING_LENGTH = 1024;
+    public static final int DEFAULT_MAX_STRING_LENGTH_NDB = 400;
 
     private static volatile int maxStringLength = DEFAULT_MAX_STRING_LENGTH;
     private Dialect dialect;
@@ -181,15 +182,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
     /**
      * @see #DEFAULT_MAX_STRING_LENGTH
      */
-    private static final void setMaxStringLength(int length)
+    private static final void setMaxStringLength(int length, Dialect dialect)
     {
-        if (length < 1024)
+        int max = (dialect instanceof AlfrescoMySQLClusterNDBDialect ? DEFAULT_MAX_STRING_LENGTH_NDB : DEFAULT_MAX_STRING_LENGTH);
+        
+        if (length < max)
         {
-            throw new AlfrescoRuntimeException("The maximum string length must >= 1024 characters.");
+            throw new AlfrescoRuntimeException("The maximum string length must >= "+max+" characters.");
         }
         SchemaBootstrap.maxStringLength = length;
     }
-
+    
     /**
      * @return      Returns the maximum number of characters that a string field can be
      */
@@ -1490,7 +1493,7 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                             sql = sql.replaceAll("(?i) BIT ", " BOOLEAN ");
                             sql = sql.replaceAll("(?i) BIT,", " BOOLEAN,");
                             
-                            sql = sql.replaceAll("(?i) string_value text", " string_value VARCHAR(1024)");
+                            sql = sql.replaceAll("(?i) string_value text", " string_value VARCHAR("+DEFAULT_MAX_STRING_LENGTH_NDB+")");
                             
                             sql = sql.replaceAll("(?i) VARCHAR(4000)", "TEXT(4000)");
                         }
@@ -1646,17 +1649,17 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // serializable_value varbinary(8192),
             maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
         }
+        else if (dialect instanceof AlfrescoMySQLClusterNDBDialect)
+        {
+            // string_value varchar(400),
+            // serializable_value blob,
+            maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH_NDB;
+        }
         else if (dialect instanceof MySQLInnoDBDialect)
         {
             // string_value text,
             // serializable_value blob,
             maxStringLength = Integer.MAX_VALUE;
-        }
-        else if (dialect instanceof AlfrescoMySQLClusterNDBDialect)
-        {
-            // string_value varchar(1024),
-            // serializable_value blob,
-            maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
         }
         else if (dialect instanceof AlfrescoOracle9Dialect)
         {
@@ -1670,13 +1673,14 @@ public class SchemaBootstrap extends AbstractLifecycleBean
             // serializable_value bytea,
             maxStringLength = SchemaBootstrap.DEFAULT_MAX_STRING_LENGTH;
         }
-        SchemaBootstrap.setMaxStringLength(maxStringLength);
+        
+        SchemaBootstrap.setMaxStringLength(maxStringLength, dialect);
         SerializableTypeHandler.setSerializableType(serializableType);
         
         // Now override the maximum string length if it was set directly
         if (maximumStringLength > 0)
         {
-            SchemaBootstrap.setMaxStringLength(maximumStringLength);
+            SchemaBootstrap.setMaxStringLength(maximumStringLength, dialect);
         }
     }
     

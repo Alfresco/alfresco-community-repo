@@ -71,6 +71,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
     private static final String ERR_DELIMITER_SET_BEFORE_SQL = "schema.update.err.delimiter_set_before_sql";
     private static final String ERR_DELIMITER_INVALID = "schema.update.err.delimiter_invalid";
     private static final int DEFAULT_MAX_STRING_LENGTH = 1024;
+    private static final int DEFAULT_MAX_STRING_LENGTH_NDB = 400;
     private static volatile int maxStringLength = DEFAULT_MAX_STRING_LENGTH;
     private Dialect dialect;
     private ResourcePatternResolver rpr = new PathMatchingResourcePatternResolver(this.getClass().getClassLoader());
@@ -550,7 +551,7 @@ public class ScriptExecutorImpl implements ScriptExecutor
                             sql = sql.replaceAll("(?i) BIT ", " BOOLEAN ");
                             sql = sql.replaceAll("(?i) BIT,", " BOOLEAN,");
                             
-                            sql = sql.replaceAll("(?i) string_value text", " string_value VARCHAR(1024)");
+                            sql = sql.replaceAll("(?i) string_value text", " string_value VARCHAR("+DEFAULT_MAX_STRING_LENGTH_NDB+")");
                             
                             sql = sql.replaceAll("(?i) VARCHAR(4000)", "TEXT(4000)");
                         }

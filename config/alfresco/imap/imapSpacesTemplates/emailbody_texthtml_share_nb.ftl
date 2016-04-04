@@ -58,24 +58,24 @@
 </head>
 <body>
 <hr/>
-<h1> Dokument (navn):   ${document.name} </h1>
+<h1> Dokument (navn):   ${document.name?html} </h1>
 <hr/>
 <fieldset>
 <legend> Metadata </legend>
 <table class="description">
    <#if document.properties.title?exists>
-                     <tr><td valign="top">Tittel:</td><td>${document.properties.title}</td></tr>
+                     <tr><td valign="top">Tittel:</td><td>${document.properties.title?html}</td></tr>
    <#else>
                      <tr><td valign="top">Tittel:</td><td>&nbsp;</td></tr>
    </#if>
    <#if document.properties.description?exists>
-                     <tr><td valign="top">Beskrivelse:</td><td>${document.properties.description}</td></tr>
+                     <tr><td valign="top">Beskrivelse:</td><td>${document.properties.description?html}</td></tr>
    <#else>
                      <tr><td valign="top">Beskrivelse:</td><td>&nbsp;</td></tr>
    </#if>
-                     <tr><td>Oppretter:</td><td>${document.properties.creator}</td></tr>
+                     <tr><td>Oppretter:</td><td>${document.properties.creator?html}</td></tr>
                      <tr><td>Opprettet:</td><td>${document.properties.created?datetime}</td></tr>
-                     <tr><td>Modifikator:</td><td>${document.properties.modifier}</td></tr>
+                     <tr><td>Modifikator:</td><td>${document.properties.modifier?html}</td></tr>
                      <tr><td>Modifisert:</td><td>${document.properties.modified?datetime}</td></tr>
                      <tr><td>Størrelse:</td><td>${document.size / 1024} kB</td></tr>
 </table>
@@ -84,13 +84,13 @@
 <legend> Lenker for innhold </legend>
 <table class="links">
    <tr>
-   <td>Mappe for innhold:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
+   <td>Mappe for innhold:</td><td><a href="${contentFolderUrl?html}">${contentFolderUrl?html}</a></td>
    </tr>
    <tr>
-   <td>URL for innhold:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
+   <td>URL for innhold:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}</a></td>
    </tr>
    <tr>
-   <td>URL til nedlasting:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>URL til nedlasting:</td><td><a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}?a=true</a></td>
    </tr>
 </table>
 </fieldset>

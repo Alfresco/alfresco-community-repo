@@ -58,24 +58,24 @@
 </head>
 <body>
 <hr/>
-<h1> Документ (имя): ${document.name} </h1>
+<h1> Документ (имя): ${document.name?html} </h1>
 <hr/>
 <fieldset>
 <legend> Метаданные </legend>
 <table class="description">
    <#if document.properties.title?exists>
-                     <tr><td valign="top">Название:</td><td> ${document.properties.title}</td></tr>
+                     <tr><td valign="top">Название:</td><td> ${document.properties.title?html}</td></tr>
    <#else>
                      <tr><td valign="top">Название:</td><td>&nbsp;</td></tr>
    </#if>
    <#if document.properties.description?exists>
-                     <tr><td valign="top">Описание:</td><td> ${document.properties.description}</td></tr>
+                     <tr><td valign="top">Описание:</td><td> ${document.properties.description?html}</td></tr>
    <#else>
                      <tr><td valign="top">Описание:</td><td>&nbsp;</td></tr>
    </#if>
-                     <tr><td>Создатель:</td><td> ${document.properties.creator}</td></tr>
+                     <tr><td>Создатель:</td><td> ${document.properties.creator?html}</td></tr>
                      <tr><td>Создано:</td><td> ${document.properties.created?datetime}</td></tr>
-                     <tr><td>Редактор:</td><td> ${document.properties.modifier}</td></tr>
+                     <tr><td>Редактор:</td><td> ${document.properties.modifier?html}</td></tr>
                      <tr><td>Изменено:</td><td> ${document.properties.modified?datetime}</td></tr>
                      <tr><td>Размер:</td><td> ${document.size / 1024} КБ</td></tr>
 </table>
@@ -84,13 +84,13 @@
 <legend> Ссылки </legend>
 <table class="links">
    <tr>
-   <td>Папка с содержимым:</td><td> <a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
+   <td>Папка с содержимым:</td><td> <a href="${contentFolderUrl?html}">${contentFolderUrl?html}</a></td>
    </tr>
    <tr>
-   <td>Ссылка на документ:</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
+   <td>Ссылка на документ:</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}</a></td>
    </tr>
    <tr>
-   <td>Ссылка на загрузку документа:</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>Ссылка на загрузку документа:</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}?a=true</a></td>
    </tr>
 </table>
 </fieldset>

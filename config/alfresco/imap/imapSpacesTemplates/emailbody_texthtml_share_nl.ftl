@@ -58,24 +58,24 @@
 </head>
 <body>
 <hr/>
-<h1> Document(naam): ${document.name} </h1>
+<h1> Document(naam): ${document.name?html} </h1>
 <hr/>
 <fieldset>
 <legend> Metagegevens </legend>
 <table class="description">
    <#if document.properties.title?exists>
-                     <tr><td valign="top">Titel:</td><td> ${document.properties.title}</td></tr>
+                     <tr><td valign="top">Titel:</td><td> ${document.properties.title?html}</td></tr>
    <#else>
                      <tr><td valign="top">Titel:</td><td>&nbsp;</td></tr>
    </#if>
    <#if document.properties.description?exists>
-                     <tr><td valign="top">Beschrijving:</td><td> ${document.properties.description}</td></tr>
+                     <tr><td valign="top">Beschrijving:</td><td> ${document.properties.description?html}</td></tr>
    <#else>
                      <tr><td valign="top">Beschrijving:</td><td>&nbsp;</td></tr>
    </#if>
-                     <tr><td>Maker:</td><td> ${document.properties.creator}</td></tr>
+                     <tr><td>Maker:</td><td> ${document.properties.creator?html}</td></tr>
                      <tr><td>Gemaakt:</td><td> ${document.properties.created?datetime}</td></tr>
-                     <tr><td>Wijziger:</td><td> ${document.properties.modifier}</td></tr>
+                     <tr><td>Wijziger:</td><td> ${document.properties.modifier?html}</td></tr>
                      <tr><td>Gewijzigd:</td><td> ${document.properties.modified?datetime}</td></tr>
                      <tr><td>Grootte:</td><td> ${document.size / 1024} kB</td></tr>
 </table>
@@ -84,13 +84,13 @@
 <legend> Contentkoppelingen </legend>
 <table class="links">
    <tr>
-   <td>Contentmap:</td><td> <a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
+   <td>Contentmap:</td><td> <a href="${contentFolderUrl?html}">${contentFolderUrl?html}</a></td>
    </tr>
    <tr>
-   <td>Content-URL:</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
+   <td>Content-URL:</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}</a></td>
    </tr>
    <tr>
-   <td>Download-URL:</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>Download-URL:</td><td> <a href="${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}?a=true">${shareContextUrl}/proxy/alfresco/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}?a=true</a></td>
    </tr>
 </table>
 </fieldset>

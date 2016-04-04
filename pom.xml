@@ -80,6 +80,7 @@
         <profile>
             <id>enterprise</id>
             <modules>
+                <module>enterprise-war-for-ear</module>
                 <module>ear</module>
                 <module>enterprise-distribution</module>
                 <module>enterprise-update</module>

@@ -269,7 +269,7 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
      * @param form
      * @param nodeRef
      */
-    protected void addTransientProperties(Form form, final NodeRef nodeRef)
+    protected void addTransientProperties(final Form form, final NodeRef nodeRef)
     {
         if (recordService.isRecord(nodeRef))
         {
@@ -277,33 +277,36 @@ public class RecordsManagementNodeFormFilter extends RecordsManagementFormFilter
         }
 
         // Need to get the disposition schedule as the system user. See RM-1727.
-        DispositionSchedule ds = runAsSystem(new RunAsWork<DispositionSchedule>()
+        //Need to run all block as the system user, needed for disposition instructions, recordCategory and categoryId. See RM-3077.
+        runAsSystem(new RunAsWork<Void>()
         {
             @Override
-            public DispositionSchedule doWork()
+            public Void doWork() throws Exception
             {
-                return getDispositionService().getDispositionSchedule(nodeRef);
+                DispositionSchedule ds = getDispositionService().getDispositionSchedule(nodeRef);
+
+                if (ds != null)
+                {
+                    String instructions = ds.getDispositionInstructions();
+                    if (instructions != null)
+                    {
+                        addTransientPropertyField(form, TRANSIENT_DISPOSITION_INSTRUCTIONS, DataTypeDefinition.TEXT,
+                                    instructions);
+                    }
+
+                    NodeRef recordCategory = getDispositionService().getAssociatedRecordsManagementContainer(ds);
+                    if (recordCategory != null)
+                    {
+                        String categoryId = (String) nodeService.getProperty(recordCategory, PROP_IDENTIFIER);
+                        if (categoryId != null)
+                        {
+                            addTransientPropertyField(form, TRANSIENT_CATEGORY_ID, DataTypeDefinition.TEXT, categoryId);
+                        }
+                    }
+                }
+                return null;
             }
         });
-
-        if (ds != null)
-        {
-            String instructions = ds.getDispositionInstructions();
-            if (instructions != null)
-            {
-                addTransientPropertyField(form, TRANSIENT_DISPOSITION_INSTRUCTIONS, DataTypeDefinition.TEXT, instructions);
-            }
-
-            NodeRef recordCategory = getDispositionService().getAssociatedRecordsManagementContainer(ds);
-            if (recordCategory != null)
-            {
-                String categoryId = (String)nodeService.getProperty(recordCategory, PROP_IDENTIFIER);
-                if (categoryId != null)
-                {
-                    addTransientPropertyField(form, TRANSIENT_CATEGORY_ID, DataTypeDefinition.TEXT, categoryId);
-                }
-            }
-        }
     }
 
     /**

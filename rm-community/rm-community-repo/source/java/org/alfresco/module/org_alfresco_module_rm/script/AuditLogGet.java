@@ -158,6 +158,10 @@ public class AuditLogGet extends BaseAuditRetrievalWebScript
         if( targetNode == null )
         {
             targetNode = filePlanService.getFilePlanBySiteId(FilePlanService.DEFAULT_RM_SITE_ID);
+            if(targetNode == null)
+            {
+                throw new WebScriptException(Status.STATUS_NOT_FOUND, "The default RM site was not found");
+            }
         }
         return AccessStatus.ALLOWED.equals(
                 capabilityService.getCapabilityAccessState(targetNode, ACCESS_AUDIT_CAPABILITY));

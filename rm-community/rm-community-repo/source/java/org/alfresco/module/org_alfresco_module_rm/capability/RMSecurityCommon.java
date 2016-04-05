@@ -244,7 +244,8 @@ public class RMSecurityCommon implements ApplicationContextAware
 	        {
 		        // Get the file plan for the node
 		        NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
-		        if (hasViewCapability(filePlan) == AccessStatus.DENIED)
+		        if (filePlan != null &&
+		            hasViewCapability(filePlan) == AccessStatus.DENIED)
 		        {
 		            if (logger.isDebugEnabled())
 		            {

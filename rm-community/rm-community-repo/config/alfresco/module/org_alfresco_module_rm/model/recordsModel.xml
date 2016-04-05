@@ -41,9 +41,6 @@
          <title>Caveat Config</title>
          <parent>cm:content</parent>
          <archive>false</archive>
-         <mandatory-aspects>
-            <aspect>rma:filePlanComponent</aspect>
-         </mandatory-aspects>
       </type>
 
       <type name="rma:emailConfig">

@@ -411,7 +411,10 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
 
                 // File plan node reference
                 NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
-                result.put("filePlan", filePlan.toString());
+                if (filePlan != null)
+                {
+                    result.put("filePlan", filePlan.toString());
+                }
 
                 // Unfiled container node reference
                 NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);

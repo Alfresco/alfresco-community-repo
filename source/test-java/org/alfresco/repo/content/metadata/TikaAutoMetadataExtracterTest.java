@@ -22,6 +22,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -274,6 +275,7 @@ public void testImageVideo() throws Throwable {
       // Check regular Tika properties
       assertEquals(QUICK_TITLE, p.get(Metadata.COMMENT));
       assertEquals("canon-55-250, moscow-birds, serbor", p.get(Metadata.SUBJECT));
+      assertTrue(Arrays.equals(new String[] { "canon-55-250", "moscow-birds", "serbor" }, (String[]) p.get("dc:subject")));
       // Check namespace'd Tika properties
       assertEquals("12.54321", p.get("geo:lat"));
       assertEquals("-54.1234", p.get("geo:long"));

@@ -40,23 +40,23 @@
 </head>
 <body>
 <hr>
-<h1> 文件 （名）：  ${document.name} </h1>
+<h1> 文件 （名）：  ${document.name?html} </h1>
 <hr>
 <h2> 元数据 </h2>
 <table class="description">
    <#if document.properties.title?exists>
-                     <tr><td valign="top">标题：</td><td> ${document.properties.title}</td></tr>
+                     <tr><td valign="top">标题：</td><td> ${document.properties.title?html}</td></tr>
    <#else>
                      <tr><td valign="top">标题：</td><td>&nbsp;</td></tr>
    </#if>
    <#if document.properties.description?exists>
-                     <tr><td valign="top">说明：</td><td> ${document.properties.description}</td></tr>
+                     <tr><td valign="top">说明：</td><td> ${document.properties.description?html}</td></tr>
    <#else>
                      <tr><td valign="top">说明：</td><td>&nbsp;</td></tr>
    </#if>
-                     <tr><td>创建者：</td><td> ${document.properties.creator}</td></tr>
+                     <tr><td>创建者：</td><td> ${document.properties.creator?html}</td></tr>
                      <tr><td>创建时间：</td><td> ${document.properties.created?datetime}</td></tr>
-                     <tr><td>修改者：</td><td> ${document.properties.modifier}</tr>
+                     <tr><td>修改者：</td><td> ${document.properties.modifier?html}</tr>
                      <tr><td>修改时间：</td><td> ${document.properties.modified?datetime}</td></tr>
                      <tr><td>大小：</td><td> ${document.size / 1024} KB</td></tr>
 </table>
@@ -64,16 +64,16 @@
 <h2> 内容链接 </h2>
 <table class="links">
    <tr>
-   <td>内容文件夹：</td><td> <a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
+   <td>内容文件夹：</td><td> <a href="${contentFolderUrl?html}">${contentFolderUrl?html}</a></td>
    </tr>
    <tr>
-   <td>URL 内容：</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
+   <td>URL 内容：</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}</a></td>
    </tr>
    <tr>
-   <td>URL 下载：</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>URL 下载：</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}?a=true">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}?a=true</a></td>
    </tr>
    <tr>
-   <td>URL WebDAV：</td><td> <a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a></td>
+   <td>URL WebDAV：</td><td> <a href="${contextUrl}${document.webdavUrl?html}">${contextUrl}${document.webdavUrl?html}</a></td>
    </tr>
 </table>
 </body>

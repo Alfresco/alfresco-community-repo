@@ -93,7 +93,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     private CopyService copyService;
     private PersonService personService;
     private FileFolderService fileFolderService;
-
+    private AuthenticationComponent authenticationComponent;
     /**
      * Data used by the tests
      */
@@ -144,9 +144,28 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         this.nodeService = serviceRegistry.getNodeService();
         
         // Authenticate as system to create initial test data set
-        AuthenticationComponent authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
+        this.authenticationComponent = (AuthenticationComponent)this.applicationContext.getBean("authenticationComponent");
         authenticationComponent.setSystemUserAsCurrentUser();
-    
+        
+        RetryingTransactionCallback<Void> processInitWork = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                initTestData();
+                return null;
+            }
+        };
+        // do the init test data in a new retrying transaction because
+        // there may be problems with the DB that needs to be retried; 
+        // That is how Alfresco works, it relies on optimistic locking and retries
+        transactionService.getRetryingTransactionHelper().doInTransaction(processInitWork, false, true);
+
+    }
+
+    private void initTestData()
+    {
+        authenticationComponent.setSystemUserAsCurrentUser();
+        
         // Create the store and get the root node reference
         this.storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.currentTimeMillis());
         this.rootNodeRef = nodeService.getRootNode(storeRef);

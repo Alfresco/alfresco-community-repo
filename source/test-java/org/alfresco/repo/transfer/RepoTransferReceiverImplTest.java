@@ -845,10 +845,12 @@ public class RepoTransferReceiverImplTest extends BaseAlfrescoSpringTest
         /**
          * First transfer test here
          */
-        reset(mockedPolicyHandler);
         try
         {
             tran.doInTransaction(doFirstPrepareCB, false, true);
+            //MNT-15847 ensure that all onEndInboundTransfer calls from setupCB are not
+            // counted in validateFirstCB
+            reset(mockedPolicyHandler);
             tran.doInTransaction(doCommitCB, false, true);
             tran.doInTransaction(validateFirstCB, false, true);
         }

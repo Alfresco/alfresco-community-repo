@@ -103,6 +103,7 @@
         <property name="scriptService" ref="ScriptService" />
         <property name="namespaceService" ref="NamespaceService" />
         <property name="filePlanService" ref="FilePlanService" />
+        <property name="renditionService" ref="RenditionService" />
    </bean>
 
    <bean id="rma.record" class="org.alfresco.module.org_alfresco_module_rm.model.rma.aspect.RecordAspect" parent="rm.baseBehaviour">

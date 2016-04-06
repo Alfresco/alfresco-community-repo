@@ -226,14 +226,14 @@ public class FilePlanComponentAspect extends    BaseBehaviourBean
 
                     // If the node has any renditions, they inherit the file plan from their source node.
                     List<ChildAssociationRef> renditions = renditionService.getRenditions(nodeRef);
-                    NodeRef thumbnail;
+                    NodeRef rendition;
                     for (ChildAssociationRef chAssRef : renditions)
                     {
-                        thumbnail = chAssRef.getChildRef();
-                        if (nodeService.exists(thumbnail)) 
+                        rendition = chAssRef.getChildRef();
+                        if (nodeService.exists(rendition)) 
                         {
-                            // Apply file plan component aspect to thumbnail
-                            nodeService.addAspect(thumbnail, ASPECT_FILE_PLAN_COMPONENT, null);
+                            // Apply file plan component aspect to node's renditions
+                            nodeService.addAspect(rendition, ASPECT_FILE_PLAN_COMPONENT, null);
                         }
                     }
                 }

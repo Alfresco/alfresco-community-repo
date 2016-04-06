@@ -414,16 +414,16 @@ public class JSONConversionComponent extends    org.alfresco.repo.jscript.app.JS
                 if (filePlan != null)
                 {
                     result.put("filePlan", filePlan.toString());
-                }
 
-                // Unfiled container node reference
-                NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
-                if (unfiledRecordContainer != null)
-                {
-                    result.put("unfiledRecordContainer", unfiledRecordContainer.toString());
-                    result.put("properties", propertiesToJSON(unfiledRecordContainer, nodeService.getProperties(unfiledRecordContainer), useShortQName));
-                    QName type = fileFolderService.getFileInfo(unfiledRecordContainer).getType();
-                    result.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
+                    // Unfiled container node reference
+                    NodeRef unfiledRecordContainer = filePlanService.getUnfiledContainer(filePlan);
+                    if (unfiledRecordContainer != null)
+                    {
+                        result.put("unfiledRecordContainer", unfiledRecordContainer.toString());
+                        result.put("properties", propertiesToJSON(unfiledRecordContainer, nodeService.getProperties(unfiledRecordContainer), useShortQName));
+                        QName type = fileFolderService.getFileInfo(unfiledRecordContainer).getType();
+                        result.put("type", useShortQName ? type.toPrefixString(namespaceService) : type.toString());
+                    }
                 }
 
                 return result;

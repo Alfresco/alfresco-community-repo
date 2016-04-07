@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.recordfolder
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
-
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
@@ -37,7 +36,6 @@ import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
-
 import net.sf.acegisecurity.vote.AccessDecisionVoter;
 
 /**
@@ -47,8 +45,8 @@ import net.sf.acegisecurity.vote.AccessDecisionVoter;
  * @since 2.4
  *
  */
-public class DeleteRecordFolderTest extends BaseRMTestCase {
-
+public class DeleteRecordFolderTest extends BaseRMTestCase 
+{
     // delete a destroyed record folder
     public void testDeleteDestroyedRecordFolder() throws Exception
     {
@@ -84,12 +82,13 @@ public class DeleteRecordFolderTest extends BaseRMTestCase {
             }
         });
 
-        doTestInTransaction(new FailureTest()
+        doTestInTransaction(new Test<Void>()
         {
             @Override
-            public void run() throws Exception
+            public Void run() throws Exception
             {
                 fileFolderService.delete(testFolder);
+                return null;
             }
         });
     }

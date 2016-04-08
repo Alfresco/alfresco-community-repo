@@ -54,6 +54,7 @@ import org.alfresco.repo.domain.node.TransactionQueryEntity;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -63,6 +64,7 @@ import org.apache.ibatis.session.ResultContext;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.mybatis.spring.SqlSessionTemplate;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.util.Assert;
 
 
@@ -1755,6 +1757,12 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
      */
     public static class MySQLClusterNDB extends MySQL
     {
+        // eg. see 
+        // ArchiveAndRestoreTest.*, 
+        // LargeArchiveAndRestoreTest.testCreateAndRestore (also bumped MaxNoOfFiredTriggers from 4000 to 12000)
+        // DbNodeServiceImplTest.testNodeStatus
+        // MultilingualDocumentAspectTest.testDeleteNode 
+        // ...
         @Override
         protected Long newNodeImplInsert(NodeEntity node)
         {
@@ -1795,6 +1803,42 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
             }
             
             return id;
+        }
+        
+        // eg. see DbNodeServiceImplTest.testDuplicateCatch
+        @Override
+        protected Long newChildAssocImplInsert(final ChildAssocEntity assoc, final QName assocTypeQName, final String childNodeName)
+        {
+            try
+            {
+                Long id = insertChildAssoc(assoc);
+                return id;
+            }
+            catch (Throwable e)
+            {
+                // DuplicateChildNodeNameException implements DoNotRetryException.
+                
+                // Allow real DB concurrency issues (e.g. DeadlockLoserDataAccessException) straight through for a retry
+                if (e instanceof ConcurrencyFailureException)
+                {
+                    throw e;
+                }
+
+                // There are some cases - FK violations, specifically - where we DO actually want to retry.
+                // Detecting this is done by looking for the related FK names, 'fk_alf_cass_*' in the error message
+                String lowerMsg = e.getMessage().toLowerCase();
+                if (lowerMsg.contains("fk_alf_cass_"))
+                {
+                    throw new ConcurrencyFailureException("FK violation updating primary parent association:" + assoc, e); 
+                }
+                
+                // We assume that this is from the child cm:name constraint violation
+                throw new DuplicateChildNodeNameException(
+                        assoc.getParentNode().getNodeRef(),
+                        assocTypeQName,
+                        childNodeName,
+                        e);
+            }
         }
     }
 

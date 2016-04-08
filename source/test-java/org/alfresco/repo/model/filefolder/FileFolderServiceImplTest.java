@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -46,6 +46,7 @@ import org.alfresco.repo.dictionary.DictionaryBootstrap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
 import org.alfresco.repo.dictionary.M2Type;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoMySQLClusterNDBDialect;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl.InvalidTypeException;
 import org.alfresco.repo.node.integrity.IntegrityChecker;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -80,6 +81,7 @@ import org.alfresco.util.FileFilterMode;
 import org.alfresco.util.FileFilterMode.Client;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
+import org.hibernate.dialect.Dialect;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.surf.util.I18NUtil;
@@ -1736,7 +1738,7 @@ public class FileFolderServiceImplTest extends TestCase
         checkFileList(pageRes, 6, 0, expectedNames);
     }	
     
-    public void testMoveCopy3000Files() throws FileNotFoundException
+    public void testMoveCopyLotsOfFiles() throws FileNotFoundException
     {
         final String CONTAINING_FOLDER = "CONTAINING FOLDER " + GUID.generate(),
                      FOLDER_1 = "FOLDER 1 " + GUID.generate(),
@@ -1746,8 +1748,18 @@ public class FileFolderServiceImplTest extends TestCase
                  folder1 = fileFolderService.create(containingFolder.getNodeRef(), FOLDER_1, ContentModel.TYPE_FOLDER),
                  folder2 = fileFolderService.create(containingFolder.getNodeRef(), FOLDER_2, ContentModel.TYPE_FOLDER);
         
-        // create 3000 files within the folder
-        final int COUNT = 3000;
+        // create thousand(s) of files within the folder
+        int COUNT = 3000;
+        
+        Dialect dialect = (Dialect) ctx.getBean("dialect");
+        if (dialect instanceof AlfrescoMySQLClusterNDBDialect)
+        {
+            // note: to increase the file count on NDB, may need to further bump-up NDB cluster config
+            // eg. DataMemory, IndexMemory, MaxNoOfConcurrentOperations, ...
+            // also consider splitting into separate txns (eg. after each bulk create, move, delete, copy, ...)
+            COUNT = 1000;
+        }
+        
         for (int index = 0; index < COUNT; index++)
         {
             fileFolderService.create(folder1.getNodeRef(), "Name " + index, ContentModel.TYPE_CONTENT);
@@ -1778,11 +1790,13 @@ public class FileFolderServiceImplTest extends TestCase
         assertEquals(COUNT, fileFolderService.listFiles(folders.get(0).getNodeRef()).size());
         
         fileFolderService.delete(folder1.getNodeRef());
+        
         assertEquals(1, fileFolderService.list(containingFolder.getNodeRef()).size());
         
         folder1 = folders.get(0);
         // copy back
         FileInfo newFolder = fileFolderService.copy(folder1.getNodeRef(), containingFolder.getNodeRef(), null);
+        
         assertEquals(2, fileFolderService.list(containingFolder.getNodeRef()).size());
         assertEquals(COUNT, fileFolderService.list(newFolder.getNodeRef()).size());
     }

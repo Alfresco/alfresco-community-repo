@@ -1,0 +1,16 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+ <!-- Extend Imap Service -->
+   <bean id="rm.imapService" abstract="true" class="org.alfresco.repo.imap.ExtendedImapServiceImpl">
+      <property name="dictionaryService" ref="DictionaryService"/>
+      <property name="authenticationUtil" ref="AuthenticationUtil"/>
+   </bean>
+   <bean class="org.alfresco.util.BeanExtender">
+      <property name="beanName" value="imapService" />
+      <property name="extendingBeanName" value="rm.imapService" />
+   </bean>
+   
+</beans>

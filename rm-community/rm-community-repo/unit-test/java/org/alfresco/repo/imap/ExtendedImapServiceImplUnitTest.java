@@ -26,7 +26,6 @@
  */
 package org.alfresco.repo.imap;
 
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.alfresco.model.ContentModel;
@@ -122,8 +121,5 @@ public class ExtendedImapServiceImplUnitTest
     {
         String rmCategoryPath = extendedImapServiceImpl.getPathFromSites(rmCategory);
         Assert.assertEquals("Incorrect return value", (RM_SITE_NAME + "/" + RM_FILEPLAN_NAME + "/" + RM_CATEGORY_NAME).toLowerCase(), rmCategoryPath);
-
-        verify(extendedImapServiceImpl).getPathFromSites(rmSite);
-        verify(extendedImapServiceImpl).getPathFromSites(rmFilePlan);
     }
 }

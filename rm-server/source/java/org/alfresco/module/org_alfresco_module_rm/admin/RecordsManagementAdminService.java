@@ -43,11 +43,6 @@ import org.alfresco.service.namespace.QName;
 public interface RecordsManagementAdminService
 {
     /**
-     * Initialise the custom model
-     */
-    void initialiseCustomModel();
-
-    /**
      * Get a list of all registered customisable types and aspects.
      *
      * @return	{@link Set}<{@link QName}> QName's of customisable types and aspects

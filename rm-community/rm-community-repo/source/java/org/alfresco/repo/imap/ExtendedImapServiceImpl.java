@@ -54,12 +54,19 @@ public class ExtendedImapServiceImpl extends ImapServiceImpl
         this.dictionaryService = dictionaryService;
     }
 
+    public void setAuthenticationUtil(AuthenticationUtil authenticationUtil)
+    {
+        this.authenticationUtil = authenticationUtil;
+    }
+
+    @Override
     public void setPolicyFilter(BehaviourFilter policyBehaviourFilter)
     {
         this.policyBehaviourFilter = policyBehaviourFilter;
         super.setPolicyFilter(policyBehaviourFilter);
     }
 
+    @Override
     public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;

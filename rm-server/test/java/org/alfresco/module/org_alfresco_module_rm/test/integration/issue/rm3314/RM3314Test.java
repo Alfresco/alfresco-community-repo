@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -32,6 +32,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
  */
 public class RM3314Test extends BaseRMTestCase
 {
+	/** registry to record callback from test beans "test.rm3114.1" and "test.rm3114.2" */
     public static Map<String, Boolean> callback = new HashMap<String, Boolean>(2);
     
     /**
@@ -45,6 +46,14 @@ public class RM3314Test extends BaseRMTestCase
      */
     public void testListenersExecutedInTheCorrectOrder()
     {
+    	/**
+    	 * The related test beans will call back into the callback map showing
+    	 * whether at the end of their execution whether the custom model has been
+    	 * initialised or not.  Given the order in which these test beans are executed
+    	 * on spring context load, we would expect that .1 executes with the custom
+    	 * map unloaded, and the .2 with it loaded.
+    	 */
+    	
         assertFalse(callback.isEmpty());
         assertFalse(callback.get("test.rm3314.1"));
         assertTrue(callback.get("test.rm3314.2"));

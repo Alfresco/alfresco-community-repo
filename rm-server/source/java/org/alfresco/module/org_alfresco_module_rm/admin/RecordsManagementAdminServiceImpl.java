@@ -247,8 +247,8 @@ public class RecordsManagementAdminServiceImpl implements RecordsManagementAdmin
 	}
 
 	/**
-	 * Indicate that this application content listener must be executed with the highest 
-	 * precedence.
+	 * Indicate that this application content listener must be executed with the lowest 
+	 * precedence. (ie last)
 	 * 
 	 * @see Ordered#getOrder()
 	 */

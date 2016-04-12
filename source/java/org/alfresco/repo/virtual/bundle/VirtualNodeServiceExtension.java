@@ -102,7 +102,7 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
         if (Reference.isReference(nodeRef))
         {
             boolean isNodeProtocol = Reference.fromNodeRef(nodeRef).getProtocol().equals(Protocols.NODE.protocol);
-            if (VirtualContentModel.ASPECT_VIRTUAL.equals(aspectQName))
+            if (VirtualContentModel.ASPECT_VIRTUAL.equals(aspectQName) || ContentModel.ASPECT_TITLED.equals(aspectQName))
             {
                 return !isNodeProtocol;
             }

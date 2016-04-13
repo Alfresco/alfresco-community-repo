@@ -155,13 +155,13 @@
                 <!-- Check that we are not using the nightly build for a non snapshot release -->
                 <if>
                   <and>
-                    <matches string="${base.installer.version}" pattern="*nightlybuilds*"/>
+                    <matches string="${base.installer.version}" pattern=".*nightlybuilds.*"/>
                     <not>
-                        <matches string="${project.version}" pattern="*SNAPSHOT"/>
+                        <matches string="${project.version}" pattern="^.*SNAPSHOT$"/>
                     </not>
                   </and>
                   <then>
-                    <fail message="do not use nightlybuilds for a non snapshot release" />
+                    <fail message="do not use nightlybuilds as a base version for a non snapshot service pack or hotfix release" />
                   </then>
                 </if>
 

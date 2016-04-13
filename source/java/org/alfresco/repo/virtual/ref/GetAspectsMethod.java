@@ -22,6 +22,7 @@ package org.alfresco.repo.virtual.ref;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.node.db.traitextender.NodeServiceTrait;
 import org.alfresco.repo.virtual.ActualEnvironment;
 import org.alfresco.repo.virtual.ActualEnvironmentException;
@@ -46,6 +47,7 @@ public class GetAspectsMethod extends AbstractProtocolMethod<Set<QName>>
     {
         Set<QName> aspects = new HashSet<QName>();
         aspects.add(VirtualContentModel.ASPECT_VIRTUAL);
+        aspects.add(ContentModel.ASPECT_TITLED);
         return aspects;
     }
 

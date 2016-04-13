@@ -289,6 +289,10 @@
                 <!-- Easy mode -->
                 <actionGroup>
                     <actionList>
+                        <!-- Ensure default values in Easy mode -->
+                        <setInstallerVariable name="component(alfresco).parameter(sharded_solr).ask" value="${component(alfresco).parameter(sharded_solr).default}" />
+                        <setInstallerVariable name="component(alfresco).parameter(sharded_solr).value" value="${component(alfresco).parameter(sharded_solr).default}" />
+                        
                         <setInstallerVariable name="component(tomcat).parameter(tomcat_show_ports).value" value="0"/>
                         <setInstallerVariable name="component(libreofficecomponent).parameter(libreoffice_show_ports).value" value="0">
                             <ruleList>

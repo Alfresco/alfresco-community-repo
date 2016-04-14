@@ -817,9 +817,14 @@ public class VirtualNodeServiceExtension extends VirtualSpringBeanExtension<Node
                 }
 
                 NodeRef referenceNodeRef = reference.toNodeRef();
+                Map<QName, Serializable> refProperties = smartStore.getProperties(reference);
+                Serializable childName = refProperties.get(ContentModel.PROP_NAME);
+                QName childAssocQName = QName
+                            .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
+                                                           childName.toString());
                 ChildAssociationRef assoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS,
                                                                     parentNodeRef,
-                                                                    NodeArchiveService.QNAME_ARCHIVED_ITEM,
+                                                                    childAssocQName,
                                                                     referenceNodeRef,
                                                                     true,
                                                                     -1);

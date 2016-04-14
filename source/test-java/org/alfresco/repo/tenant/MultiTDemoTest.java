@@ -298,9 +298,12 @@ public class MultiTDemoTest extends TestCase
             }, tenantAdminName, tenantDomain);
         }
     }
-    
+
+    /**
+     * The test is ignored, see MNT-15976
+     */
     // note: needs to come before test10CreateCategories & test15COCIandSearch ?
-    public synchronized void test00_ALF_17681() throws Exception
+    public synchronized void ignoreTest00_ALF_17681() throws Exception
     {
         // The issue was found on Lucene
         final String tenantDomain = TEST_RUN+".alf17681";

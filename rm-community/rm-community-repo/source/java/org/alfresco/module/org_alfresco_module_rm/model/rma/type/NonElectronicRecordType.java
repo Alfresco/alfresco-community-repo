@@ -27,7 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
@@ -74,15 +73,13 @@ public class NonElectronicRecordType extends BaseBehaviourBean implements NodeSe
                 final NodeRef child = nodeRef;
                 if (nodeService.exists(child))
                 {
-                    QName childType = nodeService.getType(child);
                     NodeRef parentRef = nodeService.getPrimaryParent(child).getParentRef();
                     QName parentType = nodeService.getType(parentRef);
-                    boolean isContentSubType = dictionaryService.isSubClass(childType, ContentModel.TYPE_CONTENT);
                     boolean isUnfiledRecordContainer = parentType
                                 .equals(RecordsManagementModel.TYPE_UNFILED_RECORD_CONTAINER);
                     boolean isUnfiledRecordFolder = parentType
                                 .equals(RecordsManagementModel.TYPE_UNFILED_RECORD_FOLDER);
-                    if (isContentSubType && (isUnfiledRecordContainer || isUnfiledRecordFolder))
+                    if (isUnfiledRecordContainer || isUnfiledRecordFolder)
                     {
                         if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
                         {

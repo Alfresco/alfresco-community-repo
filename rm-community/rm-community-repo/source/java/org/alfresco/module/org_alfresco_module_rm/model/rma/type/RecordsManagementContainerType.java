@@ -135,8 +135,10 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                 {
                     QName childType = nodeService.getType(child);
 
-                    // We only care about "folder" or sub-types
-                    if (dictionaryService.isSubClass(childType, ContentModel.TYPE_FOLDER))
+                    // We only care about "folder" or sub-types that are not hidden.
+                    // Some modules use hidden files to store information (see RM-3283)
+                    if (dictionaryService.isSubClass(childType, ContentModel.TYPE_FOLDER) &&
+                            !nodeService.hasAspect(child, ContentModel.ASPECT_HIDDEN))
                     {
                         if (dictionaryService.isSubClass(childType, ContentModel.TYPE_SYSTEM_FOLDER))
                         {

@@ -66,6 +66,9 @@
       <property name="recordService" ref="RecordService" />
       <property name="recordFolderService" ref="recordFolderService" />
    </bean>
+   <bean id="rma.nonElectionicDocument" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.NonElectronicRecordType" parent="rm.baseBehaviour">
+      <property name="recordService" ref="RecordService" />
+   </bean>
 
    <bean id="rma.filePlan" class="org.alfresco.module.org_alfresco_module_rm.model.rma.type.FilePlanType" parent="rm.baseBehaviour">
       <property name="identifierService" ref="recordsManagementIdentifierService"/>

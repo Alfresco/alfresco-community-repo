@@ -20,10 +20,4 @@
          <context-root>/</context-root>
      </web>
    </module>
-   <module>
-     <web>
-         <web-uri>_vti_bin.war</web-uri>
-         <context-root>/_vti_bin</context-root>
-     </web>
-   </module>
 </application>

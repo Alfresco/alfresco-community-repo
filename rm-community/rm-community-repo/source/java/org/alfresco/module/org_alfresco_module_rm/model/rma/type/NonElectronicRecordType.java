@@ -41,6 +41,12 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
+/**
+ * rma:nonElectronicDocument behaviour bean.
+ *
+ * @author silviudinuta
+ * @since 2.4
+ */
 @BehaviourBean(defaultType = "rma:nonElectronicDocument")
 public class NonElectronicRecordType extends BaseBehaviourBean implements NodeServicePolicies.OnUpdateNodePolicy
 {

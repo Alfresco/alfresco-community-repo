@@ -430,8 +430,11 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
                     }
                 }
 
-                // cache result in transaction
-                transactionCache.put(nodeRef, result);
+                // cache result in transaction if result is not null
+                if (result != null)
+                {
+                    transactionCache.put(nodeRef, result);
+                }
             }
         }
 

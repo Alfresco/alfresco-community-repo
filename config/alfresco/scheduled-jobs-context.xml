@@ -327,4 +327,26 @@
             <value>${system.cronJob.startDelayMinutes}</value>
         </property>
     </bean>
+    
+    <!-- Fixed ACL Updater -->
+    
+    <bean id="fixedAclUpdaterJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+        <property name="jobClass">
+            <value>org.alfresco.repo.domain.permissions.FixedAclUpdaterJob</value>
+        </property>
+        <property name="jobDataAsMap">
+            <map>
+                <entry key="fixedAclUpdater">
+                    <ref bean="fixedAclUpdater" />
+                </entry>
+            </map>
+        </property>
+    </bean>
+    
+   <bean id="fixedAclUpdaterTrigger" class="org.alfresco.util.CronTriggerBean">
+        <property name="jobDetail" ref="fixedAclUpdaterJobDetail" />
+        <property name="scheduler" ref="schedulerFactory" />
+        <property name="cronExpression" value="${system.fixedACLsUpdater.cronExpression}" />
+    </bean>
+    
 </beans>

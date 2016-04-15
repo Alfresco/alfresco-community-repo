@@ -34,6 +34,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.domain.permissions.AclDAO;
 import org.alfresco.repo.node.db.traitextender.NodeServiceTrait;
+import org.alfresco.repo.domain.permissions.FixedAclUpdater;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -148,6 +149,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     protected AclDAO aclDaoComponent;
     
     protected PermissionReference allPermissionReference;
+    
+    protected FixedAclUpdater fixedAclUpdater;
 
     protected boolean anyDenyDenies = false;
 
@@ -271,7 +274,12 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     {
         this.aclDaoComponent = aclDaoComponent;
     }
-
+    
+    public void setFixedAclUpdater(FixedAclUpdater fixedAclUpdater)
+    {
+        this.fixedAclUpdater = fixedAclUpdater;
+    }
+    
     /**
      * Set the permissions access cache.
      * 
@@ -1032,6 +1040,31 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     {
         NodeRef actualRef = tenantService.getName(nodeRef);
         permissionsDaoComponent.setInheritParentPermissions(actualRef, inheritParentPermissions);
+        accessCache.clear();
+    }
+    
+    public void setInheritParentPermissions(NodeRef nodeRef, final boolean inheritParentPermissions, boolean asyncCall)
+    {
+        final NodeRef actualRef = tenantService.getName(nodeRef);
+        if (asyncCall)
+        {
+            //use transaction resource to determine later on in ADMAccessControlListDAO.setFixedAcl if asynchronous call may be required
+            AlfrescoTransactionSupport.bindResource(FixedAclUpdater.FIXED_ACL_ASYNC_CALL_KEY, true);
+            permissionsDaoComponent.setInheritParentPermissions(actualRef, inheritParentPermissions);
+            //check if asynchronous call was required
+            Boolean asyncCallRequired = (Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY);
+            if (asyncCallRequired != null && asyncCallRequired)
+            {
+                //after transaction is committed FixedAclUpdater will be started in a new thread to process pending nodes 
+                AlfrescoTransactionSupport.bindListener(fixedAclUpdater);
+            }
+        }
+        else
+        {
+            //regular method call
+            permissionsDaoComponent.setInheritParentPermissions(actualRef, inheritParentPermissions);
+        }
+        
         accessCache.clear();
     }
 

@@ -2790,9 +2790,10 @@ public class ADMLuceneTest extends TestCase implements DictionaryListener
     }
 
     /**
+     * The test is ignored, see MNT-15976
      * @throws Exception
      */
-    public void testMTDeleteIssue() throws Exception
+    public void ignoreTestMTDeleteIssue() throws Exception
     {
         luceneFTS.pause();
         testTX.commit();

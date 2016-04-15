@@ -431,7 +431,7 @@ public class MoveRecordFolderTest extends BaseRMTestCase
             public void test(NodeRef testFolder) throws Exception
             {
                 // take a look at the move capability
-                Capability moveCapability = capabilityService.getCapability("Move");
+                Capability moveCapability = capabilityService.getCapability("MoveRecordFolder");
                 assertEquals(AccessDecisionVoter.ACCESS_DENIED, moveCapability.evaluate(testFolder, destination));
             }
         });

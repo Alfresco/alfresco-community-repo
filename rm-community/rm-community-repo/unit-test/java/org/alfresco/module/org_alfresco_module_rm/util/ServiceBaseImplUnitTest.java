@@ -26,17 +26,24 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.util;
 
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
+import org.springframework.context.ApplicationContext;
 
 /**
  * Service Base unit test.
@@ -44,10 +51,27 @@ import org.mockito.Mock;
  * @author Roxana Lucanu
  * @since 2.4
  */
-public class ServiceBaseImplUnitTest extends BaseUnitTest
+public class ServiceBaseImplUnitTest
 {
     @InjectMocks private ServiceBaseImpl serviceBase;
+
+    @Mock(name="nodeService") private NodeService mockedNodeService;
+    @Mock(name="dictionaryService") private DictionaryService mockedDictionaryService;
+    @Mock(name="transactionalResourceHelper") private TransactionalResourceHelper mockedTransactionalResourceHelper;
+    @Mock(name="applicationContext") protected ApplicationContext mockedApplicationContext;
     @Mock private Map<Object, Object> mockedCache;
+
+    /**
+     * Test method setup
+     */
+    @Before
+    public void before() throws Exception
+    {
+        MockitoAnnotations.initMocks(this);
+        // setup application context
+        doReturn(mockedNodeService).when(mockedApplicationContext).getBean("dbNodeService");
+        
+    }
     
     /**
      * Given a node that is not a record
@@ -57,8 +81,12 @@ public class ServiceBaseImplUnitTest extends BaseUnitTest
     @Test
     public void getFilePlan()
     {
-        NodeRef nodeRef = generateNodeRef(TYPE_FILE_PLAN);
+        NodeRef nodeRef = new NodeRef("test://node/");
 
+        when(mockedNodeService.getType(nodeRef))
+            .thenReturn(ContentModel.TYPE_CONTENT);
+        when(mockedDictionaryService.isSubClass(ContentModel.TYPE_CONTENT, RecordsManagementModel.TYPE_FILE_PLAN))
+            .thenReturn(false);
         when(mockedTransactionalResourceHelper.getMap("rm.servicebase.getFilePlan"))
             .thenReturn(mockedCache);
         when(mockedCache.containsKey(nodeRef)).thenReturn(false);

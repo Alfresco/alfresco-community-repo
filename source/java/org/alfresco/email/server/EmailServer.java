@@ -303,18 +303,8 @@ public abstract class EmailServer extends AbstractLifecycleBean
             usage();
             return;
         }
-        AbstractApplicationContext context = null;
-        try 
-        {
-            context = new ClassPathXmlApplicationContext(args);
-        } catch (BeansException e) 
-        {
-            System.err.println("Erro create context: " + e);
-            usage();
-            return;
-        }
         
-        try
+        try (AbstractApplicationContext context = new ClassPathXmlApplicationContext(args))
         {
             if (!context.containsBean("emailServer")) 
             {
@@ -342,14 +332,14 @@ public abstract class EmailServer extends AbstractLifecycleBean
                 }
             }
         }
+        catch (BeansException e) 
+        {
+            System.err.println("Error creating context: " + e);
+            usage();
+        }
         catch (InterruptedException e)
         {
         }
-        finally
-        {
-            context.close();
-        }
-
     }
 
     private static void usage()

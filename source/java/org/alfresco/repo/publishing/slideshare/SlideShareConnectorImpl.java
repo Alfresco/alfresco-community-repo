@@ -1,19 +1,3 @@
-/*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
- *
- * This file is part of Alfresco, but is derived from a file 
- * Copyright 2008 The JSlideShare Team 
- * 
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Alfresco is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
- */
 
 package org.alfresco.repo.publishing.slideshare;
 

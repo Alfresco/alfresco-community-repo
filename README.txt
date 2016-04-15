@@ -59,6 +59,16 @@ In order to refesh out of date license source headers run the following command:
 mvn clean install -Dlicense.update.dryrun=false
 
 
+Running tests against latest Aikau snapshot:
+--------------------------------------------
+
+The latest Aikau snapshot can be pulled by running the following command in rm-community:
+
+   mvn clean install -DskipTests -Dalfresco.aikau.version=LATEST -U
+
+Thereafter start the Share instance and run automation tests as described above.
+
+
 SNAPSHOT dependencies:
 ----------------------
 
@@ -68,6 +78,7 @@ This dependency will either be loaded from your local .m2 cache or from Nexus if
 You want to always use the version in your local cache - this means either doing a daily build at the root project level
 that pushes a new copy of the correct version into your cache, or alternatively you could run mvn with the
 --no-snapshot-dependency (or -nsu) option, which won't try to download a newer version.
+
 
 Code Formatting:
 ----------------

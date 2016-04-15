@@ -27,20 +27,24 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Map;
-
-import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.model.ContentModel;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
+import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.MockAuthenticationUtilHelper;
 import org.alfresco.module.org_alfresco_module_rm.util.AuthenticationUtil;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.util.GUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
@@ -50,13 +54,20 @@ import org.mockito.MockitoAnnotations;
 /**
  * @author silviudinuta
  */
-public class NonElectronicRecordTypeUnitTest extends BaseUnitTest
+public class NonElectronicRecordTypeUnitTest implements RecordsManagementModel, ContentModel
 {
 
     @InjectMocks
     NonElectronicRecordType nonElectronicRecordType;
+
     @Mock
     AuthenticationUtil mockAuthenticationUtil;
+
+    @Mock
+    RecordService mockedRecordService;
+
+    @Mock
+    NodeService mockedNodeService;
 
     @Before
     public void setUp()
@@ -65,13 +76,19 @@ public class NonElectronicRecordTypeUnitTest extends BaseUnitTest
         MockAuthenticationUtilHelper.setup(mockAuthenticationUtil);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testOnUpdateWithAspectsAlreadyPresent()
     {
-        NodeRef nodeRef = generateNodeRef();
-        NodeRef parentNodeRef=generateNodeRef();
-        ChildAssociationRef generateChildAssociationRef = generateChildAssociationRef(parentNodeRef, nodeRef);
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
+        when(mockedNodeService.exists(eq(nodeRef))).thenReturn(true);
+
+        NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
+        when(mockedNodeService.exists(eq(parentNodeRef))).thenReturn(true);
+
+        ChildAssociationRef generateChildAssociationRef = mock(ChildAssociationRef.class);
+        doReturn(parentNodeRef).when(generateChildAssociationRef).getParentRef();
+        doReturn(nodeRef).when(generateChildAssociationRef).getChildRef();
+
         when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(generateChildAssociationRef);
         when(mockedNodeService.getType(parentNodeRef)).thenReturn(TYPE_UNFILED_RECORD_FOLDER);
         when(mockedNodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT)).thenReturn(true);
@@ -79,17 +96,23 @@ public class NonElectronicRecordTypeUnitTest extends BaseUnitTest
 
         nonElectronicRecordType.onUpdateNode(nodeRef);
 
-        verify(mockedNodeService, never()).addAspect(eq(nodeRef), eq(ASPECT_FILE_PLAN_COMPONENT), any(Map.class));
-        verify(mockedRecordService, never()).makeRecord(eq(nodeRef));
+        verify(mockedNodeService, never()).addAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT, null);
+        verify(mockedRecordService, never()).makeRecord(nodeRef);
     }
 
-    @SuppressWarnings("unchecked")
     @Test
     public void testOnUpdateWithoutTheAspects()
     {
-        NodeRef nodeRef = generateNodeRef();
-        NodeRef parentNodeRef=generateNodeRef();
-        ChildAssociationRef generateChildAssociationRef = generateChildAssociationRef(parentNodeRef, nodeRef);
+        NodeRef nodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
+        when(mockedNodeService.exists(eq(nodeRef))).thenReturn(true);
+
+        NodeRef parentNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, GUID.generate());
+        when(mockedNodeService.exists(eq(parentNodeRef))).thenReturn(true);
+
+        ChildAssociationRef generateChildAssociationRef = mock(ChildAssociationRef.class);
+        doReturn(parentNodeRef).when(generateChildAssociationRef).getParentRef();
+        doReturn(nodeRef).when(generateChildAssociationRef).getChildRef();
+
         when(mockedNodeService.getPrimaryParent(nodeRef)).thenReturn(generateChildAssociationRef);
         when(mockedNodeService.getType(parentNodeRef)).thenReturn(TYPE_UNFILED_RECORD_FOLDER);
         when(mockedNodeService.hasAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT)).thenReturn(false);
@@ -97,7 +120,7 @@ public class NonElectronicRecordTypeUnitTest extends BaseUnitTest
 
         nonElectronicRecordType.onUpdateNode(nodeRef);
 
-        verify(mockedNodeService, times(1)).addAspect(eq(nodeRef), eq(ASPECT_FILE_PLAN_COMPONENT), any(Map.class));
-        verify(mockedRecordService, times(1)).makeRecord(eq(nodeRef));
+        verify(mockedNodeService, times(1)).addAspect(nodeRef, ASPECT_FILE_PLAN_COMPONENT, null);
+        verify(mockedRecordService, times(1)).makeRecord(nodeRef);
     }
 }

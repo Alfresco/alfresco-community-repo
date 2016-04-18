@@ -58,13 +58,13 @@ public interface RecordsManagementActionCondition
 
     /**
      *
-     * @return The records management action condition definition
+     * @return
      */
     RecordsManagementActionConditionDefinition getRecordsManagementActionConditionDefinition();
 
     /**
      *
-     * @return <code>true</code> if the condition is public, <code>false</code> otherwise
+     * @return
      */
     boolean isPublicCondition();
 }

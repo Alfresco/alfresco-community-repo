@@ -62,7 +62,7 @@ public interface RecordsManagementAdminService
     /**
      * Get a list of all registered customisable types and aspects.
      *
-     * @return Set of <{@link QName}>s of customisable types and aspects
+     * @return	{@link Set}<{@link QName}> QName's of customisable types and aspects
      */
     Set<QName> getCustomisable();
 
@@ -71,7 +71,7 @@ public interface RecordsManagementAdminService
      * node reference.
      *
      * @param nodeRef  node reference
-     * @return Set of <{@link QName}>s of customisable types and aspects, empty if none
+     * @return {@link Set}<{@link QName}> QName's of customisable types and aspects, empty if none
      */
     Set<QName> getCustomisable(NodeRef nodeRef);
 
@@ -108,13 +108,13 @@ public interface RecordsManagementAdminService
     /**
      * This method returns the custom properties that have been defined for the specified
      * customisable RM element.
-     * <p>
+     * <P/>
      * Note: the custom property definitions are retrieved from the dictionaryService
      * which is notified of any newly created definitions on transaction commit.
      * Therefore custom properties created in the current transaction will not appear
      * in the result of this method.
      *
-     * @param customisableType
+     * @param customisedElement
      * @return
      * @see CustomisableRmElement
      */

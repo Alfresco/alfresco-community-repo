@@ -98,7 +98,7 @@ public class MoveDmRecordAction extends AuditableActionExecuterAbstractBase impl
     /**
      * Sets the inplace record service
      *
-     * @param inplaceRecordService Inplace record service
+     * @param InplaceRecordService Inplace record service
      */
     public void setInplaceRecordService(InplaceRecordService inplaceRecordService)
     {

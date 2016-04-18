@@ -36,11 +36,11 @@ import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Records management action condition who's implementation is delegated to an existing
+ * Records management action condition who's implementation is delegated to an existing 
  * action condition.
  * <p>
  * Useful for creating a RM version of an existing action condition implementation.
- *
+ * 
  * @author Roy Wetherall
  * @since 2.1
  */
@@ -48,11 +48,9 @@ public class DelegateActionCondition extends RecordsManagementActionConditionEva
 {
     /** Delegate action evaluator */
     private ActionConditionEvaluator actionConditionEvaluator;
-
+    
     /**
-     * Sets the action condition evaluator
-     *
-     * @param actionConditionEvaluator The action condition evaluator
+     * @param actionEvaluator   action evaluator
      */
     public void setActionConditionEvaluator(ActionConditionEvaluator actionConditionEvaluator)
     {
@@ -64,10 +62,10 @@ public class DelegateActionCondition extends RecordsManagementActionConditionEva
      */
     @Override
     protected boolean evaluateImpl(ActionCondition actionCondition, NodeRef actionedUponNodeRef)
-    {
+    {        
         return actionConditionEvaluator.evaluate(actionCondition, actionedUponNodeRef);
     }
-
+    
     /**
      * @see org.alfresco.repo.action.ParameterizedItemAbstractBase#getParameterDefintions()
      */

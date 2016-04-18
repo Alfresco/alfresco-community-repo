@@ -39,9 +39,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 
+
+
 /**
  * Records management IsRecordType evaluator that evaluates whether the record is of the specified type.
- *
+ * 
  * @author Craig Tan
  * @since 2.1
  */
@@ -60,9 +62,7 @@ public class IsRecordTypeEvaluator extends RecordsManagementActionConditionEvalu
     private NodeService nodeService;
 
     /**
-     * Sets the node service
-     *
-     * @param nodeService The node service
+     * @param nodeService
      */
     public void setNodeService(NodeService nodeService)
     {

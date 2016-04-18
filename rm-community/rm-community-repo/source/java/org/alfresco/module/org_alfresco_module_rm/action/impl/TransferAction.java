@@ -52,7 +52,7 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
     /**
      * Indicates whether this transfer is an accession or not
      *
-     * @param isAccession Is the transfer an accession or not
+     * @param isAccession
      */
     public void setIsAccession(boolean isAccession)
     {
@@ -60,8 +60,6 @@ public class TransferAction extends RMDispositionActionExecuterAbstractBase
     }
 
     /**
-     * Sets the transfer service
-     *
      * @param transferService transfer service
      */
     public void setTransferService(TransferService transferService)

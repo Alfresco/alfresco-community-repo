@@ -96,7 +96,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
 	}
 
     /**
-     * @param retryingTransactionHelper retrying transaction helper
+     * @param retryingTransactionHelper
      */
     public void setRetryingTransactionHelper(RetryingTransactionHelper retryingTransactionHelper)
     {
@@ -150,7 +150,7 @@ public abstract class RecordsManagementActionConditionEvaluatorAbstractBase exte
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionCondition#getName()
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAction#getName()
      */
     public String getName()
     {

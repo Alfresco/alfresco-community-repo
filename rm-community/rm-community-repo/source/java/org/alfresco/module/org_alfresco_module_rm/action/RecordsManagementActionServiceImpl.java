@@ -125,7 +125,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#register(org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction)
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementActionService#register(org.alfresco.module.org_alfresco_module_rm.RecordsManagementAction)
      */
     public void register(RecordsManagementAction rmAction)
     {
@@ -181,7 +181,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getRecordsManagementActions()
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementActionService#getRecordsManagementActions()
      */
     public List<RecordsManagementAction> getRecordsManagementActions()
     {
@@ -202,10 +202,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     }
 
     /**
-     * Gets the disposition actions for the given node
-     *
-     * @param nodeRef The node reference
-     * @return List of records management action
+     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getDispositionActions(org.alfresco.service.cmr.repository.NodeRef)
      */
     @SuppressWarnings("unused")
     public List<RecordsManagementAction> getDispositionActions(NodeRef nodeRef)
@@ -221,7 +218,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getDispositionActions()
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementActionService#getDispositionActionDefinitions()
      */
     public List<RecordsManagementAction> getDispositionActions()
     {
@@ -230,7 +227,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
         return Collections.unmodifiableList(result);
     }
 
-    /**
+    /*
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getDispositionAction(java.lang.String)
      */
     public RecordsManagementAction getDispositionAction(String name)
@@ -238,7 +235,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
         return dispositionActions.get(name);
     }
 
-    /**
+    /*
      * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#getRecordsManagementAction(java.lang.String)
      */
     public RecordsManagementAction getRecordsManagementAction(String name)
@@ -247,7 +244,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#executeRecordsManagementAction(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementActionService#executeRecordsManagementAction(org.alfresco.service.cmr.repository.NodeRef, java.lang.String)
      */
     public RecordsManagementActionResult executeRecordsManagementAction(NodeRef nodeRef, String name)
     {
@@ -255,7 +252,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#executeRecordsManagementAction(java.util.List, java.lang.String)
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementActionService#executeRecordsManagementAction(java.util.List, java.lang.String)
      */
     public Map<NodeRef, RecordsManagementActionResult> executeRecordsManagementAction(List<NodeRef> nodeRefs, String name)
     {
@@ -263,7 +260,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#executeRecordsManagementAction(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map)
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementActionService#executeRecordsManagementAction(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, java.util.Map)
      */
     public RecordsManagementActionResult executeRecordsManagementAction(NodeRef nodeRef, String name, Map<String, Serializable> parameters)
     {
@@ -297,7 +294,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#executeRecordsManagementAction(java.lang.String, java.util.Map)
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementActionService#executeRecordsManagementAction(java.lang.String, java.util.Map)
      */
     public RecordsManagementActionResult executeRecordsManagementAction(String name, Map<String, Serializable> parameters)
     {
@@ -320,7 +317,7 @@ public class RecordsManagementActionServiceImpl implements RecordsManagementActi
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService#executeRecordsManagementAction(java.util.List, java.lang.String, java.util.Map)
+     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementActionService#executeRecordsManagementAction(java.util.List, java.lang.String, java.util.Map)
      */
     public Map<NodeRef, RecordsManagementActionResult> executeRecordsManagementAction(List<NodeRef> nodeRefs, String name, Map<String, Serializable> parameters)
     {

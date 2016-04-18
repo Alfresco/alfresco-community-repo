@@ -63,9 +63,7 @@ public class HasDispositionActionEvaluator extends RecordsManagementActionCondit
     private DispositionService dispositionService;
 
     /**
-     * Sets the disposition service
-     *
-     * @param dispositionService The disposition service
+     * @param dispositionService
      */
     public void setDispositionService(DispositionService dispositionService)
     {

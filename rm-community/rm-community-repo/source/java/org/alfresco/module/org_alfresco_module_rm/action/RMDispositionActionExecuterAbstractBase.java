@@ -73,7 +73,7 @@ public abstract class RMDispositionActionExecuterAbstractBase extends RMActionEx
     /**
      * Indicates whether the disposition is marked complete
      *
-     * @return boolean true if marked complete, false otherwise
+     * @return <code>true</code> if marked complete, <code>false</code> otherwise
      */
     public boolean getSetDispositionActionComplete()
     {

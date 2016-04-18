@@ -56,10 +56,10 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
 
     /** content destruction component */
     private ContentDestructionComponent contentDestructionComponent;
-    
+
     /** Capability service */
     private CapabilityService capabilityService;
-    
+
     /** Recordable version service */
     private RecordableVersionService recordableVersionService;
 
@@ -73,7 +73,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     {
         this.contentDestructionComponent = contentDestructionComponent;
     }
-    
+
     /**
      * @param capabilityService capability service
      */
@@ -81,7 +81,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     {
         this.capabilityService = capabilityService;
     }
-    
+
     /**
      * @param recordableVersionService  recordable version service
      */
@@ -99,7 +99,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#checkNextDispositionAction()
+     * @see org.alfresco.module.org_alfresco_module_rm.action.RMDispositionActionExecuterAbstractBase#checkNextDispositionAction(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
     protected boolean checkNextDispositionAction(NodeRef actionedUponNodeRef)
@@ -159,7 +159,7 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
      */
     @Override
     protected void executeRecordLevelDisposition(Action action, NodeRef record)
-    {        
+    {
         if (isGhostOnDestroySetForAction(action, record))
         {
             // mark version as destroyed
@@ -168,10 +168,10 @@ public class DestroyAction extends RMDispositionActionExecuterAbstractBase
             {
                 recordableVersionService.destroyRecordedVersion(version);
             }
-            
+
             // Add the ghosted aspect
             getNodeService().addAspect(record, ASPECT_GHOSTED, null);
-            
+
             // destroy content
             contentDestructionComponent.destroyContent(record);
         }

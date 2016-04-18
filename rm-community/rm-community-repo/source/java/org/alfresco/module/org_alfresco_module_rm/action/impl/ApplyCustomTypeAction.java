@@ -91,8 +91,7 @@ public class ApplyCustomTypeAction extends RMActionExecuterAbstractBase
     }
 
     /**
-     * This method extracts the properties from the custom type's aspect.
-     * @see #getCustomTypeAspect()
+     * @see org.alfresco.module.org_alfresco_module_rm.action.RMActionExecuterAbstractBase#addParameterDefinitions(java.util.List)
      */
     @Override
     protected final void addParameterDefinitions(List<ParameterDefinition> paramList)

@@ -72,6 +72,7 @@ public interface RecordsManagementAction
      *
      * @param filePlanComponent     file plan component the action is executed upon
      * @param parameters            action parameters
+     * @return The result of the executed action
      */
     RecordsManagementActionResult execute(NodeRef filePlanComponent, Map<String, Serializable> parameters);
 
@@ -86,7 +87,7 @@ public interface RecordsManagementAction
     /**
      * Get the records management action definition.
      *
-     * @return
+     * @return The records management action definition.
      * @since 2.1
      */
     RecordsManagementActionDefinition getRecordsManagementActionDefinition();
@@ -94,7 +95,7 @@ public interface RecordsManagementAction
     /**
      * Indicates whether the action is public or not
      *
-     * @return
+     * @return <code>true</code> if the action is public, <code>false</code> otherwise
      * @since 2.1
      */
     boolean isPublicAction();

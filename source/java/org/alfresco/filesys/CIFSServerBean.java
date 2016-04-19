@@ -203,11 +203,12 @@ public class CIFSServerBean extends AbstractLifecycleBean
         out.println("CIFS Server Test");
         out.println("----------------");
 
+        ClassPathXmlApplicationContext ctx = null;
         try
         {
             // Create the configuration service in the same way that Spring creates it
             
-            ApplicationContext ctx = new ClassPathXmlApplicationContext("alfresco/application-context.xml");
+            ctx = new ClassPathXmlApplicationContext("alfresco/application-context.xml");
 
             // Get the CIFS server bean
             
@@ -266,6 +267,13 @@ public class CIFSServerBean extends AbstractLifecycleBean
         catch (Exception ex)
         {
             ex.printStackTrace();
+        }
+        finally
+        {
+            if (ctx != null)
+            {
+                ctx.close();
+            }
         }
         System.exit(1);
     }

@@ -123,9 +123,12 @@ public class FileWipingContentCleanerListener implements ContentStoreCleanerList
             throw new ContentIOException("Unable to write to file: " + file);
         }
         long bytes = file.length();
-        OutputStream os = new BufferedOutputStream(new FileOutputStream(file));
+        OutputStream fos = null;
+        OutputStream bos = null;
         try
         {
+            fos = new FileOutputStream(file);
+            bos = new BufferedOutputStream(fos);
             /*
              * There are many more efficient ways of writing bytes into the file.
              * However, it is likely that implementations will do a lot more than
@@ -133,12 +136,19 @@ public class FileWipingContentCleanerListener implements ContentStoreCleanerList
              */
             for (int i = 0; i < bytes; i++)
             {
-                os.write(0);
+                bos.write(0);
             }
         }
         finally
         {
-            try {os.close(); } catch (Throwable e) {}
+            if (bos != null)
+            {
+                try {bos.close(); } catch (Throwable e) {}
+            }
+            if (fos != null)
+            {
+                fos.close();
+            }
         }
     }
 }

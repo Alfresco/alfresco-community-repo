@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.relationship;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -35,6 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.3
  */
+@AlfrescoPublicApi
 public interface Relationship
 {
     /**

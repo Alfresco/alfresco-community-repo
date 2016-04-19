@@ -31,6 +31,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -40,12 +41,13 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Roy Wetherall
  * @since 2.1
  */
+@AlfrescoPublicApi
 public interface FilePlanRoleService
 {
     /** Default role names */
     String ROLE_USER                = "User";
     String ROLE_POWER_USER          = "PowerUser";
-    String ROLE_SECURITY_OFFICER    = "SecurityOfficer"; 
+    String ROLE_SECURITY_OFFICER    = "SecurityOfficer";
     String ROLE_RECORDS_MANAGER     = "RecordsManager";
     String ROLE_ADMIN               = "Administrator";
     String ROLE_EXTENDED_READERS    = "ExtendedReaders";

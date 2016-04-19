@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.relationship;
 
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -37,11 +38,12 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.3
  */
+@AlfrescoPublicApi
 public interface RelationshipService
 {
     /** System relationship names */
     static final String RELATIONSHIP_VERSIONS = "versions";
-    
+
     /**
      * Gets all the existing relationship definitions
      *
@@ -97,7 +99,7 @@ public interface RelationshipService
      * @return All relationships that come out from the given node reference
      */
     Set<Relationship> getRelationshipsFrom(NodeRef nodeRef);
-    
+
     /**
      * Gets all the relationships that come out from the given node reference
      * that match the a given name filter.
@@ -107,7 +109,7 @@ public interface RelationshipService
      * @param nodeRef The node reference
      * @param nameFilter Name filter for results
      * @return All relationships that come out from the given node reference
-     * 
+     *
      * @since 2.3.1
      */
     Set<Relationship> getRelationshipsFrom(NodeRef nodeRef, String nameFilter);
@@ -119,7 +121,7 @@ public interface RelationshipService
      * @return All relationships that go into the given node reference
      */
     Set<Relationship> getRelationshipsTo(NodeRef nodeRef);
-    
+
     /**
      * Gets all the relationships that go into the given node reference
      * that match the a given name filter.
@@ -129,7 +131,7 @@ public interface RelationshipService
      * @param nodeRef The node reference
      * @param nameFilter Name filter for results
      * @return All relationships that go into the given node reference
-     * 
+     *
      * @since 2.3.1
      */
     Set<Relationship> getRelationshipsTo(NodeRef nodeRef, String nameFilter);

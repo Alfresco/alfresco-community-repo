@@ -29,6 +29,9 @@ package org.alfresco.module.org_alfresco_module_rm.caveat;
 
 import java.util.Arrays;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
+@AlfrescoPublicApi
 public class RMConstraintInfo
 {
     private String name;

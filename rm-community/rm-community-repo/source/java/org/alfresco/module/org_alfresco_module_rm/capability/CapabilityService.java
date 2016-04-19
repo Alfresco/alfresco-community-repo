@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 
@@ -40,6 +41,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
  * @author Roy Wetherall
  * @since 2.0
  */
+@AlfrescoPublicApi
 public interface CapabilityService
 {
    /**
@@ -108,7 +110,7 @@ public interface CapabilityService
    /**
     * Gets the list of all the capability groups (in index order)
     *
-    * @return {@link List}<{@link Group}> List of all the capability groups (in index order) 
+    * @return {@link List}<{@link Group}> List of all the capability groups (in index order)
     */
    List<Group> getGroups();
 

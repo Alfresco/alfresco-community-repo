@@ -32,13 +32,16 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Delegate spring bean for TransactionResourceHelper
- * 
+ *
  * @author Roy Wetherall
  * @since 2.3
  * @see org.alfresco.repo.transaction.TransactionalResourceHelper
  */
+@AlfrescoPublicApi
 public class TransactionalResourceHelper
 {
     /**
@@ -48,7 +51,7 @@ public class TransactionalResourceHelper
     {
         return org.alfresco.repo.transaction.TransactionalResourceHelper.getCount(resourceKey);
     }
-    
+
     /**
      * @see org.alfresco.repo.transaction.TransactionalResourceHelper#getCount(Object)
      */
@@ -56,7 +59,7 @@ public class TransactionalResourceHelper
     {
         org.alfresco.repo.transaction.TransactionalResourceHelper.resetCount(resourceKey);
     }
-    
+
     /**
      * @see org.alfresco.repo.transaction.TransactionalResourceHelper#incrementCount(Object)
      */
@@ -64,7 +67,7 @@ public class TransactionalResourceHelper
     {
         return org.alfresco.repo.transaction.TransactionalResourceHelper.incrementCount(resourceKey);
     }
-    
+
     /**
      * @see org.alfresco.repo.transaction.TransactionalResourceHelper#decrementCount(Object, boolean)
      */
@@ -72,7 +75,7 @@ public class TransactionalResourceHelper
     {
         return org.alfresco.repo.transaction.TransactionalResourceHelper.decrementCount(resourceKey, allowNegative);
     }
-    
+
     /**
      * @see org.alfresco.repo.transaction.TransactionalResourceHelper#getCount(Object)
      */
@@ -80,7 +83,7 @@ public class TransactionalResourceHelper
     {
         return org.alfresco.repo.transaction.TransactionalResourceHelper.isResourcePresent(resourceKey);
     }
-    
+
     /**
      * @see org.alfresco.repo.transaction.TransactionalResourceHelper#getMap(Object)
      */

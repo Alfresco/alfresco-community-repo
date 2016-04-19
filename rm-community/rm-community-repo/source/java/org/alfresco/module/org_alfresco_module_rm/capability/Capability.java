@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 
@@ -36,6 +37,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
  * @author andyh
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface Capability
 {
     /**

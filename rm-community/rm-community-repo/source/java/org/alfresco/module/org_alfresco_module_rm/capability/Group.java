@@ -27,12 +27,15 @@
 
 package org.alfresco.module.org_alfresco_module_rm.capability;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Group interface
  *
  * @author Tuna Aksoy
  * @since 2.1
  */
+@AlfrescoPublicApi
 public interface Group
 {
     /**

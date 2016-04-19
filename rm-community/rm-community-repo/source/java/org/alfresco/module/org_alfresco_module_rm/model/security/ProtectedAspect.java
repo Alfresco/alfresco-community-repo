@@ -27,10 +27,13 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.security;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * @author Roy Wetherall
  * @since 2.1
  */
+@AlfrescoPublicApi
 public class ProtectedAspect extends ProtectedModelArtifact
 {
 

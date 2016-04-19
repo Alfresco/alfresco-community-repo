@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 /**
@@ -34,6 +35,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Gavin Cornwell
  */
+@AlfrescoPublicApi
 public interface RecordsManagementCustomModel
 {
     // Namespace details

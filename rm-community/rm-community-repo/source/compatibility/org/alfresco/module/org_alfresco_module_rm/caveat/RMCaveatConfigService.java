@@ -33,9 +33,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+@AlfrescoPublicApi
 public interface RMCaveatConfigService
 {
     void init();

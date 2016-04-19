@@ -30,33 +30,35 @@ package org.alfresco.module.org_alfresco_module_rm.model.security;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 
 /**
  * Protected model artifact class.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
+@AlfrescoPublicApi
 public abstract class ProtectedModelArtifact
 {
     /** Model security service */
-    private ModelSecurityService modelSecurityService;    
-    
+    private ModelSecurityService modelSecurityService;
+
     /** Namespace service */
     private NamespaceService namespaceService;
-    
+
     /** Qualified name of the model artifact */
     private QName name;
-    
+
     /** Set of capabilities */
     private Set<Capability> capabilities;
-    
+
     /** Capability names */
     private Set<String> capabilityNames;
-    
+
     /**
      * @param namespaceService  namespace service
      */
@@ -64,7 +66,7 @@ public abstract class ProtectedModelArtifact
     {
         this.namespaceService = namespaceService;
     }
-    
+
     /**
      * @param modelSecurityService  model security service
      */
@@ -72,7 +74,7 @@ public abstract class ProtectedModelArtifact
     {
         this.modelSecurityService = modelSecurityService;
     }
-    
+
     /**
      * Init method
      */
@@ -80,7 +82,7 @@ public abstract class ProtectedModelArtifact
     {
         modelSecurityService.register(this);
     }
-    
+
     /**
      * @param name  artifact name (in cm:content form)
      */
@@ -89,7 +91,7 @@ public abstract class ProtectedModelArtifact
         QName qname = QName.createQName(name, namespaceService);
         this.name = qname;
     }
-    
+
     /**
      * @return  artifact QName
      */
@@ -97,7 +99,7 @@ public abstract class ProtectedModelArtifact
     {
         return name;
     }
-    
+
     /**
      * @param capabilities  capabilities
      */
@@ -105,7 +107,7 @@ public abstract class ProtectedModelArtifact
     {
         this.capabilities = capabilities;
     }
-    
+
     /**
      * @return  capabilities
      */
@@ -113,7 +115,7 @@ public abstract class ProtectedModelArtifact
     {
         return capabilities;
     }
-    
+
     /**
      * @return  capability names
      */
@@ -125,9 +127,9 @@ public abstract class ProtectedModelArtifact
             for (Capability capability : capabilities)
             {
                 capabilityNames.add(capability.getName());
-            }            
+            }
         }
-        
+
         return capabilityNames;
     }
 }

@@ -27,12 +27,15 @@
 
 package org.alfresco.module.org_alfresco_module_rm.action;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Record Management Action Condition
  *
  * @author Roy Wetherall
  * @since 2.1
  */
+@AlfrescoPublicApi
 public interface RecordsManagementActionCondition
 {
     /**

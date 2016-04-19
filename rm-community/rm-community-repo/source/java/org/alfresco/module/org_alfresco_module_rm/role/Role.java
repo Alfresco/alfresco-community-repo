@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.role;
 
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 
 /**
@@ -36,6 +37,7 @@ import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
  *
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public class Role
 {
     /** Role name */

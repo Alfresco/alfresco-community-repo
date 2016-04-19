@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.report;
 
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -38,6 +39,7 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.1
  */
+@AlfrescoPublicApi
 public interface ReportService
 {
     /**
@@ -65,7 +67,7 @@ public interface ReportService
 
     /**
      * Generate a report for a specified mimetype.
-     * 
+     *
      * @see #generateReport(QName, NodeRef)
      *
      * @param reportType            report type

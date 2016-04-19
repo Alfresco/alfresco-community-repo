@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.hold;
 
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -37,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.2
  */
+@AlfrescoPublicApi
 public interface HoldService
 {
     /**
@@ -58,7 +60,7 @@ public interface HoldService
 
     /**
      * Gets the node reference for the hold with the given name in the given file plan
-     * 
+     *
      * @param name {@link String} The name of the hold
      * @return {@link NodeRef} of the hold with the given name
      */
@@ -75,8 +77,8 @@ public interface HoldService
     List<NodeRef> heldBy(NodeRef nodeRef, boolean includedInHold);
 
     /**
-     * Gets the list of item node references which are in the given hold 
-     * 
+     * Gets the list of item node references which are in the given hold
+     *
      * @param hold {@link NodeRef} of the hold
      * @return Lost of item {@link NodeRef}s which are in the given hold
      */
@@ -84,7 +86,7 @@ public interface HoldService
 
     /**
      * Creates a hold with the given name, reason and description for the given file plan
-     * 
+     *
      * @param filePlan The {@link NodeRef} of the file plan
      * @param name {@link String} The name of the hold
      * @param reason {@link String} The reason of the hold
@@ -95,7 +97,7 @@ public interface HoldService
 
     /**
      * Gets the hold reason for the given hold node reference
-     * 
+     *
      * @param hold The {@link NodeRef} of the hold
      * @return {@link String} The reason of the hold
      */
@@ -103,7 +105,7 @@ public interface HoldService
 
     /**
      * Sets the hold reason
-     * 
+     *
      * @param hold The {@link NodeRef} of the hold
      * @param reason {@link String} The reason for the hold
      */
@@ -111,7 +113,7 @@ public interface HoldService
 
     /**
      * Deletes the hold
-     * 
+     *
      * @param hold The {@link NodeRef} of the hold
      */
     void deleteHold(NodeRef hold);
@@ -126,7 +128,7 @@ public interface HoldService
 
     /**
      * Adds the items to the the given hold
-     * 
+     *
      * @param hold The {@link NodeRef} of the hold to which the items will be added
      * @param nodeRefs The item {@link NodeRef}s which will be added to the hold
      */
@@ -158,7 +160,7 @@ public interface HoldService
 
     /**
      * Removes the given items from the given hold
-     * 
+     *
      * @param hold The hold {@link NodeRef} from which the given items will be removed
      * @param nodeRefs The list of items which will be removed from the given holds
      */

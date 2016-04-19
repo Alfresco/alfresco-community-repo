@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
@@ -42,6 +43,7 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.1
  */
+@AlfrescoPublicApi
 public interface FilePlanService
 {
     /**

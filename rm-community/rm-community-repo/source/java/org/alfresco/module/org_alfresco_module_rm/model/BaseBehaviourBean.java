@@ -30,6 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.model;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.repo.policy.BehaviourFilter;
@@ -43,6 +44,7 @@ import org.apache.commons.logging.LogFactory;
  * @author Roy Wetherall
  * @since 2.2
  */
+@AlfrescoPublicApi
 public abstract class BaseBehaviourBean extends ServiceBaseImpl
                                         implements RecordsManagementModel,
                                                    BehaviourRegistry

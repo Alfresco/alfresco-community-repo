@@ -30,13 +30,15 @@ package org.alfresco.module.org_alfresco_module_rm.identifier;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.namespace.QName;
 
 /**
  * Generates an identifier for a content type from a given context.
- * 
+ *
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface IdentifierGenerator
 {
     /**
@@ -44,7 +46,7 @@ public interface IdentifierGenerator
      * @return  QName   the type
      */
     QName getType();
-    
+
     /**
      * Generates the next id based on the provided context.
      * @param context   map of context values

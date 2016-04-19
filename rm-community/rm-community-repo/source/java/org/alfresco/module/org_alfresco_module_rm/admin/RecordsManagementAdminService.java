@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
@@ -52,6 +53,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  * @since 2.1
  * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService
  */
+@AlfrescoPublicApi
 public interface RecordsManagementAdminService
 {
     /**

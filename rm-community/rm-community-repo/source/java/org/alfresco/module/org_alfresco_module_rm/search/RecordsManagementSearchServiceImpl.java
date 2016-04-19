@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -63,6 +64,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public class RecordsManagementSearchServiceImpl implements RecordsManagementSearchService
 {
     private static final String SITES_SPACE_QNAME_PATH = "/app:company_home/st:sites/";
@@ -214,12 +216,12 @@ public class RecordsManagementSearchServiceImpl implements RecordsManagementSear
 
         // execute query
         ResultSet resultSet = searchService.query(searchParameters);
-        
+
         // process results
         List<Pair<NodeRef, NodeRef>> result = new ArrayList<Pair<NodeRef, NodeRef>>(resultSet.length());
         for (ChildAssociationRef childAssoc : resultSet.getChildAssocRefs())
         {
-        	result.add(new Pair<NodeRef, NodeRef>(childAssoc.getParentRef(), childAssoc.getChildRef()));        	
+        	result.add(new Pair<NodeRef, NodeRef>(childAssoc.getParentRef(), childAssoc.getChildRef()));
         }
 
         // return results

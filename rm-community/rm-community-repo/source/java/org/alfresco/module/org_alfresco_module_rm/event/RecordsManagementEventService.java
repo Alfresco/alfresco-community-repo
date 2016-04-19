@@ -29,11 +29,14 @@ package org.alfresco.module.org_alfresco_module_rm.event;
 
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Records management event service interface
  *
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface RecordsManagementEventService
 {
     /**

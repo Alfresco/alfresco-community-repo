@@ -32,6 +32,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -42,6 +43,7 @@ import org.alfresco.service.namespace.QName;
  * Used to bridge between the old style of saved search passed and required by the UI and the new actual saved search details.
  * Eventually will be factored out as web scripts are brought up to date.
  */
+@AlfrescoPublicApi
 public class SavedSearchDetailsCompatibility implements RecordsManagementModel
 {
     /** Saved search details */

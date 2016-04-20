@@ -30,12 +30,9 @@ package org.alfresco.module.org_alfresco_module_rm.email;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.api.AlfrescoPublicApi;
-
 /**
  * Custom EMail Mapping Service
  */
-@AlfrescoPublicApi
 public interface CustomEmailMappingService
 {
     /**

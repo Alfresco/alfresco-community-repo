@@ -31,7 +31,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanComponentKind;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
@@ -53,7 +52,6 @@ import org.springframework.context.ApplicationContextAware;
  * @author Roy Wetherall
  * @since 2.1
  */
-@AlfrescoPublicApi
 public class ServiceBaseImpl implements RecordsManagementModel, ApplicationContextAware
 {
     /** Node service */
@@ -73,9 +71,9 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
 
     /** authentication helper */
     protected AuthenticationUtil authenticationUtil;
-
+    
     /** transactional resource helper */
-    protected TransactionalResourceHelper transactionalResourceHelper;
+    protected TransactionalResourceHelper transactionalResourceHelper; 
 
     /**
      * @see org.springframework.context.ApplicationContextAware#setApplicationContext(org.springframework.context.ApplicationContext)
@@ -117,7 +115,7 @@ public class ServiceBaseImpl implements RecordsManagementModel, ApplicationConte
     {
         this.authenticationUtil = authenticationUtil;
     }
-
+    
     /**
      * @param transactionalResourceHelper   transactional resource helper
      */

@@ -27,12 +27,9 @@
 
 package org.alfresco.module.org_alfresco_module_rm.email;
 
-import org.alfresco.api.AlfrescoPublicApi;
-
 /**
  * Custom EMail Mapping
  */
-@AlfrescoPublicApi
 public class CustomMapping
 {
     private String from;

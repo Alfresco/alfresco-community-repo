@@ -33,7 +33,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.dictionary.constraint.ListOfValuesConstraint;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.dictionary.ConstraintException;
@@ -60,7 +59,6 @@ public class RMListOfValuesConstraint extends ListOfValuesConstraint
     // defined match logic used by caveat matching (default = "AND")
     private MatchLogic matchLogic = MatchLogic.AND;
 
-    @AlfrescoPublicApi
     public enum MatchLogic
     {
         // closed marking - all values must match

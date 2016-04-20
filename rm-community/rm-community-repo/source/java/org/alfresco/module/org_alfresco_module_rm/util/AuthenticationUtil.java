@@ -27,7 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.util;
 
-import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 
@@ -39,7 +38,6 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
  * @author Roy Wetherall
  * @since 2.3
  */
-@AlfrescoPublicApi
 public class AuthenticationUtil
 {
     /**

@@ -84,6 +84,12 @@
             <value>${synchronization.syncDelete}</value>
         </property>
         <property name="nameChecker" ref="nameChecker" />
+        <property name="externalUserControl">
+        	<value>${synchronization.externalUserControl}</value>
+        </property>
+        <property name="externalUserControlSubsystemName">
+        	<value>${synchronization.externalUserControlSubsystemName}</value>
+        </property>
     </bean>
 
 

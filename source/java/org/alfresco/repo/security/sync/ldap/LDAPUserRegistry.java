@@ -191,6 +191,9 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     /** The LDAP generalized time format. */
     private DateFormat timestampFormat;
 
+    /** The LDAP User Account Status Property Interpreter */
+    private AbstractDirectoryServiceUserAccountStatusInterpreter userAccountStatusInterpreter;
+
     /**
      * Instantiates a new lDAP user registry.
      */
@@ -503,6 +506,16 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
     public void setAttributeBatchSize(int attributeBatchSize)
     {
         this.attributeBatchSize = attributeBatchSize;
+    }
+
+    public void setUserAccountStatusInterpreter(AbstractDirectoryServiceUserAccountStatusInterpreter userAccountStatusInterpreter)
+    {
+        this.userAccountStatusInterpreter = userAccountStatusInterpreter;
+    }
+
+    public AbstractDirectoryServiceUserAccountStatusInterpreter getUserAccountStatusInterpreter()
+    {
+        return userAccountStatusInterpreter;
     }
 
     /*

@@ -35,7 +35,6 @@ import org.junit.Test;
  */
 public class ZipFormatIntegrationTest extends AbstractIntegrationTest
 {   
-    
     File updatePackage;
     
     @Before
@@ -47,6 +46,11 @@ public class ZipFormatIntegrationTest extends AbstractIntegrationTest
         updatePackage = new File(pkgName);        
     }
     
+    /**
+     * Check that the apply_updates.sh script exists in the update package and
+     * that it has 0x755 permissions.  In particular the +x bit needs to be 
+     * set.
+     */
     @Test
     public void applyUpdatesScriptHasExecutableBitsSet() throws FileNotFoundException, ArchiveException, IOException, CompressorException
     {

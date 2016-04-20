@@ -45,6 +45,22 @@ public class PackagingIntegrationTest
         updatePackage = new File(pkgName);        
     }
 
+    /**
+     * Test that the package structure within the update package 
+     * is as expected.
+     * <p>
+     * In particular check the following paths exist.
+     * <ul>
+     * <li>/lib/alfresco-update-tool.jar</li>
+     * <li>/apply_updates.sh</li>
+     * <li>/apply_updates.bat</li>
+     * <li>/resources/war/alfresco.war</li>
+     * <li>/resources/war/share.war</li>
+     * <li>/resources/distribution/common/bin/alfresco-mmt.jar</li>
+     * <li>/resources/distribution/common/bin/alfresco-spring-encryptor.jar</li>
+     * <li>/resources/distribution/platform/README.txt</li>
+     * </ul>
+     */
     @Test
     public void testPackageStructureIsAsExpected() throws ZipException, IOException
     {
@@ -70,6 +86,9 @@ public class PackagingIntegrationTest
         // Is the mmt in the correct place ?
         assertPathPresent(paths, dirs[0] + "/resources/distribution/common/bin/alfresco-mmt.jar");
         assertPathPresent(paths, dirs[0] + "/resources/distribution/common/bin/alfresco-spring-encryptor.jar");
+        
+        // Is the readme present ?
+        assertPathPresent(paths, dirs[0] + "resources/distribution/platform/README.txt");
         
     }
         

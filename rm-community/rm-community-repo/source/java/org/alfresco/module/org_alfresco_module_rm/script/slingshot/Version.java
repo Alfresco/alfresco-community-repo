@@ -30,12 +30,15 @@ package org.alfresco.module.org_alfresco_module_rm.script.slingshot;
 import static org.alfresco.util.ParameterCheck.mandatory;
 import static org.alfresco.util.ParameterCheck.mandatoryString;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Recordable version class
  *
  * @author Tuna Aksoy
  * @since 2.3
  */
+@AlfrescoPublicApi
 public class Version
 {
     /** The version policy */

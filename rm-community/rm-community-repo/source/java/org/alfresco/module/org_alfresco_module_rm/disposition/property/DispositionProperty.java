@@ -32,7 +32,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Set;
 
-import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionActionDefinition;
@@ -56,7 +55,6 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Roy Wetherall
  */
-@AlfrescoPublicApi
 @BehaviourBean
 public class DispositionProperty extends BaseBehaviourBean
                                  implements NodeServicePolicies.OnUpdatePropertiesPolicy

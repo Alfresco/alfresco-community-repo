@@ -88,7 +88,7 @@ public class PackagingIntegrationTest
         assertPathPresent(paths, dirs[0] + "/resources/distribution/common/bin/alfresco-spring-encryptor.jar");
         
         // Is the readme present ?
-        assertPathPresent(paths, dirs[0] + "resources/distribution/platform/README.txt");
+        assertPathPresent(paths, dirs[0] + "/resources/distribution/platform/README.txt");
         
     }
         

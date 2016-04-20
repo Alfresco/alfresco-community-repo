@@ -171,6 +171,11 @@ public class DeclarativeCapability extends AbstractCapability
         boolean result = true;
         NodeRef filePlan = getFilePlanService().getFilePlan(nodeRef);
 
+        if(filePlan == null)
+        {
+            return result;
+        }
+
         for (String permission : permissions)
         {
              if (permissionService.hasPermission(filePlan, permission) != AccessStatus.ALLOWED)

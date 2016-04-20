@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.audit.event.AuditEvent;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -42,7 +43,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Gavin Cornwell
  */
-// Not @AlfrescoPublicApi as extends the deprecated class RecordsManagementAuditServiceDeprecated.
+@AlfrescoPublicApi
 @SuppressWarnings("deprecation")
 public interface RecordsManagementAuditService extends RecordsManagementAuditServiceDeprecated
 {

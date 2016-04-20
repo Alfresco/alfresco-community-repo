@@ -32,6 +32,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -40,9 +41,10 @@ import org.springframework.extensions.surf.util.ISO8601DateFormat;
 
 /**
  * Class to represent a Records Management audit entry.
- * 
+ *
  * @author Gavin Cornwell
  */
+@AlfrescoPublicApi
 public final class RecordsManagementAuditEntry
 {
     private final Date timestamp;
@@ -58,20 +60,20 @@ public final class RecordsManagementAuditEntry
     private final Map<QName, Serializable> beforeProperties;
     private final Map<QName, Serializable> afterProperties;
     private Map<QName, Pair<Serializable, Serializable>> changedProperties;
-    
+
     /**
      * Default constructor
      */
-    public RecordsManagementAuditEntry(Date timestamp, 
-                String userName, String fullName, String userRole, 
-                NodeRef nodeRef, String nodeName, String nodeType, 
+    public RecordsManagementAuditEntry(Date timestamp,
+                String userName, String fullName, String userRole,
+                NodeRef nodeRef, String nodeName, String nodeType,
                 String event, String identifier, String path,
                 Map<QName, Serializable> beforeProperties,
                 Map<QName, Serializable> afterProperties)
     {
         ParameterCheck.mandatory("timestamp", timestamp);
         ParameterCheck.mandatory("userName", userName);
-        
+
         this.timestamp = timestamp;
         this.userName = userName;
         this.userRole = userRole;
@@ -85,7 +87,7 @@ public final class RecordsManagementAuditEntry
         this.beforeProperties = beforeProperties;
         this.afterProperties = afterProperties;
     }
-    
+
     @Override
     public String toString()
     {
@@ -106,18 +108,18 @@ public final class RecordsManagementAuditEntry
           .append(")");
         return sb.toString();
     }
-    
+
     /**
-     * 
+     *
      * @return The date of the audit entry
      */
     public Date getTimestamp()
     {
         return this.timestamp;
     }
-    
+
     /**
-     * 
+     *
      * @return The date of the audit entry as an ISO8601 formatted String
      */
     public String getTimestampString()
@@ -126,7 +128,7 @@ public final class RecordsManagementAuditEntry
     }
 
     /**
-     * 
+     *
      * @return The username of the user that caused the audit log entry to be created
      */
     public String getUserName()
@@ -135,7 +137,7 @@ public final class RecordsManagementAuditEntry
     }
 
     /**
-     * 
+     *
      * @return The full name of the user that caused the audit log entry to be created
      */
     public String getFullName()
@@ -144,7 +146,7 @@ public final class RecordsManagementAuditEntry
     }
 
     /**
-     * 
+     *
      * @return The role of the user that caused the audit log entry to be created
      */
     public String getUserRole()
@@ -153,7 +155,7 @@ public final class RecordsManagementAuditEntry
     }
 
     /**
-     * 
+     *
      * @return The NodeRef of the node the audit log entry is for
      */
     public NodeRef getNodeRef()
@@ -162,16 +164,16 @@ public final class RecordsManagementAuditEntry
     }
 
     /**
-     * 
+     *
      * @return The name of the node the audit log entry is for
      */
     public String getNodeName()
     {
         return this.nodeName;
     }
-    
+
     /**
-     * 
+     *
      * @return The type of the node the audit log entry is for
      */
     public String getNodeType()
@@ -180,8 +182,8 @@ public final class RecordsManagementAuditEntry
     }
 
     /**
-     * 
-     * @return The human readable description of the reason for the audit log 
+     *
+     * @return The human readable description of the reason for the audit log
      *         entry i.e. metadata updated, record declared
      */
     public String getEvent()
@@ -191,9 +193,9 @@ public final class RecordsManagementAuditEntry
 
     /**
      * An identifier for the item being audited, for example for a record
-     * it will be the unique record identifier, for a user it would be the 
+     * it will be the unique record identifier, for a user it would be the
      * username etc.
-     * 
+     *
      * @return Ad identifier for the thing being audited
      */
     public String getIdentifier()
@@ -202,25 +204,25 @@ public final class RecordsManagementAuditEntry
     }
 
     /**
-     * 
+     *
      * @return The path to the object being audited
      */
     public String getPath()
     {
         return this.path;
     }
-    
+
     /**
-     * 
+     *
      * @return Map of properties before the audited action
      */
     public Map<QName, Serializable> getBeforeProperties()
     {
         return this.beforeProperties;
     }
-    
+
     /**
-     * 
+     *
      * @return Map of properties after the audited action
      */
     public Map<QName, Serializable> getAfterProperties()
@@ -229,7 +231,7 @@ public final class RecordsManagementAuditEntry
     }
 
     /**
-     * 
+     *
      * @return Map of changed properties
      */
     public Map<QName, Pair<Serializable, Serializable>> getChangedProperties()
@@ -238,10 +240,10 @@ public final class RecordsManagementAuditEntry
         {
             initChangedProperties();
         }
-        
+
         return this.changedProperties;
     }
-    
+
     /**
      * Initialises the map of changed values given the before and after properties
      */
@@ -251,7 +253,7 @@ public final class RecordsManagementAuditEntry
         {
             this.changedProperties = new HashMap<QName, Pair<Serializable, Serializable>>(
                         this.beforeProperties.size() + this.afterProperties.size());
-            
+
             // add all the properties present before the audited action
             for (QName valuePropName : this.beforeProperties.keySet())
             {
@@ -260,7 +262,7 @@ public final class RecordsManagementAuditEntry
                             this.afterProperties.get(valuePropName));
                 this.changedProperties.put(valuePropName, values);
             }
-            
+
             // add all the properties present after the audited action that
             // have not already been added
             for (QName valuePropName : this.afterProperties.keySet())

@@ -31,6 +31,7 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 
@@ -41,6 +42,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.1
  * @deprecated as of 2.1, see {@link RecordsManagementAuditService}.
  */
+@AlfrescoPublicApi
 public interface RecordsManagementAuditServiceDeprecated
 {
     /**

@@ -31,7 +31,6 @@ import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.repo.security.permissions.impl.SimpleNodePermissionEntry;
 import org.alfresco.repo.security.permissions.impl.traitextender.PermissionServiceExtension;
 import org.alfresco.repo.security.permissions.impl.traitextender.PermissionServiceTrait;
-import org.alfresco.repo.virtual.VirtualizationException;
 import org.alfresco.repo.virtual.ref.Reference;
 import org.alfresco.repo.virtual.store.VirtualStore;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -561,6 +560,12 @@ public class VirtualPermissionServiceExtension extends
     public Set<String> getAuthorisations()
     {
         return getTrait().getAuthorisations();
+    }
+
+    @Override
+    public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions, boolean asyncCall)
+    {
+        getTrait().setInheritParentPermissions(nodeRef, inheritParentPermissions, asyncCall);
     }
 
 }

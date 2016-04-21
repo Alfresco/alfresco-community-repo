@@ -116,7 +116,7 @@ public class PortEarlyPropertyChecker implements SubsystemEarlyPropertyChecker
                 {
                     try
                     {
-                        PortUtil.checkPort(portNumber, host);
+                        checkPort(portNumber, host);
                     }
                     catch (IOException ioe)
                     {
@@ -164,7 +164,7 @@ public class PortEarlyPropertyChecker implements SubsystemEarlyPropertyChecker
                     {
                         try
                         {
-                            PortUtil.checkPort(portNumber, host);
+                            checkPort(portNumber, host);
                         }
                         catch (IOException ioe)
                         {
@@ -221,6 +221,11 @@ public class PortEarlyPropertyChecker implements SubsystemEarlyPropertyChecker
         {
             createLogAndThrowAnInvalidPropertyValueException(UNABLE_TO_PARSE_PORT_MESSAGE, new String[] { subsystemName, propertyValue });
         }
+    }
+
+    protected void checkPort(int portNumber, String host) throws IOException
+    {
+        PortUtil.checkPort(portNumber, host);
     }
 
     private String appendToErrorString(String stringToAppendTo, String separator, String valueToAppend)

@@ -40,7 +40,7 @@
                                                 </td>
                                                 <td>
                                                    <div style="font-size: 22px; padding-bottom: 4px;">
-                                                      You have been invited to join the '${args["siteName"]}' site
+                                                      You have been invited to join the '${args["siteName"]?html}' site
                                                    </div>
                                                    <div style="font-size: 13px;">
                                                       ${date?datetime?string.full}
@@ -49,25 +49,25 @@
                                              </tr>
                                           </table>
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
-                                             <p>Hi ${inviteePerson.properties["cm:firstName"]!""},</p>
+                                             <p>Hi ${inviteePerson.properties["cm:firstName"]?html!""},</p>
       
-                                             <p>${inviterPerson.properties["cm:firstName"]!""} ${inviterPerson.properties["cm:lastName"]!""} 
-                                             has invited you to join the <b>${args["siteName"]}</b> site with the role of ${args["inviteeSiteRole"]}.</p>
+                                             <p>${inviterPerson.properties["cm:firstName"]?html!""} ${inviterPerson.properties["cm:lastName"]?html!""} 
+                                             has invited you to join the <b>${args["siteName"]?html}</b> site with the role of ${args["inviteeSiteRole"]}.</p>
                                              
-                                             <p>Click this link to accept ${inviterPerson.properties["cm:firstName"]!""}'s invitation:<br />
+                                             <p>Click this link to accept ${inviterPerson.properties["cm:firstName"]?html!""}'s invitation:<br />
                                              <br /><a href="${args["acceptLink"]}">${args["acceptLink"]}</a></p>
                                              
                                              <#if args["inviteeGenPassword"]?exists>
                                              <p>An account has been created for you and your login details are:<br />
-                                             <br />Username: <b>${args["inviteeUserName"]}</b>
-                                             <br />Password: <b>${args["inviteeGenPassword"]}</b>
+                                             <br />Username: <b>${args["inviteeUserName"]?html}</b>
+                                             <br />Password: <b>${args["inviteeGenPassword"]?html}</b>
                                              </p>
                                              
                                              <p><b>We strongly advise you to change your password when you log in for the first time.</b><br />
                                              You can do this by going to <b>My Profile</b> and selecting <b>Change Password</b>.</p>
                                              </#if>
                                              
-                                             <p>If you want to decline ${inviterPerson.properties["cm:firstName"]!""}’s invitation, click this link:<br />
+                                             <p>If you want to decline ${inviterPerson.properties["cm:firstName"]?html!""}’s invitation, click this link:<br />
                                              <br /><a href="${args["rejectLink"]}">${args["rejectLink"]}</a></p>
                                              
                                              <p>Sincerely,<br />

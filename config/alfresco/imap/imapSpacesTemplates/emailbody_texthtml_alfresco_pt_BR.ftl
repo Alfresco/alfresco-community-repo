@@ -40,23 +40,23 @@
 </head>
 <body>
 <hr>
-<h1> Documento (nome):   ${document.name} </h1>
+<h1> Documento (nome):   ${document.name?html} </h1>
 <hr>
 <h2> Metadados </h2>
 <table class="description">
    <#if document.properties.title?exists>
-                     <tr><td valign="top">Título:</td><td>${document.properties.title}</td></tr>
+                     <tr><td valign="top">Título:</td><td>${document.properties.title?html}</td></tr>
    <#else>
                      <tr><td valign="top">Título:</td><td>&nbsp;</td></tr>
    </#if>
    <#if document.properties.description?exists>
-                     <tr><td valign="top">Descrição:</td><td>${document.properties.description}</td></tr>
+                     <tr><td valign="top">Descrição:</td><td>${document.properties.description?html}</td></tr>
    <#else>
                      <tr><td valign="top">Descrição:</td><td>&nbsp;</td></tr>
    </#if>
-                     <tr><td>Criador:</td><td>${document.properties.creator}</td></tr>
+                     <tr><td>Criador:</td><td>${document.properties.creator?html}</td></tr>
                      <tr><td>Criado:</td><td>${document.properties.created?datetime}</td></tr>
-                     <tr><td>Modificador:</td><td>${document.properties.modifier}</td></tr>
+                     <tr><td>Modificador:</td><td>${document.properties.modifier?html}</td></tr>
                      <tr><td>Modificado:</td><td>${document.properties.modified?datetime}</td></tr>
                      <tr><td>Tamanho:</td><td>${document.size / 1024} KB</td></tr>
 </table>
@@ -64,16 +64,16 @@
 <h2> Links de conteúdo </h2>
 <table class="links">
    <tr>
-   <td>Pasta de conteúdo:</td><td><a href="${contentFolderUrl}">${contentFolderUrl}</a></td>
+   <td>Pasta de conteúdo:</td><td><a href="${contentFolderUrl?html}">${contentFolderUrl?html}</a></td>
    </tr>
    <tr>
-   <td>URL de conteúdo:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}</a></td>
+   <td>URL de conteúdo:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}</a></td>
    </tr>
    <tr>
-   <td>URL de download:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name}?a=true</a></td>
+   <td>URL de download:</td><td><a href="${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}?a=true">${contextUrl}/service/api/node/content/${document.storeType}/${document.storeId}/${document.id}/${document.name?html}?a=true</a></td>
    </tr>
    <tr>
-   <td>URL de WebDAV:</td><td><a href="${contextUrl}${document.webdavUrl}">${contextUrl}${document.webdavUrl}</a></td>
+   <td>URL de WebDAV:</td><td><a href="${contextUrl}${document.webdavUrl?html}">${contextUrl}${document.webdavUrl?html}</a></td>
    </tr>
 </table>
 </body>

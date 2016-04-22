@@ -74,6 +74,11 @@
             <type>pom</type>
             <scope>import</scope>
          </dependency>
+         <dependency>
+             <groupId>org.reflections</groupId>
+             <artifactId>reflections</artifactId>
+             <version>0.9.10</version>
+         </dependency>
       </dependencies>
    </dependencyManagement>
 
@@ -262,7 +267,7 @@
                <artifactId>sql-maven-plugin</artifactId>
                <version>1.5</version>
             </plugin>
-            
+
             <!-- Maven Release Plugin (Use a recent version for better Git Support) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -272,7 +277,7 @@
                     <tagNameFormat>V@{project.version}</tagNameFormat>
                 </configuration>
             </plugin>
-            
+
             <!-- Disable doclint until RM-3150 is fixed -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

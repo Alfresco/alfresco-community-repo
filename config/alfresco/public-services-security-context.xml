@@ -102,8 +102,19 @@
                 <ref bean="lockOwnerDynamicAuthority" />
             </list>
         </property>
+        <property name="fixedAclUpdater">
+            <ref bean="fixedAclUpdater"/>
+        </property>
     </bean>
     
+    <bean id="fixedAclUpdater" class="org.alfresco.repo.domain.permissions.FixedAclUpdater">
+        <property name="jobLockService" ref="jobLockService"/>
+        <property name="transactionService" ref="transactionService"/>
+        <property name="accessControlListDAO" ref="admNodeACLDAO"/>
+        <property name="nodeDAO" ref="nodeDAO"/>
+        <property name="maxItemBatchSize" value="${system.fixedACLsUpdater.maxItemBatchSize}"/>
+        <property name="lockTimeToLive" value="${system.fixedACLsUpdater.lockTTL}"/>
+    </bean>
     
     <!-- =================== -->
     <!-- Dynamic Authorities -->

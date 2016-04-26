@@ -29,6 +29,7 @@ import junit.framework.JUnit4TestAdapter;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
+import org.alfresco.repo.domain.permissions.FixedAclUpdaterTest;
 import org.alfresco.repo.ownable.impl.OwnableServiceTest;
 import org.alfresco.repo.security.authentication.AlfrescoSSLSocketFactoryTest;
 import org.alfresco.repo.security.authentication.AuthenticationBootstrapTest;
@@ -92,6 +93,8 @@ public class SecurityTestSuite extends TestSuite
 
         suite.addTest(new JUnit4TestAdapter(HomeFolderProviderSynchronizerTest.class));
         suite.addTest(new JUnit4TestAdapter(AlfrescoSSLSocketFactoryTest.class));
+		suite.addTestSuite(FixedAclUpdaterTest.class);
+		
         return suite;
     }
 }

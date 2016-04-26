@@ -115,6 +115,12 @@ public class PermissionServiceNOOPImpl implements PermissionServiceSPI
     }
 
     @Override
+    public void setInheritParentPermissions(NodeRef nodeRef, boolean inheritParentPermissions, boolean asyncCall)
+    {
+        // Do Nothing.
+    }
+
+    @Override
     public boolean getInheritParentPermissions(NodeRef nodeRef)
     {
         // TODO Auto-generated method stub

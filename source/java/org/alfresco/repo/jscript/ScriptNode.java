@@ -1629,6 +1629,18 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
     }
     
     /**
+     * Set whether this node should inherit permissions from the parent node. If the operation takes 
+     * too long and asyncCall parameter set accordingly, fixed ACLs method will be asynchronously called.
+     * 
+     * @param inherit True to inherit parent permissions, false otherwise.
+     * @param asyncCall True if fixed ACLs should be asynchronously set when operation execution takes too long, false otherwise.
+     */
+    public void setInheritsPermissions(boolean inherit, boolean asyncCall)
+    {
+        this.services.getPermissionService().setInheritParentPermissions(this.nodeRef, inherit, asyncCall);
+    }
+    
+    /**
      * Apply a permission for ALL users to the node.
      * 
      * @param permission Permission to apply

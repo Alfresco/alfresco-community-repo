@@ -114,73 +114,11 @@ public class SubsystemsTest extends BaseSpringTest
         assertEquals(123456789123456789L, testBeans[2].getLongProperty());
         assertEquals("Global Instance Default", testBeans[2].getAnotherStringProperty());
     }
-    
-    private void blockPort(final String host, final int portNumber)
-    {
-        shouldBlockPort = true;
-        
-        new Thread()
-        {
-            public void run()
-            {
-                ServerSocket serverSocket = null;
-
-                try
-                {
-                    if (host != null && !host.equals("0.0.0.0"))
-                    {
-                        serverSocket = new ServerSocket(portNumber, 0, InetAddress.getByName(host));
-                    }
-                    else
-                    {
-                        serverSocket = new ServerSocket(portNumber);
-                    }
-                    
-                    serverSocket.setSoTimeout(200);
-                    
-                    do
-                    {
-                        try
-                        {
-                            serverSocket.accept();
-                        }
-                        catch (SocketTimeoutException ste)
-                        {
-                            //We're expecting this.
-                        }
-                    }
-                    while (shouldBlockPort);
-                }
-                catch (IOException ex)
-                {
-                    LogFactory.getLog(SubsystemsTest.class).error(ex.getMessage());
-                }
-                finally
-                {
-                    if (serverSocket != null)
-                    {
-                        try
-                        {
-                            serverSocket.close();
-                        }
-                        catch (Exception ex)
-                        {
-                            LogFactory.getLog(SubsystemsTest.class).error(ex.getMessage());
-                        }
-                    }
-                }
-            }
-        }.start();
-    }
-
-    private void unblockPort()
-    {
-        shouldBlockPort = false;
-    }
 
     public void testAbstractPropertyBackedBean_performEarlyPropertyChecks_PortEarlyPropertyChecker()
     {
         int testPortNumber = (Integer) getApplicationContext().getBean("testPortNumber");
+        String testHost = (String) getApplicationContext().getBean("testHost");
 
         ChildApplicationContextFactory testBean = (ChildApplicationContextFactory) getApplicationContext().getBean("testsubsystem");
 
@@ -201,33 +139,23 @@ public class SubsystemsTest extends BaseSpringTest
         // Check for "port in use" error:
         testProperties.put("test5.port", "" + testPortNumber);
 
-        try
-        {
-            blockPort(null, testPortNumber);
+        String errorMessage = testBean.performEarlyPropertyChecks(testProperties);
             
-            String errorMessage = testBean.performEarlyPropertyChecks(testProperties);
+        assertTrue(errorMessage.contains("The value for TestSubsystem port property cannot be empty."));
+        assertTrue(errorMessage.contains("Unable to parse value for TestSubsystem port property: 123xy."));
+        assertTrue(errorMessage.contains("The port chosen for TestSubsystem is outside the required range (1, 65535): 0."));
+        assertTrue(errorMessage.contains("The port chosen for TestSubsystem is outside the required range (1, 65535): 65536."));
             
-            assertTrue(errorMessage.contains("The value for TestSubsystem port property cannot be empty."));
-            assertTrue(errorMessage.contains("Unable to parse value for TestSubsystem port property: 123xy."));
-            assertTrue(errorMessage.contains("The port chosen for TestSubsystem is outside the required range (1, 65535): 0."));
-            assertTrue(errorMessage.contains("The port chosen for TestSubsystem is outside the required range (1, 65535): 65536."));
-            
-            assertTrue(errorMessage.contains(
-                    "The port chosen for TestSubsystem is already in use or you don't have permission to use it: " + testPortNumber + "."));
-            
-        }
-        finally
-        {
-            unblockPort();
-        }
+        assertTrue(errorMessage.contains(
+                "The port chosen for TestSubsystem is already in use or you don't have permission to use it: " + testPortNumber + "."));
         
         testProperties.clear();
 
         testProperties.put("test_with_host.port", "" + testPortNumber);
         // Check for unknown host:
-        testProperties.put("test.subsystem.host", "The quick brown fox jumps over the lazy dog.");
+        testProperties.put("test.subsystem.host", testHost);
 
-        String errorMessage = testBean.performEarlyPropertyChecks(testProperties);
+        errorMessage = testBean.performEarlyPropertyChecks(testProperties);
         
         assertTrue(errorMessage.contains(
                 "The hostname chosen for TestSubsystem is unknown or misspelled: " + testProperties.get("test.subsystem.host") + "."));

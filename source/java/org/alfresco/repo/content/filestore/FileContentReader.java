@@ -203,6 +203,7 @@ public class FileContentReader extends AbstractContentReader
     @Override
     protected ReadableByteChannel getDirectReadableChannel() throws ContentIOException
     {
+        RandomAccessFile randomAccessFile = null;
         try
         {
             // the file must exist
@@ -214,7 +215,7 @@ public class FileContentReader extends AbstractContentReader
             ReadableByteChannel channel = null;
             if (allowRandomAccess)
             {
-                RandomAccessFile randomAccessFile = new RandomAccessFile(file, "r");  // won't create it
+                randomAccessFile = new RandomAccessFile(file, "r");  // won't create it
                 channel = randomAccessFile.getChannel();
             }
             else
@@ -234,6 +235,20 @@ public class FileContentReader extends AbstractContentReader
         catch (Throwable e)
         {
             throw new ContentIOException("Failed to open file channel: " + this, e);
+        }
+        finally
+        {
+            if (randomAccessFile != null)
+            {
+                try
+                {
+                    randomAccessFile.close();
+                }
+                catch (IOException e)
+                {
+                    logger.error("Problem while closing file.", e);
+                }
+            }
         }
     }
 

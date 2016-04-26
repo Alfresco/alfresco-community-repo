@@ -347,6 +347,9 @@
         <property name="jobDetail" ref="fixedAclUpdaterJobDetail" />
         <property name="scheduler" ref="schedulerFactory" />
         <property name="cronExpression" value="${system.fixedACLsUpdater.cronExpression}" />
+        <property name="startDelayMinutes">
+            <value>${system.cronJob.startDelayMinutes}</value>
+        </property>
     </bean>
     
 </beans>

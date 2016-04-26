@@ -174,6 +174,10 @@ public abstract class AbstractImageMagickContentTransformerWorker extends Conten
         {
             return false;   // dwg extension doesn't work
         }
+        else if (mimetype.equals(MimetypeMap.MIMETYPE_IMAGE_DWT))
+        {
+            return false;   // dwt extension doesn't work
+        }
         else
         {
             return true;

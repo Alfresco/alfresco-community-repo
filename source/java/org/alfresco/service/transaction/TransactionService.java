@@ -26,10 +26,10 @@ import org.alfresco.service.NotAuditable;
 /**
  * Contract for retrieving access to a user transaction.
  * <p>
- * Note that the implementation of the {@link javax.transaction.UserTransaction}
+ * Note that the implementation of the  <code>javax.transaction.UserTransaction</code>
  * is not able to provide the full set of status codes available on the
- * {@link javax.transaction.Status} class.
- * 
+ * <code>javax.transaction.Status</code> class.
+ *
  * @author David Caruana
  */
 public interface TransactionService
@@ -37,35 +37,35 @@ public interface TransactionService
     /**
      * Determine if the repository has been put into read only mode.
      * This is independent of the current user.
-     * 
+     *
      * @return          <tt>true</tt> if the repository is allowed to perform
      *                  write operations
      */
     public boolean getAllowWrite();
-    
+
     /**
      * Determine if ALL user transactions will be read-only.  The 'System'
      * user is always allowed to write.
-     * 
+     *
      * @return Returns true if all transactions are read-only AND the current
      *         user is not the 'System' user.
      */
     @NotAuditable
     public boolean isReadOnly();
-    
+
     /**
      * Gets a user transaction that supports transaction propagation.
      * This is like the EJB <b>REQUIRED</b> transaction attribute.
-     * 
+     *
      * @return the user transaction
      */
     @NotAuditable
     UserTransaction getUserTransaction();
-    
+
     /**
      * Gets a user transaction that supports transaction propagation.
      * This is like the EJB <b>REQUIRED</b> transaction attribute.
-     * 
+     *
      * @param readOnly     Set true for a READONLY transaction instance, false otherwise.
      *      Note that it is not <i>always</i> possible to force a write transaction if the
      *      system is in read-only mode.
@@ -73,11 +73,11 @@ public interface TransactionService
      */
     @NotAuditable
     UserTransaction getUserTransaction(boolean readOnly);
-    
+
     /**
      * Gets a user transaction that supports transaction propagation.
      * This is like the EJB <b>REQUIRED</b> transaction attribute.
-     * 
+     *
      * @param readOnly     Set true for a READONLY transaction instance, false otherwise.
      * @param ignoreSystemReadOnly     <tt>true</tt> to force the read-only flag to be respected regardless
      *                  of the system read-only mode.
@@ -85,26 +85,26 @@ public interface TransactionService
      */
     @NotAuditable
     UserTransaction getUserTransaction(boolean readOnly, boolean ignoreSystemReadOnly);
-    
+
     /**
      * Gets a user transaction that ensures a new transaction is created.
      * Any enclosing transaction is not propagated.
      * This is like the EJB <b>REQUIRES_NEW</b> transaction attribute -
      * when the transaction is started, the current transaction will be
      * suspended and a new one started.
-     * 
+     *
      * @return Returns a non-propagating user transaction
      */
     @NotAuditable
     UserTransaction getNonPropagatingUserTransaction();
-    
+
     /**
      * Gets a user transaction that ensures a new transaction is created.
      * Any enclosing transaction is not propagated.
      * This is like the EJB <b>REQUIRES_NEW</b> transaction attribute -
      * when the transaction is started, the current transaction will be
      * suspended and a new one started.
-     * 
+     *
      * @param readOnly Set true for a READONLY transaction instance, false otherwise.
      *      Note that it is not <i>always</i> possible to force a write transaction if the
      *      system is in read-only mode.
@@ -112,14 +112,14 @@ public interface TransactionService
      */
     @NotAuditable
     UserTransaction getNonPropagatingUserTransaction(boolean readOnly);
-    
+
     /**
      * Gets a user transaction that ensures a new transaction is created.
      * Any enclosing transaction is not propagated.
      * This is like the EJB <b>REQUIRES_NEW</b> transaction attribute -
      * when the transaction is started, the current transaction will be
      * suspended and a new one started.
-     * 
+     *
      * @param readOnly  Set true for a READONLY transaction instance, false otherwise.
      * @param ignoreSystemReadOnly     <tt>true</tt> to force the read-only flag to be respected regardless
      *                  of the system read-only mode.
@@ -127,10 +127,10 @@ public interface TransactionService
      */
     @NotAuditable
     UserTransaction getNonPropagatingUserTransaction(boolean readOnly, boolean ignoreSystemReadOnly);
-    
+
     /**
      * Get the standard instance of the helper object that supports transaction retrying.
-     * 
+     *
      * @return
      *      Returns a helper object that executes units of work transactionally.  The helper
      *      can be reused or altered as required.

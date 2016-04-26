@@ -7,4 +7,8 @@
       defaults
    -->
    <import resource="../common-ldap-context.xml" />
+
+   <!-- LDAP-AD User Account Status Interpreter -->
+   <bean id="ldapadUserAccountStatusInterpreter" class="org.alfresco.repo.security.sync.ldap_ad.LDAPADUserAccountStatusInterpreter"> 
+   </bean>
 </beans>

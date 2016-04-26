@@ -7,4 +7,14 @@
       defaults
    -->
    <import resource="../common-ldap-context.xml" />
+
+   <!-- LDAP User Account Status Interpreter -->
+   <bean id="ldapUserAccountStatusInterpreter" class="org.alfresco.repo.security.sync.ldap.LDAPUserAccountStatusInterpreter"> 
+      <property name="disabledAccountPropertyValue">
+         <value>${ldap.synchronization.disabledAccountPropertyValue}</value>
+      </property>
+      <property name="acceptNullArgument">
+         <value>${ldap.synchronization.disabledAccountPropertyValueCanBeNull}</value>
+      </property>
+   </bean>
 </beans>

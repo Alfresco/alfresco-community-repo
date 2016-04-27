@@ -29,6 +29,26 @@
         <stringParameter name="alfresco_database_name" value="alfresco" ask="0"/>
         <stringParameter name="alfresco_database_validate_query" value="SELECT 1" ask="0"/>
 
+        <!-- License agreement panel -->
+        <licenseParameter>
+            <name>alfresco_license</name>
+            <title>License Agreement</title>
+            <insertAfter>welcome</insertAfter>
+            <description>Please read the following License Agreement. You must accept the terms of this agreement before continuing with the installation.</description>
+            <wrapText>1</wrapText>
+            <file>licenses/alfresco.trial.agreement-en.txt</file>
+            <licenseFileList>
+                <licenseFile>
+                    <code>en</code>
+                    <file>licenses/alfresco.trial.agreement-en.txt</file>
+                    <encoding>utf-8</encoding>
+                </licenseFile>
+            </licenseFileList>
+            <ruleList>
+                <compareText logic="equals" text="${alfresco_edition}" value="enterprise"/>
+            </ruleList>
+        </licenseParameter>
+
         <!-- Remote Solr Configuration -->
         <parameterGroup>
             <name>remote_solr_configuration</name>

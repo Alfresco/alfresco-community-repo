@@ -28,8 +28,6 @@ package org.alfresco.repo.domain.permissions;
 import java.util.HashSet;
 import java.util.Set;
 
-import junit.framework.TestCase;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.NodeRefQueryCallback;
@@ -39,11 +37,12 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.impl.PermissionsDaoComponent;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
-import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.ArgumentHelper;
@@ -52,10 +51,13 @@ import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import junit.framework.TestCase;
+
 /**
  * Test class for {@link FixedAclUpdater}
  * 
  * @author Andreea Dragoi
+ * @author sglover
  * @since 4.2.7
  *
  */
@@ -68,6 +70,7 @@ public class FixedAclUpdaterTest extends TestCase
     private FixedAclUpdater fixedAclUpdater;
     private NodeRef folderNodeRef;
     private PermissionsDaoComponent permissionsDaoComponent;
+    private PermissionService permissionService;
     private NodeDAO nodeDAO;
 
     @Override
@@ -80,6 +83,7 @@ public class FixedAclUpdaterTest extends TestCase
         repository = (Repository) ctx.getBean("repositoryHelper");
         fixedAclUpdater = (FixedAclUpdater) ctx.getBean("fixedAclUpdater");
         permissionsDaoComponent = (PermissionsDaoComponent) ctx.getBean("admPermissionsDaoComponent");
+        permissionService = (PermissionService) ctx.getBean("permissionService");
         nodeDAO = (NodeDAO) ctx.getBean("nodeDAO");
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
@@ -160,62 +164,66 @@ public class FixedAclUpdaterTest extends TestCase
      */
     private int getNodesCountWithPendingFixedAclAspect()
     {
-        final Set<QName> aspects = new HashSet<>(1);
-        aspects.add(ContentModel.ASPECT_PENDING_FIX_ACL);
-        GetNodesCountWithAspectCallback callback = new GetNodesCountWithAspectCallback();
-        nodeDAO.getNodesWithAspects(aspects, 1L, null, callback);
-        return callback.getNodesNumber();
+        return txnHelper.doInTransaction(new RetryingTransactionCallback<Integer>()
+        {
+            @Override
+            public Integer execute() throws Throwable
+            {
+                final Set<QName> aspects = new HashSet<>(1);
+                aspects.add(ContentModel.ASPECT_PENDING_FIX_ACL);
+                GetNodesCountWithAspectCallback callback = new GetNodesCountWithAspectCallback();
+                nodeDAO.getNodesWithAspects(aspects, 1L, null, callback);
+                return callback.getNodesNumber();
+            }
+        });
     }
 
     @Test
     public void testMNT15368()
     {
+        // kick it off by setting inherit parent permissions == false
         txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
         {
             @Override
             public Void execute() throws Throwable
             {
-                // call setInheritParentPermissions on a node that will required async
-                AlfrescoTransactionSupport.bindResource(FixedAclUpdater.FIXED_ACL_ASYNC_CALL_KEY, true);
-                permissionsDaoComponent.setInheritParentPermissions(folderNodeRef, false);
+                permissionService.setInheritParentPermissions(folderNodeRef, false, true);
 
                 Boolean asyncCallRequired = (Boolean) AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY);
-                if (asyncCallRequired != null && asyncCallRequired)
-                {
-                    // check if there are nodes with ASPECT_PENDING_FIX_ACL
-                    assertTrue(" No nodes with pending aspect", getNodesCountWithPendingFixedAclAspect() > 0);
-                    AlfrescoTransactionSupport.bindListener(new TransactionListenerAdapter()
-                    {
-                        @Override
-                        public void afterCommit()
-                        {
-                            // start fixedAclUpdater
-                            Thread t = new Thread(new Runnable()
-                            {
-                                @Override
-                                public void run()
-                                {
-                                    fixedAclUpdater.execute();
-                                }
-                            });
-                            t.start();
-                            try
-                            {
-                                // wait to finish work
-                                t.join();
-                            }
-                            catch (InterruptedException e)
-                            {
-                            }
-                        }
-                    });
-                }
+                assertTrue("asyncCallRequired should be true", asyncCallRequired);
+
                 return null;
             }
-        });
-        // check if nodes with ASPECT_PENDING_FIX_ACL are processed
-        assertTrue("Not all nodes were processed", getNodesCountWithPendingFixedAclAspect() == 0);
+        }, false, true);
 
+        // run the fixedAclUpdater until there is nothing more to fix (running the updater
+        // may create more to fix up)
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                int count = 0;
+                do
+                {
+                    count = fixedAclUpdater.execute();
+                }
+                while(count > 0);
+
+                return null;
+            }
+        }, false, true);
+
+        // check if nodes with ASPECT_PENDING_FIX_ACL are processed
+        txnHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                assertEquals("Not all nodes were processed", 0, getNodesCountWithPendingFixedAclAspect());
+                return null;
+            }
+        }, false, true);
     }
 
     private static class GetNodesCountWithAspectCallback implements NodeRefQueryCallback

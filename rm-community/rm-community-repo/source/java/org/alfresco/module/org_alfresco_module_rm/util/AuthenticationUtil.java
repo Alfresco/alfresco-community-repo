@@ -99,6 +99,16 @@ public class AuthenticationUtil
     }
 
     /**
+     * Helper method that gets the guest user name.
+     *
+     * @see org.alfresco.repo.security.authentication.AuthenticationUtil#getGuestUserName()
+     */
+    public String getGuestUserName()
+    {
+        return org.alfresco.repo.security.authentication.AuthenticationUtil.getGuestUserName();
+    }
+
+    /**
      * @see org.alfresco.repo.security.authentication.AuthenticationUtil#isRunAsUserTheSystemUser()
      */
     public boolean isRunAsUserTheSystemUser()

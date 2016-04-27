@@ -30,6 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.action;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -37,6 +38,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  *
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface RecordsManagementAction
 {
     /**

@@ -42,6 +42,7 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.0
  */
+// Not @AlfrescoPublicApi because it depends on DispositionSchedule which is not part of the public API.
 public interface DispositionService
 {
     /** ========= Disposition Property Methods ========= */

@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.fileplan;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * File plan component kind enumeration class.
  * <br>
@@ -35,6 +37,7 @@ package org.alfresco.module.org_alfresco_module_rm.fileplan;
  *
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public enum FilePlanComponentKind
 {
     FILE_PLAN_COMPONENT,

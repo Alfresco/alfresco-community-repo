@@ -30,17 +30,19 @@ package org.alfresco.module.org_alfresco_module_rm.freeze;
 import java.util.Date;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.hold.HoldService;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Freeze Service Interface
- * 
+ *
  * TODO should be deprecated and methods moved to the HoldService with "hold, held, etc" style names
  *
  * @author Roy Wetherall
  * @since 2.0
  */
+@AlfrescoPublicApi
 public interface FreezeService
 {
     /**
@@ -74,12 +76,12 @@ public interface FreezeService
      * @return String The initiator of the freeze or null
      */
     String getFreezeInitiator(NodeRef nodeRef);
-    
+
    /**
     * @deprecated as of 2.2, use {@link HoldService#isHold(NodeRef)} instead.
     */
     @Deprecated
-   boolean isHold(NodeRef nodeRef);   
+   boolean isHold(NodeRef nodeRef);
 
    /**
     * @deprecated as of 2.2, use {@link HoldService#getHeld(NodeRef)} instead.

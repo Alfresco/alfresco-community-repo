@@ -27,15 +27,17 @@
 
 package org.alfresco.module.org_alfresco_module_rm.report;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
  * Report generator interface.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
+@AlfrescoPublicApi
 public interface ReportGenerator
 {
     /**
@@ -45,7 +47,7 @@ public interface ReportGenerator
 
     /**
      * Generate report.
-     * 
+     *
      * @param reportedUponNodeRef
      * @param mimetype
      * @return

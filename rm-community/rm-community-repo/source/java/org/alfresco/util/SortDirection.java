@@ -1,5 +1,7 @@
 package org.alfresco.util;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /*
  * #%L
  * Alfresco Records Management Module
@@ -35,6 +37,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
  * @author Tuna Aksoy
  * @since 2.5
  */
+@AlfrescoPublicApi
 public enum SortDirection
 {
     ASC ("asc"),

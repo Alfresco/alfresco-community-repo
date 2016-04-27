@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.transfer;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
@@ -35,6 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Tuna Aksoy
  * @since 2.2
  */
+@AlfrescoPublicApi
 public interface TransferService
 {
     /**
@@ -62,7 +64,7 @@ public interface TransferService
      * Completes the transfer for the given node.
      *
      * @param nodeRef       node reference to complete the transfer
-     * 
+     *
      * @since 2.2
      */
     void completeTransfer(NodeRef nodeRef);

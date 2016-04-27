@@ -83,6 +83,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *
  * @author Roy Wetherall
  */
+// Not @AlfrescoPublicApi at the moment as it requires RecordsManagementSearchServiceImpl which is not public API.
 public class SavedSearchDetails extends ReportDetails
 {
     // JSON label values

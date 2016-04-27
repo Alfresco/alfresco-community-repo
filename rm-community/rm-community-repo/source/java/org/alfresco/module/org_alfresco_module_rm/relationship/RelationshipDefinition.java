@@ -27,12 +27,15 @@
 
 package org.alfresco.module.org_alfresco_module_rm.relationship;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Interface representing the relationship definition
  *
  * @author Tuna Aksoy
  * @since 2.3
  */
+@AlfrescoPublicApi
 public interface RelationshipDefinition
 {
     /**

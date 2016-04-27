@@ -36,6 +36,7 @@ import org.alfresco.service.cmr.repository.Period;
  * @author Roy Wetherall
  * @since 2.0
  */
+// Not @AlfrescoPublicApi due to e.g. Period.
 public interface VitalRecordService
 {
     /** Period 'none' */

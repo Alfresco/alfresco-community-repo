@@ -42,6 +42,7 @@ import org.alfresco.service.namespace.QName;
  * Used to bridge between the old style of saved search passed and required by the UI and the new actual saved search details.
  * Eventually will be factored out as web scripts are brought up to date.
  */
+// Not @AlfrescoPublicApi at the moment as it requires RecordsManagementSearchServiceImpl which is not public API.
 public class SavedSearchDetailsCompatibility implements RecordsManagementModel
 {
     /** Saved search details */

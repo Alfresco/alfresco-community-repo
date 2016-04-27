@@ -126,10 +126,20 @@
       </tree>
 
       <!--
-         Used by the "Manage Aspects" action
+         Used by "Manage Rules" -> "Add aspect" action.
 
-         For custom aspects, remember to also add the relevant i18n string(s)
-            cm_myaspect=My Aspect
+         If an aspect has been specified without a title element in the content model,
+         or you need to support multiple languages,
+         then an i18n file is needed on the Repo AMP/JAR extension side for the aspect to
+         be visible when creating rules:
+
+          custom_customModel.aspect.custom_myaspect.title=My Aspect
+
+         Used by the "Manage Aspects" action.
+
+         For the aspect to have a localised label add relevant i18n string(s) in a Share AMP/JAR extension:
+
+          aspect.custom_myaspect=My Aspect
       -->
       <aspects>
          <!-- Aspects that a user can see -->
@@ -164,15 +174,26 @@
       </aspects>
 
       <!--
-         Used by the "Change Type" action
+         Used by "Manage Rules" -> "Specialise type" action.
+
+         If a type has been specified without a title element in the content model,
+         or you need to support multiple languages,
+         then an i18n file is needed on the Repo AMP/JAR extension side for the type to
+         be visible when creating rules:
+
+            custom_customModel.type.custom_mytype.title=My SubType
+
+         Used by the "Change Type" action.
+
+         For the type to have a localised label add relevant i18n string(s) in a Share AMP/JAR extension:
+
+            type.custom_mytype=My SubType
 
          Define valid subtypes using the following example:
-            <type name="cm:content">
-               <subtype name="cm:mysubtype" />
-            </type>
 
-         Remember to also add the relevant i18n string(s):
-            cm_mysubtype=My SubType
+            <type name="cm:content">
+             <subtype name="custom:mytype" />
+            </type>
       -->
       <types>
          <type name="cm:content">

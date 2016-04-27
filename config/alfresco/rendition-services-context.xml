@@ -175,6 +175,9 @@
       <property name="tikaConfig">
          <ref bean="tikaConfig"/>
       </property>
+      <property name="metadataExtracterConfig">
+         <ref bean="metadataExtracterConfig" />
+      </property>
    </bean>
 
    <bean id="compositeRenderingEngine"

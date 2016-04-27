@@ -16,6 +16,42 @@ function exitUpload(statusCode, statusMsg)
    status.message = statusMsg;
    status.redirect = true;
 }
+/**
+ * Creates an new filename by adding a suffix to existing one in order to avoid duplicates in folder
+ * The check that folder already contains the filename should be done before calling this function
+ * @param filename - existing filename
+ * @param destNode - folder node
+ * @returns
+ */
+function createUniqueNameInFolder(filename, destNode)
+{
+   var counter = 1,
+   tmpFilename,
+   dotIndex,
+   existingFile;
+   do
+   {
+      dotIndex = filename.lastIndexOf(".");
+      if (dotIndex == 0)
+      {
+         // File didn't have a proper 'name' instead it had just a suffix and started with a ".", create "1.txt"
+         tmpFilename = counter + filename;
+      }
+      else if (dotIndex > 0)
+      {
+         // Filename contained ".", create "filename-1.txt"
+         tmpFilename = filename.substring(0, dotIndex) + "-" + counter + filename.substring(dotIndex);
+      }
+      else
+      {
+         // Filename didn't contain a dot at all, create "filename-1"
+         tmpFilename = filename + "-" + counter;
+      }
+      existingFile = destNode.childByNamePath(tmpFilename);
+      counter++;
+   } while (existingFile !== null);
+   return tmpFilename;
+}
 
 function main()
 {
@@ -40,6 +76,7 @@ function main()
       // Update specific
       var updateNodeRef = null,
          majorVersion = false,
+         updateNameAndMimetype = false,
          description = "";
       
       // Prevents Flash- and IE8-sourced "null" values being set for those parameters where they are invalid.
@@ -132,6 +169,10 @@ function main()
             case "thumbnails":
                thumbnailNames = field.value;
                break;
+               
+            case "updatenameandmimetype":
+               updateNameAndMimetype = field.value == "true";
+               break;
          }
       }
 
@@ -222,6 +263,20 @@ function main()
             exitUpload(404, "Node specified by updateNodeRef (" + updateNodeRef + ") not found.");
             return;
          }
+
+         if (updateNameAndMimetype)
+         {
+             //check to see if name is already used in folder
+             var existingFile = updateNode.getParent().childByNamePath(filename),
+                 newFilename = filename;
+             if (existingFile !== null && existingFile.nodeRef.id  !== updateNodeRef.id)
+             {
+                 //name it's already used for other than node to update; create a new one
+                 newFilename = createUniqueNameInFolder(filename, updateNode.getParent());
+             }
+             //update node name
+             updateNode.setName(newFilename);
+         }
          
          var workingcopy = updateNode.hasAspect("cm:workingcopy");
          if (!workingcopy && updateNode.isLocked)
@@ -248,7 +303,7 @@ function main()
          }
 
          // Update the working copy content
-         updateNode.properties.content.write(content, false, true);
+         updateNode.properties.content.write(content, updateNameAndMimetype, true);
          // check it in again, with supplied version history note
          
          // Extract the metadata
@@ -325,32 +380,7 @@ function main()
             else
             {
                // Upload component was configured to find a new unique name for clashing filenames
-               var counter = 1,
-                  tmpFilename,
-                  dotIndex;
-
-               while (existingFile !== null)
-               {
-                  dotIndex = filename.lastIndexOf(".");
-                  if (dotIndex == 0)
-                  {
-                     // File didn't have a proper 'name' instead it had just a suffix and started with a ".", create "1.txt"
-                     tmpFilename = counter + filename;
-                  }
-                  else if (dotIndex > 0)
-                  {
-                     // Filename contained ".", create "filename-1.txt"
-                     tmpFilename = filename.substring(0, dotIndex) + "-" + counter + filename.substring(dotIndex);
-                  }
-                  else
-                  {
-                     // Filename didn't contain a dot at all, create "filename-1"
-                     tmpFilename = filename + "-" + counter;
-                  }
-                  existingFile = destNode.childByNamePath(tmpFilename);
-                  counter++;
-               }
-               filename = tmpFilename;
+               filename = createUniqueNameInFolder(filename, destNode);
             }
          }
 

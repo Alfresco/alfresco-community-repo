@@ -346,6 +346,13 @@
             </ruleList>
         </actionGroup>
         
+        <!-- Remove unnecessary license agreement files  -->
+        <actionGroup>
+            <actionList>
+                <deleteFile path="${installdir}/licenses/alfresco.trial.agreement*.txt"/>
+            </actionList>
+        </actionGroup>
+        
     </postInstallationActionList>
     
     <finalPageActionList>

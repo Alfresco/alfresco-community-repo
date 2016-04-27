@@ -344,7 +344,7 @@ public class AuthenticationServiceImpl extends AbstractAuthenticationService imp
      */
     public boolean getAuthenticationEnabled(String userName) throws AuthenticationException
     {
-        if (personService.personExists(userName))
+        if (personService != null && personService.personExists(userName))
         {
             return personService.isEnabled(userName);
         }

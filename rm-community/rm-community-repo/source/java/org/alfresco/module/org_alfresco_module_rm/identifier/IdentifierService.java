@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.identifier;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
@@ -35,6 +36,7 @@ import org.alfresco.service.namespace.QName;
  *
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 public interface IdentifierService
 {
     /** Context value names */

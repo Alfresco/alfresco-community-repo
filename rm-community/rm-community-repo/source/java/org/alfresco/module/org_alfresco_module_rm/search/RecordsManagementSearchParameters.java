@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
@@ -48,6 +49,7 @@ import org.json.JSONObject;
 /**
  * @author Roy Wetherall
  */
+@AlfrescoPublicApi
 @SuppressWarnings("serial")
 public class RecordsManagementSearchParameters
 {

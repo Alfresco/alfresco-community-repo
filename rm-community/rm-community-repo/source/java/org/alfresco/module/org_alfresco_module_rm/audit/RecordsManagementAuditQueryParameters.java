@@ -29,15 +29,17 @@ package org.alfresco.module.org_alfresco_module_rm.audit;
 
 import java.util.Date;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 
 /**
- * Class to represent the parameters for a Records Management 
+ * Class to represent the parameters for a Records Management
  * audit log query.
- * 
+ *
  * @author Gavin Cornwell
  */
+@AlfrescoPublicApi
 public final class RecordsManagementAuditQueryParameters
 {
     private int maxEntries = -1;
@@ -56,7 +58,7 @@ public final class RecordsManagementAuditQueryParameters
     }
 
     /**
-     * 
+     *
      * @return The username to filter by
      */
     public String getUser()
@@ -67,7 +69,7 @@ public final class RecordsManagementAuditQueryParameters
     /**
      * Restricts the retrieved audit trail to entries made by
      * the provided user.
-     * 
+     *
      * @param user The username to filter by
      */
     public void setUser(String user)
@@ -76,7 +78,7 @@ public final class RecordsManagementAuditQueryParameters
     }
 
     /**
-     * 
+     *
      * @return The maximum number of audit log entries to retrieve
      */
     public int getMaxEntries()
@@ -85,9 +87,9 @@ public final class RecordsManagementAuditQueryParameters
     }
 
     /**
-     * Restricts the retrieved audit trail to the last 
+     * Restricts the retrieved audit trail to the last
      * <code>maxEntries</code> entries.
-     * 
+     *
      * @param maxEntries Maximum number of entries
      */
     public void setMaxEntries(int maxEntries)
@@ -96,7 +98,7 @@ public final class RecordsManagementAuditQueryParameters
     }
 
     /**
-     * 
+     *
      * @return The node to get entries for
      */
     public NodeRef getNodeRef()
@@ -107,7 +109,7 @@ public final class RecordsManagementAuditQueryParameters
     /**
      * Restricts the retrieved audit trail to only those entries
      * created by the give node.
-     * 
+     *
      * @param nodeRef The node to get entries for
      */
     public void setNodeRef(NodeRef nodeRef)
@@ -116,7 +118,7 @@ public final class RecordsManagementAuditQueryParameters
     }
 
     /**
-     * 
+     *
      * @return The date to retrieve entries from
      */
     public Date getDateFrom()
@@ -127,7 +129,7 @@ public final class RecordsManagementAuditQueryParameters
     /**
      * Restricts the retrieved audit trail to only those entries
      * that occurred after the given date.
-     * 
+     *
      * @param dateFrom Date to retrieve entries after
      */
     public void setDateFrom(Date dateFrom)
@@ -136,7 +138,7 @@ public final class RecordsManagementAuditQueryParameters
     }
 
     /**
-     * 
+     *
      * @return The date to retrive entries to
      */
     public Date getDateTo()
@@ -147,16 +149,16 @@ public final class RecordsManagementAuditQueryParameters
     /**
      * Restricts the retrieved audit trail to only those entries
      * that occurred before the given date.
-     * 
+     *
      * @param dateTo Date to retrieve entries before
      */
     public void setDateTo(Date dateTo)
     {
         this.dateTo = dateTo;
     }
-    
+
     /**
-     * 
+     *
      * @return The event to retrive entries for
      */
     public String getEvent()
@@ -167,16 +169,16 @@ public final class RecordsManagementAuditQueryParameters
     /**
      * Restricts the retrieved audit trail to only those entries
      * that match the given event string.
-     * 
+     *
      * @param event Event to retrieve entries for
      */
     public void setEvent(String event)
     {
         this.event = event;
     }
-    
+
     /**
-     * 
+     *
      * @return The property to retrieve entries for
      */
     public QName getProperty()
@@ -187,7 +189,7 @@ public final class RecordsManagementAuditQueryParameters
     /**
      * Restricts the audit trail to only those entries that involve
      * the given property.
-     * 
+     *
      * @param property The property to retrieve entries for
      */
     public void setProperty(QName property)
@@ -198,17 +200,17 @@ public final class RecordsManagementAuditQueryParameters
     /*
      * @see java.lang.Object#toString()
      */
-    @Override 
+    @Override
     public String toString()
     {
         StringBuilder builder = new StringBuilder(super.toString());
-        
+
         builder.append(" (nodeRef='").append(nodeRef).append("', user='")
         .append(user).append("', dateFrom='").append(dateFrom)
         .append("', dateTo='").append(dateTo).append("', maxEntries='")
         .append(maxEntries).append("', event='").append(event)
         .append("', property='").append(property).append("')");
-        
+
         return builder.toString();
     }
 }

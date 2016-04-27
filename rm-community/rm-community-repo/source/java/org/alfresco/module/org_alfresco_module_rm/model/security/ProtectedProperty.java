@@ -27,17 +27,20 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.security;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Protected property implementation
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
  */
+@AlfrescoPublicApi
 public class ProtectedProperty extends ProtectedModelArtifact
 {
     /** always allow new indicator */
     private boolean allwaysAllowNew = false;
-    
+
     /**
      * @param allwaysAllowNew   true if always allow new, false otherwise
      */
@@ -45,7 +48,7 @@ public class ProtectedProperty extends ProtectedModelArtifact
     {
         this.allwaysAllowNew = allwaysAllowNew;
     }
-    
+
     /**
      * @return  true if always allow new, false otherwise
      */

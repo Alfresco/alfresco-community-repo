@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.audit.event;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.audit.RecordsManagementAuditService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.util.ParameterCheck;
@@ -40,6 +41,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  * @author Roy Wetherall
  * @since 1.0
  */
+@AlfrescoPublicApi
 public class AuditEvent implements RecordsManagementModel, Comparable<AuditEvent>
 {
 	/** Name */

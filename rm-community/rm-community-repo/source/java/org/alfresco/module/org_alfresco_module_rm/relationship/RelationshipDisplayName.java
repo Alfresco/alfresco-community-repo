@@ -29,12 +29,15 @@ package org.alfresco.module.org_alfresco_module_rm.relationship;
 
 import static org.alfresco.util.ParameterCheck.mandatoryString;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * POJO representing the relationship display name
  *
  * @author Tuna Aksoy
  * @since 2.3
  */
+@AlfrescoPublicApi
 public class RelationshipDisplayName
 {
     /** The source text of the relationship */

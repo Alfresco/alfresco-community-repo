@@ -27,52 +27,55 @@
 
 package org.alfresco.module.org_alfresco_module_rm.search;
 
+import org.alfresco.api.AlfrescoPublicApi;
+
 /**
  * Report details.
- *            
+ *
  * @author Roy Wetherall
  */
-public class ReportDetails 
+@AlfrescoPublicApi
+public class ReportDetails
 {
     /** Name */
 	protected String name;
-	
+
 	/** Description */
 	protected String description;
-	
+
 	/** Search */
 	protected String search;
-	
+
 	/** Search parameters */
 	protected RecordsManagementSearchParameters searchParameters;
 
 	/**
-	 * 
+	 *
 	 * @param name
 	 * @param description
 	 * @param search
 	 * @param searchParameters
 	 */
-	public ReportDetails(String name, String description, String search, RecordsManagementSearchParameters searchParameters) 
+	public ReportDetails(String name, String description, String search, RecordsManagementSearchParameters searchParameters)
 	{
 		this.name = name;
 		this.description = description;
 		this.search = search;
 		this.searchParameters = searchParameters;
 	}
-	
+
 	/**
 	 * @return {@link String}  name
 	 */
-	public String getName() 
+	public String getName()
 	{
 		return name;
 	}
-	
+
 	/**
 	 * @return {@link String}  description
 	 */
-	public String getDescription() 
+	public String getDescription()
 	{
 		return description;
 	}
@@ -80,7 +83,7 @@ public class ReportDetails
 	/**
 	 * @param description  description
 	 */
-	public void setDescription(String description) 
+	public void setDescription(String description)
 	{
 		this.description = description;
 	}
@@ -92,15 +95,15 @@ public class ReportDetails
     {
         return search;
     }
-	
+
 	/**
 	 * @param query query string
 	 */
 	public void setSearch(String search)
     {
         this.search = search;
-    }	
-	
+    }
+
 	/**
 	 * @return
 	 */
@@ -108,7 +111,7 @@ public class ReportDetails
     {
         return searchParameters;
     }
-	
+
 	/**
 	 * @param searchParameters
 	 */

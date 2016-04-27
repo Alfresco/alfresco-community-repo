@@ -52,6 +52,7 @@ import org.alfresco.service.namespace.RegexQNamePattern;
  * @since 2.1
  * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService
  */
+// Not @AlfrescoPublicApi at the moment as it requires MatchLogic which is not public API.
 public interface RecordsManagementAdminService
 {
     /**

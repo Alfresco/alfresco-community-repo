@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -42,6 +43,7 @@ import org.alfresco.service.namespace.QName;
  * @author Roy Wetherall
  * @since 2.1
  */
+@AlfrescoPublicApi
 public interface RecordService
 {
     /**
@@ -62,7 +64,7 @@ public interface RecordService
 
     /**
      * Disables the property editable check.
-     * 
+     *
      * @since 2.2
      */
     void disablePropertyEditableCheck();
@@ -71,7 +73,7 @@ public interface RecordService
      * Disables the property editable check for a given node in this transaction only.
      *
      * @param nodeRef   node reference
-     * 
+     *
      * @since 2.2
      */
     void disablePropertyEditableCheck(NodeRef nodeRef);
@@ -90,26 +92,26 @@ public interface RecordService
     */
    @Deprecated
    Set<QName> getRecordMetaDataAspects();
-   
+
    /**
     * Indicates whether the provided aspect is a registered record meta-data
     * aspect.
-    * 
+    *
     * @param aspect     aspect {@link QName}
-    * @return boolean   true if the aspect is a registered record meta-data aspect, false otherwise 
-    * 
+    * @return boolean   true if the aspect is a registered record meta-data aspect, false otherwise
+    *
     * @since 2.3
     */
    boolean isRecordMetadataAspect(QName aspect);
-   
+
    /**
-    * Indicates whther the provided property is declared on a registered record 
+    * Indicates whther the provided property is declared on a registered record
     * meta-data aspect.
-    * 
+    *
     * @param  property  property {@link QName}
-    * @return boolean   true if the property is declared on a registered record meta-data aspect, 
+    * @return boolean   true if the property is declared on a registered record meta-data aspect,
     *                   false otherwise
-    * 
+    *
     * @since 2.3
     */
    boolean isRecordMetadataProperty(QName property);
@@ -175,10 +177,10 @@ public interface RecordService
     * @see #createRecord(NodeRef, NodeRef, boolean)
     */
    void createRecord(NodeRef filePlan, NodeRef nodeRef);
-   
+
    /**
     * Creates a record from a copy of the node reference provided.
-    * 
+    *
     * @param filePlan   file plan
     * @param nodeRef    node reference
     */
@@ -266,13 +268,13 @@ public interface RecordService
     * @param recordFolder   the record folder to link it to
     */
    void link(NodeRef record, NodeRef recordFolder);
-   
+
    /**
     * Unlinks a record from a specified record folder.
-    * 
+    *
     * @param record         the record to unlink
     * @param recordFolder   the record folder to unlink it from
-    * 
+    *
     * @since 2.3
     */
    void unlink(NodeRef record, NodeRef recordFolder);

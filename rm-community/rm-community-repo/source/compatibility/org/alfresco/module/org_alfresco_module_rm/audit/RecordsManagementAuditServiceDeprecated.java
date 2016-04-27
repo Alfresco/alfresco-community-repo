@@ -31,29 +31,32 @@ import java.io.Serializable;
 import java.util.Date;
 import java.util.Map;
 
+import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Deprecated records management audit interface methods.
- * 
+ *
  * @author Roy Wetherall
  * @since 2.1
+ * @deprecated as of 2.1, see {@link RecordsManagementAuditService}.
  */
-public interface RecordsManagementAuditServiceDeprecated 
+@AlfrescoPublicApi
+public interface RecordsManagementAuditServiceDeprecated
 {
     /**
      * @deprecated as of 2.1, see {@link #stop(NodeRef)}
      */
     @Deprecated
     void stop();
-    
+
     /**
      * @deprecated as of 2.1, see {@link #clear(NodeRef)}
      */
     @Deprecated
-    void clear();    
-    
+    void clear();
+
     /**
      * @deprecated as of 2.1, see {@link #isEnabled(NodeRef)}
      */
@@ -65,12 +68,12 @@ public interface RecordsManagementAuditServiceDeprecated
      */
     @Deprecated
     Date getDateLastStarted();
-    
+
     /**
      * @deprecated as of 2.1, see {@link #getDateLastStopped(NodeRef)}
      */
     Date getDateLastStopped();
-    
+
     /**
      * @deprecated as of 2.1
      */

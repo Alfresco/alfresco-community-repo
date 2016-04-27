@@ -29,7 +29,6 @@ package org.alfresco.module.org_alfresco_module_rm.search;
 
 import java.util.List;
 
-import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
 
@@ -38,7 +37,7 @@ import org.alfresco.util.Pair;
  *
  * @author Roy Wetherall
  */
-@AlfrescoPublicApi
+// Not @AlfrescoPublicApi at the moment as it requires SavedSearchDetails which is not public API.
 public interface RecordsManagementSearchService
 {
 	/**

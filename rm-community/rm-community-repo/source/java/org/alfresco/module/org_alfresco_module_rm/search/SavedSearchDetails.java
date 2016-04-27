@@ -27,7 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.search;
 
-import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
@@ -84,7 +83,7 @@ import org.springframework.extensions.surf.util.I18NUtil;
  *
  * @author Roy Wetherall
  */
-@AlfrescoPublicApi
+// Not @AlfrescoPublicApi at the moment as it requires RecordsManagementSearchServiceImpl which is not public API.
 public class SavedSearchDetails extends ReportDetails
 {
     // JSON label values

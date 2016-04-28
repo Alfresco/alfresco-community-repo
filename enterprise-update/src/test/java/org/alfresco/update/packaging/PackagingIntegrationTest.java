@@ -1,4 +1,10 @@
-
+/*
+ * Copyright 2015-2015 Alfresco Software, Ltd.  All rights reserved.
+ *
+ * License rights for this program may be obtained from Alfresco Software, Ltd. 
+ * pursuant to a written agreement and any use of this program without such an 
+ * agreement is prohibited. 
+ */
 package org.alfresco.update.packaging;
 
 import static org.junit.Assert.*;
@@ -20,8 +26,7 @@ import org.junit.Test;
  * <p>
  * To run these tests in Eclipse, add the following to the "VM arguments" for the junit Run Configuration:
  * <pre>
- *   -Dalfresco.update.package=target/alfresco-enterprise-update-package-2015-1-EA-SNAPSHOT.zip
- *   -Dalfresco.contents.package=target/update-contents-2015-1-EA-SNAPSHOT.zip
+ *   -Dalfresco.update.package.zip=target/alfresco-enterprise-update-package-2015-1-EA-SNAPSHOT.zip
  * </pre>
  * 
  * ...or similar, depending on current version etc. There probably is a better way.
@@ -31,18 +36,13 @@ import org.junit.Test;
 public class PackagingIntegrationTest
 {
     private File updatePackage;
-    private File contentsPackage;
     
     @Before
     public void setUp() throws Exception
     {
-        String pkgName = System.getProperty("alfresco.update.package");
-        assertNotNull("Could not determine package name.");
-        updatePackage = new File(pkgName);
-        
-        String contentsPkgName = System.getProperty("alfresco.contents.package");
-        assertNotNull("Could not determine content package name.");
-        contentsPackage = new File(contentsPkgName);
+        String pkgName = System.getProperty("alfresco.update.package.zip");
+        assertNotNull("Could not determine package name.", pkgName);
+        updatePackage = new File(pkgName);        
     }
 
     @Test
@@ -51,30 +51,28 @@ public class PackagingIntegrationTest
         // Check the package exists before we go any further
         assertTrue("Update package does not exist.", updatePackage.exists());
         
-        Set<String> paths = listFiles(updatePackage);
+        Set<String> paths = listFiles(updatePackage); 
+
+        assertTrue("too few paths in the update package", paths.size() > 3);
         
+        String firstPath = (String)paths.toArray()[0];
+        String dirs[] = firstPath.split("/");
+       
         // Are the binaries present?
-        assertPathPresent(paths, "bin/alfresco-update-tool.jar");
-        assertPathPresent(paths, "bin/apply_updates.sh");
-        assertPathPresent(paths, "bin/apply_updates.bat");
+        assertPathPresent(paths, dirs[0] + "/lib/alfresco-update-tool.jar");
+        assertPathPresent(paths, dirs[0] + "/apply_updates.sh");
+        assertPathPresent(paths, dirs[0] + "/apply_updates.bat");
 
         // Is the content sub-package present?
-        assertPathPresent(paths, "update/"+contentsPackage.getName());
-    }
-    
-    @Test
-    public void testContentsPackageStructureIsAsExpected() throws ZipException, IOException
-    {
-        // Check the package exists before we go any further
-        assertTrue("Contents package does not exist.", contentsPackage.exists());
+        assertPathPresent(paths, dirs[0] + "/resources/war/alfresco.war");
+        assertPathPresent(paths, dirs[0] + "/resources/war/share.war");
         
-        Set<String> paths = listFiles(contentsPackage);
+        // Is the mmt in the correct place ?
+        assertPathPresent(paths, dirs[0] + "/resources/distribution/common/bin/alfresco-mmt.jar");
+        assertPathPresent(paths, dirs[0] + "/resources/distribution/common/bin/alfresco-spring-encryptor.jar");
         
-        // Are the webapps present?
-        assertPathPresent(paths, "assets/web-server/webapps/alfresco.war");
-        assertPathPresent(paths, "assets/web-server/webapps/share.war");
     }
-    
+        
     private void assertPathPresent(Set<String> pathsToCheck, String expectedPath)
     {
         assertTrue("Expected path to be present, but was not: "+expectedPath,
@@ -102,3 +100,4 @@ public class PackagingIntegrationTest
         return paths;
     }
 }
+

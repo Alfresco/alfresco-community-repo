@@ -75,6 +75,9 @@ public class FileTreeCompareImpl implements FileTreeCompare
             ignorePaths.add(toPlatformPath("**/solrcore.properties"));
             ignorePaths.add(toPlatformPath("**/modifications.install"));
             ignorePaths.add(toPlatformPath("tomcat/webapps/ROOT.war"));
+			
+			// Temp fix for the fall-out for MNT-15874
+			ignorePaths.add(toPlatformPath("tomcat/shared/classes/alfresco-global.properties"));
             
             // Ignore for 5.1 MNT-14307
             ignorePaths.add(toPlatformPath("tomcat/shared/classes/alfresco/web-extension/share-config-custom.xml"));

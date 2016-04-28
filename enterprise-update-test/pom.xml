@@ -151,6 +151,19 @@
                     <fail message="Missing Alfresco Base version. Example: -Dbase.installer.version=https://nightlybuilds.alfresco.com/Enterprise-5.1/5.1/LATEST/ALL/alfresco-one-installer-LATEST-linux-x64.bin" />
                   </then>
                 </if>
+                
+                <!-- Check that we are not using the nightly build for a non snapshot release -->
+                <if>
+                  <and>
+                    <matches string="${base.installer.version}" pattern="*nightlybuilds*"/>
+                    <not>
+                        <matches string="${project.version}" pattern="*SNAPSHOT"/>
+                    </not>
+                  </and>
+                  <then>
+                    <fail message="do not use nightlybuilds for a non snapshot release" />
+                  </then>
+                </if>
 
                 <!-- Download and install the base version of alfresco -->
                 <if>

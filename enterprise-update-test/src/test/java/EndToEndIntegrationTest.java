@@ -92,7 +92,29 @@ public class EndToEndIntegrationTest
         initTargetDir();    
     }
     
-    
+    /**
+     * Compare an instance of alfresco that has been installed and 
+     * then updated via the update package for the current build with a freshly 
+     * installed instance of the current build.  Some differences such as files containing 
+     * the installation path are allowed.  Other differences will be detected by the test.
+     * <p>
+     * The maven build installs two instances of alfresco, an instance that is
+     * to be updated <i>update</i>, ${base.alfresco.instance}
+     * and a <i>reference</i> instance, ${this.alfresco.instance} which is the 
+     * current build.
+     * <p>
+     * The output of the test is a boolean pass/fail but as a side-effect a report 
+     * of the test is also produced, <i>installation-diff-report.html</i> and 
+     * <i>installation-diff-report.zip</i>.   The zip file should be empty in a 
+     * successful execution. If there are unexpected differences then these will 
+     * be added to the zip file. 
+     * <p>
+     * The patterns of files to [test | ignore | allow special processing] are currently 
+     * contained within the FileTreeCompareImpl.java class as are the patterns allowed 
+     * during special processing.
+     * 
+     * @see FileTreeCompareImpl
+     */
     @Test
     public void testEndToEndUpdate() throws Exception
     {

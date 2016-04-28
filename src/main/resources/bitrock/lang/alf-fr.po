@@ -678,3 +678,6 @@ msgstr "Oui"
 
 msgid "No"
 msgstr "Non"
+
+msgid "Read the following License Agreement. You must accept the terms of this agreement before continuing with the installation."
+msgstr "Veuillez lire le contrat de licence suivant. Vous devez accepter ses conditions avant de poursuivre l'installation."

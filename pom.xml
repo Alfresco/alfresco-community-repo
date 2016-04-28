@@ -57,6 +57,9 @@
 
         <alfresco.package.name>alfresco-community</alfresco.package.name>
         <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
+
+        <!-- The URL of the "base" installer for the end to enterprise update test -->
+        <base.installer.version>https://releases.alfresco.com/Enterprise-5.1/5.1.0/AlfrescoOne/build-00019/ALL/alfresco-one-installer-201603-linux-x64.bin</base.installer.version>
     </properties>
 
     <modules>
@@ -82,7 +85,12 @@
                 <module>enterprise-distribution</module>
                 <module>enterprise-update</module>
                 <module>enterprise-installer</module>
-		<module>enterprise-update-test</module>
+            </modules>
+        </profile>
+        <profile>
+            <id>update-test</id>
+            <modules>
+                <module>enterprise-update-test</module>
             </modules>
         </profile>
         <profile>

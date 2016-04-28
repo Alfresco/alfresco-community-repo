@@ -78,6 +78,10 @@ public class FileTreeCompareImpl implements FileTreeCompare
 			
 			// Temp fix for the fall-out for MNT-15874
 			ignorePaths.add(toPlatformPath("tomcat/shared/classes/alfresco-global.properties"));
+			
+	         // Temp fix for PostGress SNAPSHOT upgrade on 5.2
+            ignorePaths.add(toPlatformPath("tomcat/lib/postgresql-9.4-1201-jdbc41.jar"));
+            ignorePaths.add(toPlatformPath(" tomcat/lib/postgresql-9.4.1208.jre7.jar"));
             
             // Ignore for 5.1 MNT-14307
             ignorePaths.add(toPlatformPath("tomcat/shared/classes/alfresco/web-extension/share-config-custom.xml"));

@@ -78,6 +78,7 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter, Be
     private long extractionTime;
     private String beanName;
     private Properties properties;
+    private MetadataExtracterConfig metadataExtracterConfig;
 
     protected AbstractMetadataExtracter(String supportedMimetype, double reliability, long extractionTime)
     {
@@ -131,7 +132,15 @@ abstract public class AbstractMetadataExtracter implements MetadataExtracter, Be
     {
         this.properties = properties;
     }
-
+    
+    /**
+     * The metadata extracter config.
+     */
+    public void setMetadataExtracterConfig(MetadataExtracterConfig metadataExtracterConfig)
+    {
+        this.metadataExtracterConfig = metadataExtracterConfig;
+    }
+    
     /**
      * @return Returns the mimetype helper
      */

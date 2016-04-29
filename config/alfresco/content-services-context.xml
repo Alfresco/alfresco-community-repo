@@ -241,6 +241,13 @@
       </property>
    </bean>
    
+   <!-- Metadata Extraction Configuration -->
+   <bean id="metadataExtracterConfig" class="org.alfresco.repo.content.metadata.MetadataExtracterConfigImpl" >
+      <property name="properties">
+         <ref bean="global-properties" />
+      </property>
+   </bean>
+   
    <!-- Metadata Extraction Registry -->
    <bean id="metadataExtracterRegistry" class="org.alfresco.repo.content.metadata.MetadataExtracterRegistry" />
    
@@ -260,6 +267,9 @@
       </property>
       <property name="properties">
          <ref bean="global-properties" />
+      </property>
+      <property name="metadataExtracterConfig">
+         <ref bean="metadataExtracterConfig" />
       </property>
    </bean>
    
@@ -466,6 +476,9 @@
          <value>true</value>
       </property>
        <property name="retryTransformOnDifferentMimeType" value="${content.transformer.retryOn.different.mimetype}"/>
+      <property name="metadataExtracterConfig">
+         <ref bean="metadataExtracterConfig" />
+      </property>
    </bean>
    
    <!-- Abstract bean definition defining base definition for all transformer that are not registered.

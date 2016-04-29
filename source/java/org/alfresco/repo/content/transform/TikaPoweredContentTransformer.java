@@ -227,7 +227,11 @@ public abstract class TikaPoweredContentTransformer extends AbstractContentTrans
        
        Parser parser = getParser();
        Metadata metadata = new Metadata();
-       
+       if (metadataExtracterConfig != null)
+       {
+          metadataExtracterConfig.prepareMetadataWithConfigParams(metadata);
+       }
+
        ParseContext context = buildParseContext(metadata, targetMimeType, options);
        
        ContentHandler handler = getContentHandler(targetMimeType, ow);

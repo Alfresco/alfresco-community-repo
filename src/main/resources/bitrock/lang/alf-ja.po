@@ -678,3 +678,6 @@ msgstr "はい"
 
 msgid "No"
 msgstr "いいえ"
+
+msgid "Read the following License Agreement. You must accept the terms of this agreement before continuing with the installation."
+msgstr "以下のライセンス使用許諾契約をお読みください。 インストールするには、これらの規約に同意する必要があります。"

@@ -99,5 +99,6 @@ public class MockAuthenticationUtilHelper
         when(mockAuthenticationUtil.getFullyAuthenticatedUser()).thenReturn(fullyAuthenticatedUser);
         when(mockAuthenticationUtil.getRunAsUser()).thenReturn(fullyAuthenticatedUser);
         when(mockAuthenticationUtil.getSystemUserName()).thenReturn("system");
+        when(mockAuthenticationUtil.getGuestUserName()).thenReturn("guest");
     }
 }

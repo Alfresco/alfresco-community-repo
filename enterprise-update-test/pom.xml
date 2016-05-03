@@ -21,7 +21,7 @@
     <!-- The version have to follow the following pattern 
         Enterprise-5.[0,1]/5.[0.1].[0]
      -->
-    <base.installer.version></base.installer.version>
+    <base.installer.version>https://nightlybuilds.alfresco.com/Enterprise-5.2/5.2/LATEST/ALL/alfresco-one-installer-LATEST-linux-x64.bin</base.installer.version>
     
     <!-- Where to put the two deployed instances of alfresco -->
     <base.alfresco.instance>${project.build.directory}/test-data/base-alf-installation</base.alfresco.instance>

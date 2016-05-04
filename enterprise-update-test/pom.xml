@@ -89,142 +89,7 @@
           <target>1.7</target>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
 
-          <!-- unpack the update package for this version -->
-          <execution>
-            <id>unpack-update-package</id>
-            <phase>generate-resources</phase>
-            <goals>
-              <goal>unpack</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.alfresco</groupId>
-                  <artifactId>alfresco-one-update-package</artifactId>
-                  <version>${project.version}</version>
-                  <overWrite>true</overWrite>
-                  <outputDirectory>${unpacked.update.package}</outputDirectory>
-                  <type>zip</type>
-                </artifactItem>
-              </artifactItems>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- Download and install the two versions of Alfresco -->
-      <plugin>
-        <artifactId>maven-antrun-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>fetch-installer</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>run</goal>
-            </goals>
-            <configuration>
-              <target>
-                <taskdef resource="net/sf/antcontrib/antlib.xml" />
-                
-                <condition property="isWindows" value="true">
-                  <os family="windows" />
-                </condition>
-                
-                <condition property="isLinux" value="true">
-                  <os family="unix" />
-                </condition>
-                
-                <echo>Is base.installer.version provided ?</echo>
-                <if>
-                  <or>
-                    <equals arg1="${base.installer.version}" arg2=""/>
-                    <not>
-                        <matches string="${base.installer.version}" pattern="^*.bin$"/>
-                    </not>
-                  </or>
-                  <then>
-                    <fail message="Missing Alfresco Base version. Example: -Dbase.installer.version=https://nightlybuilds.alfresco.com/Enterprise-5.1/5.1/LATEST/ALL/alfresco-one-installer-LATEST-linux-x64.bin" />
-                  </then>
-                </if>
-                
-                <!-- Check that we are not using the nightly build for a non snapshot release -->
-                <if>
-                  <and>
-                    <matches string="${base.installer.version}" pattern=".*nightlybuilds.*"/>
-                    <not>
-                        <matches string="${project.version}" pattern="^.*SNAPSHOT$"/>
-                    </not>
-                  </and>
-                  <then>
-                    <fail message="do not use nightlybuilds as a base version for a non snapshot service pack or hotfix release" />
-                  </then>
-                </if>
-
-                <!-- Download and install the base version of alfresco -->
-                <if>
-                  <not>
-                    <isset property="base.installer.location" />
-                  </not>
-                  <then>
-                    <property name="base.installer.location" location="${basedir}/target/base-alf-installer.bin" />
-                  </then>
-                </if>
-                <echo>Downloading Base Alfresco installer ${base.installer.version}...</echo>
-                <get src="${base.installer.version}" dest="${base.installer.location}"/>
-                <chmod file="${base.installer.location}" perm="a+x" verbose="true" />
-
-                <echo>Installing the base Version of Alfresco... to ${base.alfresco.instance}</echo>
-                <exec executable="${base.installer.location}" dir="target" failonerror="true">
-                  <arg line="${installer.args} --prefix ${base.alfresco.instance} " />
-                </exec>
-
-                <if>
-                  <not>
-                    <isset property="this.installer.location" />
-                  </not>
-                  <then>
-                    <path id="this.installer.name"> 
-                        <fileset dir="../enterprise-installer/target"> 
-                            <include name="alfresco-*.bin"/> 
-                        </fileset>
-                    </path>
-                    <property name="this.installer.location" refid="this.installer.name" />
-                  </then>
-                </if>
-
-                <echo>Installing newly generated version of Alfresco...</echo>
-                <exec executable="${this.installer.location}" dir="target" failonerror="true">
-                  <arg line="${installer.args} --prefix ${this.alfresco.instance} " />
-                </exec>
-              </target>
-              
-            </configuration>
-          </execution>
-        </executions>
-        <dependencies>
-          <dependency>
-            <groupId>org.apache.ant</groupId>
-            <artifactId>ant-jsch</artifactId>
-            <version>1.8.2</version>
-          </dependency>
-          <dependency>
-            <groupId>ant-contrib</groupId>
-            <artifactId>ant-contrib</artifactId>
-            <version>1.0b3</version>
-            <exclusions>
-              <exclusion>
-                <groupId>ant</groupId>
-                <artifactId>ant</artifactId>
-              </exclusion>
-            </exclusions>
-          </dependency>
-        </dependencies>
-      </plugin>
 
       <!-- Configure unit and integration tests -->
       <plugin>
@@ -239,39 +104,15 @@
             </goals>
             <configuration>
               <excludes>
+                <!--
+                  Exclude update assistant tests by default, use the
+                  update-assistant-tests profile to include them.
+                 -->
                 <exclude>**/*IntegrationTest.java</exclude>
+                <exclude>org/alfresco/update/**/*Test.java</exclude>
               </excludes>
               <redirectTestOutputToFile>true</redirectTestOutputToFile>
               <runOrder>alphabetical</runOrder>
-              <systemPropertyVariables>
-                <alfresco.update.package>${alfresco.update.package}</alfresco.update.package>
-                <alfresco.target.dir>${project.build.directory}</alfresco.target.dir>
-                <this.alfresco.instance>${this.alfresco.instance}</this.alfresco.instance>
-                <base.alfresco.instance>${base.alfresco.instance}</base.alfresco.instance>
-              </systemPropertyVariables>
-            </configuration>
-          </execution>
-          <execution>
-            <id>integration-test</id>
-            <phase>integration-test</phase>
-            <goals>
-              <goal>test</goal>
-            </goals>
-            <configuration>
-              <skip>false</skip>
-              <workingDirectory>${project.build.directory}</workingDirectory>
-              <redirectTestOutputToFile>true</redirectTestOutputToFile>
-              <runOrder>alphabetical</runOrder>
-              <excludes>
-                <exclude>none</exclude>
-              </excludes>
-              <includes>
-                <include>**/*IntegrationTest.java</include>
-              </includes>
-              <systemPropertyVariables>
-                <alfresco.update.package.zip>${project.artifactId}-${installer.version.name}.zip</alfresco.update.package.zip>
-                <alfresco.target.dir>${project.build.directory}</alfresco.target.dir>
-              </systemPropertyVariables>
             </configuration>
           </execution>
         </executions>
@@ -280,7 +121,199 @@
   </build>
 
   <profiles>
+    <profile>
+      <id>update-assistant-tests</id>
+      <activation>
+        <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-dependency-plugin</artifactId>
+            <executions>
+              <!-- unpack the update package for this version -->
+              <execution>
+                <id>unpack-update-package</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>unpack</goal>
+                </goals>
+                <configuration>
+                  <artifactItems>
+                    <artifactItem>
+                      <groupId>org.alfresco</groupId>
+                      <artifactId>alfresco-one-update-package</artifactId>
+                      <version>${project.version}</version>
+                      <overWrite>true</overWrite>
+                      <outputDirectory>${unpacked.update.package}</outputDirectory>
+                      <type>zip</type>
+                    </artifactItem>
+                  </artifactItems>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
 
+          <!-- Download and install the two versions of Alfresco -->
+          <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>fetch-installer</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>run</goal>
+                </goals>
+                <configuration>
+                  <target>
+                    <taskdef resource="net/sf/antcontrib/antlib.xml" />
+
+                    <condition property="isWindows" value="true">
+                      <os family="windows" />
+                    </condition>
+
+                    <condition property="isLinux" value="true">
+                      <os family="unix" />
+                    </condition>
+
+                    <echo>Is base.installer.version provided ?</echo>
+                    <if>
+                      <or>
+                        <equals arg1="${base.installer.version}" arg2=""/>
+                        <not>
+                          <matches string="${base.installer.version}" pattern="^*.bin$"/>
+                        </not>
+                      </or>
+                      <then>
+                        <fail message="Missing Alfresco Base version. Example: -Dbase.installer.version=https://nightlybuilds.alfresco.com/Enterprise-5.1/5.1/LATEST/ALL/alfresco-one-installer-LATEST-linux-x64.bin" />
+                      </then>
+                    </if>
+
+                    <!-- Check that we are not using the nightly build for a non snapshot release -->
+                    <if>
+                      <and>
+                        <matches string="${base.installer.version}" pattern=".*nightlybuilds.*"/>
+                        <not>
+                          <matches string="${project.version}" pattern="^.*SNAPSHOT$"/>
+                        </not>
+                      </and>
+                      <then>
+                        <fail message="do not use nightlybuilds as a base version for a non snapshot service pack or hotfix release" />
+                      </then>
+                    </if>
+
+                    <!-- Download and install the base version of alfresco -->
+                    <if>
+                      <not>
+                        <isset property="base.installer.location" />
+                      </not>
+                      <then>
+                        <property name="base.installer.location" location="${basedir}/target/base-alf-installer.bin" />
+                      </then>
+                    </if>
+                    <echo>Downloading Base Alfresco installer ${base.installer.version}...</echo>
+                    <get src="${base.installer.version}" dest="${base.installer.location}"/>
+                    <chmod file="${base.installer.location}" perm="a+x" verbose="true" />
+
+                    <echo>Installing the base Version of Alfresco... to ${base.alfresco.instance}</echo>
+                    <exec executable="${base.installer.location}" dir="target" failonerror="true">
+                      <arg line="${installer.args} --prefix ${base.alfresco.instance} " />
+                    </exec>
+
+                    <if>
+                      <not>
+                        <isset property="this.installer.location" />
+                      </not>
+                      <then>
+                        <path id="this.installer.name">
+                          <fileset dir="../enterprise-installer/target">
+                            <include name="alfresco-*.bin"/>
+                          </fileset>
+                        </path>
+                        <property name="this.installer.location" refid="this.installer.name" />
+                      </then>
+                    </if>
+
+                    <echo>Installing newly generated version of Alfresco...</echo>
+                    <exec executable="${this.installer.location}" dir="target" failonerror="true">
+                      <arg line="${installer.args} --prefix ${this.alfresco.instance} " />
+                    </exec>
+                  </target>
+
+                </configuration>
+              </execution>
+            </executions>
+            <dependencies>
+              <dependency>
+                <groupId>org.apache.ant</groupId>
+                <artifactId>ant-jsch</artifactId>
+                <version>1.8.2</version>
+              </dependency>
+              <dependency>
+                <groupId>ant-contrib</groupId>
+                <artifactId>ant-contrib</artifactId>
+                <version>1.0b3</version>
+                <exclusions>
+                  <exclusion>
+                    <groupId>ant</groupId>
+                    <artifactId>ant</artifactId>
+                  </exclusion>
+                </exclusions>
+              </dependency>
+            </dependencies>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>default-test</id>
+                <phase>test</phase>
+                <goals>
+                  <goal>test</goal>
+                </goals>
+                <configuration>
+                  <excludes>
+                    <exclude>**/*IntegrationTest.java</exclude>
+                  </excludes>
+                  <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                  <runOrder>alphabetical</runOrder>
+                </configuration>
+              </execution>
+              <execution>
+                <id>integration-test</id>
+                <phase>integration-test</phase>
+                <goals>
+                  <goal>test</goal>
+                </goals>
+                <configuration>
+                  <skip>false</skip>
+                  <workingDirectory>${project.build.directory}</workingDirectory>
+                  <redirectTestOutputToFile>true</redirectTestOutputToFile>
+                  <runOrder>alphabetical</runOrder>
+                  <excludes>
+                    <exclude>none</exclude>
+                  </excludes>
+                  <includes>
+                    <include>**/*IntegrationTest.java</include>
+                  </includes>
+                  <systemPropertyVariables>
+                    <alfresco.update.package.zip>${project.artifactId}-${installer.version.name}.zip</alfresco.update.package.zip>
+                    <alfresco.target.dir>${project.build.directory}</alfresco.target.dir>
+                    <alfresco.update.package>${alfresco.update.package}</alfresco.update.package>
+                    <alfresco.target.dir>${project.build.directory}</alfresco.target.dir>
+                    <this.alfresco.instance>${this.alfresco.instance}</this.alfresco.instance>
+                    <base.alfresco.instance>${base.alfresco.instance}</base.alfresco.instance>
+                  </systemPropertyVariables>
+                </configuration>
+              </execution>
+            </executions>
+            </plugin>
+        </plugins>
+      </build>
+    </profile>
   </profiles>
 
 </project>

@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.api;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
@@ -159,43 +158,40 @@ public class PublicAPITestUtil
         {
             for (Method method : initialClass.getDeclaredMethods())
             {
-                if (isVisibleToExtender(method.getModifiers()) && !isDeprecated(method))
+                if (isVisibleToExtender(method.getModifiers()))
                 {
                     referencedClasses.addAll(getClassesFromMethod(method));
                 }
             }
             for (Constructor<?> constructor : initialClass.getDeclaredConstructors())
             {
-                if (isVisibleToExtender(constructor.getModifiers()) && !isDeprecated(constructor))
+                if (isVisibleToExtender(constructor.getModifiers()))
                 {
                     referencedClasses.addAll(getClassesFromConstructor(constructor));
                 }
             }
             for (Field field : initialClass.getDeclaredFields())
             {
-                if (isVisibleToExtender(field.getModifiers()) && !isDeprecated(field))
+                if (isVisibleToExtender(field.getModifiers()))
                 {
                     referencedClasses.addAll(getClassesFromField(field));
                 }
             }
             for (Class<?> clazz : initialClass.getDeclaredClasses())
             {
-                if (isVisibleToExtender(clazz.getModifiers()) && !isDeprecated(clazz))
+                if (isVisibleToExtender(clazz.getModifiers()))
                 {
                     referencedClasses.addAll(getReferencedClassesFromClass(clazz, consideredClasses));
                 }
             }
-            if (initialClass.getSuperclass() != null && !isDeprecated(initialClass.getSuperclass()))
+            if (initialClass.getSuperclass() != null)
             {
                 referencedClasses
                             .addAll(getReferencedClassesFromClass(initialClass.getSuperclass(), consideredClasses));
             }
             for (Class<?> clazz : initialClass.getInterfaces())
             {
-                if (!isDeprecated(clazz))
-                {
-                    referencedClasses.addAll(getReferencedClassesFromClass(clazz, consideredClasses));
-                }
+                referencedClasses.addAll(getReferencedClassesFromClass(clazz, consideredClasses));
             }
         }
         return referencedClasses;
@@ -355,18 +351,6 @@ public class PublicAPITestUtil
             }
         }
         return returnClasses;
-    }
-
-    /**
-     * Check if the element is deprecated. Deprecated elements do not need to be part of the public API, even if they
-     * are visible to extenders.
-     *
-     * @param element The element to check.
-     * @return {@code true} if the element has been annotated as deprecated.
-     */
-    private static boolean isDeprecated(AnnotatedElement element)
-    {
-        return (element.getDeclaredAnnotation(Deprecated.class) != null);
     }
 
     /**

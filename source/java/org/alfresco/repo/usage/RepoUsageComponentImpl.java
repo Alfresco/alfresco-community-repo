@@ -53,6 +53,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.DateUtil;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -512,24 +513,23 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
         Long licenseExpiryDate = restrictions.getLicenseExpiryDate();
         if (licenseExpiryDate != null)
         {
-            long remainingMs = licenseExpiryDate - System.currentTimeMillis();
-            double remainingDays = (double) remainingMs / (double)(24*3600000);
-            if (remainingDays <= 0.0)
+            int remainingDays = DateUtil.calculateDays(System.currentTimeMillis(), licenseExpiryDate);
+            if (remainingDays <= 0)
             {
                 errors.add(I18NUtil.getMessage("system.usage.err.limit_license_expired"));
                 level = RepoUsageLevel.LOCKED_DOWN;
             }
-            else if (remainingDays <= 7.0)
+            else if (remainingDays <= 7)
             {
-                warnings.add(I18NUtil.getMessage("system.usage.err.limit_license_expiring", (int)remainingDays));
+                warnings.add(I18NUtil.getMessage("system.usage.err.limit_license_expiring", remainingDays));
                 if (level.ordinal() < RepoUsageLevel.WARN_ADMIN.ordinal())
                 {
                     level = RepoUsageLevel.WARN_ALL;
                 }
             }
-            else if (remainingDays <= 21.0)
+            else if (remainingDays <= 21)
             {
-                warnings.add(I18NUtil.getMessage("system.usage.err.limit_license_expiring", (int)remainingDays));
+                warnings.add(I18NUtil.getMessage("system.usage.err.limit_license_expiring", remainingDays));
                 if (level.ordinal() < RepoUsageLevel.WARN_ALL.ordinal())
                 {
                     level = RepoUsageLevel.WARN_ADMIN;

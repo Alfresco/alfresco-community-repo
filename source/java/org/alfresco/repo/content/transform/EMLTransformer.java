@@ -169,8 +169,16 @@ public class EMLTransformer extends AbstractContentTransformer2
                 partToUse = part;
                 break;
             }
-            else if  (part.getContentType().contains(MimetypeMap.MIMETYPE_HTML)){
+            else if  (part.getContentType().contains(MimetypeMap.MIMETYPE_HTML))
+            {
                 partToUse = part;
+            } 
+            else if (part.getContentType().contains(MimetypeMap.MIMETYPE_MULTIPART_ALTERNATIVE))
+            {
+                if (part.getContent() instanceof Multipart)
+                {
+                    processAlternativeMultipart((Multipart) part.getContent(), sb);
+                }
             }
         }
         if (partToUse != null)

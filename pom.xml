@@ -342,4 +342,71 @@
          </plugins>
       </pluginManagement>
    </build>
+
+   <profiles>
+      <!-- Generate the Javadoc for Public API only (filtered on AlfrescoPublicApi annotation) -->
+      <profile>
+         <id>publicapi</id>
+         <properties>
+            <docflex.version>1.6.1</docflex.version>
+         </properties>
+         <!-- Downloads the docflex license -->
+         <dependencies>
+            <dependency>
+               <groupId>com.docflex</groupId>
+               <artifactId>docflex-alfresco-license</artifactId>
+               <version>1.0</version>
+               <type>license</type>
+            </dependency>
+         </dependencies>
+         <!-- Extracts Docflex locally -->
+         <build>
+            <plugins>
+               <plugin>
+                  <artifactId>maven-dependency-plugin</artifactId>
+                  <version>2.10</version>
+                  <executions>
+                     <!-- Unzips the docflex/javadoc doclet -->
+                     <execution>
+                        <id>default-cli</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                           <goal>unpack</goal>
+                        </goals>
+                        <configuration>
+                           <artifactItems>
+                              <artifactItem>
+                                 <groupId>com.docflex</groupId>
+                                 <artifactId>docflex-javadoc</artifactId>
+                                 <version>${docflex.version}</version>
+                                 <type>zip</type>
+                              </artifactItem>
+                           </artifactItems>
+                           <outputDirectory>${project.build.directory}</outputDirectory>
+                        </configuration>
+                     </execution>
+                  </executions>
+               </plugin>
+
+               <plugin>
+                  <artifactId>maven-javadoc-plugin</artifactId>
+                  <version>2.10.3</version>
+                  <configuration>
+                     <doclet>com.docflex.javadoc.Doclet</doclet>
+                     <docletPath>${project.build.directory}/docflex-javadoc-${docflex.version}/lib/docflex-javadoc.jar</docletPath>
+                     <additionalparam>
+                         -license ${settings.localRepository}/com/docflex/docflex-alfresco-license/1.0/docflex-alfresco-license-1.0.license
+                         -template ${project.build.directory}/docflex-javadoc-${docflex.version}/templates/JavadocPro/FramedDoc.tpl
+                         -nodialog
+                         -launchviewer=false
+                         -p:filter.byAnns.include.classes=org.alfresco.api.AlfrescoPublicApi
+                         -p:docTitle "${project.name} ${project.version} Public API"
+                         -p:windowTitle "${project.name} ${project.version} Public API"
+                     </additionalparam>
+                  </configuration>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
+   </profiles>
 </project>

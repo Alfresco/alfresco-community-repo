@@ -290,7 +290,7 @@ export GS_LIB
                 <platformTest type="unix"/>
             </conditionRuleList>
             <actionList>
-                <setInstallerVariable name="imagemagick_policy_path" value="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config/policy.xml"/>
+                <setInstallerVariable name="imagemagick_policy_path" value="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16/policy.xml"/>
             </actionList>
             <elseActionList>
                 <setInstallerVariable name="imagemagick_policy_path" value="${imagemagick_root_directory}/policy.xml"/>

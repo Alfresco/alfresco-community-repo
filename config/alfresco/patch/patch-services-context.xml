@@ -1437,4 +1437,21 @@
         </property>
     </bean>
     
+    <bean id="patch.redeployInvitationNominatedAddDirectActivitiWorkflow" class="org.alfresco.repo.admin.patch.impl.GenericWorkflowPatch" parent="baseWorkflowPatch" >
+        <property name="id"><value>patch.redeployInvitationNominatedAddDirectActivitiWorkflow</value></property>
+        <property name="description"><value>patch.redeployInvitationNominatedAddDirectActivitiWorkflow.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>10050</value></property>
+        <property name="targetSchema"><value>10051</value></property>
+        <property name="workflowDefinitions">
+            <list>
+               <props>
+                    <prop key="engineId">activiti</prop>
+                    <prop key="location">alfresco/workflow/invitation-add-direct.bpmn20.xml</prop>
+                    <prop key="mimetype">text/xml</prop>
+               </props>
+            </list>
+        </property>
+    </bean>
+    
 </beans>

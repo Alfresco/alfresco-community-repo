@@ -1,5 +1,0 @@
-// ALFRESCO UPDATE ASSISTANT SCRIPT for 5.0
-// update5-0.auas
-
-DELETE /tomcat/endorsed/xalan-2.7.2.jar
-DELETE /tomcat/endorsed/serializer-2.7.2.jar

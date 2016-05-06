@@ -21,9 +21,6 @@
         <!-- Alfresco GoogleDocs integration version -->
         <alfresco.googledocs.version>3.0.3</alfresco.googledocs.version>
 
-        <!-- Alfresco Update Tool version bundled in the update installer -->
-        <alfresco.updatetool.version>1.0-SNAPSHOT</alfresco.updatetool.version>
-        
         <!-- Alfresco Office Services Module -->
         <alfresco.aos-module.version>1.1</alfresco.aos-module.version>
 
@@ -57,9 +54,6 @@
 
         <alfresco.package.name>alfresco-community</alfresco.package.name>
         <alfresco.distribution.name>${alfresco.package.name}-distribution</alfresco.distribution.name>
-
-        <!-- The URL of the "base" installer for the end to enterprise update test -->
-        <base.installer.version>https://nightlybuilds.alfresco.com/Enterprise-5.2/LATEST-BASE-INSTALLER</base.installer.version>
     </properties>
 
     <modules>
@@ -83,14 +77,7 @@
                 <module>enterprise-war-for-ear</module>
                 <module>ear</module>
                 <module>enterprise-distribution</module>
-                <module>enterprise-update</module>
                 <module>enterprise-installer</module>
-            </modules>
-        </profile>
-        <profile>
-            <id>update-test</id>
-            <modules>
-                <module>enterprise-update-test</module>
             </modules>
         </profile>
         <profile>

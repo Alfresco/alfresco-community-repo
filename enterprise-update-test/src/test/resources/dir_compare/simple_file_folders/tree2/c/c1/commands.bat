@@ -1,2 +1,0 @@
-echo Hello
-echo World

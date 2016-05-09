@@ -1,11 +1,10 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
    <groupId>org.alfresco</groupId>
    <artifactId>alfresco-rm</artifactId>
    <packaging>pom</packaging>
-   <version>2.4-SNAPSHOT</version>
+   <version>2.4.1-SNAPSHOT</version>
    <name>Alfresco Records Management</name>
 
    <parent>
@@ -25,7 +24,8 @@
       <connection>scm:git:https://gitlab.alfresco.com/records-management/records-management.git</connection>
       <developerConnection>scm:git:https://gitlab.alfresco.com/records-management/records-management.git</developerConnection>
       <url>https://gitlab.alfresco.com/records-management/records-management</url>
-   </scm>
+     <tag>HEAD</tag>
+  </scm>
 
    <issueManagement>
       <system>JIRA</system>
@@ -230,7 +230,7 @@
                                 </goals>
                             </pluginExecutionFilter>
                             <action>
-                                <ignore></ignore>
+                                <ignore />
                             </action>
                         </pluginExecution>
                      </pluginExecutions>

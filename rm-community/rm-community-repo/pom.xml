@@ -1,5 +1,4 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
    <modelVersion>4.0.0</modelVersion>
    <artifactId>alfresco-rm-community-repo</artifactId>
@@ -10,7 +9,7 @@
    <parent>
       <groupId>org.alfresco</groupId>
       <artifactId>alfresco-rm-community</artifactId>
-      <version>2.4-SNAPSHOT</version>
+      <version>2.4.1-SNAPSHOT</version>
    </parent>
 
    <properties>
@@ -85,10 +84,9 @@
                   <configuration>
                      <target>
                         <copy todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
-                           <fileset dir="${project.build.outputDirectory}/alfresco"/>
+                           <fileset dir="${project.build.outputDirectory}/alfresco" />
                         </copy>
-                        <move file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties"
-                           todir="${project.build.directory}/${project.build.finalName}"/>
+                        <move file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties" todir="${project.build.directory}/${project.build.finalName}" />
                      </target>
                   </configuration>
                </execution>
@@ -251,7 +249,7 @@
                               </goals>
                            </pluginExecutionFilter>
                            <action>
-                              <ignore></ignore>
+                              <ignore />
                            </action>
                         </pluginExecution>
                         <pluginExecution>
@@ -266,7 +264,7 @@
                         		</goals>
                         	</pluginExecutionFilter>
                         	<action>
-                        		<ignore></ignore>
+                        		<ignore />
                         	</action>
                         </pluginExecution>
                      </pluginExecutions>
@@ -357,7 +355,7 @@
             <alfresco.db.name>${my.db.name}</alfresco.db.name>
             <alfresco.db.port>${my.db.port}</alfresco.db.port>
             <alfresco.db.hibernate.dialect>org.hibernate.dialect.MySQLInnoDBDialect</alfresco.db.hibernate.dialect>
-            <alfresco.db.params></alfresco.db.params>
+            <alfresco.db.params />
             <alfresco.db.master.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.db.master.url>
             <alfresco.db.url>jdbc:mysql://${alfresco.db.host}:${alfresco.db.port}/${alfresco.db.name}</alfresco.db.url>
             <alfresco.db.datasource.class>org.gjt.mm.mysql.Driver</alfresco.db.datasource.class>
@@ -369,7 +367,7 @@
             <alfresco.db.name>${my.db.name}</alfresco.db.name>
             <alfresco.db.port>${my.db.port}</alfresco.db.port>
             <alfresco.db.hibernate.dialect>org.hibernate.dialect.PostgreSQLDialect</alfresco.db.hibernate.dialect>
-            <alfresco.db.params></alfresco.db.params>
+            <alfresco.db.params />
             <alfresco.db.master.url>jdbc:postgresql:template1</alfresco.db.master.url>
             <alfresco.db.url>jdbc:postgresql:${alfresco.db.name}</alfresco.db.url>
             <alfresco.db.datasource.class>org.postgresql.Driver</alfresco.db.datasource.class>

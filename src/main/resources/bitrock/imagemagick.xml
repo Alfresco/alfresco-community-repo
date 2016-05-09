@@ -283,6 +283,38 @@ export GS_LIB
             </actionList>
         </folder>
     </folderList>
-    <postInstallationActionList/>
+    <postInstallationActionList>
+        <!-- ImageMagick: Remote execution vulnerability (CVE-2016–3714) -->
+        <if>
+            <conditionRuleList>
+                <platformTest type="unix"/>
+            </conditionRuleList>
+            <actionList>
+                <setInstallerVariable name="imagemagick_policy_path" value="${imagemagick_root_directory}/lib/ImageMagick-${imagemagick_version}/config-Q16/policy.xml"/>
+            </actionList>
+            <elseActionList>
+                <setInstallerVariable name="imagemagick_policy_path" value="${imagemagick_root_directory}/policy.xml"/>
+            </elseActionList>
+        </if>
+        <substitute>
+            <files>${imagemagick_policy_path}</files>
+            <substitutionList>
+                <substitution>
+                    <pattern><![CDATA[<policymap>]]></pattern>
+                    <value><![CDATA[<policymap>
+    <policy domain="coder" rights="none" pattern="EPHEMERAL" />
+    <policy domain="coder" rights="none" pattern="URL" />
+    <policy domain="coder" rights="none" pattern="HTTPS" />
+    <policy domain="coder" rights="none" pattern="MVG" />
+    <policy domain="coder" rights="none" pattern="MSL" />
+    <policy domain="coder" rights="none" pattern="TEXT" />
+    <policy domain="coder" rights="none" pattern="SHOW" />
+    <policy domain="coder" rights="none" pattern="WIN" />
+    <policy domain="coder" rights="none" pattern="PLT" />
+    ]]></value>
+                </substitution>
+            </substitutionList>
+        </substitute>
+    </postInstallationActionList>
 </component>
 

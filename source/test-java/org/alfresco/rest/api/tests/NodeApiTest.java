@@ -541,7 +541,10 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF));
         MultiPartRequest reqBody = multiPartBuilder.build();
 
-        // Try to upload
+        // Try to upload into a non-existent folder
+        post(getChildrenUrl(UUID.randomUUID().toString()), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 404);
+
+        // Upload
         response = post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
         Document document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
@@ -572,6 +575,27 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(paging);
         assertEquals("Duplicate file name. The file shouldn't have been uploaded.", numOfNodes + 1, pagingResult.getCount().intValue());
 
+        // Set autoRename=true and upload the same file again
+        reqBody = MultiPartBuilder.copy(multiPartBuilder)
+                          .setAutoRename(true)
+                          .build();
+
+        response = post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        // Check the upload response
+        assertEquals("quick-1.pdf", document.getName());
+
+        // upload the same file again
+        response = post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        // Check the upload response
+        assertEquals("quick-2.pdf", document.getName());
+
+        response = getAll(getChildrenUrl(Nodes.PATH_MY), user1, paging, 200);
+        pagingResult = parsePaging(response.getJsonResponse());
+        assertNotNull(paging);
+        assertEquals(numOfNodes + 3, pagingResult.getCount().intValue());
+
         // User2 tries to upload a new file into the user1's home folder.
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
         Folder user1Home = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
@@ -585,13 +609,13 @@ public class NodeApiTest extends AbstractBaseApiTest
         response = getAll(getChildrenUrl(Nodes.PATH_MY), user1, paging, 200);
         pagingResult = parsePaging(response.getJsonResponse());
         assertNotNull(paging);
-        assertEquals("Access Denied. The file shouldn't have been uploaded.", numOfNodes + 1, pagingResult.getCount().intValue());
+        assertEquals("Access Denied. The file shouldn't have been uploaded.", numOfNodes + 3, pagingResult.getCount().intValue());
 
         // User1 tries to upload a file into a document rather than a folder!
         post(getChildrenUrl(document.getId()), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
 
         // Try to upload a file without defining the required formData
-        reqBody = MultiPartBuilder.create().build();
+        reqBody = MultiPartBuilder.create().setAutoRename(true).build();
         post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
     }
 
@@ -644,12 +668,6 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // Upload the same file again to check the name conflicts handling
         post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 409);
-
-        // Set overwrite=true and upload the same file again
-        reqBody = MultiPartBuilder.copy(multiPartBuilder)
-                    .setOverwrite(true)
-                    .build();
-        post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
 
         response = getAll(getChildrenUrl(folderA_Ref), userOneN1.getId(), paging, 200);
         pagingResult = parsePaging(response.getJsonResponse());

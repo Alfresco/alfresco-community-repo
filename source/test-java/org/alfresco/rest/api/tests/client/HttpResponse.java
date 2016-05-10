@@ -154,12 +154,13 @@ public class HttpResponse
             if (contentType.startsWith("text/plain") || contentType.startsWith("application/json"))
             {
                 sb.append(getResponse());
+                sb.append("\n");
             }
-            else
+            else if(getResponseAsBytes() != null)
             {
                 sb.append(" << ").append(getResponseAsBytes().length).append(" bytes >>");
+                sb.append("\n");
             }
-            sb.append("\n");
         }
 
 		return sb.toString();

@@ -19,8 +19,10 @@
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.Nodes;
@@ -32,6 +34,7 @@ import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
+import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
@@ -56,6 +59,9 @@ import java.util.Map;
  */
 public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 {
+    public static final String LAST_MODIFIED_HEADER = "Last-Modified";
+    public static final String IF_MODIFIED_SINCE_HEADER = "If-Modified-Since";
+
     private static final String RESOURCE_PREFIX = "publicapi/upload/";
 
     private static final String URL_NODES = "nodes/";
@@ -174,6 +180,22 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         publicApiClient.setRequestContext(new RequestContext(runAsUser));
 
         HttpResponse response = publicApiClient.get(entityResource, entityId, null, params);
+        checkStatus(expectedStatus, response.getStatusCode());
+
+        return response;
+    }
+
+    protected HttpResponse getSingle(String url, String runAsUser, String entityId, Map<String, String> params, Map<String, String> headers, int expectedStatus) throws Exception
+    {
+        RequestBuilder requestBuilder = httpClient.new GetRequestBuilder()
+                    .setRequestContext(new RequestContext(runAsUser))
+                    .setScope(getScope())
+                    .setEntityCollectionName(url)
+                    .setEntityId(entityId)
+                    .setParams(params)
+                    .setHeaders(headers);
+
+        HttpResponse response = publicApiClient.execute(requestBuilder);
         checkStatus(expectedStatus, response.getStatusCode());
 
         return response;

@@ -36,6 +36,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
+import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
 import org.alfresco.rest.api.tests.client.data.Activities;
 import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.CMISNode;
@@ -591,6 +592,19 @@ public class PublicApiClient
 
 		return response;
 	}
+
+    public HttpResponse execute(RequestBuilder requestBuilder) throws IOException
+    {
+        if (requestBuilder.getRequestContext() == null)
+        {
+            throw new RuntimeException("Must set a request context");
+        }
+        HttpResponse response = client.execute(requestBuilder);
+
+        logger.debug(response.toString());
+
+        return response;
+    }
 
 	public HttpResponse index(Map<String, String> params) throws IOException
 	{

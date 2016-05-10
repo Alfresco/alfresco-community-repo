@@ -33,7 +33,6 @@ import org.alfresco.service.namespace.QName;
  * @author steveglover
  * @author janv
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Folder extends Node
 {
     public Folder()
@@ -51,6 +50,11 @@ public class Folder extends Node
     public ContentInfo getContent()
     {
         return null;
+    }
+
+    @Override
+    public void setContent(ContentInfo contentInfo)
+    {
     }
 
     @Override

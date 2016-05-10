@@ -33,11 +33,11 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.SiteMembershipRequests
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Comment;
-import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Favourite;
+import org.alfresco.rest.api.tests.client.data.FavouriteDocument;
+import org.alfresco.rest.api.tests.client.data.FavouriteFolder;
 import org.alfresco.rest.api.tests.client.data.FavouritesTarget;
 import org.alfresco.rest.api.tests.client.data.FileFavouriteTarget;
-import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.FolderFavouriteTarget;
 import org.alfresco.rest.api.tests.client.data.InvalidFavouriteTarget;
 import org.alfresco.rest.api.tests.client.data.JSONAble;
@@ -472,7 +472,7 @@ public class TestFavourites extends EnterpriseTestApi
 	
 	private Favourite makeFolderFavourite(String targetGuid) throws ParseException
 	{
-		Folder folder = new Folder(targetGuid);
+		FavouriteFolder folder = new FavouriteFolder(targetGuid);
 		FolderFavouriteTarget target = new FolderFavouriteTarget(folder);
 		Date creationData = new Date();
 		Favourite favourite = new Favourite(creationData, null, target);
@@ -481,7 +481,7 @@ public class TestFavourites extends EnterpriseTestApi
 
 	private Favourite makeFileFavourite(String targetGuid) throws ParseException
 	{
-		Document document = new Document(targetGuid);
+		FavouriteDocument document = new FavouriteDocument(targetGuid);
 		FileFavouriteTarget target = new FileFavouriteTarget(document);
 		Date creationData = new Date();
 		Favourite favourite = new Favourite(creationData, null, target);
@@ -584,7 +584,7 @@ public class TestFavourites extends EnterpriseTestApi
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person10Id));
 
 			String siteGuid = person1PublicSites.get(0).getGuid();
-	    	Document document = new Document(siteGuid);
+			FavouriteDocument document = new FavouriteDocument(siteGuid);
 			Favourite favourite = makeFileFavourite(document.getGuid());
 			Favourite ret = favouritesProxy.createFavourite(person10Id, favourite);
 			favourite.expected(ret);
@@ -601,7 +601,7 @@ public class TestFavourites extends EnterpriseTestApi
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person10Id));
 
 			String siteGuid = person1PublicSites.get(0).getGuid();
-	    	Folder folder = new Folder(siteGuid);
+			FavouriteFolder folder = new FavouriteFolder(siteGuid);
 	    	Favourite favourite = makeFolderFavourite(folder.getGuid());
 			Favourite ret = favouritesProxy.createFavourite(person10Id, favourite);
 			favourite.expected(ret);
@@ -618,7 +618,7 @@ public class TestFavourites extends EnterpriseTestApi
 		{
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person10Id));
 
-			Folder folder = new Folder(person1PublicDocs.get(0).getId());
+			FavouriteFolder folder = new FavouriteFolder(person1PublicDocs.get(0).getId());
 	    	Favourite favourite = makeFolderFavourite(folder.getGuid());
 			Favourite ret = favouritesProxy.createFavourite(person10Id, favourite);
 			favourite.expected(ret);
@@ -635,7 +635,7 @@ public class TestFavourites extends EnterpriseTestApi
 		{
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person10Id));
 
-			Document document = new Document(person1PublicFolders.get(0).getId());
+			FavouriteDocument document = new FavouriteDocument(person1PublicFolders.get(0).getId());
 			Favourite favourite = makeFileFavourite(document.getGuid());
 			Favourite ret = favouritesProxy.createFavourite(person10Id, favourite);
 			favourite.expected(ret);
@@ -655,8 +655,8 @@ public class TestFavourites extends EnterpriseTestApi
 			try
 			{
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person10Id));
-				
-				Document document = new Document(person1PublicDocs.get(0).getId());
+
+				FavouriteDocument document = new FavouriteDocument(person1PublicDocs.get(0).getId());
 				Favourite favourite = makeFileFavourite(document.getGuid());
 				favouritesProxy.createFavourite(person11Id, favourite);
 	
@@ -751,8 +751,8 @@ public class TestFavourites extends EnterpriseTestApi
 			try
 			{
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person10Id));
-	
-				Document document = new Document(GUID.generate());
+
+				FavouriteDocument document = new FavouriteDocument(GUID.generate());
 				Favourite favourite = makeFileFavourite(document.getGuid());
 				favouritesProxy.createFavourite(person10Id, favourite);
 	
@@ -771,8 +771,8 @@ public class TestFavourites extends EnterpriseTestApi
 			try
 			{
 				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person10Id));
-	
-				Folder folder = new Folder(GUID.generate());
+
+				FavouriteFolder folder = new FavouriteFolder(GUID.generate());
 		    	Favourite favourite = makeFolderFavourite(folder.getGuid());
 				favouritesProxy.createFavourite(person10Id, favourite);
 	
@@ -826,7 +826,7 @@ public class TestFavourites extends EnterpriseTestApi
 				assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
 			}
 
-			Document document = new Document(person1PublicDocs.get(0).getId());
+			FavouriteDocument document = new FavouriteDocument(person1PublicDocs.get(0).getId());
 
 			try
 			{
@@ -859,8 +859,8 @@ public class TestFavourites extends EnterpriseTestApi
 			{
 				assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
 			}
-			
-			Folder folder = new Folder(person1PublicFolders.get(0).getId());
+
+			FavouriteFolder folder = new FavouriteFolder(person1PublicFolders.get(0).getId());
 
 			try
 			{
@@ -929,11 +929,11 @@ public class TestFavourites extends EnterpriseTestApi
 			log("cloud-2467");
 			
 			Favourite siteFavourite1 = makeSiteFavourite(person1PublicSites.get(0));
-			
-			Document document = repoService.getDocument(network1.getId(), person1PublicDocs.get(0));
+
+			FavouriteDocument document = repoService.getDocument(network1.getId(), person1PublicDocs.get(0));
 			Favourite fileFavourite1 = makeFileFavourite(document.getGuid());
-			
-			Folder folder = repoService.getFolder(network1.getId(), person1PublicFolders.get(0));
+
+			FavouriteFolder folder = repoService.getFolder(network1.getId(), person1PublicFolders.get(0));
 	    	Favourite folderFavourite1 = makeFolderFavourite(folder.getGuid());
 	    	
 			Favourite siteFavourite2 = makeSiteFavourite(person1PublicSites.get(1));
@@ -1062,7 +1062,7 @@ public class TestFavourites extends EnterpriseTestApi
 				{
 					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person21Id));
 
-					Document document1 = new Document(person1PrivateDocs.get(0).getId());
+					FavouriteDocument document1 = new FavouriteDocument(person1PrivateDocs.get(0).getId());
 					Favourite favourite = makeFileFavourite(document1.getGuid());
 					try
 					{
@@ -1094,7 +1094,7 @@ public class TestFavourites extends EnterpriseTestApi
 				{
 					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person21Id));
 
-					Folder folder1 = new Folder(person1PrivateFolders.get(0).getId());
+					FavouriteFolder folder1 = new FavouriteFolder(person1PrivateFolders.get(0).getId());
 			    	Favourite favourite = makeFolderFavourite(folder1.getGuid());
 			    	try
 			    	{

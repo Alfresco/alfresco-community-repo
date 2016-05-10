@@ -34,13 +34,13 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.ContentInfo;
-import org.alfresco.rest.api.model.Document;
-import org.alfresco.rest.api.model.Folder;
-import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.PathInfo;
-import org.alfresco.rest.api.model.PathInfo.ElementInfo;
-import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.api.tests.client.data.ContentInfo;
+import org.alfresco.rest.api.tests.client.data.Document;
+import org.alfresco.rest.api.tests.client.data.Folder;
+import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.client.data.PathInfo;
+import org.alfresco.rest.api.tests.client.data.PathInfo.ElementInfo;
+import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
@@ -92,6 +92,7 @@ import java.util.UUID;
  * </ul>
  *
  * @author Jamal Kaabi-Mofrad
+ * @author janv
  */
 public class NodeApiTest extends AbstractBaseApiTest
 {

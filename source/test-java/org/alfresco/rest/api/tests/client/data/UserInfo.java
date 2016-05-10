@@ -20,14 +20,26 @@
 package org.alfresco.rest.api.tests.client.data;
 
 /**
- * Representation of a folder node (initially for client tests for File Folder API)
+ * Representation of a user info (initially for client tests for File Folder API)
  *
  * @author janv
  */
-public class Folder extends Node
+public class UserInfo
 {
-    public Folder()
+    private String userName;
+    private String displayName;
+
+    public UserInfo()
     {
-        super();
+    }
+
+    public String getDisplayName()
+    {
+        return displayName;
+    }
+
+    public String getUserName()
+    {
+        return userName;
     }
 }

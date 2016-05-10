@@ -1,217 +1,159 @@
+/*
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.rest.api.tests.client.data;
 
-import static org.junit.Assert.assertTrue;
-
-import java.io.Serializable;
 import java.util.Date;
-
-import org.json.simple.JSONObject;
+import java.util.List;
+import java.util.Map;
 
 /**
- * Alfresco API (non-CMIS) node representation.
- * 
- * @author steveglover
+ * Representation of a node (for client tests for File Folder API)
  *
+ * @author janv
  */
-public class Node implements Serializable, ExpectedComparison
+public class Node
 {
-	private static final long serialVersionUID = -6881545732441221372L;
+    protected String id;
+    protected String name;
 
-	protected String nodeId;
-	protected String guid;
-	protected String name;
-	protected String title;
-	protected String description;
-	protected Date createdAt;
-	protected Date modifiedAt;
-	protected String createdBy;
-	protected String modifiedBy;
+    protected Date createdAt;
+    protected Date modifiedAt;
+    protected UserInfo createdByUser;
+    protected UserInfo modifiedByUser;
 
-	public Node()
-	{
-	}
+    protected Boolean isFolder;
+    protected Boolean isLink;
 
-	/**
-	 * For POSTs
-	 * 
-	 * @param guid String
-	 */
-	public Node(String guid)
-	{
-		this.guid = guid;
-	}
+    protected String parentId;
+    protected PathInfo path;
+    protected String nodeType;
 
-	public Node(String id, String guid)
-	{
-		this.nodeId = id;
-		this.guid = guid;
-	}
+    protected List<String> aspectNames;
 
-	public void setGuid(String guid)
-	{
-		this.guid = guid;
-	}
+    protected Map<String, Object> properties;
 
-	public String getGuid()
-	{
-		return guid;
-	}
+    public Node()
+    {
+    }
 
-	public String getRawNodeId()
-	{
-		return nodeId;
-	}
+    public String getId()
+    {
+        return id;
+    }
 
-	public String getNodeId()
-	{
-		return nodeId;
-	}
+    public String getName()
+    {
+        return name;
+    }
 
-	public boolean isFolder()
-	{
-		return false;
-	}
-	
-	public String getName()
-	{
-		return name;
-	}
+    public void setName(String name)
+    {
+        this.name = name;
+    }
 
-	public void setName(String name)
-	{
-		this.name = name;
-	}
+    public Date getCreatedAt()
+    {
+        return createdAt;
+    }
 
-	public String getTitle()
-	{
-		return title;
-	}
+    public Date getModifiedAt()
+    {
+        return modifiedAt;
+    }
 
-	public void setTitle(String title)
-	{
-		this.title = title;
-	}
+    public UserInfo getCreatedByUser()
+    {
+        return createdByUser;
+    }
 
-	public String getDescription()
-	{
-		return description;
-	}
+    public UserInfo getModifiedByUser()
+    {
+        return modifiedByUser;
+    }
 
-	public void setDescription(String description)
-	{
-		this.description = description;
-	}
+    public Boolean getIsFolder()
+    {
+        return isFolder;
+    }
 
-	public Date getCreatedAt()
-	{
-		return createdAt;
-	}
+    public void setIsFolder(Boolean folder)
+    {
+        isFolder = folder;
+    }
 
-	public void setCreatedAt(Date createdAt)
-	{
-		this.createdAt = createdAt;
-	}
+    public Boolean getIsLink()
+    {
+        return isLink;
+    }
 
-	public Date getModifiedAt()
-	{
-		return modifiedAt;
-	}
+    public void setIsLink(Boolean link)
+    {
+        isLink = link;
+    }
 
-	public void setModifiedAt(Date modifiedAt)
-	{
-		this.modifiedAt = modifiedAt;
-	}
+    public String getParentId()
+    {
+        return parentId;
+    }
 
-	public String getCreatedBy()
-	{
-		return createdBy;
-	}
+    public void setParentId(String parentId)
+    {
+        this.parentId = parentId;
+    }
 
-	public void setCreatedBy(String createdBy)
-	{
-		this.createdBy = createdBy;
-	}
+    public PathInfo getPath()
+    {
+        return path;
+    }
 
-	public String getModifiedBy()
-	{
-		return modifiedBy;
-	}
+    public void setPath(PathInfo path)
+    {
+        this.path = path;
+    }
 
-	public void setModifiedBy(String modifiedBy)
-	{
-		this.modifiedBy = modifiedBy;
-	}
+    public String getNodeType()
+    {
+        return nodeType;
+    }
 
-	public void setNodeId(String nodeId)
-	{
-		this.nodeId = nodeId;
-	}
+    public void setNodeType(String nodeType)
+    {
+        this.nodeType = nodeType;
+    }
 
-	@Override
-	public int hashCode()
-	{
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((nodeId == null) ? 0 : nodeId.hashCode());
-		return result;
-	}
+    public List<String> getAspectNames()
+    {
+        return aspectNames;
+    }
 
-	@Override
-	public boolean equals(Object obj)
-	{
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Node other = (Node) obj;
-		if (nodeId == null)
-		{
-			if (other.nodeId != null)
-				return false;
-		} else if (!nodeId.equals(other.nodeId))
-			return false;
-		return true;
-	}
+    public void setAspectNames(List<String> aspectNames)
+    {
+        this.aspectNames = aspectNames;
+    }
 
-	@SuppressWarnings("unchecked")
-	public JSONObject toJSON()
-	{
-		JSONObject json = new JSONObject();
-		json.put("guid", getGuid());
-		json.put("id", getNodeId());
-		return json;
-	}
+    public Map<String, Object> getProperties()
+    {
+        return properties;
+    }
 
-	@Override
-	public void expected(Object o)
-	{
-		assertTrue(o instanceof Node);
-
-		Node other = (Node) o;
-
-		AssertUtil.assertEquals("id", nodeId, other.getNodeId());
-		AssertUtil.assertEquals("guid", guid, other.getGuid());
-		AssertUtil.assertEquals("name", name, other.getName());
-		AssertUtil.assertEquals("title", title, other.getTitle());
-		AssertUtil.assertEquals("description", description, other.getDescription());
-		AssertUtil.assertEquals("createdAt", createdAt, other.getCreatedAt());
-		if(modifiedAt != null)
-		{
-			assertTrue(modifiedAt.before(other.getModifiedAt()) || modifiedAt.equals(other.getModifiedAt()));
-		}
-		AssertUtil.assertEquals("createdBy", createdBy, other.getCreatedBy());
-		AssertUtil.assertEquals("modifiedBy", modifiedBy, other.getModifiedBy());
-	}
-
-	@Override
-	public String toString()
-	{
-		return "Node [nodeId=" + nodeId + ", guid=" + guid + ", name=" + name
-				+ ", title=" + title + ", description=" + description
-				+ ", createdAt=" + createdAt + ", modifiedAt=" + modifiedAt
-				+ ", createdBy=" + createdBy + ", modifiedBy=" + modifiedBy
-				+ "]";
-	}
+    public void setProperties(Map<String, Object> properties)
+    {
+        this.properties = properties;
+    }
 }

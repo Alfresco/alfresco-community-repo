@@ -6,15 +6,15 @@ import org.json.simple.JSONObject;
 
 public class FolderFavouriteTarget implements FavouritesTarget
 {
-	private Folder folder;
+	private FavouriteFolder folder;
 
-	public FolderFavouriteTarget(Folder folder)
+	public FolderFavouriteTarget(FavouriteFolder folder)
 	{
 		super();
 		this.folder = folder;
 	}
 
-	public Folder getFolder()
+	public FavouriteFolder getFolder()
 	{
 		return folder;
 	}

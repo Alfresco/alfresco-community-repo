@@ -261,7 +261,7 @@
                                                     "http://go.alfresco.com/a0100K050L0000KZjI2d00U" target="_blank"
                                             ><span style="font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 24px; color: #727174;"><img
                                                     style="border:none; display:block; border-collapse:collapse; outline:none; text-decoration:none;"
-                                                    src="${url.context}/images/logo/Alfresco_Logo_gray.png" border="0"
+                                                    src="${template_assets_url}/Alfresco_Logo_gray.png" border="0"
                                                     alt="Alfresco" width="122" height="38"></span></a></td>
                                         </tr>
                                     </table>
@@ -298,7 +298,7 @@
                                             <td style="border-collapse:collapse; ">
                                                 <div class="mktEditable" id="Banner Image 1"><span
                                                         style="font-family:'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 24px; color: #ffffff;"><img
-                                                        src="${url.context}/images/icons/Product_Banner_1.jpg" alt="Alfresco Products" style="width:100%; border:none;
+                                                        src="${template_assets_url}/Product_Banner_1.jpg" alt="Alfresco Products" style="width:100%; border:none;
 display:block; border-collapse:collapse; outline:none; text-decoration:none;"></span></div>
                                             </td>
                                         </tr>
@@ -394,23 +394,23 @@ middle;"><p>${shared_node_name} shared with you</p></span></div>
                                             <td cellspacing="0" cellpadding="0" border="0" align="center"><a
                                                     style="color: #ffffff; text-decoration: none;"
                                                     href="http://go.alfresco.com/a0100K060L0000RZeI2o00U" target="_blank"><img
-                                                    src="${url.context}/images/icons/Alfresco_Icon_Social_Twitter.png" width="23" height="23"
+                                                    src="${template_assets_url}/Alfresco_Icon_Social_Twitter.png" width="23" height="23"
                                                     border="0"></a>&nbsp; <a style="color: #ffffff; text-decoration: none;"
                                                                              href="http://go.alfresco.com/G6I0Zo100S0fL0UK0000020"
-                                                                             target="_blank"><img src="${url.context}/images/icons/Alfresco_Icon_Social_LinkedIn.png"
+                                                                             target="_blank"><img src="${template_assets_url}/Alfresco_Icon_Social_LinkedIn.png"
                                                                                                   width="23" height="23" border="0"></a>&nbsp; <a
                                                     style="color:
 #ffffff; text-decoration: none;" href="http://go.alfresco.com/TT2Lo00060000Ig10K00UZ0" target="_blank"><img
-                                                    src="${url.context}/images/icons/Alfresco_Icon_Social_Facebook.png" width="23" height="23" border="0"></a>&nbsp; <a
+                                                    src="${template_assets_url}/Alfresco_Icon_Social_Facebook.png" width="23" height="23" border="0"></a>&nbsp; <a
                                                     style="color: #ffffff; text-decoration: none;"
                                                     href="http://go.alfresco.com/v00002oh0UKZL0U6I010000" target="_blank"><img
-                                                    src="${url.context}/images/icons/Alfresco_Icon_Social_Google.png" width="23" height="23" border="0"></a></td>
+                                                    src="${template_assets_url}/Alfresco_Icon_Social_Google.png" width="23" height="23" border="0"></a></td>
                                             <td cellspacing="0" cellpadding="0" border="0" align="center" width="10"></td>
                                             <td cellspacing="0" cellpadding="0" border="0" align="center"><a style="color: #333333;"
                                                                                                              href="http://go.alfresco.com/a0100K050L0000KZjI2d00U"
                                                                                                              target="_blank"><span
                                                     style="font-family: Gotham, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size: 10px; color: #727174;"><img
-                                                    src="${url.context}/images/logo/AlfrrescoGlobal_Logo_BW.png" border="0" alt="alfresco.com" width="92" height="29"><br></span></a>
+                                                    src="${template_assets_url}/AlfrrescoGlobal_Logo_BW.png" border="0" alt="alfresco.com" width="92" height="29"><br></span></a>
                                             </td>
                                         </tr>
                                     </table>

@@ -235,7 +235,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
                     }
                     else
                     {
-                        return nodes.getContent(nodeId, parameters);
+                        return nodes.getContent(nodeId, parameters, false);
                     }
                 }
             }, networkTenantDomain);

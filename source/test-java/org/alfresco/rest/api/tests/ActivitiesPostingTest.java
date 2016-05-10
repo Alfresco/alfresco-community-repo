@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
@@ -41,6 +59,9 @@ import java.util.Map;
 public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
 {
 
+    /**
+     * Tests the main activites, added, updated, deleted, downloaded
+     */
     @Test
     public void testCreateUpdate() throws Exception
     {
@@ -54,10 +75,10 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         //Update the file
         Document dUpdate = new Document();
         dUpdate.setName("d1b.txt");
-        HttpResponse response = put(URL_NODES, u1.getId(), documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
+        put(URL_NODES, u1.getId(), documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
 
         //Now download it
-        response = getSingle(NodesEntityResource.class, u1.getId(), documentResp.getId()+"/content", null, 200);
+        HttpResponse response = getSingle(NodesEntityResource.class, u1.getId(), documentResp.getId()+"/content", null, 200);
         String textContent = response.getResponse();
         assertNotNull(textContent);
 
@@ -85,6 +106,9 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         assertNotNull(act);
     }
 
+    /**
+     * Tests non-file activites. So no events.
+     */
     @Test
     public void testNonFileActivities() throws Exception
     {
@@ -103,6 +127,9 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         assertEquals("No activites should be created for non-file activities", activities, activitiesAgain);
     }
 
+    /**
+     * Tests non-site file activites. So no events.
+     */
     @Test
     public void testNonSite() throws Exception
     {
@@ -119,12 +146,17 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         //Update the file
         Document dUpdate = new Document();
         dUpdate.setName("nonsite_d2.txt");
-        HttpResponse response = put(URL_NODES, u1.getId(), documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
+        put(URL_NODES, u1.getId(), documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
 
         List<Activity> activitiesAgain = getMyActivites();
         assertEquals("No activites should be created for non-site nodes", activities, activitiesAgain);
     }
 
+    /**
+     * Generate the feed an get the activities for user1
+     * @return
+     * @throws Exception
+     */
     private List<Activity> getMyActivites() throws Exception
     {
         repoService.generateFeed();
@@ -136,6 +168,16 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     }
 
 
+    /**
+     * Match an exact activity by a combination of the parameters
+     * @param list
+     * @param type
+     * @param user
+     * @param siteId
+     * @param parentId
+     * @param title
+     * @return
+     */
     private Activity matchActivity(List<Activity> list, String type, String user, String siteId, String parentId, String title)
     {
         for (Activity act:list)

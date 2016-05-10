@@ -152,9 +152,10 @@ public interface Nodes
      *
      * @param fileNodeId
      * @param parameters
+     * @param recordActivity true, if an activity post is required.
      * @return
      */
-    BinaryResource getContent(String fileNodeId, Parameters parameters);
+    BinaryResource getContent(String fileNodeId, Parameters parameters, boolean recordActivity);
 
     /**
      * Uploads file content (updates existing node with new content).

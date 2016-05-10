@@ -46,6 +46,8 @@ public class QuickShareLink
 	protected Date modifiedAt;
 	protected UserInfo modifiedByUser;
 
+	protected UserInfo sharedByUser;
+
 	public QuickShareLink()
 	{
 	}
@@ -112,6 +114,16 @@ public class QuickShareLink
 		this.modifiedByUser = modifiedByUser;
 	}
 
+	public UserInfo getSharedByUser()
+	{
+		return sharedByUser;
+	}
+
+	public void setSharedByUser(UserInfo sharedByUser)
+	{
+		this.sharedByUser = sharedByUser;
+	}
+
 	// eg. for debug logging etc
     @Override
 	public String toString()
@@ -122,6 +134,7 @@ public class QuickShareLink
 		sb.append(", name=").append(getName());
 		sb.append(", modifiedAt=").append(getModifiedAt());
 		sb.append(", modifiedByUser=").append(getModifiedByUser());
+		sb.append(", sharedByUser=").append(getSharedByUser());
 		sb.append(", content=").append(getContent());
 		sb.append("]");
 		return sb.toString();

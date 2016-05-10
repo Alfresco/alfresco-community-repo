@@ -19,15 +19,17 @@
 package org.alfresco.rest.api.nodes;
 
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.resource.RelationshipResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.webscripts.servlet.FormData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,18 +38,20 @@ import java.util.List;
  * TODO ... work-in-progress
  * 
  * @author janv
+ * @author Jamal Kaabi-Mofrad
  */
 @RelationshipResource(name = "children",  entityResource = NodesEntityResource.class, title = "Folder children")
-public class NodeChildrenRelation implements RelationshipResourceAction.Read<Node>, RelationshipResourceAction.Create<Node>, InitializingBean
+public class NodeChildrenRelation implements RelationshipResourceAction.Read<Node>, RelationshipResourceAction.Create<Node>,
+            MultiPartRelationshipResourceAction.Create<Node>, InitializingBean
 {
-	private Nodes nodes;
+    private Nodes nodes;
 
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
     }
 
-	@Override
+    @Override
     public void afterPropertiesSet()
     {
         ParameterCheck.mandatory("nodes", this.nodes);
@@ -104,4 +108,13 @@ public class NodeChildrenRelation implements RelationshipResourceAction.Read<Nod
 
         return result;
     }
+
+    @Override
+    @WebApiDescription(title = "Upload file content and meta-data into the repository.")
+    @WebApiParam(name = "formData", title = "A single form data", description = "A single form data which holds FormFields.")
+    public Node create(String parentFolderNodeId, FormData formData, Parameters parameters)
+    {
+        return nodes.upload(parentFolderNodeId, formData, parameters);
+    }
+
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,7 +22,7 @@ package org.alfresco.rest.api.tests.client.data;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Representation of a folder node (initially for client tests for File Folder API)
+ * Representation of a folder node - initially for client tests for Nodes (aka File Folder) API
  *
  * @author janv
  */

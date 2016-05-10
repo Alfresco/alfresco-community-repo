@@ -30,7 +30,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Representation of a node (for client tests for File Folder API)
+ * Representation of a node - initially for client tests for Nodes (aka File Folder) API
  *
  * @author janv
  */
@@ -45,6 +45,7 @@ public class Node
     protected UserInfo modifiedByUser;
 
     protected Boolean isFolder;
+    protected Boolean isContent;
     protected Boolean isLink;
 
     protected String parentId;
@@ -114,9 +115,19 @@ public class Node
         return isFolder;
     }
 
-    public void setIsFolder(Boolean folder)
+    public void setIsFolder(Boolean isFolder)
     {
-        isFolder = folder;
+        this.isFolder = isFolder;
+    }
+
+    public Boolean getIsContent()
+    {
+        return isContent;
+    }
+
+    public void setIsContent(Boolean isContent)
+    {
+        this.isContent = isContent;
     }
 
     public Boolean getIsLink()
@@ -262,6 +273,7 @@ public class Node
         }
 
         AssertUtil.assertEquals("isFolder", isFolder, other.getIsFolder());
+        AssertUtil.assertEquals("isContent", isContent, other.getIsContent());
         AssertUtil.assertEquals("isLink", isLink, other.getIsLink());
 
         if (path != null) {

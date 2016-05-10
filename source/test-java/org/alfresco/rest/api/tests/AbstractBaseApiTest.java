@@ -69,7 +69,20 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return response;
     }
 
-    protected HttpResponse post(String url, String runAsUser, String body,  String queryString, String contentType, int expectedStatus) throws Exception
+    protected HttpResponse post(String url, String runAsUser, String body, String queryString, String contentType, int expectedStatus) throws Exception
+    {
+        publicApiClient.setRequestContext(new RequestContext(runAsUser));
+        if (queryString != null)
+        {
+            url += queryString;
+        }
+        HttpResponse response = publicApiClient.post(getScope(), url, null, null, null, body, contentType);
+        checkStatus(expectedStatus, response.getStatusCode());
+
+        return response;
+    }
+
+    protected HttpResponse post(String url, String runAsUser, byte[] body, String queryString, String contentType, int expectedStatus) throws Exception
     {
         publicApiClient.setRequestContext(new RequestContext(runAsUser));
         if (queryString != null)

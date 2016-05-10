@@ -452,6 +452,18 @@ public class PublicApiClient
         return response;
     }
 
+
+	public HttpResponse post(String scope, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId,
+							 byte[] body, String contentType) throws IOException
+	{
+		HttpResponse response = client.post(getRequestContext(), scope, entityCollectionName, entityId, relationCollectionName,
+				relationshipEntityId != null ? relationshipEntityId.toString() : null, body, contentType);
+
+		logger.debug(response.toString());
+
+		return response;
+	}
+
 	public HttpResponse post(String urlSuffix, String body) throws IOException
 	{
 		HttpResponse response = client.post(getRequestContext(), urlSuffix, body);

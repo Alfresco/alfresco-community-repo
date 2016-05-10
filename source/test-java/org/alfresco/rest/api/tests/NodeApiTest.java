@@ -20,12 +20,7 @@
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
@@ -77,6 +72,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -101,6 +98,8 @@ import java.util.UUID;
 public class NodeApiTest extends AbstractBaseApiTest
 {
     private static final String RESOURCE_PREFIX = "publicapi/upload/";
+
+    private static final String URL_NODES = "nodes/";
 
     /**
      * User one from network one
@@ -547,10 +546,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Try to upload into a non-existent folder
-        post(getChildrenUrl(UUID.randomUUID().toString()), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 404);
+        post(getChildrenUrl(UUID.randomUUID().toString()), user1, reqBody.getBody(), null, reqBody.getContentType(), 404);
 
         // Upload
-        response = post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        response = post(getChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals(fileName, document.getName());
@@ -576,7 +575,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(numOfNodes + 1, pagingResult.getCount().intValue());
 
         // Upload the same file again to check the name conflicts handling
-        post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 409);
+        post(getChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 409);
 
         response = getAll(getChildrenUrl(Nodes.PATH_MY), user1, paging, 200);
         pagingResult = parsePaging(response.getJsonResponse());
@@ -588,13 +587,13 @@ public class NodeApiTest extends AbstractBaseApiTest
                           .setAutoRename(true)
                           .build();
 
-        response = post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        response = post(getChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals("quick-1.pdf", document.getName());
 
         // upload the same file again, and request the path info to be present in the response
-        response = post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), "?select=path", reqBody.getContentType(), 201);
+        response = post(getChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), "?select=path", reqBody.getContentType(), 201);
         document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals("quick-2.pdf", document.getName());
@@ -613,7 +612,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         reqBody = MultiPartBuilder.create()
                     .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN))
                     .build();
-        post(getChildrenUrl(user1Home.getId()), user2, new String(reqBody.getBody()), null, reqBody.getContentType(), 403);
+        post(getChildrenUrl(user1Home.getId()), user2, reqBody.getBody(), null, reqBody.getContentType(), 403);
 
         response = getAll(getChildrenUrl(Nodes.PATH_MY), user1, paging, 200);
         pagingResult = parsePaging(response.getJsonResponse());
@@ -621,11 +620,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals("Access Denied. The file shouldn't have been uploaded.", numOfNodes + 3, pagingResult.getCount().intValue());
 
         // User1 tries to upload a file into a document rather than a folder!
-        post(getChildrenUrl(document.getId()), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
+        post(getChildrenUrl(document.getId()), user1, reqBody.getBody(), null, reqBody.getContentType(), 400);
 
         // Try to upload a file without defining the required formData
         reqBody = MultiPartBuilder.create().setAutoRename(true).build();
-        post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
+        post(getChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 400);
 
         // Test unsupported node type
         reqBody = MultiPartBuilder.create()
@@ -633,7 +632,7 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .setAutoRename(true)
                     .setNodeType("cm:link")
                     .build();
-        post(getChildrenUrl(user1Home.getId()), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
+        post(getChildrenUrl(user1Home.getId()), user1, reqBody.getBody(), null, reqBody.getContentType(), 400);
 
     }
 
@@ -662,7 +661,7 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .setFileData(new FileData(fileName, file, null));
         MultiPartRequest reqBody = multiPartBuilder.build();
         // Try to upload
-        response = post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        response = post(getChildrenUrl(folderA_Ref), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals(fileName, document.getName());
@@ -686,7 +685,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(numOfNodes + 1, pagingResult.getCount().intValue());
 
         // Upload the same file again to check the name conflicts handling
-        post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 409);
+        post(getChildrenUrl(folderA_Ref), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 409);
 
         response = getAll(getChildrenUrl(folderA_Ref), userOneN1.getId(), paging, 200);
         pagingResult = parsePaging(response.getJsonResponse());
@@ -699,10 +698,10 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN))
                     .build();
         // userTwoN1 tries to upload a new file into the folderA of userOneN1
-        post(getChildrenUrl(folderA_Ref), userTwoN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 403);
+        post(getChildrenUrl(folderA_Ref), userTwoN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 403);
 
         // Test upload with properties
-        response = post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        response = post(getChildrenUrl(folderA_Ref), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals(fileName2, document.getName());
@@ -723,7 +722,7 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .setProperties(props)
                     .build();
 
-        response = post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        response = post(getChildrenUrl(folderA_Ref), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         // "quick-2-1.txt" => fileName2 + autoRename
@@ -744,7 +743,7 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .setProperties(props)
                     .build();
         // Prop prefix is unknown
-        post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
+        post(getChildrenUrl(folderA_Ref), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 400);
     }
 
     /**
@@ -803,7 +802,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
 
-        String postUrl = "nodes/"+myFilesNodeRef.getId()+"/children";
+        String postUrl = getChildrenUrl(myFilesNodeRef);
 
         Folder f1 = new Folder();
         f1.setName("f1");
@@ -859,10 +858,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         Folder f3 = new Folder();
         f3.setName("f3");
         f3.setNodeType("cm:folder");
-        post("nodes/"+personNodeRef.getId()+"/children", user1, toJsonAsStringNonNull(f3), 400);
+        post(getChildrenUrl(personNodeRef), user1, toJsonAsStringNonNull(f3), 400);
 
         // -ve test - unknown parent folder node id
-        post("nodes/"+UUID.randomUUID().toString()+"/children", user1, toJsonAsStringNonNull(f3), 404);
+        post(getChildrenUrl(UUID.randomUUID().toString()), user1, toJsonAsStringNonNull(f3), 404);
 
         // -ve test - duplicate name
         post(postUrl, user1, toJsonAsStringNonNull(f1), 409);
@@ -883,7 +882,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
 
-        String postUrl = "nodes/"+myFilesNodeRef.getId()+"/children";
+        String postUrl = getChildrenUrl(myFilesNodeRef);
 
         Document d1 = new Document();
         d1.setName("d1.txt");
@@ -954,10 +953,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document d3 = new Document();
         d3.setName("d3.txt");
         d3.setNodeType("cm:content");
-        post("nodes/"+personNodeRef.getId()+"/children", user1, toJsonAsStringNonNull(d3), 400);
+        post(getChildrenUrl(personNodeRef), user1, toJsonAsStringNonNull(d3), 400);
 
         // -ve test - unknown parent folder node id
-        post("nodes/"+UUID.randomUUID().toString()+"/children", user1, toJsonAsStringNonNull(d3), 404);
+        post(getChildrenUrl(UUID.randomUUID().toString()), user1, toJsonAsStringNonNull(d3), 404);
 
         // -ve test - duplicate name
         post(postUrl, user1, toJsonAsStringNonNull(d1), 409);
@@ -978,7 +977,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
 
-        String postUrl = "nodes/"+myFilesNodeRef.getId()+"/children";
+        String postUrl = getChildrenUrl(myFilesNodeRef);
 
         String folderName = "My Folder";
 
@@ -1195,7 +1194,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, docResp.getContent().getMimeType());
 
         // Update content & Download URL
-        final String url = "nodes/" + docResp.getId() + "/content";
+        final String url = URL_NODES + docResp.getId() + "/content";
 
         // Update the empty node's content
         String content = "The quick brown fox jumps over the lazy dog.";
@@ -1204,10 +1203,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         BinaryPayload payload = new BinaryPayload(file, MimetypeMap.MIMETYPE_TEXT_PLAIN);
 
         // Try to update a folder!
-        putBinary("nodes/" + f1_nodeId + "/content", user1, payload, null, null, 400);
+        putBinary(URL_NODES + f1_nodeId + "/content", user1, payload, null, null, 400);
 
         // Try to update a non-existent file
-        putBinary("nodes/" + UUID.randomUUID().toString() + "/content", user1, payload, null, null, 404);
+        putBinary(URL_NODES + UUID.randomUUID().toString() + "/content", user1, payload, null, null, 404);
 
         // Update the empty file
         response = putBinary(url, user1, payload, null, null, 200);
@@ -1250,6 +1249,81 @@ public class NodeApiTest extends AbstractBaseApiTest
 
     // TODO add test for file/folder links - creating, getting, listing, deleting
 
+    /**
+     * Tests download of file/content.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
+     */
+    @Test
+    public void testDownloadFileContent() throws Exception
+    {
+        //
+        // Test plain text
+        //
+
+        String fileName = "quick-1.txt";
+        File file = getResourceFile(fileName);
+        
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_TEXT_PLAIN));
+        MultiPartRequest reqBody = multiPartBuilder.build();
+        
+        // Upload text content
+        HttpResponse response = post(getChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        
+        String contentNodeId = document.getId();
+        
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        ContentInfo contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        // Download text content - by default with Content-Disposition header
+        response = getSingle(NodesEntityResource.class, user1, contentNodeId+"/content", null, 200);
+
+        String textContent = response.getResponse();
+        assertEquals("The quick brown fox jumps over the lazy dog", textContent);
+        assertEquals("attachment; filename=\"quick-1.txt\"; filename*=UTF-8''quick-1.txt", response.getHeaders().get("Content-Disposition"));
+
+
+        //
+        // Test binary (eg. PDF)
+        //
+
+        fileName = "quick.pdf";
+        file = getResourceFile(fileName);
+        byte[] originalBytes = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF));
+        reqBody = multiPartBuilder.build();
+
+        // Upload binary content
+        response = post(getChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+
+        contentNodeId = document.getId();
+
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
+
+        // Download binary content (as bytes) - without Content-Disposition header (attachment=false)
+        Map<String, String> params = new LinkedHashMap<>();
+        params.put("attachment", "false");
+
+        response = getSingle(NodesEntityResource.class, user1, contentNodeId+"/content", params, 200);
+
+        byte[] bytes = response.getResponseAsBytes();
+
+        assertArrayEquals(originalBytes, bytes);
+        assertNull(response.getHeaders().get("Content-Disposition"));
+    }
+
     private String getChildrenUrl(NodeRef parentNodeRef)
     {
         return getChildrenUrl(parentNodeRef.getId());
@@ -1257,7 +1331,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
     private String getChildrenUrl(String parentId)
     {
-        return "nodes/" + parentId + "/children";
+        return URL_NODES + parentId + "/children";
     }
 
     private File getResourceFile(String fileName) throws FileNotFoundException

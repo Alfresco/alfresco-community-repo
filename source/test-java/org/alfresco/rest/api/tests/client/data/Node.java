@@ -18,9 +18,16 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
+import org.junit.Assert;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+
+import static junit.framework.TestCase.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 /**
  * Representation of a node (for client tests for File Folder API)
@@ -57,6 +64,11 @@ public class Node
         return id;
     }
 
+    public void setId(String id)
+    {
+        this.id = id;
+    }
+
     public String getName()
     {
         return name;
@@ -82,9 +94,19 @@ public class Node
         return createdByUser;
     }
 
+    public void setCreatedByUser(UserInfo createdByUser)
+    {
+        this.createdByUser = createdByUser;
+    }
+
     public UserInfo getModifiedByUser()
     {
         return modifiedByUser;
+    }
+
+    public void setModifiedByUser(UserInfo modifiedByUser)
+    {
+        this.modifiedByUser = modifiedByUser;
     }
 
     public Boolean getIsFolder()
@@ -155,5 +177,80 @@ public class Node
     public void setProperties(Map<String, Object> properties)
     {
         this.properties = properties;
+    }
+
+    public void expected(Object o)
+    {
+        Node other = (Node) o;
+
+        if (id != null)
+        {
+            AssertUtil.assertEquals("id", id, other.getId());
+        }
+        else
+        {
+            assertNotNull(other.id);
+        }
+
+        AssertUtil.assertEquals("parentId", parentId, other.getParentId());
+        AssertUtil.assertEquals("name", name, other.getName());
+        AssertUtil.assertEquals("nodeType", nodeType, other.getNodeType());
+
+        if (createdAt != null)
+        {
+            AssertUtil.assertEquals("createdAt", createdAt, other.getCreatedAt());
+        }
+        else
+        {
+            assertNotNull(other.createdAt);
+        }
+
+        createdByUser.expected(other.getCreatedByUser());
+
+        if (modifiedAt != null)
+        {
+            assertTrue(modifiedAt.before(other.getModifiedAt()) || modifiedAt.equals(other.getModifiedAt()));
+        }
+        else
+        {
+            assertNotNull(other.modifiedAt);
+        }
+
+        modifiedByUser.expected(other.getModifiedByUser());
+
+        if (aspectNames != null)
+        {
+            assertNotNull(other.getAspectNames());
+            assertEquals(aspectNames.size(), other.getAspectNames().size());
+            for (String aspectName : aspectNames)
+            {
+                assertTrue(other.getAspectNames().contains(aspectName));
+            }
+        }
+        else
+        {
+            assertNull(other.getAspectNames());
+        }
+
+        if (properties != null)
+        {
+            assertNotNull(other.getProperties());
+            assertEquals(properties.size(), other.getProperties().size());
+            for (Map.Entry<String,Object> e : properties.entrySet())
+            {
+                Object otherObj = other.getProperties().get(e.getKey());
+                assertEquals(e.getValue(), otherObj); // TODO fix !
+            }
+        }
+        else
+        {
+            assertNull(other.getProperties());
+        }
+
+        AssertUtil.assertEquals("isLink", isLink, other.getIsLink());
+
+        if (path != null) {
+            path.expected(other.getPath());
+        }
     }
 }

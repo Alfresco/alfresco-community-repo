@@ -19,6 +19,8 @@
 
 package org.alfresco.rest.api.tests.client.data;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Representation of a folder node (initially for client tests for File Folder API)
  *
@@ -29,5 +31,13 @@ public class Folder extends Node
     public Folder()
     {
         super();
+    }
+
+    @Override
+    public void expected(Object o)
+    {
+        super.expected(o);
+
+        assertTrue(o instanceof Folder);
     }
 }

@@ -75,6 +75,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -738,6 +739,8 @@ public class NodeApiTest extends AbstractBaseApiTest
         NodeRef personNodeRef = personService.getPerson(user1);
         NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personNodeRef);
 
+        UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
+
         String postUrl = "nodes/"+myFilesNodeRef.getId()+"/children";
 
         Folder f1 = new Folder();
@@ -747,20 +750,16 @@ public class NodeApiTest extends AbstractBaseApiTest
         // create folder
         HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(f1), 201);
 
-        Folder f1Created = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-        assertNotNull(f1Created.getId());
-        assertEquals("f1",f1Created.getName());
-        assertEquals("cm:folder",f1Created.getNodeType());
-        assertEquals(true, f1Created.getIsFolder());
-        assertNotNull(f1Created.getCreatedAt());
-        assertEquals(user1,f1Created.getCreatedByUser().getUserName());
-        assertNotNull(f1Created.getModifiedAt());
-        assertEquals(user1,f1Created.getModifiedByUser().getUserName());
-        assertEquals(myFilesNodeRef.getId(), f1Created.getParentId());
-        assertTrue(f1Created.getAspectNames().contains("cm:auditable"));
-        assertNull(f1Created.getProperties());
-        assertNull(f1Created.getPath());
-        assertNull(f1Created.getIsLink());
+        Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+
+        f1.setIsFolder(true);
+        f1.setParentId(myFilesNodeRef.getId());
+        f1.setAspectNames(Collections.singletonList("cm:auditable"));
+
+        f1.setCreatedByUser(expectedUser);
+        f1.setModifiedByUser(expectedUser);
+
+        f1.expected(folderResp);
 
         // create folder with properties
         Map<String,Object> props = new HashMap<>();
@@ -773,13 +772,16 @@ public class NodeApiTest extends AbstractBaseApiTest
         f2.setProperties(props);
 
         response = post(postUrl, user1, toJsonAsStringNonNull(f2), 201);
-        Folder f2Created = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-        assertNotNull(f2Created.getId());
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
 
-        assertTrue(f2Created.getAspectNames().contains("cm:auditable"));
-        assertTrue(f2Created.getAspectNames().contains("cm:titled"));
-        assertEquals(f2Created.getProperties().get("cm:title"),"my folder title");
-        assertEquals(f2Created.getProperties().get("cm:description"),"my folder description");
+        f2.setIsFolder(true);
+        f2.setParentId(myFilesNodeRef.getId());
+        f2.setAspectNames(Arrays.asList("cm:auditable","cm:titled"));
+
+        f2.setCreatedByUser(expectedUser);
+        f2.setModifiedByUser(expectedUser);
+
+        f2.expected(folderResp);
 
         // -ve test - name is mandatory
         Folder invalid = new Folder();
@@ -817,6 +819,8 @@ public class NodeApiTest extends AbstractBaseApiTest
         NodeRef personNodeRef = personService.getPerson(user1);
         NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personNodeRef);
 
+        UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
+
         String postUrl = "nodes/"+myFilesNodeRef.getId()+"/children";
 
         Document d1 = new Document();
@@ -829,24 +833,20 @@ public class NodeApiTest extends AbstractBaseApiTest
         // create empty file
         HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(d1), 201);
 
-        Document d1Created = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-        assertNotNull(d1Created.getId());
-        assertEquals("d1.txt",d1Created.getName());
-        assertEquals("cm:content",d1Created.getNodeType());
-        assertEquals(false, d1Created.getIsFolder());
-        assertNotNull(d1Created.getCreatedAt());
-        assertEquals(user1,d1Created.getCreatedByUser().getUserName());
-        assertNotNull(d1Created.getModifiedAt());
-        assertEquals(user1,d1Created.getModifiedByUser().getUserName());
-        assertEquals(myFilesNodeRef.getId(), d1Created.getParentId());
-        assertTrue(d1Created.getAspectNames().contains("cm:auditable"));
-        assertEquals(0L, d1Created.getContent().getSizeInBytes());
-        assertEquals("text/plain", d1Created.getContent().getMimeType());
-        assertEquals("Plain Text", d1Created.getContent().getMimeTypeName());
-        assertEquals("UTF-8", d1Created.getContent().getEncoding());
-        assertNull(d1Created.getProperties());
-        assertNull(d1Created.getPath());
-        assertNull(d1Created.getIsLink());
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        d1.setIsFolder(false);
+        d1.setParentId(myFilesNodeRef.getId());
+        d1.setAspectNames(Collections.singletonList("cm:auditable"));
+
+        d1.setCreatedByUser(expectedUser);
+        d1.setModifiedByUser(expectedUser);
+
+        d1.getContent().setMimeTypeName("Plain Text");
+        d1.getContent().setSizeInBytes(0L);
+        d1.getContent().setEncoding("UTF-8");
+
+        d1.expected(documentResp);
 
         // create empty file with properties
         Map<String,Object> props = new HashMap<>();
@@ -859,13 +859,24 @@ public class NodeApiTest extends AbstractBaseApiTest
         d2.setProperties(props);
 
         response = post(postUrl, user1, toJsonAsStringNonNull(d2), 201);
-        Document d2Created = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-        assertNotNull(d2Created.getId());
 
-        assertTrue(d2Created.getAspectNames().contains("cm:auditable"));
-        assertTrue(d2Created.getAspectNames().contains("cm:titled"));
-        assertEquals(d2Created.getProperties().get("cm:title"),"my file title");
-        assertEquals(d2Created.getProperties().get("cm:description"),"my file description");
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        d2.setIsFolder(false);
+        d2.setParentId(myFilesNodeRef.getId());
+        d2.setAspectNames(Arrays.asList("cm:auditable","cm:titled"));
+
+        d2.setCreatedByUser(expectedUser);
+        d2.setModifiedByUser(expectedUser);
+
+        ContentInfo ciExpected = new ContentInfo();
+        ciExpected.setMimeType("text/plain");
+        ciExpected.setMimeTypeName("Plain Text");
+        ciExpected.setSizeInBytes(0L);
+        ciExpected.setEncoding("UTF-8");
+        d2.setContent(ciExpected);
+
+        d2.expected(documentResp);
 
         // -ve test - name is mandatory
         Document invalid = new Document();

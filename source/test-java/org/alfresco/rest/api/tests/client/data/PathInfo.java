@@ -1,9 +1,12 @@
 
 package org.alfresco.rest.api.tests.client.data;
 
+import junit.framework.Assert;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 import java.util.List;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * Representation of a path info (initially for client tests for File Folder API)
@@ -53,5 +56,15 @@ public class PathInfo
         {
             return id;
         }
+    }
+
+    public void expected(Object o)
+    {
+        assertTrue(o instanceof PathInfo);
+
+        PathInfo other = (PathInfo) o;
+
+        // TODO
+        Assert.fail("TODO test optional path elements !");
     }
 }

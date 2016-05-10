@@ -15,6 +15,7 @@ import java.util.Map;
 
 import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.api.nodes.NodeCommentsRelation;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.OperationResourceMetaData;
 import org.alfresco.rest.framework.core.ResourceInspector;
@@ -34,6 +35,7 @@ import org.alfresco.rest.framework.tests.api.mocks.MultiPartTestEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks.MultiPartTestRelationshipResource;
 import org.alfresco.rest.framework.tests.api.mocks.MultiPartTestResponse;
 import org.alfresco.rest.framework.tests.api.mocks.Sheep;
+import org.alfresco.rest.framework.tests.api.mocks.SheepBaaaahResource;
 import org.alfresco.rest.framework.tests.api.mocks.SheepBlackSheepResource;
 import org.alfresco.rest.framework.tests.api.mocks.SheepEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks.SheepNoActionEntityResource;
@@ -43,6 +45,7 @@ import org.alfresco.rest.framework.tests.api.mocks2.FarmersSon;
 import org.alfresco.rest.framework.tests.api.mocks3.Flock;
 import org.alfresco.rest.framework.tests.api.mocks3.FlockEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks3.FlocketEntityResource;
+import org.alfresco.rest.framework.tests.api.mocks3.GoatRelationshipResource;
 import org.alfresco.rest.framework.tests.api.mocks3.GrassEntityResourceNowDeleted;
 import org.alfresco.rest.framework.tests.api.mocks3.SheepBlackSheepResourceIsNoMore;
 import org.alfresco.rest.framework.tests.api.mocks3.SheepEntityResourceWithDeletedMethods;
@@ -335,12 +338,27 @@ public class InspectorTests
         assertTrue(op.getTitle().startsWith("Reads a photo as a Stream"));
           
         aMethod = ResourceInspector.findMethod(BinaryResourceAction.Delete.class, FlockEntityResource.class);
-        op = ResourceInspector.inspectOperation(FlockEntityResource.class, aMethod, HttpMethod.GET);
+        op = ResourceInspector.inspectOperation(FlockEntityResource.class, aMethod, HttpMethod.DELETE);
         assertNotNull(op);
         assertTrue(op.getTitle().startsWith("Deletes a photo"));
 
         aMethod = ResourceInspector.findMethod(BinaryResourceAction.Update.class, FlockEntityResource.class);
-        op = ResourceInspector.inspectOperation(FlockEntityResource.class, aMethod, HttpMethod.GET);
+        op = ResourceInspector.inspectOperation(FlockEntityResource.class, aMethod, HttpMethod.PUT);
+        assertNotNull(op);
+        assertTrue(op.getTitle().startsWith("Updates a photo"));
+
+        aMethod = ResourceInspector.findMethod(BinaryResourceAction.Read.class, SheepBaaaahResource.class);
+        op = ResourceInspector.inspectOperation(SheepBaaaahResource.class, aMethod, HttpMethod.GET);
+        assertNotNull(op);
+        assertTrue(op.getTitle().startsWith("Reads a photo"));
+
+        aMethod = ResourceInspector.findMethod(BinaryResourceAction.Delete.class, SheepBaaaahResource.class);
+        op = ResourceInspector.inspectOperation(SheepBaaaahResource.class, aMethod, HttpMethod.DELETE);
+        assertNotNull(op);
+        assertTrue(op.getTitle().startsWith("Deletes a photo"));
+
+        aMethod = ResourceInspector.findMethod(BinaryResourceAction.Update.class, SheepBaaaahResource.class);
+        op = ResourceInspector.inspectOperation(SheepBaaaahResource.class, aMethod, HttpMethod.PUT);
         assertNotNull(op);
         assertTrue(op.getTitle().startsWith("Updates a photo"));
     }
@@ -406,7 +424,7 @@ public class InspectorTests
             String result = null;
             switch (resourceMetadata.getUniqueId())
             {
-                case "/-root-/{entityId}/grow":
+                case "/-root-/{id}/grow":
                     assertTrue("GrassEntityResource supports POST", resourceMetadata.supports(HttpMethod.POST));
                     assertFalse("GrassEntityResource does not support DELETE", resourceMetadata.supports(HttpMethod.DELETE));
                     Class paramType = resourceMetadata.getObjectType(HttpMethod.POST);
@@ -414,7 +432,7 @@ public class InspectorTests
                     result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", paramObj, Params.valueOf("notUsed", null));
                     assertEquals("Growing well",result);
                     break;
-                case "/-root-/{entityId}/cut":
+                case "/-root-/{id}/cut":
                     assertTrue("GrassEntityResource supports POST", resourceMetadata.supports(HttpMethod.POST));
                     assertFalse("GrassEntityResource does not support GET", resourceMetadata.supports(HttpMethod.GET));
                     assertNull(resourceMetadata.getObjectType(HttpMethod.POST));
@@ -425,8 +443,29 @@ public class InspectorTests
                     fail("Invalid action information.");
             }
 
+        }
+    }
 
 
+
+    @Test
+    public void testInspectRelationshipProperties()
+    {
+        List<ResourceMetadata> metainfo = ResourceInspector.inspect(GoatRelationshipResource.class);
+        assertTrue(metainfo.size()==2);
+        for (ResourceMetadata resourceMetadata : metainfo)
+        {
+            switch (resourceMetadata.getUniqueId())
+            {
+                case "/goat/{entityId}/herd":
+                    assertTrue("GoatRelationshipResource supports GET", resourceMetadata.supports(HttpMethod.GET));
+                    break;
+                case "/goat/{entityId}/herd/{id}/content":
+                    assertTrue("GoatRelationshipResource supports GET", resourceMetadata.supports(HttpMethod.GET));
+                    break;
+                default:
+                    fail("Invalid information.");
+            }
         }
     }
 
@@ -439,7 +478,7 @@ public class InspectorTests
         ResourceInspector.inspectAddressedProperties(api, FlockEntityResource.class, "myroot", metainfo);
         assertTrue(metainfo.size()==1);
         ResourceMetadata metaData = metainfo.get(0);
-        assertEquals("/myroot/photo",metaData.getUniqueId()); 
+        assertEquals("/myroot/{id}/photo",metaData.getUniqueId());
         assertTrue(metaData.getOperations().size()==3);
         assertTrue("FlockEntityResource supports GET", metaData.supports(HttpMethod.GET));
         assertTrue("FlockEntityResource supports PUT", metaData.supports(HttpMethod.PUT));
@@ -472,7 +511,7 @@ public class InspectorTests
 //                    fail("Invalid address property information.");
 //            }
           
-            if ("/myroot/photo".equals(resourceMetadata.getUniqueId()))
+            if ("/myroot/{id}/photo".equals(resourceMetadata.getUniqueId()))
             {
                 assertTrue("FlocketEntityResource supports GET", resourceMetadata.supports(HttpMethod.GET));
                 assertTrue("FlocketEntityResource supports PUT", resourceMetadata.supports(HttpMethod.PUT));
@@ -480,7 +519,7 @@ public class InspectorTests
             }
             else
             {
-                if ("/myroot/album".equals(resourceMetadata.getUniqueId()))
+                if ("/myroot/{id}/album".equals(resourceMetadata.getUniqueId()))
                 {
                     assertTrue("FlocketEntityResource supports GET", resourceMetadata.supports(HttpMethod.GET));
                     assertTrue("FlocketEntityResource supports PUT", resourceMetadata.supports(HttpMethod.PUT));
@@ -488,7 +527,7 @@ public class InspectorTests
                 }
                 else
                 {
-                    if ("/myroot/madeUpProp".equals(resourceMetadata.getUniqueId()))
+                    if ("/myroot/{id}/madeUpProp".equals(resourceMetadata.getUniqueId()))
                     {
                         assertTrue("FlocketEntityResource supports GET", resourceMetadata.supports(HttpMethod.GET));
                         assertTrue("FlocketEntityResource does not supports PUT", !resourceMetadata.supports(HttpMethod.PUT));

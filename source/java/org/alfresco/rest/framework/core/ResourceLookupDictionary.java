@@ -34,6 +34,29 @@ public class ResourceLookupDictionary implements ResourceLocator
     }
 
     @Override
+    public ResourceWithMetadata locateRelationPropertyResource(Api api, String entityResource, String relationResource, String property, HttpMethod httpMethod) throws InvalidArgumentException,UnsupportedResourceOperationException
+    {
+        String resourceKey = ResourceDictionary.resourceKey(entityResource, relationResource);
+        String propertyResourceKey = ResourceDictionary.propertyResourceKey(resourceKey, property);
+        Map<String, ResourceWithMetadata> apiResources = dictionary.getAllResources().get(api);
+        if (apiResources == null)
+        {
+            throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_INVALID_API);
+        }
+
+        ResourceWithMetadata resource = apiResources.get(propertyResourceKey);
+        if (resource != null)
+        {
+            if (!resource.getMetaData().supports(httpMethod)) { throw new UnsupportedResourceOperationException(); }
+            return resource;
+        }
+
+        logger.warn("Unable to locate resource resource for :"+entityResource+" "+relationResource==null?"":relationResource+" "+property==null?"":property);
+        throw new InvalidArgumentException("Unable to locate resource resource for :"+entityResource+" "+(relationResource==null?"":relationResource+" "+property==null?"":property));
+
+    }
+
+    @Override
     public ResourceWithMetadata locateRelationResource(Api api, String entityResource, String relationResource, HttpMethod httpMethod) throws InvalidArgumentException,UnsupportedResourceOperationException
     {
         String resourceKey = ResourceDictionary.resourceKey(entityResource, relationResource);
@@ -83,7 +106,12 @@ public class ResourceLookupDictionary implements ResourceLocator
         String collectionName = templateVars.get(COLLECTION_RESOURCE);
         String entityId = templateVars.get(ENTITY_ID);
         String resourceName = templateVars.get(RELATIONSHIP_RESOURCE);
-        
+        String property =  templateVars.get(PROPERTY);
+
+        if (StringUtils.isNotBlank(property))
+        {
+            return locateRelationPropertyResource(api,collectionName ,resourceName, property,httpMethod);
+        }
         if (StringUtils.isNotBlank(resourceName))
         {
             return locateRelationResource(api,collectionName ,resourceName,httpMethod);

@@ -146,6 +146,15 @@ public class ResourceLocatorTests
         collResource = locator.locateResource(api, templateVars, HttpMethod.POST);
         assertEquals(GrassEntityResource.class, collResource.getResource().getClass());
         assertEquals(ResourceMetadata.RESOURCE_TYPE.OPERATION, collResource.getMetaData().getType());
+
+        templateVars = new HashMap<String, String>();
+        templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "sheep");
+        templateVars.put(ResourceLocator.ENTITY_ID, "sheepId");
+        templateVars.put(ResourceLocator.RELATIONSHIP_RESOURCE, "baaahh");
+        templateVars.put(ResourceLocator.PROPERTY, "chew");
+        collResource = locator.locateResource(api, templateVars, HttpMethod.POST);
+        assertEquals(SheepBaaaahResource.class, collResource.getResource().getClass());
+        assertEquals(ResourceMetadata.RESOURCE_TYPE.OPERATION, collResource.getMetaData().getType());
     }
 
     @Test
@@ -204,6 +213,56 @@ public class ResourceLocatorTests
         assertNotNull(collResource);
         assertTrue(collResource.getMetaData().supports(HttpMethod.PUT));
         assertEquals(FlocketEntityResource.class, collResource.getResource().getClass());
+    }
+
+    @Test
+    public void testLocateRelationshipProperties()
+    {
+        Api api3 = Api.valueOf("alfrescomock", "private", "3");
+        Map<String, String> templateVars = new HashMap<String, String>();
+        templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "goat");
+        templateVars.put(ResourceLocator.ENTITY_ID, "herdId");
+        templateVars.put(ResourceLocator.RELATIONSHIP_RESOURCE, "herd");
+
+        ResourceWithMetadata collResource;
+        try
+        {
+            collResource = locator.locateResource(api3, templateVars, HttpMethod.PUT);
+            fail("Should throw an UnsupportedResourceOperationException");
+        }
+        catch (UnsupportedResourceOperationException error)
+        {
+            //this is correct
+        }
+
+        templateVars.put(ResourceLocator.PROPERTY, "content");
+        collResource = locator.locateResource(api3, templateVars, HttpMethod.GET);
+        assertNotNull(collResource);
+        assertTrue(collResource.getMetaData().supports(HttpMethod.GET));
+
+        templateVars = new HashMap<String, String>();
+        templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "sheep");
+        templateVars.put(ResourceLocator.ENTITY_ID, "sheepId");
+        templateVars.put(ResourceLocator.RELATIONSHIP_RESOURCE, "baaahh");
+        templateVars.put(ResourceLocator.PROPERTY, "content");
+
+        try
+        {
+            //Tests by passing invalid propery
+            collResource = locator.locateResource(api, templateVars, HttpMethod.GET);
+            fail("Should throw an InvalidArgumentException");
+        }
+        catch (InvalidArgumentException error)
+        {
+            //this is correct
+        }
+
+        templateVars.put(ResourceLocator.PROPERTY, "photo");
+        collResource = locator.locateResource(api, templateVars, HttpMethod.GET);
+        assertNotNull(collResource);
+        assertTrue(collResource.getMetaData().supports(HttpMethod.GET));
+        assertTrue(collResource.getMetaData().supports(HttpMethod.PUT));
+        assertTrue(collResource.getMetaData().supports(HttpMethod.DELETE));
     }
     
     @Test

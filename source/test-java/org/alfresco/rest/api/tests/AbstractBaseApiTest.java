@@ -18,8 +18,12 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
+
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -31,15 +35,22 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.TempFileProvider;
 import org.springframework.util.ResourceUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.Serializable;
 import java.net.URL;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -296,6 +307,25 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         HttpResponse response = post("nodes/" + parentId + "/children", runAsUserId, RestApiUtil.toJsonAsStringNonNull(n), 201);
 
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), returnType);
+    }
+
+    protected Document createTextFile(String userId, String parentId, String fileName, String textContent) throws IOException, Exception
+    {
+        return createTextFile(userId, parentId, fileName, textContent, "UTF-8", Collections.EMPTY_MAP);
+    }
+
+    protected Document createTextFile(String userId, String parentId, String fileName, String textContent, String encoding, Map<String,String> props) throws IOException, Exception
+    {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
+        File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+
+        MultiPartBuilder.MultiPartRequest reqBody = MultiPartBuilder.create()
+                .setFileData(new MultiPartBuilder.FileData(fileName, txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN, encoding))
+                .setProperties(props)
+                .build();
+
+        HttpResponse response = post("nodes/" + parentId + "/children", userId, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 
     protected File getResourceFile(String fileName) throws FileNotFoundException

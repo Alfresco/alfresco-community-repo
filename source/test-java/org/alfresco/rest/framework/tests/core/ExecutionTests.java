@@ -3,7 +3,10 @@ package org.alfresco.rest.framework.tests.core;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.ResourceLocator;
@@ -23,6 +26,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.http.HttpMethod;
@@ -103,8 +107,10 @@ public class ExecutionTests extends AbstractContextTest
 
         final Goat goat = new Goat("xyz");
         ResourceWithMetadata cowresource = locator.locateEntityResource(api,"cow", HttpMethod.POST);
-        result = executor.execute(cowresource, Params.valueOf("654", null, NULL_PARAMS, Arrays.asList(goat), mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        WebScriptResponse response = mock(WebScriptResponse.class);
+        result = executor.execute(cowresource, Params.valueOf("654", null, NULL_PARAMS, Arrays.asList(goat), mock(WebScriptRequest.class)),  response, false);
         assertEquals(goat,((ExecutionResult)result).getRoot());
+        verify(response, times(1)).setStatus(Status.STATUS_ACCEPTED);
 
         ResourceWithMetadata entityResource = locator.locateRelationResource(api,"grass", "grow", HttpMethod.POST);
         result = executor.execute(entityResource,  Params.valueOf("654", null, NULL_PARAMS, grr, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);

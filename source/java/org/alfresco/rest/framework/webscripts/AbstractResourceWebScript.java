@@ -156,6 +156,10 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                         final ResourceOperation operation = resource.getMetaData().getOperation(getHttpMethod());
                         Object result = executeAction(resource, params);
                         setResponse(res,operation.getSuccessStatus(),ApiWebScript.CACHE_NEVER, DEFAULT_JSON_CONTENT);
+                        if (result instanceof BinaryResource)
+                        {
+                            return result; //don't postprocess it.
+                        }
                         return helper.processAdditionsToTheResponse(res, resource.getMetaData().getApi(), entityCollectionName, params, result);
                     }
                 }, isReadOnly, true);

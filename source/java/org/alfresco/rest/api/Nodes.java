@@ -168,4 +168,13 @@ public interface Nodes
     NodeRef validateNode(NodeRef nodeRef);
     boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes);
 
+    /**
+     * Determines whether the type of the given nodeRef is a sub-class of another class or not.
+     *
+     * @param nodeRef         source nodeRef
+     * @param ofClassQName    the class to test against
+     * @param validateNodeRef whether to validate the given source node or not
+     * @return true if the type of the given nodeRef is a sub-class of another class, otherwise false
+     */
+    boolean isSubClass(NodeRef nodeRef, QName ofClassQName, boolean validateNodeRef);
 }

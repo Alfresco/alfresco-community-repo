@@ -1052,4 +1052,31 @@
    <bean class="org.alfresco.rest.api.cmm.CustomModelDownloadRelation">
       <property name="customModels" ref="CustomModels" />
    </bean>
+
+   <!--                               -->
+   <!--        Rendition REST API     -->
+   <!--                               -->
+   <bean id="renditions" class="org.alfresco.rest.api.impl.RenditionsImpl" init-method="init">
+       <property name="nodes" ref="nodes" />
+       <property name="thumbnailService" ref="ThumbnailService" />
+       <property name="serviceRegistry" ref="ServiceRegistry" />
+   </bean>
+
+   <bean id="Renditions" class="org.springframework.aop.framework.ProxyFactoryBean">
+       <property name="proxyInterfaces">
+           <value>org.alfresco.rest.api.Renditions</value>
+       </property>
+       <property name="target">
+           <ref bean="renditions" />
+       </property>
+       <property name="interceptorNames">
+           <list>
+               <idref bean="legacyExceptionInterceptor" />
+           </list>
+       </property>
+   </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeRenditionsRelation">
+       <property name="renditions" ref="Renditions" />
+   </bean>
 </beans>

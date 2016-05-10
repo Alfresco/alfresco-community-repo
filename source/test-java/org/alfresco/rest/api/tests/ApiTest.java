@@ -13,6 +13,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     NodeApiTest.class,
+    RenditionsTest.class,
     TestSites.class,
     TestNodeComments.class,
     TestCMIS.class,

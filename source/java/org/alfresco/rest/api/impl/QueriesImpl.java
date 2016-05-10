@@ -24,6 +24,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Queries;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
@@ -221,10 +222,16 @@ public class QueriesImpl implements Queries, InitializingBean
 
         List<Node> nodeList = new ArrayList<>(results.length());
 
+        final Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
+
+        List<String> includeParam = parameters.getInclude();
+
         for (ResultSetRow row : results)
         {
             NodeRef nodeRef = row.getNodeRef();
-            nodeList.add(nodes.getFolderOrDocument(nodeRef.getId(), parameters));
+
+            // minimal info by default (unless "include"d otherwise)
+            nodeList.add(nodes.getFolderOrDocument(nodeRef, null, null, includeParam, mapUserInfo));
         }
 
         results.close();

@@ -218,7 +218,7 @@ public class ResourceWebScriptHelperTests
             theClause = getClause(paramName, "x/,z");
             fail("Should throw an InvalidSelectException");
         }
-        catch (InvalidArgumentException error)
+        catch (InvalidSelectException error)
         {
             //this is correct
         }
@@ -228,7 +228,7 @@ public class ResourceWebScriptHelperTests
             theClause = getClause(paramName, "/x'n,/z");
             fail("Should throw an InvalidSelectException");
         }
-        catch (InvalidArgumentException error)
+        catch (InvalidSelectException error)
         {
             //this is correct
         } 
@@ -238,7 +238,7 @@ public class ResourceWebScriptHelperTests
             theClause = getClause(paramName, "/foo/0");
             fail("Should throw an InvalidSelectException. Legal identifiers must start with a letter not zero");
         }
-        catch (InvalidArgumentException error)
+        catch (InvalidSelectException error)
         {
             //this is correct
         }        
@@ -248,11 +248,21 @@ public class ResourceWebScriptHelperTests
             theClause = getClause(paramName, "/");
             fail("Should throw an InvalidSelectException. No identifier specified.");
         }
-        catch (InvalidArgumentException error)
+        catch (InvalidSelectException error)
         {
             //this is correct
-        }              
-        
+        }
+
+        try
+        {
+            theClause = getClause(paramName,  "path, isLink");
+            fail("Should throw an InvalidSelectException. No identifier specified.");
+        }
+        catch (InvalidSelectException error)
+        {
+            //this is correct
+        }
+
         theClause = getClause(paramName, "king/kong");
         assertTrue("has a valid "+paramName, theClause.size() == 1);
         assertEquals("king/kong",theClause.get(0));

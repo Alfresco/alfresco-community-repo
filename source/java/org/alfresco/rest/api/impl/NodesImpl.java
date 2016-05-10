@@ -877,7 +877,6 @@ public class NodesImpl implements Nodes
 
     public Node updateNode(String nodeId, Node nodeInfo, Parameters parameters)
     {
-
         final NodeRef nodeRef = validateNode(nodeId);
 
         final Set<QName> fileOrFolder = new HashSet<>(Arrays.asList(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT));
@@ -902,6 +901,61 @@ public class NodesImpl implements Nodes
         {
             // note: this is equivalent of a rename within target folder
             props.put(ContentModel.PROP_NAME, name);
+        }
+
+        List<String> aspectNames = nodeInfo.getAspectNames();
+        if (aspectNames != null)
+        {
+            // note: can be empty (eg. to remove existing aspects (+ aspect properties) ... apart from cm:auditable, sys:referencable, sys:localized)
+            Set<QName> aspectQNames = new HashSet<>(aspectNames.size());
+            for (String aspectName : aspectNames)
+            {
+                QName aspectQName = QName.createQName(aspectName, namespaceService);
+                aspectQNames.add(aspectQName);
+            }
+
+            Set<QName> existingAspects = nodeService.getAspects(nodeRef);
+
+            Set<QName> aspectsToAdd = new HashSet<>(3);
+            Set<QName> aspectsToRemove = new HashSet<>(3);
+
+            for (QName aspectQName : aspectQNames)
+            {
+                if (EXCLUDED_ASPECTS.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
+                {
+                    continue; // ignore
+                }
+
+                if (! existingAspects.contains(aspectQName))
+                {
+                    aspectsToAdd.add(aspectQName);
+                }
+            }
+
+            for (QName existingAspect : existingAspects)
+            {
+                if (EXCLUDED_ASPECTS.contains(existingAspect) || existingAspect.equals(ContentModel.ASPECT_AUDITABLE))
+                {
+                    continue; // ignore
+                }
+
+                if (! aspectQNames.contains(existingAspect))
+                {
+                    aspectsToRemove.add(existingAspect);
+                }
+            }
+
+            // Note: for now, if aspectNames are sent then all that are required should be sent (to avoid properties from other existing aspects being removed)
+            // TODO: optional PATCH mechanism to add one new new aspect (with some related aspect properties) without affecting existing aspects/properties
+            for (QName aQName : aspectsToRemove)
+            {
+                nodeService.removeAspect(nodeRef, aQName);
+            }
+
+            for (QName aQName : aspectsToAdd)
+            {
+                nodeService.addAspect(nodeRef, aQName, null);
+            }
         }
 
         if (props.size() > 0)

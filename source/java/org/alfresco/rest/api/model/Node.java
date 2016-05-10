@@ -107,7 +107,7 @@ public class Node implements Comparable<Node>
     public static UserInfo lookupUserInfo(String userName, Map<String, UserInfo> mapUserInfo, PersonService personService) {
 
         UserInfo userInfo = mapUserInfo.get(userName);
-        if (userInfo == null)
+        if ((userInfo == null) && (userName != null))
         {
             String sysUserName = AuthenticationUtil.getSystemUserName();
             if (userName.equals(sysUserName) || (AuthenticationUtil.isMtEnabled() && userName.startsWith(sysUserName + "@")))

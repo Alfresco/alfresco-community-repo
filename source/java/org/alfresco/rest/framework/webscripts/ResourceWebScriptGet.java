@@ -224,7 +224,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                     }
                     else
                     {
-                      executionCallback.onSuccess(helper.postProcessResponse(resource.getMetaData().getApi(), entityCollectionName, params, result), DEFAULT_JSON_CONTENT);
+                      executionCallback.onSuccess(helper.processAdditionsToTheResponse(resource.getMetaData().getApi(), entityCollectionName, params, result), DEFAULT_JSON_CONTENT);
                     }
                     return null;
                 }

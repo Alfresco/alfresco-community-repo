@@ -208,7 +208,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 public Void execute() throws Throwable
                 {
                     Object result = executeInternal(resource, params);
-                    executionCallback.onSuccess(helper.postProcessResponse(resource.getMetaData().getApi(), entityCollectionName, params, result), DEFAULT_JSON_CONTENT);
+                    executionCallback.onSuccess(helper.processAdditionsToTheResponse(resource.getMetaData().getApi(), entityCollectionName, params, result), DEFAULT_JSON_CONTENT);
                     return null;
                 }
             }, false, true);

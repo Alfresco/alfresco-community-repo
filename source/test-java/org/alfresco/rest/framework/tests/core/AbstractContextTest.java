@@ -22,6 +22,7 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -46,7 +47,7 @@ public abstract class AbstractContextTest
     @Autowired
     JacksonHelper jsonHelper;
 
-    static Params NOT_USED = Params.valueOf("notUsed", null);
+    static Params NOT_USED = Params.valueOf("notUsed", null, mock(WebScriptRequest.class));
     static final Params.RecognizedParams NULL_PARAMS = new Params.RecognizedParams(null, null, null, null, null, null, null, false);
     static Api api = Api.valueOf("alfrescomock", "private", "1");
 

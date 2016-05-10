@@ -7,6 +7,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -53,6 +54,7 @@ import org.alfresco.rest.framework.tests.api.mocks3.SlimGoat;
 import org.alfresco.util.Pair;
 import org.junit.Test;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.http.HttpMethod;
 
 /**
@@ -445,7 +447,7 @@ public class InspectorTests
                     assertEquals("grow should return ACCEPTED", Status.STATUS_ACCEPTED, op.getSuccessStatus());
                     Class paramType = resourceMetadata.getObjectType(op);
                     Object paramObj = paramType.newInstance();
-                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", paramObj, Params.valueOf("notUsed", null));
+                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", paramObj, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)));
                     assertEquals("Growing well",result);
                     break;
                 case "/-root-/{id}/cut":
@@ -454,7 +456,7 @@ public class InspectorTests
                     op = resourceMetadata.getOperation(HttpMethod.POST);
                     assertNull(resourceMetadata.getObjectType(op));
                     assertEquals("cut should return ACCEPTED", Status.STATUS_NOT_IMPLEMENTED, op.getSuccessStatus());
-                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", null, Params.valueOf("notUsed", null));
+                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", null, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)));
                     assertEquals("All done",result);
                     break;
                 default:

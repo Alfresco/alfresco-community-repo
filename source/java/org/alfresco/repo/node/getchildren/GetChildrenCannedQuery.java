@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2013 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -67,7 +67,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
- * GetChidren canned query
+ * GetChildren canned query
  * 
  * To get paged list of children of a parent node filtered by child type.
  * Also optionally filtered and/or sorted by one or more properties (up to three).
@@ -85,7 +85,7 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     
     public static final int MAX_FILTER_SORT_PROPS = 3;
     
-    // note: speical qnames - originally from Share DocLib default config (however, we do not support arbitrary "fts-alfresco" special sortable fields)
+    // note: special qnames - originally from Share DocLib default config (however, we do not support arbitrary "fts-alfresco" special sortable fields)
     public static final QName SORT_QNAME_CONTENT_SIZE = QName.createQName("http://www.alfresco.org/model/content/1.0", "content.size");
     public static final QName SORT_QNAME_CONTENT_MIMETYPE = QName.createQName("http://www.alfresco.org/model/content/1.0", "content.mimetype");
     public static final QName SORT_QNAME_NODE_TYPE = QName.createQName("", "TYPE");
@@ -212,88 +212,104 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         
         filterSortPropCnt = setFilterSortParams(sortFilterProps, params);
         
-        // Set child node type qnames (additional filter - performed by DB query)
         
-        if (childNodeTypeQNames != null)
-        {
-            Set<Long> childNodeTypeQNameIds = qnameDAO.convertQNamesToIds(childNodeTypeQNames, false);
-            if (childNodeTypeQNameIds.size() > 0)
-            {
-                params.setChildNodeTypeQNameIds(new ArrayList<Long>(childNodeTypeQNameIds));
-            }
-        }
+        List<NodeRef> result = new ArrayList<>(0);
         
-        if(assocTypeQNames != null)
+        try
         {
-            Set<Long> assocTypeQNameIds = qnameDAO.convertQNamesToIds(assocTypeQNames, false);
-            if (assocTypeQNameIds.size() > 0)
-            {
-                params.setAssocTypeQNameIds(assocTypeQNameIds);
-            }
+	        if ((childNodeTypeQNames != null) && (childNodeTypeQNames.size() > 0))
+	        {
+	            // Set child node type qnames (additional filter - performed by DB query)
+	            Set<Long> childNodeTypeQNameIds = qnameDAO.convertQNamesToIds(childNodeTypeQNames, false);
+	            if (childNodeTypeQNameIds.size() > 0)
+	            {
+	                params.setChildNodeTypeQNameIds(new ArrayList<Long>(childNodeTypeQNameIds));
+	            }
+	            else
+	            {
+	                // short-circuit - return no results - given node type qname(s) do not exist
+	                return result;
+	            }
+	        }
+	
+	        if ((assocTypeQNames != null)  && (assocTypeQNames.size() > 0))
+	        {
+	            // Set assoc type qnames (additional filter - performed by DB query)
+	            Set<Long> assocTypeQNameIds = qnameDAO.convertQNamesToIds(assocTypeQNames, false);
+	            if (assocTypeQNameIds.size() > 0)
+	            {
+	                params.setAssocTypeQNameIds(assocTypeQNameIds);
+	            }
+	            else
+	            {
+	                // short-circuit - return no results - given assoc type qname(s) do not exist
+	                return result;
+	            }
+	        }
+	
+	        if (pattern != null)
+	        {
+	            // TODO, check that we should be tied to the content model in this way. Perhaps a configurable property
+	            // name against which compare the pattern?
+	            Pair<Long, QName> nameQName = qnameDAO.getQName(ContentModel.PROP_NAME);
+	            if(nameQName == null)
+	            {
+	                throw new AlfrescoRuntimeException("Unable to determine qname id of name property");
+	            }
+	            params.setNamePropertyQNameId(nameQName.getFirst());
+	            params.setPattern(pattern);
+	        }
+	        
+	        if (filterSortPropCnt > 0)
+	        {
+	            // filtered and/or sorted - note: permissions will be applied post query
+	            final List<FilterSortNode> children = new ArrayList<FilterSortNode>(100);
+	            final FilterSortChildQueryCallback c = getFilterSortChildQuery(children, filterProps, paramBean);
+	            FilterSortResultHandler resultHandler = new FilterSortResultHandler(c);
+	            cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITH_PROPS, params, 0, Integer.MAX_VALUE, resultHandler);
+	            resultHandler.done();
+	            
+	            if (sortPairs.size() > 0)
+	            {
+	            	Long startSort = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
+	            	
+	                // sort
+	                Collections.sort(children, new PropComparatorAsc(sortPairs));
+	                
+	                if (startSort != null)
+	                {
+	                    logger.debug("Post-query sort: "+children.size()+" in "+(System.currentTimeMillis()-startSort)+" msecs");
+	                }
+	            }
+	            
+	            result = new ArrayList<NodeRef>(children.size());
+	            for (FilterSortNode child : children)
+	            {
+	                result.add(tenantService.getBaseName(child.getNodeRef()));
+	            }
+	        }
+	        else
+	        {
+	            // unsorted (apart from any implicit order) - note: permissions are applied during result handling to allow early cutoff
+	            
+	            final int requestedCount = parameters.getResultsRequired();
+	            
+	            final List<NodeRef> rawResult = new ArrayList<NodeRef>(Math.min(1000, requestedCount));
+	            UnsortedChildQueryCallback callback = getUnsortedChildQueryCallback(rawResult, requestedCount, paramBean);
+	            UnsortedResultHandler resultHandler = new UnsortedResultHandler(callback);
+	            cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITHOUT_PROPS, params, 0, Integer.MAX_VALUE, resultHandler);
+	            resultHandler.done();
+	            
+	            // permissions have been applied
+	            result = PermissionCheckedValueMixin.create(rawResult);
+	        }
         }
-
-        if (pattern != null)
+        finally
         {
-            // TODO, check that we should be tied to the content model in this way. Perhaps a configurable property
-            // name against which compare the pattern?
-            Pair<Long, QName> nameQName = qnameDAO.getQName(ContentModel.PROP_NAME);
-            if(nameQName == null)
-            {
-                throw new AlfrescoRuntimeException("Unable to determine qname id of name property");
-            }
-            params.setNamePropertyQNameId(nameQName.getFirst());
-            params.setPattern(pattern);
-        }
-        
-        final List<NodeRef> result;
-        
-        if (filterSortPropCnt > 0)
-        {
-            // filtered and/or sorted - note: permissions will be applied post query
-            final List<FilterSortNode> children = new ArrayList<FilterSortNode>(100);
-            final FilterSortChildQueryCallback c = getFilterSortChildQuery(children, filterProps, paramBean);
-            FilterSortResultHandler resultHandler = new FilterSortResultHandler(c);
-            cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITH_PROPS, params, 0, Integer.MAX_VALUE, resultHandler);
-            resultHandler.done();
-            
-            if (sortPairs.size() > 0)
-            {
-            	Long startSort = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
-            	
-                // sort
-                Collections.sort(children, new PropComparatorAsc(sortPairs));
-                
-                if (startSort != null)
-                {
-                    logger.debug("Post-query sort: "+children.size()+" in "+(System.currentTimeMillis()-startSort)+" msecs");
-                }
-            }
-            
-            result = new ArrayList<NodeRef>(children.size());
-            for (FilterSortNode child : children)
-            {
-                result.add(tenantService.getBaseName(child.getNodeRef()));
-            }
-        }
-        else
-        {
-            // unsorted (apart from any implicit order) - note: permissions are applied during result handling to allow early cutoff
-            
-            final int requestedCount = parameters.getResultsRequired();
-            
-            final List<NodeRef> rawResult = new ArrayList<NodeRef>(Math.min(1000, requestedCount));
-            UnsortedChildQueryCallback callback = getUnsortedChildQueryCallback(rawResult, requestedCount, paramBean);
-            UnsortedResultHandler resultHandler = new UnsortedResultHandler(callback);
-            cannedQueryDAO.executeQuery(QUERY_NAMESPACE, QUERY_SELECT_GET_CHILDREN_WITHOUT_PROPS, params, 0, Integer.MAX_VALUE, resultHandler);
-            resultHandler.done();
-            
-            // permissions have been applied
-            result = PermissionCheckedValueMixin.create(rawResult);
-        }
-        
-        if (start != null)
-        {
-            logger.debug("Base query "+(filterSortPropCnt > 0 ? "(sort=y, perms=n)" : "(sort=n, perms=y)")+": "+result.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
+	        if (start != null)
+	        {
+	            logger.debug("Base query "+(filterSortPropCnt > 0 ? "(sort=y, perms=n)" : "(sort=n, perms=y)")+": "+result.size()+" in "+(System.currentTimeMillis()-start)+" msecs");
+	        }
         }
         
         return result;

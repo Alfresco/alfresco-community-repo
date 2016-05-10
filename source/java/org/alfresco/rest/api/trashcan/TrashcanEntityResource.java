@@ -40,6 +40,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,7 +73,7 @@ public class TrashcanEntityResource implements
     }
 
     @Operation("restore")
-    @WebApiDescription(title = "Restore deleted Node", description="Restores an archived node")
+    @WebApiDescription(title = "Restore deleted Node", description="Restores an archived node",successStatus = HttpServletResponse.SC_OK)
     public Node restoreDeletedNode(String nodeId, Void ignored, Parameters parameters, WithResponse withResponse)
     {
         return deletedNodes.restoreArchivedNode(nodeId);

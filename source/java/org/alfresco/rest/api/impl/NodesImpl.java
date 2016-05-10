@@ -121,6 +121,7 @@ import org.alfresco.util.Pair;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.servlet.FormData;
 import org.springframework.http.InvalidMediaTypeException;
@@ -691,6 +692,11 @@ public class NodesImpl implements Nodes
                 catch (AccessDeniedException ade)
                 {
                     throw new PermissionDeniedException(ade.getMessage());
+                }
+                catch (FileExistsException fex)
+                {
+                    // Assume concurrency failure, so retry
+                    throw new ConcurrencyFailureException(fex.getMessage());
                 }
             }
             else if (!isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false))

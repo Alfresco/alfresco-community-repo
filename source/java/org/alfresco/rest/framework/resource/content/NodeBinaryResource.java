@@ -23,25 +23,22 @@ import org.alfresco.service.namespace.QName;
 
 /**
  * A binary resource based on a Node reference.
- * 
+ *
  * @author Gethin James
  */
-public class NodeBinaryResource implements BinaryResource
+public class NodeBinaryResource extends AbstractBinaryResource
 {
 
     final NodeRef nodeRef;
     final QName propertyQName;
     final ContentInfo contentInfo;
-    final String attachFileName;
-    
+
     public NodeBinaryResource(NodeRef nodeRef, QName propertyQName, ContentInfo contentInfo, String attachFileName)
     {
-        super();
-
+        super(attachFileName);
         this.nodeRef = nodeRef;
         this.propertyQName = propertyQName;
         this.contentInfo = contentInfo;
-        this.attachFileName = attachFileName;
     }
 
     public NodeRef getNodeRef()
@@ -57,10 +54,5 @@ public class NodeBinaryResource implements BinaryResource
     public ContentInfo getContentInfo()
     {
         return this.contentInfo;
-    }
-
-    public String getAttachFileName()
-    {
-        return this.attachFileName;
     }
 }

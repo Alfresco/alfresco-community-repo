@@ -19,30 +19,22 @@
 
 package org.alfresco.rest.framework.resource.content;
 
-import java.io.File;
-
 /**
- * A binary resource based on a File.
+ * An abstract binary resource.
  *
- * @author Gethin James
+ * @author Jamal Kaabi-Mofrad
  */
-public class FileBinaryResource extends AbstractBinaryResource
+public class AbstractBinaryResource implements BinaryResource
 {
-    final File file;
+    final String attachFileName;
 
-    public FileBinaryResource(File file)
+    public AbstractBinaryResource(String attachFileName)
     {
-        this(file, null);
+        this.attachFileName = attachFileName;
     }
 
-    public FileBinaryResource(File file, String attachFileName)
+    public String getAttachFileName()
     {
-        super(attachFileName);
-        this.file = file;
-    }
-
-    public File getFile()
-    {
-        return this.file;
+        return attachFileName;
     }
 }

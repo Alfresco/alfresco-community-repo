@@ -53,6 +53,8 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.InputStream;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -368,6 +370,141 @@ public class RenditionsTest extends AbstractBaseApiTest
         {
             thumbnailService.setThumbnailsEnabled(true);
         }
+    }
+
+    /**
+     * Tests download rendition.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/renditions/<renditionId>/content}
+     */
+    @Test
+    public void testDownloadRendition() throws Exception
+    {
+        // Create a folder within the site document's library
+        String folderName = "folder" + System.currentTimeMillis();
+        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, ContentModel.TYPE_FOLDER, userOneN1.getId());
+
+        // Create multipart request
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                    .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF));
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Upload quick.pdf file into 'folder'
+        HttpResponse response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        // Get rendition (not created yet) information for node
+        response = getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib", 200);
+        Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
+        assertNotNull(rendition);
+        assertEquals(RenditionStatus.NOT_CREATED, rendition.getStatus());
+
+        // Download placeholder - by default with Content-Disposition header
+        Map<String, String> params = new HashMap<>();
+        params.put("placeholder", "true");
+        response = getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), ("doclib/content"), params, 200);
+        assertNotNull(response.getResponseAsBytes());
+        Map<String, String> responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        String contentDisposition = responseHeaders.get("Content-Disposition");
+        assertNotNull(contentDisposition);
+        assertTrue(contentDisposition.contains("filename=\"doclib\""));
+        String contentType = responseHeaders.get("Content-Type");
+        assertNotNull(contentType);
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
+
+        // Download placeholder - without Content-Disposition header (attachment=false)
+        params.put("attachment", "false");
+        response = getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), ("doclib/content"), params, 200);
+        assertNotNull(response.getResponseAsBytes());
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertNull(responseHeaders.get("Content-Disposition"));
+        contentType = responseHeaders.get("Content-Type");
+        assertNotNull(contentType);
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
+
+        // Create and get 'doclib' rendition
+        rendition = createAndGetRendition(contentNodeId, "doclib");
+        assertNotNull(rendition);
+        assertEquals(RenditionStatus.CREATED, rendition.getStatus());
+
+        // Download rendition - by default with Content-Disposition header
+        response = getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib/content", 200);
+        assertNotNull(response.getResponseAsBytes());
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        contentDisposition = responseHeaders.get("Content-Disposition");
+        assertNotNull(contentDisposition);
+        assertTrue(contentDisposition.contains("filename=\"doclib\""));
+        contentType = responseHeaders.get("Content-Type");
+        assertNotNull(contentType);
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
+
+        // Download rendition - without Content-Disposition header (attachment=false)
+        params = Collections.singletonMap("attachment", "false");
+        response = getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib/content", params, 200);
+        assertNotNull(response.getResponseAsBytes());
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertNull(responseHeaders.get("Content-Disposition"));
+        contentType = responseHeaders.get("Content-Type");
+        assertNotNull(contentType);
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
+
+        // Download rendition - with Content-Disposition header (attachment=true) same as default
+        params = Collections.singletonMap("attachment", "true");
+        response = getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib/content", params, 200);
+        assertNotNull(response.getResponseAsBytes());
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        contentDisposition = responseHeaders.get("Content-Disposition");
+        assertNotNull(contentDisposition);
+        assertTrue(contentDisposition.contains("filename=\"doclib\""));
+        contentType = responseHeaders.get("Content-Type");
+        assertNotNull(contentType);
+        assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
+
+        //-ve tests
+        // nodeId in the path parameter does not represent a file
+        getSingle(getRenditionsUrl(folder_Id), userOneN1.getId(), "doclib/content", 400);
+
+        // nodeId in the path parameter does not exist
+        getSingle(getRenditionsUrl(UUID.randomUUID().toString()), userOneN1.getId(), "doclib/content", 404);
+
+        // renditionId in the path parameter is not registered/available
+        getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), ("renditionId" + System.currentTimeMillis() + "/content"), 404);
+
+        InputStream inputStream = new ByteArrayInputStream("The quick brown fox jumps over the lazy dog".getBytes());
+        file = TempFileProvider.createTempFile(inputStream, "RenditionsTest-", ".abcdef");
+        reqBody = MultiPartBuilder.create()
+                    .setFileData(new FileData(file.getName(), file, "application/unknown"))
+                    .build();
+        // Upload temp file into 'folder'
+        response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        contentNodeId = document.getId();
+        // Check there is no rendition created yet
+        response = getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib", 200);
+        rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
+        assertNotNull(rendition);
+        assertEquals(RenditionStatus.NOT_CREATED, rendition.getStatus());
+
+        // The content of the rendition does not exist and the placeholder parameter is not present
+        getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib/content", 404);
+
+        // The content of the rendition does not exist and the placeholder parameter has a value of "false"
+        params = Collections.singletonMap("placeholder", "false");
+        getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib/content", params, 404);
+
+        // The rendition does not exist, a placeholder is not available and the placeholder parameter has a value of "true"
+        params = Collections.singletonMap("placeholder", "true");
+        getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), ("renditionId" + System.currentTimeMillis() + "/content"), params, 404);
+
+        //TODO add tests for 304 response
     }
 
     private String addToDocumentLibrary(final TestSite testSite, final String name, final QName type, String user)

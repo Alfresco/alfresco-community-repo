@@ -63,7 +63,7 @@ public class NodesEntityResource implements
     /**
      * Returns information regarding the node 'nodeId' - folder or document
      * 
-     * @param nodeId String id of node (folder or document) - will also accept well-known aliases, eg. "-root-" or "-my-"
+     * @param nodeId String id of node (folder or document) - will also accept well-known aliases, eg. "-root-", "-my-", "-shared-"
      * 
      * Optional parameters:
      * - path

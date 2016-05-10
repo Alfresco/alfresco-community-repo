@@ -48,9 +48,9 @@ public class Document extends Node
         super();
     }
 
-    public Document(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, ServiceRegistry sr)
+    public Document(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
-        super(nodeRef, parentNodeRef, nodeProps, sr);
+        super(nodeRef, parentNodeRef, nodeProps, mapUserInfo, sr);
 
         Serializable val = nodeProps.get(ContentModel.PROP_CONTENT);
 

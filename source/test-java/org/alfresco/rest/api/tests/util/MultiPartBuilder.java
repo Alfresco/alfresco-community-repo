@@ -44,10 +44,7 @@ import java.util.Map.Entry;
 public class MultiPartBuilder
 {
     private FileData fileData;
-    private String siteId;
-    private String containerId;
-    private String destination;
-    private String uploadDirectory;
+    private String relativePath;
     private String updateNodeRef;
     private String description;
     private String contentTypeQNameStr;
@@ -65,10 +62,7 @@ public class MultiPartBuilder
     private MultiPartBuilder(MultiPartBuilder that)
     {
         this.fileData = that.fileData;
-        this.siteId = that.siteId;
-        this.containerId = that.containerId;
-        this.destination = that.destination;
-        this.uploadDirectory = that.uploadDirectory;
+        this.relativePath = that.relativePath;
         this.updateNodeRef = that.updateNodeRef;
         this.description = that.description;
         this.contentTypeQNameStr = that.contentTypeQNameStr;
@@ -96,27 +90,9 @@ public class MultiPartBuilder
         return this;
     }
 
-    public MultiPartBuilder setSiteId(String siteId)
+    public MultiPartBuilder setRelativePath(String relativePath)
     {
-        this.siteId = siteId;
-        return this;
-    }
-
-    public MultiPartBuilder setContainerId(String containerId)
-    {
-        this.containerId = containerId;
-        return this;
-    }
-
-    public MultiPartBuilder setDestination(String destination)
-    {
-        this.destination = destination;
-        return this;
-    }
-
-    public MultiPartBuilder setUploadDirectory(String uploadDirectory)
-    {
-        this.uploadDirectory = uploadDirectory;
+        this.relativePath = relativePath;
         return this;
     }
 
@@ -275,18 +251,15 @@ public class MultiPartBuilder
             parts.add(fp);
             addPartIfNotNull(parts, "filename", fileData.getFileName());
         }
-        addPartIfNotNull(parts, "siteid", siteId);
-        addPartIfNotNull(parts, "containerid", containerId);
-        addPartIfNotNull(parts, "destination", destination);
-        addPartIfNotNull(parts, "uploaddirectory", uploadDirectory);
+        addPartIfNotNull(parts, "relativepath", relativePath);
         addPartIfNotNull(parts, "updatenoderef", updateNodeRef);
         addPartIfNotNull(parts, "description", description);
         addPartIfNotNull(parts, "contenttype", contentTypeQNameStr);
         addPartIfNotNull(parts, "aspects", getAspects(aspects));
         addPartIfNotNull(parts, "majorversion", majorVersion);
         addPartIfNotNull(parts, "overwrite", overwrite);
-        addPartIfNotNull(parts, "autoRename", autoRename);
-        addPartIfNotNull(parts, "nodeType", nodeType);
+        addPartIfNotNull(parts, "autorename", autoRename);
+        addPartIfNotNull(parts, "nodetype", nodeType);
 
         if (!properties.isEmpty())
         {

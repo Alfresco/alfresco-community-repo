@@ -1047,6 +1047,72 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .build();
         // Prop prefix is unknown
         post(getNodeChildrenUrl(folderA_id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 400);
+
+        // Test relativePath multi-part field.
+        // Any folders in the relativePath that do not exist, are created before the content is created.
+        multiPartBuilder = MultiPartBuilder.create()
+                    .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .setRelativePath("X/Y/Z");
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(folderA_id), userOneN1.getId(), reqBody.getBody(), "?include=path", reqBody.getContentType(), 201);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+        // Check the uploaded file parent folders
+        PathInfo pathInfo = document.getPath();
+        assertNotNull(pathInfo);
+        List<ElementInfo> elementInfos = pathInfo.getElements();
+        assertNotNull(elementInfos);
+        // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A/X/Y/Z
+        assertEquals(8, elementInfos.size());
+        assertEquals(document.getParentId(), elementInfos.get(7).getId().getId());
+        assertEquals("Z", elementInfos.get(7).getName());
+        assertEquals("Y", elementInfos.get(6).getName());
+        assertEquals("X", elementInfos.get(5).getName());
+        assertEquals(folderA, elementInfos.get(4).getName());
+
+        // Try to create a folder with the same name as the document within the 'Z' folder.
+        reqBody = MultiPartBuilder.copy(multiPartBuilder)
+                    .setRelativePath("X/Y/Z/" + document.getName())
+                    .build();
+        post(getNodeChildrenUrl(folderA_id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 409);
+
+        // Test the same functionality as "mkdir -p x/y/z" which the folders should be created
+        // as needed but no errors thrown if the path or any part of the path already exists.
+        // NOTE: white spaces, leading and trailing "/" are ignored.
+        reqBody = MultiPartBuilder.copy(multiPartBuilder)
+                    .setRelativePath("/X/ Y/Z /CoolFolder/")
+                    .build();
+        response = post(getNodeChildrenUrl(folderA_id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        // Retrieve the uploaded file parent folder
+        response = getSingle(NodesEntityResource.class, userOneN1.getId(), document.getParentId(), null, 200);
+        Folder coolFolder = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(document.getParentId(), coolFolder.getId());
+        assertEquals("CoolFolder", coolFolder.getName());
+
+        // Try to upload quick-1.txt within coolFolder and set the relativePath to a blank string.
+        reqBody = MultiPartBuilder.copy(multiPartBuilder)
+                    .setRelativePath("  ")// blank
+                    .build();
+        // 409 -> as the blank string is ignored and quick-1.txt already exists in the coolFolder
+        post(getNodeChildrenUrl(coolFolder.getId()), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 409);
+
+        // userTwoN1 tries to upload the same file by creating sub-folders in the folderA of userOneN1
+        reqBody = MultiPartBuilder.copy(multiPartBuilder)
+                    .setRelativePath("userTwoFolder1/userTwoFolder2")
+                    .build();
+        post(getNodeChildrenUrl(folderA_id), userTwoN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 403);
     }
 
     /**

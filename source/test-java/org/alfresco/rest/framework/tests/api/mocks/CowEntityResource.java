@@ -1,6 +1,7 @@
 package org.alfresco.rest.framework.tests.api.mocks;
 
 import org.alfresco.rest.framework.BinaryProperties;
+import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
@@ -10,6 +11,8 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Description;
 import org.springframework.extensions.webscripts.Status;
 
 import java.io.InputStream;
@@ -26,10 +29,31 @@ public class CowEntityResource implements EntityResourceAction.ReadByIdWithRespo
         BinaryResourceAction.DeleteWithResponse,
         BinaryResourceAction.UpdateWithResponse<Goat>
 {
+    public final static Cache CACHE_COW = new Cache(new Description.RequiredCache()
+    {
+        @Override
+        public boolean getNeverCache()
+        {
+            return false;
+        }
+
+        @Override
+        public boolean getIsPublic()
+        {
+            return true;
+        }
+
+        @Override
+        public boolean getMustRevalidate()
+        {
+            return false;
+        }
+    });
 
     @Override
     public Goat readById(String id, Parameters parameters, WithResponse withResponse)
     {
+        withResponse.setCache(CACHE_COW);
         return new Goat("Goat"+id);
     }
 

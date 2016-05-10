@@ -94,6 +94,9 @@ public class DeletedNodesImpl implements DeletedNodes
         Map<QName, Serializable> nodeProps = nodeService.getProperties(aNode.getNodeRef());
         aNode.setArchivedAt((Date)nodeProps.get(ContentModel.PROP_ARCHIVED_DATE));
         aNode.setArchivedByUser(aNode.lookupUserInfo((String)nodeProps.get(ContentModel.PROP_ARCHIVED_BY), mapUserInfo, personService));
+
+        //Don't show parent id
+        aNode.setParentId(null);
     }
 
     @Override

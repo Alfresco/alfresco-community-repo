@@ -20,6 +20,7 @@ package org.alfresco.rest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.alfresco.rest.api.Nodes;
@@ -30,12 +31,15 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.client.data.PathInfo;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.junit.Test;
 import org.springframework.extensions.webscripts.Status;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Tests Deleting nodes and recovering
@@ -92,23 +96,36 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNotNull(nodes);
         assertEquals(numOfNodes+3,nodes.size());
 
-        response = getSingle(URL_DELETED_NODES, u1.getId(), document.getId(), 200);
+        Map<String, String> params = Collections.singletonMap("include", "path");
+        response = getSingle(URL_DELETED_NODES, u1.getId(), document.getId(), params, 200);
         Document node = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         assertNotNull(node);
         assertEquals(u1.getId(), node.getArchivedByUser().getId());
         assertTrue(node.getArchivedAt().after(now));
+        PathInfo path = node.getPath();
+        assertNull("Path should be null because its parent has been deleted",path);
+        assertNull("We don't show the parent id for a deleted node",node.getParentId());
 
-        response = getSingle(URL_DELETED_NODES, u1.getId(), createdFolder.getId(), 200);
+        response = getSingle(URL_DELETED_NODES, u1.getId(), createdFolder.getId(), params, 200);
         Folder fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
         assertNotNull(fNode);
         assertEquals(u1.getId(), fNode.getArchivedByUser().getId());
         assertTrue(fNode.getArchivedAt().after(now));
+        path = fNode.getPath();
+        assertNotNull(path);
+        assertEquals("/Company Home/Sites/"+tSite.getSiteId()+"/documentLibrary", path.getName());
+        assertTrue(path.getIsComplete());
+        assertNull("We don't show the parent id for a deleted node",fNode.getParentId());
 
-        response = getSingle(URL_DELETED_NODES, u1.getId(), createdFolderNonSite.getId(), 200);
+        response = getSingle(URL_DELETED_NODES, u1.getId(), createdFolderNonSite.getId(), params, 200);
         fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
         assertNotNull(fNode);
         assertEquals(u1.getId(), fNode.getArchivedByUser().getId());
         assertTrue(fNode.getArchivedAt().after(now));
+        path = fNode.getPath();
+        assertNotNull(path);
+        assertEquals("/Company Home/User Homes/"+u1.getId(), path.getName());
+        assertTrue(path.getIsComplete());
 
         //The list is ordered with the most recently deleted node first
         checkDeletedNodes(now, createdFolder, createdFolderNonSite, document, nodes);
@@ -215,6 +232,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertEquals("This folder was deleted most recently", createdFolderNonSite.getId(), aNode.getId());
         assertEquals(u1.getId(), aNode.getArchivedByUser().getId());
         assertTrue(aNode.getArchivedAt().after(now));
+        assertNull("We don't show the parent id for a deleted node",aNode.getParentId());
 
         Node folderNode = (Node) nodes.get(1);
         assertNotNull(folderNode);
@@ -222,12 +240,14 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertEquals(u1.getId(), folderNode.getArchivedByUser().getId());
         assertTrue(folderNode.getArchivedAt().after(now));
         assertTrue("This folder was deleted before the non-site folder", folderNode.getArchivedAt().before(aNode.getArchivedAt()));
+        assertNull("We don't show the parent id for a deleted node",folderNode.getParentId());
 
         aNode = (Node) nodes.get(2);
         assertNotNull(aNode);
         assertEquals(document.getId(), aNode.getId());
         assertEquals(u1.getId(), aNode.getArchivedByUser().getId());
         assertTrue(aNode.getArchivedAt().after(now));
+        assertNull("We don't show the parent id for a deleted node",aNode.getParentId());
     }
 
 }

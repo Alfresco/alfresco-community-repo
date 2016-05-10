@@ -794,10 +794,14 @@ public class NodesImpl implements Nodes
             mapUserInfo = new HashMap<>(2);
         }
 
+        Node node;
+        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+
         PathInfo pathInfo = null;
         if (includeParam.contains(PARAM_INCLUDE_PATH))
         {
-            pathInfo = lookupPathInfo(nodeRef);
+            ChildAssociationRef archivedParentAssoc = (ChildAssociationRef) properties.get(ContentModel.PROP_ARCHIVED_ORIGINAL_PARENT_ASSOC);
+            pathInfo = lookupPathInfo(nodeRef, archivedParentAssoc);
         }
 
         if (nodeTypeQName == null)
@@ -809,9 +813,6 @@ public class NodesImpl implements Nodes
         {
             parentNodeRef = getParentNodeRef(nodeRef);
         }
-
-        Node node;
-        Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
 
         Type type = getType(nodeTypeQName, nodeRef);
 
@@ -891,14 +892,35 @@ public class NodesImpl implements Nodes
         return node;
     }
     
-    protected PathInfo lookupPathInfo(NodeRef nodeRefIn)
+    protected PathInfo lookupPathInfo(NodeRef nodeRefIn, ChildAssociationRef archivedParentAssoc)
     {
-        final Path nodePath = nodeService.getPath(nodeRefIn);
 
         List<ElementInfo> pathElements = new ArrayList<>();
         Boolean isComplete = Boolean.TRUE;
-        // 2 => as we don't want to include the given node in the path as well.
-        for (int i = nodePath.size() - 2; i >= 0; i--)
+        final Path nodePath;
+        final int pathIndex;
+
+        if (archivedParentAssoc != null)
+        {
+            if (permissionService.hasPermission(archivedParentAssoc.getParentRef(), PermissionService.READ).equals(AccessStatus.ALLOWED)
+                    && nodeService.exists(archivedParentAssoc.getParentRef()))
+            {
+                nodePath = nodeService.getPath(archivedParentAssoc.getParentRef());
+                pathIndex = 1;// 1 => we want to include the given node in the path as well.
+            }
+            else
+            {
+                //We can't return a valid path
+                return null;
+            }
+        }
+        else
+        {
+            nodePath = nodeService.getPath(nodeRefIn);
+            pathIndex = 2; // 2 => as we don't want to include the given node in the path as well.
+        }
+
+        for (int i = nodePath.size() - pathIndex; i >= 0; i--)
         {
             Element element = nodePath.get(i);
             if (element instanceof Path.ChildAssocElement)
@@ -940,7 +962,7 @@ public class NodesImpl implements Nodes
         }
         return new PathInfo(pathStr, isComplete, pathElements);
     }
-    
+
     protected Set<QName> mapToNodeAspects(List<String> aspectNames)
     {
         Set<QName> nodeAspects = new HashSet<>(aspectNames.size());
@@ -1579,7 +1601,7 @@ public class NodesImpl implements Nodes
             }
             else
             {
-                poster.postFileFolderActivity(activityType, null, TenantUtil.getCurrentDomain(),
+                    poster.postFileFolderActivity(activityType, null, TenantUtil.getCurrentDomain(),
                         activityInfo.getSiteId(), activityInfo.getParentNodeRef(), activityInfo.getNodeRef(),
                         activityInfo.getFileName(), Activities.APP_TOOL, Activities.RESTAPI_CLIENT,
                         activityInfo.getFileInfo());

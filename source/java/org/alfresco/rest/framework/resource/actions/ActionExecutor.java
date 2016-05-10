@@ -4,6 +4,7 @@ import org.alfresco.rest.framework.core.HttpMethodSupport;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.rest.framework.webscripts.ResponseCallBack;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
@@ -21,6 +22,6 @@ public interface ActionExecutor extends HttpMethodSupport
      * @param params Params
      */
     @SuppressWarnings("rawtypes")
-    public Object executeAction(ResourceWithMetadata resource, Params params) throws Throwable;
+    public Object executeAction(ResourceWithMetadata resource, Params params, ResponseCallBack withResponse) throws Throwable;
 
 }

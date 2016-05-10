@@ -69,6 +69,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.springframework.beans.BeanUtils;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.http.HttpMethod;
@@ -628,8 +629,9 @@ public class ResourceWebScriptHelper
                 paramFilter = filters.get(resourceKey);
             }
             final Params executionParams = Params.valueOf(paramFilter, uniqueEntityId, params.getRequest());
+            final ResponseCallBack callBack = new ResponseCallBack(Status.STATUS_OK,ApiWebScript.DEFAULT_JSON_CONTENT,ApiWebScript.CACHE_NEVER);
             //Read only because this only occurs for GET requests
-            Object result = executor.executeAction(resource, executionParams);
+            Object result = executor.executeAction(resource, executionParams, callBack);
             return processAdditionsToTheResponse(null, api, null, executionParams, result);
         }
         catch(NotFoundException e)

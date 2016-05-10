@@ -180,7 +180,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
      * @return anObject the result of the execute
      */
     @Override
-    public Object executeAction(ResourceWithMetadata resource, Params params) throws Throwable
+    public Object executeAction(ResourceWithMetadata resource, Params params, ResponseCallBack withResponse) throws Throwable
     {
         switch (resource.getMetaData().getType())
         {

@@ -211,7 +211,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
      * @return anObject the result of the execute
      */
     @Override
-    public Object executeAction(ResourceWithMetadata resource, Params params) throws Throwable
+    public Object executeAction(ResourceWithMetadata resource, Params params, ResponseCallBack withResponse) throws Throwable
     {
         final Object resObj = resource.getResource();
 

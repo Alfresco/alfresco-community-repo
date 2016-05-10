@@ -180,21 +180,47 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
         switch (resource.getMetaData().getType())
         {
             case ENTITY:
-                if (resource.getMetaData().isDeleted(EntityResourceAction.Update.class))
+                if (EntityResourceAction.Update.class.isAssignableFrom(resource.getResource().getClass()))
                 {
-                    throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
+                    if (resource.getMetaData().isDeleted(EntityResourceAction.Update.class))
+                    {
+                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
+                    }
+                    EntityResourceAction.Update<Object> updateEnt = (EntityResourceAction.Update<Object>) resource.getResource();
+                    Object result = updateEnt.update(params.getEntityId(), params.getPassedIn(), params);
+                    return result;
                 }
-                EntityResourceAction.Update<Object> updateEnt = (EntityResourceAction.Update<Object>) resource.getResource();
-                Object result = updateEnt.update(params.getEntityId(), params.getPassedIn(), params);
-                return result;
+                else
+                {
+                    if (resource.getMetaData().isDeleted(EntityResourceAction.UpdateWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
+                    }
+                    EntityResourceAction.UpdateWithResponse<Object> updateEnt = (EntityResourceAction.UpdateWithResponse<Object>) resource.getResource();
+                    Object result = updateEnt.update(params.getEntityId(), params.getPassedIn(), params, withResponse);
+                    return result;
+                }
             case RELATIONSHIP:
-                if (resource.getMetaData().isDeleted(RelationshipResourceAction.Update.class))
+                if (RelationshipResourceAction.UpdateWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                 {
-                    throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
+                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.UpdateWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceAction.UpdateWithResponse<Object> relationUpdater = (RelationshipResourceAction.UpdateWithResponse<Object>) resource.getResource();
+                    Object relResult = relationUpdater.update(params.getEntityId(), params.getPassedIn(), params, withResponse);
+                    return relResult;
                 }
-                RelationshipResourceAction.Update<Object> relationUpdater = (RelationshipResourceAction.Update<Object>) resource.getResource();
-                Object relResult = relationUpdater.update(params.getEntityId(), params.getPassedIn(), params);
-                return relResult;
+                else
+                {
+                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.Update.class))
+                    {
+                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceAction.Update<Object> relationUpdater = (RelationshipResourceAction.Update<Object>) resource.getResource();
+                    Object relResult = relationUpdater.update(params.getEntityId(), params.getPassedIn(), params);
+                    return relResult;
+                }
             case PROPERTY:
                 if (BinaryResourceAction.Update.class.isAssignableFrom(resource.getResource().getClass()))
                 {
@@ -205,6 +231,15 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                     BinaryResourceAction.Update<Object> binUpdater = (BinaryResourceAction.Update<Object>) resource.getResource();
                     return binUpdater.updateProperty(params.getEntityId(), params.getContentInfo(), params.getStream(), params);
                 }
+                if (BinaryResourceAction.UpdateWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(BinaryResourceAction.UpdateWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
+                    }
+                    BinaryResourceAction.UpdateWithResponse<Object> binUpdater = (BinaryResourceAction.UpdateWithResponse<Object>) resource.getResource();
+                    return binUpdater.updateProperty(params.getEntityId(), params.getContentInfo(), params.getStream(), params, withResponse);
+                }
                 if (RelationshipResourceBinaryAction.Update.class.isAssignableFrom(resource.getResource().getClass()))
                 {
                     if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.Update.class))
@@ -213,6 +248,15 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                     }
                     RelationshipResourceBinaryAction.Update<Object> binUpdater = (RelationshipResourceBinaryAction.Update<Object>) resource.getResource();
                     return binUpdater.updateProperty(params.getEntityId(), params.getRelationshipId(), params.getContentInfo(), params.getStream(), params);
+                }
+                if (RelationshipResourceBinaryAction.UpdateWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.UpdateWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceBinaryAction.UpdateWithResponse<Object> binUpdater = (RelationshipResourceBinaryAction.UpdateWithResponse<Object>) resource.getResource();
+                    return binUpdater.updateProperty(params.getEntityId(), params.getRelationshipId(), params.getContentInfo(), params.getStream(), params, withResponse);
                 }
             default:
                 throw new UnsupportedResourceOperationException("PUT not supported for Actions");

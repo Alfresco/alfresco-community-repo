@@ -63,10 +63,10 @@ public class ResourceInspectorUtil
         {
             switch (paramTypes.length)
             {
-                case 3:
-                    //EntityResource operation by id, same logic as RelationshipEntityResource operation by id
                 case 4:
-                int position = paramTypes.length-2;
+                    //EntityResource operation by id, same logic as RelationshipEntityResource operation by id
+                case 5:
+                int position = paramTypes.length-3;
                 if (Void.class.equals(paramTypes[position]))
                 {
                     return null;
@@ -78,8 +78,8 @@ public class ResourceInspectorUtil
             }
         }
 
-        throw new IllegalArgumentException("An operation method signature should have 3 parameters (uniqueId, typePassedin, Parameters)," +
-                " use Void if you are not interested in the second argument.");
+        throw new IllegalArgumentException("Your method signature should have 4 parameters (uniqueId, typePassedin, Parameters, WithResponse)," +
+                " use Void if you are not interested in the second argument. "+resource.getName()+ " "+ method.getName());
     }
 
     /**

@@ -183,18 +183,18 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
      * @param params
      * @return the result of the execution.
      */
-    private Object executeOperation(ResourceWithMetadata resource, Params params)  throws Throwable
+    private Object executeOperation(ResourceWithMetadata resource, Params params, WithResponse withResponse)  throws Throwable
     {
         OperationResourceMetaData operationResourceMetaData = (OperationResourceMetaData) resource.getMetaData();
 
         switch (operationResourceMetaData.getOperationMethod().getParameterTypes().length)
         {
-            case 3:
-                //EntityResource operation by id
-                return ResourceInspectorUtil.invokeMethod(operationResourceMetaData.getOperationMethod(),resource.getResource(), params.getEntityId(), params.getPassedIn(), params);
             case 4:
+                //EntityResource operation by id
+                return ResourceInspectorUtil.invokeMethod(operationResourceMetaData.getOperationMethod(),resource.getResource(), params.getEntityId(), params.getPassedIn(), params, withResponse);
+            case 5:
                 //RelationshipEntityResource operation by id
-                return ResourceInspectorUtil.invokeMethod(operationResourceMetaData.getOperationMethod(),resource.getResource(), params.getEntityId(), params.getRelationshipId(), params.getPassedIn(), params);
+                return ResourceInspectorUtil.invokeMethod(operationResourceMetaData.getOperationMethod(),resource.getResource(), params.getEntityId(), params.getRelationshipId(), params.getPassedIn(), params, withResponse);
         }
 
         throw new UnsupportedResourceOperationException("The operation method has an invalid signature");
@@ -214,10 +214,6 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
         switch (resource.getMetaData().getType())
         {
             case ENTITY:
-                if (resource.getMetaData().isDeleted(EntityResourceAction.Create.class))
-                {
-                    throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
-                }
 
                 if (resObj instanceof MultiPartResourceAction.Create<?> && params.getPassedIn() instanceof FormData)
                 {
@@ -227,25 +223,45 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                 }
                 else
                 {
-                    EntityResourceAction.Create<Object> creator = (EntityResourceAction.Create<Object>) resObj;
-                    List<Object> created = creator.create((List<Object>) params.getPassedIn(), params);
-                    if (created != null && created.size() == 1)
+                    if (EntityResourceAction.Create.class.isAssignableFrom(resource.getResource().getClass()))
                     {
-                        // return just one object instead of an array
-                        return created.get(0);
+                        if (resource.getMetaData().isDeleted(EntityResourceAction.Create.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+                        EntityResourceAction.Create<Object> creator = (EntityResourceAction.Create<Object>) resObj;
+                        List<Object> created = creator.create((List<Object>) params.getPassedIn(), params);
+                        if (created != null && created.size() == 1)
+                        {
+                            // return just one object instead of an array
+                            return created.get(0);
+                        }
+                        else
+                        {
+                            return wrapWithCollectionWithPaging(created);
+                        }
                     }
-                    else
+                    if (EntityResourceAction.CreateWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                     {
-                        return wrapWithCollectionWithPaging(created);
+                        if (resource.getMetaData().isDeleted(EntityResourceAction.CreateWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+                        EntityResourceAction.CreateWithResponse<Object> creator = (EntityResourceAction.CreateWithResponse<Object>) resObj;
+                        List<Object> created = creator.create((List<Object>) params.getPassedIn(), params, withResponse);
+                        if (created != null && created.size() == 1)
+                        {
+                            // return just one object instead of an array
+                            return created.get(0);
+                        }
+                        else
+                        {
+                            return wrapWithCollectionWithPaging(created);
+                        }
                     }
                 }
 
             case RELATIONSHIP:
-                if (resource.getMetaData().isDeleted(RelationshipResourceAction.Create.class))
-                {
-                    throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
-                }
-
                 if (resObj instanceof MultiPartRelationshipResourceAction.Create<?> && params.getPassedIn() instanceof FormData)
                 {
                     MultiPartRelationshipResourceAction.Create<Object> creator = (MultiPartRelationshipResourceAction.Create<Object>) resObj;
@@ -253,20 +269,48 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                 }
                 else
                 {
-                    RelationshipResourceAction.Create<Object> createRelation = (RelationshipResourceAction.Create<Object>) resource.getResource();
-                    List<Object> createdRel = createRelation.create(params.getEntityId(), (List<Object>) params.getPassedIn(), params);
-                    if (createdRel != null && createdRel.size() == 1)
+                    if (RelationshipResourceAction.Create.class.isAssignableFrom(resource.getResource().getClass()))
                     {
-                        // return just one object instead of an array
-                        return createdRel.get(0);
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.Create.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+
+                        RelationshipResourceAction.Create<Object> createRelation = (RelationshipResourceAction.Create<Object>) resource.getResource();
+                        List<Object> createdRel = createRelation.create(params.getEntityId(), (List<Object>) params.getPassedIn(), params);
+                        if (createdRel != null && createdRel.size() == 1)
+                        {
+                            // return just one object instead of an array
+                            return createdRel.get(0);
+                        }
+                        else
+                        {
+                            return wrapWithCollectionWithPaging(createdRel);
+                        }
                     }
-                    else
+
+                    if (RelationshipResourceAction.CreateWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                     {
-                        return wrapWithCollectionWithPaging(createdRel);
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.CreateWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
+                        }
+
+                        RelationshipResourceAction.CreateWithResponse<Object> createRelation = (RelationshipResourceAction.CreateWithResponse<Object>) resource.getResource();
+                        List<Object> createdRel = createRelation.create(params.getEntityId(), (List<Object>) params.getPassedIn(), params, withResponse);
+                        if (createdRel != null && createdRel.size() == 1)
+                        {
+                            // return just one object instead of an array
+                            return createdRel.get(0);
+                        }
+                        else
+                        {
+                            return wrapWithCollectionWithPaging(createdRel);
+                        }
                     }
                 }
             case OPERATION:
-                return executeOperation(resource, params);
+                return executeOperation(resource, params, withResponse);
             default:
                 throw new UnsupportedResourceOperationException("POST not supported for Actions");
         }

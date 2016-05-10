@@ -83,6 +83,14 @@ public class ResourceInspector
         ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.Update.class);
         ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.Delete.class);
         ALL_ENTITY_RESOURCE_INTERFACES.add(BinaryResourceAction.Read.class);
+
+        ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.CreateWithResponse.class);
+        ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.ReadWithResponse.class);
+        ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.ReadByIdWithResponse.class);
+        ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.UpdateWithResponse.class);
+        ALL_ENTITY_RESOURCE_INTERFACES.add(EntityResourceAction.DeleteWithResponse.class);
+        ALL_ENTITY_RESOURCE_INTERFACES.add(BinaryResourceAction.ReadWithResponse.class);
+
         ALL_ENTITY_RESOURCE_INTERFACES.add(MultiPartResourceAction.Create.class);
 
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Create.class);
@@ -90,11 +98,22 @@ public class ResourceInspector
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.ReadById.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Update.class);
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.Delete.class);
+
+        ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.CreateWithResponse.class);
+        ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.ReadWithResponse.class);
+        ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.ReadByIdWithResponse.class);
+        ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.UpdateWithResponse.class);
+        ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(RelationshipResourceAction.DeleteWithResponse.class);
+
         ALL_RELATIONSHIP_RESOURCE_INTERFACES.add(MultiPartRelationshipResourceAction.Create.class);
 
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.Read.class);
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.Delete.class);
         ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.Update.class);
+
+        ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.ReadWithResponse.class);
+        ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.DeleteWithResponse.class);
+        ALL_PROPERTY_RESOURCE_INTERFACES.add(BinaryResourceAction.UpdateWithResponse.class);
     }
     
     /**
@@ -117,6 +136,13 @@ public class ResourceInspector
         findOperation(EntityResourceAction.ReadById.class, HttpMethod.GET, helper);
         findOperation(EntityResourceAction.Update.class,   HttpMethod.PUT, helper);  
         findOperation(EntityResourceAction.Delete.class,   HttpMethod.DELETE, helper);
+
+        findOperation(EntityResourceAction.CreateWithResponse.class,   HttpMethod.POST, helper);
+        findOperation(EntityResourceAction.ReadWithResponse.class,     HttpMethod.GET, helper);
+        findOperation(EntityResourceAction.ReadByIdWithResponse.class, HttpMethod.GET, helper);
+        findOperation(EntityResourceAction.UpdateWithResponse.class,   HttpMethod.PUT, helper);
+        findOperation(EntityResourceAction.DeleteWithResponse.class,   HttpMethod.DELETE, helper);
+
         findOperation(MultiPartResourceAction.Create.class,   HttpMethod.POST, helper);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
@@ -163,9 +189,17 @@ public class ResourceInspector
         findOperation(BinaryResourceAction.Delete.class, HttpMethod.DELETE, helperForAddressProps);
         findOperation(BinaryResourceAction.Update.class, HttpMethod.PUT, helperForAddressProps);
 
+        findOperation(BinaryResourceAction.ReadWithResponse.class,   HttpMethod.GET, helperForAddressProps);
+        findOperation(BinaryResourceAction.DeleteWithResponse.class, HttpMethod.DELETE, helperForAddressProps);
+        findOperation(BinaryResourceAction.UpdateWithResponse.class, HttpMethod.PUT, helperForAddressProps);
+
         findOperation(RelationshipResourceBinaryAction.Read.class,   HttpMethod.GET, helperForAddressProps);
         findOperation(RelationshipResourceBinaryAction.Delete.class, HttpMethod.DELETE, helperForAddressProps);
         findOperation(RelationshipResourceBinaryAction.Update.class, HttpMethod.PUT, helperForAddressProps);
+
+        findOperation(RelationshipResourceBinaryAction.ReadWithResponse.class,   HttpMethod.GET, helperForAddressProps);
+        findOperation(RelationshipResourceBinaryAction.DeleteWithResponse.class, HttpMethod.DELETE, helperForAddressProps);
+        findOperation(RelationshipResourceBinaryAction.UpdateWithResponse.class, HttpMethod.PUT, helperForAddressProps);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
         if (noAuth)
@@ -211,6 +245,13 @@ public class ResourceInspector
         findOperation(RelationshipResourceAction.ReadById.class, HttpMethod.GET, helper);
         findOperation(RelationshipResourceAction.Update.class,   HttpMethod.PUT, helper);  
         findOperation(RelationshipResourceAction.Delete.class,   HttpMethod.DELETE, helper);
+
+        findOperation(RelationshipResourceAction.CreateWithResponse.class,   HttpMethod.POST, helper);
+        findOperation(RelationshipResourceAction.ReadWithResponse.class,     HttpMethod.GET, helper);
+        findOperation(RelationshipResourceAction.ReadByIdWithResponse.class, HttpMethod.GET, helper);
+        findOperation(RelationshipResourceAction.UpdateWithResponse.class,   HttpMethod.PUT, helper);
+        findOperation(RelationshipResourceAction.DeleteWithResponse.class,   HttpMethod.DELETE, helper);
+
         findOperation(MultiPartRelationshipResourceAction.Create.class, HttpMethod.POST, helper);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
@@ -629,21 +670,19 @@ public class ResourceInspector
         Map<String, Pair<ResourceOperation,Method>> embeds = new HashMap<String, Pair<ResourceOperation,Method>>();
         List<Method> annotatedMethods = ResourceInspectorUtil.findMethodsByAnnotation(anyClass, Operation.class);
         if (annotatedMethods != null && !annotatedMethods.isEmpty())
-        {
             for (Method annotatedMethod : annotatedMethods)
             {
+                //validateOperationMethod(annotatedMethod, anyClass);
                 Annotation annot = AnnotationUtils.findAnnotation(annotatedMethod, Operation.class);
                 if (annot != null)
                 {
                     Map<String, Object> annotAttribs = AnnotationUtils.getAnnotationAttributes(annot);
                     String actionName = String.valueOf(annotAttribs.get("value"));
-                    String actionPath = ResourceDictionary.propertyResourceKey(entityPath,actionName);
+                    String actionPath = ResourceDictionary.propertyResourceKey(entityPath, actionName);
                     ResourceOperation ro = inspectOperation(anyClass, annotatedMethod, HttpMethod.POST);
-                    embeds.put(actionPath, new Pair<ResourceOperation,Method>(ro,annotatedMethod));
+                    embeds.put(actionPath, new Pair<ResourceOperation, Method>(ro, annotatedMethod));
                 }
             }
-
-        }
         return embeds;
     }
     

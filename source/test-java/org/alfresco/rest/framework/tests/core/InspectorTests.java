@@ -51,6 +51,8 @@ import org.alfresco.rest.framework.tests.api.mocks3.GrassEntityResourceNowDelete
 import org.alfresco.rest.framework.tests.api.mocks3.SheepBlackSheepResourceIsNoMore;
 import org.alfresco.rest.framework.tests.api.mocks3.SheepEntityResourceWithDeletedMethods;
 import org.alfresco.rest.framework.tests.api.mocks3.SlimGoat;
+import org.alfresco.rest.framework.webscripts.ApiWebScript;
+import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.Pair;
 import org.junit.Test;
 import org.springframework.extensions.webscripts.Status;
@@ -438,6 +440,8 @@ public class InspectorTests
             OperationResourceMetaData operationResourceMetaData = (OperationResourceMetaData) resourceMetadata;
             Method actionMethod = operationResourceMetaData.getOperationMethod();
             String result = null;
+            final WithResponse wr = new WithResponse(Status.STATUS_OK, ApiWebScript.DEFAULT_JSON_CONTENT, ApiWebScript.CACHE_NEVER);
+
             switch (resourceMetadata.getUniqueId())
             {
                 case "/-root-/{id}/grow":
@@ -447,7 +451,7 @@ public class InspectorTests
                     assertEquals("grow should return ACCEPTED", Status.STATUS_ACCEPTED, op.getSuccessStatus());
                     Class paramType = resourceMetadata.getObjectType(op);
                     Object paramObj = paramType.newInstance();
-                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", paramObj, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)));
+                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", paramObj, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)), wr);
                     assertEquals("Growing well",result);
                     break;
                 case "/-root-/{id}/cut":
@@ -456,7 +460,7 @@ public class InspectorTests
                     op = resourceMetadata.getOperation(HttpMethod.POST);
                     assertNull(resourceMetadata.getObjectType(op));
                     assertEquals("cut should return ACCEPTED", Status.STATUS_NOT_IMPLEMENTED, op.getSuccessStatus());
-                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", null, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)));
+                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", null, Params.valueOf("notUsed", null, mock(WebScriptRequest.class)), wr);
                     assertEquals("All done",result);
                     break;
                 default:

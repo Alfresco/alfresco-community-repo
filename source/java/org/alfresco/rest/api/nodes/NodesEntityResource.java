@@ -32,7 +32,9 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.ParameterCheck;
+import org.apache.lucene.store.Lock;
 import org.springframework.beans.factory.InitializingBean;
 
 import java.io.InputStream;
@@ -125,14 +127,14 @@ public class NodesEntityResource implements
 
     @Operation("copy")
     @WebApiDescription(title = "Copy Node", description="Copy one or more nodes (files or folders) to a new target folder, with option to rename.")
-    public Node copyById(String nodeId, NodeTarget target, Parameters parameters)
+    public Node copyById(String nodeId, NodeTarget target, Parameters parameters, WithResponse withResponse)
     {
        return nodes.moveOrCopyNode(nodeId, target.getTargetParentId(), target.getName(), parameters, true);
     }
 
     @Operation("move")
     @WebApiDescription(title = "Move Node", description="Moves one or more nodes (files or folders) to a new target folder, with option to rename.")
-    public Node moveById(String nodeId, NodeTarget target, Parameters parameters)
+    public Node moveById(String nodeId, NodeTarget target, Parameters parameters, WithResponse withResponse)
     {
         return nodes.moveOrCopyNode(nodeId, target.getTargetParentId(), target.getName(), parameters, false);
     }

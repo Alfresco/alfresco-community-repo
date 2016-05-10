@@ -102,4 +102,6 @@ public interface QuickShareLinks
      * API Constants - query parameters, etc
      */
     String PARAM_SHAREDBY = "sharedByUser";
+
+    String PARAM_SELECT_ISLINK = "allowableOperations";
 }

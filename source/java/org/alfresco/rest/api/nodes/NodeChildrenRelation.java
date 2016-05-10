@@ -25,6 +25,7 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
@@ -100,10 +101,45 @@ public class NodeChildrenRelation implements RelationshipResourceAction.Read<Nod
     {
         List<Node> result = new ArrayList<>(nodeInfos.size());
 
+        // TODO experimental (API subject to change) - eg. this may move to a separate endpoint !
+        for (Node nodeInfo : nodeInfos)
+        {
+            String action = nodeInfo.getAction();
+            if (action != null)
+            {
+                String sourceNodeId = nodeInfo.getNodeRef().getId();
+                String optionalName = nodeInfo.getName();
+
+                if (action.equalsIgnoreCase("move"))
+                {
+                    result.add(nodes.moveNode(sourceNodeId, parentFolderNodeId, optionalName, parameters));
+                }
+                else if (action.equalsIgnoreCase("copy"))
+                {
+                    result.add(nodes.copyNode(sourceNodeId, parentFolderNodeId, optionalName, parameters));
+                }
+                else
+                {
+                    throw new InvalidArgumentException("Unknown action: "+action);
+                }
+            }
+            else
+            {
+                if (nodeInfo.getNodeRef() != null)
+                {
+                    throw new InvalidArgumentException("Unexpected id without action, eg. move/copy: "+nodeInfo.getNodeRef());
+                }
+                result.add(nodes.createNode(parentFolderNodeId, nodeInfo, parameters));
+            }
+
+        }
+
+        /*
         for (Node nodeInfo : nodeInfos)
         {
             result.add(nodes.createNode(parentFolderNodeId, nodeInfo, parameters));
         }
+        */
 
         return result;
     }

@@ -1084,8 +1084,18 @@ public class NodesImpl implements Nodes
         NodeRef parentNodeRef = nodeInfo.getParentId();
         if (parentNodeRef != null)
         {
-            // move/rename - with exception mapping
-            move(nodeRef, parentNodeRef, name);
+            NodeRef currentParentNodeRef = getParentNodeRef(nodeRef);
+            if (currentParentNodeRef == null)
+            {
+                // implies root (Company Home) hence return 403 here
+                throw new PermissionDeniedException();
+            }
+
+            if (! currentParentNodeRef.equals(parentNodeRef))
+            {
+                // move/rename - with exception mapping
+                moveOrCopy(nodeRef, parentNodeRef, name, false);
+            }
         }
 
         List<String> aspectNames = nodeInfo.getAspectNames();
@@ -1171,46 +1181,61 @@ public class NodesImpl implements Nodes
         return getFolderOrDocument(nodeRef.getId(), parameters);
     }
 
-    private void move(NodeRef nodeRef, NodeRef parentNodeRef, String name)
+    public Node moveNode(String sourceNodeId, String parentFolderNodeId, String name, Parameters parameters)
     {
-        NodeRef currentParentNodeRef = getParentNodeRef(nodeRef);
-        if (currentParentNodeRef == null)
-        {
-            // implies root (Company Home) hence return 403 here
-            throw new PermissionDeniedException();
-        }
+        final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
+        final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId, null);
 
-        if (! currentParentNodeRef.equals(parentNodeRef))
+        FileInfo fi = moveOrCopy(sourceNodeRef, parentNodeRef, name, false);
+        return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
+    }
+
+    public Node copyNode(String sourceNodeId, String parentFolderNodeId, String name, Parameters parameters)
+    {
+        final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
+        final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId, null);
+
+        FileInfo fi = moveOrCopy(sourceNodeRef, parentNodeRef, name, true);
+        return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
+    }
+
+    protected FileInfo moveOrCopy(NodeRef nodeRef, NodeRef parentNodeRef, String name, boolean isCopy)
+    {
+        try
         {
-            try
+            if (isCopy)
+            {
+                return fileFolderService.copy(nodeRef, parentNodeRef, name);
+            }
+            else
             {
                 // updating "parentId" means moving primary parent !
                 // note: in the future (as and when we support secondary parent/child assocs) we may also
                 // wish to select which parent to "move from" (in case where the node resides in multiple locations)
-                fileFolderService.move(nodeRef, parentNodeRef, name);
+                return fileFolderService.move(nodeRef, parentNodeRef, name);
             }
-            catch (InvalidNodeRefException inre)
-            {
-                throw new EntityNotFoundException(inre.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
-            }
-            catch (FileNotFoundException fnfe)
-            {
-                // convert checked exception
-                throw new EntityNotFoundException(fnfe.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
-            }
-            catch (FileExistsException fee)
-            {
-                // duplicate - name clash
-                throw new ConstraintViolatedException(fee.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
-            }
-            catch (FileFolderServiceImpl.InvalidTypeException ite)
-            {
-                throw new InvalidArgumentException(ite.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
-            }
-            catch (CyclicChildRelationshipException ccre)
-            {
-                throw new InvalidArgumentException(ccre.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
-            }
+        }
+        catch (InvalidNodeRefException inre)
+        {
+            throw new EntityNotFoundException(inre.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
+        }
+        catch (FileNotFoundException fnfe)
+        {
+            // convert checked exception
+            throw new EntityNotFoundException(fnfe.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
+        }
+        catch (FileExistsException fee)
+        {
+            // duplicate - name clash
+            throw new ConstraintViolatedException(fee.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
+        }
+        catch (FileFolderServiceImpl.InvalidTypeException ite)
+        {
+            throw new InvalidArgumentException(ite.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
+        }
+        catch (CyclicChildRelationshipException ccre)
+        {
+            throw new InvalidArgumentException(ccre.getMessage() + " [" + nodeRef + "," + parentNodeRef + "]");
         }
     }
 

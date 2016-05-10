@@ -89,7 +89,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
      * @return anObject the result of the execute
      */
     @Override
-    public Object executeAction(ResourceWithMetadata resource, Params params, ResponseCallBack withResponse)
+    public Object executeAction(ResourceWithMetadata resource, Params params, WithResponse withResponse)
     {
         switch (resource.getMetaData().getType())
         {
@@ -143,7 +143,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
     public Void execute(final ResourceWithMetadata resource, final Params params, final WebScriptResponse res, boolean isReadOnly)
     {
         final ResourceOperation operation = resource.getMetaData().getOperation(HttpMethod.DELETE);
-        final ResponseCallBack callBack = new ResponseCallBack(operation.getSuccessStatus(),DEFAULT_JSON_CONTENT,ApiWebScript.CACHE_NEVER);
+        final WithResponse callBack = new WithResponse(operation.getSuccessStatus(),DEFAULT_JSON_CONTENT,ApiWebScript.CACHE_NEVER);
         transactionService.getRetryingTransactionHelper().doInTransaction(
             new RetryingTransactionCallback<Void>()
             {

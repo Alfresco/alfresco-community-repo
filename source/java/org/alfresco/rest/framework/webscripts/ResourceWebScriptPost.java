@@ -22,9 +22,7 @@ package org.alfresco.rest.framework.webscripts;
 import java.util.Arrays;
 import java.util.List;
 
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.core.OperationResourceMetaData;
-import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceInspectorUtil;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
@@ -42,10 +40,8 @@ import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptRequestImpl;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.servlet.FormData;
 import org.springframework.http.HttpMethod;
 
@@ -211,7 +207,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
      * @return anObject the result of the execute
      */
     @Override
-    public Object executeAction(ResourceWithMetadata resource, Params params, ResponseCallBack withResponse) throws Throwable
+    public Object executeAction(ResourceWithMetadata resource, Params params, WithResponse withResponse) throws Throwable
     {
         final Object resObj = resource.getResource();
 

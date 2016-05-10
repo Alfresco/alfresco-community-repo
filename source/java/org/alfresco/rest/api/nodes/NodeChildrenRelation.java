@@ -30,7 +30,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelation
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.webscripts.ResponseCallBack;
+import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.servlet.FormData;
@@ -113,7 +113,7 @@ public class NodeChildrenRelation implements RelationshipResourceAction.Read<Nod
     @Override
     @WebApiDescription(title = "Upload file content and meta-data into the repository.")
     @WebApiParam(name = "formData", title = "A single form data", description = "A single form data which holds FormFields.")
-    public Node create(String parentFolderNodeId, FormData formData, Parameters parameters, ResponseCallBack withResponse)
+    public Node create(String parentFolderNodeId, FormData formData, Parameters parameters, WithResponse withResponse)
     {
         return nodes.upload(parentFolderNodeId, formData, parameters);
     }

@@ -77,6 +77,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
+import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
@@ -132,6 +133,7 @@ public class NodesImpl implements Nodes
     }
 
     private final static String PARAM_RELATIVE_PATH = "relativePath";
+    private final static String PARAM_AUTO_RENAME = "autoRename";
 
     private final static String PARAM_SELECT_PROPERTIES = "properties";
     private final static String PARAM_SELECT_PATH = "path";
@@ -979,6 +981,18 @@ public class NodesImpl implements Nodes
         {
             // node properties - set any additional properties
             props = mapToNodeProperties(nodeInfo.getProperties());
+        }
+
+        // Existing file/folder name handling
+        final boolean autoRename = Boolean.valueOf(parameters.getParameter(PARAM_AUTO_RENAME));
+        if (autoRename && (isContent || FileFolderServiceType.FOLDER.equals(fileFolderService.getType(nodeTypeQName))))
+        {
+            NodeRef existingNode = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, nodeName);
+            if (existingNode != null)
+            {
+                // File already exists, find a unique name
+                nodeName = findUniqueName(parentNodeRef, nodeName);
+            }
         }
 
         // Create the node

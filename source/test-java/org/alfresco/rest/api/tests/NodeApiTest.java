@@ -1233,6 +1233,19 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // -ve test - duplicate name
         post(postUrl, user1, toJsonAsStringNonNull(f1), 409);
+
+        // Create a folder with a duplicate name (f1), but set the autoRename to true
+        response = post(postUrl, user1, toJsonAsStringNonNull(f1), "?autoRename=true", 201);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals("f1-1", documentResp.getName());
+
+        // Create a folder with a duplicate name (f1) again, but set the autoRename to true
+        response = post(postUrl, user1, toJsonAsStringNonNull(f1), "?autoRename=true", 201);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals("f1-2", documentResp.getName());
+
+        // -ve test - create a folder with a duplicate name (f1), but set the autoRename to false
+        post(postUrl, user1, toJsonAsStringNonNull(f1), "?autoRename=false", 409);
     }
 
     /**
@@ -1327,6 +1340,25 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // -ve test - duplicate name
         post(postUrl, user1, toJsonAsStringNonNull(d1), 409);
+
+        // Create a file with a duplicate name (d1.txt), but set the autoRename to true
+        response = post(postUrl, user1, toJsonAsStringNonNull(d1), "?autoRename=true", 201);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals("d1-1.txt", documentResp.getName());
+
+        // Create a file with a duplicate name (d1.txt) again, but set the autoRename to true
+        response = post(postUrl, user1, toJsonAsStringNonNull(d1), "?autoRename=true", 201);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals("d1-2.txt", documentResp.getName());
+
+        // Create a file with a duplicate name (d1-2.txt) again, but set the autoRename to true
+        d1.setName("d1-2.txt");
+        response = post(postUrl, user1, toJsonAsStringNonNull(d1), "?autoRename=true", 201);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals("d1-2-1.txt", documentResp.getName());
+
+        // -ve test - create a file with a duplicate name (d1-2.txt), but set the autoRename to false
+        post(postUrl, user1, toJsonAsStringNonNull(d1), "?autoRename=false", 409);
     }
 
     /**

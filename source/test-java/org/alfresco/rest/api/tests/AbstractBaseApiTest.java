@@ -58,6 +58,12 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 {
     private static final String RESOURCE_PREFIX = "publicapi/upload/";
 
+    private static final String URL_NODES = "nodes/";
+    private static final String URL_RENDITIONS = "/renditions";
+    private static final String URL_CHILDREN = "/children";
+    private static final String URL_CONTENT = "/content";
+
+
     /**
      * The api scope. either public or private
      * @return public or private
@@ -387,11 +393,16 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected String getNodeRenditionsUrl(String nodeId)
     {
-        return "nodes/" + nodeId + "/renditions";
+        return URL_NODES + nodeId + URL_RENDITIONS;
     }
 
     protected String getNodeChildrenUrl(String nodeId)
     {
-        return "nodes/" + nodeId + "/children";
+        return URL_NODES + nodeId + URL_CHILDREN;
+    }
+
+    protected String getNodeContentUrl(String nodeId)
+    {
+        return URL_NODES + nodeId + URL_CONTENT;
     }
 }

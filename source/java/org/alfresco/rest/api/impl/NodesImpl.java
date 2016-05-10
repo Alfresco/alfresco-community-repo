@@ -1165,38 +1165,37 @@ public class NodesImpl implements Nodes
         final PagingResults<FileInfo> pagingResults;
 
         // notes (see also earlier validation checks):
+        // - no filtering means any types/sub-types (well, apart from hidden &/or default ignored types - eg. systemfolder, fm types)
         // - node type filtering is mutually exclusive from isFile/isFolder, can optionally also include sub-types
         // - isFile & isFolder cannot both be true
         // - (isFile=false) means any other types/sub-types (other than files)
         // - (isFolder=false) means any other types/sub-types (other than folders)
-        // - (isFile=false and isFolder=false) means any types/sub-types (other than files or folders)
+        // - (isFile=false and isFolder=false) means any other types/sub-types (other than files or folders)
 
         if (filterNodeTypeQName == null)
         {
-            if (Boolean.FALSE.equals(includeFiles) && Boolean.FALSE.equals(includeFolders))
+            if ((includeFiles == null) && (includeFolders == null))
             {
-                includeFiles = false;
-                includeFolders = false;
-
+                // no additional filtering
                 filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
             }
-
-            if (includeFiles != null)
+            else if ((includeFiles != null) && (includeFolders != null))
             {
-                if ((! includeFiles) && (includeFolders == null))
+                if ((! includeFiles) && (! includeFolders))
                 {
-                    // isFile=false
+                    // no files or folders
                     filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
                 }
             }
-
-            if (includeFolders != null)
+            else if ((includeFiles != null) && (! includeFiles))
             {
-                if ((! includeFolders) && (includeFiles == null))
-                {
-                    // isFolder=false
-                    filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
-                }
+                // no files
+                filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
+            }
+            else if ((includeFolders != null) && (! includeFolders))
+            {
+                // no folders
+                filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
             }
         }
 

@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.rest.framework.webscripts;
 
 import java.io.File;
@@ -28,6 +46,7 @@ import org.springframework.extensions.webscripts.Description.RequiredCache;
 import org.springframework.extensions.webscripts.Format;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.WrappingWebScriptResponse;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
 
 /**
@@ -219,15 +238,22 @@ public abstract class ApiWebScript extends AbstractWebScript
             //Set content info on the response
             res.setContentType(contentInfo.getMimeType());
             res.setContentEncoding(contentInfo.getEncoding());
+
+            if (res instanceof WrappingWebScriptResponse)
+            {
+                WrappingWebScriptResponse wrappedRes = ((WrappingWebScriptResponse) res);
+                res = wrappedRes.getNext();
+            }
+
             if (res instanceof WebScriptServletResponse)
             {
                 WebScriptServletResponse servletResponse = (WebScriptServletResponse) res;
                 if (contentInfo.getLength() > 0)
                 {
-                	if (contentInfo.getLength()>0 && contentInfo.getLength() < Integer.MAX_VALUE)
-                	{
-                      servletResponse.getHttpServletResponse().setContentLength((int)contentInfo.getLength());
-                	}
+                    if (contentInfo.getLength() > 0 && contentInfo.getLength() < Integer.MAX_VALUE)
+                    {
+                        servletResponse.getHttpServletResponse().setContentLength((int) contentInfo.getLength());
+                    }
                 }
                 if (contentInfo.getLocale() != null)
                 {
@@ -235,7 +261,6 @@ public abstract class ApiWebScript extends AbstractWebScript
                 }
             }
         }
-
     }
     
     public void setResolver(ExceptionResolver<Exception> resolver)

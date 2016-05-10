@@ -13,6 +13,8 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.ReadById;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
+import org.alfresco.rest.framework.resource.content.ContentInfo;
+import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
@@ -195,7 +197,11 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                     Object result = executeInternal(resource, params);
                     if (result instanceof BinaryResource)
                     {
-                        executionCallback.onSuccess(result, null);
+                        ContentInfo ci = null;
+                        if (result instanceof NodeBinaryResource) {
+                            ci = ((NodeBinaryResource)result).getContentInfo();
+                        }
+                        executionCallback.onSuccess(result, ci);
                     }
                     else
                     {

@@ -40,7 +40,9 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.Client;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
+import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
@@ -92,6 +94,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
@@ -152,6 +155,7 @@ import org.springframework.http.MediaType;
 public class NodesImpl implements Nodes
 {
     private static final Log logger = LogFactory.getLog(NodesImpl.class);
+    private static final String APP_TOOL = "API";
 
     private enum Type
     {
@@ -174,6 +178,7 @@ public class NodesImpl implements Nodes
     private OwnableService ownableService;
     private AuthorityService authorityService;
     private ThumbnailService thumbnailService;
+    private ActivityPoster poster;
 
     private BehaviourFilter behaviourFilter;
 
@@ -245,6 +250,11 @@ public class NodesImpl implements Nodes
     public void setIgnoreTypes(Set<String> ignoreTypesAndAspects)
     {
         this.defaultIgnoreTypesAndAspects = ignoreTypesAndAspects;
+    }
+
+    public void setPoster(ActivityPoster poster)
+    {
+        this.poster = poster;
     }
 
     // excluded namespaces (aspects and properties)
@@ -1475,6 +1485,7 @@ public class NodesImpl implements Nodes
 
     private NodeRef createNodeImpl(NodeRef parentNodeRef, String nodeName, QName nodeTypeQName, Map<QName, Serializable> props)
     {
+        NodeRef newNode = null;
         if (props == null)
         {
             props = new HashMap<>(1);
@@ -1486,13 +1497,24 @@ public class NodesImpl implements Nodes
         QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
         try
         {
-            return nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, nodeTypeQName, props).getChildRef();
+            newNode = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, nodeTypeQName, props).getChildRef();
         }
         catch (DuplicateChildNodeNameException dcne)
         {
             // duplicate - name clash
             throw new ConstraintViolatedException(dcne.getMessage());
         }
+
+        boolean isFolder = isSubClass(nodeTypeQName, ContentModel.TYPE_FOLDER);
+        boolean isContent = isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT);
+
+        if (isFolder || isContent)
+        {
+            FileInfo fileInfo = fileFolderService.getFileInfo(newNode);
+            poster.postSiteAwareFileFolderActivity(isFolder?ActivityType.FOLDER_ADDED:ActivityType.FILE_ADDED, null, TenantUtil.getCurrentDomain(),
+                    null, parentNodeRef, newNode, nodeName, APP_TOOL, Client.asType(Client.ClientType.script), fileInfo);
+        }
+        return newNode;
     }
 
     // check cm:cmobject (but *not* cm:systemfolder)
@@ -1708,7 +1730,16 @@ public class NodesImpl implements Nodes
             }
         }
 
-        return getFolderOrDocument(nodeRef.getId(), parameters);
+        Node updatedNode = getFolderOrDocument(nodeRef.getId(), parameters);
+        boolean isContent = isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT);
+
+        if (isContent)
+        {
+            FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
+            poster.postSiteAwareFileFolderActivity(ActivityType.FILE_UPDATED, null, TenantUtil.getCurrentDomain(),
+                    null, updatedNode.getParentId(), updatedNode.getNodeRef(), updatedNode.getName(), APP_TOOL, Client.asType(Client.ClientType.script), fileInfo);
+        }
+        return updatedNode;
     }
 
     @Override
@@ -1848,12 +1879,14 @@ public class NodesImpl implements Nodes
         }
         String versionComment = parameters.getParameter(PARAM_VERSION_COMMENT);
 
-        return updateExistingFile(nodeRef, contentInfo, stream, parameters, versionMajor, versionComment);
+        final String fileName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        return updateExistingFile(null, nodeRef, fileName, contentInfo, stream, parameters, versionMajor, versionComment);
     }
 
-    private Node updateExistingFile(NodeRef nodeRef, BasicContentInfo contentInfo, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)
+    private Node updateExistingFile(NodeRef parentNodeRef, NodeRef nodeRef, String fileName, BasicContentInfo contentInfo, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)
     {
         boolean isVersioned = versionService.isVersioned(nodeRef);
+        FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
 
         behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         try
@@ -1869,6 +1902,9 @@ public class NodesImpl implements Nodes
                 }
                 createVersion(nodeRef, isVersioned, versionType, versionComment);
             }
+
+            poster.postSiteAwareFileFolderActivity(ActivityType.FILE_UPDATED, null, TenantUtil.getCurrentDomain(),
+                    null, parentNodeRef, nodeRef, fileName, APP_TOOL, Client.asType(Client.ClientType.script), fileInfo);
 
             extractMetadata(nodeRef);
         }
@@ -2074,7 +2110,7 @@ public class NodesImpl implements Nodes
                 {
                     // overwrite existing (versionable) file
                     BasicContentInfo contentInfo = new ContentInfoImpl(content.getMimetype(), content.getEncoding(), -1, null);
-                    return updateExistingFile(existingFile, contentInfo, content.getInputStream(), parameters, majorVersion, versionComment);
+                    return updateExistingFile(parentNodeRef, existingFile, fileName, contentInfo, content.getInputStream(), parameters, majorVersion, versionComment);
                 }
                 else
                 {

@@ -1236,8 +1236,8 @@ public class NodesImpl implements Nodes
 
             if (! currentParentNodeRef.equals(parentNodeRef))
             {
-                // move/rename - with exception mapping
-                moveOrCopy(nodeRef, parentNodeRef, name, false);
+                //moveOrCopy(nodeRef, parentNodeRef, name, false); // not currently supported - client should use explicit POST /move operation instead
+                throw new InvalidArgumentException("Cannot update parentId of "+nodeId+" via PUT /nodes/{nodeId}. Please use explicit POST /nodes/{nodeId}/move operation instead");
             }
         }
 

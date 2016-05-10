@@ -1646,7 +1646,147 @@ public class NodeApiTest extends AbstractBaseApiTest
         post(getNodeChildrenUrl(myNodeId), user1, RestApiUtil.toJsonAsStringNonNull(n), 409);
     }
 
-    // TODO test custom type with properties (sub-type of cm:cmobject)
+    // TODO test custom types with properties (sub-type of cm:cmobject)
+
+    @Test
+    public void testListChildrenIsFileIsFolderFilter() throws Exception
+    {
+        String myNodeId = getMyNodeId(user1);
+        String myChildrenUrl = getNodeChildrenUrl(myNodeId);
+
+        long timeNow = System.currentTimeMillis();
+
+        int folderCnt = 2;
+        int fileCnt = 3;
+        int objCnt = 4;
+
+        // create some folders
+        List<String> folderIds = new ArrayList<>(folderCnt);
+
+        for (int i = 1; i <= folderCnt; i++)
+        {
+            folderIds.add(createFolder(user1, myNodeId, "folder "+i+" "+timeNow).getId());
+        }
+
+        // create some files
+        List<String> fileIds = new ArrayList<>(fileCnt);
+        for (int i = 1; i <= fileCnt; i++)
+        {
+            fileIds.add(createTextFile(user1, myNodeId, "file "+i+" "+timeNow, "The quick brown fox jumps over the lazy dog "+i).getId());
+        }
+
+        // create some nodes (cmobject)
+        List<String> objIds = new ArrayList<>(objCnt);
+        for (int i = 1; i <= objCnt; i++)
+        {
+            Node obj = new Node();
+            obj.setName("obj "+i+" "+timeNow);
+            obj.setNodeType("cm:cmobject");
+
+            // create node/object
+            HttpResponse response = post(myChildrenUrl, user1, toJsonAsStringNonNull(obj), 201);
+            Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            objIds.add(nodeResp.getId());
+        }
+
+        List<String> allIds = new ArrayList<>(objCnt+folderCnt+fileCnt);
+        allIds.addAll(folderIds);
+        allIds.addAll(fileIds);
+        allIds.addAll(objIds);
+
+        List<String> folderAndFileIds = new ArrayList<>(folderCnt+fileCnt);
+        folderAndFileIds.addAll(folderIds);
+        folderAndFileIds.addAll(fileIds);
+
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+
+        // filtering, via where clause - folders
+
+        Map<String, String> params = new HashMap<>();
+        params.put("where", "(nodeType='cm:folder')");
+
+        HttpResponse response = getAll(myChildrenUrl, user1, paging, params, 200);
+        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, folderIds);
+
+        params = new HashMap<>();
+        params.put("where", "(isFolder=true)");
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, folderIds);
+
+        params = new HashMap<>();
+        params.put("where", "(isFolder=true AND isFile=false)");
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, folderIds);
+
+        // filtering, via where clause - files
+
+        params = new HashMap<>();
+        params.put("where", "(nodeType='cm:content')");
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, fileIds);
+
+        params = new HashMap<>();
+        params.put("where", "(isFile=true)");
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, fileIds);
+
+        params = new HashMap<>();
+        params.put("where", "(isFile=true AND isFolder=false)");
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, fileIds);
+
+        // filtering, via where clause - files and folders
+
+        params = new HashMap<>();
+        params.put("where", "(isFile=true AND isFolder=true)");
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, folderAndFileIds);
+
+        // filtering, via where clause - non-folders / non-files
+
+        params = new HashMap<>();
+        params.put("where", "(nodeType='cm:cmobject')");
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, objIds);
+
+        params = new HashMap<>();
+        params.put("where", "(nodeType='cm:cmobject INCLUDESUBTYPES')");
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, allIds);
+
+        params = new HashMap<>();
+        params.put("where", "(isFile=false AND isFolder=false)");
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, objIds);
+    }
+
+    private void checkNodeIds(List<Node> nodes, List<String> nodeIds)
+    {
+        assertEquals(nodeIds.size(), nodes.size());
+        for (Node node : nodes)
+        {
+            assertTrue(nodeIds.contains(node.getId()));
+        }
+    }
 
     // note: app:folderlink & app:filelink both extend cm:link (which in turn extends cm:cmobject)
     //       (see applicationModel.xml / contentModel.xml)

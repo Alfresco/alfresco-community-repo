@@ -33,7 +33,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by gethin on 22/03/16.
+ * Tests posting activities from the public api.
+ *
+ * @author gethin
  */
 public class ActivitiesPostingTest extends AbstractBaseApiTest
 {

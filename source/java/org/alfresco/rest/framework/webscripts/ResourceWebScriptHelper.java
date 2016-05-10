@@ -1,4 +1,21 @@
-
+/*
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.rest.framework.webscripts;
 
 import java.beans.PropertyDescriptor;
@@ -92,6 +109,44 @@ public class ResourceWebScriptHelper
      */
     public static BeanPropertiesFilter getFilter(String filterParams)
     {
+    	return getFilter(filterParams, null);
+    }
+
+    /**
+     * Takes the web request and looks for a "filter" parameter Parses the
+     * parameter and produces a list of bean properties to use as a filter A
+     * SimpleBeanPropertyFilter it returned that uses the properties If no
+     * filter param is set then a default BeanFilter is returned that will never
+     * filter properties (ie. Returns all bean properties).
+     *
+     * If selectList is provided then it will take precedence (ie. be included) over the properties filter
+     * for top-level entries (bean properties).
+     *
+     * For example, this will return entries from both select & properties, eg.
+     *
+     *    select=abc,def&properties=id,name,ghi
+     *
+     * Note: it should be noted that API-generic "properties" clause does not currently work for sub-entries.
+     *
+     * Hence, even if the API-specific "select" clause allows selection of a sub-entries this cannot be used
+     * with "properties" filtering. For example, an API-specific method may implement and return "abc/blah", eg.
+     *
+     *    select=abc/blah
+     *
+     * However the following will not return "abc/blah" if used with properties filtering, eg.
+     *
+     *    select=abc/blah&properties=id,name,ghi
+     *
+     * If properties filtering is desired then it would require "abc" to be selected and returned as a whole, eg.
+     *
+     *    select=abc&properties=id,name,ghi
+     *
+     * @param filterParams
+     * @param selectList
+     * @return
+     */
+    public static BeanPropertiesFilter getFilter(String filterParams, List<String> selectList)
+    {
         if (filterParams != null)
         {
             StringTokenizer st = new StringTokenizer(filterParams, ",");
@@ -100,6 +155,17 @@ public class ResourceWebScriptHelper
             {
                 filteredProperties.add(st.nextToken());
             }
+
+            // if supplied, the select takes precedence over properties (filter) for top-level bean properties
+            if (selectList != null)
+            {
+            	for (String select : selectList)
+            	{
+            		String[] split = select.split("/");
+            		filteredProperties.add(split[0]);
+            	}
+            }
+            
             logger.debug("Filtering using the following properties: " + filteredProperties);
             BeanPropertiesFilter filter = new BeanPropertiesFilter(filteredProperties);
             return filter;
@@ -431,6 +497,7 @@ public class ResourceWebScriptHelper
                 //Simple property or Collection that can't be embedded so just return it.
                 return objectToWrap;
             }
+
             final ExecutionResult execRes = new ExecutionResult(objectToWrap, params.getFilter());
             
             Map<String,Pair<String,Method>> embeddded = ResourceInspector.findEmbeddedResources(objectToWrap.getClass());
@@ -615,13 +682,15 @@ public class ResourceWebScriptHelper
      */
     public static RecognizedParams getRecognizedParams(WebScriptRequest req)
     {
-        Paging paging = findPaging(req);
+    	Paging paging = findPaging(req);
         List<SortColumn> sorting = getSort(req.getParameter(ResourceWebScriptHelper.PARAM_ORDERBY));
         Map<String, BeanPropertiesFilter> relationFilter = getRelationFilter(req.getParameter(ResourceWebScriptHelper.PARAM_RELATIONS));
-        BeanPropertiesFilter filter = getFilter(req.getParameter(ResourceWebScriptHelper.PARAM_FILTER_PROPS));
         Query whereQuery = getWhereClause(req.getParameter(ResourceWebScriptHelper.PARAM_WHERE));
         Map<String, String[]> requestParams = getRequestParameters(req);
+
         List<String> theSelect = getSelectClause(req.getParameter(ResourceWebScriptHelper.PARAM_SELECT));
+        BeanPropertiesFilter filter = getFilter(req.getParameter(ResourceWebScriptHelper.PARAM_FILTER_PROPS), theSelect);
+    	
         return new RecognizedParams(requestParams, paging, filter, relationFilter, theSelect, whereQuery, sorting);
     }
     

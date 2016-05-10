@@ -198,15 +198,25 @@ public class NodeApiTest extends AbstractBaseApiTest
 
     private Folder createFolder(String runAsUserId, String parentId, String folderName, Map<String, Object> props) throws Exception
     {
-        Folder f = new Folder();
-        f.setName(folderName);
-        f.setNodeType("cm:folder");
-        f.setProperties(props);
+        return createNode( runAsUserId, parentId, folderName, "cm:folder", props, Folder.class);
+    }
 
-        // create folder
-        HttpResponse response = post(getChildrenUrl(parentId), runAsUserId, toJsonAsStringNonNull(f), 201);
+    private Node createNode(String runAsUserId, String parentId, String nodeName, String nodeType, Map<String, Object> props) throws Exception
+    {
+        return createNode( runAsUserId, parentId, nodeName, nodeType, props, Node.class);
+    }
 
-        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+    private <T> T createNode(String runAsUserId, String parentId, String nodeName, String nodeType, Map<String, Object> props, Class<T> returnType) throws Exception
+    {
+        Node n = new Node();
+        n.setName(nodeName);
+        n.setNodeType(nodeType);
+        n.setProperties(props);
+
+        // create node
+        HttpResponse response = post(getChildrenUrl(parentId), runAsUserId, toJsonAsStringNonNull(n), 201);
+
+        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), returnType);
     }
 
     /**
@@ -713,6 +723,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         // -ve test - try to get node info using relative path to node for which user does not have read permission
         params = Collections.singletonMap("relativePath", "User Homes/"+user2);
         getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, params, 403);
+
+        // -ve test - attempt to get node info for non-folder node with relative path should return 400
+        params = Collections.singletonMap("relativePath", "/unknown");
+        getSingle(NodesEntityResource.class, user1, content_Id, params, 400);
     }
 
     /**
@@ -1232,6 +1246,12 @@ public class NodeApiTest extends AbstractBaseApiTest
         f3.setNodeType("cm:folder");
         post(getChildrenUrl(d1Id), user1, toJsonAsStringNonNull(f3), 400);
 
+        // -ve test - it should not be possible to create a "system folder"
+        invalid = new Folder();
+        invalid.setName("my sys folder");
+        invalid.setNodeType("cm:systemfolder");
+        post(postUrl, user1, toJsonAsStringNonNull(invalid), 400);
+
         // -ve test - unknown parent folder node id
         post(getChildrenUrl(UUID.randomUUID().toString()), user1, toJsonAsStringNonNull(f3), 404);
 
@@ -1251,6 +1271,102 @@ public class NodeApiTest extends AbstractBaseApiTest
         // -ve test - create a folder with a duplicate name (f1), but set the autoRename to false
         post(postUrl, user1, toJsonAsStringNonNull(f1), "?autoRename=false", 409);
     }
+
+    /**
+     * Sanity Test CRUD for other/custom node type (that extend from cm:cmobject but not cm:folder/cm:content)
+     *
+     * TODO use custom test model (to sub-type of cm:cmobject)
+     */
+    @Test
+    public void testOtherNodeTypeCRUD() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        String myNodeId = getMyNodeId(user1);
+        UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
+        String myChildrenUrl = getChildrenUrl(myNodeId);
+
+        // create node
+        String nodeName = "n1";
+        String nodeType = "cm:cmobject";
+
+        Node nodeResp = createNode(user1, myNodeId, nodeName, nodeType, null);
+        String n1Id = nodeResp.getId();
+
+        Node n1 = new Node();
+        n1.setName(nodeName);
+        n1.setNodeType(nodeType);
+        n1.setIsFolder(false);
+        n1.setParentId(myNodeId);
+        n1.setAspectNames(Collections.singletonList("cm:auditable"));
+
+        n1.setCreatedByUser(expectedUser);
+        n1.setModifiedByUser(expectedUser);
+
+        n1.expected(nodeResp);
+
+        // TODO test create node with custom properties
+
+        // get node info
+        HttpResponse response = getSingle(NodesEntityResource.class, user1, n1Id, null, 200);
+        nodeResp = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+
+        n1.expected(nodeResp);
+
+
+        // update node - rename
+
+        String updatedName = "n1b";
+
+        Node nUpdate = new Node();
+        nUpdate.setName(updatedName);
+
+        response = put("nodes", user1, n1Id, toJsonAsStringNonNull(nUpdate), null, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        n1.setName(updatedName);
+        n1.expected(nodeResp);
+
+
+        // filtering, via where clause (nodeType)
+        Map<String, String> params = new HashMap<>();
+        params.put("where", "(nodeType='"+nodeType+"')");
+
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        List<Node> nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
+        assertEquals(1, nodes.size());
+        assertFalse(nodes.get(0).getIsFolder());
+        assertEquals(n1Id, nodes.get(0).getId());
+
+        // delete file
+        delete("nodes", user1, n1Id, 204);
+
+        // -ve test - delete - cannot delete non-existant node
+        delete("nodes", user1, n1Id, 404);
+
+        // -ve test - create - name is mandatory
+        Node invalid = new Node();
+        invalid.setNodeType("cm:cmobject");
+        post(myChildrenUrl, user1, toJsonAsStringNonNull(invalid), 400);
+
+        // -ve test - create - node type is mandatory
+        invalid = new Node();
+        invalid.setName("my node");
+        post(myChildrenUrl, user1, toJsonAsStringNonNull(invalid), 400);
+
+        // -ve test - create - unsupported node type
+        invalid = new Node();
+        invalid.setName("my node");
+        invalid.setNodeType("sys:base");
+        post(myChildrenUrl, user1, toJsonAsStringNonNull(invalid), 400);
+
+        // -ve test - create - duplicate name
+        post(myChildrenUrl, user1, toJsonAsStringNonNull(n1), 201); // re-create (since deleted earlier)
+        post(myChildrenUrl, user1, toJsonAsStringNonNull(n1), 409);
+    }
+
 
     /**
      * Tests create empty file.

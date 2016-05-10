@@ -20,23 +20,32 @@ package org.alfresco.rest.api.nodes;
 
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.framework.resource.content.BasicContentInfo;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 
+import java.io.InputStream;
+
 /**
- * An implementation of an Entity Resource for a Node
+ * An implementation of an Entity Resource for a Node (file or folder)
  *
  * @author sglover
  * @author Gethin James
  * @author janv
  */
 @EntityResource(name="nodes", title = "Nodes")
-public class NodesEntityResource implements EntityResourceAction.ReadById<Node>,  EntityResourceAction.Delete, EntityResourceAction.Update<Node>, InitializingBean
+public class NodesEntityResource implements
+        EntityResourceAction.ReadById<Node>, EntityResourceAction.Delete, EntityResourceAction.Update<Node>,
+        BinaryResourceAction.Read, BinaryResourceAction.Update, InitializingBean
 {
     private Nodes nodes;
 
@@ -54,13 +63,10 @@ public class NodesEntityResource implements EntityResourceAction.ReadById<Node>,
     /**
      * Returns information regarding the node 'nodeId' - folder or document
      * 
-     * TODO other metadata/properties & permissions etc ...
-     * 
      * @param nodeId String id of node (folder or document) - will also accept well-known aliases, eg. "-root-" or "-my-"
      * 
      * Optional parameters:
      * - path
-     * - incPrimaryPath
      */
     @WebApiDescription(title = "Get Node Information", description = "Get information for the node with id 'nodeId'")
     @WebApiParam(name = "nodeId", title = "The node id")
@@ -69,15 +75,30 @@ public class NodesEntityResource implements EntityResourceAction.ReadById<Node>,
     	return nodes.getFolderOrDocument(nodeId, parameters);
     }
 
+    @Override
+    @WebApiDescription(title = "Download content", description = "Download content")
+    @BinaryProperties({"content"})
+    public BinaryResource readProperty(String fileNodeId, Parameters parameters) throws EntityNotFoundException
+    {
+        return nodes.getContent(fileNodeId, parameters);
+    }
+
+    @Override
+    @WebApiDescription(title = "Upload content", description = "Upload content")
+    @BinaryProperties({"content"})
+    public void update(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
+    {
+        nodes.updateContent(fileNodeId, contentInfo, stream, parameters);
+    }
+
     /**
      * Update info on the node 'nodeId' - folder or document
      *
-     * Initially, name, title &/or description. Note: changing name is a "rename" (and must be unique within the current parent folder).
-     *
-     * TODO other metadata/properties & permissions etc ...
+     * Can update name (which is a "rename" and hence must be unique within the current parent folder)
+     * or update other properties.
      *
      * @param nodeId  String nodeId of node (folder or document)
-     * @param nodeInfo node entity with info to update (eg. name, title, description ...)
+     * @param nodeInfo node entity with info to update (eg. name, properties ...)
      * @param parameters
      * @return
      */

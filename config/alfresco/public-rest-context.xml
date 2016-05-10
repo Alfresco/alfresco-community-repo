@@ -430,13 +430,8 @@
     </bean>
     
     <bean id="nodes" class="org.alfresco.rest.api.impl.NodesImpl">
-        <property name="nodeService" ref="NodeService" />
-        <property name="dictionaryService" ref="DictionaryService" />
-        <property name="cmisConnector" ref="CMISConnector" />
-        <property name="fileFolderService" ref="FileFolderService" />
-        <property name="repositoryHelper" ref="repositoryHelper" />
-        <property name="namespaceService" ref="NamespaceService" />
-        <property name="permissionService" ref="PermissionService" />
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="repositoryHelper" ref="repositoryHelper"/>
     </bean>
 
     <bean id="Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">

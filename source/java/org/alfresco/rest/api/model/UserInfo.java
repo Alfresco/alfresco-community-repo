@@ -18,43 +18,39 @@
  */
 package org.alfresco.rest.api.model;
 
-import java.io.Serializable;
-import java.util.Map;
-
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
-
 /**
- * Representation of a folder node.
- * 
- * @author steveglover
+ * Representation of a user info
+ *
  * @author janv
  *
  */
-public class Folder extends Node
+public class UserInfo
 {
-	public Folder()
+	private String userName;
+	private String displayName;
+
+	public UserInfo()
 	{
-		super();
 	}
 
-    public Folder(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, ServiceRegistry sr)
-    {
-        super(nodeRef, parentNodeRef, nodeProps, sr);
-    }
-
-	public Boolean getIsFolder()
+	public UserInfo(String userName, String firstName, String lastName)
 	{
-		return true;
+		this.userName = userName;
+		this.displayName = ((firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "")).replaceAll("^\\s+|\\s+$", "");
 	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
 
 	@Override
 	public String toString()
 	{
-		return "Folder [nodeRef=" + nodeRef + ", name=" + name + ", title="
-				+ title + ", description=" + description + ", createdAt="
-				+ createdAt + ", modifiedAt=" + modifiedAt + ", createdBy="
-				+ createdBy + ", modifiedBy=" + modifiedBy + "]";
+		return "User [userName=" + userName + ", displayName=" + displayName + "]";
 	}
 }

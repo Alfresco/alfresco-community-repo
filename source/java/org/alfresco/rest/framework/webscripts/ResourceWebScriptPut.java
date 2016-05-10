@@ -6,6 +6,7 @@ import java.util.Locale;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.repo.web.scripts.BufferedRequest;
 import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
@@ -23,6 +24,7 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -127,6 +129,14 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                logger.warn("Failed to get the input stream.", error);
             }
         }
+        else if (req instanceof WrappingWebScriptRequest)
+        {
+            // TODO review REST fwk change
+            // eg. BufferredRequest
+            WrappingWebScriptRequest wrappedRequest = (WrappingWebScriptRequest) req;
+            return wrappedRequest.getContent().getInputStream();
+        }
+
         return null;
     }
     

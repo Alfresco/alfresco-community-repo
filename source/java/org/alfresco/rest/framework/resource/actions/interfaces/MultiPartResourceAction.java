@@ -20,6 +20,7 @@
 package org.alfresco.rest.framework.resource.actions.interfaces;
 
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.webscripts.ResponseCallBack;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
@@ -33,6 +34,6 @@ public interface MultiPartResourceAction
      */
     public static interface Create<E> extends ResourceAction
     {
-        public E create(FormData formData, Parameters parameters);
+        public E create(FormData formData, Parameters parameters, ResponseCallBack withResponse);
     }
 }

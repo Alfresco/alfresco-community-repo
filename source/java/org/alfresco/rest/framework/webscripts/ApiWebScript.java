@@ -130,7 +130,7 @@ public abstract class ApiWebScript extends AbstractWebScript
             return true;
         }
     });
-    final static ContentInfo DEFAULT_JSON_CONTENT = new ContentInfoImpl(Format.JSON.mimetype(),UTF8, 0, null);
+    public final static ContentInfo DEFAULT_JSON_CONTENT = new ContentInfoImpl(Format.JSON.mimetype(),UTF8, 0, null);
     
     @Override
     public void execute(final WebScriptRequest req, final WebScriptResponse res) throws IOException

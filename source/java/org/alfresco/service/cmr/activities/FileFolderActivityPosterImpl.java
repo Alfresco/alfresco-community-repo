@@ -1,10 +1,14 @@
 package org.alfresco.service.cmr.activities;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
+import org.alfresco.opencmis.ActivityPosterImpl;
 import org.alfresco.repo.Client;
+import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.service.cmr.model.FileInfo;
+import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
@@ -24,7 +28,6 @@ public class FileFolderActivityPosterImpl implements ActivityPoster
 {
     private static final Logger logger = LoggerFactory.getLogger(FileFolderActivityPosterImpl.class);
     private ActivityService activityService;
-    private SiteService siteService;
  
     @Override
     public void postFileFolderActivity(
@@ -57,41 +60,6 @@ public class FileFolderActivityPosterImpl implements ActivityPoster
                     json.toString(),
                     client,
                     fileInfo);
-    }
-
-    @Override
-    public void postSiteAwareFileFolderActivity(String activityType,
-                                                String path,
-                                                String tenantDomain,
-                                                String siteId,
-                                                NodeRef parentNodeRef,
-                                                NodeRef nodeRef,
-                                                String fileName,
-                                                String appTool,
-                                                Client client,
-                                                FileInfo fileInfo)
-    {
-
-        if(siteId == null || siteId.isEmpty())
-        {
-            SiteInfo siteInfo = siteService.getSite(nodeRef);
-            if (siteInfo != null)
-            {
-                siteId = siteInfo.getShortName();
-            }
-            else
-            {
-                //Not a site noderef so return without posting
-                if (logger.isDebugEnabled())
-                {
-                    logger.debug("Non-site activity, so ignored " + activityType + " " + nodeRef);
-                }
-                return;
-            }
-
-        }
-        postFileFolderActivity(activityType, path, tenantDomain, siteId, parentNodeRef, nodeRef,
-                                fileName, appTool, client, fileInfo);
     }
 
     /**
@@ -141,11 +109,6 @@ public class FileFolderActivityPosterImpl implements ActivityPoster
             }
         
         return json;
-    }
-
-    public void setSiteService(SiteService siteService)
-    {
-        this.siteService = siteService;
     }
 
     public void setActivityService(ActivityService activityService)

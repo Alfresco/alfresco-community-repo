@@ -30,22 +30,4 @@ public interface ActivityPoster
                 String siteId, NodeRef parentNodeRef, NodeRef nodeRef, String fileName,
                 String appTool, Client client, FileInfo fileInfo);
 
-    /**
-     * Posts file folder activity only if its part of a Site.  If the activity is
-     * not from a Site then it is ignored.
-     * @param activityType required
-     * @param path optional
-     * @param tenantDomain optional
-     * @param siteId required
-     * @param parentNodeRef optional
-     * @param nodeRef required
-     * @param fileName required
-     * @param appTool required
-     * @param client required
-     * @param fileInfo optional
-     */
-    void postSiteAwareFileFolderActivity(String activityType, String path, String tenantDomain,
-                                         String siteId, NodeRef parentNodeRef, NodeRef nodeRef, String fileName,
-                                         String appTool, Client client, FileInfo fileInfo);
-
 }

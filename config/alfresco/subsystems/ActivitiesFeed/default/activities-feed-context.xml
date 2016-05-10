@@ -29,7 +29,6 @@
    
    <bean id="ffActivitiesPoster" class="org.alfresco.service.cmr.activities.FileFolderActivityPosterImpl">
       <property name="activityService" ref="activityService" />
-      <property name="siteService" ref="SiteService"/>
    </bean>
    
    <!-- cleans out-of-date feed entries -->

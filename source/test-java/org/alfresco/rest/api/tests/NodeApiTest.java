@@ -313,15 +313,15 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(3, nodes.size());
         assertEquals(folder2, nodes.get(0).getName());
         assertEquals(folder1, nodes.get(1).getName());
-        Document node = (Document) nodes.get(2);
+        Document node = nodes.get(2);
         assertEquals(content1, node.getName());
         assertEquals("cm:content", node.getNodeType());
         assertEquals(contentNodeRef.getId(), node.getId());
         UserInfo  createdByUser = node.getCreatedByUser();
-        assertEquals(user1, createdByUser.getUserName());
+        assertEquals(user1, createdByUser.getId());
         assertEquals(user1 + " " + user1, createdByUser.getDisplayName());
         UserInfo modifiedByUser = node.getModifiedByUser();
-        assertEquals(user1, modifiedByUser.getUserName());
+        assertEquals(user1, modifiedByUser.getId());
         assertEquals(user1 + " " + user1, modifiedByUser.getDisplayName());
         assertEquals(MimetypeMap.MIMETYPE_BINARY, node.getContent().getMimeType());
         assertNotNull(node.getContent().getMimeTypeName());

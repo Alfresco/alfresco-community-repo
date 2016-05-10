@@ -28,16 +28,16 @@ import java.io.Serializable;
  */
 public class UserInfo implements Serializable
 {
-    private String userName;
+    private String id;
     private String displayName;
 
     public UserInfo()
     {
     }
 
-    public UserInfo(String userName, String firstName, String lastName)
+    public UserInfo(String id, String firstName, String lastName)
     {
-        this.userName = userName;
+        this.id = id;
         this.displayName = ((firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "")).trim();
     }
 
@@ -46,14 +46,14 @@ public class UserInfo implements Serializable
         return displayName;
     }
 
-    public String getUserName()
+    public String getId()
     {
-        return userName;
+        return id;
     }
 
     @Override
     public String toString()
     {
-        return "User [userName=" + userName + ", displayName=" + displayName + "]";
+        return "User [id=" + id + ", displayName=" + displayName + "]";
     }
 }

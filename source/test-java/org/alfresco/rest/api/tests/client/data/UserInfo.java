@@ -28,16 +28,16 @@ import static org.junit.Assert.assertTrue;
  */
 public class UserInfo
 {
-    private String userName;
+    private String id;
     private String displayName;
 
     public UserInfo()
     {
     }
 
-    public UserInfo(String userName, String displayName)
+    public UserInfo(String id, String displayName)
     {
-        this.userName = userName;
+        this.id = id;
         this.displayName = displayName;
     }
 
@@ -46,9 +46,9 @@ public class UserInfo
         return displayName;
     }
 
-    public String getUserName()
+    public String getId()
     {
-        return userName;
+        return id;
     }
 
     public void expected(Object o)
@@ -57,7 +57,7 @@ public class UserInfo
 
         UserInfo other = (UserInfo) o;
 
-        AssertUtil.assertEquals("userName", userName, other.getUserName());
+        AssertUtil.assertEquals("id", id, other.getId());
         AssertUtil.assertEquals("displayName", displayName, other.getDisplayName());
     }
 }

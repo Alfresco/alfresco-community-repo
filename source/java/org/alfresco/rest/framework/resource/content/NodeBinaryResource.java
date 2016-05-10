@@ -35,7 +35,12 @@ public class NodeBinaryResource extends AbstractBinaryResource
 
     public NodeBinaryResource(NodeRef nodeRef, QName propertyQName, ContentInfo contentInfo, String attachFileName)
     {
-        super(attachFileName);
+        this(nodeRef, propertyQName, contentInfo, attachFileName, null);
+    }
+
+    public NodeBinaryResource(NodeRef nodeRef, QName propertyQName, ContentInfo contentInfo, String attachFileName, CacheDirective cacheDirective)
+    {
+        super(attachFileName, cacheDirective);
         this.nodeRef = nodeRef;
         this.propertyQName = propertyQName;
         this.contentInfo = contentInfo;

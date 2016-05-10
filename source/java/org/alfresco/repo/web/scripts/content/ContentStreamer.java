@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.alfresco.repo.web.scripts.content;
 
 import java.io.File;
@@ -13,18 +32,12 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.alfresco.events.types.ContentEvent;
-import org.alfresco.events.types.ContentEventImpl;
-import org.alfresco.events.types.Event;
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.Client;
-import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.filestore.FileContentReader;
-import org.alfresco.repo.events.EventPreparator;
 import org.alfresco.repo.events.EventPublisher;
 import org.alfresco.repo.web.util.HttpRangeProcessor;
-import org.alfresco.repo.webdav.WebDAVHelper;
+import org.alfresco.rest.framework.resource.content.CacheDirective;
 import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -38,6 +51,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.context.ResourceLoaderAware;
 import org.springframework.core.io.ResourceLoader;
+import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -55,74 +69,80 @@ import org.springframework.util.FileCopyUtils;
 
 public class ContentStreamer implements ResourceLoaderAware
 {
-        // Logger
-        private static final Log logger = LogFactory.getLog(ContentStreamer.class);
+    // Logger
+    private static final Log logger = LogFactory.getLog(ContentStreamer.class);
 
-        /**
-         * format definied by RFC 822, see http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3 
-         */
-        private static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z", Locale.US);
-        
-        private static final String HEADER_CONTENT_RANGE  = "Content-Range";
-        private static final String HEADER_CONTENT_LENGTH = "Content-Length";
-        private static final String HEADER_ACCEPT_RANGES  = "Accept-Ranges";
-        private static final String HEADER_RANGE          = "Range";
-        private static final String HEADER_USER_AGENT     = "User-Agent";
-        
-        /** Services */
-       // protected PermissionService permissionService;
-        protected NodeService nodeService;
-        protected ContentService contentService;
-        protected MimetypeService mimetypeService;
-        protected ResourceLoader resourceLoader;
-        protected EventPublisher eventPublisher;
-        protected SiteService siteService;
-        /**
-         * @param mimetypeService MimetypeService
-         */
-        public void setMimetypeService(MimetypeService mimetypeService)
-        {
-            this.mimetypeService = mimetypeService; 
-        }
+    public static final String KEY_ALLOW_BROWSER_TO_CACHE = "allowBrowserToCache";
+    public static final String KEY_CACHE_DIRECTIVE = "cacheDirective";
 
-        /**
-         * @param nodeService NodeService
-         */
-        public void setNodeService(NodeService nodeService)
-        {
-            this.nodeService = nodeService; 
-        }
-        
-        /**
-         * @param eventPublisher EventPublisher
-         */
-        public void setEventPublisher(EventPublisher eventPublisher)
-        {
-            this.eventPublisher = eventPublisher;
-        }
-        
-        /**
-         * @param siteService SiteService
-         */
-        public void setSiteService(SiteService siteService)
-        {
-            this.siteService = siteService;
-        }
-        
-        @Override
-        public void setResourceLoader(ResourceLoader resourceLoader)
-        {
-            this.resourceLoader = resourceLoader;
-        }
-        
-        /**
-         * @param contentService ContentService
-         */
-        public void setContentService(ContentService contentService)
-    
-        {
-            this.contentService = contentService;
-        }  
+    /**
+     * format definied by RFC 822, see http://www.w3.org/Protocols/rfc2616/rfc2616-sec3.html#sec3.3
+     */
+    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("EEE', 'dd' 'MMM' 'yyyy' 'HH:mm:ss' 'Z", Locale.US);
+
+    private static final String HEADER_CONTENT_RANGE = "Content-Range";
+    private static final String HEADER_CONTENT_LENGTH = "Content-Length";
+    private static final String HEADER_ACCEPT_RANGES = "Accept-Ranges";
+    private static final String HEADER_RANGE = "Range";
+    private static final String HEADER_USER_AGENT = "User-Agent";
+
+    /**
+     * Services
+     */
+    // protected PermissionService permissionService;
+    protected NodeService nodeService;
+    protected ContentService contentService;
+    protected MimetypeService mimetypeService;
+    protected ResourceLoader resourceLoader;
+    protected EventPublisher eventPublisher;
+    protected SiteService siteService;
+
+    /**
+     * @param mimetypeService MimetypeService
+     */
+    public void setMimetypeService(MimetypeService mimetypeService)
+    {
+        this.mimetypeService = mimetypeService;
+    }
+
+    /**
+     * @param nodeService NodeService
+     */
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
+    /**
+     * @param eventPublisher EventPublisher
+     */
+    public void setEventPublisher(EventPublisher eventPublisher)
+    {
+        this.eventPublisher = eventPublisher;
+    }
+
+    /**
+     * @param siteService SiteService
+     */
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
+
+    @Override
+    public void setResourceLoader(ResourceLoader resourceLoader)
+    {
+        this.resourceLoader = resourceLoader;
+    }
+
+    /**
+     * @param contentService ContentService
+     */
+    public void setContentService(ContentService contentService)
+
+    {
+        this.contentService = contentService;
+    }
 
 
     /**
@@ -169,78 +189,78 @@ public class ContentStreamer implements ResourceLoaderAware
     }
 
     /**
-         * Streams the content on a given node's content property to the response of the web script.
-         * 
-         * @param req               Request
-         * @param res               Response
-         * @param nodeRef           The node reference
-         * @param propertyQName     The content property name
-         * @param attach            Indicates whether the content should be streamed as an attachment or not
-         * @param attachFileName    Optional file name to use when attach is <code>true</code>
-         * @throws IOException 
-         */
-        public void streamContent(WebScriptRequest req, 
-                                     WebScriptResponse res, 
-                                     NodeRef nodeRef, 
-                                     QName propertyQName,
-                                     boolean attach, 
-                                     String attachFileName,
-                                     Map<String, Object> model) throws IOException
+     * Streams the content on a given node's content property to the response of the web script.
+     *
+     * @param req            Request
+     * @param res            Response
+     * @param nodeRef        The node reference
+     * @param propertyQName  The content property name
+     * @param attach         Indicates whether the content should be streamed as an attachment or not
+     * @param attachFileName Optional file name to use when attach is <code>true</code>
+     * @throws IOException
+     */
+    public void streamContent(WebScriptRequest req,
+                WebScriptResponse res,
+                NodeRef nodeRef,
+                QName propertyQName,
+                boolean attach,
+                String attachFileName,
+                Map<String, Object> model) throws IOException
+    {
+        if (logger.isDebugEnabled())
+            logger.debug("Retrieving content from node ref " + nodeRef.toString() + " (property: " + propertyQName.toString() + ") (attach: " + attach + ")");
+
+        // TODO
+        // This was commented out to accomadate records management permissions.  We need to review how we cope with this
+        // hard coded permission checked.
+
+        // check that the user has at least READ_CONTENT access - else redirect to the login page
+        //        if (permissionService.hasPermission(nodeRef, PermissionService.READ_CONTENT) == AccessStatus.DENIED)
+        //        {
+        //            throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Permission denied");
+        //        }
+
+        // check If-Modified-Since header and set Last-Modified header as appropriate
+        Date modified = (Date) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
+        if (modified != null)
         {
-            if (logger.isDebugEnabled())
-                logger.debug("Retrieving content from node ref " + nodeRef.toString() + " (property: " + propertyQName.toString() + ") (attach: " + attach + ")");
-    
-            // TODO 
-            // This was commented out to accomadate records management permissions.  We need to review how we cope with this
-            // hard coded permission checked.
-            
-            // check that the user has at least READ_CONTENT access - else redirect to the login page
-    //        if (permissionService.hasPermission(nodeRef, PermissionService.READ_CONTENT) == AccessStatus.DENIED)
-    //        {
-    //            throw new WebScriptException(HttpServletResponse.SC_FORBIDDEN, "Permission denied");
-    //        }
-           
-            // check If-Modified-Since header and set Last-Modified header as appropriate
-            Date modified = (Date)nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIED);
-            if (modified != null)
+            long modifiedSince = -1;
+            String modifiedSinceStr = req.getHeader("If-Modified-Since");
+            if (modifiedSinceStr != null)
             {
-                long modifiedSince = -1;
-                String modifiedSinceStr = req.getHeader("If-Modified-Since");
-                if (modifiedSinceStr != null)
+                try
                 {
-                    try
+                    modifiedSince = dateFormat.parse(modifiedSinceStr).getTime();
+                }
+                catch (Throwable e)
+                {
+                    if (logger.isInfoEnabled())
+                        logger.info("Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
+                }
+
+                if (modifiedSince > 0L)
+                {
+                    // round the date to the ignore millisecond value which is not supplied by header
+                    long modDate = (modified.getTime() / 1000L) * 1000L;
+                    if (modDate <= modifiedSince)
                     {
-                        modifiedSince = dateFormat.parse(modifiedSinceStr).getTime();
-                    }
-                    catch (Throwable e)
-                    {
-                        if (logger.isInfoEnabled())
-                            logger.info("Browser sent badly-formatted If-Modified-Since header: " + modifiedSinceStr);
-                    }
-                    
-                    if (modifiedSince > 0L)
-                    {
-                        // round the date to the ignore millisecond value which is not supplied by header
-                        long modDate = (modified.getTime() / 1000L) * 1000L;
-                        if (modDate <= modifiedSince)
-                        {
-                            res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-                            return;
-                        }
+                        res.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                        return;
                     }
                 }
             }
-    
-            // get the content reader
-            ContentReader reader = contentService.getReader(nodeRef, propertyQName);
-            if (reader == null || !reader.exists())
-            {
-                throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for node ref " + nodeRef + " (property: " + propertyQName.toString() + ")");
-            }
-            
-            // Stream the content
-            streamContentImpl(req, res, reader, nodeRef, propertyQName, attach, modified, modified == null ? null : String.valueOf(modified.getTime()), attachFileName, model);
         }
+
+        // get the content reader
+        ContentReader reader = contentService.getReader(nodeRef, propertyQName);
+        if (reader == null || !reader.exists())
+        {
+            throw new WebScriptException(HttpServletResponse.SC_NOT_FOUND, "Unable to locate content for node ref " + nodeRef + " (property: " + propertyQName.toString() + ")");
+        }
+
+        // Stream the content
+        streamContentImpl(req, res, reader, nodeRef, propertyQName, attach, modified, modified == null ? null : Long.toString(modified.getTime()), attachFileName, model);
+    }
 
     /**
      * Streams content back to client from a given resource path.
@@ -330,7 +350,7 @@ public class ContentStreamer implements ResourceLoaderAware
                                     final String attachFileName, 
                                     Map<String, Object> model) throws IOException
     {
-        setAttachment(null, res, attach, attachFileName);
+        setAttachment(req, res, attach, attachFileName);
     
         // establish mimetype
         String mimetype = reader.getMimetype();
@@ -450,7 +470,7 @@ public class ContentStreamer implements ResourceLoaderAware
 
                 if (req == null)
                 {
-                    headerValue += "; filename*=UTF-8''" + WebDAVHelper.encodeURL(attachFileName)
+                    headerValue += "; filename*=UTF-8''" + URLEncoder.encode(attachFileName)
                             + "; filename=\"" + attachFileName + "\"";
                 }
                 else
@@ -459,12 +479,12 @@ public class ContentStreamer implements ResourceLoaderAware
                     boolean isLegacy = (null != userAgent) && (userAgent.contains("MSIE 8") || userAgent.contains("MSIE 7"));
                     if (isLegacy)
                     {
-                        headerValue += "; filename=\"" + WebDAVHelper.encodeURL(attachFileName);
+                        headerValue += "; filename=\"" + URLEncoder.encode(attachFileName);
                     }
                     else
                     {
                         headerValue += "; filename=\"" + attachFileName + "\"; filename*=UTF-8''"
-                                + WebDAVHelper.encodeURL(attachFileName);
+                                + URLEncoder.encode(attachFileName);
                     }
                 }
             }
@@ -486,8 +506,21 @@ public class ContentStreamer implements ResourceLoaderAware
     protected void setResponseCache(WebScriptResponse res, Date modified, String eTag, Map<String, Object> model)
     {
         Cache cache = new Cache();
-        if (model == null || model.get("allowBrowserToCache") == null || ((String)model.get("allowBrowserToCache")).equals("false"))
+
+        Object obj;
+        if (model != null && (obj = model.get(KEY_CACHE_DIRECTIVE)) instanceof CacheDirective)
         {
+            CacheDirective cacheDirective = (CacheDirective) obj;
+            cache.setNeverCache(cacheDirective.isNeverCache());
+            cache.setMustRevalidate(cacheDirective.isMustRevalidate());
+            cache.setMaxAge(cacheDirective.getMaxAge());
+            cache.setLastModified(cacheDirective.getLastModified());
+            cache.setETag(cacheDirective.getETag());
+            cache.setIsPublic(cacheDirective.isPublic());
+        }
+        else if (model == null || !getBooleanValue(model.get(KEY_ALLOW_BROWSER_TO_CACHE)))
+        {
+            // if 'allowBrowserToCache' is null or false
             cache.setNeverCache(false);
             cache.setMustRevalidate(true);
             cache.setMaxAge(0L);
@@ -498,12 +531,20 @@ public class ContentStreamer implements ResourceLoaderAware
         {
             cache.setNeverCache(false);
             cache.setMustRevalidate(false);
-            cache.setMaxAge(new Long(31536000));
+            cache.setMaxAge(Long.valueOf(31536000));// one year
             cache.setLastModified(modified);
             cache.setETag(eTag);
-            res.setCache(cache);
         }
+
         res.setCache(cache);
     }
 
+    private boolean getBooleanValue(Object obj)
+    {
+        if (obj instanceof String)
+        {
+            return Boolean.valueOf((String) obj);
+        }
+        return Boolean.TRUE.equals(obj);
+    }
 }

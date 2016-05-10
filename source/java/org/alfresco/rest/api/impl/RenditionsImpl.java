@@ -37,6 +37,7 @@ import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
+import org.alfresco.rest.framework.resource.content.CacheDirective;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
@@ -70,6 +71,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -348,14 +350,23 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
 
         Map<QName, Serializable> nodeProps = nodeService.getProperties(renditionNodeRef);
         ContentData contentData = (ContentData) nodeProps.get(ContentModel.PROP_CONTENT);
+        Date modified = (Date) nodeProps.get(ContentModel.PROP_MODIFIED);
 
         org.alfresco.rest.framework.resource.content.ContentInfo contentInfo = null;
         if (contentData != null)
         {
             contentInfo = new ContentInfoImpl(contentData.getMimetype(), contentData.getEncoding(), contentData.getSize(), contentData.getLocale());
         }
+        // add cache settings
+        CacheDirective cacheDirective = new CacheDirective.Builder()
+                    .setNeverCache(false)
+                    .setMustRevalidate(false)
+                    .setLastModified(modified)
+                    .setETag(modified != null ? Long.toString(modified.getTime()) : null)
+                    .setMaxAge(Long.valueOf(31536000))// one year (in seconds)
+                    .build();
 
-        return new NodeBinaryResource(renditionNodeRef, ContentModel.PROP_CONTENT, contentInfo, attachFileName);
+        return new NodeBinaryResource(renditionNodeRef, ContentModel.PROP_CONTENT, contentInfo, attachFileName, cacheDirective);
     }
 
     protected NodeRef getRenditionByName(NodeRef nodeRef, String renditionId, Parameters parameters)

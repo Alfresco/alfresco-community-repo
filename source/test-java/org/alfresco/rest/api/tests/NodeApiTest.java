@@ -2739,7 +2739,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         Map<String, String> responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
         assertEquals("attachment; filename=\"quick-1.txt\"; filename*=UTF-8''quick-1.txt", responseHeaders.get("Content-Disposition"));
-        assertNotNull(responseHeaders.get("Cache-Control"));
+        String cacheControl = responseHeaders.get("Cache-Control");
+        assertNotNull(cacheControl);
+        assertTrue(cacheControl.contains("must-revalidate"));
+        assertTrue(cacheControl.contains("max-age=0"));
         assertNotNull(responseHeaders.get("Expires"));
         String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
         assertNotNull(lastModifiedHeader);

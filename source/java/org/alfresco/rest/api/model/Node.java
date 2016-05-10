@@ -45,13 +45,6 @@ public class Node implements Comparable<Node>
     protected NodeRef nodeRef;
     protected String name;
 
-    // TODO needed for favourties - backwards compat' - we could also choose to split of NodeInfo / Node impl's etc
-    protected String title;
-    protected NodeRef guid;
-    protected String description;
-    protected String createdBy;
-    protected String modifiedBy;
-
     protected Date createdAt;
     protected Date modifiedAt;
     protected UserInfo createdByUser;
@@ -77,7 +70,7 @@ public class Node implements Comparable<Node>
         this.nodeRef = nodeRef;
         this.parentNodeRef = parentNodeRef;
 
-        mapBasicInfo(nodeProps, sr);
+        mapMinimalInfo(nodeProps, sr);
     }
 
     protected Object getValue(Map<String, PropertyData<?>> props, String name)
@@ -91,7 +84,7 @@ public class Node implements Comparable<Node>
     {
     }
 
-    protected void mapBasicInfo(Map<QName, Serializable> nodeProps, ServiceRegistry sr)
+    protected void mapMinimalInfo(Map<QName, Serializable> nodeProps, ServiceRegistry sr)
     {
         PersonService personService = sr.getPersonService();
 
@@ -126,20 +119,6 @@ public class Node implements Comparable<Node>
         }
     }
 
-    public void setGuid(NodeRef guid)
-    {
-        this.guid = guid;
-    }
-
-    public NodeRef getGuid() {
-        return guid;
-    }
-
-    public String getTitle()
-    {
-        return title;
-    }
-
     @UniqueId
     public NodeRef getNodeRef()
     {
@@ -166,22 +145,12 @@ public class Node implements Comparable<Node>
         return modifiedAt;
     }
 
-    public String getModifiedBy()
-    {
-        return modifiedBy;
-    }
-
     public UserInfo getModifiedByUser() {
         return modifiedByUser;
     }
 
     public UserInfo getCreatedByUser() {
         return createdByUser;
-    }
-
-    public String getDescription()
-    {
-        return description;
     }
 
     public String getName()
@@ -192,16 +161,6 @@ public class Node implements Comparable<Node>
     public void setName(String name)
     {
         this.name = name;
-    }
-
-    public String getCreatedBy()
-    {
-        return this.createdBy;
-    }
-
-    public void setCreatedBy(String createdBy)
-    {
-        this.createdBy = createdBy;
     }
 
     public PathInfo getPath()
@@ -274,5 +233,92 @@ public class Node implements Comparable<Node>
                 + title + ", description=" + description + ", createdAt="
                 + createdAt + ", modifiedAt=" + modifiedAt + ", createdByUser=" + createdByUser + ", modifiedBy="
                 + modifiedByUser + ", pathInfo =" + pathInfo +"]";
+    }
+
+    // TODO for backwards compat' - set explicitly when needed (ie. favourites) (note: we could choose to have separate old Node/NodeImpl etc)
+
+    protected String title;
+    protected NodeRef guid;
+    protected String description;
+    protected String createdBy;
+    protected String modifiedBy;
+
+    /**
+     * @deprecated
+     */
+    public NodeRef getGuid() {
+        return guid;
+    }
+
+    /**
+     * @deprecated
+     */
+    public void setGuid(NodeRef guid)
+    {
+        this.guid = guid;
+    }
+
+    /**
+     * @deprecated
+     */
+    public String getTitle()
+    {
+        return title;
+    }
+
+    /**
+     * @deprecated
+     */
+    public void setTitle(String title)
+    {
+        this.title = title;
+    }
+
+    /**
+     * @deprecated
+     */
+    public String getDescription()
+    {
+        return description;
+    }
+
+    /**
+     * @deprecated
+     */
+    public void setDescription(String description)
+    {
+        this.description = description;
+    }
+
+    /**
+     * @deprecated
+     */
+    public String getCreatedBy()
+    {
+        return this.createdBy;
+    }
+
+    /**
+     * @deprecated
+     */
+    public void setCreatedBy(String createdBy)
+    {
+        this.createdBy = createdBy;
+    }
+
+    /**
+     * @deprecated
+     */
+    public String getModifiedBy()
+    {
+        return modifiedBy;
+    }
+
+    /**
+     * @deprecated
+     */
+    public void setModifiedBy(String modifiedBy)
+    {
+        this.modifiedBy = modifiedBy;
     }
 }

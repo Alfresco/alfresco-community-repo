@@ -46,6 +46,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -59,6 +60,7 @@ import org.alfresco.util.Pair;
 
 import java.io.InputStream;
 import java.io.Serializable;
+import java.math.BigInteger;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -271,18 +273,26 @@ public class NodesImpl implements Nodes
     }
 
     /**
-     * Returns the public api representation of a document.
-     *
-     * @deprecated review usage (backward compat')
+     * @deprecated note: currently required for backwards compat' (Favourites API)
      */
     public Document getDocument(NodeRef nodeRef)
     {
     	Type type = getType(nodeRef);
     	if (type.equals(Type.DOCUMENT))
-    	{
+        {
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
 
-    		Document doc = new Document(nodeRef, getParentNodeRef(nodeRef), properties, sr);
+            Document doc = new Document(nodeRef, getParentNodeRef(nodeRef), properties, sr);
+
+            doc.setVersionLabel((String)properties.get(ContentModel.PROP_VERSION_LABEL));
+            ContentData cd = (ContentData) properties.get(ContentModel.PROP_CONTENT);
+            if (cd != null)
+            {
+                doc.setSizeInBytes(BigInteger.valueOf(cd.getSize()));
+                doc.setMimeType((cd.getMimetype()));
+            }
+
+            setCommonProps(doc, nodeRef, properties);
     		return doc;
     	}
     	else
@@ -290,11 +300,18 @@ public class NodesImpl implements Nodes
     		throw new InvalidArgumentException("Node is not a file");
     	}
     }
+
+    private void setCommonProps(Node node, NodeRef nodeRef, Map<QName,Serializable> properties)
+    {
+        node.setGuid(nodeRef);
+        node.setTitle((String)properties.get(ContentModel.PROP_TITLE));
+        node.setDescription((String)properties.get(ContentModel.PROP_TITLE));
+        node.setModifiedBy((String)properties.get(ContentModel.PROP_MODIFIER));
+        node.setCreatedBy((String)properties.get(ContentModel.PROP_CREATOR));
+    }
     
     /**
-     * Returns the public api representation of a folder.
-     *
-     * @deprecated review usage (backward compat')
+     * @deprecated note: currently required for backwards compat' (Favourites API)
      */
     public Folder getFolder(NodeRef nodeRef)
     {
@@ -304,6 +321,7 @@ public class NodesImpl implements Nodes
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
 
     		Folder folder = new Folder(nodeRef, getParentNodeRef(nodeRef), properties, sr);
+            setCommonProps(folder, nodeRef, properties);
     		return folder;
     	}
     	else

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -604,7 +604,7 @@ public class NodesImpl implements Nodes
             node = new Document(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
             node.setIsFolder(null);
         }
-        if (type.equals(Type.DOCUMENT))
+        else if (type.equals(Type.DOCUMENT))
         {
             node = new Document(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
         }

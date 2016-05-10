@@ -18,9 +18,11 @@
  */
 package org.alfresco.rest.api;
 
+import org.alfresco.repo.node.archive.RestoreNodeReport;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Handles trashcan / deleted nodes
@@ -31,4 +33,5 @@ public interface DeletedNodes
 {
     CollectionWithPagingInfo<Node> listDeleted(Parameters parameters);
     Node getDeletedNode(String originalId, Parameters parameters);
+    Node restoreArchivedNode(String archivedId);
 }

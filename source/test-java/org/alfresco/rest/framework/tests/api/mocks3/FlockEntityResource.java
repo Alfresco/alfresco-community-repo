@@ -22,7 +22,7 @@ public class FlockEntityResource implements BinaryResourceAction.Read, BinaryRes
     @Override
     @WebApiDescription(title = "Updates a photo")
     @BinaryProperties("photo")
-    public void update(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params)
+    public void updateProperty(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params)
     {
         return;
     }

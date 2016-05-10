@@ -173,7 +173,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                     throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
                 }
                 BinaryResourceAction.Update binUpdater = (BinaryResourceAction.Update) resource.getResource();
-                binUpdater.update(params.getEntityId(),params.getContentInfo(), params.getStream(), params);
+                binUpdater.updateProperty(params.getEntityId(),params.getContentInfo(), params.getStream(), params);
                 //Don't pass anything to the callback - its just successful
                 return null;
             default:

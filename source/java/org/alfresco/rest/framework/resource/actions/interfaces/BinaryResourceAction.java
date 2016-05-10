@@ -65,7 +65,7 @@ public interface BinaryResourceAction
          * @param contentInfo Basic information about the content stream
          * @param params {@link Parameters}
          */
-        public void update (String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params);
+        public void updateProperty (String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params);
     }
 
 }

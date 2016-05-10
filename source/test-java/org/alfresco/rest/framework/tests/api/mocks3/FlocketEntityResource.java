@@ -18,7 +18,7 @@ public class FlocketEntityResource implements BinaryResourceAction.Read, BinaryR
     @Override
     @WebApiDescription(title = "Updates a flocket")
     @BinaryProperties({"photo","album"})
-    public void update(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params)
+    public void updateProperty(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params)
     {
         return;
     }

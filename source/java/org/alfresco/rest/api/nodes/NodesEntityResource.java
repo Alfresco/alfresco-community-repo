@@ -86,7 +86,7 @@ public class NodesEntityResource implements
     @Override
     @WebApiDescription(title = "Upload content", description = "Upload content")
     @BinaryProperties({"content"})
-    public void update(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
+    public void updateProperty(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
     {
         nodes.updateContent(fileNodeId, contentInfo, stream, parameters);
     }

@@ -386,8 +386,6 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
     // Helper find (search) method
 
-    private static final String PARAM_SHAREDBY = "sharedByUser/id";
-
     private final static Set<String> FIND_SHARED_LINKS_QUERY_PROPERTIES =
             new HashSet<>(Arrays.asList(new String[] {PARAM_SHAREDBY}));
 

@@ -19,9 +19,8 @@
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
+import static org.junit.Assert.*;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -38,6 +37,7 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -337,4 +337,59 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         }
         return ResourceUtils.getFile(url);
     }
+
+    protected static final long PAUSE_TIME = 5000; //millisecond
+    protected static final int MAX_RETRY = 10;
+
+    protected Rendition createAndGetRendition(String userId, String sourceNodeId, String renditionId) throws Exception
+    {
+        Rendition renditionRequest = new Rendition();
+        renditionRequest.setId(renditionId);
+
+        int retryCount = 0;
+        while (retryCount < MAX_RETRY)
+        {
+            try
+            {
+                HttpResponse res = post(getRenditionsUrl(sourceNodeId), userId, toJsonAsString(renditionRequest), 202);
+                assertNull(res.getJsonResponse());
+                break;
+            }
+            catch (AssertionError ex)
+            {
+                // If no transformer is currently available,
+                // wait for 'PAUSE_TIME' and try again.
+                retryCount++;
+                Thread.sleep(PAUSE_TIME);
+            }
+        }
+
+        retryCount = 0;
+        while (retryCount < MAX_RETRY)
+        {
+            try
+            {
+                HttpResponse response = getSingle(getRenditionsUrl(sourceNodeId), userId, renditionId, 200);
+                Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
+                assertNotNull(rendition);
+                assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+                return rendition;
+            }
+            catch (AssertionError ex)
+            {
+                // If the asynchronous create rendition action is not finished yet,
+                // wait for 'PAUSE_TIME' and try again.
+                retryCount++;
+                Thread.sleep(PAUSE_TIME);
+            }
+        }
+
+        return null;
+    }
+
+    private String getRenditionsUrl(String nodeId)
+    {
+        return "nodes/" + nodeId + "/renditions";
+    }
+
 }

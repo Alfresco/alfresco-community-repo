@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -24,7 +24,7 @@ import org.alfresco.service.cmr.security.NoSuchPersonException;
 
 public interface People
 {
-	public static String DEFAULT_USER = "-me-";
+	String DEFAULT_USER = "-me-";
 
 	String validatePerson(String personId);
 	String validatePerson(String personId, boolean validateIsCurrentUser);

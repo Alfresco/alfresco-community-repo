@@ -20,14 +20,15 @@
 package org.alfresco.rest.api.tests.util;
 
 import static org.junit.Assert.assertNotNull;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A utility class for Rest API tests
@@ -133,5 +134,17 @@ public class RestApiUtil
     {
         assertNotNull(object);
         return OBJECT_MAPPER.writeValueAsString(object);
+    }
+
+    /**
+     * Converts the POJO which represents the JSON payload into a JSON string.
+     * null values will be ignored.
+     */
+    public static String toJsonAsStringNonNull(Object object) throws IOException
+    {
+        assertNotNull(object);
+        ObjectMapper om = new ObjectMapper();
+        om.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
+        return om.writeValueAsString(object);
     }
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,10 +18,11 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.junit.Assert.fail;
 import static org.junit.Assert.assertNotNull;
-
+import static org.junit.Assert.fail;
 import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.SiteInformation;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
@@ -30,8 +31,15 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.api.tests.client.data.Folder;
+import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.springframework.util.ResourceUtils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.net.URL;
 import java.util.Map;
 
 /**
@@ -39,6 +47,7 @@ import java.util.Map;
  */
 public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 {
+    private static final String RESOURCE_PREFIX = "publicapi/upload/";
 
     /**
      * The api scope. either public or private
@@ -224,5 +233,60 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         {
             fail("Status code " + actualStatus + " returned, but expected " + expectedStatus);
         }
+    }
+
+    // root (eg. Company Home for on-prem)
+    protected String getRootNodeId(String runAsUserId) throws Exception
+    {
+        HttpResponse response = getSingle(NodesEntityResource.class, runAsUserId, Nodes.PATH_ROOT, null, 200);
+        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        return node.getId();
+    }
+
+    // my (eg. User's Home for on-prem)
+    protected String getMyNodeId(String runAsUserId) throws Exception
+    {
+        HttpResponse response = getSingle(NodesEntityResource.class, runAsUserId, Nodes.PATH_MY, null, 200);
+        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        return node.getId();
+    }
+
+    protected Folder createFolder(String runAsUserId, String parentId, String folderName) throws Exception
+    {
+        return createFolder(runAsUserId, parentId, folderName, null);
+    }
+
+    protected Folder createFolder(String runAsUserId, String parentId, String folderName, Map<String, Object> props) throws Exception
+    {
+        return createNode(runAsUserId, parentId, folderName, "cm:folder", props, Folder.class);
+    }
+
+    protected Node createNode(String runAsUserId, String parentId, String nodeName, String nodeType, Map<String, Object> props) throws Exception
+    {
+        return createNode(runAsUserId, parentId, nodeName, nodeType, props, Node.class);
+    }
+
+    protected <T> T createNode(String runAsUserId, String parentId, String nodeName, String nodeType, Map<String, Object> props, Class<T> returnType)
+                throws Exception
+    {
+        Node n = new Node();
+        n.setName(nodeName);
+        n.setNodeType(nodeType);
+        n.setProperties(props);
+
+        // create node
+        HttpResponse response = post("nodes/" + parentId + "/children", runAsUserId, RestApiUtil.toJsonAsStringNonNull(n), 201);
+
+        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), returnType);
+    }
+
+    protected File getResourceFile(String fileName) throws FileNotFoundException
+    {
+        URL url = NodeApiTest.class.getClassLoader().getResource(RESOURCE_PREFIX + fileName);
+        if (url == null)
+        {
+            fail("Cannot get the resource: " + fileName);
+        }
+        return ResourceUtils.getFile(url);
     }
 }

@@ -19,33 +19,13 @@
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.Serializable;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
-
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -83,12 +63,25 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.TempFileProvider;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.util.ResourceUtils;
+
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  * API tests for:
@@ -106,8 +99,6 @@ import org.springframework.util.ResourceUtils;
  */
 public class NodeApiTest extends AbstractBaseApiTest
 {
-    private static final String RESOURCE_PREFIX = "publicapi/upload/";
-
     private static final String URL_NODES = "nodes/";
 
     /**
@@ -176,50 +167,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         }
         users.clear();
         AuthenticationUtil.clearCurrentSecurityContext();
-    }
-
-    // root (eg. Company Home for on-prem)
-    private String getRootNodeId(String runAsUserId) throws Exception
-    {
-        HttpResponse response = getSingle(NodesEntityResource.class, runAsUserId, Nodes.PATH_ROOT, null, 200);
-        Node node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
-        return node.getId();
-    }
-
-    // my (eg. User's Home for on-prem)
-    private String getMyNodeId(String runAsUserId) throws Exception
-    {
-        HttpResponse response = getSingle(NodesEntityResource.class, runAsUserId, Nodes.PATH_MY, null, 200);
-        Node node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
-        return node.getId();
-    }
-
-    private Folder createFolder(String runAsUserId, String parentId, String folderName) throws Exception
-    {
-        return createFolder(runAsUserId, parentId, folderName, null);
-    }
-
-    private Folder createFolder(String runAsUserId, String parentId, String folderName, Map<String, Object> props) throws Exception
-    {
-        return createNode( runAsUserId, parentId, folderName, "cm:folder", props, Folder.class);
-    }
-
-    private Node createNode(String runAsUserId, String parentId, String nodeName, String nodeType, Map<String, Object> props) throws Exception
-    {
-        return createNode( runAsUserId, parentId, nodeName, nodeType, props, Node.class);
-    }
-
-    private <T> T createNode(String runAsUserId, String parentId, String nodeName, String nodeType, Map<String, Object> props, Class<T> returnType) throws Exception
-    {
-        Node n = new Node();
-        n.setName(nodeName);
-        n.setNodeType(nodeType);
-        n.setProperties(props);
-
-        // create node
-        HttpResponse response = post(getChildrenUrl(parentId), runAsUserId, toJsonAsStringNonNull(n), 201);
-
-        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), returnType);
     }
 
     /**
@@ -1847,7 +1794,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         dUpdate = new Document();
         dUpdate.setProperties(props);
         put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 400);
-        
+
         // -ve test - fail on unknown aspect
         List<String> aspects = new ArrayList<>(d1.getAspectNames());
         aspects.add("cm:unknownAspect");
@@ -2133,17 +2080,17 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         String fileName = "quick-1.txt";
         File file = getResourceFile(fileName);
-        
+
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
                 .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_TEXT_PLAIN));
         MultiPartRequest reqBody = multiPartBuilder.build();
-        
+
         // Upload text content
         HttpResponse response = post(getChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
-        
+
         String contentNodeId = document.getId();
-        
+
         // Check the upload response
         assertEquals(fileName, document.getName());
         ContentInfo contentInfo = document.getContent();
@@ -2204,27 +2151,9 @@ public class NodeApiTest extends AbstractBaseApiTest
         return URL_NODES + parentId + "/children";
     }
 
-    private File getResourceFile(String fileName) throws FileNotFoundException
-    {
-        URL url = NodeApiTest.class.getClassLoader().getResource(RESOURCE_PREFIX + fileName);
-        if (url == null)
-        {
-            fail("Cannot get the resource: " + fileName);
-        }
-        return ResourceUtils.getFile(url);
-    }
-
     @Override
     public String getScope()
     {
         return "public";
-    }
-
-    // TODO move into RestApiUtil (and statically init the OM)
-    private String toJsonAsStringNonNull(Object obj) throws IOException
-    {
-        ObjectMapper om = new ObjectMapper();
-        om.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
-        return om.writeValueAsString(obj);
     }
 }

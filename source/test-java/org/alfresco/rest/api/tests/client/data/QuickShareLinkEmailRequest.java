@@ -17,7 +17,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
 
-package org.alfresco.rest.api.model;
+package org.alfresco.rest.api.tests.client.data;
 
 import java.util.List;
 

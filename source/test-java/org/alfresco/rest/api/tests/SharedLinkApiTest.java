@@ -31,6 +31,7 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.client.data.QuickShareLinkEmailRequest;
 import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
@@ -48,6 +49,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
@@ -564,9 +566,92 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         }
     }
 
+    /**
+     * Tests emailing shared links.
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/email}
+     */
+    @Test
+    public void testEmailSharedLink() throws Exception
+    {
+        // Create plain text document
+        String myFolderNodeId = getMyNodeId(user1);
+        String contentText = "The quick brown fox jumps over the lazy dog.";
+        String fileName = "file-" + RUNID + ".txt";
+        Document doc = createTextFile(user1, myFolderNodeId, fileName, contentText);
+        String docId = doc.getId();
+
+        // Create shared link to document
+        Map<String, String> body = Collections.singletonMap("nodeId", docId);
+        HttpResponse response = post(URL_SHARED_LINKS, user1, toJsonAsStringNonNull(body), 201);
+        QuickShareLink resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
+        String sharedId = resp.getId();
+        assertNotNull(sharedId);
+        assertEquals(fileName, resp.getName());
+
+        // Email request with minimal properties
+        QuickShareLinkEmailRequest request = new QuickShareLinkEmailRequest();
+        request.setClient("sfs");
+        List<String> recipients = new ArrayList<>(2);
+        recipients.add(user2 + "@acme.test");
+        recipients.add(user2 + "@ping.test");
+        request.setRecipientEmails(recipients);
+        post(getEmailSharedLinkUrl(sharedId), user1, RestApiUtil.toJsonAsString(request), 202);
+
+        // Email request with all the properties
+        request = new QuickShareLinkEmailRequest();
+        request.setClient("sfs");
+        request.setMessage("My custom message!");
+        request.setLocale(Locale.UK.toString());
+        recipients = Collections.singletonList(user2 + "@acme.test");
+        request.setRecipientEmails(recipients);
+        post(getEmailSharedLinkUrl(sharedId), user1, RestApiUtil.toJsonAsString(request), 202);
+
+        // -ve tests
+        // sharedId path parameter does not exist
+        post(getEmailSharedLinkUrl(sharedId + System.currentTimeMillis()), user1, RestApiUtil.toJsonAsString(request), 404);
+
+        // Unregistered client
+        request = new QuickShareLinkEmailRequest();
+        request.setClient("VeryCoolClient" + System.currentTimeMillis());
+        List<String> user2Email = Collections.singletonList(user2 + "@acme.test");
+        request.setRecipientEmails(user2Email);
+        post(getEmailSharedLinkUrl(sharedId), user1, RestApiUtil.toJsonAsString(request), 400);
+
+        // client is mandatory
+        request.setClient(null);
+        post(getEmailSharedLinkUrl(sharedId), user1, RestApiUtil.toJsonAsString(request), 400);
+
+        // recipientEmails is mandatory
+        request.setClient("sfs");
+        request.setRecipientEmails(null);
+        post(getEmailSharedLinkUrl(sharedId), user1, RestApiUtil.toJsonAsString(request), 400);
+
+        // TODO if and when these tests are optionally runnable via remote env then we could skip this part of the test
+        // (else need to verify test mechanism for enterprise admin via jmx ... etc)
+        QuickShareLinksImpl quickShareLinks = applicationContext.getBean("quickShareLinks", QuickShareLinksImpl.class);
+        try
+        {
+            quickShareLinks.setEnabled(false);
+            request = new QuickShareLinkEmailRequest();
+            request.setClient("sfs");
+            request.setRecipientEmails(user2Email);
+            post(getEmailSharedLinkUrl(sharedId), user1, RestApiUtil.toJsonAsString(request), 501);
+        }
+        finally
+        {
+            quickShareLinks.setEnabled(true);
+        }
+    }
+
     @Override
     public String getScope()
     {
         return "public";
+    }
+
+    private String getEmailSharedLinkUrl(String sharedId)
+    {
+        return URL_SHARED_LINKS + '/' + sharedId + "/email";
     }
 }

@@ -1062,7 +1062,7 @@ public class NodesImpl implements Nodes
             }
             else
             {
-                throw new IllegalArgumentException("Failed to change (specialise) the node type - from "+nodeTypeQName+" to "+destNodeTypeQName);
+                throw new InvalidArgumentException("Failed to change (specialise) node type - from "+nodeTypeQName+" to "+destNodeTypeQName);
             }
         }
 
@@ -1123,8 +1123,15 @@ public class NodesImpl implements Nodes
 
         if (props.size() > 0)
         {
-            // update node properties - note: null will unset the specified property
-            nodeService.addProperties(nodeRef, props);
+            try
+            {
+                // update node properties - note: null will unset the specified property
+                nodeService.addProperties(nodeRef, props);
+            }
+            catch (DuplicateChildNodeNameException dcne)
+            {
+                throw new ConstraintViolatedException(dcne.getMessage());
+            }
         }
 
         return getFolderOrDocument(nodeRef.getId(), parameters);

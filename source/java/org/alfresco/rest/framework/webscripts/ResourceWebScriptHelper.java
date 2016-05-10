@@ -78,31 +78,41 @@ import org.springframework.http.HttpMethod;
  * Helps a Webscript with various tasks
  * 
  * @author Gethin James
+ * @author janv
  */
 public class ResourceWebScriptHelper
 {
 
     private static Log logger = LogFactory.getLog(ResourceWebScriptHelper.class);
     public static final String PARAM_RELATIONS = "relations";
-    public static final String PARAM_FILTER_PROPS = "properties";
+
+    public static final String PARAM_FILTER_FIELDS = "fields";
+
+    @Deprecated
+    public static final String PARAM_FILTER_PROPERTIES = "properties";
+
     public static final String PARAM_PAGING_SKIP = "skipCount";
     public static final String PARAM_PAGING_MAX = "maxItems";
     public static final String PARAM_ORDERBY = "orderBy";
     public static final String PARAM_WHERE = "where";
     public static final String PARAM_SELECT = "select";
     public static final String PARAM_INCLUDE_SOURCE_ENTITY = "includeSource";
-    public static final List<String> KNOWN_PARAMS = Arrays.asList(PARAM_RELATIONS,PARAM_FILTER_PROPS,PARAM_PAGING_SKIP,PARAM_PAGING_MAX, PARAM_ORDERBY, PARAM_WHERE, PARAM_SELECT, PARAM_INCLUDE_SOURCE_ENTITY);
+
+    public static final List<String> KNOWN_PARAMS = Arrays.asList(
+            PARAM_RELATIONS, PARAM_FILTER_PROPERTIES, PARAM_FILTER_FIELDS,PARAM_PAGING_SKIP,PARAM_PAGING_MAX,
+            PARAM_ORDERBY, PARAM_WHERE, PARAM_SELECT, PARAM_INCLUDE_SOURCE_ENTITY);
     
     private ResourceLocator locator;
 
     private ActionExecutor executor;
 
     /**
-     * Takes the web request and looks for a "filter" parameter Parses the
-     * parameter and produces a list of bean properties to use as a filter A
-     * SimpleBeanPropertyFilter it returned that uses the properties If no
+     * Takes the web request and looks for a "fields" parameter  (otherwise deprecated "properties" parameter).
+     *
+     * Parses the parameter and produces a list of bean properties to use as a filter A
+     * SimpleBeanPropertyFilter it returned that uses the bean properties. If no
      * filter param is set then a default BeanFilter is returned that will never
-     * filter properties (ie. Returns all bean properties).
+     * filter fields (ie. Returns all bean properties).
      * 
      * @param filterParams String
      * @return BeanPropertyFilter - if no parameter then returns a new
@@ -114,33 +124,34 @@ public class ResourceWebScriptHelper
     }
 
     /**
-     * Takes the web request and looks for a "filter" parameter Parses the
-     * parameter and produces a list of bean properties to use as a filter A
-     * SimpleBeanPropertyFilter it returned that uses the properties If no
-     * filter param is set then a default BeanFilter is returned that will never
-     * filter properties (ie. Returns all bean properties).
+     * Takes the web request and looks for a "fields" parameter (otherwise deprecated "properties" parameter).
      *
-     * If selectList is provided then it will take precedence (ie. be included) over the properties filter
+     * Parses the parameter and produces a list of bean properties to use as a filter A
+     * SimpleBeanPropertyFilter it returned that uses the bean properties. If no
+     * filter param is set then a default BeanFilter is returned that will never
+     * filter fields (ie. Returns all bean properties).
+     *
+     * If selectList is provided then it will take precedence (ie. be included) over the fields/properties filter
      * for top-level entries (bean properties).
      *
      * For example, this will return entries from both select & properties, eg.
      *
      *    select=abc,def&properties=id,name,ghi
      *
-     * Note: it should be noted that API-generic "properties" clause does not currently work for sub-entries.
+     * Note: it should be noted that API-generic "fields" clause does not currently work for sub-entries.
      *
      * Hence, even if the API-specific "select" clause allows selection of a sub-entries this cannot be used
-     * with "properties" filtering. For example, an API-specific method may implement and return "abc/blah", eg.
+     * with "fields" filtering. For example, an API-specific method may implement and return "abc/blah", eg.
      *
      *    select=abc/blah
      *
-     * However the following will not return "abc/blah" if used with properties filtering, eg.
+     * However the following will not return "abc/blah" if used with fields filtering, eg.
      *
-     *    select=abc/blah&properties=id,name,ghi
+     *    select=abc/blah&fields=id,name,ghi
      *
-     * If properties filtering is desired then it would require "abc" to be selected and returned as a whole, eg.
+     * If fields filtering is desired then it would require "abc" to be selected and returned as a whole, eg.
      *
-     *    select=abc&properties=id,name,ghi
+     *    select=abc&fields=id,name,ghi
      *
      * @param filterParams
      * @param selectList
@@ -157,7 +168,7 @@ public class ResourceWebScriptHelper
                 filteredProperties.add(st.nextToken());
             }
 
-            // if supplied, the select takes precedence over properties (filter) for top-level bean properties
+            // if supplied, the select takes precedence over the filter (fields/properties) for top-level bean properties
             if (selectList != null)
             {
             	for (String select : selectList)
@@ -658,7 +669,7 @@ public class ResourceWebScriptHelper
     }
 
     /**
-     * Finds all request parameters that aren't already know about (eg. not paging or filter params)
+     * Finds all request parameters that aren't already known about (eg. not paging or filter params)
      * and returns them for use.
      * 
      * @param req - the WebScriptRequest object
@@ -704,7 +715,19 @@ public class ResourceWebScriptHelper
         boolean includeSource = Boolean.valueOf(req.getParameter(ResourceWebScriptHelper.PARAM_INCLUDE_SOURCE_ENTITY));
 
         List<String> theSelect = getSelectClause(req.getParameter(ResourceWebScriptHelper.PARAM_SELECT));
-        BeanPropertiesFilter filter = getFilter(req.getParameter(ResourceWebScriptHelper.PARAM_FILTER_PROPS), theSelect);
+
+        String fields = req.getParameter(ResourceWebScriptHelper.PARAM_FILTER_FIELDS);
+        String properties = req.getParameter(ResourceWebScriptHelper.PARAM_FILTER_PROPERTIES);
+
+        if ((fields != null) && (properties != null))
+        {
+            if (logger.isWarnEnabled())
+            {
+                logger.warn("Taking 'fields' param [" + fields + "] and ignoring deprecated 'properties' param [" + properties + "]");
+            }
+        }
+
+        BeanPropertiesFilter filter = getFilter((fields != null ? fields : properties), theSelect);
     	
         return new RecognizedParams(requestParams, paging, filter, relationFilter, theSelect, whereQuery, sorting, includeSource);
     }

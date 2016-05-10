@@ -45,9 +45,10 @@ public class Rendition implements ExpectedComparison, Comparable<Rendition>
         return id;
     }
 
-    public void setId(String id)
+    public Rendition setId(String id)
     {
         this.id = id;
+        return this;
     }
 
     public RenditionStatus getStatus()
@@ -55,9 +56,10 @@ public class Rendition implements ExpectedComparison, Comparable<Rendition>
         return status;
     }
 
-    public void setStatus(RenditionStatus status)
+    public Rendition setStatus(RenditionStatus status)
     {
         this.status = status;
+        return this;
     }
 
     public ContentInfo getContent()
@@ -65,9 +67,10 @@ public class Rendition implements ExpectedComparison, Comparable<Rendition>
         return contentInfo;
     }
 
-    public void setContent(ContentInfo contentInfo)
+    public Rendition setContent(ContentInfo contentInfo)
     {
         this.contentInfo = contentInfo;
+        return this;
     }
 
     @Override

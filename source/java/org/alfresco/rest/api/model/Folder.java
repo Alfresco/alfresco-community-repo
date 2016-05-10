@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.data.Properties;
 
@@ -11,6 +12,7 @@ import org.apache.chemistry.opencmis.commons.data.Properties;
  * Representation of a folder node.
  * 
  * @author steveglover
+ * @author janv
  *
  */
 public class Folder extends Node
@@ -20,14 +22,21 @@ public class Folder extends Node
 		super();
 	}
 
+	/*
 	public Folder(NodeRef nodeRef, Properties properties)
 	{
 		super(nodeRef, properties);
 	}
+	*/
 
-	public Folder(NodeRef nodeRef, Map<QName, Serializable> nodeProps)
+	public Folder(NodeRef nodeRef, Map<QName, Serializable> nodeProps, NamespaceService namespaceService)
 	{
-		super(nodeRef, nodeProps);
+		super(nodeRef, nodeProps, namespaceService);
+	}
+
+	public Boolean getIsFolder()
+	{
+		return true;
 	}
 
 	@Override

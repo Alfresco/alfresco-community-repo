@@ -433,6 +433,10 @@
         <property name="nodeService" ref="NodeService" />
         <property name="dictionaryService" ref="DictionaryService" />
         <property name="cmisConnector" ref="CMISConnector" />
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="repositoryHelper" ref="repositoryHelper" />
+        <property name="namespaceService" ref="NamespaceService" />
+        <property name="permissionService" ref="PermissionService" />
     </bean>
 
     <bean id="Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">
@@ -658,6 +662,10 @@
 
     <bean class="org.alfresco.rest.api.nodes.NodeRatingsRelation">
         <property name="nodeRatings" ref="NodeRatings" />
+    </bean>
+    
+    <bean class="org.alfresco.rest.api.nodes.NodeChildrenRelation">
+        <property name="nodes" ref="Nodes" />
     </bean>
 
     <bean class="org.alfresco.rest.api.nodes.NodeTagsRelation">

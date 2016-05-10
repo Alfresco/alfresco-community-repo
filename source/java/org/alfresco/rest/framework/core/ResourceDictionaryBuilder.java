@@ -138,7 +138,11 @@ public class ResourceDictionaryBuilder
             ResourceDictionary rd = new ResourceDictionary();
             processResources(rd,apiMap,null);
             processTopLevelApis(rd);
-            logger.debug(rd.prettyPrint());
+            
+            if (logger.isDebugEnabled()) {
+            	logger.debug(rd.prettyPrint());
+            }
+            
             return rd;
     }
 

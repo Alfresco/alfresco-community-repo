@@ -63,7 +63,7 @@ import org.springframework.core.type.classreading.MetadataReaderFactory;
  * A http client for talking to the rest apis. The caller can pass in a rest api
  * implementation class to the http method (get, post, put, delete supported)
  * and the url will be generated.
- * 
+ *
  * @author steveglover
  */
 public class PublicApiHttpClient
@@ -72,7 +72,7 @@ public class PublicApiHttpClient
 
     private static final String OLD_BASE_URL = "{0}://{1}:{2}{3}{4}{5}/api/";
     private static final String INDEX_URL = "{0}://{1}:{2}{3}{4}";
-    private static final String BASE_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/{7}/versions/{8}/";
+    private static final String BASE_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/{7}/versions/{8}";
     private static final String PUBLICAPI_CMIS_SERVICE_URL = "{0}://{1}:{2}{3}{4}cmis/versions/{5}/{6}";
     private static final String PUBLICAPI_CMIS_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/cmis/versions/{7}/{8}";
     private static final String PUBLICAPI_CMIS_URL_SUFFIX = "{0}/{1}/cmis/versions/{2}/{3}";
@@ -617,20 +617,21 @@ public class PublicApiHttpClient
                 String relationEntityIdString = encodeToString(relationEntityId);
                 String collectionEntityIdString = encodeToString(collectionEntityId);
 
+                sb.append('/');
                 sb.append(entityCollectionName);
-                sb.append("/");
+                sb.append('/');
                 if (collectionEntityIdString != null)
                 {
                     sb.append(collectionEntityIdString);
-                    sb.append("/");
+                    sb.append('/');
                 }
 
                 sb.append(relationshipCollectionName);
-                sb.append("/");
+                sb.append('/');
                 if (relationEntityIdString != null)
                 {
                     sb.append(relationEntityIdString);
-                    sb.append("/");
+                    sb.append('/');
                 }
             }
             else
@@ -640,12 +641,13 @@ public class PublicApiHttpClient
                 {
                     String collectionEntityIdString = encodeToString(collectionEntityId);
 
+                    sb.append('/');
                     sb.append(entityCollectionName);
-                    sb.append("/");
+                    sb.append('/');
                     if (collectionEntityIdString != null)
                     {
                         sb.append(collectionEntityIdString);
-                        sb.append("/");
+                        sb.append('/');
                     }
                 }
                 else
@@ -691,6 +693,7 @@ public class PublicApiHttpClient
 
             if (collectionName != null)
             {
+                sb.append('/');
                 sb.append(collectionName);
                 if (collectionEntityId != null)
                 {
@@ -701,10 +704,7 @@ public class PublicApiHttpClient
 
             if (relationName != null)
             {
-                if (!sb.toString().endsWith("/"))
-                {
-                    sb.append('/');
-                }
+                sb.append('/');
                 sb.append(relationName);
                 if (relationEntityId != null)
                 {

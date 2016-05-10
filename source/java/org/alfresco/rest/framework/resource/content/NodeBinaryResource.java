@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -54,11 +54,13 @@ public class NodeBinaryResource implements BinaryResource
         return this.propertyQName;
     }
 
-    public ContentInfo getContentInfo() {
+    public ContentInfo getContentInfo()
+    {
         return this.contentInfo;
     }
 
-    public String getAttachFileName() {
+    public String getAttachFileName()
+    {
         return this.attachFileName;
     }
 }

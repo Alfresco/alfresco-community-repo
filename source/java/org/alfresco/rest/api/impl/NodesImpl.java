@@ -1070,6 +1070,11 @@ public class NodesImpl implements Nodes
     // TODO should we able to specify content properties (eg. mimeType ... or use extension for now, or encoding)
     public Node createNode(String parentFolderNodeId, Node nodeInfo, Parameters parameters)
     {
+        if (nodeInfo.getNodeRef() != null)
+        {
+            throw new InvalidArgumentException("Unexpected id when trying to create a new node: "+nodeInfo.getNodeRef());
+        }
+
         // check that requested parent node exists and it's type is a (sub-)type of folder
         final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
 

@@ -18,7 +18,9 @@
  */
 package org.alfresco.rest.api.impl;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
+import org.alfresco.repo.quickshare.QuickShareServiceImpl.QuickShareEmailRequest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -26,6 +28,7 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.QuickShareLink;
+import org.alfresco.rest.api.model.QuickShareLinkEmailRequest;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -47,6 +50,7 @@ import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -59,6 +63,7 @@ import java.util.Map;
  * TODO - if QuickShare is disabled should we return 403 (as below) or 404 (eg. when accessing a link) ?
  *
  * @author janv
+ * @author Jamal Kaabi-Mofrad
  * 
  * @since publicapi1.0
  */
@@ -264,6 +269,35 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         }
 
         return result;
+    }
+
+    @Override
+    public void emailSharedLink(String nodeId, QuickShareLinkEmailRequest emailRequest, Parameters parameters)
+    {
+        try
+        {   NodeRef nodeRef = nodes.validateNode(nodeId);
+            final String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+
+            QuickShareEmailRequest request = new QuickShareEmailRequest();
+            request.setSharedNodeName(nodeName);
+            request.setSharedNodeURL(emailRequest.getSharedNodeUrl());
+            request.setSenderMessage(emailRequest.getMessage());
+            request.setLocale(I18NUtil.parseLocale(emailRequest.getLocale()));
+            request.setTemplateId(emailRequest.getTemplateId());
+            request.setToEmails(emailRequest.getRecipientEmails());
+            request.setSendFromDefaultEmail(emailRequest.getIsSendFromDefaultEmail());
+            request.setIgnoreSendFailure(emailRequest.getIsIgnoreSendFailure());
+            quickShareService.sendEmailNotification(request);
+        }
+        catch (Exception ex)
+        {
+            String errorMsg = ex.getMessage();
+            if (errorMsg == null)
+            {
+                errorMsg = "";
+            }
+            throw new InvalidArgumentException("Couldn't send an email. " + errorMsg);
+        }
     }
 
     private QuickShareLink getQuickShareInfo(String sharedId)

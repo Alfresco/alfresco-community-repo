@@ -20,7 +20,9 @@ package org.alfresco.rest.api.quicksharelinks;
 
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.model.QuickShareLink;
+import org.alfresco.rest.api.model.QuickShareLinkEmailRequest;
 import org.alfresco.rest.framework.BinaryProperties;
+import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiNoAuth;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -38,6 +40,7 @@ import java.util.List;
  * An implementation of an Entity Resource for Shared Links.
  *
  * @author janv
+ * @author Jamal Kaabi-Mofrad
  */
 @EntityResource(name="shared-links", title = "Shared Links")
 public class QuickShareLinkEntityResource implements EntityResourceAction.ReadById<QuickShareLink>,
@@ -46,10 +49,10 @@ public class QuickShareLinkEntityResource implements EntityResourceAction.ReadBy
 {
     private QuickShareLinks quickShareLinks;
 
-	public void setQuickShareLinks(QuickShareLinks quickShareLinks)
-	{
-		this.quickShareLinks = quickShareLinks;
-	}
+    public void setQuickShareLinks(QuickShareLinks quickShareLinks)
+    {
+        this.quickShareLinks = quickShareLinks;
+    }
 
     @Override
     public void afterPropertiesSet()
@@ -120,5 +123,12 @@ public class QuickShareLinkEntityResource implements EntityResourceAction.ReadBy
     public List<QuickShareLink> create(List<QuickShareLink> nodeIds, Parameters parameters)
     {
         return quickShareLinks.create(nodeIds, parameters);
+    }
+
+    @Operation("email")
+    @WebApiDescription(title = "Email shared link", description = "Email the shared link")
+    public void email(String nodeId, QuickShareLinkEmailRequest emailRequest, Parameters parameters)
+    {
+        quickShareLinks.emailSharedLink(nodeId, emailRequest, parameters);
     }
 }

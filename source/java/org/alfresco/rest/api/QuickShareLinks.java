@@ -19,15 +19,18 @@
 package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.QuickShareLink;
+import org.alfresco.rest.api.model.QuickShareLinkEmailRequest;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+
 import java.util.List;
 
 /**
  * Centralises access to quick share services and maps between representations.
  *
  * @author janv
+ * @author Jamal Kaabi-Mofrad
  * 
  * @since publicapi1.0
  */
@@ -74,4 +77,13 @@ public interface QuickShareLinks
      * @return
      */
     List<QuickShareLink> create(List<QuickShareLink> nodeIds, Parameters parameters);
+
+    /**
+     * Notifies users by email that a content has been shared with them.
+     *
+     * @param nodeId       The content id
+     * @param emailRequest The email details including its template details
+     * @param parameters   The {@link Parameters} object to get the parameters passed into the request
+     */
+    void emailSharedLink(String nodeId, QuickShareLinkEmailRequest emailRequest, Parameters parameters);
 }

@@ -18,6 +18,7 @@
  */
 package org.alfresco.rest.api.impl;
 
+import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
@@ -37,6 +38,7 @@ import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
@@ -53,7 +55,9 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -122,7 +126,7 @@ public class NodesImpl implements Nodes
     private final static String PARAM_SELECT_PROPERTIES = "properties";
     private final static String PARAM_SELECT_PATH = "path";
     private final static String PARAM_SELECT_ASPECTNAMES = "aspectNames";
-    private final static String PARAM_SELECT_ISLINK = "isLink"; // TODO ...
+    private final static String PARAM_SELECT_ISLINK = "isLink";
 
     private NodeService nodeService;
     private DictionaryService dictionaryService;
@@ -328,13 +332,42 @@ public class NodesImpl implements Nodes
 
     private Type getType(NodeRef nodeRef)
     {
-        return getType(nodeService.getType(nodeRef));
+        return getType(nodeService.getType(nodeRef), nodeRef);
     }
 
-    private Type getType(QName type)
+    private Type getType(QName typeQName, NodeRef nodeRef)
     {
-        boolean isContainer = Boolean.valueOf((dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER) == true
-                    && !dictionaryService.isSubClass(type, ContentModel.TYPE_SYSTEM_FOLDER)));
+        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_LINK))
+        {
+            // handle file/folder link type (we do not explicitly validate that the destination type matches)
+            if (dictionaryService.isSubClass(typeQName, ApplicationModel.TYPE_FOLDERLINK))
+            {
+                return Type.FOLDER;
+            }
+            else if (dictionaryService.isSubClass(typeQName, ApplicationModel.TYPE_FILELINK))
+            {
+                return Type.DOCUMENT;
+            }
+            else
+            {
+                // cm:link (or other subclass)
+                NodeRef linkNodeRef = (NodeRef)nodeService.getProperty(nodeRef, ContentModel.PROP_LINK_DESTINATION);
+                if (linkNodeRef != null)
+                {
+                    try
+                    {
+                        typeQName = nodeService.getType(linkNodeRef);
+                    }
+                    catch (InvalidNodeRefException inre)
+                    {
+                        // ignore
+                    }
+                }
+            }
+        }
+
+        boolean isContainer = (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER) &&
+                               (! dictionaryService.isSubClass(typeQName, ContentModel.TYPE_SYSTEM_FOLDER)));
         return isContainer ? Type.FOLDER : Type.DOCUMENT;
     }
 
@@ -514,7 +547,7 @@ public class NodesImpl implements Nodes
         return getFolderOrDocument(nodeRef, getParentNodeRef(nodeRef), typeQName, selectParam, null);
     }
 
-    private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName typeQName, List<String> selectParam, Map<String,UserInfo> mapUserInfo)
+    private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> selectParam, Map<String,UserInfo> mapUserInfo)
     {
         if (mapUserInfo == null) {
             mapUserInfo = new HashMap<>(2);
@@ -526,7 +559,7 @@ public class NodesImpl implements Nodes
             pathInfo = lookupPathInfo(nodeRef);
         }
 
-        Type type = getType(typeQName);
+        Type type = getType(nodeTypeQName, nodeRef);
 
         Node node;
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
@@ -555,7 +588,13 @@ public class NodesImpl implements Nodes
             node.setAspectNames(mapFromNodeAspects(nodeService.getAspects(nodeRef)));
         }
 
-        node.setNodeType(typeQName.toPrefixString(namespaceService));
+        if (selectParam.contains(PARAM_SELECT_ISLINK))
+        {
+            boolean isLink = typeMatches(nodeTypeQName, Collections.singleton(ContentModel.TYPE_LINK), null);
+            node.setIsLink(isLink);
+        }
+
+        node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
         node.setPath(pathInfo);
 
         return node;
@@ -670,7 +709,29 @@ public class NodesImpl implements Nodes
         for (Entry<String, Object> entry : props.entrySet())
         {
             QName propQName = QName.createQName(entry.getKey(), namespaceService);
-            nodeProps.put(propQName, (Serializable)entry.getValue());
+
+            PropertyDefinition pd = dictionaryService.getProperty(propQName);
+            if (pd != null)
+            {
+                Serializable value;
+                if (pd.getDataType().getName().equals(DataTypeDefinition.NODE_REF))
+                {
+                    String nodeRefString = (String) entry.getValue();
+                    if (! NodeRef.isNodeRef(nodeRefString))
+                    {
+                        value = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeRefString);
+                    }
+                    else
+                    {
+                        value = new NodeRef(nodeRefString);
+                    }
+                }
+                else
+                {
+                    value = (Serializable)entry.getValue();
+                }
+                nodeProps.put(propQName, value);
+            }
         }
 
         return nodeProps;
@@ -863,9 +924,12 @@ public class NodesImpl implements Nodes
 
         QName nodeTypeQName = createQName(nodeType);
 
-        Set<QName> contentAndFolders = new HashSet<>(Arrays.asList(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT));
-        if (! typeMatches(nodeTypeQName, contentAndFolders, null)) {
-            throw new InvalidArgumentException("Type of folder or content is expected: "+ nodeType);
+        Set<QName> contentAndFolders = new HashSet<>(
+                Arrays.asList(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT, ContentModel.TYPE_LINK));
+
+        if (! typeMatches(nodeTypeQName, contentAndFolders, null))
+        {
+            throw new InvalidArgumentException("Type of cm:folder cm:content or cm:link is expected: "+ nodeType);
         }
 
         boolean isContent = typeMatches(nodeTypeQName, Collections.singleton(ContentModel.TYPE_CONTENT), null);
@@ -948,7 +1012,7 @@ public class NodesImpl implements Nodes
             }
             else
             {
-                throw new IllegalArgumentException("Cannot generalise the node type (from "+nodeTypeQName+" to "+destNodeTypeQName+")");
+                throw new IllegalArgumentException("Failed to change (specialise) the node type - from "+nodeTypeQName+" to "+destNodeTypeQName);
             }
         }
 

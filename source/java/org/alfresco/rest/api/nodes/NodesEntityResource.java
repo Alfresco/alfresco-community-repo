@@ -127,14 +127,14 @@ public class NodesEntityResource implements
     @WebApiDescription(title = "Copy Node", description="Copy one or more nodes (files or folders) to a new target folder, with option to rename.")
     public Node copyById(String nodeId, NodeTarget target, Parameters parameters)
     {
-       return nodes.copyNode(nodeId, target.getTargetParentId(), target.getName(), parameters);
+       return nodes.moveOrCopyNode(nodeId, target.getTargetParentId(), target.getName(), parameters, true);
     }
 
     @Operation("move")
     @WebApiDescription(title = "Move Node", description="Moves one or more nodes (files or folders) to a new target folder, with option to rename.")
     public Node moveById(String nodeId, NodeTarget target, Parameters parameters)
     {
-        return nodes.moveNode(nodeId, target.getTargetParentId(), target.getName(), parameters);
+        return nodes.moveOrCopyNode(nodeId, target.getTargetParentId(), target.getName(), parameters, false);
     }
 
 }

@@ -1107,10 +1107,10 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // move file (without rename)
 
-        NodeTarget moveTgt = new NodeTarget();
-        moveTgt.setTargetParentId(f2Id);
+        NodeTarget tgt = new NodeTarget();
+        tgt.setTargetParentId(f2Id);
 
-        HttpResponse response = post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 201);
+        HttpResponse response = post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(tgt), null, 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1Name, documentResp.getName());
@@ -1120,11 +1120,11 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         String d1NewName = d1Name+" updated !!";
 
-        moveTgt = new NodeTarget();
-        moveTgt.setName(d1NewName);
-        moveTgt.setTargetParentId(f1Id);
+        tgt = new NodeTarget();
+        tgt.setName(d1NewName);
+        tgt.setTargetParentId(f1Id);
 
-        response = post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 201);
+        response = post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(tgt), null, 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1NewName, documentResp.getName());
@@ -1132,26 +1132,31 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // -ve tests
 
+        // missing target
+        tgt = new NodeTarget();
+        tgt.setName("new name");
+        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(tgt), null, 400);
+
         // name already exists
-        moveTgt = new NodeTarget();
-        moveTgt.setName(d2Name);
-        moveTgt.setTargetParentId(f2Id);
-        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 409);
+        tgt = new NodeTarget();
+        tgt.setName(d2Name);
+        tgt.setTargetParentId(f2Id);
+        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(tgt), null, 409);
 
         // unknown source nodeId
-        moveTgt = new NodeTarget();
-        moveTgt.setTargetParentId(f2Id);
-        post("nodes/"+UUID.randomUUID().toString()+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 404);
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(f2Id);
+        post("nodes/"+UUID.randomUUID().toString()+"/move", user1, toJsonAsStringNonNull(tgt), null, 404);
 
         // unknown target nodeId
-        moveTgt = new NodeTarget();
-        moveTgt.setTargetParentId(UUID.randomUUID().toString());
-        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 404);
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(UUID.randomUUID().toString());
+        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(tgt), null, 404);
 
         // target is not a folder
-        moveTgt = new NodeTarget();
-        moveTgt.setTargetParentId(d2Id);
-        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 400);
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(d2Id);
+        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(tgt), null, 400);
 
         String rootNodeId = getRootNodeId(user1);
 
@@ -1160,25 +1165,24 @@ public class NodeApiTest extends AbstractBaseApiTest
         String f3Id = folderResp.getId();
 
         // can't create cycle (move into own subtree)
-        moveTgt = new NodeTarget();
-        moveTgt.setTargetParentId(f3Id);
-        post("nodes/"+f2Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 400);
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(f3Id);
+        post("nodes/"+f2Id+"/move", user1, toJsonAsStringNonNull(tgt), null, 400);
 
         // no (write/create) permissions to move to target
-        moveTgt = new NodeTarget();
-        moveTgt.setTargetParentId(rootNodeId);
-        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 403);
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(rootNodeId);
+        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(tgt), null, 403);
 
         AuthenticationUtil.setFullyAuthenticatedUser(user2);
 
         String my2NodeId = getMyNodeId(user2);
 
         // no (write/delete) permissions to move source
-        moveTgt = new NodeTarget();
-        moveTgt.setTargetParentId(my2NodeId);
-        post("nodes/"+f1Id+"/move", user2, toJsonAsStringNonNull(moveTgt), null, 403);
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(my2NodeId);
+        post("nodes/"+f1Id+"/move", user2, toJsonAsStringNonNull(tgt), null, 403);
     }
-
 
     /**
      * Tests copy (file or folder)
@@ -1231,6 +1235,41 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         assertEquals(newD2Name, documentResp.getName());
         assertEquals(target, documentResp.getParentId());
+
+        // -ve tests
+
+        // missing target
+        NodeTarget tgt = new NodeTarget();
+        tgt.setName("new name");
+        post("nodes/"+d1Id+"/copy", user1, toJsonAsStringNonNull(tgt), null, 400);
+
+        // name already exists
+        tgt = new NodeTarget();
+        tgt.setName(newD2Name);
+        tgt.setTargetParentId(target);
+        post("nodes/"+d1Id+"/copy", user1, toJsonAsStringNonNull(tgt), null, 409);
+
+        // unknown source nodeId
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(target);
+        post("nodes/"+UUID.randomUUID().toString()+"/copy", user1, toJsonAsStringNonNull(tgt), null, 404);
+
+        // unknown target nodeId
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(UUID.randomUUID().toString());
+        post("nodes/"+d1Id+"/copy", user1, toJsonAsStringNonNull(tgt), null, 404);
+
+        // target is not a folder
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(d2Id);
+        post("nodes/"+d1Id+"/copy", user1, toJsonAsStringNonNull(tgt), null, 400);
+
+        String rootNodeId = getRootNodeId(user1);
+
+        // no (write/create) permissions to copy to target
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(rootNodeId);
+        post("nodes/"+d1Id+"/copy", user1, toJsonAsStringNonNull(tgt), null, 403);
     }
     /**
      * Tests create folder.

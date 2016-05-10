@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.web.scripts.content.ContentStreamer;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.HttpMethodSupport;
@@ -30,6 +31,7 @@ import org.alfresco.rest.framework.core.ResourceWithMetadata;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor;
+import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.FileBinaryResource;
@@ -42,6 +44,7 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.extensions.surf.util.URLEncoder;
+import org.springframework.extensions.webscripts.Description;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -117,7 +120,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
             });
             
             //Outside the transaction.
-            Object toSerialize = respons.get("toSerialize");
+            final Object toSerialize = respons.get("toSerialize");
             ContentInfo contentInfo = (ContentInfo) respons.get("contentInfo");
             
             // set caching (MNT-13938)
@@ -130,7 +133,25 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
             {
                 if (toSerialize instanceof BinaryResource)
                 {
-                    streamResponse(req, res, (BinaryResource) toSerialize);
+                    // TODO review (experimental) - can we move earlier & wrap complete execute ? Also for QuickShare (in MT/Cloud) needs to be tenant for the nodeRef (TBC).
+                    boolean noAuth = resource.getMetaData().isNoAuth(BinaryResourceAction.Read.class);
+                    if (noAuth)
+                    {
+                        String networkTenantDomain = TenantUtil.getCurrentDomain();
+
+                        TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<Void>()
+                        {
+                            public Void doWork() throws Exception
+                            {
+                                streamResponse(req, res, (BinaryResource) toSerialize);
+                                return null;
+                            }
+                        }, networkTenantDomain);
+                    }
+                    else
+                    {
+                        streamResponse(req, res, (BinaryResource) toSerialize);
+                    }
                 }
                 else
                 {
@@ -243,5 +264,4 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     {
         this.streamer = streamer;
     }
-
 }

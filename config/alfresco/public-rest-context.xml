@@ -29,6 +29,10 @@
       <property name="defaultWebScript"><value>webscript.default</value></property>
       <property name="getNetworksWebScript" ref="getNetworksWebScript" />
       <property name="getNetworkWebScript" ref="getNetworkWebScript" />
+
+      <!-- TODO - experimental (review) -->
+      <property name="locator" ref="apiLookup" />
+
    </bean>
    
    <bean id="publicapi.registry.prototype" parent="publicapi.registry" scope="prototype">
@@ -694,6 +698,13 @@
 
     <bean class="org.alfresco.rest.api.nodes.NodeTagsRelation">
         <property name="tags" ref="Tags" />
+    </bean>
+
+    <!-- TODO - experimental (review) -->
+    <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkEntityResource">
+        <property name="quickShareService" ref="QuickShareService" />
+        <property name="nodes" ref="Nodes" />
+        <property name="nodeService" ref="NodeService" />
     </bean>
 
     <bean class="org.alfresco.rest.api.people.PersonFavouritesRelation">

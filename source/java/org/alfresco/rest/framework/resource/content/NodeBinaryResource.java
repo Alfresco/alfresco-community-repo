@@ -32,13 +32,16 @@ public class NodeBinaryResource implements BinaryResource
     final NodeRef nodeRef;
     final QName propertyQName;
     final ContentInfo contentInfo;
+    final String attachFileName;
     
-    public NodeBinaryResource(NodeRef nodeRef, QName propertyQName, ContentInfo contentInfo)
+    public NodeBinaryResource(NodeRef nodeRef, QName propertyQName, ContentInfo contentInfo, String attachFileName)
     {
         super();
+
         this.nodeRef = nodeRef;
         this.propertyQName = propertyQName;
         this.contentInfo = contentInfo;
+        this.attachFileName = attachFileName;
     }
 
     public NodeRef getNodeRef()
@@ -53,5 +56,9 @@ public class NodeBinaryResource implements BinaryResource
 
     public ContentInfo getContentInfo() {
         return this.contentInfo;
+    }
+
+    public String getAttachFileName() {
+        return this.attachFileName;
     }
 }

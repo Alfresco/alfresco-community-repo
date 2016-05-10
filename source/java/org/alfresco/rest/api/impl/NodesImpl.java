@@ -102,6 +102,10 @@ import java.util.Set;
 
 /**
  * Centralises access to file/folder/node services and maps between representations.
+ *
+ * Note:
+ * This class was originally used for returning some basic node info when listing Favourites.
+ * It has now been re-purposed and extended to implement the new File Folder (RESTful) API.
  * 
  * @author steveglover
  * @author janv
@@ -139,6 +143,12 @@ public class NodesImpl implements Nodes
     private ServiceRegistry sr;
     private Set<String> defaultIgnoreTypes;
     private Set<QName> ignoreTypeQNames;
+
+    private Set<String> nonAttachContentTypes = Collections.EMPTY_SET; // pre-configured whitelist, eg. images & pdf
+
+    public void setNonAttachContentTypes(Set<String> nonAttachWhiteList) {
+        this.nonAttachContentTypes = nonAttachWhiteList;
+    }
 
     public void init()
     {
@@ -1154,14 +1164,36 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("NodeId of content is expected: "+nodeRef);
         }
 
-        ContentData cd = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
+        ContentData cd = (ContentData)nodeProps.get(ContentModel.PROP_CONTENT);
+        String name = (String)nodeProps.get(ContentModel.PROP_NAME);
+
         org.alfresco.rest.framework.resource.content.ContentInfo ci = null;
         if (cd != null) {
             ci = new org.alfresco.rest.framework.resource.content.ContentInfoImpl(cd.getMimetype(), cd.getEncoding(), cd.getSize(), cd.getLocale());
         }
 
-        // TODO attachment header - update (or extend ?) REST fwk
-        return new NodeBinaryResource(nodeRef, ContentModel.PROP_CONTENT, ci);
+        // By default set attachment header (with filename) unless attachment=false *and* content type is pre-configured as non-attach
+        boolean attach = true;
+        String attachment = parameters.getParameter("attachment");
+        if (attachment != null)
+        {
+            Boolean a = new Boolean(attachment);
+            if ((a != null) && (a == false))
+            {
+                if (nonAttachContentTypes.contains(cd.getMimetype()))
+                {
+                    attach = false;
+                }
+                else
+                {
+                    logger.warn("Ignored attachment=false for "+fileNodeId+" since "+cd.getMimetype()+" is not in the whitelist for non-attach content types");
+                }
+            }
+        }
+        String attachFileName = (attach ? name : null);
+
+        return new NodeBinaryResource(nodeRef, ContentModel.PROP_CONTENT, ci, attachFileName);
     }
 
     @Override

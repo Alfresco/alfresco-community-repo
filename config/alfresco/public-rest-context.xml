@@ -442,10 +442,24 @@
         </property>
     </bean>
 
+    <bean id="nodes.nonAttachContentTypes" class="org.springframework.beans.factory.config.SetFactoryBean">
+        <property name="sourceSet">
+            <set>
+                <value>application/pdf</value>
+                <value>image/jpeg</value>
+                <value>image/gif</value>
+                <value>image/png</value>
+                <value>image/tiff</value>
+                <value>image/bmp</value>
+            </set>
+        </property>
+    </bean>
+
     <bean id="nodes" class="org.alfresco.rest.api.impl.NodesImpl" init-method="init">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="repositoryHelper" ref="repositoryHelper"/>
         <property name="ignoreTypes" ref="nodes.ignoreTypes"/>
+        <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
     </bean>
 
     <bean id="Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">

@@ -403,7 +403,7 @@ public class SerializeTests extends AbstractContextTest
         AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
         executor.execute(propResource, Params.valueOf("234", null), new ExecutionCallback<BinaryResource>(){
             @Override
-            public void onSuccess(BinaryResource result, ContentInfo contentInfo)
+            public void onSuccess(BinaryResource result, ContentInfo contentInfo, int statusCode)
             {
                 assertNotNull(result);
             }});

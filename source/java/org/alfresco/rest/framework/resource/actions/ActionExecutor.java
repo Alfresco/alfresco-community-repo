@@ -4,6 +4,7 @@ import org.alfresco.rest.framework.core.HttpMethodSupport;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
+import org.springframework.extensions.webscripts.Status;
 
 /**
  * Executes an action in the system
@@ -29,7 +30,7 @@ public interface ActionExecutor extends HttpMethodSupport
      */
     public interface ExecutionCallback<R>
     {
-        public void onSuccess(R result, ContentInfo contentInfo);
+        public void onSuccess(R result, ContentInfo contentInfo, int statusCode);
     }
     
 }

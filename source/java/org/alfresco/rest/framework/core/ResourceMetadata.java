@@ -65,17 +65,17 @@ public class ResourceMetadata
     }
 
     /**
-     * Indicates if this resource can support the specified HTTPMethod
+     * Gets the operation for the specified HTTPMethod
      * @param supportedMethod HttpMethod
-     * @return true if can support it
+     * @return null if the operation is not supported
      */
-    public boolean supports(HttpMethod supportedMethod)
+    public ResourceOperation getOperation(HttpMethod supportedMethod)
     {
         for (ResourceOperation ops : operations)
         {
-            if (ops.getHttpMethod().equals(supportedMethod)) return true;
+            if (ops.getHttpMethod().equals(supportedMethod)) return ops;
         }
-        return false;
+        return null;
     }
 
     /**
@@ -84,23 +84,17 @@ public class ResourceMetadata
      * @return true if can support it
      */
     @SuppressWarnings("rawtypes")
-    public Class getObjectType(HttpMethod supportedMethod)
+    public Class getObjectType(ResourceOperation operation)
     {
-        for (ResourceOperation ops : operations)
+        for (ResourceParameter param : operation.getParameters())
         {
-            if (ops.getHttpMethod().equals(supportedMethod)) 
-            {
-                for (ResourceParameter param : ops.getParameters())
-                {
-                    if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(param.getParamType())) {
-                        return param.getDataType(); 
-                    }
-                }   
+            if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(param.getParamType())) {
+                return param.getDataType();
             }
         }
         return null;
     }
-    
+
     /**
      * Indicates if this resource action is no longer supported.
      * @param resourceAction Class<? extends ResourceAction>
@@ -203,20 +197,6 @@ public class ResourceMetadata
 //        }
 //        return Collections.emptyList();
 //    }
-//    
-    /**
-     * Gets the parameters for the specified http method.
-     * Matches the first operation.
-     * @param httpMethod HttpMethod
-     * @return If not found returns an empty list
-     */
-    public List<ResourceParameter> getParameters(HttpMethod httpMethod)
-    {
-        for (ResourceOperation ops : operations)
-        {
-            if (ops.getHttpMethod().equals(httpMethod))return ops.getParameters();
-        }
-        return Collections.emptyList();
-    }
+//
   
 }

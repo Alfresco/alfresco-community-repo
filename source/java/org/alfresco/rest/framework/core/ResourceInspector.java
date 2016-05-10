@@ -56,6 +56,7 @@ import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.http.HttpMethod;
 import org.springframework.util.ReflectionUtils;
 
@@ -286,14 +287,40 @@ public class ResourceInspector
             Map<String, Object> annotAttribs = AnnotationUtils.getAnnotationAttributes(annot);
             String title = String.valueOf(annotAttribs.get("title"));
             String desc = String.valueOf(annotAttribs.get("description"));
-            return new ResourceOperation(httpMethod, title, desc, parameters);
+            Integer success = (Integer) annotAttribs.get("successStatus");
+            return new ResourceOperation(httpMethod, title, desc, parameters, validSuccessCode(httpMethod,success));
         }
         else {
             return new ResourceOperation(httpMethod, 
-                        "Missing @WebApiDescription annotation", "This method should be annotated with @WebApiDescription", parameters); 
+                        "Missing @WebApiDescription annotation",
+                        "This method should be annotated with @WebApiDescription", parameters, validSuccessCode(httpMethod, ResourceOperation.UNSET_STATUS));
         }
     }
-    
+
+    public static int validSuccessCode(HttpMethod httpMethod, int success)
+    {
+        if (!(ResourceOperation.UNSET_STATUS == success))
+        {
+            //The status has been set by the api implementor so use it.
+            return success;
+        }
+
+        switch (httpMethod)
+        {
+            case GET:
+                return Status.STATUS_OK;
+            case POST:
+                return Status.STATUS_CREATED;
+            case PUT:
+                return Status.STATUS_OK;
+            case DELETE:
+                return Status.STATUS_NO_CONTENT;
+            default:
+                return Status.STATUS_OK;
+        }
+
+    }
+
     /**
      * Inspects the Method to find any @WebApiParameters and @WebApiParam
      * @param resource the class

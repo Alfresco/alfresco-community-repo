@@ -19,6 +19,7 @@ import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceLookupDictionary;
 import org.alfresco.rest.framework.core.ResourceMetadata;
+import org.alfresco.rest.framework.core.ResourceOperation;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
@@ -104,20 +105,20 @@ public class ResourceLocatorTests
         templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "sheep");
         ResourceWithMetadata collResource = locator.locateResource(api, templateVars, HttpMethod.GET);
         assertNotNull(collResource);
-        assertTrue(collResource.getMetaData().supports(HttpMethod.GET));
+        assertNotNull(collResource.getMetaData().getOperation(HttpMethod.GET));
 
         collResource = locator.locateResource(api, templateVars, HttpMethod.POST);
         assertNotNull(collResource);
-        assertTrue(collResource.getMetaData().supports(HttpMethod.POST));
+        assertNotNull(collResource.getMetaData().getOperation(HttpMethod.POST));
         
         templateVars.put(ResourceLocator.ENTITY_ID, "farmersUniqueId");
         ResourceWithMetadata entityResource = locator.locateResource(api,templateVars, HttpMethod.GET);
         assertNotNull(entityResource);
-        assertTrue(entityResource.getMetaData().supports(HttpMethod.GET));
+        assertNotNull(entityResource.getMetaData().getOperation(HttpMethod.GET));
         
         entityResource = locator.locateResource(api, templateVars, HttpMethod.PUT);
         assertNotNull(entityResource);
-        assertTrue(entityResource.getMetaData().supports(HttpMethod.PUT));    
+        assertNotNull(entityResource.getMetaData().getOperation(HttpMethod.PUT));
         
         templateVars.clear();
         templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "sheepnoaction");
@@ -167,7 +168,7 @@ public class ResourceLocatorTests
         templateVars.put(ResourceLocator.RELATIONSHIP_RESOURCE, "photo");
         ResourceWithMetadata collResource = locator.locateResource(api3, templateVars, HttpMethod.GET);
         assertNotNull(collResource);
-        assertTrue(collResource.getMetaData().supports(HttpMethod.GET));
+        assertNotNull(collResource.getMetaData().getOperation(HttpMethod.GET));
         assertEquals(FlockEntityResource.class, collResource.getResource().getClass());
         
         templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "flocket");
@@ -192,7 +193,7 @@ public class ResourceLocatorTests
         }
         collResource = locator.locateResource(api3, templateVars, HttpMethod.GET);
         assertNotNull(collResource);
-        assertTrue(collResource.getMetaData().supports(HttpMethod.GET));
+        assertNotNull(collResource.getMetaData().getOperation(HttpMethod.GET));
         assertEquals(FlocketEntityResource.class, collResource.getResource().getClass());
         
         templateVars.put(ResourceLocator.RELATIONSHIP_RESOURCE, "album");
@@ -207,11 +208,11 @@ public class ResourceLocatorTests
         }
         collResource = locator.locateResource(api3, templateVars, HttpMethod.GET);
         assertNotNull(collResource);
-        assertTrue(collResource.getMetaData().supports(HttpMethod.GET));
+        assertNotNull(collResource.getMetaData().getOperation(HttpMethod.GET));
         assertEquals(FlocketEntityResource.class, collResource.getResource().getClass());
         collResource = locator.locateResource(api3, templateVars, HttpMethod.PUT);
         assertNotNull(collResource);
-        assertTrue(collResource.getMetaData().supports(HttpMethod.PUT));
+        assertNotNull(collResource.getMetaData().getOperation(HttpMethod.PUT));
         assertEquals(FlocketEntityResource.class, collResource.getResource().getClass());
     }
 
@@ -238,7 +239,7 @@ public class ResourceLocatorTests
         templateVars.put(ResourceLocator.PROPERTY, "content");
         collResource = locator.locateResource(api3, templateVars, HttpMethod.GET);
         assertNotNull(collResource);
-        assertTrue(collResource.getMetaData().supports(HttpMethod.GET));
+        assertNotNull(collResource.getMetaData().getOperation(HttpMethod.GET));
 
         templateVars = new HashMap<String, String>();
         templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "sheep");
@@ -260,9 +261,9 @@ public class ResourceLocatorTests
         templateVars.put(ResourceLocator.PROPERTY, "photo");
         collResource = locator.locateResource(api, templateVars, HttpMethod.GET);
         assertNotNull(collResource);
-        assertTrue(collResource.getMetaData().supports(HttpMethod.GET));
-        assertTrue(collResource.getMetaData().supports(HttpMethod.PUT));
-        assertTrue(collResource.getMetaData().supports(HttpMethod.DELETE));
+        assertNotNull(collResource.getMetaData().getOperation(HttpMethod.GET));
+        assertNotNull(collResource.getMetaData().getOperation(HttpMethod.PUT));
+        assertNotNull(collResource.getMetaData().getOperation(HttpMethod.DELETE));
     }
     
     @Test

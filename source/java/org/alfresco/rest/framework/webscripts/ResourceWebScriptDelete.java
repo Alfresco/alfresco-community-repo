@@ -3,6 +3,7 @@ package org.alfresco.rest.framework.webscripts;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
+import org.alfresco.rest.framework.core.ResourceOperation;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
 import org.alfresco.rest.framework.core.exceptions.DeletedResourceException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
@@ -87,7 +88,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
      * @param params parameters to use
      * @return anObject the result of the execute
      */
-    private Object executeInternal(ResourceWithMetadata resource, Params params)
+    private void executeInternal(ResourceWithMetadata resource, Params params)
     {
         switch (resource.getMetaData().getType())
         {
@@ -99,7 +100,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 EntityResourceAction.Delete entityDeleter = (EntityResourceAction.Delete) resource.getResource();
                 entityDeleter.delete(params.getEntityId(), params);
                 //Don't pass anything to the callback - its just successful
-                return null;
+                return;
             case RELATIONSHIP:
                 if (resource.getMetaData().isDeleted(RelationshipResourceAction.Delete.class))
                 {
@@ -108,7 +109,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 RelationshipResourceAction.Delete relationDeleter = (RelationshipResourceAction.Delete) resource.getResource();
                 relationDeleter.delete(params.getEntityId(), params.getRelationshipId(), params);
                 //Don't pass anything to the callback - its just successful
-                return null;
+                return;
             case PROPERTY:
                 if (BinaryResourceAction.Delete.class.isAssignableFrom(resource.getResource().getClass()))
                 {
@@ -119,7 +120,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                     BinaryResourceAction.Delete binDeleter = (BinaryResourceAction.Delete) resource.getResource();
                     binDeleter.deleteProperty(params.getEntityId(), params);
                     //Don't pass anything to the callback - its just successful
-                    return null;
+                    return;
                 }
                 if (RelationshipResourceBinaryAction.Delete.class.isAssignableFrom(resource.getResource().getClass()))
                 {
@@ -130,7 +131,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                     RelationshipResourceBinaryAction.Delete binDeleter = (RelationshipResourceBinaryAction.Delete) resource.getResource();
                     binDeleter.deleteProperty(params.getEntityId(), params.getRelationshipId(), params);
                     //Don't pass anything to the callback - its just successful
-                    return null;
+                    return;
                 }
             default:
                 throw new UnsupportedResourceOperationException("DELETE not supported for Actions");
@@ -146,17 +147,12 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 @Override
                 public Void execute() throws Throwable
                 {
+                    final ResourceOperation operation = resource.getMetaData().getOperation(HttpMethod.DELETE);
                     executeInternal(resource, params); //ignore return result
-                    executionCallback.onSuccess(null, DEFAULT_JSON_CONTENT);
+                    executionCallback.onSuccess(null, DEFAULT_JSON_CONTENT, operation.getSuccessStatus());
                     return null;
                 }
             }, false, true);
-    }
-
-    @Override
-    protected void setSuccessResponseStatus(WebScriptResponse res)
-    {
-        res.setStatus(Status.STATUS_NO_CONTENT);
     }
 
 }

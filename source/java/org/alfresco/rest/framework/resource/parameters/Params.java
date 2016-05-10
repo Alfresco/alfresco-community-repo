@@ -30,7 +30,6 @@ public class Params implements Parameters
     private final RecognizedParams recognizedParams;
     private final String addressedProperty;
     private final BasicContentInfo contentInfo;
-    private final Status status;
 
     //Constants
     private static final RecognizedParams NULL_PARAMS = new RecognizedParams(null, null, null, null, null, null, null, false);
@@ -46,7 +45,6 @@ public class Params implements Parameters
         this.recognizedParams = recognizedParams;
         this.addressedProperty = addressedProperty;
         this.contentInfo = contentInfo==null?DEFAULT_CONTENT_INFO:contentInfo;
-        this.status = new Status();
     }
 
     public static Params valueOf(BeanPropertiesFilter paramFilter, String entityId)
@@ -214,12 +212,6 @@ public class Params implements Parameters
     public BasicContentInfo getContentInfo()
     {
         return contentInfo;
-    }
-
-    @Override
-    public Status getStatus()
-    {
-        return status;
     }
 
     /**

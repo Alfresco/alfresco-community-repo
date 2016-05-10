@@ -92,11 +92,4 @@ public interface Parameters
      * @return BasicContentInfo the content info
      */
     BasicContentInfo getContentInfo();
-
-    /**
-     * Gets Web Script status
-     * 
-     * @return {@link Status}
-     */
-    public Status getStatus();
 }

@@ -52,6 +52,7 @@ import org.alfresco.rest.framework.tests.api.mocks3.SheepEntityResourceWithDelet
 import org.alfresco.rest.framework.tests.api.mocks3.SlimGoat;
 import org.alfresco.util.Pair;
 import org.junit.Test;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.http.HttpMethod;
 
 /**
@@ -69,11 +70,12 @@ public class InspectorTests
         assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
         ResourceMetadata metaData = metainfo.get(0);
         assertNotNull(metaData);
-        assertTrue("SheepEntityResource supports GET", metaData.supports(HttpMethod.GET));
-        assertTrue("SheepEntityResource supports PUT", metaData.supports(HttpMethod.PUT));
-        assertTrue("SheepEntityResource supports DELETE", metaData.supports(HttpMethod.DELETE));
-        assertTrue("SheepEntityResource does not support POST", !metaData.supports(HttpMethod.POST));
-        assertTrue("SheepEntityResource must support Sheep", Sheep.class.equals(metaData.getObjectType(HttpMethod.PUT)));
+        assertNotNull("SheepEntityResource supports GET", metaData.getOperation(HttpMethod.GET));
+        assertNotNull("SheepEntityResource supports PUT", metaData.getOperation(HttpMethod.PUT));
+        assertNotNull("SheepEntityResource supports DELETE", metaData.getOperation(HttpMethod.DELETE));
+        assertNull("SheepEntityResource does not support POST", metaData.getOperation(HttpMethod.POST));
+        ResourceOperation op = metaData.getOperation(HttpMethod.PUT);
+        assertTrue("SheepEntityResource must support Sheep", Sheep.class.equals(metaData.getObjectType(op)));
         
         metainfo = ResourceInspector.inspect(SheepNoActionEntityResource.class);
         assertTrue("SheepNoActionEntityResource has no actions.",metainfo.isEmpty());
@@ -82,28 +84,30 @@ public class InspectorTests
         assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
         metaData = metainfo.get(0);
         assertNotNull(metaData);
-        assertTrue("GoatEntityResource supports GET", metaData.supports(HttpMethod.GET));
-        List<ResourceParameter> params = metaData.getParameters(HttpMethod.GET);
+        assertNotNull("GoatEntityResource supports GET", metaData.getOperation(HttpMethod.GET));
+        op = metaData.getOperation(HttpMethod.GET);
+        List<ResourceParameter> params = op.getParameters();
         assertTrue("readById method should have 1 url param", params.size() == 1);
         
         metainfo = ResourceInspector.inspect(FlockEntityResource.class);
         assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
         metaData = metainfo.get(0);
         assertNotNull(metaData);
-        assertTrue("FlockEntityResource supports GET", metaData.supports(HttpMethod.GET));
-        assertTrue("FlockEntityResource supports PUT", metaData.supports(HttpMethod.PUT));
-        assertTrue("FlockEntityResource supports DELETE", metaData.supports(HttpMethod.DELETE));
-        assertTrue("FlockEntityResource does not support POST", !metaData.supports(HttpMethod.POST));
+        assertNotNull("FlockEntityResource supports GET", metaData.getOperation(HttpMethod.GET));
+        assertNotNull("FlockEntityResource supports PUT", metaData.getOperation(HttpMethod.PUT));
+        assertNotNull("FlockEntityResource supports DELETE", metaData.getOperation(HttpMethod.DELETE));
+        assertNull("FlockEntityResource does not support POST", metaData.getOperation(HttpMethod.POST));
 
         metainfo = ResourceInspector.inspect(MultiPartTestEntityResource.class);
         assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
         metaData = metainfo.get(0);
         assertNotNull(metaData);
-        assertTrue("MultiPartTestEntityResource support POST", metaData.supports(HttpMethod.POST));
-        assertFalse("MultiPartTestEntityResource does not supports GET", metaData.supports(HttpMethod.GET));
-        assertFalse("MultiPartTestEntityResource does not supports PUT", metaData.supports(HttpMethod.PUT));
-        assertFalse("MultiPartTestEntityResource does not supports DELETE", metaData.supports(HttpMethod.DELETE));
-        assertTrue("MultiPartTestEntityResource must support MultiPartTestResponse", MultiPartTestResponse.class.equals(metaData.getObjectType(HttpMethod.POST)));
+        assertNotNull("MultiPartTestEntityResource support POST", metaData.getOperation(HttpMethod.POST));
+        assertNull("MultiPartTestEntityResource does not supports GET", metaData.getOperation(HttpMethod.GET));
+        assertNull("MultiPartTestEntityResource does not supports PUT", metaData.getOperation(HttpMethod.PUT));
+        assertNull("MultiPartTestEntityResource does not supports DELETE", metaData.getOperation(HttpMethod.DELETE));
+        op = metaData.getOperation(HttpMethod.POST);
+        assertTrue("MultiPartTestEntityResource must support MultiPartTestResponse", MultiPartTestResponse.class.equals(metaData.getObjectType(op)));
 
     }
 
@@ -114,15 +118,18 @@ public class InspectorTests
         assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
         ResourceMetadata metaData = metainfo.get(0);
         assertNotNull(metaData);
-        assertTrue("SheepBlackSheepResource supports GET", metaData.supports(HttpMethod.GET));
-        List<ResourceParameter> params = metaData.getParameters(HttpMethod.GET);
+        assertNotNull("SheepBlackSheepResource supports GET", metaData.getOperation(HttpMethod.GET));
+        ResourceOperation op = metaData.getOperation(HttpMethod.GET);
+        List<ResourceParameter> params = op.getParameters();
         assertTrue("readAll method should have 1 url param and 3 query params", params.size() == 4);
-        assertTrue("SheepBlackSheepResource supports PUT", metaData.supports(HttpMethod.PUT));
-        params = metaData.getParameters(HttpMethod.PUT);
+        assertNotNull("SheepBlackSheepResource supports PUT", metaData.getOperation(HttpMethod.PUT));
+        op = metaData.getOperation(HttpMethod.PUT);
+        params = op.getParameters();
         assertTrue("update method should have 2 url params and 1 HTTP_OBJECT param ", params.size() == 3);
-        assertTrue("SheepBlackSheepResource supports POST", metaData.supports(HttpMethod.POST));
-        assertTrue("SheepBlackSheepResource must support Sheep", Sheep.class.equals(metaData.getObjectType(HttpMethod.POST)));
-        params = metaData.getParameters(HttpMethod.POST);
+        assertNotNull("SheepBlackSheepResource supports POST", metaData.getOperation(HttpMethod.POST));
+        op = metaData.getOperation(HttpMethod.POST);
+        params = op.getParameters();
+        assertTrue("SheepBlackSheepResource must support Sheep", Sheep.class.equals(metaData.getObjectType(op)));
         assertTrue("create method should have 1 url param and 1 HTTP_OBJECT param ", params.size() == 2);
         assertNotNull(params);
         for (ResourceParameter resourceParameter : params)
@@ -132,19 +139,21 @@ public class InspectorTests
                assertFalse(resourceParameter.isAllowMultiple());  //set to not allow multiple
            }
         }
-        assertTrue("SheepBlackSheepResource supports DELETE", metaData.supports(HttpMethod.DELETE));
-        params = metaData.getParameters(HttpMethod.DELETE);
+        assertNotNull("SheepBlackSheepResource supports DELETE", metaData.getOperation(HttpMethod.DELETE));
+        op = metaData.getOperation(HttpMethod.DELETE);
+        params = op.getParameters();
         assertTrue("DELETE method on a relations should have 2 url params.", params.size() == 2);
         
         metainfo = ResourceInspector.inspect(MultiPartTestRelationshipResource.class);
         assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
         metaData = metainfo.get(0);
         assertNotNull(metaData);
-        assertTrue("MultiPartTestRelationshipResource support POST", metaData.supports(HttpMethod.POST));
-        assertFalse("MultiPartTestRelationshipResource does not supports GET", metaData.supports(HttpMethod.GET));
-        assertFalse("MultiPartTestRelationshipResource does not supports PUT", metaData.supports(HttpMethod.PUT));
-        assertFalse("MultiPartTestRelationshipResource does not supports DELETE", metaData.supports(HttpMethod.DELETE));
-        assertTrue("MultiPartTestRelationshipResource must support MultiPartTestResponse", MultiPartTestResponse.class.equals(metaData.getObjectType(HttpMethod.POST)));
+        assertNotNull("MultiPartTestRelationshipResource support POST", metaData.getOperation(HttpMethod.POST));
+        assertNull("MultiPartTestRelationshipResource does not supports GET", metaData.getOperation(HttpMethod.GET));
+        assertNull("MultiPartTestRelationshipResource does not supports PUT", metaData.getOperation(HttpMethod.PUT));
+        assertNull("MultiPartTestRelationshipResource does not supports DELETE", metaData.getOperation(HttpMethod.DELETE));
+        op = metaData.getOperation(HttpMethod.POST);
+        assertTrue("MultiPartTestRelationshipResource must support MultiPartTestResponse", MultiPartTestResponse.class.equals(metaData.getObjectType(op)));
     }
 
     @Test
@@ -171,7 +180,8 @@ public class InspectorTests
         assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
         ResourceMetadata metaData = metainfo.get(0);
         assertNotNull(metaData);
-        assertTrue("NodeCommentsRelation must support Comment", Comment.class.equals(metaData.getObjectType(HttpMethod.POST)));
+        ResourceOperation op = metaData.getOperation(HttpMethod.POST);
+        assertTrue("NodeCommentsRelation must support Comment", Comment.class.equals(metaData.getObjectType(op)));
     }
     
     @Test
@@ -425,17 +435,19 @@ public class InspectorTests
             switch (resourceMetadata.getUniqueId())
             {
                 case "/-root-/{id}/grow":
-                    assertTrue("GrassEntityResource supports POST", resourceMetadata.supports(HttpMethod.POST));
-                    assertFalse("GrassEntityResource does not support DELETE", resourceMetadata.supports(HttpMethod.DELETE));
-                    Class paramType = resourceMetadata.getObjectType(HttpMethod.POST);
+                    assertNotNull("GrassEntityResource supports POST", resourceMetadata.getOperation(HttpMethod.POST));
+                    assertNull("GrassEntityResource does not support DELETE", resourceMetadata.getOperation(HttpMethod.DELETE));
+                    ResourceOperation op = resourceMetadata.getOperation(HttpMethod.POST);
+                    Class paramType = resourceMetadata.getObjectType(op);
                     Object paramObj = paramType.newInstance();
                     result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", paramObj, Params.valueOf("notUsed", null));
                     assertEquals("Growing well",result);
                     break;
                 case "/-root-/{id}/cut":
-                    assertTrue("GrassEntityResource supports POST", resourceMetadata.supports(HttpMethod.POST));
-                    assertFalse("GrassEntityResource does not support GET", resourceMetadata.supports(HttpMethod.GET));
-                    assertNull(resourceMetadata.getObjectType(HttpMethod.POST));
+                    assertNotNull("GrassEntityResource supports POST", resourceMetadata.getOperation(HttpMethod.POST));
+                    assertNull("GrassEntityResource does not support GET", resourceMetadata.getOperation(HttpMethod.GET));
+                    op = resourceMetadata.getOperation(HttpMethod.POST);
+                    assertNull(resourceMetadata.getObjectType(op));
                     result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", null, Params.valueOf("notUsed", null));
                     assertEquals("All done",result);
                     break;
@@ -458,10 +470,10 @@ public class InspectorTests
             switch (resourceMetadata.getUniqueId())
             {
                 case "/goat/{entityId}/herd":
-                    assertTrue("GoatRelationshipResource supports GET", resourceMetadata.supports(HttpMethod.GET));
+                    assertNotNull("GoatRelationshipResource supports GET", resourceMetadata.getOperation(HttpMethod.GET));
                     break;
                 case "/goat/{entityId}/herd/{id}/content":
-                    assertTrue("GoatRelationshipResource supports GET", resourceMetadata.supports(HttpMethod.GET));
+                    assertNotNull("GoatRelationshipResource supports GET", resourceMetadata.getOperation(HttpMethod.GET));
                     break;
                 default:
                     fail("Invalid information.");
@@ -480,9 +492,9 @@ public class InspectorTests
         ResourceMetadata metaData = metainfo.get(0);
         assertEquals("/myroot/{id}/photo",metaData.getUniqueId());
         assertTrue(metaData.getOperations().size()==3);
-        assertTrue("FlockEntityResource supports GET", metaData.supports(HttpMethod.GET));
-        assertTrue("FlockEntityResource supports PUT", metaData.supports(HttpMethod.PUT));
-        assertTrue("FlockEntityResource supports DELETE", metaData.supports(HttpMethod.DELETE));
+        assertNotNull("FlockEntityResource supports GET", metaData.getOperation(HttpMethod.GET));
+        assertNotNull("FlockEntityResource supports PUT", metaData.getOperation(HttpMethod.PUT));
+        assertNotNull("FlockEntityResource supports DELETE", metaData.getOperation(HttpMethod.DELETE));
         
         metainfo.clear();
         ResourceInspector.inspectAddressedProperties(api, FlocketEntityResource.class, "myroot", metainfo);
@@ -493,19 +505,19 @@ public class InspectorTests
 //            switch (resourceMetadata.getUniqueId())
 //            {
 //                case "/myroot/photo":
-//                    assertTrue("FlocketEntityResource supports GET", resourceMetadata.supports(HttpMethod.GET));
-//                    assertTrue("FlocketEntityResource supports PUT", resourceMetadata.supports(HttpMethod.PUT));
-//                    assertTrue("FlocketEntityResource supports DELETE", resourceMetadata.supports(HttpMethod.DELETE));
+//                    assertTrue("FlocketEntityResource supports GET", resourcemetaData.getOperation(HttpMethod.GET));
+//                    assertTrue("FlocketEntityResource supports PUT", resourcemetaData.getOperation(HttpMethod.PUT));
+//                    assertTrue("FlocketEntityResource supports DELETE", resourcemetaData.getOperation(HttpMethod.DELETE));
 //                    break;
 //                case "/myroot/album":
-//                    assertTrue("FlocketEntityResource supports GET", resourceMetadata.supports(HttpMethod.GET));
-//                    assertTrue("FlocketEntityResource supports PUT", resourceMetadata.supports(HttpMethod.PUT));
-//                    assertTrue("FlocketEntityResource does not support DELETE", !resourceMetadata.supports(HttpMethod.DELETE));                   
+//                    assertTrue("FlocketEntityResource supports GET", resourcemetaData.getOperation(HttpMethod.GET));
+//                    assertTrue("FlocketEntityResource supports PUT", resourcemetaData.getOperation(HttpMethod.PUT));
+//                    assertTrue("FlocketEntityResource does not support DELETE", !resourcemetaData.getOperation(HttpMethod.DELETE));
 //                    break;
 //                case "/myroot/madeUpProp":
-//                    assertTrue("FlocketEntityResource supports GET", resourceMetadata.supports(HttpMethod.GET));
-//                    assertTrue("FlocketEntityResource does not supports PUT", !resourceMetadata.supports(HttpMethod.PUT));
-//                    assertTrue("FlocketEntityResource does not support DELETE", !resourceMetadata.supports(HttpMethod.DELETE));
+//                    assertTrue("FlocketEntityResource supports GET", resourcemetaData.getOperation(HttpMethod.GET));
+//                    assertTrue("FlocketEntityResource does not supports PUT", !resourcemetaData.getOperation(HttpMethod.PUT));
+//                    assertTrue("FlocketEntityResource does not support DELETE", !resourcemetaData.getOperation(HttpMethod.DELETE));
 //                    break;
 //                default:
 //                    fail("Invalid address property information.");
@@ -513,25 +525,25 @@ public class InspectorTests
           
             if ("/myroot/{id}/photo".equals(resourceMetadata.getUniqueId()))
             {
-                assertTrue("FlocketEntityResource supports GET", resourceMetadata.supports(HttpMethod.GET));
-                assertTrue("FlocketEntityResource supports PUT", resourceMetadata.supports(HttpMethod.PUT));
-                assertTrue("FlocketEntityResource supports DELETE", resourceMetadata.supports(HttpMethod.DELETE));
+                assertNotNull("FlocketEntityResource supports GET", resourceMetadata.getOperation(HttpMethod.GET));
+                assertNotNull("FlocketEntityResource supports PUT", resourceMetadata.getOperation(HttpMethod.PUT));
+                assertNotNull("FlocketEntityResource supports DELETE", resourceMetadata.getOperation(HttpMethod.DELETE));
             }
             else
             {
                 if ("/myroot/{id}/album".equals(resourceMetadata.getUniqueId()))
                 {
-                    assertTrue("FlocketEntityResource supports GET", resourceMetadata.supports(HttpMethod.GET));
-                    assertTrue("FlocketEntityResource supports PUT", resourceMetadata.supports(HttpMethod.PUT));
-                    assertTrue("FlocketEntityResource does not support DELETE", !resourceMetadata.supports(HttpMethod.DELETE));
+                    assertNotNull("FlocketEntityResource supports GET", resourceMetadata.getOperation(HttpMethod.GET));
+                    assertNotNull("FlocketEntityResource supports PUT", resourceMetadata.getOperation(HttpMethod.PUT));
+                    assertNull("FlocketEntityResource does not support DELETE", resourceMetadata.getOperation(HttpMethod.DELETE));
                 }
                 else
                 {
                     if ("/myroot/{id}/madeUpProp".equals(resourceMetadata.getUniqueId()))
                     {
-                        assertTrue("FlocketEntityResource supports GET", resourceMetadata.supports(HttpMethod.GET));
-                        assertTrue("FlocketEntityResource does not supports PUT", !resourceMetadata.supports(HttpMethod.PUT));
-                        assertTrue("FlocketEntityResource does not support DELETE", !resourceMetadata.supports(HttpMethod.DELETE));
+                        assertNotNull("FlocketEntityResource supports GET", resourceMetadata.getOperation(HttpMethod.GET));
+                        assertNull("FlocketEntityResource does not supports PUT", resourceMetadata.getOperation(HttpMethod.PUT));
+                        assertNull("FlocketEntityResource does not support DELETE", resourceMetadata.getOperation(HttpMethod.DELETE));
                     }
                     else
                     {
@@ -550,20 +562,35 @@ public class InspectorTests
         assertTrue("Must be at least one ResourceMetadata",metainfo.size()>0);
         ResourceMetadata metaData = metainfo.get(0);
         assertNotNull(metaData);
-        assertTrue("GrassEntityResourceNowDeleted all methods deleted", !metaData.supports(HttpMethod.GET));
-        assertTrue("GrassEntityResourceNowDeleted all methods deleted", !metaData.supports(HttpMethod.PUT));
-        assertTrue("GrassEntityResourceNowDeleted all methods deleted", !metaData.supports(HttpMethod.DELETE));
-        assertTrue("GrassEntityResourceNowDeleted all methods deleted", !metaData.supports(HttpMethod.POST));
-        assertNull("GrassEntityResourceNowDeleted all methods deleted", metaData.getObjectType(HttpMethod.POST));
+        assertNull("GrassEntityResourceNowDeleted all methods deleted", metaData.getOperation(HttpMethod.GET));
+        assertNull("GrassEntityResourceNowDeleted all methods deleted", metaData.getOperation(HttpMethod.PUT));
+        assertNull("GrassEntityResourceNowDeleted all methods deleted", metaData.getOperation(HttpMethod.DELETE));
+        assertNull("GrassEntityResourceNowDeleted all methods deleted", metaData.getOperation(HttpMethod.POST));
         
         metainfo = ResourceInspector.inspect(SheepBlackSheepResourceIsNoMore.class);
         assertTrue("Must be at least one ResourceMetadata",metainfo.size()>0);
         metaData = metainfo.get(0);
         assertNotNull(metaData);
-        assertTrue("SheepBlackSheepResourceIsNoMore all methods deleted", !metaData.supports(HttpMethod.GET));
-        assertTrue("SheepBlackSheepResourceIsNoMore all methods deleted", !metaData.supports(HttpMethod.PUT));
-        assertTrue("SheepBlackSheepResourceIsNoMore all methods deleted", !metaData.supports(HttpMethod.DELETE));
-        assertTrue("SheepBlackSheepResourceIsNoMore all methods deleted", !metaData.supports(HttpMethod.POST));
-        assertNull("SheepBlackSheepResourceIsNoMore all methods deleted", metaData.getObjectType(HttpMethod.POST));
+        assertNull("SheepBlackSheepResourceIsNoMore all methods deleted", metaData.getOperation(HttpMethod.GET));
+        assertNull("SheepBlackSheepResourceIsNoMore all methods deleted", metaData.getOperation(HttpMethod.PUT));
+        assertNull("SheepBlackSheepResourceIsNoMore all methods deleted", metaData.getOperation(HttpMethod.DELETE));
+        assertNull("SheepBlackSheepResourceIsNoMore all methods deleted", metaData.getOperation(HttpMethod.POST));
+
+    }
+
+    @Test
+    public void testValidSuccessCode()
+    {
+        //Test defaults
+        assertEquals(Status.STATUS_OK,ResourceInspector.validSuccessCode(HttpMethod.GET, ResourceOperation.UNSET_STATUS));
+        assertEquals(Status.STATUS_CREATED,ResourceInspector.validSuccessCode(HttpMethod.POST, ResourceOperation.UNSET_STATUS));
+        assertEquals(Status.STATUS_OK,ResourceInspector.validSuccessCode(HttpMethod.PUT, ResourceOperation.UNSET_STATUS));
+        assertEquals(Status.STATUS_NO_CONTENT,ResourceInspector.validSuccessCode(HttpMethod.DELETE, ResourceOperation.UNSET_STATUS));
+
+        //Test custom values
+        assertEquals(Status.STATUS_ACCEPTED,ResourceInspector.validSuccessCode(HttpMethod.GET, Status.STATUS_ACCEPTED));
+        assertEquals(Status.STATUS_FOUND,ResourceInspector.validSuccessCode(HttpMethod.POST, Status.STATUS_FOUND));
+        assertEquals(Status.STATUS_ACCEPTED,ResourceInspector.validSuccessCode(HttpMethod.PUT, Status.STATUS_ACCEPTED));
+        assertEquals(Status.STATUS_NOT_MODIFIED,ResourceInspector.validSuccessCode(HttpMethod.DELETE, Status.STATUS_NOT_MODIFIED));
     }
 }

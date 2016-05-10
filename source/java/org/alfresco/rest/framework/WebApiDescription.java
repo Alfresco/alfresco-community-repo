@@ -2,6 +2,9 @@ package org.alfresco.rest.framework;
 
 import static java.lang.annotation.ElementType.METHOD;
 
+import org.alfresco.rest.framework.core.ResourceOperation;
+import org.springframework.extensions.webscripts.Status;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -16,5 +19,6 @@ import java.lang.annotation.Target;
 public @interface WebApiDescription {
     String title();
     String description() default "";
+    int successStatus() default ResourceOperation.UNSET_STATUS;
 }
 

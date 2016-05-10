@@ -2010,7 +2010,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         dUpdate = new Document();
         dUpdate.setProperties(props);
 
-        put(URL_NODES, user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 400);
+        put(URL_NODES, user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 422);
 
         AuthenticationUtil.setFullyAuthenticatedUser(user2);
 

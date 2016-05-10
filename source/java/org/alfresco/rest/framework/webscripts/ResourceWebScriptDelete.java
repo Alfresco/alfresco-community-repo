@@ -141,19 +141,21 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
     @Override
     public Void execute(final ResourceWithMetadata resource, final Params params, final WebScriptResponse res, boolean isReadOnly)
     {
+        final ResourceOperation operation = resource.getMetaData().getOperation(HttpMethod.DELETE);
+        final ResponseCallBack callBack = new ResponseCallBack(operation.getSuccessStatus(),DEFAULT_JSON_CONTENT,ApiWebScript.CACHE_NEVER);
         transactionService.getRetryingTransactionHelper().doInTransaction(
             new RetryingTransactionCallback<Void>()
             {
                 @Override
                 public Void execute() throws Throwable
                 {
-                    final ResourceOperation operation = resource.getMetaData().getOperation(HttpMethod.DELETE);
                     executeAction(resource, params); //ignore return result
-                    setResponse(res,operation.getSuccessStatus(),ApiWebScript.CACHE_NEVER, DEFAULT_JSON_CONTENT);
                     return null;
                 }
             }, false, true);
+        setResponse(res,callBack);
         return null;
+
     }
 
 }

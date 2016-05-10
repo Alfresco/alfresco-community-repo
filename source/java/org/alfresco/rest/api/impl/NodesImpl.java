@@ -29,10 +29,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.StringTokenizer;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
@@ -46,6 +46,7 @@ import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.rest.antlr.WhereClauseParser;
@@ -594,43 +595,30 @@ public class NodesImpl implements Nodes
 
     protected NodeRef resolveNodeByPath(final NodeRef parentNodeRef, String path, boolean checkForCompanyHome)
     {
-        final List<String> pathElements = new ArrayList<>(0);
+        final List<String> pathElements = getPathElements(path);
 
-        if ((path != null) && (! path.isEmpty()))
+        if (!pathElements.isEmpty() && checkForCompanyHome)
         {
-
-            if (path.startsWith("/"))
+            /*
+            if (nodeService.getRootNode(parentNodeRef.getStoreRef()).equals(parentNodeRef))
             {
-                path = path.substring(1);
-            }
-
-            if (! path.isEmpty())
-            {
-                pathElements.addAll(Arrays.asList(path.split("/")));
-
-                if (checkForCompanyHome)
+                // special case
+                NodeRef chNodeRef = repositoryHelper.getCompanyHome();
+                String chName = (String) nodeService.getProperty(chNodeRef, ContentModel.PROP_NAME);
+                if (chName.equals(pathElements.get(0)))
                 {
-                /*
-                if (nodeService.getRootNode(parentNodeRef.getStoreRef()).equals(parentNodeRef))
-                {
-                    // special case
-                    NodeRef chNodeRef = repositoryHelper.getCompanyHome();
-                    String chName = (String)nodeService.getProperty(chNodeRef, ContentModel.PROP_NAME);
-                    if (chName.equals(pathElements.get(0)))
-                    {
-                        pathElements = pathElements.subList(1, pathElements.size());
-                        parentNodeRef = chNodeRef;
-                    }
-                }
-                */
+                    pathElements = pathElements.subList(1, pathElements.size());
+                    parentNodeRef = chNodeRef;
                 }
             }
+            */
         }
+
 
         FileInfo fileInfo = null;
         try
         {
-            if (pathElements.size() != 0)
+            if (!pathElements.isEmpty())
             {
                 fileInfo = fileFolderService.resolveNamePath(parentNodeRef, pathElements);
             }
@@ -650,6 +638,66 @@ public class NodesImpl implements Nodes
         }
 
         return fileInfo.getNodeRef();
+    }
+
+    private List<String> getPathElements(String path)
+    {
+        final List<String> pathElements = new ArrayList<>();
+        if (path != null && path.trim().length() > 0)
+        {
+            // There is no need to check for leading and trailing "/"
+            final StringTokenizer tokenizer = new StringTokenizer(path, "/");
+            while (tokenizer.hasMoreTokens())
+            {
+                pathElements.add(tokenizer.nextToken().trim());
+            }
+        }
+        return pathElements;
+    }
+
+    private NodeRef makeFolders(NodeRef parentNodeRef, List<String> pathElements)
+    {
+        NodeRef currentParentRef = parentNodeRef;
+        // just loop and create if necessary
+        for (final String element : pathElements)
+        {
+            final NodeRef contextNodeRef = currentParentRef;
+            // does it exist?
+            // Navigation should not check permissions
+            NodeRef nodeRef = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+            {
+                @Override
+                public NodeRef doWork() throws Exception
+                {
+                    return nodeService.getChildByName(contextNodeRef, ContentModel.ASSOC_CONTAINS, element);
+                }
+            }, AuthenticationUtil.getSystemUserName());
+
+            if (nodeRef == null)
+            {
+                try
+                {
+                    // Checks for create permissions as the fileFolderService is a public service.
+                    FileInfo createdFileInfo = fileFolderService.create(currentParentRef, element, ContentModel.TYPE_FOLDER);
+                    currentParentRef = createdFileInfo.getNodeRef();
+                }
+                catch (AccessDeniedException ade)
+                {
+                    throw new PermissionDeniedException(ade.getMessage());
+                }
+            }
+            else if (!isSubClass(nodeRef, ContentModel.TYPE_FOLDER, false))
+            {
+                String parentName = (String) nodeService.getProperty(contextNodeRef, ContentModel.PROP_NAME);
+                throw new ConstraintViolatedException("Name [" + element + "] already exists in the target parent: " + parentName);
+            }
+            else
+            {
+                // it exists
+                currentParentRef = nodeRef;
+            }
+        }
+        return currentParentRef;
     }
 
     @Override
@@ -1675,11 +1723,10 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("The request content-type is not multipart: "+parentFolderNodeId);
         }
 
-        final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
-
-        if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
+        NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
+        if (!nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
         {
-            throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef.getId());
+            throw new InvalidArgumentException("NodeId of folder is expected: " + parentNodeRef.getId());
         }
 
         String fileName = null;
@@ -1689,6 +1736,7 @@ public class NodesImpl implements Nodes
         boolean overwrite = false; // If a fileName clashes for a versionable file
         Boolean majorVersion = null;
         String versionComment = null;
+        List<String> pathElements = null;
         Map<String, Object> qnameStrProps = new HashMap<>();
         Map<QName, Serializable> properties = null;
 
@@ -1732,6 +1780,10 @@ public class NodesImpl implements Nodes
                     versionComment = getStringOrNull(field.getValue());
                     break;
 
+                case "relativepath":
+                    pathElements = getPathElements(getStringOrNull(field.getValue()));
+                    break;
+
                 default:
                 {
                     final String propName = field.getName();
@@ -1759,6 +1811,13 @@ public class NodesImpl implements Nodes
         if (autoRename && overwrite)
         {
             throw new InvalidArgumentException("Both 'overwrite' and 'autoRename' should not be true when uploading a file");
+        }
+
+        // Checks for the presence of, and creates as necessary,
+        // the folder structure in the provided path elements list.
+        if (pathElements != null && !pathElements.isEmpty())
+        {
+            parentNodeRef = makeFolders(parentNodeRef, pathElements);
         }
 
         try

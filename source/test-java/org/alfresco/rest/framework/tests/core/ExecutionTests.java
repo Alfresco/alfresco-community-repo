@@ -5,14 +5,17 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceLookupDictionary;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
+import org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver;
 import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
@@ -27,9 +30,12 @@ import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
 import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Match;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
@@ -37,9 +43,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,6 +58,9 @@ import java.util.Map;
 public class ExecutionTests extends AbstractContextTest
 {
     static final Api api3 = Api.valueOf("alfrescomock", "private", "3");
+
+    @Autowired
+    SimpleMappingExceptionResolver simpleMappingExceptionResolver;
 
     @Test
     public void testInvokeGet() throws IOException
@@ -217,5 +229,56 @@ public class ExecutionTests extends AbstractContextTest
         calf = locator.locateRelationResource(api,"cow/{entityId}/calf", "photo", HttpMethod.PUT);
         result = executor.execute(calf,  Params.valueOf("4", "56", mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
         assertNull(result);
+    }
+
+    @Test
+    public void testInvokeAbstract() throws IOException
+    {
+        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
+        executor.setLocator(locator);
+        executor.setResolver(simpleMappingExceptionResolver);
+        executor.setJsonHelper(jsonHelper);
+        Map<String, String> templateVars = new HashMap();
+        templateVars.put("apiScope", "private");
+        templateVars.put("apiVersion", "1");
+        templateVars.put("apiName", "alfrescomock");
+        templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "sheep");
+        executor.execute(executor.determineApi(templateVars), mockRequest(templateVars,new HashMap<String, List<String>>(1)), mock(WebScriptResponse.class));
+
+        WebScriptResponse response = mockResponse();
+        templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "bad");
+        executor.execute(api, mockRequest(templateVars,new HashMap<String, List<String>>(1)), response);
+        //throws a runtime exception so INTERNAL_SERVER_ERROR
+        verify(response, times(1)).setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+
+        response = mockResponse();
+        templateVars.put(ResourceLocator.ENTITY_ID, "badId");
+        executor.execute(api, mockRequest(templateVars,new HashMap<String, List<String>>(1)), response);
+        //throws a IntegrityException so 422
+        verify(response, times(1)).setStatus(422);
+
+    }
+
+    private WebScriptResponse mockResponse() throws IOException
+    {
+        WebScriptResponse res = mock(WebScriptResponse.class);
+        when(res.getOutputStream()).thenReturn(new ByteArrayOutputStream());
+        return res;
+    }
+
+    private WebScriptRequest mockRequest(Map<String, String> templateVars, final Map<String, List<String>> params)
+    {
+        final String[] paramNames = params.keySet().toArray(new String[]{});
+        WebScriptRequest request = mock(WebScriptRequest.class);
+        when(request.getServiceMatch()).thenReturn(new Match(null, templateVars,null));
+        when(request.getParameterNames()).thenReturn(paramNames);
+        when(request.getParameterValues(anyString())).thenAnswer(new Answer<String[]>() {
+            @Override
+            public String[] answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                return params.get((String) args[0]).toArray(new String[]{});
+            }
+        });
+        return request;
     }
 }

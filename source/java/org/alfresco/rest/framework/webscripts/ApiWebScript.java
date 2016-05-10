@@ -161,7 +161,7 @@ public abstract class ApiWebScript extends AbstractWebScript
         }
     }
 
-    private Api determineApi(Map<String, String> templateVars)
+    public Api determineApi(Map<String, String> templateVars)
     {
         String apiScope = templateVars.get("apiScope");
         String apiVersion = templateVars.get("apiVersion");

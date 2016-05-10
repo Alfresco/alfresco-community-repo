@@ -5,11 +5,13 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import org.alfresco.repo.forms.FormNotFoundException;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.DeletedResourceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
+import org.alfresco.rest.framework.core.exceptions.InsufficientStorageException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
@@ -77,6 +79,12 @@ public class ExceptionResolverTests
         //Try a random exception
         response = simpleMappingExceptionResolver.resolveException(new FormNotFoundException(null));
         assertNull(response);
+
+        response = simpleMappingExceptionResolver.resolveException(new InsufficientStorageException(null));
+        assertEquals(507, response.getStatusCode());
+
+        response = simpleMappingExceptionResolver.resolveException(new IntegrityException(null));
+        assertEquals(422, response.getStatusCode());
         
     }
 }

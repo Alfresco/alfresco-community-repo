@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -146,17 +147,9 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
             }
 
         }
-        catch (IntegrityException intException)
+        catch (AlfrescoRuntimeException | ApiException | WebScriptException xception )
         {
-            renderErrorResponse(resolveException(intException), res);
-        }
-        catch (ApiException apiException)
-        {
-            renderErrorResponse(resolveException(apiException), res);
-        }
-        catch (WebScriptException webException)
-        {
-            renderErrorResponse(resolveException(webException), res);
+            renderErrorResponse(resolveException(xception), res);
         }
         catch (RuntimeException runtimeException)
         {

@@ -28,32 +28,20 @@ import java.util.List;
  */
 public class QuickShareLinkEmailRequest extends Target
 {
-    private String templateId;
-    private String sharedNodeUrl;
+    private String client;
     private String message;
     private String locale;
     private List<String> recipientEmails;
-    private Boolean isSendFromDefaultEmail;
-    private Boolean isIgnoreSendFailure;
 
-    public String getTemplateId()
+    public String getClient()
     {
-        return templateId;
+        return client;
     }
 
-    public void setTemplateId(String templateId)
+    public QuickShareLinkEmailRequest setClient(String client)
     {
-        this.templateId = templateId;
-    }
-
-    public String getSharedNodeUrl()
-    {
-        return sharedNodeUrl;
-    }
-
-    public void setSharedNodeUrl(String sharedNodeUrl)
-    {
-        this.sharedNodeUrl = sharedNodeUrl;
+        this.client = client;
+        return this;
     }
 
     public String getMessage()
@@ -86,37 +74,14 @@ public class QuickShareLinkEmailRequest extends Target
         this.recipientEmails = recipientEmails;
     }
 
-    public Boolean getIsSendFromDefaultEmail()
-    {
-        return isSendFromDefaultEmail;
-    }
-
-    public void setIsSendFromDefaultEmail(Boolean isSendFromDefaultEmail)
-    {
-        this.isSendFromDefaultEmail = isSendFromDefaultEmail;
-    }
-
-    public Boolean getIsIgnoreSendFailure()
-    {
-        return isIgnoreSendFailure;
-    }
-
-    public void setIsIgnoreSendFailure(Boolean isIgnoreSendFailure)
-    {
-        this.isIgnoreSendFailure = isIgnoreSendFailure;
-    }
-
     @Override
     public String toString()
     {
         final StringBuilder sb = new StringBuilder(250);
-        sb.append("QuickShareLinkEmailRequest [templateId='").append(templateId)
-                    .append(", sharedNodeUrl='").append(sharedNodeUrl)
-                    .append(", message='").append(message)
-                    .append(", locale='").append(locale)
+        sb.append("QuickShareLinkEmailRequest [client=").append(client)
+                    .append(", message=").append(message)
+                    .append(", locale=").append(locale)
                     .append(", recipientEmails=").append(recipientEmails)
-                    .append(", isSendFromDefaultEmail").append(isSendFromDefaultEmail)
-                    .append(", isIgnoreSendFailure=").append(isIgnoreSendFailure)
                     .append(']');
         return sb.toString();
     }

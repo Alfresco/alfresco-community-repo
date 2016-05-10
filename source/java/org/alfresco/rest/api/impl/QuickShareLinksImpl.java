@@ -21,6 +21,7 @@ package org.alfresco.rest.api.impl;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.repo.quickshare.QuickShareClientNotFoundException;
 import org.alfresco.repo.quickshare.QuickShareServiceImpl.QuickShareEmailRequest;
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -74,6 +75,7 @@ import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.SearchLanguageConversion;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -353,33 +355,37 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
     }
 
     @Override
-    public void emailSharedLink(String nodeId, QuickShareLinkEmailRequest emailRequest, Parameters parameters)
+    public void emailSharedLink(String sharedId, QuickShareLinkEmailRequest emailRequest, Parameters parameters)
     {
         checkEnabled();
+        checkValidShareId(sharedId);
+        validateEmailRequest(emailRequest);
 
         try
-        {   NodeRef nodeRef = nodes.validateNode(nodeId);
-            final String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-
+        {
+            NodeRef nodeRef = quickShareService.getTenantNodeRefFromSharedId(sharedId).getSecond();
+            String sharedNodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
             QuickShareEmailRequest request = new QuickShareEmailRequest();
-            request.setSharedNodeName(nodeName);
-            request.setSharedNodeURL(emailRequest.getSharedNodeUrl());
+            request.setSharedNodeName(sharedNodeName);
+            request.setClient(emailRequest.getClient());
+            request.setSharedId(sharedId);
             request.setSenderMessage(emailRequest.getMessage());
             request.setLocale(I18NUtil.parseLocale(emailRequest.getLocale()));
-            request.setTemplateId(emailRequest.getTemplateId());
             request.setToEmails(emailRequest.getRecipientEmails());
-            request.setSendFromDefaultEmail(emailRequest.getIsSendFromDefaultEmail());
-            request.setIgnoreSendFailure(emailRequest.getIsIgnoreSendFailure());
             quickShareService.sendEmailNotification(request);
         }
-        catch (Exception ex)
+        catch (InvalidSharedIdException ex)
         {
-            String errorMsg = ex.getMessage();
-            if (errorMsg == null)
-            {
-                errorMsg = "";
-            }
-            throw new InvalidArgumentException("Couldn't send an email. " + errorMsg);
+            throw new EntityNotFoundException(sharedId);
+        }
+        catch (InvalidNodeRefException inre)
+        {
+            logger.warn("Unable to find: " + sharedId + " [" + inre.getNodeRef() + "]");
+            throw new EntityNotFoundException(sharedId);
+        }
+        catch (QuickShareClientNotFoundException ex)
+        {
+            throw new InvalidArgumentException("Client is not registered [" + emailRequest.getClient() + "]");
         }
     }
 
@@ -583,6 +589,18 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         if (sharedId==null)
         {
             throw new InvalidArgumentException("A valid sharedId must be specified !");
+        }
+    }
+
+    private void validateEmailRequest(QuickShareLinkEmailRequest emailRequest)
+    {
+        if (StringUtils.isEmpty(emailRequest.getClient()))
+        {
+            throw new InvalidArgumentException("A valid client must be specified.");
+        }
+        if (emailRequest.getRecipientEmails() == null || emailRequest.getRecipientEmails().isEmpty())
+        {
+            throw new InvalidArgumentException("A valid recipientEmail must be specified.");
         }
     }
 }

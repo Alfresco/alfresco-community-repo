@@ -83,11 +83,11 @@ public interface QuickShareLinks
     /**
      * Notifies users by email that a content has been shared with them.
      *
-     * @param nodeId       The content id
+     * @param sharedId     The string id of the quick share
      * @param emailRequest The email details including its template details
      * @param parameters   The {@link Parameters} object to get the parameters passed into the request
      */
-    void emailSharedLink(String nodeId, QuickShareLinkEmailRequest emailRequest, Parameters parameters);
+    void emailSharedLink(String sharedId, QuickShareLinkEmailRequest emailRequest, Parameters parameters);
 
     /**
      * Find (search) for shared links visible to current user.

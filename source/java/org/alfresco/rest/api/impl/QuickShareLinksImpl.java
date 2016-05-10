@@ -455,23 +455,23 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         return CollectionWithPagingInfo.asPaged(paging, qsLinks, results.hasMore(), new Long(results.getNumberFound()).intValue());
     }
 
-    private QuickShareLink getQuickShareInfo(String sharedId, boolean noAuth, List<String> selectParam)
+    private QuickShareLink getQuickShareInfo(String sharedId, boolean noAuth, List<String> includeParam)
     {
         checkValidShareId(sharedId);
 
         Map<String, Object> map = (Map<String, Object>) quickShareService.getMetaData(sharedId).get("item");
         NodeRef nodeRef = new NodeRef((String) map.get("nodeRef"));
 
-        return getQuickShareInfo(nodeRef, map, noAuth, selectParam);
+        return getQuickShareInfo(nodeRef, map, noAuth, includeParam);
     }
 
-    private QuickShareLink getQuickShareInfo(NodeRef nodeRef, boolean noAuth, List<String> selectParam)
+    private QuickShareLink getQuickShareInfo(NodeRef nodeRef, boolean noAuth, List<String> includeParam)
     {
         Map<String, Object> map = (Map<String, Object>) quickShareService.getMetaData(nodeRef).get("item");
-        return getQuickShareInfo(nodeRef, map , noAuth, selectParam);
+        return getQuickShareInfo(nodeRef, map , noAuth, includeParam);
     }
 
-    private QuickShareLink getQuickShareInfo(NodeRef nodeRef, Map<String, Object> map, boolean noAuth, List<String> selectParam)
+    private QuickShareLink getQuickShareInfo(NodeRef nodeRef, Map<String, Object> map, boolean noAuth, List<String> includeParam)
     {
         String sharedId = (String)map.get("sharedId");
 
@@ -502,11 +502,11 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             qs.setModifiedByUser(modifiedByUser);
             qs.setSharedByUser(sharedByUser);
 
-            if ((! noAuth) && selectParam.contains(PARAM_SELECT_ISLINK))
+            if ((! noAuth) && includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
             {
                 if (canDeleteSharedLink(nodeRef, sharedByUserId))
                 {
-                    qs.setAllowableOperations(Collections.singletonList("delete"));
+                    qs.setAllowableOperations(Collections.singletonList(Nodes.OP_DELETE));
                 }
             }
 

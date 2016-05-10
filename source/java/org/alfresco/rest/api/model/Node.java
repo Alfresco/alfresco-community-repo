@@ -67,6 +67,8 @@ public class Node implements Comparable<Node>
     protected List<String> aspectNames;
     protected Map<String, Object> properties;
 
+    protected List<String> allowableOperations;
+
     public Node(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
         if(nodeRef == null)
@@ -278,6 +280,16 @@ public class Node implements Comparable<Node>
         this.isLink = isLink;
     }
 
+    public List<String> getAllowableOperations()
+    {
+        return allowableOperations;
+    }
+
+    public void setAllowableOperations(List<String> allowableOperations)
+    {
+        this.allowableOperations = allowableOperations;
+    }
+
     public boolean equals(Object other)
     {
         if(this == other)
@@ -303,10 +315,25 @@ public class Node implements Comparable<Node>
     @Override
     public String toString()
     {
-        return "Node [nodeRef=" + nodeRef + ", type=" + prefixTypeQName + ", name=" + name + ", title="
-                + title + ", description=" + description + ", createdAt="
-                + createdAt + ", modifiedAt=" + modifiedAt + ", createdByUser=" + createdByUser + ", modifiedBy="
-                + modifiedByUser + ", isFolder =" + isFolder + ", isFile =" + isFile + ", pathInfo =" + pathInfo +"]";
+        StringBuilder sb = new StringBuilder();
+        sb.append("Node [id=").append(getNodeRef().getId());
+        sb.append(", parentId=").append(getParentId());
+        sb.append(", type=").append(getNodeType());
+        sb.append(", name=").append(getName());
+        sb.append(", isFolder=").append(getIsFolder());
+        sb.append(", isFile=").append(getIsFile());
+        sb.append(", isLink=").append(getIsLink()); // note: symbolic link (not shared link)
+        sb.append(", modifiedAt=").append(getModifiedAt());
+        sb.append(", modifiedByUser=").append(getModifiedByUser());
+        sb.append(", createdAt=").append(getCreatedAt());
+        sb.append(", createdByUser=").append(getCreatedByUser());
+        sb.append(", path=").append(getPath());
+        sb.append(", content=").append(getContent());
+        sb.append(", aspectNames=").append(getAspectNames());
+        //sb.append(", properties=").append(getProperties());
+        sb.append(", allowableOperations=").append(getAllowableOperations());
+        sb.append("]");
+        return sb.toString();
     }
 
     // here to allow POST /nodes/{id}/children when creating empty file with specified content.mimeType

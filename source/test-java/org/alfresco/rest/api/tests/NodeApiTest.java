@@ -130,6 +130,8 @@ public class NodeApiTest extends AbstractBaseApiTest
     protected NodeArchiveService nodeArchiveService;
     protected NodeService nodeService;
 
+    private final String RUNID = System.currentTimeMillis()+"";
+
 
     @Before
     public void setup() throws Exception
@@ -1134,6 +1136,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // admin can permanently delete
         String folder6Id = createFolder(user1, sharedNodeId, "folder " + runId + "_6").getId();
+
         params = Collections.singletonMap("permanent", "true");
 
         // TODO improve - admin-related tests
@@ -2609,6 +2612,105 @@ public class NodeApiTest extends AbstractBaseApiTest
         headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
         // Test 304 response
         getSingle(getNodeContentUrl(contentNodeId), user1, null, null, headers, 304);
+    }
+
+    /**
+     * Tests optional lookup of Allowable Operations (eg. when getting node info, listing node children, ...)
+     *
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children?include=allowableOperations}
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>?include=allowableOperations}
+     */
+    @Test
+    public void testAllowableOps() throws Exception
+    {
+        String sharedNodeId = getSharedNodeId(user1);
+
+        // as user1 ...
+
+        // create folder
+        Node nodeResp = createFolder(user1, sharedNodeId, "folder 1 - "+RUNID);
+        String folderId = nodeResp.getId();
+        assertNull(nodeResp.getAllowableOperations());
+
+        HttpResponse response = getSingle(NodesEntityResource.class, user1, folderId, null, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNull(nodeResp.getAllowableOperations());
+
+        Map params = new HashMap<>();
+        params.put("include", "allowableOperations");
+        response = getSingle(NodesEntityResource.class, user1, folderId, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNotNull(nodeResp.getAllowableOperations());
+        assertEquals(3, nodeResp.getAllowableOperations().size());
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+
+        // create file
+        nodeResp = createTextFile(user1, folderId, "my file - "+RUNID+".txt", "The quick brown fox jumps over the lazy dog");
+        String fileId = nodeResp.getId();
+        assertNull(nodeResp.getAllowableOperations());
+
+        response = getSingle(NodesEntityResource.class, user1, fileId, null, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNull(nodeResp.getAllowableOperations());
+
+        params = new HashMap<>();
+        params.put("include", "allowableOperations");
+        response = getSingle(NodesEntityResource.class, user1, fileId, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNotNull(nodeResp.getAllowableOperations());
+        assertEquals(2, nodeResp.getAllowableOperations().size());
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+
+        // as user2 ...
+
+        params = new HashMap<>();
+        params.put("include", "allowableOperations");
+        response = getSingle(NodesEntityResource.class, user2, folderId, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNotNull(nodeResp.getAllowableOperations());
+        assertEquals(1, nodeResp.getAllowableOperations().size());
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
+
+        params = new HashMap<>();
+        params.put("include", "allowableOperations");
+        response = getSingle(NodesEntityResource.class, user2, fileId, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNull(nodeResp.getAllowableOperations());
+
+        // as admin ...
+
+        // TODO improve - admin-related tests
+        params = new HashMap<>();
+        params.put("include", "allowableOperations");
+        publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
+        response = publicApiClient.get(NodesEntityResource.class, folderId, null, params);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNotNull(nodeResp.getAllowableOperations());
+        assertEquals(3, nodeResp.getAllowableOperations().size());
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+
+        params = new HashMap<>();
+        params.put("include", "allowableOperations");
+        publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
+        response = publicApiClient.get(NodesEntityResource.class, fileId, null, params);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNotNull(nodeResp.getAllowableOperations());
+        assertEquals(2, nodeResp.getAllowableOperations().size());
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+
+        publicApiClient.setRequestContext(null);
+
+        // as user1 ...
+
+        // cleanup
+        delete(URL_NODES, user1, folderId, 204);
     }
 
     @Override

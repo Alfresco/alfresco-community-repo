@@ -186,6 +186,10 @@ public interface Nodes
     String PATH_MY = "-my-";
     String PATH_SHARED = "-shared-";
 
+    String OP_CREATE = "create";
+    String OP_DELETE= "delete";
+    String OP_UPDATE = "update";
+
     String PARAM_RELATIVE_PATH = "relativePath";
     String PARAM_AUTO_RENAME = "autoRename";
     String PARAM_PERMANENT = "permanent";
@@ -194,6 +198,7 @@ public interface Nodes
     String PARAM_INCLUDE_PATH = "path";
     String PARAM_INCLUDE_ASPECTNAMES = "aspectNames";
     String PARAM_INCLUDE_ISLINK = "isLink";
+    String PARAM_INCLUDE_ALLOWABLEOPERATIONS = "allowableOperations";
 
     String PARAM_ISFOLDER = "isFolder";
     String PARAM_ISFILE = "isFile";

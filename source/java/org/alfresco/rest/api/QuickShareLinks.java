@@ -103,5 +103,5 @@ public interface QuickShareLinks
      */
     String PARAM_SHAREDBY = "sharedByUser";
 
-    String PARAM_SELECT_ISLINK = "allowableOperations";
+    String PARAM_INCLUDE_ALLOWABLEOPERATIONS = Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
 }

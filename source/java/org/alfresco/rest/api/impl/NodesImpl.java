@@ -721,7 +721,7 @@ public class NodesImpl implements Nodes
         return getFolderOrDocument(nodeRef, parentNodeRef, nodeTypeQName, includeParam, null);
     }
 
-    private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> selectParam, Map<String,UserInfo> mapUserInfo)
+    private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> includeParam, Map<String,UserInfo> mapUserInfo)
     {
         if (mapUserInfo == null)
         {
@@ -729,7 +729,7 @@ public class NodesImpl implements Nodes
         }
 
         PathInfo pathInfo = null;
-        if (selectParam.contains(PARAM_INCLUDE_PATH))
+        if (includeParam.contains(PARAM_INCLUDE_PATH))
         {
             pathInfo = lookupPathInfo(nodeRef);
         }
@@ -770,20 +770,47 @@ public class NodesImpl implements Nodes
             throw new RuntimeException("Unexpected - should not reach here: "+type);
         }
 
-        if (selectParam.size() > 0)
+        if (includeParam.size() > 0)
         {
-            node.setProperties(mapFromNodeProperties(properties, selectParam, mapUserInfo));
+            node.setProperties(mapFromNodeProperties(properties, includeParam, mapUserInfo));
         }
 
-        if (selectParam.contains(PARAM_INCLUDE_ASPECTNAMES))
+        if (includeParam.contains(PARAM_INCLUDE_ASPECTNAMES))
         {
             node.setAspectNames(mapFromNodeAspects(nodeService.getAspects(nodeRef)));
         }
 
-        if (selectParam.contains(PARAM_INCLUDE_ISLINK))
+        if (includeParam.contains(PARAM_INCLUDE_ISLINK))
         {
             boolean isLink = isSubClass(nodeTypeQName, ContentModel.TYPE_LINK);
             node.setIsLink(isLink);
+        }
+
+        if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
+        {
+            // note: refactor when requirements change
+            Map<String, String> mapPermsToOps = new HashMap<>(3);
+            mapPermsToOps.put(PermissionService.DELETE, OP_DELETE);
+            mapPermsToOps.put(PermissionService.ADD_CHILDREN, OP_CREATE);
+            mapPermsToOps.put(PermissionService.WRITE, OP_UPDATE);
+
+            List<String> allowableOperations = new ArrayList<>(3);
+            for (Entry<String, String> kv : mapPermsToOps.entrySet())
+            {
+                String perm = kv.getKey();
+                String op = kv.getValue();
+
+                // special case: do not return "create" for file
+                if (! (perm.equals(PermissionService.ADD_CHILDREN) && type.equals(Type.DOCUMENT)))
+                {
+                    if (permissionService.hasPermission(nodeRef, perm) == AccessStatus.ALLOWED)
+                    {
+                        allowableOperations.add(op);
+                    }
+                }
+            }
+
+            node.setAllowableOperations((allowableOperations.size() > 0 )? allowableOperations : null);
         }
         
         node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));

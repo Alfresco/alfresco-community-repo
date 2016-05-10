@@ -97,7 +97,9 @@ import org.springframework.util.ResourceUtils;
  * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/children} </li>
  * </ul>
  *
- * TODO replace most (all ?) usages of repoService test data setup code with actual FileFolder API calls (where appropriate)
+ * TODO
+ * - improve test 'fwk' to enable api tests to be run against remote repo (rather than embedded jetty)
+ * - requires replacement of non-remote calls (eg. repoService, siteService, permissionService) with calls to remote (preferably public) apis
  *
  * @author Jamal Kaabi-Mofrad
  * @author janv
@@ -1805,6 +1807,118 @@ public class NodeApiTest extends AbstractBaseApiTest
         fUpdate.setParentId(myNodeId);
         put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
     }
+
+    /**
+     * Tests update owner (file or folder)
+     * <p>PUT:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
+     */
+    @Test
+    public void testUpdateOwner() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        String ownerProp = "cm:owner";
+
+        // create folder f1
+        String folderName = "f1 "+System.currentTimeMillis();
+        Folder folderResp = createFolder(user1, Nodes.PATH_SHARED, folderName);
+        String f1Id = folderResp.getId();
+
+        assertNull(user1, folderResp.getProperties()); // owner is implied
+
+        // explicitly set owner to oneself
+        Map<String, Object> props = new HashMap<>();
+        props.put(ownerProp, user1);
+        Folder fUpdate = new Folder();
+        fUpdate.setProperties(props);
+
+        HttpResponse response = put("nodes", user1, f1Id, toJsonAsStringNonNull(fUpdate), null, 200);
+        folderResp = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
+
+        assertEquals(user1, ((Map)folderResp.getProperties().get(ownerProp)).get("id"));
+
+        // create doc d1
+        NodeRef f1Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, f1Id);
+        String d1Name = "content1 " + System.currentTimeMillis();
+        NodeRef d1Ref = repoService.createDocument(f1Ref, d1Name, "The quick brown fox jumps over the lazy dog.");
+        String d1Id = d1Ref.getId();
+
+        // get node info
+        response = getSingle(NodesEntityResource.class, user1, d1Id, null, 200);
+        Document documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+
+        assertNull(user1, documentResp.getProperties()); // owner is implied
+
+        props = new HashMap<>();
+        props.put(ownerProp, user1);
+        Document dUpdate = new Document();
+        dUpdate.setProperties(props);
+
+        response = put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(user1, ((Map)documentResp.getProperties().get(ownerProp)).get("id"));
+
+        // -ve test - cannot set owner to a nonexistent user
+
+        props = new HashMap<>();
+        props.put(ownerProp, "unknownusernamedoesnotexist");
+        dUpdate = new Document();
+        dUpdate.setProperties(props);
+
+        put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 400);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(user2);
+
+        response = getSingle("nodes", user1, d1Id, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(user1, ((Map)documentResp.getProperties().get(ownerProp)).get("id"));
+
+        // -ve test - cannot take/change ownership
+
+        props = new HashMap<>();
+        props.put(ownerProp, user2);
+        dUpdate = new Document();
+        dUpdate.setProperties(props);
+
+        put("nodes", user2, d1Id, toJsonAsStringNonNull(dUpdate), null, 403);
+
+        props = new HashMap<>();
+        props.put(ownerProp, user1);
+        dUpdate = new Document();
+        dUpdate.setProperties(props);
+
+        put("nodes", user2, d1Id, toJsonAsStringNonNull(dUpdate), null, 403);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        props = new HashMap<>();
+        props.put(ownerProp, user2);
+        dUpdate = new Document();
+        dUpdate.setProperties(props);
+
+        response = put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(user2, ((Map)documentResp.getProperties().get(ownerProp)).get("id"));
+
+        AuthenticationUtil.setFullyAuthenticatedUser(user2);
+
+        response = getSingle("nodes", user2, d1Id, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(user2, ((Map)documentResp.getProperties().get(ownerProp)).get("id"));
+
+        // -ve test - user2 cannot delete the test folder/file - TODO is that expected ?
+        delete("nodes", user2, f1Id, 403);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        delete("nodes", user1, f1Id, 204);
+    }
+
 
     /**
      * Tests update file content

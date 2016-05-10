@@ -292,6 +292,19 @@ public class Node implements Comparable<Node>
                 + modifiedByUser + ", pathInfo =" + pathInfo +"]";
     }
 
+    protected ContentInfo contentInfo;
+
+    public ContentInfo getContent()
+    {
+        return contentInfo;
+    }
+
+    public void setContent(ContentInfo contentInfo)
+    {
+        this.contentInfo = contentInfo;
+    }
+
+
     // TODO for backwards compat' - set explicitly when needed (ie. favourites) (note: we could choose to have separate old Node/NodeImpl etc)
 
     protected String title;

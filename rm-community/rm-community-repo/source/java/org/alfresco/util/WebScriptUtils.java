@@ -328,6 +328,30 @@ public final class WebScriptUtils
     }
 
     /**
+     * Creates a json array from the given {@link String}
+     *
+     * @param json The json array as {@link String}
+     * @return The json array created from the given {@link String}
+     */
+    public static JSONArray createJSONArray(String json)
+    {
+        mandatory("json", json);
+
+        JSONArray jsonArray;
+
+        try
+        {
+            jsonArray = new JSONArray(json);
+        }
+        catch (JSONException error)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Cannot create a json array from the given string '" + json + "'.", error);
+        }
+
+        return jsonArray;
+    }
+
+    /**
      * Gets the {@link JSONArray} value of a given key from a json object
      *
      * @param jsonObject The json object

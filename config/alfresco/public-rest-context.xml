@@ -488,7 +488,6 @@
        </property>
     </bean>
 
-    <!-- TODO - experimental (review) -->
     <bean id="quickShareLinks" class="org.alfresco.rest.api.impl.QuickShareLinksImpl">
         <property name="quickShareService" ref="QuickShareService"/>
         <property name="nodes" ref="nodes"/>
@@ -503,6 +502,25 @@
         </property>
         <property name="target">
             <ref bean="quickShareLinks" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean id="queries" class="org.alfresco.rest.api.impl.QueriesImpl">
+        <property name="nodes" ref="nodes"/>
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+    </bean>
+
+    <bean id="Queries" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.Queries</value>
+        </property>
+        <property name="target">
+            <ref bean="queries" />
         </property>
         <property name="interceptorNames">
             <list>
@@ -730,9 +748,12 @@
         <property name="tags" ref="Tags" />
     </bean>
 
-    <!-- TODO - experimental (review) -->
     <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkEntityResource">
         <property name="quickShareLinks" ref="QuickShareLinks" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.queries.QueriesEntityResource">
+        <property name="queries" ref="Queries" />
     </bean>
 
     <bean class="org.alfresco.rest.api.people.PersonFavouritesRelation">

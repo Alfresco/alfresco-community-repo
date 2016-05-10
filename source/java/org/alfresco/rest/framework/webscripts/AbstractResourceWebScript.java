@@ -39,6 +39,7 @@ import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.FileBinaryResource;
@@ -105,7 +106,21 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 if (toSerialize instanceof BinaryResource)
                 {
                     // TODO review (experimental) - can we move earlier & wrap complete execute ? Also for QuickShare (in MT/Cloud) needs to be tenant for the nodeRef (TBC).
-                    boolean noAuth = resource.getMetaData().isNoAuth(BinaryResourceAction.Read.class);
+                    boolean noAuth = false;
+
+                    if (BinaryResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        noAuth = resource.getMetaData().isNoAuth(BinaryResourceAction.Read.class);
+                    }
+                    else if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        noAuth = resource.getMetaData().isNoAuth(RelationshipResourceBinaryAction.Read.class);
+                    }
+                    else
+                    {
+                        logger.warn("Unexpected");
+                    }
+
                     if (noAuth)
                     {
                         String networkTenantDomain = TenantUtil.getCurrentDomain();

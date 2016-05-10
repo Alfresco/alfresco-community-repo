@@ -27,6 +27,7 @@ import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
+import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.QuickShareLinkEmailRequest;
@@ -87,6 +88,8 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
     private ServiceRegistry sr;
     private QuickShareService quickShareService;
     private Nodes nodes;
+    private Renditions renditions;
+
     private NodeService nodeService;
     private PersonService personService;
     private AuthorityService authorityService;
@@ -107,6 +110,11 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
     public void setNodes(Nodes nodes)
     {
         this.nodes = nodes;
+    }
+
+    public void setRenditions(Renditions renditions)
+    {
+        this.renditions = renditions;
     }
 
     public void setEnabled(boolean enabled)
@@ -165,11 +173,12 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
      * Note: does *not* require authenticated access for (public) shared link.
      *
      * @param sharedId
+     * @param renditionId - optional
      * @param parameters {@link Parameters}
      * @return
      * @throws EntityNotFoundException
      */
-    public BinaryResource readProperty(String sharedId, final Parameters parameters) throws EntityNotFoundException
+    public BinaryResource readProperty(String sharedId, final String renditionId, final Parameters parameters) throws EntityNotFoundException
     {
         checkEnabled();
         checkValidShareId(sharedId);
@@ -191,7 +200,16 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
                         throw new InvalidNodeRefException(nodeRef);
                     }
 
-                    return nodes.getContent(nodeRef.getId(), parameters);
+                    String nodeId = nodeRef.getId();
+
+                    if (renditionId != null)
+                    {
+                        return renditions.getContent(nodeId, renditionId, parameters);
+                    }
+                    else
+                    {
+                        return nodes.getContent(nodeId, parameters);
+                    }
                 }
             }, networkTenantDomain);
         }

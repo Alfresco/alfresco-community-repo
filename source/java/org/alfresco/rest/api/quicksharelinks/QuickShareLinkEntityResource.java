@@ -92,9 +92,9 @@ public class QuickShareLinkEntityResource implements EntityResourceAction.ReadBy
     @WebApiDescription(title = "Download shared link content", description = "Download content for shared link")
     @WebApiNoAuth
     @BinaryProperties({"content"})
-    public BinaryResource readProperty(String sharedId, final Parameters parameters) throws EntityNotFoundException
+    public BinaryResource readProperty(String sharedId, Parameters parameters) throws EntityNotFoundException
     {
-        return quickShareLinks.readProperty(sharedId, parameters);
+        return quickShareLinks.readProperty(sharedId, null, parameters);
     }
 
     /**

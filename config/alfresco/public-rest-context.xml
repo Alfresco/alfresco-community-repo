@@ -487,6 +487,7 @@
     <bean id="quickShareLinks" class="org.alfresco.rest.api.impl.QuickShareLinksImpl">
         <property name="quickShareService" ref="QuickShareService"/>
         <property name="nodes" ref="nodes"/>
+        <property name="renditions" ref="renditions"/>
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="enabled" value="${system.quickshare.enabled}" />
     </bean>
@@ -1080,4 +1081,9 @@
     <bean class="org.alfresco.rest.api.nodes.NodeRenditionsRelation">
        <property name="renditions" ref="Renditions" />
    </bean>
+
+    <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkRenditionsRelation">
+        <property name="quickShareLinks" ref="QuickShareLinks"/>
+    </bean>
+
 </beans>

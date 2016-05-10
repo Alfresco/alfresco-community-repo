@@ -18,15 +18,10 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
-import junit.framework.Assert;
-import junit.framework.TestCase;
-import org.alfresco.service.cmr.repository.NodeRef;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.List;
-
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 
 /**
  * Representation of a path info (initially for client tests for File Folder API)

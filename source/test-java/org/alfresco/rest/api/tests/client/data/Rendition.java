@@ -111,7 +111,7 @@ public class Rendition implements ExpectedComparison, Comparable<Rendition>
     public String toString()
     {
         final StringBuilder sb = new StringBuilder(150);
-        sb.append("Rendition [id='").append(id)
+        sb.append("Rendition [id=").append(id)
                     .append(", status=").append(status)
                     .append(", contentInfo=").append(contentInfo)
                     .append(']');

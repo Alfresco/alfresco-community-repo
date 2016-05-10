@@ -6,6 +6,7 @@ import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -20,7 +21,7 @@ import java.io.File;
  * @author Gethin James
  */
 @RelationshipResource(name = "herd",entityResource=GoatEntityResourceForV3.class, title = "Goat Herd")
-public class GoatRelationshipResource implements RelationshipResourceAction.Read<Herd>,  BinaryResourceAction.Read
+public class GoatRelationshipResource implements RelationshipResourceAction.Read<Herd>,  RelationshipResourceBinaryAction.Read
 {
     @Override
     public CollectionWithPagingInfo<Herd> readAll(String entityResourceId, Parameters params)
@@ -30,10 +31,9 @@ public class GoatRelationshipResource implements RelationshipResourceAction.Read
 
     @WebApiDescription(title = "Download content", description = "Download content")
     @BinaryProperties({"content"})
-    public BinaryResource readProperty(String herdId, Parameters parameters) throws EntityNotFoundException
+    public BinaryResource readProperty(String herdId, String entityResourceId, Parameters parameters) throws EntityNotFoundException
     {
         File file = TempFileProvider.createTempFile("Its a goat", ".txt");
         return new FileBinaryResource(file);
     }
-
 }

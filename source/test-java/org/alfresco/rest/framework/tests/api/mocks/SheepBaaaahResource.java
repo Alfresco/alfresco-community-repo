@@ -11,6 +11,7 @@ import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -22,7 +23,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  * @author Gethin James
  */
 @RelationshipResource(name = "baaahh", entityResource=SheepEntityResource.class, title = "Sheep baaah")
-public class SheepBaaaahResource implements RelationshipResourceAction.Read<Sheep>, RelationshipResourceAction.ReadById<Sheep>, BinaryResourceAction.Read, BinaryResourceAction.Delete,BinaryResourceAction.Update
+public class SheepBaaaahResource implements RelationshipResourceAction.Read<Sheep>, RelationshipResourceAction.ReadById<Sheep>, RelationshipResourceBinaryAction.Read, RelationshipResourceBinaryAction.Delete,RelationshipResourceBinaryAction.Update
 {
 
     @Override
@@ -39,27 +40,26 @@ public class SheepBaaaahResource implements RelationshipResourceAction.Read<Shee
         return CollectionWithPagingInfo.asPaged(params.getPaging(),toReturn,toReturn.size()!=3 ,3);
     }
 
-
-    @Override
-    @WebApiDescription(title = "Deletes a photo")
-    @BinaryProperties("photo")
-    public void deleteProperty(String entityId, Parameters parameters)
-    {
-
-    }
-
     @Override
     @WebApiDescription(title = "Reads a photo")
     @BinaryProperties("photo")
-    public BinaryResource readProperty(String entityId, Parameters parameters) throws EntityNotFoundException
+    public BinaryResource readProperty(String entityId, String id, Parameters parameters) throws EntityNotFoundException
     {
         return null;
     }
 
     @Override
+    @WebApiDescription(title = "Deletes a photo")
+    @BinaryProperties("photo")
+    public void deleteProperty(String entityId, String entityResourceId, Parameters parameters)
+    {
+
+    }
+
+    @Override
     @WebApiDescription(title = "Updates a photo")
     @BinaryProperties("photo")
-    public Object updateProperty(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params)
+    public Object updateProperty(String entityId, String entityResourceId, BasicContentInfo contentInfo, InputStream stream, Parameters params)
     {
         return null;
     }

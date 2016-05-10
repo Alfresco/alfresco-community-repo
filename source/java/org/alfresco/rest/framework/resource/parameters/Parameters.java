@@ -18,7 +18,7 @@ import org.springframework.extensions.webscripts.Status;
 public interface Parameters
 {   
     /**
-     * Gets a single request parameter passed in by the user.
+     * Gets a single request query parameter passed in by the user.
      * Currently doesn't support multiple values.
      * @param parameterName String
      * @return String The Parameter value

@@ -34,7 +34,9 @@ import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationE
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
@@ -95,9 +97,19 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 }
             case PROPERTY:
                 final String resourceName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
+                final String propertyName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.PROPERTY);
+
                 if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(resourceName))
                 {
-                    return Params.valueOf(entityId, null, null, getStream(req), resourceName, params, getContentInfo(req));
+                    if (StringUtils.isNotBlank(propertyName))
+                    {
+                        return Params.valueOf(entityId, relationshipId, null, getStream(req), propertyName, params, getContentInfo(req));
+                    }
+                    else
+                    {
+                        return Params.valueOf(entityId, null, null, getStream(req), resourceName, params, getContentInfo(req));
+                    }
+
                 }
                 //Fall through to unsupported.
             default:
@@ -185,12 +197,24 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 Object relResult = relationUpdater.update(params.getEntityId(), params.getPassedIn(), params);
                 return relResult;
             case PROPERTY:
-                if (resource.getMetaData().isDeleted(BinaryResourceAction.Update.class))
+                if (BinaryResourceAction.Update.class.isAssignableFrom(resource.getResource().getClass()))
                 {
-                    throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
+                    if (resource.getMetaData().isDeleted(BinaryResourceAction.Update.class))
+                    {
+                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
+                    }
+                    BinaryResourceAction.Update<Object> binUpdater = (BinaryResourceAction.Update<Object>) resource.getResource();
+                    return binUpdater.updateProperty(params.getEntityId(), params.getContentInfo(), params.getStream(), params);
                 }
-                BinaryResourceAction.Update<Object> binUpdater = (BinaryResourceAction.Update<Object>) resource.getResource();
-                return binUpdater.updateProperty(params.getEntityId(), params.getContentInfo(), params.getStream(), params);
+                if (RelationshipResourceBinaryAction.Update.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.Update.class))
+                    {
+                        throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceBinaryAction.Update<Object> binUpdater = (RelationshipResourceBinaryAction.Update<Object>) resource.getResource();
+                    return binUpdater.updateProperty(params.getEntityId(), params.getRelationshipId(), params.getContentInfo(), params.getStream(), params);
+                }
             default:
                 throw new UnsupportedResourceOperationException("PUT not supported for Actions");
         }

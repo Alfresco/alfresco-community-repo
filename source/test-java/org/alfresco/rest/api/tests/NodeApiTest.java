@@ -23,6 +23,7 @@ import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -2535,9 +2536,36 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         String textContent = response.getResponse();
         assertEquals("The quick brown fox jumps over the lazy dog", textContent);
-        assertEquals("attachment; filename=\"quick-1.txt\"; filename*=UTF-8''quick-1.txt", response.getHeaders().get("Content-Disposition"));
-        assertNotNull(response.getHeaders().get("Last-Modified"));
-        assertNotNull(response.getHeaders().get("Expires"));
+        Map<String, String> responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertEquals("attachment; filename=\"quick-1.txt\"; filename*=UTF-8''quick-1.txt", responseHeaders.get("Content-Disposition"));
+        assertNotNull(responseHeaders.get("Cache-Control"));
+        assertNotNull(responseHeaders.get("Expires"));
+        String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
+        assertNotNull(lastModifiedHeader);
+        Map<String, String> headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
+        // Test 304 response
+        getSingle(getNodeContentUrl(contentNodeId), user1, null, null, headers, 304);
+
+        // Update the content to change the node's modified date
+        Document docUpdate = new Document();
+        docUpdate.setProperties(Collections.singletonMap("cm:description", (Object) "desc updated!"));
+        // Wait a second then update, as the dates will be rounded to
+        // ignore millisecond when checking for If-Modified-Since
+        Thread.sleep(1000L);
+        response = put(URL_NODES, user1, contentNodeId, toJsonAsStringNonNull(docUpdate), null, 200);
+        Document updatedDocument = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(contentNodeId, updatedDocument.getId());
+
+        // The requested "If-Modified-Since" date is older than node's modified date
+        response = getSingle(getNodeContentUrl(contentNodeId), user1, null, null, headers, 200);
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertNotNull(responseHeaders.get("Cache-Control"));
+        assertNotNull(responseHeaders.get("Expires"));
+        String newLastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
+        assertNotNull(newLastModifiedHeader);
+        assertNotEquals(lastModifiedHeader, newLastModifiedHeader);
 
         //
         // Test binary (eg. PDF)
@@ -2567,14 +2595,20 @@ public class NodeApiTest extends AbstractBaseApiTest
         Map<String, String> params = new LinkedHashMap<>();
         params.put("attachment", "false");
 
-        response = getSingle(NodesEntityResource.class, user1, contentNodeId+"/content", params, 200);
-
+        response = getSingle(NodesEntityResource.class, user1, contentNodeId + "/content", params, 200);
         byte[] bytes = response.getResponseAsBytes();
-
         assertArrayEquals(originalBytes, bytes);
-        assertNull(response.getHeaders().get("Content-Disposition"));
-        assertNotNull(response.getHeaders().get("Last-Modified"));
-        assertNotNull(response.getHeaders().get("Expires"));
+
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertNull(responseHeaders.get("Content-Disposition"));
+        assertNotNull(responseHeaders.get("Cache-Control"));
+        assertNotNull(responseHeaders.get("Expires"));
+        lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
+        assertNotNull(lastModifiedHeader);
+        headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
+        // Test 304 response
+        getSingle(getNodeContentUrl(contentNodeId), user1, null, null, headers, 304);
     }
 
     @Override

@@ -5,11 +5,13 @@ import static org.junit.Assert.*;
 
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.rest.api.Activities;
+import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
+import org.alfresco.rest.api.tests.client.PublicApiException;
+import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
@@ -19,13 +21,10 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
-import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -92,38 +91,83 @@ public class ActivitiesPostingTest extends AbstractBaseApiTest
         Folder createdFolder = createFolder(u1.getId(), docLibNodeRef.getId(), folder1, null);
         assertNotNull(createdFolder);
 
+        String docName = "d1.txt";
+        Document documentResp = createDocument(createdFolder, docName);
+
+        //Update the file
+        Document dUpdate = new Document();
+        dUpdate.setName("d1b.txt");
+        HttpResponse response = put(URL_NODES, u1.getId(), documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
+
+        delete(URL_NODES, u1.getId(), documentResp.getId(), 204);
+        delete(URL_NODES, u1.getId(), createdFolder.getId(), 204);
+
+        List<Activity> activities = getMyActivites();
+        assertEquals(activities.size(),5);
+        Activity act = matchActivity(activities, ActivityType.FOLDER_ADDED, u1.getId(), tSite.getSiteId(), docLibNodeRef.getId(), folder1);
+        assertNotNull(act);
+
+        act = matchActivity(activities, ActivityType.FILE_ADDED, u1.getId(), tSite.getSiteId(), createdFolder.getId(), docName);
+        assertNotNull(act);
+
+        act = matchActivity(activities, ActivityType.FILE_UPDATED, u1.getId(), tSite.getSiteId(), createdFolder.getId(), dUpdate.getName());
+        assertNotNull(act);
+
+        act = matchActivity(activities, ActivityType.FOLDER_DELETED, u1.getId(), tSite.getSiteId(), docLibNodeRef.getId(), folder1);
+        assertNotNull(act);
+
+        act = matchActivity(activities, ActivityType.FILE_DELETED, u1.getId(), tSite.getSiteId(), createdFolder.getId(), dUpdate.getName());
+        assertNotNull(act);
+    }
+
+
+    @Test
+    public void testNonSite() throws Exception
+    {
+        List<Activity> activities = getMyActivites();
+        String folder1 = "nonSitefolder" + System.currentTimeMillis() + "_1";
+        //Create a folder outside a site
+        Folder createdFolder = createFolder(u1.getId(),  Nodes.PATH_MY, folder1, null);
+        assertNotNull(createdFolder);
+
+        String docName = "nonsite_d1.txt";
+        Document documentResp = createDocument(createdFolder, docName);
+        assertNotNull(documentResp);
+
+        //Update the file
+        Document dUpdate = new Document();
+        dUpdate.setName("nonsite_d2.txt");
+        HttpResponse response = put(URL_NODES, u1.getId(), documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
+
+        List<Activity> activitiesAgain = getMyActivites();
+        assertEquals("No activites should be created for non-site nodes", activities, activitiesAgain);
+    }
+
+    private List<Activity> getMyActivites() throws Exception
+    {
+        repoService.generateFeed();
+
+        publicApiClient.setRequestContext(new RequestContext(u1.getId()));
+        Map<String, String> meParams = new HashMap<>();
+        meParams.put("who", String.valueOf(Activities.ActivityWho.me));
+        return publicApiClient.people().getActivities(u1.getId(), meParams).getList();
+    }
+
+    private Document createDocument(Folder parentFolder, String docName) throws Exception
+    {
         Document d1 = new Document();
-        d1.setName("d1.txt");
+        d1.setName(docName);
         d1.setNodeType("cm:content");
         ContentInfo ci = new ContentInfo();
         ci.setMimeType("text/plain");
         d1.setContent(ci);
 
         // create empty file
-        HttpResponse response = post(getNodeChildrenUrl(createdFolder.getId()), u1.getId(), toJsonAsStringNonNull(d1), 201);
-        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-
-        //Update the file
-        Document dUpdate = new Document();
-        dUpdate.setName("d1b.txt");
-        response = put(URL_NODES, u1.getId(), documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
-
-        repoService.generateFeed();
-
-        Map<String, String> meParams = new HashMap<>();
-        meParams.put("who", String.valueOf(Activities.ActivityWho.me));
-        PublicApiClient.ListResponse<Activity> activities = publicApiClient.people().getActivities(u1.getId(), meParams);
-        assertEquals(activities.getList().size(),3);
-        Activity act = matchActivity(activities.getList(), ActivityType.FOLDER_ADDED, u1.getId(), tSite.getSiteId(), docLibNodeRef.getId(), folder1);
-        assertNotNull(act);
-
-        act = matchActivity(activities.getList(), ActivityType.FILE_ADDED, u1.getId(), tSite.getSiteId(), createdFolder.getId(), d1.getName());
-        assertNotNull(act);
-
-        act = matchActivity(activities.getList(), ActivityType.FILE_UPDATED, u1.getId(), tSite.getSiteId(), createdFolder.getId(), dUpdate.getName());
-        assertNotNull(act);
-
+        HttpResponse response = post(getNodeChildrenUrl(parentFolder.getId()), u1.getId(), toJsonAsStringNonNull(d1), 201);
+        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
+
+    //TODO: Test non-site and non-file activities.
 
     private Activity matchActivity(List<Activity> list, String type, String user, String siteId, String parentId, String title)
     {

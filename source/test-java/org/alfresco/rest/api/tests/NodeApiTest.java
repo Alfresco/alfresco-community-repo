@@ -697,12 +697,12 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // get node info via relativePath
 
-        params = Collections.singletonMap("relativePath", "/"+folderA+"/"+folderB);
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/"+folderA+"/"+folderB);
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 200);
         Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
         assertEquals(folderB_Id, folderResp.getId());
 
-        params = Collections.singletonMap("relativePath", folderA+"/"+folderB+"/"+contentName);
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folderA+"/"+folderB+"/"+contentName);
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals(content_Id, documentResp.getId());
@@ -711,7 +711,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         String folderC = "folder" + System.currentTimeMillis() + " ¢";
         String folderC_Id = createFolder(user1, folderB_Id, folderC).getId();
 
-        params = Collections.singletonMap("relativePath", "/"+folderA+"/"+folderB+"/"+folderC);
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/"+folderA+"/"+folderB+"/"+folderC);
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
         assertEquals(folderC_Id, folderResp.getId());
@@ -724,15 +724,15 @@ public class NodeApiTest extends AbstractBaseApiTest
         getSingle(NodesEntityResource.class, user2, myFilesNodeId, null, 403);
 
         // -ve test - try to get node info using relative path to unknown node
-        params = Collections.singletonMap("relativePath", folderA+"/unknown");
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folderA+"/unknown");
         getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 404);
 
         // -ve test - try to get node info using relative path to node for which user does not have read permission
-        params = Collections.singletonMap("relativePath", "User Homes/"+user2);
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/"+user2);
         getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, params, 403);
 
         // -ve test - attempt to get node info for non-folder node with relative path should return 400
-        params = Collections.singletonMap("relativePath", "/unknown");
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/unknown");
         getSingle(NodesEntityResource.class, user1, content_Id, params, 400);
     }
 
@@ -1216,7 +1216,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         checkStatus(403, response.getStatusCode());
 
         params = new HashMap<>();
-        params.put("relativePath", "/Sites");
+        params.put(Nodes.PARAM_RELATIVE_PATH, "/Sites");
         response = getSingle(NodesEntityResource.class, user1, rootNodeId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         String sitesNodeId = nodeResp.getId();
@@ -1227,7 +1227,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         checkStatus(403, response.getStatusCode());
 
         params = new HashMap<>();
-        params.put("relativePath", "/Data Dictionary");
+        params.put(Nodes.PARAM_RELATIVE_PATH, "/Data Dictionary");
         response = getSingle(NodesEntityResource.class, user1, rootNodeId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         String ddNodeId = nodeResp.getId();
@@ -1364,7 +1364,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         checkStatus(403, response.getStatusCode());
 
         Map params = new HashMap<>();
-        params.put("relativePath", "/Sites");
+        params.put(Nodes.PARAM_RELATIVE_PATH, "/Sites");
         response = getSingle(NodesEntityResource.class, user1, rootNodeId, params, 200);
         Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         String sitesNodeId = nodeResp.getId();
@@ -1375,7 +1375,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         checkStatus(403, response.getStatusCode());
 
         params = new HashMap<>();
-        params.put("relativePath", "/Data Dictionary");
+        params.put(Nodes.PARAM_RELATIVE_PATH, "/Data Dictionary");
         response = getSingle(NodesEntityResource.class, user1, rootNodeId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         String ddNodeId = nodeResp.getId();
@@ -1475,8 +1475,6 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testCreateFolder() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
         String myNodeId = getMyNodeId(user1);
 
         UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
@@ -1485,6 +1483,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // create folder
         Folder folderResp = createFolder(user1, myNodeId, "f1");
+        String f1Id = folderResp.getId();
 
         Folder f1 = new Folder();
         f1.setName("f1");
@@ -1499,12 +1498,13 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         f1.expected(folderResp);
 
-        // create folder with properties
+        // create sub-folder with properties
         Map<String,Object> props = new HashMap<>();
         props.put("cm:title","my folder title");
         props.put("cm:description","my folder description");
 
-        folderResp = createFolder(user1, myNodeId, "f2", props);
+        folderResp = createFolder(user1, f1Id, "f2", props);
+        String f2Id = folderResp.getId();
 
         Folder f2 = new Folder();
         f2.setName("f2");
@@ -1512,7 +1512,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         f2.setProperties(props);
 
         f2.setIsFolder(true);
-        f2.setParentId(myNodeId);
+        f2.setParentId(f1Id);
         f2.setAspectNames(Arrays.asList("cm:auditable","cm:titled"));
 
         f2.setCreatedByUser(expectedUser);
@@ -1520,17 +1520,51 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         f2.expected(folderResp);
 
+        // create another folder in a (partially existing) folder path
+        Node n = new Node();
+        n.setName("fZ");
+        n.setNodeType("cm:folder");
+        n.setRelativePath("/f1/f2/f3/f4");
+
+        // create node
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), user1, RestApiUtil.toJsonAsStringNonNull(n), 201);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+
+        // check parent hierarchy ...
+        response = getSingle(NodesEntityResource.class, user1, folderResp.getId(), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(folderResp.getName(),"fZ");
+
+        response = getSingle(NodesEntityResource.class, user1, folderResp.getParentId(), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(folderResp.getName(),"f4");
+
+        response = getSingle(NodesEntityResource.class, user1, folderResp.getParentId(), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(folderResp.getName(),"f3");
+
+        response = getSingle(NodesEntityResource.class, user1, folderResp.getParentId(), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(folderResp.getName(),"f2");
+        assertEquals(folderResp.getId(), f2Id);
+
         // -ve test - name is mandatory
         Folder invalid = new Folder();
         invalid.setNodeType("cm:folder");
         post(postUrl, user1, toJsonAsStringNonNull(invalid), 400);
+
+        // -ve test - invalid name
+        invalid = new Folder();
+        invalid.setName("inv:alid");
+        invalid.setNodeType("cm:folder");
+        post(postUrl, user1, toJsonAsStringNonNull(invalid), 422);
 
         // -ve test - node type is mandatory
         invalid = new Folder();
         invalid.setName("my folder");
         post(postUrl, user1, toJsonAsStringNonNull(invalid), 400);
 
-        // create empty file
+        // create empty file - used in -ve test below
         Document d1 = new Document();
         d1.setName("d1.txt");
         d1.setNodeType("cm:content");
@@ -1538,7 +1572,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         ci.setMimeType("text/plain");
         d1.setContent(ci);
 
-        HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(d1), 201);
+        response = post(postUrl, user1, toJsonAsStringNonNull(d1), 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String d1Id = documentResp.getId();
 
@@ -1572,6 +1606,20 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // -ve test - create a folder with a duplicate name (f1), but set the autoRename to false
         post(postUrl, user1, toJsonAsStringNonNull(f1), "?autoRename=false", 409);
+
+        // -ve test - invalid relative path
+        n = new Node();
+        n.setName("fX");
+        n.setNodeType("cm:folder");
+        n.setRelativePath("/f1/inv:alid");
+        post(getNodeChildrenUrl(f2Id), user1, RestApiUtil.toJsonAsStringNonNull(n), 422);
+
+        // -ve test - invalid relative path - points to existing node that is not a folder
+        n = new Node();
+        n.setName("fY");
+        n.setNodeType("cm:folder");
+        n.setRelativePath("d1.txt");
+        post(getNodeChildrenUrl(myNodeId), user1, RestApiUtil.toJsonAsStringNonNull(n), 409);
     }
 
     // TODO test custom type with properties (sub-type of cm:cmobject)
@@ -1829,6 +1877,33 @@ public class NodeApiTest extends AbstractBaseApiTest
         d2.setContent(ciExpected);
 
         d2.expected(documentResp);
+
+        // create another empty file in a (partially existing) folder path
+        Node n = new Node();
+        n.setName("d3.txt");
+        n.setNodeType("cm:content");
+        n.setRelativePath("/f1/f2");
+
+        // create node
+        response = post(getNodeChildrenUrl(myNodeId), user1, RestApiUtil.toJsonAsStringNonNull(n), 201);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        // check parent hierarchy ...
+        response = getSingle(NodesEntityResource.class, user1, documentResp.getId(), null, 200);
+        Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(folderResp.getName(),"d3.txt");
+
+        response = getSingle(NodesEntityResource.class, user1, folderResp.getParentId(), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(folderResp.getName(),"f2");
+
+        response = getSingle(NodesEntityResource.class, user1, folderResp.getParentId(), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(folderResp.getName(),"f1");
+
+        response = getSingle(NodesEntityResource.class, user1, folderResp.getParentId(), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(myNodeId, folderResp.getId());
 
         // -ve test - name is mandatory
         Document invalid = new Document();
@@ -2752,13 +2827,13 @@ public class NodeApiTest extends AbstractBaseApiTest
         String sharedNodeId = getSharedNodeId(user1);
 
         Map params = new HashMap<>();
-        params.put("relativePath", "/Sites");
+        params.put(Nodes.PARAM_RELATIVE_PATH, "/Sites");
         HttpResponse response = getSingle(NodesEntityResource.class, user1, rootNodeId, params, 200);
         Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         String sitesNodeId = nodeResp.getId();
 
         params = new HashMap<>();
-        params.put("relativePath", "/Data Dictionary");
+        params.put(Nodes.PARAM_RELATIVE_PATH, "/Data Dictionary");
         response = getSingle(NodesEntityResource.class, user1, rootNodeId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         String ddNodeId = nodeResp.getId();

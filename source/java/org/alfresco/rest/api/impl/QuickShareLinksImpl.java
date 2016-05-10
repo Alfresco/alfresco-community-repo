@@ -20,6 +20,7 @@ package org.alfresco.rest.api.impl;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
+import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.quickshare.QuickShareServiceImpl.QuickShareEmailRequest;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
@@ -33,9 +34,10 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
@@ -47,6 +49,10 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.ResultSetRow;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
@@ -85,6 +91,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
     private PersonService personService;
     private AuthorityService authorityService;
     private MimetypeService mimeTypeService;
+    private SearchService searchService;
 
     public void setServiceRegistry(ServiceRegistry sr)
     {
@@ -118,6 +125,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         this.personService = sr.getPersonService();
         this.authorityService = sr.getAuthorityService();
         this.mimeTypeService = sr.getMimetypeService();
+        this.searchService = sr.getSearchService();
     }
 
     /**
@@ -337,16 +345,74 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         }
     }
 
+    // Helper find (search) method
+
+    public CollectionWithPagingInfo<QuickShareLink> findLinks(Parameters parameters)
+    {
+        checkEnabled();
+
+        /*
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+
+        String queryString =
+                "ASPECT:\"" + QuickShareModel.ASPECT_QSHARE.toString() +
+                        "\" +@\\{http\\://www.alfresco.org/model/content/1.0\\}" + QuickShareModel.PROP_QSHARE_SHAREDBY.getLocalName() + ":\"" + currentUser + "\"";
+                        */
+
+        String queryString =
+                "ASPECT:\"" + QuickShareModel.ASPECT_QSHARE.toString() + "\"";
+
+        SearchParameters sp = new SearchParameters();
+        sp.setLanguage(SearchService.LANGUAGE_LUCENE);
+        sp.setQuery(queryString);
+        sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+
+        Paging paging = parameters.getPaging();
+        PagingRequest pagingRequest = Util.getPagingRequest(paging);
+
+        sp.setSkipCount(pagingRequest.getSkipCount());
+        sp.setMaxItems(pagingRequest.getMaxItems());
+
+        // TODO is perf ok with Solr 4 paging/sorting ? (otherwise make this optional via orderBy and leave default sort as undefined)
+        sp.addSort("@" + ContentModel.PROP_MODIFIED, false);
+
+        ResultSet results = searchService.query(sp);
+
+        List<QuickShareLink> qsLinks = new ArrayList<>(results.length());
+
+        for (ResultSetRow row : results)
+        {
+            NodeRef nodeRef = row.getNodeRef();
+            qsLinks.add(getQuickShareInfo(nodeRef, false));
+        }
+
+        results.close();
+
+        return CollectionWithPagingInfo.asPaged(paging, qsLinks, results.hasMore(), new Long(results.getNumberFound()).intValue());
+    }
+
     private QuickShareLink getQuickShareInfo(String sharedId, boolean noAuth)
     {
         checkValidShareId(sharedId);
 
+        Map<String, Object> map = (Map<String, Object>) quickShareService.getMetaData(sharedId).get("item");
+        NodeRef nodeRef = new NodeRef((String) map.get("nodeRef"));
+
+        return getQuickShareInfo(nodeRef, map, noAuth);
+    }
+
+    private QuickShareLink getQuickShareInfo(NodeRef nodeRef, boolean noAuth)
+    {
+        Map<String, Object> map = (Map<String, Object>) quickShareService.getMetaData(nodeRef).get("item");
+        return getQuickShareInfo(nodeRef, map , noAuth);
+    }
+
+    private QuickShareLink getQuickShareInfo(NodeRef nodeRef, Map<String, Object> map, boolean noAuth)
+    {
+        String sharedId = (String)map.get("sharedId");
+
         try
         {
-            Map<String, Object> map = (Map<String, Object>)quickShareService.getMetaData(sharedId).get("item");
-
-            NodeRef nodeRef = new NodeRef((String) map.get("nodeRef"));
-
             Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
             ContentData cd = (ContentData)nodeProps.get(ContentModel.PROP_CONTENT);
 

@@ -22,6 +22,7 @@ import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.QuickShareLinkEmailRequest;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 import java.util.List;
@@ -86,4 +87,12 @@ public interface QuickShareLinks
      * @param parameters   The {@link Parameters} object to get the parameters passed into the request
      */
     void emailSharedLink(String nodeId, QuickShareLinkEmailRequest emailRequest, Parameters parameters);
+
+    /**
+     * Find (search) for shared links visible to current user
+     *
+     * @param parameters
+     * @return
+     */
+    CollectionWithPagingInfo<QuickShareLink> findLinks(Parameters parameters);
 }

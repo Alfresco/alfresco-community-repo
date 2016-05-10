@@ -20,7 +20,7 @@ public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>
     }
 
     @Action("cut")
-    public String cutLawn(String id, Parameters parameters) {
+    public String cutLawn(String id, Void notused, Parameters parameters) {
         return "All done";
     }
 

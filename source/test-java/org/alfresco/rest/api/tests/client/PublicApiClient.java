@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.rest.api.tests.client;
 
 import static org.junit.Assert.assertNotNull;
@@ -552,7 +570,12 @@ public class PublicApiClient
 
 	public HttpResponse delete(String scope, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId) throws IOException
 	{
-		HttpResponse response = client.delete(getRequestContext(), scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId);
+		return delete(scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, null);
+	}
+
+	public HttpResponse delete(String scope, int version, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId, Map<String, String> params) throws IOException
+	{
+		HttpResponse response = client.delete(getRequestContext(), scope, version, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params);
 		
 		logger.debug(response.toString());
 

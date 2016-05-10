@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.rest.api.tests.client;
 
 import java.io.BufferedInputStream;
@@ -545,14 +544,14 @@ public class PublicApiHttpClient
     public HttpResponse delete(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
                 final String relationCollectionName, final Object relationshipEntityId) throws IOException
     {
-        return delete(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId);
+        return delete(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, null);
     }
 
     public HttpResponse delete(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
-                final String relationCollectionName, final Object relationshipEntityId) throws IOException
+                final String relationCollectionName, final Object relationshipEntityId, final Map<String, String> params) throws IOException
     {
         RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
-                    relationshipEntityId, null);
+                    relationshipEntityId, params);
         String url = endpoint.getUrl();
 
         DeleteMethod req = new DeleteMethod(url);

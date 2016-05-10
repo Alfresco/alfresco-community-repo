@@ -331,10 +331,26 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
             ContentInfo contentInfo = new ContentInfo((String) map.get("mimetype"), null, (Long) map.get("size"), null);
 
-            // note: we do not currently return userids (to be consistent with v0 internal - limited disclosure)
-            UserInfo modifiedByUser = new UserInfo(null, (String) map.get("modifierFirstName"), (String) map.get("modifierLastName"));
+            // note: if not authenticated then we do not currently return userids (to be consistent with v0 internal - limited disclosure)
+            boolean noAuth = (AuthenticationUtil.isRunAsUserTheSystemUser()); // TODO review - for now assume "System" implies unauthenticated access
 
-            // TODO review - limit to authenticated users ? (not exposed by V0 but needed for "find")
+            //
+            // modifiedByUser
+            //
+            UserInfo modifiedByUser = null;
+            if (noAuth)
+            {
+                modifiedByUser = new UserInfo(null, (String) map.get("modifierFirstName"), (String) map.get("modifierLastName"));
+            }
+            else
+            {
+                String modifiedByUserId = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+                modifiedByUser = new UserInfo(modifiedByUserId, (String) map.get("modifierFirstName"), (String) map.get("modifierLastName"));
+            }
+
+            //
+            // sharedByUser
+            //
             UserInfo sharedByUser = null;
             String sharedByUserId = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);
             if (sharedByUserId != null)
@@ -345,10 +361,19 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
                     PersonService.PersonInfo pInfo = personService.getPerson(pRef);
                     if (pInfo != null)
                     {
-                        sharedByUser = new UserInfo(null, pInfo.getFirstName(), pInfo.getLastName());
+                        // TODO review - limit to authenticated users only ?? (not exposed by V0 but needed for "find")
+                        if (noAuth)
+                        {
+                            sharedByUser = new UserInfo(null, pInfo.getFirstName(), pInfo.getLastName());
+                        }
+                        else
+                        {
+                            sharedByUser = new UserInfo(sharedByUserId, pInfo.getFirstName(), pInfo.getLastName());
+                        }
                     }
                 }
             }
+
             // TODO other "properties" (if needed) - eg. cm:title, cm:lastThumbnailModificationData, ... thumbnail info ...
 
             QuickShareLink qs = new QuickShareLink(sharedId, nodeRef.getId());

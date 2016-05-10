@@ -42,6 +42,7 @@ import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
@@ -97,6 +98,8 @@ import org.alfresco.service.cmr.repository.Path;
 import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
@@ -154,6 +157,8 @@ public class NodesImpl implements Nodes
     private ActionService actionService;
     private VersionService versionService;
     private PersonService personService;
+    private OwnableService ownableService;
+    private AuthorityService authorityService;
 
     // note: circular - Nodes/QuickShareLinks currently use each other (albeit for different methods)
     private QuickShareLinks quickShareLinks;
@@ -184,6 +189,8 @@ public class NodesImpl implements Nodes
         this.actionService = sr.getActionService();
         this.versionService = sr.getVersionService();
         this.personService = sr.getPersonService();
+        this.ownableService = sr.getOwnableService();
+        this.authorityService = sr.getAuthorityService();
 
         if (defaultIgnoreTypesAndAspects != null)
         {
@@ -1137,6 +1144,17 @@ public class NodesImpl implements Nodes
 
         if (permanentDelete == true)
         {
+            boolean isAdmin = authorityService.hasAdminAuthority();
+            if (! isAdmin)
+            {
+                String owner = ownableService.getOwner(nodeRef);
+                if (! AuthenticationUtil.getRunAsUser().equals(owner))
+                {
+                    // non-owner/non-admin cannot permanently delete (even if they have delete permission)
+                    throw new PermissionDeniedException("Non-owner/non-admin cannot permanently delete: " + nodeId);
+                }
+            }
+
             // Set as temporary to delete node instead of archiving.
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
         }

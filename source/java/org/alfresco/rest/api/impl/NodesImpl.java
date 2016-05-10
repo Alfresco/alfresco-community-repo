@@ -268,6 +268,8 @@ public class NodesImpl implements Nodes
             new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_NODETYPE, PARAM_SUBTYPES}));
 
     /*
+     * Validates that node exists.
+     *
      * Note: assumes workspace://SpacesStore
      */
     public NodeRef validateNode(String nodeId)
@@ -305,9 +307,17 @@ public class NodesImpl implements Nodes
         return nodeRef;
     }
 
+    /*
+     * Check that nodes exists and matches given expected/excluded type(s).
+     */
     public boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes)
     {
-        if (!nodeService.exists(nodeRef))
+        return nodeMatches(nodeRef, expectedTypes, excludedTypes, true);
+    }
+
+    public boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes, boolean existsCheck)
+    {
+        if (existsCheck && (! nodeService.exists(nodeRef)))
         {
             throw new EntityNotFoundException(nodeRef.getId());
         }
@@ -327,6 +337,13 @@ public class NodesImpl implements Nodes
 
     protected boolean typeMatches(QName type, Set<QName> expectedTypes, Set<QName> excludedTypes)
     {
+        if (((expectedTypes != null) && (expectedTypes.size() == 1)) &&
+            ((excludedTypes == null) || (excludedTypes.size() == 0)))
+        {
+            // use isSubClass if checking against single expected type (and no excluded types)
+            return isSubClass(type, expectedTypes.iterator().next());
+        }
+
         Set<QName> allExpectedTypes = new HashSet<>();
         if (expectedTypes != null)
         {
@@ -530,6 +547,12 @@ public class NodesImpl implements Nodes
 
         if (path != null)
         {
+            // check that parent is a folder before resolving relative path
+            if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
+            {
+                throw new InvalidArgumentException("NodeId of folder is expected");
+            }
+
             // resolve path relative to current nodeId
             parentNodeRef = resolveNodeByPath(parentNodeRef, path, true);
         }
@@ -670,7 +693,7 @@ public class NodesImpl implements Nodes
 
         if (selectParam.contains(PARAM_SELECT_ISLINK))
         {
-            boolean isLink = typeMatches(nodeTypeQName, Collections.singleton(ContentModel.TYPE_LINK), null);
+            boolean isLink = isSubClass(nodeTypeQName, ContentModel.TYPE_LINK);
             node.setIsLink(isLink);
         }
         
@@ -863,7 +886,14 @@ public class NodesImpl implements Nodes
     public CollectionWithPagingInfo<Node> listChildren(String parentFolderNodeId, Parameters parameters)
     {
         String path = parameters.getParameter(PARAM_RELATIVE_PATH);
+
         final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, path);
+
+        // check that resolved node is a folder
+        if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
+        {
+            throw new InvalidArgumentException("NodeId of folder is expected");
+        }
 
         final List<String> selectParam = parameters.getSelectedProperties();
 
@@ -930,11 +960,6 @@ public class NodesImpl implements Nodes
         }
 
         Paging paging = parameters.getPaging();
-
-        if (!nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null))
-        {
-            throw new InvalidArgumentException("NodeId of folder is expected");
-        }
 
         PagingRequest pagingRequest = Util.getPagingRequest(paging);
 
@@ -1045,7 +1070,7 @@ public class NodesImpl implements Nodes
         // check that requested parent node exists and it's type is a (sub-)type of folder
         final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
 
-        if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null))
+        if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
         {
             throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef);
         }
@@ -1349,7 +1374,7 @@ public class NodesImpl implements Nodes
     {
         final NodeRef nodeRef = validateNode(fileNodeId);
 
-        if (! nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null))
+        if (! nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
             throw new InvalidArgumentException("NodeId of content is expected: "+nodeRef);
         }
@@ -1394,7 +1419,7 @@ public class NodesImpl implements Nodes
     {
         final NodeRef nodeRef = validateNode(fileNodeId);
 
-        if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null))
+        if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
             throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef);
         }

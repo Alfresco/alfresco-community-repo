@@ -408,7 +408,7 @@
           </list>
        </property>
     </bean>
-    
+
     <bean id="nodeRatings" class="org.alfresco.rest.api.impl.NodeRatingsImpl">
         <property name="nodes" ref="nodes" />
         <property name="ratingService" ref="RatingService" />
@@ -458,6 +458,7 @@
     <bean id="nodes" class="org.alfresco.rest.api.impl.NodesImpl" init-method="init">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="repositoryHelper" ref="repositoryHelper"/>
+        <property name="quickShareService" ref="QuickShareService"/>
         <property name="ignoreTypes" ref="nodes.ignoreTypes"/>
         <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
     </bean>

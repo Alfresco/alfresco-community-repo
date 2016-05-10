@@ -34,6 +34,7 @@ import java.util.Set;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
+import org.alfresco.model.QuickShareModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.ContentLimitViolationException;
@@ -76,6 +77,7 @@ import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -140,6 +142,7 @@ public class NodesImpl implements Nodes
     private ContentService contentService;
     private ActionService actionService;
     private VersionService versionService;
+    private QuickShareService quickShareService;
     private Repository repositoryHelper;
     private ServiceRegistry sr;
     private Set<String> defaultIgnoreTypes;
@@ -182,6 +185,11 @@ public class NodesImpl implements Nodes
     public void setRepositoryHelper(Repository repositoryHelper)
     {
         this.repositoryHelper = repositoryHelper;
+    }
+
+    public void setQuickShareService(QuickShareService quickShareService)
+    {
+        this.quickShareService = quickShareService;
     }
 
     public void setIgnoreTypes(Set<String> ignoreTypes)
@@ -1114,11 +1122,27 @@ public class NodesImpl implements Nodes
             // TODO: optional PATCH mechanism to add one new new aspect (with some related aspect properties) without affecting existing aspects/properties
             for (QName aQName : aspectsToRemove)
             {
+                // in future, this could/should be part of QuickShareService aspect "behaviour"
+                if (aQName.equals(QuickShareModel.ASPECT_QSHARE))
+                {
+                    String qShareId = (String)nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
+                    if (qShareId != null)
+                    {
+                        quickShareService.unshareContent(qShareId);
+                    }
+                }
+
                 nodeService.removeAspect(nodeRef, aQName);
             }
 
             for (QName aQName : aspectsToAdd)
             {
+                // in future, this could/should be part of QuickShareService aspect "behaviour"
+                if (aQName.equals(QuickShareModel.ASPECT_QSHARE))
+                {
+                    quickShareService.shareContent(nodeRef);
+                }
+
                 nodeService.addAspect(nodeRef, aQName, null);
             }
         }

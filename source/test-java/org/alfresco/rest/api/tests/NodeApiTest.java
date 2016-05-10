@@ -678,9 +678,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         d1.setCreatedByUser(expectedUser);
         d1.setModifiedByUser(expectedUser);
 
-        Map<String,Object> props = new HashMap<>();
-        props.put("cm:title",title);
-        props.put("cm:versionLabel","1.0");
+        Map<String, Object> props = new HashMap<>();
+        props.put("cm:title", title);
+        props.put("cm:versionLabel", "1.0");
+        props.put("cm:versionType", "MAJOR");
 
         d1.setProperties(props);
         d1.setAspectNames(Arrays.asList("cm:auditable","cm:titled","cm:versionable","cm:author"));
@@ -2265,7 +2266,8 @@ public class NodeApiTest extends AbstractBaseApiTest
         response = getSingle(URL_NODES, user1, dId, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        d1.getProperties().put("cm:versionLabel","1.0");
+        d1.getProperties().put("cm:versionLabel", "1.0");
+        d1.getProperties().put("cm:versionType", "MAJOR");
         d1.expected(documentResp);
 
         // update file - remove titled aspect (and it's related aspect properties)
@@ -2404,8 +2406,9 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         // note: owner is implied
-        assertEquals(1, documentResp.getProperties().size());
+        assertEquals(2, documentResp.getProperties().size());
         assertEquals("1.0", documentResp.getProperties().get("cm:versionLabel"));
+        assertEquals("MAJOR", documentResp.getProperties().get("cm:versionType"));
 
         props = new HashMap<>();
         props.put(PROP_OWNER, user1);

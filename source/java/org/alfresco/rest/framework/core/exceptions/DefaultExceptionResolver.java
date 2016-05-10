@@ -9,6 +9,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 public class DefaultExceptionResolver implements ExceptionResolver<Exception>
 {
+    public static final String ERROR_URL = "api-explorer.alfresco.com";
     public static final String DEFAULT_MESSAGE_ID = "framework.exception.ApiDefault";
     
     @Override

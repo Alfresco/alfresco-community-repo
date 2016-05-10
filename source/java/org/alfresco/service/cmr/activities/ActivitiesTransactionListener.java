@@ -19,12 +19,11 @@
 package org.alfresco.service.cmr.activities;
 
 import org.alfresco.repo.Client;
-import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.TransactionListener;
 
 /**
- * A Transaction Listener to post activites once the transaction has been committed,
+ * A Transaction Listener to post activities once the transaction has been committed,
  * or at the end of a read-only transaction.
  *
  * @author Gethin James

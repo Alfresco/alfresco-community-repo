@@ -1,21 +1,31 @@
+/*
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.alfresco.service.cmr.activities;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.model.ContentModel;
-import org.alfresco.opencmis.ActivityPosterImpl;
 import org.alfresco.repo.Client;
-import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.site.SiteInfo;
-import org.alfresco.service.cmr.site.SiteService;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * A consolidated services for posting file folder activities.
@@ -26,7 +36,6 @@ import org.slf4j.LoggerFactory;
  */
 public class FileFolderActivityPosterImpl implements ActivityPoster
 {
-    private static final Logger logger = LoggerFactory.getLogger(FileFolderActivityPosterImpl.class);
     private ActivityService activityService;
  
     @Override

@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.alfresco.rest.framework.Action;
+import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.WebApi;
@@ -134,7 +134,7 @@ public class ResourceInspector
         }
 
         inspectAddressedProperties(api, resource, urlPath, metainfo);
-        inspectActions(api, resource, urlPath, metainfo);
+        inspectOperations(api, resource, urlPath, metainfo);
         return metainfo;
     }
 
@@ -535,46 +535,46 @@ public class ResourceInspector
     }
     
     /**
-     * Inspect a resource to find actions on it.
+     * Inspect a resource to find operations on it.
      * @param api Api
      * @param resource Class<?>
      * @param entityPath String
      * @param metainfo List<ResourceMetadata>
      */
-    public static void inspectActions(Api api, Class<?> resource, final String entityPath, List<ResourceMetadata> metainfo)
+    public static void inspectOperations(Api api, Class<?> resource, final String entityPath, List<ResourceMetadata> metainfo)
     {
-        Map<String,Pair<ResourceOperation,Method>> operations = findActions(entityPath, resource);
+        Map<String,Pair<ResourceOperation,Method>> operations = findOperations(entityPath, resource);
         if (operations != null && !operations.isEmpty())
         {
             for (Entry<String, Pair<ResourceOperation, Method>> opera : operations.entrySet())
             {
                 if (isDeleted(opera.getValue().getSecond()))
                 {
-                    metainfo.add(new ActionResourceMetaData(opera.getKey(), api, new HashSet(Arrays.asList(opera.getValue().getFirst()))));
+                    metainfo.add(new OperationResourceMetaData(opera.getKey(), api, new HashSet(Arrays.asList(opera.getValue().getFirst()))));
                 }
                 else
                 {
-                    metainfo.add(new ActionResourceMetaData(opera.getKey(), Arrays.asList(opera.getValue().getFirst()), api, opera.getValue().getSecond()));
+                    metainfo.add(new OperationResourceMetaData(opera.getKey(), Arrays.asList(opera.getValue().getFirst()), api, opera.getValue().getSecond()));
                 }
             }
         }
     }
 
     /**
-     * Finds actions on an entity
+     * Finds operations on an entity
      * @param entityPath path to the entity
      * @param anyClass resource clause
      * @return The operations
      */
-    private static Map<String,Pair<ResourceOperation,Method>> findActions(String entityPath, Class<?> anyClass)
+    private static Map<String,Pair<ResourceOperation,Method>> findOperations(String entityPath, Class<?> anyClass)
     {
         Map<String, Pair<ResourceOperation,Method>> embeds = new HashMap<String, Pair<ResourceOperation,Method>>();
-        List<Method> annotatedMethods = ResourceInspectorUtil.findMethodsByAnnotation(anyClass, Action.class);
+        List<Method> annotatedMethods = ResourceInspectorUtil.findMethodsByAnnotation(anyClass, Operation.class);
         if (annotatedMethods != null && !annotatedMethods.isEmpty())
         {
             for (Method annotatedMethod : annotatedMethods)
             {
-                Annotation annot = AnnotationUtils.findAnnotation(annotatedMethod, Action.class);
+                Annotation annot = AnnotationUtils.findAnnotation(annotatedMethod, Operation.class);
                 if (annot != null)
                 {
                     Map<String, Object> annotAttribs = AnnotationUtils.getAnnotationAttributes(annot);

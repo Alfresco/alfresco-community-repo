@@ -22,34 +22,33 @@ import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
 
 import java.lang.reflect.Method;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 /**
- * Extends ResourceMetaData to give more information about an Action
+ * Extends ResourceMetaData to give more information about an Operation
  *
  * @author Gethin James
  */
-public class ActionResourceMetaData extends ResourceMetadata
+public class OperationResourceMetaData extends ResourceMetadata
 {
-    private final Method actionMethod;
+    private final Method operationMethod;
 
     /**
      * Use this constructor to create the resource metadata
      * @param uniqueId
      * @param operations
      * @param api
-     * @param actionMethod
+     * @param operationMethod
      */
-    public ActionResourceMetaData(String uniqueId, List<ResourceOperation> operations, Api api, Method actionMethod)
+    public OperationResourceMetaData(String uniqueId, List<ResourceOperation> operations, Api api, Method operationMethod)
     {
-        super(uniqueId, RESOURCE_TYPE.ACTION, operations, api, null, null, null);
+        super(uniqueId, RESOURCE_TYPE.OPERATION, operations, api, null, null, null);
         if (operations.size()!= 1)
         {
-            throw new IllegalArgumentException("Only 1 action per url is supported for an entity");
+            throw new IllegalArgumentException("Only 1 operation per url is supported for an entity");
         }
-        this.actionMethod = actionMethod;
+        this.operationMethod = operationMethod;
     }
 
     /**
@@ -58,22 +57,22 @@ public class ActionResourceMetaData extends ResourceMetadata
      * @param api
      * @param apiDeleted
      */
-    public ActionResourceMetaData(String uniqueId, Api api, Set<Class<? extends ResourceAction>> apiDeleted)
+    public OperationResourceMetaData(String uniqueId, Api api, Set<Class<? extends ResourceAction>> apiDeleted)
     {
-        super(uniqueId, RESOURCE_TYPE.ACTION, null, api, apiDeleted, null, null);
-        this.actionMethod = null;
+        super(uniqueId, RESOURCE_TYPE.OPERATION, null, api, apiDeleted, null, null);
+        this.operationMethod = null;
     }
 
-    public Method getActionMethod()
+    public Method getOperationMethod()
     {
-        return actionMethod;
+        return operationMethod;
     }
 
     @Override
     public String toString()
     {
         final StringBuilder builder = new StringBuilder();
-        builder.append("ActionResourceMetaData [api=");
+        builder.append("OperationResourceMetaData [api=");
         builder.append(this.getApi());
         builder.append(", uniqueId=");
         builder.append(this.getUniqueId());
@@ -85,7 +84,7 @@ public class ActionResourceMetaData extends ResourceMetadata
         builder.append(this.getOperations());
         builder.append(", apiDeleted=");
         builder.append(this.getApiDeleted());
-        builder.append("actionMethod=").append(actionMethod);
+        builder.append("operationMethod=").append(operationMethod);
         builder.append("]");
         return builder.toString();
     }

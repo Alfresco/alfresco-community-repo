@@ -36,7 +36,7 @@ import org.springframework.http.HttpMethod;
  */
 public class ResourceMetadata
 {
-    public enum RESOURCE_TYPE {ENTITY, RELATIONSHIP, PROPERTY, ACTION};
+    public enum RESOURCE_TYPE {ENTITY, RELATIONSHIP, PROPERTY, OPERATION};
     private final String uniqueId;
     private final RESOURCE_TYPE type;
     private final List<ResourceOperation> operations;

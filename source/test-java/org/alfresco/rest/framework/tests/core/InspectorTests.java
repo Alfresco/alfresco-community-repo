@@ -15,10 +15,8 @@ import java.util.Map;
 
 import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.api.nodes.NodeCommentsRelation;
-import org.alfresco.rest.framework.Action;
 import org.alfresco.rest.framework.Api;
-import org.alfresco.rest.framework.BinaryProperties;
-import org.alfresco.rest.framework.core.ActionResourceMetaData;
+import org.alfresco.rest.framework.core.OperationResourceMetaData;
 import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceInspectorUtil;
 import org.alfresco.rest.framework.core.ResourceMetadata;
@@ -391,20 +389,20 @@ public class InspectorTests
     }
 
     @Test
-    public void testInspectActions() throws IllegalAccessException, InstantiationException, Throwable
+    public void testInspectOperations() throws IllegalAccessException, InstantiationException, Throwable
     {
         Api api = Api.valueOf("alfrescomock", "private", "1");
         List<ResourceMetadata> metainfo = new ArrayList<ResourceMetadata>();
 
         GrassEntityResource grassEntityResource = new GrassEntityResource();
-        ResourceInspector.inspectActions(api, GrassEntityResource.class,"-root-", metainfo);
+        ResourceInspector.inspectOperations(api, GrassEntityResource.class,"-root-", metainfo);
         assertTrue(metainfo.size()==2);
 
         for (ResourceMetadata resourceMetadata : metainfo)
         {
-            assertEquals(ResourceMetadata.RESOURCE_TYPE.ACTION, resourceMetadata.getType());
-            ActionResourceMetaData actionResourceMetaData = (ActionResourceMetaData) resourceMetadata;
-            Method actionMethod = actionResourceMetaData.getActionMethod();
+            assertEquals(ResourceMetadata.RESOURCE_TYPE.OPERATION, resourceMetadata.getType());
+            OperationResourceMetaData operationResourceMetaData = (OperationResourceMetaData) resourceMetadata;
+            Method actionMethod = operationResourceMetaData.getOperationMethod();
             String result = null;
             switch (resourceMetadata.getUniqueId())
             {

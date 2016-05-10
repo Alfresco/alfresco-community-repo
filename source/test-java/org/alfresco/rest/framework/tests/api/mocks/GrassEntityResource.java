@@ -7,6 +7,7 @@ import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.springframework.extensions.webscripts.Status;
 
 import java.util.List;
 
@@ -22,12 +23,13 @@ public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>
     }
 
     @Operation("cut")
+    @WebApiDescription(title = "Cut the grass",successStatus = Status.STATUS_NOT_IMPLEMENTED)
     public String cutLawn(String id, Void notused, Parameters parameters) {
         return "All done";
     }
 
     @Operation("grow")
-    @WebApiDescription(title = "Grow the grass")
+    @WebApiDescription(title = "Grow the grass",successStatus = Status.STATUS_ACCEPTED)
     @WebApiParam(name = "Grass", title = "The grass.",required=true, kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     public String growTheLawn(String id, Grass grass, Parameters parameters) {
         return "Growing well";

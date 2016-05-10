@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.alfresco.opencmis.OpenCMISClientContext;
 import org.alfresco.opencmis.tck.tests.query.QueryForObjectCustom;
+import org.alfresco.opencmis.tck.tests.query.QueryInFolderTestCustom;
 import org.alfresco.opencmis.tck.tests.query.QueryLikeTestCustom;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.apache.chemistry.opencmis.commons.enums.BindingType;
@@ -17,10 +18,8 @@ import org.apache.chemistry.opencmis.tck.tests.control.ControlTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.crud.CRUDTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.filing.FilingTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.query.ContentChangesSmokeTest;
-import org.apache.chemistry.opencmis.tck.tests.versioning.CheckedOutTest;
-import org.apache.chemistry.opencmis.tck.tests.versioning.VersionDeleteTest;
-import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningSmokeTest;
-import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningStateCreateTest;
+import org.apache.chemistry.opencmis.tck.tests.query.QuerySmokeTest;
+import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningTestGroup;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.junit.AfterClass;
@@ -73,7 +72,7 @@ public class TestPublicApiAtomPub10TCK extends AbstractEnterpriseOpenCMIS10TCKTe
     @Test
     public void testCMISTCKVersioning() throws Exception
     {
-        OverrideVersioningTestGroup versioningTestGroup = new OverrideVersioningTestGroup();
+        VersioningTestGroup versioningTestGroup = new VersioningTestGroup();
         JUnitHelper.run(versioningTestGroup);
     }
     
@@ -98,23 +97,23 @@ public class TestPublicApiAtomPub10TCK extends AbstractEnterpriseOpenCMIS10TCKTe
         JUnitHelper.run(queryTestGroup);
     }
     
-    private class OverrideVersioningTestGroup extends AbstractSessionTestGroup
-    {
-        @Override
-        public void init(Map<String, String> parameters) throws Exception
-        {
-            super.init(parameters);
-
-            setName("Versioning Test Group");
-            setDescription("Versioning tests.");
-
-            addTest(new VersioningSmokeTest());
-            addTest(new VersionDeleteTest());
-            addTest(new VersioningStateCreateTest());
-            // relies on Solr being available
-            addTest(new CheckedOutTest());
-        }
-    }
+//    private class OverrideVersioningTestGroup extends AbstractSessionTestGroup
+//    {
+//        @Override
+//        public void init(Map<String, String> parameters) throws Exception
+//        {
+//            super.init(parameters);
+//
+//            setName("Versioning Test Group");
+//            setDescription("Versioning tests.");
+//
+//            addTest(new VersioningSmokeTest());
+//            addTest(new VersionDeleteTest());
+//            addTest(new VersioningStateCreateTest());
+//            // relies on Solr being available
+//            addTest(new CheckedOutTest());
+//        }
+//    }
 
     private class OverrideQueryTestGroup extends AbstractSessionTestGroup
     {
@@ -128,11 +127,12 @@ public class TestPublicApiAtomPub10TCK extends AbstractEnterpriseOpenCMIS10TCKTe
 
             // this is failing because of an MT issue (the thread is a specific tenant but the DB metadata query is searching
             // against the workspace://SpacesStore)
-//            addTest(new QuerySmokeTest());
+            addTest(new QuerySmokeTest());
             // The test fails on Lucene see MNT-11223
 //            addTest(new QueryRootFolderTest());
             addTest(new QueryForObjectCustom());
             addTest(new QueryLikeTestCustom());
+            addTest(new QueryInFolderTestCustom());
             addTest(new ContentChangesSmokeTest());
         }
     }

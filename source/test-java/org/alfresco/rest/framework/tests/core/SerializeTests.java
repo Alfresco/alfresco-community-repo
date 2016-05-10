@@ -263,7 +263,25 @@ public class SerializeTests
         out = writeResponse(resultCollection);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
     }
-    
+
+    @Test
+    public void testIncludeSource() throws IOException
+    {
+        ExecutionResult exec1 = new ExecutionResult(new Farmer("180"),null);
+        ExecutionResult exec2 = new ExecutionResult(new Farmer("456"), null);
+        CollectionWithPagingInfo<ExecutionResult> coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1, exec2));
+
+        Object resultCollection =  helper.processAdditionsToTheResponse(api,"sheep",ParamsExtender.valueOf(true,"1"),coll);
+        assertNotNull(resultCollection);
+        String out = writeResponse(resultCollection);
+        assertTrue("There must 'source' json output", StringUtils.contains(out, "\"source\":{\"name\":\"Dolly\",\"age\":3,\"sheepGuid\":\"1\"}"));
+
+        resultCollection =  helper.processAdditionsToTheResponse(api,"sheep",ParamsExtender.valueOf(false,"1"),coll);
+        assertNotNull(resultCollection);
+        out = writeResponse(resultCollection);
+        assertFalse("There must not 'source' json output", StringUtils.contains(out, "\"source\":{\"name\":\"Dolly\",\"age\":3,\"sheepGuid\":\"1\"}"));
+    }
+
     @Test
     public void testExpandRecursiveRelations() throws IOException
     {

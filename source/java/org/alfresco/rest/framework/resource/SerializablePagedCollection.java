@@ -31,6 +31,11 @@ public interface SerializablePagedCollection<T>
     Integer getTotalItems();
 
     /**
+     * The parent/source entity responsible for the collection
+     */
+    Object getSourceEntity();
+
+    /**
      * The requested paging parameters set by the client
      */
     Paging getPaging();

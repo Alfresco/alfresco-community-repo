@@ -47,6 +47,7 @@ import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
+import org.alfresco.rest.framework.resource.SerializablePagedCollection;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor.ExecutionCallback;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
@@ -474,22 +475,19 @@ public class ResourceWebScriptHelper
     {
         PropertyCheck.mandatory(this, null, params);
         if (objectToWrap == null ) return null;
-        if (objectToWrap instanceof CollectionWithPagingInfo<?>)
+        if (objectToWrap instanceof SerializablePagedCollection<?>)
         {
-            CollectionWithPagingInfo<?> collectionToWrap = (CollectionWithPagingInfo<?>) objectToWrap;
+            SerializablePagedCollection<?> collectionToWrap = (SerializablePagedCollection<?>) objectToWrap;
+            Object sourceEntity = executeIncludedSource(api,entityCollectionName,params.getEntityId(),params.includeSource());
+            Collection<Object> resultCollection = new ArrayList(collectionToWrap.getCollection().size());
             if (!collectionToWrap.getCollection().isEmpty())
             {
-                Collection<Object> resultCollection = new ArrayList(collectionToWrap.getCollection().size());
                 for (Object obj : collectionToWrap.getCollection())
                 {
                     resultCollection.add(processAdditionsToTheResponse(api,entityCollectionName,params,obj));
                 }
-                return CollectionWithPagingInfo.asPaged(collectionToWrap.getPaging(), resultCollection, collectionToWrap.hasMoreItems(), collectionToWrap.getTotalItems());
             }
-            else
-            {   //It is empty so just return it for rendering.
-                return objectToWrap;
-            }
+            return CollectionWithPagingInfo.asPaged(collectionToWrap.getPaging(), resultCollection, collectionToWrap.hasMoreItems(), collectionToWrap.getTotalItems(), sourceEntity);
         }
         else
         {           
@@ -519,6 +517,20 @@ public class ResourceWebScriptHelper
             return execRes; 
 
         }
+    }
+
+    private Object executeIncludedSource(Api api, String entityCollectionName, String uniqueEntityId, boolean includeSource)
+    {
+        if (includeSource)
+        {
+            ResourceWithMetadata res = locator.locateEntityResource(api, entityCollectionName, HttpMethod.GET);
+            if (res != null)
+            {
+                Object result = executeRelatedResource(api, null, uniqueEntityId, null, res);
+                if (result!=null && result instanceof ExecutionResult) return ((ExecutionResult) result).getRoot();
+            }
+        }
+        return null;
     }
 
     /**

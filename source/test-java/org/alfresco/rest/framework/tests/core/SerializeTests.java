@@ -243,6 +243,12 @@ public class SerializeTests extends AbstractContextTest
         assertNotNull(resultCollection);
         out = writeResponse(resultCollection);
         assertFalse("There must not 'source' json output", StringUtils.contains(out, "\"source\":{\"name\":\"Dolly\",\"age\":3,\"sheepGuid\":\"1\"}"));
+
+        coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1, exec2), false, 2, new Sheep("barbie"));
+        resultCollection =  helper.processAdditionsToTheResponse(mock(WebScriptResponse.class), api,"sheep",ParamsExtender.valueOf(true,"1"),coll);
+        assertNotNull(resultCollection);
+        out = writeResponse(resultCollection);
+        assertTrue("There must 'source' json output", StringUtils.contains(out, "\"source\":{\"name\":\"Dolly\",\"age\":3,\"sheepGuid\":\"barbie\""));
     }
 
     @Test

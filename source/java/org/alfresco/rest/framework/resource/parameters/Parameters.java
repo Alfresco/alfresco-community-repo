@@ -73,7 +73,15 @@ public interface Parameters
      * @return String the propertyName
      */
     public String getBinaryProperty();
-    
+
+    /**
+     * Indicates if the source entity should be includes in the request.
+     * This will normally be done by the framework but implentations may prefer
+     * to do it themselves.
+     * @return true if the source should be included.
+     */
+    boolean includeSource();
+
     /**
      * Represents a Query specified by the client.
      * Specified by the "WHERE" request parameter.

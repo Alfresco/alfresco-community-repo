@@ -130,36 +130,40 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
      * <p>DELETE:</p>
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>}
      */
-
-    // TODO re-enable (or at least split out rendition part of the test) - for some reason fails on build m/c - apparently fails to create rendition ?
-    public void XtestSharedLinkCreateGetDelete() throws Exception
+    @Test
+    public void testSharedLinkCreateGetDelete() throws Exception
     {
         // As user 1 ...
 
-        // create doc d1 - plain text
+        // create doc d1 - pdf
         String sharedFolderNodeId = getSharedNodeId(user1);
-        String content1Text = "The quick brown fox jumps over the lazy dog 1.";
-        String fileName1 = "content" + RUNID + "_1.txt";
-        Document doc1 = createTextFile(user1, sharedFolderNodeId, fileName1, content1Text);
-        String d1Id = doc1.getId();
 
-        // create doc d2 - pdf
-        String myFolderNodeId = getMyNodeId(user1);
+        String fileName1 = "quick"+RUNID+"_1.pdf";
+        File file1 = getResourceFile("quick.pdf");
 
-        String fileName2 = "quick"+RUNID+"_2.pdf";
-        File file = getResourceFile("quick.pdf");
-        byte[] file2_originalBytes = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
+        byte[] file1_originalBytes = Files.readAllBytes(Paths.get(file1.getAbsolutePath()));
 
-        String file2_MimeType = MimetypeMap.MIMETYPE_PDF;
+        String file1_MimeType = MimetypeMap.MIMETYPE_PDF;
 
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
-                .setFileData(new MultiPartBuilder.FileData(fileName2, file, file2_MimeType));
+                .setFileData(new MultiPartBuilder.FileData(fileName1, file1, file1_MimeType));
         MultiPartBuilder.MultiPartRequest reqBody = multiPartBuilder.build();
 
-        HttpResponse response = post(getNodeChildrenUrl(myFolderNodeId), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document doc2 = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        HttpResponse response = post(getNodeChildrenUrl(sharedFolderNodeId), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document doc1 = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
+        String d1Id = doc1.getId();
+
+        // create doc d2 - plain text
+        String myFolderNodeId = getMyNodeId(user1);
+
+        String content2Text = "The quick brown fox jumps over the lazy dog 2.";
+        String fileName2 = "content" + RUNID + "_2.txt";
+
+        Document doc2 = createTextFile(user1, myFolderNodeId, fileName2, content2Text);
         String d2Id = doc2.getId();
+
+        String file2_MimeType = MimetypeMap.MIMETYPE_TEXT_PLAIN;
 
         // As user 2 ...
 
@@ -182,11 +186,10 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(d1Id, resp.getNodeId());
         assertEquals(fileName1, resp.getName());
 
-        String file1_MimeType = MimetypeMap.MIMETYPE_TEXT_PLAIN;
         assertEquals(file1_MimeType, resp.getContent().getMimeType());
-        assertEquals("Plain Text", resp.getContent().getMimeTypeName());
+        assertEquals("Adobe PDF Document", resp.getContent().getMimeTypeName());
 
-        assertEquals(new Long(content1Text.length()), resp.getContent().getSizeInBytes());
+        assertEquals(new Long(file1_originalBytes.length), resp.getContent().getSizeInBytes());
         assertEquals("UTF-8", resp.getContent().getEncoding());
 
         assertEquals(docModifiedAt.getTime(), resp.getModifiedAt().getTime()); // not changed
@@ -265,10 +268,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertNull(resp.getSharedByUser().getId()); // userId not returned
         assertEquals(user2+" "+user2, resp.getSharedByUser().getDisplayName());
 
-
         // unauth access to file 1 content (via shared link)
         response = getSingle(QuickShareLinkEntityResource.class, null, shared1Id + "/content", null, 200);
-        assertArrayEquals(content1Text.getBytes(), response.getResponseAsBytes());
+        assertArrayEquals(file1_originalBytes, response.getResponseAsBytes());
         Map<String, String> responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
         assertEquals(file1_MimeType+";charset=UTF-8", responseHeaders.get("Content-Type"));
@@ -280,16 +282,22 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         Map<String, String> headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
         getSingle(URL_SHARED_LINKS, null, shared1Id + "/content", null, headers, 304);
 
-        // -ve test - unauth access to get shared link file content - without Content-Disposition header (attachment=false) - header ignored (plain text is not in white list)
+        // unauth access to file 1 content (via shared link) - without Content-Disposition header (attachment=false)
         params = new HashMap<>();
         params.put("attachment", "false");
         response = getSingle(QuickShareLinkEntityResource.class, null, shared1Id + "/content", params, 200);
-        assertEquals("attachment; filename=\"" + fileName1 + "\"; filename*=UTF-8''" + fileName1 + "", response.getHeaders().get("Content-Disposition"));
+        assertArrayEquals(file1_originalBytes, response.getResponseAsBytes());
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertEquals(file1_MimeType+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
+        assertNotNull(responseHeaders.get("Expires"));
+        assertNull(responseHeaders.get("Content-Disposition"));
 
 
         // unauth access to file 2 content (via shared link)
         response = getSingle(QuickShareLinkEntityResource.class, null, shared2Id + "/content", null, 200);
-        assertArrayEquals(file2_originalBytes, response.getResponseAsBytes());
+        assertArrayEquals(content2Text.getBytes(), response.getResponseAsBytes());
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
         assertEquals(file2_MimeType+";charset=UTF-8", responseHeaders.get("Content-Type"));
@@ -297,17 +305,11 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
         assertEquals("attachment; filename=\"" + fileName2 + "\"; filename*=UTF-8''" + fileName2 + "", responseHeaders.get("Content-Disposition"));
 
-        // unauth access to file 2 content (via shared link) - without Content-Disposition header (attachment=false)
+        // -ve test - unauth access to get shared link file content - without Content-Disposition header (attachment=false) - header ignored (plain text is not in white list)
         params = new HashMap<>();
         params.put("attachment", "false");
         response = getSingle(QuickShareLinkEntityResource.class, null, shared2Id + "/content", params, 200);
-        assertArrayEquals(file2_originalBytes, response.getResponseAsBytes());
-        responseHeaders = response.getHeaders();
-        assertNotNull(responseHeaders);
-        assertEquals(file2_MimeType+";charset=UTF-8", responseHeaders.get("Content-Type"));
-        assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
-        assertNotNull(responseHeaders.get("Expires"));
-        assertNull(responseHeaders.get("Content-Disposition"));
+        assertEquals("attachment; filename=\"" + fileName2 + "\"; filename*=UTF-8''" + fileName2 + "", response.getHeaders().get("Content-Disposition"));
 
         // -ve shared link rendition tests
         {
@@ -319,7 +321,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         }
 
 
-        // create rendition
+        // create rendition of pdf doc - note: for some reason create rendition of txt doc fail on build m/c (TBC) ?
         Rendition rendition = createAndGetRendition(user2, d1Id, "doclib");
         assertNotNull(rendition);
         assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());

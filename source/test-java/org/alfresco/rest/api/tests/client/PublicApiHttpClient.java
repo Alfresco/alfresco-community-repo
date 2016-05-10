@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -880,8 +880,8 @@ public class PublicApiHttpClient
         public BinaryRequestEntity(File file, String mimeType, String charset)
         {
             this.file = file;
-            this.mimeType = (mimeType == null) ? "application/octet-stream" : mimeType;
-            this.charset = (charset == null) ? "UTF-8" : charset;
+            this.mimeType = mimeType;
+            this.charset = charset;
         }
 
         @Override
@@ -918,7 +918,15 @@ public class PublicApiHttpClient
         @Override
         public String getContentType()
         {
-            return mimeType + "; " + charset;
+            if (charset == null)
+            {
+                return mimeType;
+            }
+            if (mimeType == null)
+            {
+                return null;
+            }
+            return mimeType + "; charset=" + charset;
         }
     }
 

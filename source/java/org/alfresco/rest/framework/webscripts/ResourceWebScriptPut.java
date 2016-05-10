@@ -46,6 +46,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.extensions.webscripts.WrappingWebScriptRequest;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRequest;
 import org.springframework.http.HttpMethod;
@@ -178,8 +179,8 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
      * @param params parameters to use
      * @return anObject the result of the execute
      */
-    @SuppressWarnings("unchecked")
-    private Object executeInternal(ResourceWithMetadata resource, Params params)
+    @Override
+    public Object executeAction(ResourceWithMetadata resource, Params params) throws Throwable
     {
         switch (resource.getMetaData().getType())
         {
@@ -223,23 +224,4 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
         }
     }
 
-    
-    @Override
-    public void execute(final ResourceWithMetadata resource, final Params params, final ExecutionCallback executionCallback)
-    {
-        final String entityCollectionName = ResourceInspector.findEntityCollectionNameName(resource.getMetaData());
-        transactionService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    final ResourceOperation operation = resource.getMetaData().getOperation(HttpMethod.PUT);
-                    Object result = executeInternal(resource, params);
-                    executionCallback.onSuccess(helper.processAdditionsToTheResponse(resource.getMetaData().getApi(), entityCollectionName, params, result),
-                            DEFAULT_JSON_CONTENT, operation.getSuccessStatus());
-                    return null;
-                }
-            }, false, true);
-    }
 }

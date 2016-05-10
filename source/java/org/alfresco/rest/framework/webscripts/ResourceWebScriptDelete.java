@@ -13,7 +13,6 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.http.HttpMethod;
@@ -88,7 +87,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
      * @param params parameters to use
      * @return anObject the result of the execute
      */
-    private void executeInternal(ResourceWithMetadata resource, Params params)
+    public Object executeAction(ResourceWithMetadata resource, Params params)
     {
         switch (resource.getMetaData().getType())
         {
@@ -100,7 +99,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 EntityResourceAction.Delete entityDeleter = (EntityResourceAction.Delete) resource.getResource();
                 entityDeleter.delete(params.getEntityId(), params);
                 //Don't pass anything to the callback - its just successful
-                return;
+                return null;
             case RELATIONSHIP:
                 if (resource.getMetaData().isDeleted(RelationshipResourceAction.Delete.class))
                 {
@@ -109,7 +108,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 RelationshipResourceAction.Delete relationDeleter = (RelationshipResourceAction.Delete) resource.getResource();
                 relationDeleter.delete(params.getEntityId(), params.getRelationshipId(), params);
                 //Don't pass anything to the callback - its just successful
-                return;
+                return null;
             case PROPERTY:
                 if (BinaryResourceAction.Delete.class.isAssignableFrom(resource.getResource().getClass()))
                 {
@@ -120,7 +119,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                     BinaryResourceAction.Delete binDeleter = (BinaryResourceAction.Delete) resource.getResource();
                     binDeleter.deleteProperty(params.getEntityId(), params);
                     //Don't pass anything to the callback - its just successful
-                    return;
+                    return null;
                 }
                 if (RelationshipResourceBinaryAction.Delete.class.isAssignableFrom(resource.getResource().getClass()))
                 {
@@ -131,7 +130,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                     RelationshipResourceBinaryAction.Delete binDeleter = (RelationshipResourceBinaryAction.Delete) resource.getResource();
                     binDeleter.deleteProperty(params.getEntityId(), params.getRelationshipId(), params);
                     //Don't pass anything to the callback - its just successful
-                    return;
+                    return null;
                 }
             default:
                 throw new UnsupportedResourceOperationException("DELETE not supported for Actions");
@@ -139,7 +138,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
     }
     
     @Override
-    public void execute(final ResourceWithMetadata resource, final Params params, final ExecutionCallback executionCallback)
+    public Void execute(final ResourceWithMetadata resource, final Params params, final WebScriptResponse res, boolean isReadOnly)
     {
         transactionService.getRetryingTransactionHelper().doInTransaction(
             new RetryingTransactionCallback<Void>()
@@ -148,11 +147,12 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 public Void execute() throws Throwable
                 {
                     final ResourceOperation operation = resource.getMetaData().getOperation(HttpMethod.DELETE);
-                    executeInternal(resource, params); //ignore return result
-                    executionCallback.onSuccess(null, DEFAULT_JSON_CONTENT, operation.getSuccessStatus());
+                    executeAction(resource, params); //ignore return result
+                    setResponse(res,operation.getSuccessStatus(),ApiWebScript.CACHE_NEVER, DEFAULT_JSON_CONTENT);
                     return null;
                 }
             }, false, true);
+        return null;
     }
 
 }

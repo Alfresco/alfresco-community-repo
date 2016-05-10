@@ -30,6 +30,7 @@ import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.QuickShareLinkEmailRequest;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
@@ -58,9 +59,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Centralises access to quick share services and maps between representations.
- *
- * TODO - if QuickShare is disabled should we return 403 (as below) or 404 (eg. when accessing a link) ?
+ * Centralises access to shared link (public "quick share") services and maps between representations.
  *
  * @author janv
  * @author Jamal Kaabi-Mofrad
@@ -367,7 +366,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
     {
         if (!enabled)
         {
-            throw new NotFoundException(DISABLED);
+            throw new DisabledServiceException(DISABLED);
         }
     }
 

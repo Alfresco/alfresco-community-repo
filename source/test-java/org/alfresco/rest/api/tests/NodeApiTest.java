@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -20,51 +20,13 @@
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
-import static org.junit.Assert.*;
-
-import org.alfresco.model.ContentModel;
-import org.alfresco.model.ForumModel;
-import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.model.Repository;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
-import org.alfresco.rest.api.tests.client.data.ContentInfo;
-import org.alfresco.rest.api.tests.client.data.Document;
-import org.alfresco.rest.api.tests.client.data.Folder;
-import org.alfresco.rest.api.tests.client.data.Node;
-import org.alfresco.rest.api.tests.client.data.PathInfo;
-import org.alfresco.rest.api.tests.client.data.PathInfo.ElementInfo;
-import org.alfresco.rest.api.tests.client.data.UserInfo;
-import org.alfresco.rest.api.nodes.NodesEntityResource;
-import org.alfresco.rest.api.tests.RepoService.TestNetwork;
-import org.alfresco.rest.api.tests.RepoService.TestPerson;
-import org.alfresco.rest.api.tests.RepoService.TestSite;
-import org.alfresco.rest.api.tests.client.HttpResponse;
-import org.alfresco.rest.api.tests.client.PublicApiClient;
-import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
-import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
-import org.alfresco.rest.api.tests.client.data.SiteRole;
-import org.alfresco.rest.api.tests.util.JacksonUtil;
-import org.alfresco.rest.api.tests.util.MultiPartBuilder;
-import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
-import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
-import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.util.TempFileProvider;
-import org.codehaus.jackson.map.ObjectMapper;
-import org.codehaus.jackson.map.annotate.JsonSerialize;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.springframework.util.ResourceUtils;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -84,6 +46,50 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
+
+import org.alfresco.model.ContentModel;
+import org.alfresco.model.ForumModel;
+import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
+import org.alfresco.rest.api.tests.RepoService.TestNetwork;
+import org.alfresco.rest.api.tests.RepoService.TestPerson;
+import org.alfresco.rest.api.tests.RepoService.TestSite;
+import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.PublicApiClient;
+import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
+import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
+import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
+import org.alfresco.rest.api.tests.client.data.ContentInfo;
+import org.alfresco.rest.api.tests.client.data.Document;
+import org.alfresco.rest.api.tests.client.data.Folder;
+import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.client.data.PathInfo;
+import org.alfresco.rest.api.tests.client.data.PathInfo.ElementInfo;
+import org.alfresco.rest.api.tests.client.data.SiteRole;
+import org.alfresco.rest.api.tests.client.data.UserInfo;
+import org.alfresco.rest.api.tests.util.JacksonUtil;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
+import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.TempFileProvider;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.springframework.util.ResourceUtils;
 
 /**
  * API tests for:
@@ -190,7 +196,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         repoService.addToDocumentLibrary(userOneN1Site, folder2, ContentModel.TYPE_FOLDER);
 
         String content1 = "content" + System.currentTimeMillis() + "_1";
-        repoService.addToDocumentLibrary(userOneN1Site, content1, ContentModel.TYPE_CONTENT);
+        NodeRef contentNodeRef = repoService.addToDocumentLibrary(userOneN1Site, content1, ContentModel.TYPE_CONTENT);
 
         String content2 = "content" + System.currentTimeMillis() + "_2";
         repoService.addToDocumentLibrary(userOneN1Site, content2, ContentModel.TYPE_CONTENT);
@@ -289,16 +295,22 @@ public class NodeApiTest extends AbstractBaseApiTest
         NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personService.getPerson(user1));
 
         String folder1 = "folder" + System.currentTimeMillis() + "_1";
-        repoService.createFolder(myFilesNodeRef, folder1);
+        NodeRef folder1NodeRef = repoService.createFolder(myFilesNodeRef, folder1);
+        repoService.getNodeService().setProperty(folder1NodeRef, ContentModel.PROP_TITLE, "This is folder 1");
 
         String folder2 = "folder" + System.currentTimeMillis() + "_2";
-        repoService.createFolder(myFilesNodeRef, folder2);
+        NodeRef folder2NodeRef = repoService.createFolder(myFilesNodeRef, folder2);
+        repoService.getNodeService().setProperty(folder2NodeRef, ContentModel.PROP_TITLE, "This is folder 2");
 
         String content1 = "content" + System.currentTimeMillis() + "_1";
         NodeRef contentNodeRef = repoService.createDocument(myFilesNodeRef, content1, "The quick brown fox jumps over the lazy dog.");
         repoService.getNodeService().setProperty(contentNodeRef, ContentModel.PROP_OWNER, user1);
         repoService.getNodeService().setProperty(contentNodeRef, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA,
                     (Serializable) Collections.singletonList("doclib:1444660852296"));
+        
+        List<String> folderIds = Arrays.asList(folder1NodeRef.getId(), folder2NodeRef.getId());
+        List<String> contentIds = Arrays.asList(contentNodeRef.getId());
+        
 
         Paging paging = getPaging(0, Integer.MAX_VALUE);
         HttpResponse response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, 200);
@@ -326,18 +338,43 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(node.getContent().getMimeTypeName());
         assertNotNull(node.getContent().getEncoding());
         assertTrue(node.getContent().getSizeInBytes() > 0);
-
-        // Invalid QName (Namespace prefix cm... is not mapped to a namespace URI) for the orderBy parameter.
-        orderBy = Collections.singletonMap("orderBy", "isFolder DESC,cm" + System.currentTimeMillis() + ":modified DESC");
-        getAll(getChildrenUrl(myFilesNodeRef), user1, paging, orderBy, 400);
-
-        AuthenticationUtil.setFullyAuthenticatedUser(user2);
-        // user2 tries to access user1's home folder
-        getAll(getChildrenUrl(myFilesNodeRef), user2, paging, 403);
-
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-        // request property via select
+        
+        // request without select
         Map<String, String> params = new LinkedHashMap<>();
+        response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
+        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        for (Node n : nodes)
+        {
+        	 assertNull("There shouldn't be a 'properties' object in the response.", n.getProperties());
+        	 assertNull("There shouldn't be a 'isLink' object in the response.", n.getIsLink());
+        	 assertNull("There shouldn't be a 'path' object in the response.", n.getPath());
+        	 assertNull("There shouldn't be a 'aspectNames' object in the response.", n.getAspectNames());
+        }
+        
+        // request with select - example 1
+        params = new LinkedHashMap<>();
+        params.put("select", "isLink");
+        response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
+        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        for (Node n : nodes)
+        {
+        	assertNotNull("There should be a 'isLink' object in the response.", n.getIsLink());
+        }
+        
+        // request with select - example 2
+        params = new LinkedHashMap<>();
+        params.put("select", "aspectNames,properties, path,isLink");
+        response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
+        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        for (Node n : nodes)
+        {
+            assertNotNull("There should be a 'properties' object in the response.", n.getIsLink()); // eg. cm:title, see above
+        	assertNotNull("There should be a 'isLink' object in the response.", n.getIsLink());
+        	assertNotNull("There should be a 'path' object in the response.", n.getPath());
+        }
+        
+        // request specific property via select
+        params = new LinkedHashMap<>();
         params.put("select", "cm:lastThumbnailModification");
         params.put("orderBy", "isFolder DESC,modifiedAt DESC");
         response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
@@ -351,6 +388,44 @@ public class NodeApiTest extends AbstractBaseApiTest
         Entry<String, Object> entry = props.iterator().next();
         assertEquals("cm:lastThumbnailModification", entry.getKey());
         assertEquals("doclib:1444660852296", ((List<?>) entry.getValue()).get(0));
+        
+        
+        // filtering, via where clause - folders only
+        params = new LinkedHashMap<>();
+        params.put("where", "(isFolder=true)");
+        response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
+        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        assertEquals(2, nodes.size());
+        
+        assertTrue(nodes.get(0).getIsFolder());
+        assertTrue(nodes.get(1).getIsFolder());
+        assertTrue(folderIds.contains(nodes.get(0).getId()));
+        assertTrue(folderIds.contains(nodes.get(1).getId()));
+        
+        // filtering, via where clause - content only
+        params = new LinkedHashMap<>();
+        params.put("where", "(isFolder=false)");
+        response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
+        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        assertEquals(1, nodes.size());
+        assertFalse(nodes.get(0).getIsFolder());
+        assertTrue(contentIds.contains(nodes.get(0).getId()));
+        
+        // -ve test - Invalid QName (Namespace prefix cm... is not mapped to a namespace URI) for the orderBy parameter.
+        orderBy = Collections.singletonMap("orderBy", "isFolder DESC,cm" + System.currentTimeMillis() + ":modified DESC");
+        getAll(getChildrenUrl(myFilesNodeRef), user1, paging, orderBy, 400);
+         
+        paging = getPaging(0, 10);
+        
+        // -ve test - list folder children for non-folder node should return 400
+        getAll(getChildrenUrl(contentNodeRef), user1, paging, 400);
+        
+        // -ve test - list folder children for unknown node should return 404
+        getAll(getChildrenUrl(UUID.randomUUID().toString()), user1, paging, 404);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(user2);
+        // -ve test - user2 tries to access user1's home folder
+        getAll(getChildrenUrl(myFilesNodeRef), user2, paging, 403);
     }
 
     /**

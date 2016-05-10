@@ -262,11 +262,16 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // unauth access to file 1 content (via shared link)
         response = getSingle(QuickShareLinkEntityResource.class, null, shared1Id + "/content", null, 200);
         assertArrayEquals(content1Text.getBytes(), response.getResponseAsBytes());
-        assertEquals(file1_MimeType+";charset=UTF-8", response.getHeaders().get("Content-Type"));
-        assertNotNull(response.getHeaders().get("Last-Modified"));
-        assertNotNull(response.getHeaders().get("Expires"));
-        assertEquals("attachment; filename=\"" + fileName1 + "\"; filename*=UTF-8''" + fileName1 + "", response.getHeaders().get("Content-Disposition"));
-
+        Map<String, String> responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertEquals(file1_MimeType+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertNotNull(responseHeaders.get("Expires"));
+        assertEquals("attachment; filename=\"" + fileName1 + "\"; filename*=UTF-8''" + fileName1 + "", responseHeaders.get("Content-Disposition"));
+        String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
+        assertNotNull(lastModifiedHeader);
+        // Test 304 response
+        Map<String, String> headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
+        getSingle(URL_SHARED_LINKS, null, shared1Id + "/content", null, headers, 304);
 
         // -ve test - unauth access to get shared link file content - without Content-Disposition header (attachment=false) - header ignored (plain text is not in white list)
         params = new HashMap<>();
@@ -278,21 +283,24 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // unauth access to file 2 content (via shared link)
         response = getSingle(QuickShareLinkEntityResource.class, null, shared2Id + "/content", null, 200);
         assertArrayEquals(file2_originalBytes, response.getResponseAsBytes());
-        assertEquals(file2_MimeType+";charset=UTF-8", response.getHeaders().get("Content-Type"));
-        assertNotNull(response.getHeaders().get("Last-Modified"));
-        assertNotNull(response.getHeaders().get("Expires"));
-        assertEquals("attachment; filename=\"" + fileName2 + "\"; filename*=UTF-8''" + fileName2 + "", response.getHeaders().get("Content-Disposition"));
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertEquals(file2_MimeType+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertNotNull(responseHeaders.get("Expires"));
+        assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
+        assertEquals("attachment; filename=\"" + fileName2 + "\"; filename*=UTF-8''" + fileName2 + "", responseHeaders.get("Content-Disposition"));
 
         // unauth access to file 2 content (via shared link) - without Content-Disposition header (attachment=false)
         params = new HashMap<>();
         params.put("attachment", "false");
         response = getSingle(QuickShareLinkEntityResource.class, null, shared2Id + "/content", params, 200);
         assertArrayEquals(file2_originalBytes, response.getResponseAsBytes());
-        assertEquals(file2_MimeType+";charset=UTF-8", response.getHeaders().get("Content-Type"));
-        assertNotNull(response.getHeaders().get("Last-Modified"));
-        assertNotNull(response.getHeaders().get("Expires"));
-        assertNull(response.getHeaders().get("Content-Disposition"));
-
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertEquals(file2_MimeType+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
+        assertNotNull(responseHeaders.get("Expires"));
+        assertNull(responseHeaders.get("Content-Disposition"));
 
         // -ve shared link rendition tests
         {
@@ -312,21 +320,29 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // unauth access to get shared link file rendition content
         response = getSingle(QuickShareLinkEntityResource.class, null, shared1Id + "/renditions/doclib/content", null, 200);
         assertTrue(response.getResponseAsBytes().length > 0);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=UTF-8", response.getHeaders().get("Content-Type"));
-        assertNotNull(response.getHeaders().get("Last-Modified"));
-        assertNotNull(response.getHeaders().get("Expires"));
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
+        assertNotNull(responseHeaders.get("Expires"));
         String docName = "doclib";
-        assertEquals("attachment; filename=\"" + docName + "\"; filename*=UTF-8''" + docName + "", response.getHeaders().get("Content-Disposition"));
+        assertEquals("attachment; filename=\"" + docName + "\"; filename*=UTF-8''" + docName + "", responseHeaders.get("Content-Disposition"));
 
         // unauth access to get shared link file rendition content - without Content-Disposition header (attachment=false)
         params = new HashMap<>();
         params.put("attachment", "false");
         response = getSingle(QuickShareLinkEntityResource.class, null, shared1Id + "/renditions/doclib/content", params, 200);
         assertTrue(response.getResponseAsBytes().length > 0);
-        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=UTF-8", response.getHeaders().get("Content-Type"));
-        assertNotNull(response.getHeaders().get("Last-Modified"));
-        assertNotNull(response.getHeaders().get("Expires"));
-        assertNull(response.getHeaders().get("Content-Disposition"));
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertNotNull(responseHeaders.get("Expires"));
+        assertNull(responseHeaders.get("Content-Disposition"));
+        lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
+        assertNotNull(lastModifiedHeader);
+        // Test 304 response
+        headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
+        getSingle(URL_SHARED_LINKS, null, shared1Id + "/renditions/doclib/content", null, headers, 304);
 
 
         // -ve delete tests

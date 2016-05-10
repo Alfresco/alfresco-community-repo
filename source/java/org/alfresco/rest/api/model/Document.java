@@ -56,7 +56,7 @@ public class Document extends Node
         }
 
         setIsFolder(false);
-        setIsContent(true);
+        setIsFile(true);
     }
 
     @Override

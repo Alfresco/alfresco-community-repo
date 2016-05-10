@@ -214,16 +214,16 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(4, nodes.size());
         assertEquals(folder2, nodes.get(0).getName());
         assertTrue(nodes.get(0).getIsFolder());
-        assertFalse(nodes.get(0).getIsContent());
+        assertFalse(nodes.get(0).getIsFile());
         assertEquals(folder1, nodes.get(1).getName());
         assertTrue(nodes.get(1).getIsFolder());
-        assertFalse(nodes.get(1).getIsContent());
+        assertFalse(nodes.get(1).getIsFile());
         assertEquals(content2, nodes.get(2).getName());
         assertFalse(nodes.get(2).getIsFolder());
-        assertTrue(nodes.get(2).getIsContent());
+        assertTrue(nodes.get(2).getIsFile());
         assertEquals(content1, nodes.get(3).getName());
         assertFalse(nodes.get(3).getIsFolder());
-        assertTrue(nodes.get(3).getIsContent());
+        assertTrue(nodes.get(3).getIsFile());
 
         // Order by folders last and modified date first
         orderBy = Collections.singletonMap("orderBy", "isFolder ASC,modifiedAt DESC");
@@ -408,11 +408,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(2, nodes.size());
 
         assertTrue(nodes.get(0).getIsFolder());
-        assertFalse(nodes.get(0).getIsContent());
+        assertFalse(nodes.get(0).getIsFile());
         assertTrue(folderIds.contains(nodes.get(0).getId()));
 
         assertTrue(nodes.get(1).getIsFolder());
-        assertFalse(nodes.get(1).getIsContent());
+        assertFalse(nodes.get(1).getIsFile());
         assertTrue(folderIds.contains(nodes.get(1).getId()));
 
         // filtering, via where clause - content only
@@ -422,7 +422,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
         assertFalse(nodes.get(0).getIsFolder());
-        assertTrue(nodes.get(0).getIsContent());
+        assertTrue(nodes.get(0).getIsFile());
         assertTrue(contentIds.contains(nodes.get(0).getId()));
 
         // list children via relativePath
@@ -569,7 +569,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(myFilesNodeId);
         assertEquals(user1, node.getName());
         assertTrue(node.getIsFolder());
-        assertFalse(node.getIsContent());
+        assertFalse(node.getIsFile());
 
         NodeRef myHomeNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myFilesNodeId);
         NodeRef userHomesNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, node.getParentId());
@@ -715,7 +715,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(myFilesNodeId);
         assertEquals(user1, node.getName());
         assertTrue(node.getIsFolder());
-        assertFalse(node.getIsContent());
+        assertFalse(node.getIsFile());
         assertNull(node.getPath()); // note: path can be optionally "select"'ed - see separate test
 
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_SHARED, null, 200);
@@ -724,7 +724,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(sharedFilesNodeId);
         assertEquals("Shared", node.getName());
         assertTrue(node.getIsFolder());
-        assertFalse(node.getIsContent());
+        assertFalse(node.getIsFile());
         assertNull(node.getPath());
 
         //Delete user1's home
@@ -2009,7 +2009,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(docResp.getModifiedAt());
         assertNotNull(docResp.getModifiedByUser());
         assertFalse(docResp.getIsFolder());
-        assertTrue(docResp.getIsContent());
+        assertTrue(docResp.getIsFile());
         assertNull(docResp.getIsLink());
         assertEquals("cm:content", docResp.getNodeType());
         assertNotNull(docResp.getParentId());

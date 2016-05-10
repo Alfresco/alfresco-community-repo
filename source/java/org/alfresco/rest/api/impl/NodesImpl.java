@@ -698,7 +698,7 @@ public class NodesImpl implements Nodes
             // might be sub-type of cm:cmobject (or a cm:link pointing to cm:cmobject or possibly even another cm:link)
             node = new Node(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
             node.setIsFolder(false);
-            node.setIsContent(false);
+            node.setIsFile(false);
         }
         else if (type.equals(Type.DOCUMENT))
         {

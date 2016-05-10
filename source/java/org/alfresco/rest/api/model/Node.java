@@ -142,7 +142,12 @@ public class Node implements Comparable<Node>
     }
 
     private NodeRef getStringAsNodeRef(String nRefString) {
-        if(! NodeRef.isNodeRef(nRefString))
+        if (nRefString == null)
+        {
+            return null;
+        }
+
+        if( ! NodeRef.isNodeRef(nRefString))
         {
             return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nRefString);
         }
@@ -321,11 +326,12 @@ public class Node implements Comparable<Node>
     }
 
     /**
-     * @deprecated
+     * @deprecated note: used when creating (via POST) favourite target
      */
     public void setGuid(NodeRef guid)
     {
         this.guid = guid;
+        setId(guid.toString());
     }
 
     /**

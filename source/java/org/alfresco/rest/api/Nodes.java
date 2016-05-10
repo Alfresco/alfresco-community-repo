@@ -36,15 +36,13 @@ import org.springframework.extensions.webscripts.servlet.FormData;
 /**
  * File Folder (Nodes) API
  *
- * @author steveglover
  * @author janv
+ * @author Jamal Kaabi-Mofrad
+ * @author Gethin James
+ * @author steveglover
  */
 public interface Nodes
 {
-    String PATH_ROOT = "-root-";
-    String PATH_MY = "-my-";
-    String PATH_SHARED = "-shared-";
-
     /**
      * Get the node representation for the given node.
      *
@@ -179,4 +177,35 @@ public interface Nodes
      * @return true if the type of the given nodeRef is a sub-class of another class, otherwise false
      */
     boolean isSubClass(NodeRef nodeRef, QName ofClassQName, boolean validateNodeRef);
+
+    /**
+     * API Constants - query parameters, etc
+     */
+
+    String PATH_ROOT = "-root-";
+    String PATH_MY = "-my-";
+    String PATH_SHARED = "-shared-";
+
+    String PARAM_RELATIVE_PATH = "relativePath";
+    String PARAM_AUTO_RENAME = "autoRename";
+    String PARAM_PERMANENT = "permanent";
+
+    String PARAM_SELECT_PROPERTIES = "properties";
+    String PARAM_SELECT_PATH = "path";
+    String PARAM_SELECT_ASPECTNAMES = "aspectNames";
+    String PARAM_SELECT_ISLINK = "isLink";
+
+    String PARAM_ISFOLDER = "isFolder";
+    String PARAM_ISFILE = "isFile";
+
+    String PARAM_INCLUDE_SUBTYPES = "INCLUDESUBTYPES";
+
+    String PARAM_NAME = "name";
+    String PARAM_CREATEDAT = "createdAt";
+    String PARAM_MODIFIEDAT = "modifiedAt";
+    String PARAM_CREATEBYUSER = "createdByUser";
+    String PARAM_MODIFIEDBYUSER = "modifiedByUser";
+    String PARAM_MIMETYPE = "mimeType";
+    String PARAM_SIZEINBYTES = "sizeInBytes";
+    String PARAM_NODETYPE = "nodeType";
 }

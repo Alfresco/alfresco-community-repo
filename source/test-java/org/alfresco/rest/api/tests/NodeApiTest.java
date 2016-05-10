@@ -416,7 +416,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // filtering, via where clause - folders only
         params = new LinkedHashMap<>();
-        params.put("where", "(isFolder=true)");
+        params.put("where", "("+Nodes.PARAM_ISFOLDER+"=true)");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         assertEquals(2, nodes.size());
@@ -431,7 +431,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // filtering, via where clause - content only
         params = new LinkedHashMap<>();
-        params.put("where", "(isContent=true)");
+        params.put("where", "("+Nodes.PARAM_ISFILE+"=true)");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
@@ -441,20 +441,20 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // list children via relativePath
 
-        params = Collections.singletonMap("relativePath", folder1);
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folder1);
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
         assertEquals(contentF1_Id, nodes.get(0).getId());
 
-        params = Collections.singletonMap("relativePath", "User Homes/" + user1 + "/" + folder2);
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user1 + "/" + folder2);
         response = getAll(rootChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
         assertEquals(contentF2_Id, nodes.get(0).getId());
 
         // -ve test - Invalid QName (Namespace prefix cm... is not mapped to a namespace URI) for the orderBy parameter.
-        params = Collections.singletonMap("orderBy", "isFolder DESC,cm" + System.currentTimeMillis() + ":modified DESC");
+        params = Collections.singletonMap("orderBy", Nodes.PARAM_ISFOLDER+" DESC,cm" + System.currentTimeMillis() + ":modified DESC");
         getAll(myChildrenUrl, user1, paging, params, 400);
 
         paging = getPaging(0, 10);
@@ -470,19 +470,19 @@ public class NodeApiTest extends AbstractBaseApiTest
         getAll(getChildrenUrl(myFilesNodeRef), user2, paging, 403);
 
         // -ve test - try to list children using relative path to unknown node
-        params = Collections.singletonMap("relativePath", "User Homes/" + user1 + "/unknown");
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user1 + "/unknown");
         getAll(rootChildrenUrl, user1, paging, params, 404);
 
         // -ve test - try to list children using relative path to node for which user does not have read permission
-        params = Collections.singletonMap("relativePath", "User Homes/" + user2);
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user2);
         getAll(rootChildrenUrl, user1, paging, params, 403);
 
         // -ve test - try to list children using relative path to node that is of wrong type (ie. not a folder/container)
-        params = Collections.singletonMap("relativePath", folder1 + "/" + contentF1);
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folder1 + "/" + contentF1);
         getAll(myChildrenUrl, user1, paging, params, 400);
 
         // -ve test - list folder children for non-folder node with relative path should return 400
-        params = Collections.singletonMap("relativePath", "/unknown");
+        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/unknown");
         getAll(getChildrenUrl(contentNodeRef), user1, paging, params, 400);
     }
 

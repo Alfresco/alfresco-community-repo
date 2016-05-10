@@ -39,6 +39,10 @@ import org.springframework.extensions.webscripts.servlet.FormData;
  */
 public interface Nodes
 {
+    String PATH_ROOT = "-root-";
+    String PATH_MY = "-my-";
+    String PATH_SHARED = "-shared-";
+
     NodeRef validateNode(StoreRef storeRef, String nodeId);
     NodeRef validateNode(String nodeId);
     NodeRef validateNode(NodeRef nodeRef);

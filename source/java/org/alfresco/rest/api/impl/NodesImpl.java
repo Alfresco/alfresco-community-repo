@@ -124,6 +124,9 @@ public class NodesImpl implements Nodes
     private final static String PARAM_RELATIVE_PATH = "relativePath"; // TODO wip
 
     private final static String PARAM_SELECT_PROPERTIES = "properties";
+    private final static String PARAM_SELECT_PATH = "path";
+    private final static String PARAM_SELECT_ASPECTNAMES = "aspectNames";
+    private final static String PARAM_SELECT_ISLINK = "isLink"; // TODO ...
 
     private NodeService nodeService;
     private DictionaryService dictionaryService;
@@ -505,18 +508,24 @@ public class NodesImpl implements Nodes
 
         QName typeQName = nodeService.getType(nodeRef);
 
-        List<String> selectParam = parameters.getSelectedProperties();
-        return getFolderOrDocument(nodeRef, getParentNodeRef(nodeRef), typeQName, selectParam, false, null);
+        List<String> selectParam = new ArrayList<>();
+        selectParam.addAll(parameters.getSelectedProperties());
+
+        // Add basic info for single get (above & beyond minimal that is used for listing collections)
+        selectParam.add(PARAM_SELECT_ASPECTNAMES);
+        selectParam.add(PARAM_SELECT_PROPERTIES);
+
+        return getFolderOrDocument(nodeRef, getParentNodeRef(nodeRef), typeQName, selectParam, null);
     }
 
-    private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName typeQName, List<String> selectParam, boolean minimalInfo, Map<String,UserInfo> mapUserInfo)
+    private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName typeQName, List<String> selectParam, Map<String,UserInfo> mapUserInfo)
     {
         if (mapUserInfo == null) {
             mapUserInfo = new HashMap<>(2);
         }
 
         PathInfo pathInfo = null;
-        if (!minimalInfo)
+        if (selectParam.contains(PARAM_SELECT_PATH))
         {
             pathInfo = lookupPathInfo(nodeRef);
         }
@@ -540,9 +549,13 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("Node is not a folder or file");
         }
 
-        if (! minimalInfo)
+        if (selectParam.size() > 0)
         {
             node.setProperties(mapFromNodeProperties(properties, selectParam, mapUserInfo));
+        }
+
+        if (selectParam.contains(PARAM_SELECT_ASPECTNAMES))
+        {
             node.setAspectNames(mapFromNodeAspects(nodeService.getAspects(nodeRef)));
         }
 
@@ -739,7 +752,6 @@ public class NodesImpl implements Nodes
         final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
 
         final List<String> selectParam = parameters.getSelectedProperties();
-        final boolean minimalInfo = (selectParam.size() == 0);
 
         boolean includeFolders = true;
         boolean includeFiles = true;
@@ -809,7 +821,7 @@ public class NodesImpl implements Nodes
                 FileInfo fInfo = page.get(index);
 
                 // minimal info by default (unless "select"ed otherwise)
-                return getFolderOrDocument(fInfo.getNodeRef(), parentNodeRef, fInfo.getType(), selectParam, minimalInfo, mapUserInfo);
+                return getFolderOrDocument(fInfo.getNodeRef(), parentNodeRef, fInfo.getType(), selectParam, mapUserInfo);
             }
 
             @Override
@@ -1193,7 +1205,7 @@ public class NodesImpl implements Nodes
 
     private Node createUploadResponse(NodeRef parentNodeRef, NodeRef newFileNodeRef)
     {
-        return getFolderOrDocument(newFileNodeRef, parentNodeRef, ContentModel.TYPE_CONTENT, Collections.<String>emptyList(), true, null);
+        return getFolderOrDocument(newFileNodeRef, parentNodeRef, ContentModel.TYPE_CONTENT, Collections.<String>emptyList(), null);
     }
 
     private String getStringOrNull(String value)

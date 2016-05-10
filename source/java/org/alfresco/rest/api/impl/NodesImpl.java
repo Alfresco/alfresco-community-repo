@@ -907,7 +907,9 @@ public class NodesImpl implements Nodes
         boolean includeFiles = true;
 
         QName filterNodeTypeQName = null;
-        boolean filterIncludeSubTypes = false;
+
+        // note: for files/folders, include subtypes by default (unless filtering by a specific nodeType - see below)
+        boolean filterIncludeSubTypes = true;
 
         Query q = parameters.getQuery();
 
@@ -927,6 +929,8 @@ public class NodesImpl implements Nodes
             String nodeTypeStr = propertyWalker.getProperty(PARAM_NODETYPE, WhereClauseParser.EQUALS, String.class);
             if ((nodeTypeStr != null) && (! nodeTypeStr.isEmpty()))
             {
+                filterIncludeSubTypes = false; // default nodeType filtering is without subTypes (unless subTypes = true)
+
                 filterNodeTypeQName = createQName(nodeTypeStr);
                 if (dictionaryService.getType(filterNodeTypeQName) == null)
                 {

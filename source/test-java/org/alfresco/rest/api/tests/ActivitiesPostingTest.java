@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Activities;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -37,57 +38,8 @@ import java.util.Map;
  *
  * @author gethin
  */
-public class ActivitiesPostingTest extends AbstractBaseApiTest
+public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
 {
-    protected MutableAuthenticationService authenticationService;
-    protected PersonService personService;
-
-    RepoService.TestNetwork networkOne;
-    RepoService.TestPerson u1;
-    RepoService.TestSite tSite;
-    NodeRef docLibNodeRef;
-
-    @Override
-    public String getScope()
-    {
-        return "public";
-    }
-
-    @Before
-    public void setup() throws Exception
-    {
-        authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
-        personService = applicationContext.getBean("personService", PersonService.class);
-
-        networkOne = getTestFixture().getRandomNetwork();
-        u1 = networkOne.createUser();
-        tSite = createSite(networkOne, u1, SiteVisibility.PRIVATE);
-
-        AuthenticationUtil.setFullyAuthenticatedUser(u1.getId());
-        docLibNodeRef = tSite.getContainerNodeRef("documentLibrary");
-        AuthenticationUtil.clearCurrentSecurityContext();
-    }
-
-
-    @After
-    public void tearDown() throws Exception
-    {
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                if (personService.personExists(u1.getId()))
-                {
-                    authenticationService.deleteAuthentication(u1.getId());
-                    personService.deletePerson(u1.getId());
-                }
-                return null;
-            }
-        });
-        AuthenticationUtil.clearCurrentSecurityContext();
-    }
 
     @Test
     public void testCreateUpdate() throws Exception
@@ -183,19 +135,6 @@ public class ActivitiesPostingTest extends AbstractBaseApiTest
         return publicApiClient.people().getActivities(u1.getId(), meParams).getList();
     }
 
-    private Document createDocument(Folder parentFolder, String docName) throws Exception
-    {
-        Document d1 = new Document();
-        d1.setName(docName);
-        d1.setNodeType("cm:content");
-        ContentInfo ci = new ContentInfo();
-        ci.setMimeType("text/plain");
-        d1.setContent(ci);
-
-        // create empty file
-        HttpResponse response = post(getNodeChildrenUrl(parentFolder.getId()), u1.getId(), toJsonAsStringNonNull(d1), 201);
-        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-    }
 
     private Activity matchActivity(List<Activity> list, String type, String user, String siteId, String parentId, String title)
     {

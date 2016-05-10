@@ -488,6 +488,28 @@
        </property>
     </bean>
 
+    <bean id="deletedNodes" class="org.alfresco.rest.api.impl.DeletedNodesImpl">
+        <property name="nodes" ref="Nodes" />
+        <property name="nodeService" ref="NodeService" />
+        <property name="nodeArchiveService" ref="nodeArchiveService"/>
+        <property name="personService" ref="PersonService" />
+    </bean>
+
+    <bean id="DeletedNodes" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.DeletedNodes</value>
+        </property>
+        <property name="target">
+            <ref bean="deletedNodes" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+
     <bean id="quickShareLinks" class="org.alfresco.rest.api.impl.QuickShareLinksImpl">
         <property name="quickShareService" ref="QuickShareService"/>
         <property name="nodes" ref="nodes"/>
@@ -747,6 +769,11 @@
     <bean class="org.alfresco.rest.api.nodes.NodeTagsRelation">
         <property name="tags" ref="Tags" />
     </bean>
+
+    <bean class="org.alfresco.rest.api.trashcan.TrashcanEntityResource">
+        <property name="deletedNodes" ref="DeletedNodes" />
+    </bean>
+
 
     <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkEntityResource">
         <property name="quickShareLinks" ref="QuickShareLinks" />

@@ -44,6 +44,9 @@ public class Node
     protected UserInfo createdByUser;
     protected UserInfo modifiedByUser;
 
+    protected Date archivedAt;
+    protected UserInfo archivedByUser;
+
     protected Boolean isFolder;
     protected Boolean isFile;
     protected Boolean isLink;
@@ -114,6 +117,26 @@ public class Node
     public void setModifiedByUser(UserInfo modifiedByUser)
     {
         this.modifiedByUser = modifiedByUser;
+    }
+
+    public Date getArchivedAt()
+    {
+        return archivedAt;
+    }
+
+    public void setArchivedAt(Date archivedAt)
+    {
+        this.archivedAt = archivedAt;
+    }
+
+    public UserInfo getArchivedByUser()
+    {
+        return archivedByUser;
+    }
+
+    public void setArchivedByUser(UserInfo archivedByUser)
+    {
+        this.archivedByUser = archivedByUser;
     }
 
     public Boolean getIsFolder()

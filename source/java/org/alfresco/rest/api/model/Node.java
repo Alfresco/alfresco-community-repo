@@ -56,6 +56,10 @@ public class Node implements Comparable<Node>
     protected UserInfo createdByUser;
     protected UserInfo modifiedByUser;
 
+    //Archived info, explicitly setting to NULL because NULLS don't get shown in the JSON.
+    protected Date archivedAt = null;
+    protected UserInfo archivedByUser = null;
+
     protected Boolean isFolder;
     protected Boolean isFile;
     protected Boolean isLink;
@@ -303,6 +307,26 @@ public class Node implements Comparable<Node>
         this.relativePath = relativePath;
     }
 
+    public Date getArchivedAt()
+    {
+        return archivedAt;
+    }
+
+    public void setArchivedAt(Date archivedAt)
+    {
+        this.archivedAt = archivedAt;
+    }
+
+    public UserInfo getArchivedByUser()
+    {
+        return archivedByUser;
+    }
+
+    public void setArchivedByUser(UserInfo archivedByUser)
+    {
+        this.archivedByUser = archivedByUser;
+    }
+
     public boolean equals(Object other)
     {
         if(this == other)
@@ -339,6 +363,14 @@ public class Node implements Comparable<Node>
         sb.append(", modifiedByUser=").append(getModifiedByUser());
         sb.append(", createdAt=").append(getCreatedAt());
         sb.append(", createdByUser=").append(getCreatedByUser());
+        if (getArchivedAt() != null)
+        {
+            sb.append(", archivedAt=").append(getArchivedAt());
+        }
+        if (getArchivedByUser() != null)
+        {
+            sb.append(", archivedByUser=").append(getArchivedByUser());
+        }
         if (getIsLink() != null)
         {
             sb.append(", isLink=").append(getIsLink()); // note: symbolic link (not shared link)

@@ -18,7 +18,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
 import static org.junit.Assert.*;
 
@@ -48,7 +47,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.Serializable;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
@@ -304,7 +302,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         n.setProperties(props);
 
         // create node
-        HttpResponse response = post("nodes/" + parentId + "/children", runAsUserId, RestApiUtil.toJsonAsStringNonNull(n), 201);
+        HttpResponse response = post(getNodeChildrenUrl(parentId), runAsUserId, RestApiUtil.toJsonAsStringNonNull(n), 201);
 
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), returnType);
     }
@@ -324,7 +322,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
                 .setProperties(props)
                 .build();
 
-        HttpResponse response = post("nodes/" + parentId + "/children", userId, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        HttpResponse response = post(getNodeChildrenUrl(parentId), userId, reqBody.getBody(), null, reqBody.getContentType(), 201);
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 
@@ -351,7 +349,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         {
             try
             {
-                HttpResponse res = post(getRenditionsUrl(sourceNodeId), userId, toJsonAsString(renditionRequest), 202);
+                HttpResponse res = post(getNodeRenditionsUrl(sourceNodeId), userId, toJsonAsString(renditionRequest), 202);
                 assertNull(res.getJsonResponse());
                 break;
             }
@@ -369,7 +367,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         {
             try
             {
-                HttpResponse response = getSingle(getRenditionsUrl(sourceNodeId), userId, renditionId, 200);
+                HttpResponse response = getSingle(getNodeRenditionsUrl(sourceNodeId), userId, renditionId, 200);
                 Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
                 assertNotNull(rendition);
                 assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
@@ -387,9 +385,13 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return null;
     }
 
-    private String getRenditionsUrl(String nodeId)
+    protected String getNodeRenditionsUrl(String nodeId)
     {
         return "nodes/" + nodeId + "/renditions";
     }
 
+    protected String getNodeChildrenUrl(String nodeId)
+    {
+        return "nodes/" + nodeId + "/children";
+    }
 }

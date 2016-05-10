@@ -13,6 +13,7 @@
 
     <properties>
         <maven.tomcat.path>/alfresco</maven.tomcat.path>
+        <maven.tomcat.uriEncoding>UTF-8</maven.tomcat.uriEncoding>
         <maven.tomcat.port>${tomcat.default.alfresco.port}</maven.tomcat.port>
         <maven.tomcat.httpsPort>${tomcat.default.alfresco.ssl.port}</maven.tomcat.httpsPort>
     </properties>
@@ -226,7 +227,7 @@
 
             <plugin>
                 <artifactId>maven-antrun-plugin</artifactId>
-                <executions> 
+                <executions>
                     <!-- ACE-2318 Bring alfresco-jmxrmi.* from repository -->
                     <execution>
                         <id>fetch-jmxrmi-properties</id>
@@ -319,7 +320,7 @@
                             <asWebapp>true</asWebapp>
                             <contextFile>${runtime.tomcat.conf.folder}/solr-context.xml</contextFile>
                         </webapp>
-                    </webapps> 
+                    </webapps>
                 </configuration>
             </plugin>
         </plugins>
@@ -339,8 +340,8 @@
                 <dependency>
                     <groupId>mysql</groupId>
                     <artifactId>mysql-connector-java</artifactId>
-                </dependency>            
+                </dependency>
             </dependencies>
        </profile>
-    </profiles>   
+    </profiles>
 </project>

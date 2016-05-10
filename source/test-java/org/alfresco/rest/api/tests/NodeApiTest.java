@@ -1272,13 +1272,12 @@ public class NodeApiTest extends AbstractBaseApiTest
         post(postUrl, user1, toJsonAsStringNonNull(f1), "?autoRename=false", 409);
     }
 
-    /**
-     * Sanity Test CRUD for other/custom node type (that extend from cm:cmobject but not cm:folder/cm:content)
-     *
-     * TODO use custom test model (to sub-type of cm:cmobject)
-     */
+    // TODO test custom type with properties (sub-type of cm:cmobject)
+
+    // note: app:folderlink & app:filelink both extend cm:link (which in turn extends cm:cmobject)
+    //       (see applicationModel.xml / contentModel.xml)
     @Test
-    public void testOtherNodeTypeCRUD() throws Exception
+    public void testLinkCRUD() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
@@ -1286,26 +1285,31 @@ public class NodeApiTest extends AbstractBaseApiTest
         UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
         String myChildrenUrl = getChildrenUrl(myNodeId);
 
-        // create node
-        String nodeName = "n1";
-        String nodeType = "cm:cmobject";
+        // create folder
+        Folder folderResp = createFolder(user1, myNodeId, "f1");
+        String f1Id = folderResp.getId();
 
-        Node nodeResp = createNode(user1, myNodeId, nodeName, nodeType, null);
+        // create folder link node
+        String nodeName = "f1 link";
+        String nodeType = "app:folderlink";
+
+        Map<String,Object> props = new HashMap<>();
+        props.put("cm:destination", f1Id);
+
+        Node nodeResp = createNode(user1, myNodeId, nodeName, nodeType, props);
         String n1Id = nodeResp.getId();
 
         Node n1 = new Node();
         n1.setName(nodeName);
         n1.setNodeType(nodeType);
-        n1.setIsFolder(false);
+        n1.setIsFolder(true);
         n1.setParentId(myNodeId);
         n1.setAspectNames(Collections.singletonList("cm:auditable"));
-
+        n1.setProperties(props);
         n1.setCreatedByUser(expectedUser);
         n1.setModifiedByUser(expectedUser);
 
         n1.expected(nodeResp);
-
-        // TODO test create node with custom properties
 
         // get node info
         HttpResponse response = getSingle(NodesEntityResource.class, user1, n1Id, null, 200);
@@ -1313,10 +1317,51 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         n1.expected(nodeResp);
 
+        // create file
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType("cm:content");
+        ContentInfo ci = new ContentInfo();
+        ci.setMimeType("text/plain");
+        d1.setContent(ci);
+
+        // create empty file
+        response = post(myChildrenUrl, user1, toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String d1Id = documentResp.getId();
+
+        // create file link node
+        nodeName = "d1 link";
+        nodeType = "app:filelink";
+
+        props = new HashMap<>();
+        props.put("cm:destination", d1Id);
+
+        nodeResp = createNode(user1, myNodeId, nodeName, nodeType, props);
+        String n2Id = nodeResp.getId();
+
+        Node n2 = new Node();
+        n2.setName(nodeName);
+        n2.setNodeType(nodeType);
+        n2.setIsFolder(false);
+        n2.setParentId(myNodeId);
+        n2.setAspectNames(Collections.singletonList("cm:auditable"));
+        n2.setProperties(props);
+        n2.setCreatedByUser(expectedUser);
+        n2.setModifiedByUser(expectedUser);
+
+        n2.expected(nodeResp);
+
+        // get node info
+        response = getSingle(NodesEntityResource.class, user1, n2Id, null, 200);
+        nodeResp = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+
+        n2.expected(nodeResp);
+
 
         // update node - rename
 
-        String updatedName = "n1b";
+        String updatedName = "f1 link renamed";
 
         Node nUpdate = new Node();
         nUpdate.setName(updatedName);
@@ -1330,15 +1375,17 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // filtering, via where clause (nodeType)
         Map<String, String> params = new HashMap<>();
-        params.put("where", "(nodeType='"+nodeType+"')");
+        params.put("where", "(nodeType='cm:link')");
 
         Paging paging = getPaging(0, Integer.MAX_VALUE);
 
+        List<String> linkIds = Arrays.asList(n1Id, n2Id);
+
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         List<Node> nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
-        assertEquals(1, nodes.size());
-        assertFalse(nodes.get(0).getIsFolder());
-        assertEquals(n1Id, nodes.get(0).getId());
+        assertEquals(2, nodes.size());
+        assertTrue(linkIds.contains(nodes.get(0).getId()));
+        assertTrue(linkIds.contains(nodes.get(1).getId()));
 
         // delete file
         delete("nodes", user1, n1Id, 204);
@@ -1348,7 +1395,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // -ve test - create - name is mandatory
         Node invalid = new Node();
-        invalid.setNodeType("cm:cmobject");
+        invalid.setNodeType("cm:link");
         post(myChildrenUrl, user1, toJsonAsStringNonNull(invalid), 400);
 
         // -ve test - create - node type is mandatory
@@ -1363,8 +1410,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         post(myChildrenUrl, user1, toJsonAsStringNonNull(invalid), 400);
 
         // -ve test - create - duplicate name
-        post(myChildrenUrl, user1, toJsonAsStringNonNull(n1), 201); // re-create (since deleted earlier)
-        post(myChildrenUrl, user1, toJsonAsStringNonNull(n1), 409);
+        post(myChildrenUrl, user1, toJsonAsStringNonNull(n2), 409);
     }
 
 
@@ -1798,8 +1844,6 @@ public class NodeApiTest extends AbstractBaseApiTest
     }
 
     // TODO add test to create multiple folders & empty files (within same parent folder)
-
-    // TODO add test for file/folder links - creating, getting, listing, deleting
 
     /**
      * Tests download of file/content.

@@ -662,7 +662,6 @@ public class NodesImpl implements Nodes
             */
         }
 
-
         FileInfo fileInfo = null;
         try
         {
@@ -675,14 +674,14 @@ public class NodesImpl implements Nodes
                 fileInfo = fileFolderService.getFileInfo(parentNodeRef);
                 if (fileInfo == null)
                 {
-                    throw new FileNotFoundException(parentNodeRef);
+                    throw new EntityNotFoundException(parentNodeRef.getId());
                 }
             }
         }
         catch (FileNotFoundException fnfe)
         {
             // convert checked exception
-            throw new EntityNotFoundException(parentNodeRef.getId());
+            throw new NotFoundException("The entity with relativePath: " + path + " was not found.");
         }
 
         return fileInfo.getNodeRef();

@@ -73,7 +73,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         Document document = createDocument(createdFolder, "d1.txt");
         Document documentNotDeleted = createDocument(createdFolder, "notdeleted1.txt");
 
-        PublicApiClient.Paging paging = getPaging(0, 100);
+        PublicApiClient.Paging paging = getPaging(0, 5);
         //First get any deleted nodes
         HttpResponse response = getAll(URL_DELETED_NODES, u1.getId(), paging, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -107,8 +107,42 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertEquals(u1.getId(), fNode.getArchivedByUser().getId());
         assertTrue(fNode.getArchivedAt().after(now));
 
+        //The list is ordered with the most recently deleted node first
+        checkDeletedNodes(now, createdFolder, createdFolderNonSite, document, nodes);
+
         //Invalid node ref
         response = getSingle(URL_DELETED_NODES, u1.getId(), "iddontexist", 404);
+        assertNotNull(response);
+
+        //Now as admin
+        publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), "admin@"+networkOne.getId(), "admin"));
+        response = publicApiClient.get(getScope(), URL_DELETED_NODES, null, null, null, createParams(paging, null));
+        checkStatus(200, response.getStatusCode());
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        assertNotNull(nodes);
+        checkDeletedNodes(now, createdFolder, createdFolderNonSite, document, nodes);
+    }
+
+    protected void checkDeletedNodes(Date now, Folder createdFolder, Folder createdFolderNonSite, Document document, List<Node> nodes)
+    {
+        Node aNode = (Node) nodes.get(0);
+        assertNotNull(aNode);
+        assertEquals("This folder was deleted most recently", createdFolderNonSite.getId(), aNode.getId());
+        assertEquals(u1.getId(), aNode.getArchivedByUser().getId());
+        assertTrue(aNode.getArchivedAt().after(now));
+
+        Node folderNode = (Node) nodes.get(1);
+        assertNotNull(folderNode);
+        assertEquals(createdFolder.getId(), folderNode.getId());
+        assertEquals(u1.getId(), folderNode.getArchivedByUser().getId());
+        assertTrue(folderNode.getArchivedAt().after(now));
+        assertTrue("This folder was deleted before the non-site folder", folderNode.getArchivedAt().before(aNode.getArchivedAt()));
+
+        aNode = (Node) nodes.get(2);
+        assertNotNull(aNode);
+        assertEquals(document.getId(), aNode.getId());
+        assertEquals(u1.getId(), aNode.getArchivedByUser().getId());
+        assertTrue(aNode.getArchivedAt().after(now));
     }
 
 }

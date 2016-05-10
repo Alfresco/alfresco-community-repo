@@ -18,15 +18,11 @@
  */
 package org.alfresco.rest;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.tests.AbstractBaseApiTest;
 import org.alfresco.rest.api.tests.RepoService;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
@@ -34,15 +30,7 @@ import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
-import org.alfresco.rest.api.tests.util.JacksonUtil;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteVisibility;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.springframework.extensions.webscripts.Status;
 
@@ -67,6 +55,12 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         u2 = networkOne.createUser();
     }
 
+    /**
+     * Tests getting deleted nodes
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/}
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/}
+     */
     @Test
     public void testCreateAndDelete() throws Exception
     {
@@ -81,7 +75,6 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNotNull(createdFolderNonSite);
 
         Document document = createDocument(createdFolder, "d1.txt");
-        Document documentNotDeleted = createDocument(createdFolder, "notdeleted1.txt");
 
         PublicApiClient.Paging paging = getPaging(0, 5);
         //First get any deleted nodes
@@ -121,11 +114,10 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         checkDeletedNodes(now, createdFolder, createdFolderNonSite, document, nodes);
 
         //User 2 can't get it but user 1 can.
-        response = getSingle(URL_DELETED_NODES, u2.getId(), createdFolderNonSite.getId(), Status.STATUS_FORBIDDEN);
+        getSingle(URL_DELETED_NODES, u2.getId(), createdFolderNonSite.getId(), Status.STATUS_FORBIDDEN);
 
         //Invalid node ref
-        response = getSingle(URL_DELETED_NODES, u1.getId(), "iddontexist", 404);
-        assertNotNull(response);
+        getSingle(URL_DELETED_NODES, u1.getId(), "iddontexist", 404);
 
         //Now as admin
         publicApiClient.setRequestContext(new RequestContext(networkOne.getId(), "admin@"+networkOne.getId(), "admin"));
@@ -136,6 +128,11 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         checkDeletedNodes(now, createdFolder, createdFolderNonSite, document, nodes);
     }
 
+    /**
+     * Tests restoring deleted nodes
+     * <p>post:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/restore}
+     */
     @Test
     public void testCreateAndRestore() throws Exception
     {
@@ -155,26 +152,31 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         Document documentSameName = createDocument(createdFolder, "restoreme.txt");
 
         //Can't restore a node of the same name
-        HttpResponse response = post(URL_DELETED_NODES+"/"+document.getId()+"/restore", u1.getId(), null, null, Status.STATUS_CONFLICT);
+        post(URL_DELETED_NODES+"/"+document.getId()+"/restore", u1.getId(), null, null, Status.STATUS_CONFLICT);
 
         delete(URL_NODES, u1.getId(), documentSameName.getId(), 204);
 
         //Now we can restore it.
-        response = post(URL_DELETED_NODES+"/"+document.getId()+"/restore", u1.getId(), null, null, 201);
+        post(URL_DELETED_NODES+"/"+document.getId()+"/restore", u1.getId(), null, null, 201);
 
         delete(URL_NODES, u1.getId(), createdFolder.getId(), 204);
 
         //We deleted the parent folder so lets see if we can restore a child doc, hopefully not.
-        response = post(URL_DELETED_NODES+"/"+documentSameName.getId()+"/restore", u1.getId(), null, null, Status.STATUS_NOT_FOUND);
+        post(URL_DELETED_NODES+"/"+documentSameName.getId()+"/restore", u1.getId(), null, null, Status.STATUS_NOT_FOUND);
 
         //Can't delete "nonsense" noderef
-        response = post("deleted-nodes/nonsense/restore", u1.getId(), null, null, Status.STATUS_NOT_FOUND);
+        post("deleted-nodes/nonsense/restore", u1.getId(), null, null, Status.STATUS_NOT_FOUND);
 
         //User 2 can't restore it but user 1 can.
-        response = post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", u2.getId(), null, null, Status.STATUS_FORBIDDEN);
-        response = post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", u1.getId(), null, null, 201);
+        post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", u2.getId(), null, null, Status.STATUS_FORBIDDEN);
+        post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", u1.getId(), null, null, 201);
     }
 
+    /**
+     * Tests purging a deleted node
+     * <p>delete:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/deleted-nodes/<nodeId>/}
+     */
     @Test
     public void testCreateAndPurge() throws Exception
     {
@@ -200,10 +202,12 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         delete(URL_DELETED_NODES, u1.getId(), createdFolder.getId(), 204);
 
         //This time we can't find it.
-        response = getSingle(URL_DELETED_NODES, u1.getId(), createdFolder.getId(), 404);
-
+        getSingle(URL_DELETED_NODES, u1.getId(), createdFolder.getId(), 404);
     }
 
+    /**
+     *  Checks the deleted nodes are in the correct order.
+     */
     protected void checkDeletedNodes(Date now, Folder createdFolder, Folder createdFolderNonSite, Document document, List<Node> nodes)
     {
         Node aNode = (Node) nodes.get(0);

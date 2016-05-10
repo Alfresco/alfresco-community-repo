@@ -52,6 +52,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
@@ -1063,13 +1064,9 @@ public class NodeApiTest extends AbstractBaseApiTest
 
     /**
      * Tests move (file or folder)
-     * <p>PUT:</p>
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/move}
      */
-
-    // TODO update these tests for RA-806 (ie. use "POST /nodes/{nodeId}/move" instead of "PUT /nodes/{nodeId}")
-
-    /*
     @Test
     public void testMove() throws Exception
     {
@@ -1097,10 +1094,10 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // move file (without rename)
 
-        Document dUpdate = new Document();
-        dUpdate.setParentId(f2Id);
+        NodeTarget moveTgt = new NodeTarget();
+        moveTgt.setTargetParentId(f2Id);
 
-        HttpResponse response = put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
+        HttpResponse response = post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1Name, documentResp.getName());
@@ -1110,11 +1107,11 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         String d1NewName = d1Name+" updated !!";
 
-        dUpdate = new Document();
-        dUpdate.setName(d1NewName);
-        dUpdate.setParentId(f1Id);
+        moveTgt = new NodeTarget();
+        moveTgt.setName(d1NewName);
+        moveTgt.setTargetParentId(f1Id);
 
-        response = put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
+        response = post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1NewName, documentResp.getName());
@@ -1123,25 +1120,25 @@ public class NodeApiTest extends AbstractBaseApiTest
         // -ve tests
 
         // name already exists
-        dUpdate = new Document();
-        dUpdate.setName(d2Name);
-        dUpdate.setParentId(f2Id);
-        put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 409);
+        moveTgt = new NodeTarget();
+        moveTgt.setName(d2Name);
+        moveTgt.setTargetParentId(f2Id);
+        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 409);
 
         // unknown source nodeId
-        dUpdate = new Document();
-        dUpdate.setParentId(f2Id);
-        put("nodes", user1, UUID.randomUUID().toString(), toJsonAsStringNonNull(dUpdate), null, 404);
+        moveTgt = new NodeTarget();
+        moveTgt.setTargetParentId(f2Id);
+        post("nodes/"+UUID.randomUUID().toString()+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 404);
 
         // unknown target nodeId
-        dUpdate = new Document();
-        dUpdate.setParentId(UUID.randomUUID().toString());
-        put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 404);
+        moveTgt = new NodeTarget();
+        moveTgt.setTargetParentId(UUID.randomUUID().toString());
+        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 404);
 
         // target is not a folder
-        dUpdate = new Document();
-        dUpdate.setParentId(d2Id);
-        put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 400);
+        moveTgt = new NodeTarget();
+        moveTgt.setTargetParentId(d2Id);
+        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 400);
 
         String rootNodeId = getRootNodeId(user1);
 
@@ -1150,29 +1147,29 @@ public class NodeApiTest extends AbstractBaseApiTest
         String f3Id = folderResp.getId();
 
         // can't create cycle (move into own subtree)
-        dUpdate = new Document();
-        dUpdate.setParentId(f3Id);
-        put("nodes", user1, f2Id, toJsonAsStringNonNull(dUpdate), null, 400);
+        moveTgt = new NodeTarget();
+        moveTgt.setTargetParentId(f3Id);
+        post("nodes/"+f2Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 400);
 
         // no (write/create) permissions to move to target
-        dUpdate = new Document();
-        dUpdate.setParentId(rootNodeId);
-        put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 403);
+        moveTgt = new NodeTarget();
+        moveTgt.setTargetParentId(rootNodeId);
+        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(moveTgt), null, 403);
 
         AuthenticationUtil.setFullyAuthenticatedUser(user2);
 
         String my2NodeId = getMyNodeId(user2);
 
         // no (write/delete) permissions to move source
-        dUpdate = new Document();
-        dUpdate.setParentId(my2NodeId);
-        put("nodes", user2, f1Id, toJsonAsStringNonNull(dUpdate), null, 403);
+        moveTgt = new NodeTarget();
+        moveTgt.setTargetParentId(my2NodeId);
+        post("nodes/"+f1Id+"/move", user2, toJsonAsStringNonNull(moveTgt), null, 403);
     }
 
 
     /**
      * Tests copy (file or folder)
-     * <p>PUT:</p>
+     * <p>POST:</p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/copy}
      */
     @Test

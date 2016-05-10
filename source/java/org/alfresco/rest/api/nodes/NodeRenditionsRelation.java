@@ -23,6 +23,7 @@ import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
@@ -77,6 +78,13 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
     @Override
     public List<Rendition> create(String nodeId, List<Rendition> entity, Parameters parameters)
     {
+        // Temporary - pending future improvements to thumbnail service to minimise chance of
+        // missing/failed thumbnails (when requested/generated 'concurrently')
+        if (entity.size() > 1)
+        {
+            throw new InvalidArgumentException("Please specify one rendition entity id only");
+        }
+
         for (Rendition rendition : entity)
         {
             renditions.createRendition(nodeId, rendition, parameters);

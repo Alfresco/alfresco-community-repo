@@ -34,6 +34,8 @@ import org.alfresco.service.namespace.QName;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
+ * File Folder (Nodes) API
+ *
  * @author steveglover
  * @author janv
  */
@@ -43,13 +45,9 @@ public interface Nodes
     String PATH_MY = "-my-";
     String PATH_SHARED = "-shared-";
 
-    NodeRef validateNode(StoreRef storeRef, String nodeId);
-    NodeRef validateNode(String nodeId);
-    NodeRef validateNode(NodeRef nodeRef);
-    boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes);
-
     /**
      * Get the node representation for the given node.
+     *
      * @param nodeId String
      * @return Node
      */
@@ -57,6 +55,7 @@ public interface Nodes
     
     /**
      * Get the document representation for the given node.
+     *
      * @param nodeRef NodeRef
      * @return Document
      */
@@ -64,6 +63,7 @@ public interface Nodes
     
     /**
      * Get the folder representation for the given node.
+     *
      * @param nodeRef NodeRef
      * @return Folder
      */
@@ -71,6 +71,7 @@ public interface Nodes
     
     /**
      * Get the folder or document representation (as appropriate) for the given node.
+     *
      * @param nodeId String nodeId or well-known alias, eg. "-root-" or "-my-"
      * @param parameters the {@link Parameters} object to get the parameters passed into the request
      *        including:
@@ -81,6 +82,7 @@ public interface Nodes
     
     /**
      * Get list of children of a parent folder.
+     *
      * @param parentFolderNodeId String id of parent folder node or well-known alias, eg. "-root-" or "-my-"
      * @param parameters the {@link Parameters} object to get the parameters passed into the request
      *        including:
@@ -92,12 +94,13 @@ public interface Nodes
     
     /**
      * Delete the given node. Note: will cascade delete for a folder.
+     *
      * @param nodeId String id of node (folder or document)
      */
     void deleteNode(String nodeId);
 
     /**
-     * Create node(s) - folder or (empty) file
+     * Create node(s) - folder or (empty) file.
      *
      * @param parentFolderNodeId
      * @param nodeInfo
@@ -107,6 +110,7 @@ public interface Nodes
     Node createNode(String parentFolderNodeId, Node nodeInfo, Parameters parameters);
 
     /**
+     * Update node meta-data.
      *
      * @param nodeId
      * @param entity
@@ -115,9 +119,26 @@ public interface Nodes
      */
     Node updateNode(String nodeId, Node entity, Parameters parameters);
 
-    // TODO update REST fwk - to optionally support "attachment" (Content-Disposition) header
+    /**
+     * Download file content.
+     *
+     * @param fileNodeId
+     * @param parameters
+     * @return
+     */
     BinaryResource getContent(String fileNodeId, Parameters parameters);
 
+    /**
+     * Uploads file content (updates existing node with new content).
+     *
+     * Note: may create a new version, depending on versioning behaviour.
+     *
+     * @param fileNodeId
+     * @param contentInfo
+     * @param stream
+     * @param parameters
+     * @return
+     */
     Node updateContent(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters);
 
     /**
@@ -129,4 +150,11 @@ public interface Nodes
      * @return {@code Node} if successful
      */
     Node upload(String parentFolderNodeId, FormData formData, Parameters parameters);
+    
+
+    NodeRef validateNode(StoreRef storeRef, String nodeId);
+    NodeRef validateNode(String nodeId);
+    NodeRef validateNode(NodeRef nodeRef);
+    boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes);
+
 }

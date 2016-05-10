@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.rest.api.tests.client;
 
 import java.io.IOException;
@@ -59,27 +60,25 @@ import org.springframework.core.type.classreading.MetadataReader;
 import org.springframework.core.type.classreading.MetadataReaderFactory;
 
 /**
- * A http client for talking to the rest apis.
- * 
- * The caller can pass in a rest api implementation class to the http method (get, post, put, delete supported)
+ * A http client for talking to the rest apis. The caller can pass in a rest api
+ * implementation class to the http method (get, post, put, delete supported)
  * and the url will be generated.
  * 
  * @author steveglover
- *
  */
 public class PublicApiHttpClient
 {
     private static final Log logger = LogFactory.getLog(PublicApiHttpClient.class);
 
     private static final String OLD_BASE_URL = "{0}://{1}:{2}{3}{4}{5}/api/";
-	private static final String INDEX_URL = "{0}://{1}:{2}{3}{4}";
-	private static final String BASE_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/{7}/versions/1";
-	private static final String PUBLICAPI_CMIS_SERVICE_URL = "{0}://{1}:{2}{3}{4}cmis/versions/{5}/{6}";
-	private static final String PUBLICAPI_CMIS_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/cmis/versions/{7}/{8}";
+    private static final String INDEX_URL = "{0}://{1}:{2}{3}{4}";
+    private static final String BASE_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/{7}/versions/{8}/";
+    private static final String PUBLICAPI_CMIS_SERVICE_URL = "{0}://{1}:{2}{3}{4}cmis/versions/{5}/{6}";
+    private static final String PUBLICAPI_CMIS_URL = "{0}://{1}:{2}{3}{4}{5}/{6}/cmis/versions/{7}/{8}";
     private static final String PUBLICAPI_CMIS_URL_SUFFIX = "{0}/{1}/cmis/versions/{2}/{3}";
-	private static final String ATOM_PUB_URL = "{0}://{1}:{2}{3}cmisatom";
+    private static final String ATOM_PUB_URL = "{0}://{1}:{2}{3}cmisatom";
 
-	private String scheme = "http";
+    private String scheme = "http";
     private String host = "localhost";
     private int port = 8081;
 
@@ -87,94 +86,55 @@ public class PublicApiHttpClient
     private String servletName;
     private AuthenticatedHttp authenticatedHttp;
 
-	private ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
-	private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(this.resourcePatternResolver);
+    private ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
+    private MetadataReaderFactory metadataReaderFactory = new CachingMetadataReaderFactory(this.resourcePatternResolver);
 
-	// can be overriden by other clients like the workflow client
-	protected String apiName = "alfresco";
-	
-	public PublicApiHttpClient(String host, int port, String contextPath, String servletName, AuthenticatedHttp authenticatedHttp)
-	{
-	    this("http", host, port, contextPath, servletName, authenticatedHttp);
-	}
+    // can be overriden by other clients like the workflow client
+    protected String apiName = "alfresco";
 
-	public PublicApiHttpClient(String scheme, String host, int port, String contextPath, String servletName, AuthenticatedHttp authenticatedHttp)
-	{
-		super();
-		this.scheme = scheme;
-		this.host = host;
-		this.port = port;
-		this.contextPath = contextPath;
-		if(this.contextPath != null && !this.contextPath.isEmpty() && !this.contextPath.endsWith("/"))
-		{
-		    this.contextPath = this.contextPath + "/";
-		}
-		if(this.contextPath != null && !this.contextPath.startsWith("/"))
-		{
-		    this.contextPath = "/" + this.contextPath;
-		}
-		this.servletName = servletName;
-		if(this.servletName != null && !this.servletName.isEmpty() && !this.servletName.endsWith("/"))
-		{
-		    this.servletName = this.servletName + "/";
-		}
-		this.authenticatedHttp = authenticatedHttp;
-	}
+    public PublicApiHttpClient(String host, int port, String contextPath, String servletName, AuthenticatedHttp authenticatedHttp)
+    {
+        this("http", host, port, contextPath, servletName, authenticatedHttp);
+    }
 
-	public String getCmisUrl(String repositoryId, String operation)
-	{
-		StringBuilder url = new StringBuilder();
-		if(repositoryId == null)
-		{
-			url.append(MessageFormat.format(ATOM_PUB_URL, new Object[] { scheme, host, String.valueOf(port), contextPath}));
-		}
-		else
-		{
-			url.append(MessageFormat.format(ATOM_PUB_URL, new Object[] { scheme, host, String.valueOf(port), contextPath}));
-			url.append("/");
-			url.append(repositoryId);
-		}
+    public PublicApiHttpClient(String scheme, String host, int port, String contextPath, String servletName, AuthenticatedHttp authenticatedHttp)
+    {
+        super();
+        this.scheme = scheme;
+        this.host = host;
+        this.port = port;
+        this.contextPath = contextPath;
+        if (this.contextPath != null && !this.contextPath.isEmpty() && !this.contextPath.endsWith("/"))
+        {
+            this.contextPath = this.contextPath + "/";
+        }
+        if (this.contextPath != null && !this.contextPath.startsWith("/"))
+        {
+            this.contextPath = "/" + this.contextPath;
+        }
+        this.servletName = servletName;
+        if (this.servletName != null && !this.servletName.isEmpty() && !this.servletName.endsWith("/"))
+        {
+            this.servletName = this.servletName + "/";
+        }
+        this.authenticatedHttp = authenticatedHttp;
+    }
 
-		if(operation != null)
-		{
-			url.append("/");
-			url.append(operation);
-		}
-
-		return url.toString();
-	}
-
-	public String getPublicApiCmisUrl(String networkId, Binding binding, String version, String operation)
-	{
-		StringBuilder url = new StringBuilder();
-		if(networkId == null)
-		{
-			url.append(MessageFormat.format(PUBLICAPI_CMIS_SERVICE_URL, new Object[] { scheme, host, String.valueOf(port), contextPath,
-					servletName, version, binding.toString().toLowerCase()}));
-		}
-		else
-		{
-			url.append(MessageFormat.format(PUBLICAPI_CMIS_URL, new Object[] { scheme, host, String.valueOf(port), contextPath, servletName,
-					networkId, "public", version, binding.toString().toLowerCase()}));
-		}
-
-		if(operation != null)
-		{
-			url.append("/");
-			url.append(operation);
-		}
-
-		return url.toString();
-	}
-
-    public String getPublicApiCmisUrlSuffix(String networkId, Binding binding, String version, String operation)
+    public String getCmisUrl(String repositoryId, String operation)
     {
         StringBuilder url = new StringBuilder();
+        if (repositoryId == null)
+        {
+            url.append(MessageFormat.format(ATOM_PUB_URL, new Object[] { scheme, host, String.valueOf(port), contextPath }));
+        }
+        else
+        {
+            url.append(MessageFormat.format(ATOM_PUB_URL, new Object[] { scheme, host, String.valueOf(port), contextPath }));
+            url.append("/");
+            url.append(repositoryId);
+        }
 
-        url.append(MessageFormat.format(PUBLICAPI_CMIS_URL_SUFFIX,
-                new Object[] {networkId, "public", version, binding.toString().toLowerCase()}));
-
-        if(operation != null)
+        if (operation != null)
         {
             url.append("/");
             url.append(operation);
@@ -182,274 +142,331 @@ public class PublicApiHttpClient
 
         return url.toString();
     }
-	
-	public void setHost(String host)
-	{
-		this.host = host;
-	}
 
-	public void setPort(int port)
-	{
-		this.port = port;
-	}
-	
-	public void setContextPath(String contextPath)
-	{
-		this.contextPath = contextPath;
-	}
-
-	public void init()
-	{
-	}
-
-	private void log(String msg)
-	{
-		if(logger.isDebugEnabled())
-		{
-			logger.debug(msg);
-		}
-	}
-    
-    protected AnnotationMetadata getAnnotationMetadata(String classname) throws IOException
+    public String getPublicApiCmisUrl(String networkId, Binding binding, String version, String operation)
     {
-		MetadataReader metadataReader = this.metadataReaderFactory.getMetadataReader(classname);
-		AnnotationMetadata annotationMetaData = metadataReader.getAnnotationMetadata();
-		return annotationMetaData;
+        StringBuilder url = new StringBuilder();
+        if (networkId == null)
+        {
+            url.append(MessageFormat.format(PUBLICAPI_CMIS_SERVICE_URL,
+                        new Object[] { scheme, host, String.valueOf(port), contextPath, servletName, version, binding.toString().toLowerCase() }));
+        }
+        else
+        {
+            url.append(MessageFormat.format(PUBLICAPI_CMIS_URL, new Object[] { scheme, host, String.valueOf(port), contextPath, servletName,
+                        networkId, "public", version, binding.toString().toLowerCase() }));
+        }
+
+        if (operation != null)
+        {
+            url.append("/");
+            url.append(operation);
+        }
+
+        return url.toString();
     }
 
-	public HttpResponse submitRequest(HttpMethod req, final RequestContext rq) throws HttpException, IOException
+    public String getPublicApiCmisUrlSuffix(String networkId, Binding binding, String version, String operation)
     {
-		try
-		{
-			final long start = System.currentTimeMillis();
+        StringBuilder url = new StringBuilder();
 
-			final HttpRequestCallback<HttpResponse> callback = new HttpRequestCallback<HttpResponse>()
-			{
-				@Override
-				public HttpResponse onCallSuccess(HttpMethod method) throws Exception
-				{
-					long end = System.currentTimeMillis();
-					
-					Map<String, String> headersMap = null;
-					Header[] headers = method.getResponseHeaders();
-					if (headers != null)
-					{
-					    headersMap = new HashMap<String, String>(headers.length);
-					    for (Header header : headers)
+        url.append(MessageFormat.format(PUBLICAPI_CMIS_URL_SUFFIX, new Object[] { networkId, "public", version, binding.toString().toLowerCase() }));
+
+        if (operation != null)
+        {
+            url.append("/");
+            url.append(operation);
+        }
+
+        return url.toString();
+    }
+
+    public void setHost(String host)
+    {
+        this.host = host;
+    }
+
+    public void setPort(int port)
+    {
+        this.port = port;
+    }
+
+    public void setContextPath(String contextPath)
+    {
+        this.contextPath = contextPath;
+    }
+
+    public void init()
+    {
+    }
+
+    private void log(String msg)
+    {
+        if (logger.isDebugEnabled())
+        {
+            logger.debug(msg);
+        }
+    }
+
+    protected AnnotationMetadata getAnnotationMetadata(String classname) throws IOException
+    {
+        MetadataReader metadataReader = this.metadataReaderFactory.getMetadataReader(classname);
+        AnnotationMetadata annotationMetaData = metadataReader.getAnnotationMetadata();
+        return annotationMetaData;
+    }
+
+    public HttpResponse submitRequest(HttpMethod req, final RequestContext rq) throws HttpException, IOException
+    {
+        try
+        {
+            final long start = System.currentTimeMillis();
+
+            final HttpRequestCallback<HttpResponse> callback = new HttpRequestCallback<HttpResponse>()
+            {
+                @Override
+                public HttpResponse onCallSuccess(HttpMethod method) throws Exception
+                {
+                    long end = System.currentTimeMillis();
+
+                    Map<String, String> headersMap = null;
+                    Header[] headers = method.getResponseHeaders();
+                    if (headers != null)
+                    {
+                        headersMap = new HashMap<String, String>(headers.length);
+                        for (Header header : headers)
                         {
                             headersMap.put(header.getName(), header.getValue());
                         }
-					}
-					
-					return new HttpResponse(method, rq.getRunAsUser(), method.getResponseBodyAsString(), headersMap, (end - start));
-				}
+                    }
 
-				@Override
-				public boolean onError(HttpMethod method, Throwable t)
-				{
-			        return false;
-				}
-			};
+                    return new HttpResponse(method, rq.getRunAsUser(), method.getResponseBodyAsString(), headersMap, (end - start));
+                }
 
-			HttpResponse response = null;
-			if(rq.getPassword() != null)
-			{
-				response = authenticatedHttp.executeHttpMethodAuthenticated(req, rq.getRunAsUser(), rq.getPassword(), callback);
-			}
-			else
-			{
-				response = authenticatedHttp.executeHttpMethodAuthenticated(req, rq.getRunAsUser(), callback);
-			}
-			return response;
-		}
-		finally
-		{
-			if(req != null)
-			{
-				req.releaseConnection();
-			}
-		}
+                @Override
+                public boolean onError(HttpMethod method, Throwable t)
+                {
+                    return false;
+                }
+            };
+
+            HttpResponse response = null;
+            if (rq.getPassword() != null)
+            {
+                response = authenticatedHttp.executeHttpMethodAuthenticated(req, rq.getRunAsUser(), rq.getPassword(), callback);
+            }
+            else
+            {
+                response = authenticatedHttp.executeHttpMethodAuthenticated(req, rq.getRunAsUser(), callback);
+            }
+            return response;
+        }
+        finally
+        {
+            if (req != null)
+            {
+                req.releaseConnection();
+            }
+        }
     }
 
     public HttpResponse get(final RequestContext rq, final String urlSuffix, Map<String, String> params) throws IOException
-	{
-    	RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), urlSuffix, params);
-		String url = endpoint.getUrl();
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), urlSuffix, params);
+        String url = endpoint.getUrl();
 
-		GetMethod req = new GetMethod(url);
-    	return submitRequest(req, rq);
-	}
+        GetMethod req = new GetMethod(url);
+        return submitRequest(req, rq);
+    }
 
-    public HttpResponse get(final Class<?> c, final RequestContext rq, final Object entityId, final Object relationshipEntityId, Map<String, String> params) throws IOException
-	{
-    	RestApiEndpoint endpoint = new RestApiEndpoint(c, rq.getNetworkId(), entityId, relationshipEntityId, params);
-		String url = endpoint.getUrl();
+    public HttpResponse get(final Class<?> c, final RequestContext rq, final Object entityId, final Object relationshipEntityId,
+                Map<String, String> params) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(c, rq.getNetworkId(), entityId, relationshipEntityId, params);
+        String url = endpoint.getUrl();
 
-		GetMethod req = new GetMethod(url);
-    	return submitRequest(req, rq);
-	}
-    
-    public HttpResponse get(final RequestContext rq, String scope, final String entityCollectionName, final Object entityId, final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
-	{
-    	RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params);
-		String url = endpoint.getUrl();
+        GetMethod req = new GetMethod(url);
+        return submitRequest(req, rq);
+    }
 
-		GetMethod req = new GetMethod(url);
-    	return submitRequest(req, rq);
-	}
-    
-    public HttpResponse get(final RequestContext rq, String scope, String password, final String entityCollectionName, final Object entityId, final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
-	{
-    	RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params);
-		String url = endpoint.getUrl();
+    public HttpResponse get(final RequestContext rq, String scope, final String entityCollectionName, final Object entityId,
+                final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
+    {
+        return get(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params);
+    }
 
-		GetMethod req = new GetMethod(url);
-    	return submitRequest(req, rq);
-	}
+    public HttpResponse get(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
+                final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
+                    relationshipEntityId, params);
+        String url = endpoint.getUrl();
+
+        GetMethod req = new GetMethod(url);
+        return submitRequest(req, rq);
+    }
+
+    public HttpResponse get(final RequestContext rq, String scope, String password, final String entityCollectionName, final Object entityId,
+                final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
+    {
+        return get(rq, scope, 1, password, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params);
+    }
+
+    public HttpResponse get(final RequestContext rq, final String scope, final int version, final String password, final String entityCollectionName, final Object entityId,
+                final String relationCollectionName, final Object relationshipEntityId, Map<String, String> params) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
+                    relationshipEntityId, params);
+        String url = endpoint.getUrl();
+
+        GetMethod req = new GetMethod(url);
+        return submitRequest(req, rq);
+    }
 
     public HttpResponse get(final String urlSuffix, final RequestContext rq, Map<String, String> params) throws IOException
-	{
-    	RestApiEndpoint endpoint = new RestApiEndpoint(urlSuffix, params);
-		String url = endpoint.getUrl();
-		
-		GetMethod req = new GetMethod(url);
-    	return submitRequest(req, rq);
-	}
-    
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(urlSuffix, params);
+        String url = endpoint.getUrl();
+
+        GetMethod req = new GetMethod(url);
+        return submitRequest(req, rq);
+    }
+
     public HttpResponse getWithPassword(final String urlSuffix, final RequestContext rq, Map<String, String> params) throws IOException
-	{
-    	RestApiEndpoint endpoint = new RestApiEndpoint(urlSuffix, params);
-		String url = endpoint.getUrl();
-		
-		GetMethod req = new GetMethod(url);
-    	return submitRequest(req, rq);
-	}
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(urlSuffix, params);
+        String url = endpoint.getUrl();
 
-	public HttpResponse post(final Class<?> c, final RequestContext rq, final Object entityId, final Object relationshipEntityId, final String body) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(c, rq.getNetworkId(), entityId, relationshipEntityId, null);
-		String url = endpoint.getUrl();
+        GetMethod req = new GetMethod(url);
+        return submitRequest(req, rq);
+    }
 
-		PostMethod req = new PostMethod(url.toString());
-		if(body != null)
-		{
-			StringRequestEntity requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
-			req.setRequestEntity(requestEntity);
-		}
-    	return submitRequest(req, rq);
-	}
-	
+    public HttpResponse post(final Class<?> c, final RequestContext rq, final Object entityId, final Object relationshipEntityId, final String body)
+                throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(c, rq.getNetworkId(), entityId, relationshipEntityId, null);
+        String url = endpoint.getUrl();
+
+        PostMethod req = new PostMethod(url.toString());
+        if (body != null)
+        {
+            StringRequestEntity requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
+            req.setRequestEntity(requestEntity);
+        }
+        return submitRequest(req, rq);
+    }
+
     public HttpResponse post(final RequestContext rq, final String urlSuffix, String body) throws IOException
-	{
-    	RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), urlSuffix, null);
-		String url = endpoint.getUrl();
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), urlSuffix, null);
+        String url = endpoint.getUrl();
 
-		PostMethod req = new PostMethod(url.toString());
-		if(body != null)
-		{
-			StringRequestEntity requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
-			req.setRequestEntity(requestEntity);
-		}
-    	return submitRequest(req, rq);
-	}
-    
-	public HttpResponse post(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation, final String body) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
-		String url = endpoint.getUrl();
-		
-		PostMethod req = new PostMethod(url.toString());
-		if(body != null)
-		{
-			StringRequestEntity requestEntity = null;
-			if(cmisBinding.equals(Binding.atom))
-			{
-				requestEntity = new StringRequestEntity(body, "text/xml", "UTF-8");
-			}
-			else if(cmisBinding.equals(Binding.browser))
-			{
-				requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
-			}
-			req.setRequestEntity(requestEntity);
-		}
-    	return submitRequest(req, rq);
-	}
-	
-	public HttpResponse put(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation, final String body) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
-		String url = endpoint.getUrl();
-		
-		PutMethod req = new PutMethod(url.toString());
-		if(body != null)
-		{
-			StringRequestEntity requestEntity = null;
-			if(cmisBinding.equals(Binding.atom))
-			{
-				requestEntity = new StringRequestEntity(body, "text/xml", "UTF-8");
-			}
-			else if(cmisBinding.equals(Binding.browser))
-			{
-				requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
-			}
-			req.setRequestEntity(requestEntity);
-		}
-    	return submitRequest(req, rq);
-	}
-	
-	public HttpResponse get(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation, Map<String, String> parameters) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, parameters);
-		String url = endpoint.getUrl();
-		
-		GetMethod req = new GetMethod(url.toString());
-    	return submitRequest(req, rq);
-	}
+        PostMethod req = new PostMethod(url.toString());
+        if (body != null)
+        {
+            StringRequestEntity requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
+            req.setRequestEntity(requestEntity);
+        }
+        return submitRequest(req, rq);
+    }
 
-	public HttpResponse delete(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
-		String url = endpoint.getUrl();
-		
-		DeleteMethod req = new DeleteMethod(url.toString());
-    	return submitRequest(req, rq);
-	}
+    public HttpResponse post(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation, final String body) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
+        String url = endpoint.getUrl();
 
-	public HttpResponse head(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
-		String url = endpoint.getUrl();
-		
-		HeadMethod req = new HeadMethod(url.toString());
-    	return submitRequest(req, rq);
-	}
-	
-	public HttpResponse options(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
-		String url = endpoint.getUrl();
-		
-		OptionsMethod req = new OptionsMethod(url.toString());
-    	return submitRequest(req, rq);
-	}
-	
-	public HttpResponse trace(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
-		String url = endpoint.getUrl();
-		
-		TraceMethod req = new TraceMethod(url.toString());
-    	return submitRequest(req, rq);
-	}
-	
-	public HttpResponse patch(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
-		String url = endpoint.getUrl();
-		
-		PatchMethod req = new PatchMethod(url.toString());
-    	return submitRequest(req, rq);
-	}
+        PostMethod req = new PostMethod(url.toString());
+        if (body != null)
+        {
+            StringRequestEntity requestEntity = null;
+            if (cmisBinding.equals(Binding.atom))
+            {
+                requestEntity = new StringRequestEntity(body, "text/xml", "UTF-8");
+            }
+            else if (cmisBinding.equals(Binding.browser))
+            {
+                requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
+            }
+            req.setRequestEntity(requestEntity);
+        }
+        return submitRequest(req, rq);
+    }
+
+    public HttpResponse put(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation, final String body) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
+        String url = endpoint.getUrl();
+
+        PutMethod req = new PutMethod(url.toString());
+        if (body != null)
+        {
+            StringRequestEntity requestEntity = null;
+            if (cmisBinding.equals(Binding.atom))
+            {
+                requestEntity = new StringRequestEntity(body, "text/xml", "UTF-8");
+            }
+            else if (cmisBinding.equals(Binding.browser))
+            {
+                requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
+            }
+            req.setRequestEntity(requestEntity);
+        }
+        return submitRequest(req, rq);
+    }
+
+    public HttpResponse get(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation, Map<String, String> parameters)
+                throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, parameters);
+        String url = endpoint.getUrl();
+
+        GetMethod req = new GetMethod(url.toString());
+        return submitRequest(req, rq);
+    }
+
+    public HttpResponse delete(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
+        String url = endpoint.getUrl();
+
+        DeleteMethod req = new DeleteMethod(url.toString());
+        return submitRequest(req, rq);
+    }
+
+    public HttpResponse head(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
+        String url = endpoint.getUrl();
+
+        HeadMethod req = new HeadMethod(url.toString());
+        return submitRequest(req, rq);
+    }
+
+    public HttpResponse options(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
+        String url = endpoint.getUrl();
+
+        OptionsMethod req = new OptionsMethod(url.toString());
+        return submitRequest(req, rq);
+    }
+
+    public HttpResponse trace(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
+        String url = endpoint.getUrl();
+
+        TraceMethod req = new TraceMethod(url.toString());
+        return submitRequest(req, rq);
+    }
+
+    public HttpResponse patch(final RequestContext rq, Binding cmisBinding, String version, String cmisOperation) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), cmisBinding, version, cmisOperation, null);
+        String url = endpoint.getUrl();
+
+        PatchMethod req = new PatchMethod(url.toString());
+        return submitRequest(req, rq);
+    }
 
     public HttpResponse post(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
                 final String relationCollectionName, final Object relationshipEntityId, final String body) throws IOException
@@ -460,7 +477,13 @@ public class PublicApiHttpClient
     public HttpResponse post(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
                 final String relationCollectionName, final Object relationshipEntityId, final String body, String contentType) throws IOException
     {
-        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, entityCollectionName, entityId, relationCollectionName,
+        return post(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, body, contentType);
+    }
+
+    public HttpResponse post(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
+                final String relationCollectionName, final Object relationshipEntityId, final String body, String contentType) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
                     relationshipEntityId, null);
         String url = endpoint.getUrl();
 
@@ -477,293 +500,321 @@ public class PublicApiHttpClient
         return submitRequest(req, rq);
     }
 
+    public HttpResponse delete(final Class<?> c, final RequestContext rq, final Object entityId, final Object relationshipEntityId) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(c, rq.getNetworkId(), entityId, relationshipEntityId, null);
+        String url = endpoint.getUrl();
 
-	public HttpResponse delete(final Class<?> c, final RequestContext rq, final Object entityId, final Object relationshipEntityId) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(c, rq.getNetworkId(), entityId, relationshipEntityId, null);
-		String url = endpoint.getUrl();
+        DeleteMethod req = new DeleteMethod(url);
+        return submitRequest(req, rq);
+    }
 
-		DeleteMethod req = new DeleteMethod(url);
-    	return submitRequest(req, rq);
-	}
-	
-	public HttpResponse delete(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId, final String relationCollectionName, final Object relationshipEntityId) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, null);
-		String url = endpoint.getUrl();
+    public HttpResponse delete(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
+                final String relationCollectionName, final Object relationshipEntityId) throws IOException
+    {
+        return delete(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId);
+    }
 
-		DeleteMethod req = new DeleteMethod(url);
-    	return submitRequest(req, rq);
-	}
+    public HttpResponse delete(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
+                final String relationCollectionName, final Object relationshipEntityId) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
+                    relationshipEntityId, null);
+        String url = endpoint.getUrl();
 
-	public HttpResponse put(final Class<?> c, final RequestContext rq, final Object entityId, final Object relationshipEntityId, final String body) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(c, rq.getNetworkId(), entityId, relationshipEntityId, null);
-		String url = endpoint.getUrl();
+        DeleteMethod req = new DeleteMethod(url);
+        return submitRequest(req, rq);
+    }
 
-		PutMethod req = new PutMethod(url);
-		if(body != null)
-		{
-			StringRequestEntity requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
-			req.setRequestEntity(requestEntity);
-		}
-    	return submitRequest(req, rq);
-	}
-	
-	public HttpResponse put(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId, final String relationCollectionName, final Object relationshipEntityId, final String body, final Map<String, String> params) throws IOException
-	{
-		RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params);
-		String url = endpoint.getUrl();
+    public HttpResponse put(final Class<?> c, final RequestContext rq, final Object entityId, final Object relationshipEntityId, final String body)
+                throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(c, rq.getNetworkId(), entityId, relationshipEntityId, null);
+        String url = endpoint.getUrl();
 
-		PutMethod req = new PutMethod(url);
-		if(body != null)
-		{
-			StringRequestEntity requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
-			req.setRequestEntity(requestEntity);
-		}
-    	return submitRequest(req, rq);
-	}
+        PutMethod req = new PutMethod(url);
+        if (body != null)
+        {
+            StringRequestEntity requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
+            req.setRequestEntity(requestEntity);
+        }
+        return submitRequest(req, rq);
+    }
 
-	/*
-	 * Encapsulates information relating to a rest api end point, generating and encoding urls
-	 * based on the rest api implementation class.
-	 */
+    public HttpResponse put(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
+                final String relationCollectionName, final Object relationshipEntityId, final String body, final Map<String, String> params) throws IOException
+    {
+        return put(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, body, params);
+    }
+
+    public HttpResponse put(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
+                final String relationCollectionName, final Object relationshipEntityId, final String body, Map<String, String> params) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
+                    relationshipEntityId, params);
+        String url = endpoint.getUrl();
+
+        PutMethod req = new PutMethod(url);
+        if (body != null)
+        {
+            StringRequestEntity requestEntity = new StringRequestEntity(body, "application/json", "UTF-8");
+            req.setRequestEntity(requestEntity);
+        }
+        return submitRequest(req, rq);
+    }
+
+    /*
+     * Encapsulates information relating to a rest api end point, generating and
+     * encoding urls based on the rest api implementation class.
+     */
     private class RestApiEndpoint
     {
-    	private String url;
+        private String url;
 
-    	RestApiEndpoint(String url, Map<String, String> params) throws IOException
-    	{
-			StringBuilder sb = new StringBuilder(MessageFormat.format(INDEX_URL, new Object[] {scheme, host, String.valueOf(port), contextPath, servletName}));
-			if(url != null)
-			{
-				sb.append(url);
-			}
+        RestApiEndpoint(String url, Map<String, String> params) throws IOException
+        {
+            StringBuilder sb = new StringBuilder(
+                        MessageFormat.format(INDEX_URL, new Object[] { scheme, host, String.valueOf(port), contextPath, servletName }));
+            if (url != null)
+            {
+                sb.append(url);
+            }
 
-			addParams(sb, params);
+            addParams(sb, params);
 
-			this.url = sb.toString();
-    	}
+            this.url = sb.toString();
+        }
 
-    	RestApiEndpoint(String tenantDomain, String url, Map<String, String> params) throws IOException
-    	{
-			StringBuilder sb = new StringBuilder(MessageFormat.format(OLD_BASE_URL, new Object[] {scheme, host, String.valueOf(port), contextPath, servletName,
-					tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain }));
-			sb.append("/");
-			sb.append(url);
+        RestApiEndpoint(String tenantDomain, String url, Map<String, String> params) throws IOException
+        {
+            StringBuilder sb = new StringBuilder(MessageFormat.format(OLD_BASE_URL, new Object[] { scheme, host, String.valueOf(port), contextPath,
+                        servletName, tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain }));
+            sb.append("/");
+            sb.append(url);
 
-			addParams(sb, params);
+            addParams(sb, params);
 
-			this.url = sb.toString();
-    	}
+            this.url = sb.toString();
+        }
 
-    	RestApiEndpoint(Class<?> resourceClass, String tenantDomain, Object collectionEntityId, Object relationEntityId, Map<String, String> params) throws IOException
-    	{
-			StringBuilder sb = new StringBuilder();
+        RestApiEndpoint(Class<?> resourceClass, String tenantDomain, Object collectionEntityId, Object relationEntityId, Map<String, String> params)
+                    throws IOException
+        {
+            StringBuilder sb = new StringBuilder();
 
-    		Api api = ResourceInspector.inspectApi(resourceClass);
-    		SCOPE scope = api.getScope();
-    		Pair<String, String> relationshipCollectionInfo = getRelationCollectionInfo(resourceClass);
+            Api api = ResourceInspector.inspectApi(resourceClass);
+            SCOPE scope = api.getScope();
+            int version = api.getVersion();
+            Pair<String, String> relationshipCollectionInfo = getRelationCollectionInfo(resourceClass);
 
-			sb.append(MessageFormat.format(BASE_URL, new Object[] {scheme, host, String.valueOf(port), contextPath, servletName,
-					tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain, scope.toString(), apiName}));
+            sb.append(MessageFormat.format(BASE_URL, new Object[] { scheme, host, String.valueOf(port), contextPath, servletName,
+                        tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain, scope.toString(), apiName, version }));
 
-    		if(relationshipCollectionInfo != null)
-    		{
-    			String entityCollectionName = relationshipCollectionInfo.getFirst();
-    			String relationshipCollectionName = relationshipCollectionInfo.getSecond();
-				String relationEntityIdString = encodeToString(relationEntityId);
-				String collectionEntityIdString = encodeToString(collectionEntityId);
+            if (relationshipCollectionInfo != null)
+            {
+                String entityCollectionName = relationshipCollectionInfo.getFirst();
+                String relationshipCollectionName = relationshipCollectionInfo.getSecond();
+                String relationEntityIdString = encodeToString(relationEntityId);
+                String collectionEntityIdString = encodeToString(collectionEntityId);
 
-				sb.append(entityCollectionName);
-				sb.append("/");
-				if(collectionEntityIdString != null)
-				{
-					sb.append(collectionEntityIdString);
-					sb.append("/");
-				}
+                sb.append(entityCollectionName);
+                sb.append("/");
+                if (collectionEntityIdString != null)
+                {
+                    sb.append(collectionEntityIdString);
+                    sb.append("/");
+                }
 
-				sb.append(relationshipCollectionName);
-				sb.append("/");
-				if(relationEntityIdString != null)
-				{
-					sb.append(relationEntityIdString);
-					sb.append("/");
-				}
-    		}
-    		else
-			{
-	    		String entityCollectionName = getEntityCollectionInfo(resourceClass);
-	    		if(entityCollectionName != null)
-	    		{
-					String collectionEntityIdString = encodeToString(collectionEntityId);
+                sb.append(relationshipCollectionName);
+                sb.append("/");
+                if (relationEntityIdString != null)
+                {
+                    sb.append(relationEntityIdString);
+                    sb.append("/");
+                }
+            }
+            else
+            {
+                String entityCollectionName = getEntityCollectionInfo(resourceClass);
+                if (entityCollectionName != null)
+                {
+                    String collectionEntityIdString = encodeToString(collectionEntityId);
 
-					sb.append(entityCollectionName);
-					sb.append("/");
-					if(collectionEntityIdString != null)
-					{
-						sb.append(collectionEntityIdString);
-						sb.append("/");
-					}
-				}
-	    		else
-	    		{
-	    			throw new RuntimeException();
-	    		}
-			}
+                    sb.append(entityCollectionName);
+                    sb.append("/");
+                    if (collectionEntityIdString != null)
+                    {
+                        sb.append(collectionEntityIdString);
+                        sb.append("/");
+                    }
+                }
+                else
+                {
+                    throw new RuntimeException();
+                }
+            }
 
-			addParams(sb, params);
+            addParams(sb, params);
 
-			this.url = sb.toString();
-    	}
-    	
-    	RestApiEndpoint(String networkId, Binding cmisBinding, String version, String cmisOperation, Map<String, String> params) throws IOException
-    	{
-			StringBuilder sb = new StringBuilder();
+            this.url = sb.toString();
+        }
 
-			if(networkId != null)
-			{
-				sb.append(getPublicApiCmisUrl(networkId, cmisBinding, version, cmisOperation));
-			}
-			else
-			{
-				throw new IllegalArgumentException();
-			}
+        RestApiEndpoint(String networkId, Binding cmisBinding, String version, String cmisOperation, Map<String, String> params) throws IOException
+        {
+            StringBuilder sb = new StringBuilder();
 
-			addParams(sb, params);
+            if (networkId != null)
+            {
+                sb.append(getPublicApiCmisUrl(networkId, cmisBinding, version, cmisOperation));
+            }
+            else
+            {
+                throw new IllegalArgumentException();
+            }
 
-			this.url = sb.toString();
-    	}
+            addParams(sb, params);
 
-    	RestApiEndpoint(String tenantDomain, String scope, String collectionName, Object collectionEntityId, String relationName, Object relationEntityId, Map<String, String> params) throws IOException
-    	{
-			StringBuilder sb = new StringBuilder();
+            this.url = sb.toString();
+        }
 
-			if(tenantDomain == null || tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
-			{
-				tenantDomain = TenantUtil.DEFAULT_TENANT;
-			}
-			sb.append(MessageFormat.format(BASE_URL, new Object[] {scheme, host, String.valueOf(port), contextPath, servletName, 
-					tenantDomain, scope, apiName}));
+        RestApiEndpoint(String tenantDomain, String scope, int version, String collectionName, Object collectionEntityId, String relationName,
+                    Object relationEntityId, Map<String, String> params) throws IOException
+        {
+            StringBuilder sb = new StringBuilder();
 
-			if(collectionName != null)
-			{
-				sb.append("/");
-				sb.append(collectionName);
-				if(collectionEntityId != null)
-				{
-					sb.append("/");
-					sb.append(collectionEntityId);
-				}
-			}
+            if (tenantDomain == null || tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
+            {
+                tenantDomain = TenantUtil.DEFAULT_TENANT;
+            }
+            sb.append(MessageFormat.format(BASE_URL,
+                        new Object[] { scheme, host, String.valueOf(port), contextPath, servletName, tenantDomain, scope, apiName, version }));
 
-			if(relationName != null)
-			{
-				sb.append("/");
-				sb.append(relationName);
-				if(relationEntityId != null)
-				{
-					sb.append("/");
-					sb.append(relationEntityId);
-				}
-			}
+            if (collectionName != null)
+            {
+                sb.append(collectionName);
+                if (collectionEntityId != null)
+                {
+                    sb.append('/');
+                    sb.append(collectionEntityId);
+                }
+            }
 
-			addParams(sb, params);
+            if (relationName != null)
+            {
+                if (!sb.toString().endsWith("/"))
+                {
+                    sb.append('/');
+                }
+                sb.append(relationName);
+                if (relationEntityId != null)
+                {
+                    sb.append('/');
+                    sb.append(relationEntityId);
+                }
+            }
 
-			this.url = sb.toString();
-    	}
+            addParams(sb, params);
 
-    	private void addParams(StringBuilder sb, Map<String, String> params) throws UnsupportedEncodingException
-    	{
-			if(params != null && params.size() > 0)
-			{
-				sb.append("?");
+            this.url = sb.toString();
+        }
 
-				for(String paramName : params.keySet())
-				{
-					sb.append(URLEncoder.encode(paramName, "UTF-8"));
-					sb.append("=");
-					sb.append(URLEncoder.encode(params.get(paramName), "UTF-8"));
-					sb.append("&");
-				}
+        RestApiEndpoint(String tenantDomain, String scope, String collectionName, Object collectionEntityId, String relationName,
+                    Object relationEntityId, Map<String, String> params) throws IOException
+        {
+            this(tenantDomain, scope, 1, collectionName, collectionEntityId, relationName, relationEntityId, params);
+        }
 
-				sb.deleteCharAt(sb.length() - 1);
-			}
-    	}
+        private void addParams(StringBuilder sb, Map<String, String> params) throws UnsupportedEncodingException
+        {
+            if (params != null && params.size() > 0)
+            {
+                sb.append("?");
+
+                for (String paramName : params.keySet())
+                {
+                    sb.append(URLEncoder.encode(paramName, "UTF-8"));
+                    sb.append("=");
+                    sb.append(URLEncoder.encode(params.get(paramName), "UTF-8"));
+                    sb.append("&");
+                }
+
+                sb.deleteCharAt(sb.length() - 1);
+            }
+        }
 
         private String encodeToString(Object o) throws UnsupportedEncodingException
         {
-	    	String ret = null;
-	
-	    	if(o instanceof NodeRef)
-	    	{
-	    		NodeRef nodeRef = (NodeRef)o;
-	    		ret = (o != null ? nodeRef.getId() : null);
-	    	}
-	    	else
-	    	{
-	    		ret = (o != null ? o.toString() : null);
-	    	}
-	
-	    	return ret;
+            String ret = null;
+
+            if (o instanceof NodeRef)
+            {
+                NodeRef nodeRef = (NodeRef) o;
+                ret = (o != null ? nodeRef.getId() : null);
+            }
+            else
+            {
+                ret = (o != null ? o.toString() : null);
+            }
+
+            return ret;
         }
-        
+
         private Pair<String, String> getRelationCollectionInfo(Class<?> resourceClass) throws IOException
         {
-    		AnnotationMetadata annotationMetaData = getAnnotationMetadata(resourceClass.getCanonicalName());
-    		if(annotationMetaData.isConcrete() && annotationMetaData.isIndependent())
-    		{
-    			if(annotationMetaData.getAnnotationTypes().contains(RelationshipResource.class.getCanonicalName()))
-    			{
-    				Map<String, Object> attrs = annotationMetaData.getAnnotationAttributes(RelationshipResource.class.getName());
-    				String relationshipCollectionName = (String)attrs.get("name");
-    				Class<?> entityResource = (Class<?>)attrs.get("entityResource");
+            AnnotationMetadata annotationMetaData = getAnnotationMetadata(resourceClass.getCanonicalName());
+            if (annotationMetaData.isConcrete() && annotationMetaData.isIndependent())
+            {
+                if (annotationMetaData.getAnnotationTypes().contains(RelationshipResource.class.getCanonicalName()))
+                {
+                    Map<String, Object> attrs = annotationMetaData.getAnnotationAttributes(RelationshipResource.class.getName());
+                    String relationshipCollectionName = (String) attrs.get("name");
+                    Class<?> entityResource = (Class<?>) attrs.get("entityResource");
 
-    				String entityCollectionName = getEntityCollectionInfo(entityResource.getCanonicalName());
-    				
-    	        	Pair<String, String> ret = new Pair<String, String>(entityCollectionName, relationshipCollectionName);
-    	        	return ret;
-    			}
-    			else
-    			{
-        			return null;
-    			}
-    		}
-    		else
-    		{
-    			throw new AlfrescoRuntimeException("");
-    		}
+                    String entityCollectionName = getEntityCollectionInfo(entityResource.getCanonicalName());
+
+                    Pair<String, String> ret = new Pair<String, String>(entityCollectionName, relationshipCollectionName);
+                    return ret;
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException("");
+            }
         }
 
         private String getEntityCollectionInfo(Class<?> resourceClass) throws IOException
         {
-        	return getEntityCollectionInfo(resourceClass.getCanonicalName());
+            return getEntityCollectionInfo(resourceClass.getCanonicalName());
         }
 
         private String getEntityCollectionInfo(String className) throws IOException
         {
-    		AnnotationMetadata annotationMetaData = getAnnotationMetadata(className);
-    		if(annotationMetaData.isConcrete() && annotationMetaData.isIndependent())
-    		{
-    			if(annotationMetaData.getAnnotationTypes().contains(EntityResource.class.getCanonicalName()))
-    			{
-    				Map<String, Object> attrs = annotationMetaData.getAnnotationAttributes(EntityResource.class.getName());
-    				return (String)attrs.get("name");
-    			}
-        		else
-        		{
-        			return null;
-        		}
-    		}
-    		else
-    		{
-    			throw new AlfrescoRuntimeException("");
-    		}
+            AnnotationMetadata annotationMetaData = getAnnotationMetadata(className);
+            if (annotationMetaData.isConcrete() && annotationMetaData.isIndependent())
+            {
+                if (annotationMetaData.getAnnotationTypes().contains(EntityResource.class.getCanonicalName()))
+                {
+                    Map<String, Object> attrs = annotationMetaData.getAnnotationAttributes(EntityResource.class.getName());
+                    return (String) attrs.get("name");
+                }
+                else
+                {
+                    return null;
+                }
+            }
+            else
+            {
+                throw new AlfrescoRuntimeException("");
+            }
         }
-		
-		public String getUrl() throws UnsupportedEncodingException
-		{
-			return url;
-		}
+
+        public String getUrl() throws UnsupportedEncodingException
+        {
+            return url;
+        }
     }
 }

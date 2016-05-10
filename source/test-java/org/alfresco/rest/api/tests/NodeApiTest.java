@@ -328,34 +328,43 @@ public class NodeApiTest extends AbstractBaseApiTest
         String myNodeId = getMyNodeId(user1);
         NodeRef myFilesNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myNodeId);
 
-        Map<String,Object> props = new HashMap<>(1);
+        String myChildrenUrl = getChildrenUrl(Nodes.PATH_MY);
+        String rootChildrenUrl = getChildrenUrl(Nodes.PATH_ROOT);
+
+        Map<String, Object> props = new HashMap<>(1);
         props.put("cm:title", "This is folder 1");
         String folder1 = "folder " + System.currentTimeMillis() + " 1";
         String folder1_Id = createFolder(user1, myNodeId, folder1, props).getId();
+
+        String contentF1 = "content" + System.currentTimeMillis() + " in folder 1";
+        String contentF1_Id = repoService.createDocument(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder1_Id), contentF1, "The quick brown fox jumps over the lazy dog 1.").getId();
 
         props = new HashMap<>(1);
         props.put("cm:title", "This is folder 2");
         String folder2 = "folder " + System.currentTimeMillis() + " 2";
         String folder2_Id = createFolder(user1, myNodeId, folder2, props).getId();
 
+        String contentF2 = "content" + System.currentTimeMillis() + " in folder 2";
+        String contentF2_Id = repoService.createDocument(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder2_Id), contentF2, "The quick brown fox jumps over the lazy dog 2.").getId();
+
         String content1 = "content" + System.currentTimeMillis() + " 1";
         NodeRef contentNodeRef = repoService.createDocument(myFilesNodeRef, content1, "The quick brown fox jumps over the lazy dog.");
         repoService.getNodeService().setProperty(contentNodeRef, ContentModel.PROP_OWNER, user1);
         repoService.getNodeService().setProperty(contentNodeRef, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA,
-                    (Serializable) Collections.singletonList("doclib:1444660852296"));
-        
+                (Serializable) Collections.singletonList("doclib:1444660852296"));
+
         List<String> folderIds = Arrays.asList(folder1_Id, folder2_Id);
         List<String> contentIds = Arrays.asList(contentNodeRef.getId());
-        
+
 
         Paging paging = getPaging(0, Integer.MAX_VALUE);
-        HttpResponse response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, 200);
+        HttpResponse response = getAll(myChildrenUrl, user1, paging, 200);
         List<Document> nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         assertEquals(3, nodes.size());
 
         // Order by folders and modified date first
         Map<String, String> orderBy = Collections.singletonMap("orderBy", "isFolder DESC,modifiedAt DESC");
-        response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, orderBy, 200);
+        response = getAll(myChildrenUrl, user1, paging, orderBy, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         assertEquals(3, nodes.size());
         assertEquals(folder2, nodes.get(0).getName());
@@ -364,7 +373,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(content1, node.getName());
         assertEquals("cm:content", node.getNodeType());
         assertEquals(contentNodeRef.getId(), node.getId());
-        UserInfo  createdByUser = node.getCreatedByUser();
+        UserInfo createdByUser = node.getCreatedByUser();
         assertEquals(user1, createdByUser.getId());
         assertEquals(user1 + " " + user1, createdByUser.getDisplayName());
         UserInfo modifiedByUser = node.getModifiedByUser();
@@ -374,47 +383,47 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(node.getContent().getMimeTypeName());
         assertNotNull(node.getContent().getEncoding());
         assertTrue(node.getContent().getSizeInBytes() > 0);
-        
+
         // request without select
         Map<String, String> params = new LinkedHashMap<>();
-        response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         for (Node n : nodes)
         {
-        	 assertNull("There shouldn't be a 'properties' object in the response.", n.getProperties());
-        	 assertNull("There shouldn't be a 'isLink' object in the response.", n.getIsLink());
-        	 assertNull("There shouldn't be a 'path' object in the response.", n.getPath());
-        	 assertNull("There shouldn't be a 'aspectNames' object in the response.", n.getAspectNames());
+            assertNull("There shouldn't be a 'properties' object in the response.", n.getProperties());
+            assertNull("There shouldn't be a 'isLink' object in the response.", n.getIsLink());
+            assertNull("There shouldn't be a 'path' object in the response.", n.getPath());
+            assertNull("There shouldn't be a 'aspectNames' object in the response.", n.getAspectNames());
         }
-        
+
         // request with select - example 1
         params = new LinkedHashMap<>();
         params.put("select", "isLink");
-        response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         for (Node n : nodes)
         {
-        	assertNotNull("There should be a 'isLink' object in the response.", n.getIsLink());
+            assertNotNull("There should be a 'isLink' object in the response.", n.getIsLink());
         }
-        
+
         // request with select - example 2
         params = new LinkedHashMap<>();
         params.put("select", "aspectNames,properties, path,isLink");
-        response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         for (Node n : nodes)
         {
             assertNotNull("There should be a 'properties' object in the response.", n.getProperties()); // eg. cm:title, see above
-        	assertNotNull("There should be a 'isLink' object in the response.", n.getIsLink());
-        	assertNotNull("There should be a 'path' object in the response.", n.getPath());
-        	assertNotNull("There should be a 'aspectNames' object in the response.", n.getAspectNames());
+            assertNotNull("There should be a 'isLink' object in the response.", n.getIsLink());
+            assertNotNull("There should be a 'path' object in the response.", n.getPath());
+            assertNotNull("There should be a 'aspectNames' object in the response.", n.getAspectNames());
         }
-        
+
         // request specific property via select
         params = new LinkedHashMap<>();
         params.put("select", "cm:lastThumbnailModification");
         params.put("orderBy", "isFolder DESC,modifiedAt DESC");
-        response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         assertEquals(3, nodes.size());
         assertNull("There shouldn't be a 'properties' object in the response.", nodes.get(0).getProperties());
@@ -425,50 +434,52 @@ public class NodeApiTest extends AbstractBaseApiTest
         Entry<String, Object> entry = propsSet.iterator().next();
         assertEquals("cm:lastThumbnailModification", entry.getKey());
         assertEquals("doclib:1444660852296", ((List<?>) entry.getValue()).get(0));
-        
-        
+
+
         // filtering, via where clause - folders only
         params = new LinkedHashMap<>();
         params.put("where", "(isFolder=true)");
-        response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         assertEquals(2, nodes.size());
-        
+
         assertTrue(nodes.get(0).getIsFolder());
         assertTrue(nodes.get(1).getIsFolder());
         assertTrue(folderIds.contains(nodes.get(0).getId()));
         assertTrue(folderIds.contains(nodes.get(1).getId()));
-        
+
         // filtering, via where clause - content only
         params = new LinkedHashMap<>();
         params.put("where", "(isFolder=false)");
-        response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
         assertFalse(nodes.get(0).getIsFolder());
         assertTrue(contentIds.contains(nodes.get(0).getId()));
 
-        // get node info via relativePath
+        // list children via relativePath
 
         params = Collections.singletonMap("relativePath", folder1);
-        response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 200);
-        Folder folderResp = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
-        assertEquals(folder1_Id, folderResp.getId());
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        assertEquals(1, nodes.size());
+        assertEquals(contentF1_Id, nodes.get(0).getId());
 
-        params = Collections.singletonMap("relativePath", "User Homes/"+user1+"/"+folder2);
-        response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, params, 200);
-        folderResp = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
-        assertEquals(folder2_Id, folderResp.getId());
-        
+        params = Collections.singletonMap("relativePath", "User Homes/" + user1 + "/" + folder2);
+        response = getAll(rootChildrenUrl, user1, paging, params, 200);
+        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        assertEquals(1, nodes.size());
+        assertEquals(contentF2_Id, nodes.get(0).getId());
+
         // -ve test - Invalid QName (Namespace prefix cm... is not mapped to a namespace URI) for the orderBy parameter.
-        orderBy = Collections.singletonMap("orderBy", "isFolder DESC,cm" + System.currentTimeMillis() + ":modified DESC");
-        getAll(getChildrenUrl(myFilesNodeRef), user1, paging, orderBy, 400);
-         
+        params = Collections.singletonMap("orderBy", "isFolder DESC,cm" + System.currentTimeMillis() + ":modified DESC");
+        getAll(myChildrenUrl, user1, paging, params, 400);
+
         paging = getPaging(0, 10);
-        
+
         // -ve test - list folder children for non-folder node should return 400
         getAll(getChildrenUrl(contentNodeRef), user1, paging, 400);
-        
+
         // -ve test - list folder children for unknown node should return 404
         getAll(getChildrenUrl(UUID.randomUUID().toString()), user1, paging, 404);
 
@@ -476,8 +487,17 @@ public class NodeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user2);
         getAll(getChildrenUrl(myFilesNodeRef), user2, paging, 403);
 
-        params = Collections.singletonMap("relativePath", "User Homes/"+user1+"/unknown");
-        getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, params, 404);
+        // -ve test - try to list children using relative path to unknown node
+        params = Collections.singletonMap("relativePath", "User Homes/" + user1 + "/unknown");
+        getAll(rootChildrenUrl, user1, paging, params, 404);
+
+        // -ve test - try to list children using relative path to node for which user does not have read permission
+        params = Collections.singletonMap("relativePath", "User Homes/" + user2);
+        getAll(rootChildrenUrl, user1, paging, params, 403);
+
+        // -ve test - try to list children using relative path to node that is of wrong type (ie. not a folder/container)
+        params = Collections.singletonMap("relativePath", folder1 + "/" + contentF1);
+        getAll(myChildrenUrl, user1, paging, params, 400);
     }
 
     /**
@@ -666,6 +686,15 @@ public class NodeApiTest extends AbstractBaseApiTest
         documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         assertEquals(content_Id, documentResp.getId());
 
+        // test path with utf-8 encoded param (eg. ¢ => )
+        String folderC = "folder" + System.currentTimeMillis() + " ¢";
+        String folderC_Id = createFolder(user1, folderB_Id, folderC).getId();
+
+        params = Collections.singletonMap("relativePath", "/"+folderA+"/"+folderB+"/"+folderC);
+        response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 200);
+        folderResp = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(folderC_Id, folderResp.getId());
+
         // -ve test - get info for unknown node should return 404
         getSingle(NodesEntityResource.class, user1, UUID.randomUUID().toString(), null, 404);
 
@@ -673,8 +702,13 @@ public class NodeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user2);
         getSingle(NodesEntityResource.class, user2, myFilesNodeId, null, 403);
 
+        // -ve test - try to get node info using relative path to unknown node
         params = Collections.singletonMap("relativePath", folderA+"/unknown");
         getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 404);
+
+        // -ve test - try to get node info using relative path to node for which user does not have read permission
+        params = Collections.singletonMap("relativePath", "User Homes/"+user2);
+        getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, params, 403);
     }
 
     /**

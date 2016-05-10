@@ -33,7 +33,7 @@ public abstract class ListParser<T>
 
     public ListResponse<T> parseList(JSONObject jsonResponse)
     {
-        List<T> deployments = new ArrayList<T>();
+        List<T> entries = new ArrayList<T>();
 
         JSONObject jsonList = (JSONObject)jsonResponse.get("list");
         assertNotNull(jsonList);
@@ -45,12 +45,12 @@ public abstract class ListParser<T>
         {
             JSONObject jsonEntry = (JSONObject)jsonEntries.get(i);
             JSONObject entry = (JSONObject)jsonEntry.get("entry");
-            deployments.add(parseEntry(entry));
+            entries.add(parseEntry(entry));
         }
 
         ExpectedPaging paging = ExpectedPaging.parsePagination(jsonList);
 
-        ListResponse<T> resp = new ListResponse<T>(paging, deployments);
+        ListResponse<T> resp = new ListResponse<T>(paging, entries);
         return resp;
     }
 

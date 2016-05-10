@@ -33,7 +33,7 @@ public class Params implements Parameters
     private final Status status;
 
     //Constants
-    private static final RecognizedParams NULL_PARAMS = new RecognizedParams(null, null, null, null, null, null, null);
+    private static final RecognizedParams NULL_PARAMS = new RecognizedParams(null, null, null, null, null, null, null, false);
     private static final BasicContentInfo DEFAULT_CONTENT_INFO = new ContentInfoImpl(MimetypeMap.MIMETYPE_BINARY, "UTF-8", -1, null);
     
     protected Params(String entityId, String relationshipId, Object passedIn, InputStream stream, String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo)
@@ -51,7 +51,7 @@ public class Params implements Parameters
 
     public static Params valueOf(BeanPropertiesFilter paramFilter, String entityId)
     {
-        return new Params(entityId, null, null, null, null, new RecognizedParams(null, null, paramFilter, null, null, null, null), null);
+        return new Params(entityId, null, null, null, null, new RecognizedParams(null, null, paramFilter, null, null, null, null, false), null);
     }
 
     public static Params valueOf(String entityId, String relationshipId)
@@ -104,6 +104,11 @@ public class Params implements Parameters
         return this.recognizedParams.filter;
     }
 
+    public boolean includeSource()
+    {
+        return this.recognizedParams.includeSource;
+    }
+
     public Map<String, BeanPropertiesFilter> getRelationsFilter()
     {
         return this.recognizedParams.relationshipFilter;
@@ -139,6 +144,8 @@ public class Params implements Parameters
         builder.append(this.recognizedParams.filter);
         builder.append(", relationshipFilter=");
         builder.append(this.recognizedParams.relationshipFilter);
+        builder.append(", includeSource=");
+        builder.append(this.recognizedParams.includeSource);
         builder.append(", addressedProperty=");
         builder.append(this.addressedProperty);
         builder.append("]");
@@ -222,10 +229,11 @@ public class Params implements Parameters
         private final Query query;
         private final List<String> select;
         private final List<SortColumn> sorting;
+        private final boolean includeSource;
         
         @SuppressWarnings("unchecked")
         public RecognizedParams(Map<String, String[]> requestParameters, Paging paging, BeanPropertiesFilter filter, Map<String, BeanPropertiesFilter> relationshipFilter, List<String> select,
-                    Query query, List<SortColumn> sorting)
+                                Query query, List<SortColumn> sorting, boolean includeSource)
         {
             super();
             this.requestParameters = requestParameters;
@@ -235,6 +243,7 @@ public class Params implements Parameters
             this.relationshipFilter = (Map<String, BeanPropertiesFilter>) (relationshipFilter==null?Collections.emptyMap():relationshipFilter);
             this.select = (List<String>) (select==null?Collections.emptyList():select);
             this.sorting = (List<SortColumn>) (sorting==null?Collections.emptyList():sorting);
+            this.includeSource = includeSource;
         }
         
     }

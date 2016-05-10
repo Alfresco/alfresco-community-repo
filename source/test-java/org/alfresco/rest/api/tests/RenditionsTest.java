@@ -556,11 +556,6 @@ public class RenditionsTest extends AbstractBaseApiTest
         response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         contentNodeId = document.getId();
-        // Check there is no rendition created yet
-        response = getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib", 200);
-        rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
-        assertNotNull(rendition);
-        assertEquals(RenditionStatus.NOT_CREATED, rendition.getStatus());
 
         // The content of the rendition does not exist and the placeholder parameter is not present
         getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib/content", 404);

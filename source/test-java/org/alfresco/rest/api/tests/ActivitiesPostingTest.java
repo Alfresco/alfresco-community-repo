@@ -19,32 +19,20 @@
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
-import static org.junit.Assert.*;
-
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import org.alfresco.repo.activities.ActivityType;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Activities;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
-import org.alfresco.rest.api.tests.client.PublicApiClient;
-import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Activity;
-import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
-import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.activities.ActivityPoster;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteVisibility;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -85,7 +73,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         delete(URL_NODES, u1.getId(), documentResp.getId(), 204);
         delete(URL_NODES, u1.getId(), createdFolder.getId(), 204);
 
-        List<Activity> activities = getMyActivites();
+        List<Activity> activities = getMyActivities();
         assertEquals(activities.size(),6);
         Activity act = matchActivity(activities, ActivityType.FOLDER_ADDED, u1.getId(), tSite.getSiteId(), docLibNodeRef.getId(), folder1);
         assertNotNull(act);
@@ -116,14 +104,14 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         Folder createdFolder = createFolder(u1.getId(), docLibNodeRef.getId(), folder1, null);
         assertNotNull(createdFolder);
 
-        List<Activity> activities = getMyActivites();
+        List<Activity> activities = getMyActivities();
 
         Node aNode = createNode(u1.getId(), createdFolder.getId(), "mynode", "cm:failedThumbnail", null);
         assertNotNull(aNode);
 
         delete(URL_NODES, u1.getId(), aNode.getId(), 204);
 
-        List<Activity> activitiesAgain = getMyActivites();
+        List<Activity> activitiesAgain = getMyActivities();
         assertEquals("No activites should be created for non-file activities", activities, activitiesAgain);
     }
 
@@ -133,7 +121,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testNonSite() throws Exception
     {
-        List<Activity> activities = getMyActivites();
+        List<Activity> activities = getMyActivities();
         String folder1 = "nonSitefolder" + System.currentTimeMillis() + "_1";
         //Create a folder outside a site
         Folder createdFolder = createFolder(u1.getId(),  Nodes.PATH_MY, folder1, null);
@@ -148,7 +136,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         dUpdate.setName("nonsite_d2.txt");
         put(URL_NODES, u1.getId(), documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
 
-        List<Activity> activitiesAgain = getMyActivites();
+        List<Activity> activitiesAgain = getMyActivities();
         assertEquals("No activites should be created for non-site nodes", activities, activitiesAgain);
     }
 
@@ -157,7 +145,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
      * @return
      * @throws Exception
      */
-    private List<Activity> getMyActivites() throws Exception
+    private List<Activity> getMyActivities() throws Exception
     {
         repoService.generateFeed();
 

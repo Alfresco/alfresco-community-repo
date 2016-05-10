@@ -3019,6 +3019,9 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(1, nodeResp.getAllowableOperations().size());
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
 
+        // -ve
+        delete(URL_NODES, user1, sharedNodeId, 403);
+
         response = getSingle(NodesEntityResource.class, user1, getMyNodeId(user1), params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
@@ -3061,6 +3064,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
 
+
         // as user2 ...
 
         response = getSingle(NodesEntityResource.class, user2, folderId, params, 200);
@@ -3069,14 +3073,21 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(1, nodeResp.getAllowableOperations().size());
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
 
+        // -ve
+        delete(URL_NODES, user2, folderId, 403);
+
         response = getSingle(NodesEntityResource.class, user2, fileId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNull(nodeResp.getAllowableOperations());
+
+        // -ve
+        delete(URL_NODES, user2, fileId, 403);
 
         // as admin ...
 
         // TODO improve - admin-related tests
         publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
+
         response = publicApiClient.get(NodesEntityResource.class, folderId, null, params);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
@@ -3086,7 +3097,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
 
         // a file - no create
-        publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
         response = publicApiClient.get(NodesEntityResource.class, fileId, null, params);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
@@ -3094,7 +3104,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
 
-        publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
         response = publicApiClient.get(NodesEntityResource.class, sharedNodeId, null, params);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
@@ -3104,7 +3113,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_DELETE));
 
         // Company Home - no delete
-        publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
         response = publicApiClient.get(NodesEntityResource.class, rootNodeId, null, params);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
@@ -3112,8 +3120,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
 
+        // -ve
+        response = publicApiClient.delete(getScope(), 1, URL_NODES, rootNodeId, null, null, params);
+        checkStatus(403, response.getStatusCode());
+
         // Sites - no delete
-        publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
         response = publicApiClient.get(NodesEntityResource.class, sitesNodeId, null, params);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
@@ -3121,8 +3132,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
 
+        // -ve
+        response = publicApiClient.delete(getScope(), 1, URL_NODES, sitesNodeId, null, null, params);
+        checkStatus(403, response.getStatusCode());
+
         // Data Dictionary - no delete
-        publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
         response = publicApiClient.get(NodesEntityResource.class, ddNodeId, null, params);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertNotNull(nodeResp.getAllowableOperations());
@@ -3130,10 +3144,28 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
         assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
 
+        // -ve
+        response = publicApiClient.delete(getScope(), 1, URL_NODES, ddNodeId, null, null, params);
+        checkStatus(403, response.getStatusCode());
 
         publicApiClient.setRequestContext(null);
 
-        // as user1 ...
+        // as userOneN1 ...
+        String userId = userOneN1.getId();
+        AuthenticationUtil.setFullyAuthenticatedUser(userId);
+        String siteNodeId = userOneN1Site.getSiteInfo().getNodeRef().getId();
+        AuthenticationUtil.clearCurrentSecurityContext();
+
+        response = getSingle(NodesEntityResource.class, userId, siteNodeId, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertEquals(userId, nodeResp.getCreatedByUser().getId());
+        assertNotNull(nodeResp.getAllowableOperations());
+        assertEquals(2, nodeResp.getAllowableOperations().size());
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_CREATE));
+        assertTrue(nodeResp.getAllowableOperations().contains(Nodes.OP_UPDATE));
+
+        // -ve
+        delete(URL_NODES, userId, siteNodeId, 403);
 
         // cleanup
         delete(URL_NODES, user1, folderId, 204);

@@ -1494,7 +1494,7 @@ public class NodesImpl implements Nodes
         {
             return true;
         }
-        else if (type.equals(SiteModel.TYPE_SITES))
+        else if (type.equals(SiteModel.TYPE_SITES) || type.equals(SiteModel.TYPE_SITE))
         {
             // note: alternatively, we could inject SiteServiceInternal and use getSitesRoot (or indirectly via node locator)
             return true;

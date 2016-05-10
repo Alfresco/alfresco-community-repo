@@ -273,8 +273,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = getSingle(NodesEntityResource.class, user2, d1Id, null, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
 
-        //assertEquals(docModifiedAt.getTime(), nodeResp.getModifiedAt().getTime()); // not changed
-        //assertEquals(docModifiedBy, nodeResp.getModifiedByUser().getId()); // not changed (ie. not user2)
+        assertEquals(docModifiedAt.getTime(), nodeResp.getModifiedAt().getTime()); // not changed
+        assertEquals(docModifiedBy, nodeResp.getModifiedByUser().getId()); // not changed (ie. not user2)
 
 
         // -ve create tests

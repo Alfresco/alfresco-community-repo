@@ -421,6 +421,31 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected static final long PAUSE_TIME = 5000; //millisecond
     protected static final int MAX_RETRY = 10;
 
+    protected Rendition waitAndGetRendition(String userId, String sourceNodeId, String renditionId) throws Exception
+    {
+        int retryCount = 0;
+        while (retryCount < MAX_RETRY)
+        {
+            try
+            {
+                HttpResponse response = getSingle(getNodeRenditionsUrl(sourceNodeId), userId, renditionId, 200);
+                Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
+                assertNotNull(rendition);
+                assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+                return rendition;
+            }
+            catch (AssertionError ex)
+            {
+                // If the asynchronous create rendition action is not finished yet,
+                // wait for 'PAUSE_TIME' and try again.
+                retryCount++;
+                Thread.sleep(PAUSE_TIME);
+            }
+        }
+
+        return null;
+    }
+
     protected Rendition createAndGetRendition(String userId, String sourceNodeId, String renditionId) throws Exception
     {
         Rendition renditionRequest = new Rendition();
@@ -444,27 +469,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
             }
         }
 
-        retryCount = 0;
-        while (retryCount < MAX_RETRY)
-        {
-            try
-            {
-                HttpResponse response = getSingle(getNodeRenditionsUrl(sourceNodeId), userId, renditionId, 200);
-                Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
-                assertNotNull(rendition);
-                assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
-                return rendition;
-            }
-            catch (AssertionError ex)
-            {
-                // If the asynchronous create rendition action is not finished yet,
-                // wait for 'PAUSE_TIME' and try again.
-                retryCount++;
-                Thread.sleep(PAUSE_TIME);
-            }
-        }
-
-        return null;
+        return waitAndGetRendition(userId, sourceNodeId, renditionId);
     }
 
     protected String getNodeRenditionsUrl(String nodeId)

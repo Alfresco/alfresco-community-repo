@@ -20,6 +20,7 @@
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -58,6 +59,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -441,6 +443,97 @@ public class RenditionsTest extends AbstractBaseApiTest
             assertNotNull(errorResponse.getStackTrace());
             assertNotNull(errorResponse.getDescriptionURL());
             assertEquals(501, errorResponse.getStatusCode());
+        }
+        finally
+        {
+            thumbnailService.setThumbnailsEnabled(true);
+        }
+    }
+
+    /**
+     * Tests create rendition when on upload/create of a file
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/children}
+     */
+    @Test
+    public void testCreateRenditionOnUpload() throws Exception
+    {
+        String userId = userOneN1.getId();
+
+        // Create a folder within the site document's library
+        String folderName = "folder" + System.currentTimeMillis();
+        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, ContentModel.TYPE_FOLDER, userId);
+
+        // Create multipart request
+        String renditionName = "doclib";
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
+                .setRenditions(Collections.singletonList(renditionName));
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Upload quick.pdf file into 'folder' - including request to create 'doclib' thumbnail
+        HttpResponse response = post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        // wait and check that rendition is created ...
+        Rendition rendition = waitAndGetRendition(userId, contentNodeId, renditionName);
+        assertNotNull(rendition);
+        assertEquals(RenditionStatus.CREATED, rendition.getStatus());
+
+        // also accepted for JSON when creating empty file (albeit with no content)
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType("cm:content");
+        ContentInfo ci = new ContentInfo();
+        ci.setMimeType("text/plain");
+        d1.setContent(ci);
+
+        // create empty file including request to generate imgpreview thumbnail
+        renditionName = "imgpreview";
+        response = post(getNodeChildrenUrl(folder_Id), userId, toJsonAsStringNonNull(d1), "?renditions="+renditionName, 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String d1Id = documentResp.getId();
+
+        // wait and check that rendition is created ...
+        rendition = waitAndGetRendition(userId, d1Id, renditionName);
+        assertNotNull(rendition);
+        assertEquals(RenditionStatus.CREATED, rendition.getStatus());
+
+
+        // -ve - currently we do not support multiple rendition requests on create
+        reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
+                .setRenditions(Arrays.asList(new String[]{"doclib,imgpreview"}))
+                .build();
+
+        post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 400);
+
+        // -ve
+        reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
+                .setRenditions(Arrays.asList(new String[]{"unknown"}))
+                .build();
+
+        post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 404);
+
+        // -ve
+        ThumbnailService thumbnailService = applicationContext.getBean("thumbnailService", ThumbnailService.class);
+        thumbnailService.setThumbnailsEnabled(false);
+        try
+        {
+            // Create multipart request
+            String txtFileName = "quick-1.txt";
+            File txtFile = getResourceFile(fileName);
+            reqBody = MultiPartBuilder.create()
+                    .setFileData(new FileData(txtFileName, txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .setRenditions(Arrays.asList(new String[]{"doclib"}))
+                    .build();
+
+            post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 501);
         }
         finally
         {

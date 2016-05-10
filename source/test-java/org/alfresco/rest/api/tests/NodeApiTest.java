@@ -1738,13 +1738,19 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         Paging paging = getPaging(0, Integer.MAX_VALUE);
 
+        // no filtering
+
+        HttpResponse response = getAll(myChildrenUrl, user1, paging, null, 200);
+        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, allIds);
+
         // filtering, via where clause - folders
 
         Map<String, String> params = new HashMap<>();
         params.put("where", "(nodeType='cm:folder')");
 
-        HttpResponse response = getAll(myChildrenUrl, user1, paging, params, 200);
-        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, folderIds);
 
         params = new HashMap<>();
@@ -1784,15 +1790,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, fileIds);
 
-        // filtering, via where clause - files and folders
-
-        params = new HashMap<>();
-        params.put("where", "(isFile=true AND isFolder=true)");
-
-        response = getAll(myChildrenUrl, user1, paging, params, 200);
-        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-        checkNodeIds(nodes, folderAndFileIds);
-
         // filtering, via where clause - non-folders / non-files
 
         params = new HashMap<>();
@@ -1815,6 +1812,20 @@ public class NodeApiTest extends AbstractBaseApiTest
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, objIds);
+
+        // -ve - node cannot be both a file and a folder
+        params = new HashMap<>();
+        params.put("where", "(isFile=true AND isFolder=true)");
+        getAll(myChildrenUrl, user1, paging, params, 400);
+
+        // -ve - nodeType and isFile/isFolder are mutually exclusive
+        params = new HashMap<>();
+        params.put("where", "(nodeType='cm:object' AND isFolder=true)");
+        getAll(myChildrenUrl, user1, paging, params, 400);
+
+        params = new HashMap<>();
+        params.put("where", "(nodeType='cm:object' AND isFile=true)");
+        getAll(myChildrenUrl, user1, paging, params, 400);
     }
 
     private void checkNodeIds(List<Node> nodes, List<String> nodeIds)

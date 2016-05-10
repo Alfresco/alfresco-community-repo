@@ -184,6 +184,8 @@ public interface Nodes
     NodeRef validateNode(StoreRef storeRef, String nodeId);
     NodeRef validateNode(String nodeId);
     NodeRef validateNode(NodeRef nodeRef);
+    NodeRef validateOrLookupNode(String nodeId, String path);
+
     boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes);
 
     /**

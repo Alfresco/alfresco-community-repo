@@ -158,11 +158,12 @@ public class QueriesImpl implements Queries, InitializingBean
         String rootNodeId = parameters.getParameter(PARAM_ROOT_NODE_ID);
         if (rootNodeId != null)
         {
-            sb.append("PATH:\"").append(getQNamePath(rootNodeId)).append("//*\" AND (");
+            NodeRef nodeRef = nodes.validateOrLookupNode(rootNodeId, null);
+            sb.append("PATH:\"").append(getQNamePath(nodeRef.getId())).append("//*\" AND (");
         }
 
-        // this will be expanded via query template
-        sb.append(QT_FIELD+":").append(term);
+        // this will be expanded via query template (+ default field name)
+        sb.append(term);
 
         if (rootNodeId != null)
         {
@@ -195,8 +196,9 @@ public class QueriesImpl implements Queries, InitializingBean
         sp.setQuery(sb.toString());
         sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
 
-        // query template / field
+        // query template / default field name
         sp.addQueryTemplate(QT_FIELD, "%(cm:name cm:title cm:description TEXT TAG)");
+        sp.setDefaultFieldName(QT_FIELD);
 
         Paging paging = parameters.getPaging();
         PagingRequest pagingRequest = Util.getPagingRequest(paging);

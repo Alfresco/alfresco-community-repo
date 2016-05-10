@@ -57,6 +57,7 @@ import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
@@ -183,6 +184,7 @@ public class NodesImpl implements Nodes
     private ThumbnailService thumbnailService;
     private SiteService siteService;
     private ActivityPoster poster;
+    private RetryingTransactionHelper retryingTransactionHelper;
 
     private enum Activity_Type
     {
@@ -226,6 +228,7 @@ public class NodesImpl implements Nodes
         this.authorityService = sr.getAuthorityService();
         this.thumbnailService = sr.getThumbnailService();
         this.siteService =  sr.getSiteService();
+        this.retryingTransactionHelper = sr.getRetryingTransactionHelper();
 
         if (defaultIgnoreTypesAndAspects != null)
         {
@@ -1912,6 +1915,19 @@ public class NodesImpl implements Nodes
             }
         }
         String attachFileName = (attach ? name : null);
+
+        final ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
+
+        //Activity posting needs a transaction
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                postActivity(Activity_Type.DOWNLOADED, activityInfo);
+                return null;
+            }
+        }, false, true);
 
         return new NodeBinaryResource(nodeRef, ContentModel.PROP_CONTENT, ci, attachFileName);
     }

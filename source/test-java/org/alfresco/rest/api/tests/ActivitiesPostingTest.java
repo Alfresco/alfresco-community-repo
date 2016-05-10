@@ -102,11 +102,16 @@ public class ActivitiesPostingTest extends AbstractBaseApiTest
         dUpdate.setName("d1b.txt");
         HttpResponse response = put(URL_NODES, u1.getId(), documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
 
+        //Now download it
+        response = getSingle(NodesEntityResource.class, u1.getId(), documentResp.getId()+"/content", null, 200);
+        String textContent = response.getResponse();
+        assertNotNull(textContent);
+
         delete(URL_NODES, u1.getId(), documentResp.getId(), 204);
         delete(URL_NODES, u1.getId(), createdFolder.getId(), 204);
 
         List<Activity> activities = getMyActivites();
-        assertEquals(activities.size(),5);
+        assertEquals(activities.size(),6);
         Activity act = matchActivity(activities, ActivityType.FOLDER_ADDED, u1.getId(), tSite.getSiteId(), docLibNodeRef.getId(), folder1);
         assertNotNull(act);
 
@@ -120,6 +125,9 @@ public class ActivitiesPostingTest extends AbstractBaseApiTest
         assertNotNull(act);
 
         act = matchActivity(activities, ActivityType.FILE_DELETED, u1.getId(), tSite.getSiteId(), createdFolder.getId(), dUpdate.getName());
+        assertNotNull(act);
+
+        act = matchActivity(activities, ActivityPoster.DOWNLOADED, u1.getId(), tSite.getSiteId(), createdFolder.getId(), dUpdate.getName());
         assertNotNull(act);
     }
 

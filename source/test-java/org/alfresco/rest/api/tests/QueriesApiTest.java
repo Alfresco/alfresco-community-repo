@@ -20,11 +20,7 @@ package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Queries;
-import org.alfresco.rest.api.QuickShareLinks;
-import org.alfresco.rest.api.impl.QuickShareLinksImpl;
-import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.Document;
@@ -37,11 +33,14 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.*;
 
 /**
@@ -105,6 +104,26 @@ public class QueriesApiTest extends AbstractBaseApiTest
         AuthenticationUtil.clearCurrentSecurityContext();
     }
 
+    public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue( Map<K, V> map )
+    {
+        List<Map.Entry<K, V>> list =
+                new LinkedList<>( map.entrySet() );
+        Collections.sort( list, new Comparator<Map.Entry<K, V>>()
+        {
+            public int compare( Map.Entry<K, V> o1, Map.Entry<K, V> o2 )
+            {
+                return (o1.getValue()).compareTo( o2.getValue() );
+            }
+        } );
+
+        Map<K, V> result = new LinkedHashMap<>();
+        for (Map.Entry<K, V> entry : list)
+        {
+            result.put( entry.getKey(), entry.getValue() );
+        }
+        return result;
+    }
+
     /**
      * Tests api for nodes live search
      *
@@ -114,8 +133,15 @@ public class QueriesApiTest extends AbstractBaseApiTest
     @Test
     public void testLiveSearchNodes() throws Exception
     {
-        String d1Id = null;
-        String d2Id = null;
+        int myDocCount = 5;
+        List<String> myDocIds = new ArrayList<>(myDocCount);
+
+        int sharedDocCount = 3;
+        List<String> sharedDocIds = new ArrayList<>(sharedDocCount);
+
+        int totalCount = myDocCount + sharedDocCount;
+
+        String testTerm = "abc123";
 
         try
         {
@@ -124,57 +150,240 @@ public class QueriesApiTest extends AbstractBaseApiTest
             Paging paging = getPaging(0, 100);
 
             Map<String, String> params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "abc123");
+            params.put(Queries.PARAM_TERM, testTerm);
 
             // Try to get nodes with search term 'abc123' - assume clean repo (ie. none to start with)
             HttpResponse response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            // create doc d1 - in "My" folder
             String myFolderNodeId = getMyNodeId(user1);
-            String content1Text = "The abc123 test document";
-            String docName1 = "content" + RUNID + "_1.txt";
-            Document doc1 = createTextFile(user1, myFolderNodeId, docName1, content1Text);
-            d1Id = doc1.getId();
-
-            // create doc d2 - in "Shared" folder
             String sharedFolderNodeId = getSharedNodeId(user1);
-            String content2Text = "Another abc123 test document";
-            String docName2 = "content" + RUNID + "_2.txt";
-            Document doc2 = createTextFile(user1, sharedFolderNodeId, docName2, content2Text);
-            d2Id = doc2.getId();
+
+            String name = "name";
+            String title = "title";
+            String descrip = "descrip";
+
+            Map<String,String> idNameMap = new HashMap<>();
+
+            int nameIdx = myDocCount;
+            for (int i = 1; i <= myDocCount; i++)
+            {
+                // create doc - in "My" folder
+                String contentText = "My " + testTerm + " test document " + user1 + " document " + i;
+
+                String num = String.format("%05d", nameIdx);
+                String docName = name+num+name;
+
+                Map<String,String> docProps = new HashMap<>(2);
+                docProps.put("cm:title", title+num+title);
+                docProps.put("cm:description", descrip+num+descrip);
+
+                Document doc = createTextFile(user1, myFolderNodeId, docName, contentText, "UTF-8", docProps);
+
+                myDocIds.add(doc.getId());
+                idNameMap.put(doc.getId(), docName);
+
+                nameIdx--;
+            }
+
+            nameIdx = sharedDocCount;
+            for (int i = 1; i <= sharedDocCount; i++)
+            {
+                // create doc - in "Shared" folder
+                String contentText = "Shared " + testTerm + " test document";
+
+                String num = String.format("%05d", nameIdx);
+                String docName = name+num+name;
+
+                Map<String,String> docProps = new HashMap<>(2);
+                docProps.put("cm:title", title+num+title);
+                docProps.put("cm:description", descrip+num+descrip);
+
+                Document doc = createTextFile(user1, sharedFolderNodeId, docName, contentText, "UTF-8", docProps);
+
+                sharedDocIds.add(doc.getId());
+                idNameMap.put(doc.getId(), docName);
+
+                nameIdx--;
+            }
+
+            List<String> idsSortedByNameAsc = new ArrayList<>(sortByValue(idNameMap).keySet());
+
+            List<String> idsSortedByNameDescCreatedAtAsc = new ArrayList<>(totalCount);
+            for (int i = 0; i < totalCount; i++)
+            {
+                if (i < myDocCount)
+                {
+                    idsSortedByNameDescCreatedAtAsc.add(myDocIds.get(i));
+                }
+                if (i < sharedDocCount)
+                {
+                    idsSortedByNameDescCreatedAtAsc.add(sharedDocIds.get(i));
+                }
+            }
+
+            List<String> allIds = new ArrayList<>(totalCount);
+            allIds.addAll(myDocIds);
+            allIds.addAll(sharedDocIds);
 
             //
             // find nodes
             //
 
-            // term only (no root node)
+            // Search hits based on FTS (content)
             params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "abc123");
+            params.put(Queries.PARAM_TERM, testTerm);
             response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            assertEquals(2, nodes.size());
-            assertEquals(d2Id, nodes.get(0).getId());
-            assertEquals(d1Id, nodes.get(1).getId());
+            checkNodeIds(nodes, allIds, null);
 
-            // term with root node (for path-based / in-tree search)
-
+            // Search hits based on FTS (content) - with a root node (for path-based / in-tree search) - here "Shared" folder
             params = new HashMap<>(2);
-            params.put(Queries.PARAM_TERM, "abc123");
+            params.put(Queries.PARAM_TERM, testTerm);
             params.put(Queries.PARAM_ROOT_NODE_ID, sharedFolderNodeId);
             response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            assertEquals(1, nodes.size());
-            assertEquals(d2Id, nodes.get(0).getId());
+            checkNodeIds(nodes, sharedDocIds, null);
 
+            // Search hits based on FTS (content) - with root node (for path-based / in-tree search) - here user's home folder ("My")
             params = new HashMap<>(2);
-            params.put(Queries.PARAM_TERM, "abc123");
+            params.put(Queries.PARAM_TERM, testTerm);
             params.put(Queries.PARAM_ROOT_NODE_ID, myFolderNodeId);
             response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            assertEquals(1, nodes.size());
-            assertEquals(d1Id, nodes.get(0).getId());
+            checkNodeIds(nodes, myDocIds, null);
+
+            // Search hits based on cm:name
+            String term = name+String.format("%05d", 1)+name;
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "\""+term+"\"");
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+            assertEquals(term, nodes.get(0).getName());
+            assertEquals(term, nodes.get(1).getName());
+
+            // Search hits based on cm:title
+            term = title+String.format("%05d", 2)+title;
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "\""+term+"\"");
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+            assertEquals(term, nodes.get(0).getProperties().get("cm:title"));
+            assertEquals(term, nodes.get(1).getProperties().get("cm:title"));
+
+            // Search hits based on cm:description
+            term = descrip+String.format("%05d", 3)+descrip;
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "\""+term+"\"");
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+            assertEquals(term, nodes.get(0).getProperties().get("cm:description"));
+            assertEquals(term, nodes.get(1).getProperties().get("cm:description"));
+
+            // test sort order
+
+            // default sort order (modifiedAt desc)
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, testTerm);
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, allIds, false);
+
+            // sort order - modifiedAt asc
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put("orderBy", "modifiedAt asc");
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, allIds, false);
+
+            // sort order - modifiedAt desc
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put("orderBy", "modifiedAt desc");
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, allIds, true);
+
+            // sort order - createdAt asc
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put("orderBy", "createdAt asc");
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, allIds, true);
+
+            // sort order - createdAt desc
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put("orderBy", "createdAt desc");
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, allIds, false);
+
+            // sort order - name asc
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put("orderBy", "name asc");
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, idsSortedByNameAsc, true);
+
+            // sort order - name desc
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put("orderBy", "name desc");
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, idsSortedByNameAsc, false);
+
+            // sort order - name desc, createdAt asc
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put("orderBy", "name desc, createdAt asc");
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, idsSortedByNameDescCreatedAtAsc, false);
+
+            // sort order - name asc, createdAt asc
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put("orderBy", "name asc, createdAt desc");
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, idsSortedByNameDescCreatedAtAsc, true);
+
+            // basic paging test
+
+            paging = getPaging(0, 100);
+
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, testTerm);
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, allIds, false);
+
+            paging = getPaging(0, myDocCount);
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, testTerm);
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, myDocIds, false);
+
+            paging = getPaging(myDocCount, sharedDocCount);
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, testTerm);
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, sharedDocIds, false);
+
+            // TODO sanity check modifiedAt (for now modifiedAt=createdAt)
+            // TODO sanity check tag search
+            // TODO sanity check nodeType query param
 
             // -ve test - no params (ie. no term)
             getAll(URL_QUERIES_LSN, user1, paging, null, 400);
@@ -184,23 +393,61 @@ public class QueriesApiTest extends AbstractBaseApiTest
             params.put(Queries.PARAM_ROOT_NODE_ID, myFolderNodeId);
             getAll(URL_QUERIES_LSN, user1, paging, params, 400);
 
+            // -ve test - invalid sort field
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put("orderBy", "invalid asc");
+            getAll(URL_QUERIES_LSN, user1, paging, params, 400);
+
             // -ve test - unauthenticated - belts-and-braces ;-)
             getAll(URL_QUERIES_LSN, null, paging, params, 401);
         }
         finally
         {
             // some cleanup
-            if (d1Id != null)
+            for (String docId : myDocIds)
             {
-                delete(URL_NODES, user1, d1Id, 204);
+                delete(URL_NODES, user1, docId, 204);
             }
 
-            if (d2Id != null)
+            for (String docId : sharedDocIds)
             {
-                delete(URL_NODES, user1, d2Id, 204);
+                delete(URL_NODES, user1, docId, 204);
             }
-
         }
+    }
+
+    private void checkNodeIds(List<Node> nodes, List<String> nodeIds, Boolean asc)
+    {
+        assertEquals(nodeIds.size(), nodes.size());
+
+        if (asc == null)
+        {
+            // ignore order
+            for (Node node : nodes)
+            {
+                assertTrue(nodeIds.contains(node.getId()));
+            }
+        }
+        else if (asc)
+        {
+            int i = 0;
+            for (Node node : nodes)
+            {
+                nodeIds.get(i).equals(node.getId());
+                i++;
+            }
+        }
+        else
+        {
+            int i = nodeIds.size() - 1;
+            for (Node node : nodes)
+            {
+                nodeIds.get(i).equals(node.getId());
+                i--;
+            }
+        }
+
     }
 
     @Override

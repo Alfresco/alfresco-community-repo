@@ -42,4 +42,8 @@ public interface Queries
     String PARAM_TERM = "term";
     String PARAM_ROOT_NODE_ID = "rootNodeId";
     String PARAM_NODE_TYPE = "nodeType";
+
+    String PARAM_NAME = "name";
+    String PARAM_CREATEDAT = "createdAt";
+    String PARAM_MODIFIEDAT = "modifiedAt";
 }

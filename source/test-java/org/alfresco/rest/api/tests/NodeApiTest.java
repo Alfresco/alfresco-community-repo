@@ -26,6 +26,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -56,10 +57,13 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -67,15 +71,18 @@ import org.springframework.util.ResourceUtils;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * API tests for:
@@ -304,7 +311,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document node = (Document) nodes.get(2);
         assertEquals(content1, node.getName());
         assertEquals("cm:content", node.getNodeType());
-        assertEquals(contentNodeRef.getId(), node.getNodeRef().getId());
+        assertEquals(contentNodeRef.getId(), node.getId());
         UserInfo  createdByUser = node.getCreatedByUser();
         assertEquals(user1, createdByUser.getUserName());
         assertEquals(user1 + " " + user1, createdByUser.getDisplayName());
@@ -426,14 +433,14 @@ public class NodeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
         HttpResponse response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
         Node node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
-        NodeRef myFilesNodeRef = node.getNodeRef();
-        assertNotNull(myFilesNodeRef);
+        String myFilesNodeId = node.getId();
+        assertNotNull(myFilesNodeId);
         assertEquals(user1, node.getName());
         assertTrue(node.getIsFolder());
 
         // /Company Home/User Homes/user<timestamp>/folder<timestamp>_A
         String folderA = "folder" + System.currentTimeMillis() + "_A";
-        NodeRef folderA_Ref = repoService.createFolder(myFilesNodeRef, folderA);
+        NodeRef folderA_Ref = repoService.createFolder(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myFilesNodeId), folderA);
 
         // /Company Home/User Homes/user<timestamp>/folder<timestamp>_A/folder<timestamp>_B
         String folderB = "folder" + System.currentTimeMillis() + "_B";
@@ -483,7 +490,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         HttpResponse response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, null, 200);
         Node node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
         assertEquals("Company Home", node.getName());
-        assertNotNull(node.getNodeRef());
+        assertNotNull(node.getId());
         assertNull(node.getPath());
 
         // unknown alias
@@ -491,23 +498,23 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
         node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
-        NodeRef myFilesNodeRef = node.getNodeRef();
-        assertNotNull(myFilesNodeRef);
+        String myFilesNodeId = node.getId();
+        assertNotNull(myFilesNodeId);
         assertEquals(user1, node.getName());
         assertTrue(node.getIsFolder());
         assertNull(node.getPath()); // note: path can be optionally "select"'ed - see separate test
 
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_SHARED, null, 200);
         node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
-        NodeRef sharedFilesNodeRef = node.getNodeRef();
-        assertNotNull(sharedFilesNodeRef);
+        String sharedFilesNodeId = node.getId();
+        assertNotNull(sharedFilesNodeId);
         assertEquals("Shared", node.getName());
         assertTrue(node.getIsFolder());
         assertNull(node.getPath());
 
         //Delete user1's home
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        repoService.getNodeService().deleteNode(myFilesNodeRef);
+        repoService.getNodeService().deleteNode(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myFilesNodeId));
 
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
         getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 404); // Not found
@@ -544,7 +551,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
 
         // Retrieve the uploaded file
-        response = getSingle(NodesEntityResource.class, user1, document.getNodeRef().getId(), null, 200);
+        response = getSingle(NodesEntityResource.class, user1, document.getId(), null, 200);
         document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         assertEquals(fileName, document.getName());
         contentInfo = document.getContent();
@@ -573,7 +580,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         reqBody = MultiPartBuilder.create()
                     .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN))
                     .build();
-        post(getChildrenUrl(user1Home.getNodeRef()), user2, new String(reqBody.getBody()), null, reqBody.getContentType(), 403);
+        post(getChildrenUrl(user1Home.getId()), user2, new String(reqBody.getBody()), null, reqBody.getContentType(), 403);
 
         response = getAll(getChildrenUrl(Nodes.PATH_MY), user1, paging, 200);
         pagingResult = parsePaging(response.getJsonResponse());
@@ -581,7 +588,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals("Access Denied. The file shouldn't have been uploaded.", numOfNodes + 1, pagingResult.getCount().intValue());
 
         // User1 tries to upload a file into a document rather than a folder!
-        post(getChildrenUrl(document.getNodeRef()), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
+        post(getChildrenUrl(document.getId()), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
 
         // Try to upload a file without defining the required formData
         reqBody = MultiPartBuilder.create().build();
@@ -622,7 +629,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
 
         // Retrieve the uploaded file
-        response = getSingle(NodesEntityResource.class, userOneN1.getId(), document.getNodeRef().getId(), null, 200);
+        response = getSingle(NodesEntityResource.class, userOneN1.getId(), document.getId(), null, 200);
         document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         assertEquals(fileName, document.getName());
         contentInfo = document.getContent();
@@ -659,7 +666,7 @@ public class NodeApiTest extends AbstractBaseApiTest
     }
 
     /**
-     * Tests delete.
+     * Tests delete (folder or file).
      * <p>DELETE:</p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
      */
@@ -699,6 +706,87 @@ public class NodeApiTest extends AbstractBaseApiTest
         delete("nodes", user1, chNodeRef.getId(), 403);
     }
 
+    /**
+     * Tests create folder.
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
+     */
+    @Test
+    public void testCreateFolder() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        NodeRef personNodeRef = personService.getPerson(user1);
+        NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personNodeRef);
+
+        String postUrl = "nodes/"+myFilesNodeRef.getId()+"/children";
+
+        Folder f1 = new Folder();
+        f1.setName("f1");
+        f1.setNodeType("cm:folder");
+
+        // create folder
+        HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(f1), 201);
+
+        Folder f1Created = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertNotNull(f1Created.getId());
+        assertEquals("f1",f1Created.getName());
+        assertEquals("cm:folder",f1Created.getNodeType());
+        assertEquals(true, f1Created.getIsFolder());
+        assertNotNull(f1Created.getCreatedAt());
+        assertEquals(user1,f1Created.getCreatedByUser().getUserName());
+        assertNotNull(f1Created.getModifiedAt());
+        assertEquals(user1,f1Created.getModifiedByUser().getUserName());
+        assertEquals(myFilesNodeRef.getId(), f1Created.getParentId());
+        assertTrue(f1Created.getAspectNames().contains("cm:auditable"));
+        assertNull(f1Created.getProperties());
+        assertNull(f1Created.getPath());
+        assertNull(f1Created.getIsLink());
+
+        // create folder with properties
+        Map<String,Object> props = new HashMap<>();
+        props.put("cm:title","my folder title");
+        props.put("cm:description","my folder description");
+
+        Folder f2 = new Folder();
+        f2.setName("f2");
+        f2.setNodeType("cm:folder");
+        f2.setProperties(props);
+
+        response = post(postUrl, user1, toJsonAsStringNonNull(f2), 201);
+        Folder f2Created = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertNotNull(f2Created.getId());
+
+        assertTrue(f2Created.getAspectNames().contains("cm:auditable"));
+        assertTrue(f2Created.getAspectNames().contains("cm:titled"));
+        assertEquals(f2Created.getProperties().get("cm:title"),"my folder title");
+        assertEquals(f2Created.getProperties().get("cm:description"),"my folder description");
+
+        // -ve test - name is mandatory
+        Folder invalid = new Folder();
+        invalid.setNodeType("cm:folder");
+        post(postUrl, user1, toJsonAsStringNonNull(invalid), 400);
+
+        // -ve test - node type is mandatory
+        invalid = new Folder();
+        invalid.setName("my folder");
+        post(postUrl, user1, toJsonAsStringNonNull(invalid), 400);
+
+        // -ve test - invalid (eg. not a folder) parent id
+        Folder f3 = new Folder();
+        f3.setName("f3");
+        f3.setNodeType("cm:folder");
+        post("nodes/"+personNodeRef.getId()+"/children", user1, toJsonAsStringNonNull(f3), 400);
+
+        // -ve test - unknown parent folder node id
+        post("nodes/"+UUID.randomUUID().toString()+"/children", user1, toJsonAsStringNonNull(f3), 404);
+
+        // -ve test - duplicate name
+        post(postUrl, user1, toJsonAsStringNonNull(f1), 409);
+    }
+
+    // TODO add test for file/folder links - creating, getting, listing, deleting
+
     private String getChildrenUrl(NodeRef parentNodeRef)
     {
         return getChildrenUrl(parentNodeRef.getId());
@@ -723,5 +811,13 @@ public class NodeApiTest extends AbstractBaseApiTest
     public String getScope()
     {
         return "public";
+    }
+
+    // TODO move into RestApiUtil (and statically init the OM)
+    private String toJsonAsStringNonNull(Object obj) throws IOException
+    {
+        ObjectMapper om = new ObjectMapper();
+        om.setSerializationInclusion(JsonSerialize.Inclusion.NON_NULL);
+        return om.writeValueAsString(obj);
     }
 }

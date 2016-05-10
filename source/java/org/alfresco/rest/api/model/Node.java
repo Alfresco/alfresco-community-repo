@@ -24,11 +24,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
@@ -42,6 +43,7 @@ import org.apache.chemistry.opencmis.commons.data.PropertyData;
  * @author Gethin James
  * @author janv
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Node implements Comparable<Node>
 {
     protected NodeRef nodeRef;
@@ -135,15 +137,29 @@ public class Node implements Comparable<Node>
         return userInfo;
     }
 
-    @UniqueId
-    public NodeRef getNodeRef()
-    {
-        return nodeRef;
+    private String getNodeRefAsString(NodeRef nRef) {
+        return (nRef != null ? nRef.getId() : null);
     }
 
-    public void setNodeRef(NodeRef nodeRef)
+    private NodeRef getStringAsNodeRef(String nRefString) {
+        if(! NodeRef.isNodeRef(nRefString))
+        {
+            return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nRefString);
+        }
+        else
+        {
+            return new NodeRef(nRefString);
+        }
+    }
+
+    public String getId()
     {
-        this.nodeRef = nodeRef;
+        return getNodeRefAsString(this.nodeRef);
+    }
+
+    public void setId(String id)
+    {
+       this.nodeRef = getStringAsNodeRef(id);
     }
 
     public Date getCreatedAt()
@@ -215,14 +231,14 @@ public class Node implements Comparable<Node>
         this.aspectNames = aspectNames;
     }
 
-    public NodeRef getParentId()
+    public String getParentId()
     {
-        return parentNodeRef;
+        return getNodeRefAsString(parentNodeRef);
     }
 
-    public void setParentId(NodeRef parentNodeRef)
+    public void setParentId(String parentId)
     {
-        this.parentNodeRef = parentNodeRef;
+        this.parentNodeRef = getStringAsNodeRef(parentId);
     }
 
     public Boolean getIsFolder()
@@ -258,13 +274,13 @@ public class Node implements Comparable<Node>
         }
 
         Node node = (Node)other;
-        return EqualsHelper.nullSafeEquals(getNodeRef(), node.getNodeRef());
+        return EqualsHelper.nullSafeEquals(getId(), node.getId());
     }
 
     @Override
     public int compareTo(Node node)
     {
-        return getNodeRef().toString().compareTo(node.getNodeRef().toString());
+        return getId().toString().compareTo(node.getId().toString());
     }
 
     @Override

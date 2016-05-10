@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -393,41 +393,62 @@ public class RepoService
 
 	public TestPerson createUser(final PersonInfo personInfo, final String username, final TestNetwork network)
 	{
+		return getOrCreateUser(personInfo, username, network, true);
+	}
+
+    public TestPerson getOrCreateUser(final PersonInfo personInfo, final String username, final TestNetwork network)
+    {
+        return getOrCreateUser(personInfo, username, network, false);
+    }
+
+    // TODO review delete person
+	public TestPerson getOrCreateUser(final PersonInfo personInfo, final String username, final TestNetwork network, final boolean deletePerson)
+	{
 		return AuthenticationUtil.runAsSystem(new RunAsWork<TestPerson>()
 		{
 			@Override
 			public TestPerson doWork() throws Exception
 			{
+
 				final TestPerson testPerson = new TestPerson(personInfo.getFirstName(), personInfo.getLastName(), username, personInfo.getPassword(),
 						personInfo.getCompany(), network, personInfo.getSkype(), personInfo.getLocation(), personInfo.getTel(),
 						personInfo.getMob(), personInfo.getInstantmsg(), personInfo.getGoogle());
+
 				final Map<QName, Serializable> props = testPerson.getProperties();
 
-				if(personService.personExists(testPerson.getId()))
-				{
-					AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
-					{
-						@Override
-						public Void doWork() throws Exception
-						{
-							personService.deletePerson(testPerson.getId());
-							return null;
-						}
-					});
-				}
+                // short-circuit for default "admin"
+                if (! username.equalsIgnoreCase("admin"))
+                {
+                    NodeRef personNodeRef = personService.getPersonOrNull(username);
 
-				NodeRef createdPerson = personService.createPerson(props);
+                    if ((personNodeRef != null) && deletePerson)
+                    {
+                        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+                        {
+                            @Override
+                            public Void doWork() throws Exception
+                            {
+                                personService.deletePerson(testPerson.getId());
+                                return null;
+                            }
+                        });
+                    }
 
-		        // create authentication to represent user
-		        authenticationService.createAuthentication(username, personInfo.getPassword().toCharArray());
+                    if (personNodeRef == null)
+                    {
+                        personNodeRef = personService.createPerson(props);
 
-				if (EnterpriseTestFixture.WITH_AVATAR.equals(personInfo.getInstantmsg()))
-				{
-					InvitationWebScriptTest.makeAvatar(nodeService,createdPerson);
-					log("Made avatar for " + testPerson.getId() + (network != null ? " in network " + network : ""));
-				}
+                        // create authentication to represent user
+                        authenticationService.createAuthentication(username, personInfo.getPassword().toCharArray());
 
-				log("Created person " + testPerson.getId() + (network != null ? " in network " + network : ""));
+                        if (EnterpriseTestFixture.WITH_AVATAR.equals(personInfo.getInstantmsg()))
+                        {
+                            InvitationWebScriptTest.makeAvatar(nodeService, personNodeRef);
+                            log("Made avatar for " + testPerson.getId() + (network != null ? " in network " + network : ""));
+                        }
+                    }
+                }
+				log("Username " + testPerson.getId() + (network != null ? " in network " + network : ""));
 
 				publicApiContext.addUser(testPerson.getId());
 				addPerson(testPerson);

@@ -64,10 +64,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     private static final String RESOURCE_PREFIX = "publicapi/upload/";
 
-    private static final String URL_NODES = "nodes/";
-    private static final String URL_RENDITIONS = "/renditions";
-    private static final String URL_CHILDREN = "/children";
-    private static final String URL_CONTENT = "/content";
+    protected static final String URL_NODES = "nodes";
+
+    private static final String URL_RENDITIONS = "renditions";
+    private static final String URL_CHILDREN = "children";
+    private static final String URL_CONTENT = "content";
 
 
     /**
@@ -257,6 +258,13 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return person.getId();
     }
 
+    protected String getOrCreateUser(String username, String password)
+    {
+        PersonInfo personInfo = new PersonInfo(username, username, username, password, null, null, null, null, null, null, null);
+        RepoService.TestPerson person = repoService.getOrCreateUser(personInfo, username, null);
+        return person.getId();
+    }
+
     protected TestSite createSite(final TestNetwork testNetwork, TestPerson user, final SiteVisibility siteVisibility)
     {
         final String siteName = "RandomSite" + System.currentTimeMillis();
@@ -415,16 +423,16 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected String getNodeRenditionsUrl(String nodeId)
     {
-        return URL_NODES + nodeId + URL_RENDITIONS;
+        return URL_NODES + "/" + nodeId + "/" + URL_RENDITIONS;
     }
 
     protected String getNodeChildrenUrl(String nodeId)
     {
-        return URL_NODES + nodeId + URL_CHILDREN;
+        return URL_NODES + "/" + nodeId + "/" + URL_CHILDREN;
     }
 
     protected String getNodeContentUrl(String nodeId)
     {
-        return URL_NODES + nodeId + URL_CONTENT;
+        return URL_NODES + "/" + nodeId + "/" + URL_CONTENT;
     }
 }

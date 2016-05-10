@@ -117,24 +117,23 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
      */
     private InputStream getStream(WebScriptRequest req)
     {
-        if (req instanceof WebScriptServletRequest)
+        try
         {
-            WebScriptServletRequest servletRequest = (WebScriptServletRequest) req;
-            try
+            if (req instanceof WebScriptServletRequest)
             {
+                WebScriptServletRequest servletRequest = (WebScriptServletRequest) req;
                 return servletRequest.getHttpServletRequest().getInputStream();
             }
-            catch (IOException error)
+            else if (req instanceof WrappingWebScriptRequest)
             {
-               logger.warn("Failed to get the input stream.", error);
+                // eg. BufferredRequest
+                WrappingWebScriptRequest wrappedRequest = (WrappingWebScriptRequest) req;
+                return wrappedRequest.getContent().getInputStream();
             }
         }
-        else if (req instanceof WrappingWebScriptRequest)
+        catch (IOException error)
         {
-            // TODO review REST fwk change
-            // eg. BufferredRequest
-            WrappingWebScriptRequest wrappedRequest = (WrappingWebScriptRequest) req;
-            return wrappedRequest.getContent().getInputStream();
+            logger.warn("Failed to get the input stream.", error);
         }
 
         return null;

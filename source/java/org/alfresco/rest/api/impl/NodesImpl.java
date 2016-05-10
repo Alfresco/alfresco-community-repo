@@ -57,6 +57,7 @@ import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InsufficientStorageException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException;
@@ -1708,11 +1709,11 @@ public class NodesImpl implements Nodes
         }
         catch (ContentQuotaException cqe)
         {
-            throw new RequestEntityTooLargeException(cqe.getMessage());
+            throw new InsufficientStorageException();
         }
         catch (ContentLimitViolationException clv)
         {
-            throw new ConstraintViolatedException(clv.getMessage());
+            throw new RequestEntityTooLargeException(clv.getMessage());
         }
         catch (Exception ex)
         {

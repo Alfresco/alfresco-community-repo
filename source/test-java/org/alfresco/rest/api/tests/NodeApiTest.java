@@ -28,6 +28,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
+import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -867,6 +868,26 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .build();
         post(getChildrenUrl(user1Home.getId()), user1, reqBody.getBody(), null, reqBody.getContentType(), 400);
 
+        // Test content size limit
+        final SimpleFixedLimitProvider limitProvider = applicationContext.getBean("defaultContentLimitProvider", SimpleFixedLimitProvider.class);
+        final long defaultSizeLimit = limitProvider.getSizeLimit();
+        limitProvider.setSizeLimitString("20000"); //20 KB
+
+        try
+        {
+            // quick.pdf size is about 23 KB
+            reqBody = MultiPartBuilder.create()
+                        .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
+                        .setAutoRename(true)
+                        .build();
+
+            // Try to upload a file larger than the configured size limit
+            post(getChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 413);
+        }
+        finally
+        {
+            limitProvider.setSizeLimitString(Long.toString(defaultSizeLimit));
+        }
     }
 
     /**

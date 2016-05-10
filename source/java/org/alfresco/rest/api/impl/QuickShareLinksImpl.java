@@ -128,16 +128,24 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
     {
         checkEnabled();
 
-        Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
-        String networkTenantDomain = pair.getFirst();
-
-        return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<QuickShareLink>()
+        try
         {
-            public QuickShareLink doWork() throws Exception
+            Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
+            String networkTenantDomain = pair.getFirst();
+
+            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<QuickShareLink>()
             {
-                return getQuickShareInfo(sharedId);
-            }
-        }, networkTenantDomain);
+                public QuickShareLink doWork() throws Exception
+                {
+                    return getQuickShareInfo(sharedId);
+                }
+            }, networkTenantDomain);
+        }
+        catch (InvalidSharedIdException ex)
+        {
+            logger.warn("Unable to find: " + sharedId);
+            throw new EntityNotFoundException("Unable to find: " + sharedId);
+        }
     }
 
     /**
@@ -203,21 +211,21 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         checkEnabled();
         checkValidShareId(sharedId);
 
-        NodeRef nodeRef = quickShareService.getTenantNodeRefFromSharedId(sharedId).getSecond();
-        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-
-        // TODO site check - see ACE-XXX
-        //String siteName = getSiteName(nodeRef);
-
-        String sharedBy = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);
-
-        if ((!currentUser.equals(sharedBy)) && (!authorityService.isAdminAuthority(currentUser)))
-        {
-            throw new PermissionDeniedException("Can't perform unshare action: " + sharedId);
-        }
-
         try
         {
+            NodeRef nodeRef = quickShareService.getTenantNodeRefFromSharedId(sharedId).getSecond();
+            String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+
+            // TODO site check - see ACE-XXX
+            //String siteName = getSiteName(nodeRef);
+
+            String sharedBy = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);
+
+            if ((!currentUser.equals(sharedBy)) && (!authorityService.isAdminAuthority(currentUser)))
+            {
+                throw new PermissionDeniedException("Can't perform unshare action: " + sharedId);
+            }
+
             quickShareService.unshareContent(sharedId);
         }
         catch (InvalidSharedIdException ex)
@@ -317,7 +325,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
         try
         {
-            Map<String, Object> map = (Map<String, Object>) quickShareService.getMetaData(sharedId).get("item");
+            Map<String, Object> map = (Map<String, Object>)quickShareService.getMetaData(sharedId).get("item");
 
             NodeRef nodeRef = new NodeRef((String) map.get("nodeRef"));
 

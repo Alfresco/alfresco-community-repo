@@ -28,20 +28,8 @@ import static org.junit.Assert.assertTrue;
  */
 public class Document extends Node
 {
-    private ContentInfo contentInfo;
-
     public Document() {
         super();
-    }
-
-    public ContentInfo getContent()
-    {
-        return contentInfo;
-    }
-
-    public void setContent(ContentInfo contentInfo)
-    {
-        this.contentInfo = contentInfo;
     }
 
     @Override
@@ -50,9 +38,5 @@ public class Document extends Node
         super.expected(o);
 
         assertTrue(o instanceof Document);
-
-        Document other = (Document) o;
-
-        contentInfo.expected(other.getContent());
     }
 }

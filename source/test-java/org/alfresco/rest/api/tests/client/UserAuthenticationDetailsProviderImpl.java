@@ -21,20 +21,26 @@ public class UserAuthenticationDetailsProviderImpl implements AuthenticationDeta
     
     public String getPasswordForUser(String userName)
     {
-        UserData user = userDataService.findUserByUserName(userName);
-        if(user != null)
+        if (userName != null)
         {
-            return user.getPassword();
+            UserData user = userDataService.findUserByUserName(userName);
+            if (user != null)
+            {
+                return user.getPassword();
+            }
         }
         return null;
     }
 
     public String getTicketForUser(String userName)
     {
-        UserData user = userDataService.findUserByUserName(userName);
-        if(user != null)
+        if (userName != null)
         {
-            return user.getTicket();
+            UserData user = userDataService.findUserByUserName(userName);
+            if (user != null)
+            {
+                return user.getTicket();
+            }
         }
         return null;
     }

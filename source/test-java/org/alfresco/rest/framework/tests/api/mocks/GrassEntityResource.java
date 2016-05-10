@@ -1,5 +1,6 @@
 package org.alfresco.rest.framework.tests.api.mocks;
 
+import org.alfresco.rest.framework.Action;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.resource.EntityResource;
@@ -15,6 +16,18 @@ public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>
     public Grass readById(String id, Parameters parameters)
     {
         return new Grass(id);
+    }
+
+    @Action("cut")
+    @WebApiDescription(title = "Cuts the grass")
+    public String cutLawn(String id, Parameters parameters) {
+        return "All done";
+    }
+
+    @Action("grow")
+    @WebApiDescription(title = "Grow the grass")
+    public String growTheLawn(String id, Grass grass, Parameters parameters) {
+        return "Growing well";
     }
 
 }

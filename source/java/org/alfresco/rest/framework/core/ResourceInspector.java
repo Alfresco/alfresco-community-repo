@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.alfresco.rest.framework.Action;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.WebApi;
@@ -109,11 +110,11 @@ public class ResourceInspector
                         helper.operations, api, helper.apiDeleted, null));
             }
         }
-           
+
         inspectAddressedProperties(api, resource, urlPath, metainfo);
+        inspectActions(api, resource, urlPath, metainfo);
         return metainfo;
     }
-
 
     /**
      * Inspects the entity resource and returns meta data about any addresssed/binary properties
@@ -298,8 +299,7 @@ public class ResourceInspector
                 }
                 if (paramsCount(params,ResourceParameter.KIND.HTTP_BODY_OBJECT) == 0)
                 {
-                    Class<?> dType = ResourceInspectorUtil.determineType(resource,aMethod);
-                    params.add(ResourceParameter.valueOf(dType.getSimpleName().toUpperCase(), "The entity", "Unique entity properties", true, ResourceParameter.KIND.HTTP_BODY_OBJECT, true, dType));
+                    inspectBodyParamAndReturnType(resource, aMethod, params);
                 }
                 break;
             case PUT:
@@ -314,8 +314,7 @@ public class ResourceInspector
                 }
                 if (paramsCount(params,ResourceParameter.KIND.HTTP_BODY_OBJECT)== 0)
                 {
-                    Class<?> dType = ResourceInspectorUtil.determineType(resource,aMethod);
-                    params.add(ResourceParameter.valueOf(dType.getSimpleName().toUpperCase(), "The entity", "Unique entity properties", true, ResourceParameter.KIND.HTTP_BODY_OBJECT, true, dType));
+                    inspectBodyParamAndReturnType(resource, aMethod, params);
                 }
                 break;
             case GET:
@@ -358,6 +357,12 @@ public class ResourceInspector
         }
         
         return params;
+    }
+
+    private static void inspectBodyParamAndReturnType(Class<?> resource, Method aMethod, List<ResourceParameter> params)
+    {
+        Class<?> dType = ResourceInspectorUtil.determineType(resource,aMethod);
+        params.add(ResourceParameter.valueOf(dType.getSimpleName().toUpperCase(), "The entity", "Unique entity properties", true, KIND.HTTP_BODY_OBJECT, true, dType));
     }
 
 
@@ -505,6 +510,61 @@ public class ResourceInspector
                     String key = String.valueOf(annotAttribs.get("propertyName"));
                     embeds.put(key, new Pair<String,Method>(entityPath,annotatedMethod));
                 }                
+            }
+
+        }
+        return embeds;
+    }
+    
+    /**
+     * Inspect a resource to find actions on it.
+     * @param api Api
+     * @param resource Class<?>
+     * @param entityPath String
+     * @param metainfo List<ResourceMetadata>
+     */
+    public static void inspectActions(Api api, Class<?> resource, final String entityPath, List<ResourceMetadata> metainfo)
+    {
+        Map<String,Pair<ResourceOperation,Method>> operations = findActions(entityPath, resource);
+        if (operations != null && !operations.isEmpty())
+        {
+            for (Entry<String, Pair<ResourceOperation, Method>> opera : operations.entrySet())
+            {
+                if (isDeleted(opera.getValue().getSecond()))
+                {
+                    metainfo.add(new ResourceMetadata(opera.getKey(), RESOURCE_TYPE.ACTION, null, api, new HashSet(Arrays.asList(opera.getValue().getFirst())), null));
+                }
+                else
+                {
+                    metainfo.add(new ResourceMetadata(opera.getKey(), RESOURCE_TYPE.ACTION, Arrays.asList(opera.getValue().getFirst()), api, null, null));
+                }
+            }
+        }
+    }
+
+    /**
+     * Finds actions on an entity
+     * @param entityPath path to the entity
+     * @param anyClass resource clause
+     * @return The operations
+     */
+    private static Map<String,Pair<ResourceOperation,Method>> findActions(String entityPath, Class<?> anyClass)
+    {
+        Map<String, Pair<ResourceOperation,Method>> embeds = new HashMap<String, Pair<ResourceOperation,Method>>();
+        List<Method> annotatedMethods = ResourceInspectorUtil.findMethodsByAnnotation(anyClass, Action.class);
+        if (annotatedMethods != null && !annotatedMethods.isEmpty())
+        {
+            for (Method annotatedMethod : annotatedMethods)
+            {
+                Annotation annot = AnnotationUtils.findAnnotation(annotatedMethod, Action.class);
+                if (annot != null)
+                {
+                    Map<String, Object> annotAttribs = AnnotationUtils.getAnnotationAttributes(annot);
+                    String actionName = String.valueOf(annotAttribs.get("value"));
+                    String actionPath = ResourceDictionary.resourceKey(entityPath,actionName);
+                    ResourceOperation ro = inspectOperation(anyClass, annotatedMethod, HttpMethod.POST);
+                    embeds.put(actionPath, new Pair<ResourceOperation,Method>(ro,annotatedMethod));
+                }
             }
 
         }

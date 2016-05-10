@@ -430,6 +430,18 @@ public class ParamsExtractorTests
         //when(resourceMock.getObjectType(HttpMethod.POST)).thenReturn(Farmer.class);
         return resourceMock;
     }
+
+    /**
+     * Mocks an action
+     * @return ResourceMetadata a Entity
+     */
+    private static ResourceMetadata mockAction()
+    {
+        ResourceMetadata resourceMock = mock(ResourceMetadata.class);
+        when(resourceMock.getType()).thenReturn(ResourceMetadata.RESOURCE_TYPE.ACTION);
+        return resourceMock;
+    }
+
     /**
      * Mocks a Relationship Resource
      * @return ResourceMetadata a Relationship

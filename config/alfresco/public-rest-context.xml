@@ -535,6 +535,7 @@
     <bean id="queries" class="org.alfresco.rest.api.impl.QueriesImpl">
         <property name="nodes" ref="nodes"/>
         <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="termMinLength" value="3"/>
     </bean>
 
     <bean id="Queries" class="org.springframework.aop.framework.ProxyFactoryBean">

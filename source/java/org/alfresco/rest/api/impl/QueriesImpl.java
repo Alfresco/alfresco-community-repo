@@ -72,7 +72,7 @@ public class QueriesImpl implements Queries, InitializingBean
 
     private final static String QUERY_LIVE_SEARCH_NODES = "live-search-nodes";
 
-    private final static int TERM_MIN_LEN = 3; // review: should this be configurable system-wide (&/or per-tenant in the cloud) ?
+    private static int TERM_MIN_LEN = 3;
 
 
     private final static Map<String,QName> MAP_PARAM_SORT_QNAME;
@@ -93,6 +93,11 @@ public class QueriesImpl implements Queries, InitializingBean
     public void setServiceRegistry(ServiceRegistry sr)
     {
         this.sr = sr;
+    }
+
+    public void setTermMinLength(int termMinLength)
+    {
+        TERM_MIN_LEN = termMinLength;
     }
 
     public void setNodes(Nodes nodes)

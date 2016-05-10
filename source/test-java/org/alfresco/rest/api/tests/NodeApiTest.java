@@ -1476,10 +1476,15 @@ public class NodeApiTest extends AbstractBaseApiTest
         tgt.setName("new name");
         post("nodes/"+d1Id+"/copy", user1, toJsonAsStringNonNull(tgt), null, 400);
 
-        // name already exists
+        // name already exists - different parent
         tgt = new NodeTarget();
         tgt.setName(newD2Name);
         tgt.setTargetParentId(targetId);
+        post("nodes/"+d1Id+"/copy", user1, toJsonAsStringNonNull(tgt), null, 409);
+
+        // name already exists - same parent
+        tgt = new NodeTarget();
+        tgt.setTargetParentId(sourceId);
         post("nodes/"+d1Id+"/copy", user1, toJsonAsStringNonNull(tgt), null, 409);
 
         // unknown source nodeId

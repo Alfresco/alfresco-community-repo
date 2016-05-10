@@ -32,6 +32,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.Status;
@@ -132,7 +133,7 @@ public class QuickShareLinkEntityResource implements EntityResourceAction.ReadBy
 
     @Operation("email")
     @WebApiDescription(title = "Email shared link", successStatus = Status.STATUS_ACCEPTED)
-    public void email(String sharedId, QuickShareLinkEmailRequest emailRequest, Parameters parameters)
+    public void email(String sharedId, QuickShareLinkEmailRequest emailRequest, Parameters parameters, WithResponse response)
     {
         quickShareLinks.emailSharedLink(sharedId, emailRequest, parameters);
     }

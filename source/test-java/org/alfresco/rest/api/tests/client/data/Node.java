@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -205,7 +205,14 @@ public class Node
             assertNotNull(other.createdAt);
         }
 
-        createdByUser.expected(other.getCreatedByUser());
+        if (createdByUser != null)
+        {
+            createdByUser.expected(other.getCreatedByUser());
+        }
+        else
+        {
+            assertNotNull(other.createdByUser);
+        }
 
         if (modifiedAt != null)
         {
@@ -216,12 +223,19 @@ public class Node
             assertNotNull(other.modifiedAt);
         }
 
-        modifiedByUser.expected(other.getModifiedByUser());
+        if (modifiedByUser != null)
+        {
+            modifiedByUser.expected(other.getModifiedByUser());
+        }
+        else
+        {
+            assertNotNull(other.modifiedByUser);
+        }
 
         if (aspectNames != null)
         {
             assertNotNull(other.getAspectNames());
-            assertEquals(aspectNames.size(), other.getAspectNames().size());
+            assertEquals("Expected: "+aspectNames+", actual: "+other.getAspectNames(), aspectNames.size(), other.getAspectNames().size());
             for (String aspectName : aspectNames)
             {
                 assertTrue(other.getAspectNames().contains(aspectName));
@@ -247,6 +261,7 @@ public class Node
             assertNull(other.getProperties());
         }
 
+        AssertUtil.assertEquals("isFolder", isFolder, other.getIsFolder());
         AssertUtil.assertEquals("isLink", isLink, other.getIsLink());
 
         if (path != null) {

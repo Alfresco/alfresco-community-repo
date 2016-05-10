@@ -28,14 +28,14 @@ public class ContentInfo
 {
 	private String mimeType;
     private String mimeTypeName;
-	private long sizeInBytes;
+	private Long sizeInBytes;
 	private String encoding;
 
 	public ContentInfo()
 	{
 	}
 
-	public ContentInfo( String mimeType, String mimeTypeName, long sizeInBytes, String encoding)
+	public ContentInfo(String mimeType, String mimeTypeName, Long sizeInBytes, String encoding)
 	{
 		this.mimeType = mimeType;
 		this.mimeTypeName = mimeTypeName;
@@ -55,7 +55,7 @@ public class ContentInfo
         return mimeTypeName;
     }
 
-    public long getSizeInBytes() {
+    public Long getSizeInBytes() {
         return sizeInBytes;
     }
 

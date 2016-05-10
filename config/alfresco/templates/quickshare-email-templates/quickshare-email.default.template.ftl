@@ -322,7 +322,9 @@ middle;"><p>${shared_node_name} shared with you</p></span></div>
                                                 <div class="mktEditable" id="Body Text 1" align="left">
 <span style="color:#727174; font-family:Gotham, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:18px;font-weight:400; text-align:left; text-decoration:none; -webkit-text-size-adjust:none;">
 <p>${sender_first_name} ${sender_last_name} has shared <a href="${shared_node_url}">${shared_node_name}</a> with you.</p>
-<p>${sender_message}</p>
+<#if sender_message??>
+    <p>${sender_message}</p>
+</#if>
 </span>
 
                                                 </div>

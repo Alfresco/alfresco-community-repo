@@ -59,7 +59,7 @@
         </property>
     </bean>
 
-    <bean id="quickShareClientsConfig" class="org.alfresco.repo.quickshare.ClientAppConfig">
+    <bean id="quickShareClientsConfig" class="org.alfresco.repo.quickshare.ClientAppConfig" init-method="init">
         <property name="defaultProperties" ref="quickShareDefaultProperties"/>
         <property name="globalProperties" ref="global-properties"/>
     </bean>

@@ -33,7 +33,6 @@ import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.Status;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -82,7 +81,7 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
         {
             renditions.createRendition(nodeId, rendition, parameters);
         }
-        return Collections.emptyList();
+        return null;
     }
 
     @WebApiDescription(title = "Download rendition", description = "Download rendition")

@@ -33,7 +33,6 @@ import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.model.Rendition.RenditionStatus;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
@@ -82,8 +81,8 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
 {
     private static final Log LOGGER = LogFactory.getLog(RenditionsImpl.class);
 
-    private static final String PARAM_status = "status";
-    private static final Set<String> RENDITION_STATUS_COLLECTION_EQUALS_QUERY_PROPERTIES = Collections.singleton(PARAM_status);
+    private static final String PARAM_STATUS = "status";
+    private static final Set<String> RENDITION_STATUS_COLLECTION_EQUALS_QUERY_PROPERTIES = Collections.singleton(PARAM_STATUS);
 
     private Nodes nodes;
     private NodeService nodeService;
@@ -140,9 +139,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     public CollectionWithPagingInfo<Rendition> getRenditions(String nodeId, Parameters parameters)
     {
         final NodeRef nodeRef = validateSourceNode(nodeId);
-
-        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-        String contentMimeType = contentData.getMimetype();
+        String contentMimeType = getMimeType(nodeRef);
 
         Query query = parameters.getQuery();
         boolean includeCreated = true;
@@ -153,7 +150,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(RENDITION_STATUS_COLLECTION_EQUALS_QUERY_PROPERTIES, null);
             QueryHelper.walk(query, propertyWalker);
 
-            String withStatus = propertyWalker.getProperty(PARAM_status, WhereClauseParser.EQUALS);
+            String withStatus = propertyWalker.getProperty(PARAM_STATUS, WhereClauseParser.EQUALS);
             if (withStatus != null)
             {
                 try
@@ -219,7 +216,27 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             ThumbnailDefinition thumbnailDefinition = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(renditionId);
             if (thumbnailDefinition == null)
             {
-                throw new EntityNotFoundException(renditionId);
+                throw new NotFoundException(renditionId + " is not registered.");
+            }
+            else
+            {
+                String contentMimeType = getMimeType(nodeRef);
+                // List all available thumbnail definitions for the source node
+                List<ThumbnailDefinition> thumbnailDefinitions = thumbnailService.getThumbnailRegistry().getThumbnailDefinitions(contentMimeType, -1);
+                boolean found = false;
+                for (ThumbnailDefinition td : thumbnailDefinitions)
+                {
+                    // Check the registered renditionId is applicable for the node's mimeType
+                    if (renditionId.equals(td.getName()))
+                    {
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                {
+                    throw new NotFoundException(renditionId + " is not applicable for the node's mimeType " + contentMimeType);
+                }
             }
             return toApiRendition(thumbnailDefinition);
         }
@@ -248,14 +265,10 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         ThumbnailDefinition thumbnailDefinition = registry.getThumbnailDefinition(rendition.getId());
         if (thumbnailDefinition == null)
         {
-            throw new EntityNotFoundException(rendition.getId() + "' is not registered.");
+            throw new NotFoundException(rendition.getId() + " is not registered.");
         }
 
-        ContentData contentData = (ContentData) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_CONTENT);
-        if (!ContentData.hasContent(contentData))
-        {
-            throw new InvalidArgumentException("Unable to create thumbnail '" + thumbnailDefinition.getName() + "' as there is no content.");
-        }
+        ContentData contentData = getContentData(sourceNodeRef, true);
         // Check if anything is currently available to generate thumbnails for the specified mimeType
         if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), contentData.getMimetype(), contentData.getSize(), sourceNodeRef,
                     thumbnailDefinition))
@@ -291,12 +304,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
             {
                 throw new NotFoundException("Thumbnail was not found for [" + renditionId + ']');
             }
-            ContentData contentData = (ContentData) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_CONTENT);
-            String sourceNodeMimeType = null;
-            if (contentData != null)
-            {
-                sourceNodeMimeType = contentData.getMimetype();
-            }
+            String sourceNodeMimeType = getMimeType(sourceNodeRef);
             // resource based on the content's mimeType and rendition id
             String phPath = scriptThumbnailService.getMimeAwarePlaceHolderResourcePath(renditionId, sourceNodeMimeType);
             if (phPath == null)
@@ -373,8 +381,15 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         String renditionName = (String) nodeService.getProperty(renditionNodeRef, ContentModel.PROP_NAME);
         apiRendition.setId(renditionName);
 
-        ContentData contentData = (ContentData) nodeService.getProperty(renditionNodeRef, ContentModel.PROP_CONTENT);
-        ContentInfo contentInfo = new ContentInfo(contentData.getMimetype(), getMimeTypeDisplayName(contentData.getMimetype()), contentData.getSize(), contentData.getEncoding());
+        ContentData contentData = getContentData(renditionNodeRef, false);
+        ContentInfo contentInfo = null;
+        if (contentData != null)
+        {
+            contentInfo = new ContentInfo(contentData.getMimetype(),
+                        getMimeTypeDisplayName(contentData.getMimetype()),
+                        contentData.getSize(),
+                        contentData.getEncoding());
+        }
         apiRendition.setContent(contentInfo);
         apiRendition.setStatus(RenditionStatus.CREATED);
 
@@ -406,5 +421,21 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     private String getMimeTypeDisplayName(String mimeType)
     {
         return mimetypeService.getDisplaysByMimetype().get(mimeType);
+    }
+
+    private ContentData getContentData(NodeRef nodeRef, boolean validate)
+    {
+        ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        if (validate && !ContentData.hasContent(contentData))
+        {
+            throw new InvalidArgumentException("Node id '" + nodeRef.getId() + "' has no content.");
+        }
+        return contentData;
+    }
+
+    private String getMimeType(NodeRef nodeRef)
+    {
+        ContentData contentData = getContentData(nodeRef, true);
+        return contentData.getMimetype();
     }
 }

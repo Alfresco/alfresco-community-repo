@@ -26,6 +26,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -2002,4 +2003,114 @@ public class PublicApiClient
 					+ (maxItems != null ? "maxItems=" + maxItems : "") + "]";
 		}
 	}
+
+    /**
+     * Representation of an error response.
+     *
+     * @author Jamal Kaabi-Mofrad
+     */
+    public static class ExpectedErrorResponse
+    {
+        private String errorKey;
+        private int statusCode;
+        private String briefSummary;
+        private String stackTrace;
+        private Map<String, Object> additionalState;
+        private String descriptionURL;
+
+        public ExpectedErrorResponse()
+        {
+        }
+
+        public ExpectedErrorResponse(String errorKey, int statusCode, String briefSummary, StackTraceElement[] stackTrace,
+                    Map<String, Object> additionalState)
+        {
+            super();
+            this.errorKey = errorKey;
+            this.statusCode = statusCode;
+            this.briefSummary = briefSummary;
+            this.stackTrace = Arrays.toString(stackTrace);
+            this.additionalState = additionalState;
+        }
+
+        public String getErrorKey()
+        {
+            return errorKey;
+        }
+
+        public ExpectedErrorResponse setErrorKey(String errorKey)
+        {
+            this.errorKey = errorKey;
+            return this;
+        }
+
+        public int getStatusCode()
+        {
+            return statusCode;
+        }
+
+        public ExpectedErrorResponse setStatusCode(int statusCode)
+        {
+            this.statusCode = statusCode;
+            return this;
+        }
+
+        public String getBriefSummary()
+        {
+            return briefSummary;
+        }
+
+        public ExpectedErrorResponse setBriefSummary(String briefSummary)
+        {
+            this.briefSummary = briefSummary;
+            return this;
+        }
+
+        public String getStackTrace()
+        {
+            return stackTrace;
+        }
+
+        public ExpectedErrorResponse setStackTrace(String stackTrace)
+        {
+            this.stackTrace = stackTrace;
+            return this;
+        }
+
+        public Map<String, Object> getAdditionalState()
+        {
+            return additionalState;
+        }
+
+        public ExpectedErrorResponse setAdditionalState(Map<String, Object> additionalState)
+        {
+            this.additionalState = additionalState;
+            return this;
+        }
+
+        public String getDescriptionURL()
+        {
+            return descriptionURL;
+        }
+
+        public ExpectedErrorResponse setDescriptionURL(String descriptionURL)
+        {
+            this.descriptionURL = descriptionURL;
+            return this;
+        }
+
+        @Override
+        public String toString()
+        {
+            final StringBuilder sb = new StringBuilder(250);
+            sb.append("ExpectedErrorResponse [errorKey='").append(errorKey)
+                        .append(", statusCode=").append(statusCode)
+                        .append(", briefSummary='").append(briefSummary)
+                        .append(", stackTrace='").append(stackTrace)
+                        .append(", additionalState=").append(additionalState)
+                        .append(", descriptionURL='").append(descriptionURL)
+                        .append(']');
+            return sb.toString();
+        }
+    }
 }

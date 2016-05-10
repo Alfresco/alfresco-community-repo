@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -125,6 +125,18 @@ public class RestApiUtil
         assertNotNull(pojoModel);
 
         return pojoModel;
+    }
+
+    /**
+     * Parses the alfresco REST API error response.
+     *
+     * @param jsonObject the {@code JSONObject} derived from the response
+     * @return ExpectedErrorResponse the error object
+     * @throws Exception
+     */
+    public static PublicApiClient.ExpectedErrorResponse parseErrorResponse(JSONObject jsonObject) throws Exception
+    {
+        return parsePojo("error", jsonObject, PublicApiClient.ExpectedErrorResponse.class);
     }
 
     /**

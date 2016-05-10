@@ -391,7 +391,7 @@ public class InspectorTests
     }
 
     @Test
-    public void testInspectActions() throws IllegalAccessException, InstantiationException
+    public void testInspectActions() throws IllegalAccessException, InstantiationException, Throwable
     {
         Api api = Api.valueOf("alfrescomock", "private", "1");
         List<ResourceMetadata> metainfo = new ArrayList<ResourceMetadata>();

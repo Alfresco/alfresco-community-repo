@@ -120,7 +120,7 @@ public class NodesEntityResource implements
     @WebApiDescription(title = "Delete Node", description="Delete the file or folder with id 'nodeId'. Folder will cascade delete")
     public void delete(String nodeId, Parameters parameters)
     {
-        nodes.deleteNode(nodeId);
+        nodes.deleteNode(nodeId, parameters);
     }
 
     @Operation("copy")

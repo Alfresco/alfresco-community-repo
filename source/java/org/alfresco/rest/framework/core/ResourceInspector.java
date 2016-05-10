@@ -362,7 +362,10 @@ public class ResourceInspector
     private static void inspectBodyParamAndReturnType(Class<?> resource, Method aMethod, List<ResourceParameter> params)
     {
         Class<?> dType = ResourceInspectorUtil.determineType(resource,aMethod);
-        params.add(ResourceParameter.valueOf(dType.getSimpleName().toUpperCase(), "The entity", "Unique entity properties", true, KIND.HTTP_BODY_OBJECT, true, dType));
+        if (dType!= null)
+        {
+            params.add(ResourceParameter.valueOf(dType.getSimpleName().toUpperCase(), "The entity", "Unique entity properties", true, KIND.HTTP_BODY_OBJECT, true, dType));
+        }
     }
 
 
@@ -532,11 +535,11 @@ public class ResourceInspector
             {
                 if (isDeleted(opera.getValue().getSecond()))
                 {
-                    metainfo.add(new ResourceMetadata(opera.getKey(), RESOURCE_TYPE.ACTION, null, api, new HashSet(Arrays.asList(opera.getValue().getFirst())), null));
+                    metainfo.add(new ActionResourceMetaData(opera.getKey(), api, new HashSet(Arrays.asList(opera.getValue().getFirst()))));
                 }
                 else
                 {
-                    metainfo.add(new ResourceMetadata(opera.getKey(), RESOURCE_TYPE.ACTION, Arrays.asList(opera.getValue().getFirst()), api, null, null));
+                    metainfo.add(new ActionResourceMetaData(opera.getKey(), Arrays.asList(opera.getValue().getFirst()), api, opera.getValue().getSecond()));
                 }
             }
         }

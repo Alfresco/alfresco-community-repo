@@ -6,6 +6,8 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.alfresco.rest.framework.Action;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.BridgeMethodResolver;
@@ -31,12 +33,50 @@ public class ResourceInspectorUtil
     protected static Class determineType(Class resource, Method method)
     {
         Method resolvedMethod = BridgeMethodResolver.findBridgedMethod(method);
-        Class returnType = GenericTypeResolver.resolveReturnType(resolvedMethod, resource);
-        if (List.class.isAssignableFrom(returnType))
+
+        /*
+        * The api is consistent that the object passed in must match the object passed out
+        * however, actions are different, they don't even need a param, and if its supplied
+        * then it doesn't have to match.  So we need special logic for actions
+         */
+        Annotation annot = AnnotationUtils.findAnnotation(resolvedMethod, Action.class);
+        if (annot != null)
         {
-            return GenericCollectionTypeResolver.getCollectionReturnType(method);
+            return determinActionType(resource, method);
         }
-        return returnType;
+        else
+        {
+            Class returnType = GenericTypeResolver.resolveReturnType(resolvedMethod, resource);
+            if (List.class.isAssignableFrom(returnType))
+            {
+                return GenericCollectionTypeResolver.getCollectionReturnType(method);
+            }
+            return returnType;
+        }
+    }
+
+    protected static Class determinActionType(Class resource, Method method)
+    {
+        //Its an Action annotated method and its a bit special
+        Class<?>[] paramTypes = method.getParameterTypes();
+
+        if (!String.class.equals(paramTypes[0]) || !Parameters.class.equals(paramTypes[paramTypes.length-1]))
+        {
+            throw new IllegalArgumentException("An action method signature must start with a String uniqueId and end with the 'Parameters' object ");
+        }
+        if (paramTypes.length == 2)
+        {
+            //No parameter required
+            return null;
+        }
+        else if (paramTypes.length == 3)
+        {
+            return paramTypes[1]; // Return the middle parameter
+        }
+        else
+        {
+            throw new IllegalArgumentException("An action method signature should have 3 parameters (uniqueId, typePassedin, Parameters)");
+        }
     }
 
     /**
@@ -71,6 +111,16 @@ public class ResourceInspectorUtil
         return annotatedMethods;
         
     }
+    /**
+     * Invokes a no arg method and returns the result
+     * @param annotatedMethod Method
+     * @param obj Object
+     * @return result of method call
+     */
+    public static Object invokeMethod(Method annotatedMethod, Object obj)
+    {
+        return invokeMethod(annotatedMethod, obj, null);
+    }
 
     /**
      * Invokes a method and returns the result
@@ -78,13 +128,13 @@ public class ResourceInspectorUtil
      * @param obj Object
      * @return result of method call
      */
-    public static Object invokeMethod(Method annotatedMethod, Object obj)
+    public static Object invokeMethod(Method annotatedMethod, Object obj, Object... args)
     {
         if (annotatedMethod != null)
         {
             try
             { 
-              return annotatedMethod.invoke(obj, null);
+              return annotatedMethod.invoke(obj, args);
             }
             catch (IllegalArgumentException error)
             {

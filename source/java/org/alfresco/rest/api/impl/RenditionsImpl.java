@@ -30,6 +30,7 @@ import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.model.Rendition.RenditionStatus;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -47,7 +48,10 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
+import org.apache.commons.lang.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -69,6 +73,7 @@ public class RenditionsImpl implements Renditions
     private RenditionService renditionService;
     private MimetypeService mimetypeService;
     private ActionService actionService;
+    private NamespaceService namespaceService;
     private ServiceRegistry serviceRegistry;
 
     public void setNodes(Nodes nodes)
@@ -96,16 +101,13 @@ public class RenditionsImpl implements Renditions
         this.actionService = serviceRegistry.getActionService();
         this.renditionService = serviceRegistry.getRenditionService();
         this.mimetypeService = serviceRegistry.getMimetypeService();
+        this.namespaceService = serviceRegistry.getNamespaceService();
     }
 
     @Override
     public CollectionWithPagingInfo<Rendition> getRenditions(String nodeId, Parameters parameters)
     {
-        final NodeRef nodeRef = nodes.validateNode(nodeId);
-        if (!nodes.isSubClass(nodeRef, ContentModel.PROP_CONTENT, false))
-        {
-            throw new InvalidArgumentException("Node id '" + nodeId + "' does not represent a file.");
-        }
+        final NodeRef nodeRef = validateSourceNode(nodeId);
 
         ContentData contentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
         String contentMimeType = contentData.getMimetype();
@@ -141,13 +143,7 @@ public class RenditionsImpl implements Renditions
             List<ThumbnailDefinition> thumbnailDefinitions = thumbnailService.getThumbnailRegistry().getThumbnailDefinitions(contentMimeType, -1);
             for (ThumbnailDefinition thumbnailDefinition : thumbnailDefinitions)
             {
-                ContentInfo contentInfo = new ContentInfo(thumbnailDefinition.getMimetype(),
-                            getMimeTypeDisplayName(thumbnailDefinition.getMimetype()), null, null);
-                Rendition apiRendition = new Rendition();
-                apiRendition.setId(thumbnailDefinition.getName());
-                apiRendition.setContent(contentInfo);
-                apiRendition.setStatus(RenditionStatus.NOT_CREATED);
-                apiRenditions.put(thumbnailDefinition.getName(), apiRendition);
+                apiRenditions.put(thumbnailDefinition.getName(), toApiRendition(thumbnailDefinition));
             }
         }
 
@@ -177,6 +173,26 @@ public class RenditionsImpl implements Renditions
         PagingResults<Rendition> results = Util.wrapPagingResults(paging, apiRenditions.values());
 
         return CollectionWithPagingInfo.asPaged(paging, results.getPage(), results.hasMoreItems(), results.getTotalResultCount().getFirst());
+    }
+
+    @Override
+    public Rendition getRendition(String nodeId, String renditionId, Parameters parameters)
+    {
+        final NodeRef nodeRef = validateSourceNode(nodeId);
+        NodeRef renditionNodeRef = getRenditionByName(nodeRef, renditionId, parameters);
+
+        // if there is no rendition, then try to find the available/registered rendition (yet to be created).
+        if (renditionNodeRef == null)
+        {
+            ThumbnailDefinition thumbnailDefinition = thumbnailService.getThumbnailRegistry().getThumbnailDefinition(renditionId);
+            if (thumbnailDefinition == null)
+            {
+                throw new EntityNotFoundException(renditionId);
+            }
+            return toApiRendition(thumbnailDefinition);
+        }
+
+        return toApiRendition(renditionNodeRef);
     }
 
     @Override
@@ -214,6 +230,23 @@ public class RenditionsImpl implements Renditions
         }
     }
 
+    protected NodeRef getRenditionByName(NodeRef nodeRef, String renditionId, Parameters parameters)
+    {
+        if (StringUtils.isEmpty(renditionId))
+        {
+            throw new InvalidArgumentException("renditionId can't be null or empty.");
+        }
+        // Thumbnails have a cm: prefix.
+        QName renditionQName = QName.resolveToQName(namespaceService, renditionId);
+
+        ChildAssociationRef nodeRefRendition = renditionService.getRenditionByName(nodeRef, renditionQName);
+        if (nodeRefRendition == null)
+        {
+            return null;
+        }
+        return nodeRefRendition.getChildRef();
+    }
+
     protected Rendition toApiRendition(NodeRef renditionNodeRef)
     {
         Rendition apiRendition = new Rendition();
@@ -227,6 +260,28 @@ public class RenditionsImpl implements Renditions
         apiRendition.setStatus(RenditionStatus.CREATED);
 
         return apiRendition;
+    }
+
+    protected Rendition toApiRendition(ThumbnailDefinition thumbnailDefinition)
+    {
+        ContentInfo contentInfo = new ContentInfo(thumbnailDefinition.getMimetype(),
+                    getMimeTypeDisplayName(thumbnailDefinition.getMimetype()), null, null);
+        Rendition apiRendition = new Rendition();
+        apiRendition.setId(thumbnailDefinition.getName());
+        apiRendition.setContent(contentInfo);
+        apiRendition.setStatus(RenditionStatus.NOT_CREATED);
+
+        return apiRendition;
+    }
+
+    protected NodeRef validateSourceNode(String nodeId)
+    {
+        final NodeRef nodeRef = nodes.validateNode(nodeId);
+        if (!nodes.isSubClass(nodeRef, ContentModel.PROP_CONTENT, false))
+        {
+            throw new InvalidArgumentException("Node id '" + nodeId + "' does not represent a file.");
+        }
+        return nodeRef;
     }
 
     private String getMimeTypeDisplayName(String mimeType)

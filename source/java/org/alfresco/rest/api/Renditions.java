@@ -40,6 +40,17 @@ public interface Renditions
     CollectionWithPagingInfo<Rendition> getRenditions(String nodeId, Parameters parameters);
 
     /**
+     * Gets information about a rendition of a node in the repository.
+     * If there is no rendition, then returns the available/registered rendition.
+     *
+     * @param nodeId      the source node id
+     * @param renditionId the rendition id
+     * @param parameters  the {@link Parameters} object to get the parameters passed into the request
+     * @return the {@link Rendition} object
+     */
+    Rendition getRendition(String nodeId, String renditionId, Parameters parameters);
+
+    /**
      * Creates a rendition for the given node asynchronously.
      *
      * @param nodeId     the source node id

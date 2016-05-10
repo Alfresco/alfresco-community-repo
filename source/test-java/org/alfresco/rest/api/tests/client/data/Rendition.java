@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class Rendition implements ExpectedComparison
+public class Rendition implements ExpectedComparison, Comparable<Rendition>
 {
     public enum RenditionStatus
     {
@@ -96,6 +96,12 @@ public class Rendition implements ExpectedComparison
         {
             this.contentInfo.expected(other.getContent());
         }
+    }
+
+    @Override
+    public int compareTo(Rendition other)
+    {
+        return this.id.compareTo(other.getId());
     }
 
     @Override

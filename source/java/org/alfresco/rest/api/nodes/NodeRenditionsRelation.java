@@ -38,6 +38,7 @@ import java.util.List;
  */
 @RelationshipResource(name = "renditions", entityResource = NodesEntityResource.class, title = "Node renditions")
 public class NodeRenditionsRelation implements RelationshipResourceAction.Read<Rendition>,
+            RelationshipResourceAction.ReadById<Rendition>,
             RelationshipResourceAction.Create<Rendition>,
             InitializingBean
 {
@@ -59,6 +60,12 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
     public CollectionWithPagingInfo<Rendition> readAll(String nodeId, Parameters parameters)
     {
         return renditions.getRenditions(nodeId, parameters);
+    }
+
+    @Override
+    public Rendition readById(String nodeId, String renditionId, Parameters parameters)
+    {
+        return renditions.getRendition(nodeId, renditionId, parameters);
     }
 
     @Override

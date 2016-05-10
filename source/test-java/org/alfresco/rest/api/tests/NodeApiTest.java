@@ -98,6 +98,8 @@ import org.springframework.util.ResourceUtils;
  * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/children} </li>
  * </ul>
  *
+ * TODO replace most (all ?) usages of repoService/repositoryHelper test data setup code with actual REST v1 API calls
+ *
  * @author Jamal Kaabi-Mofrad
  * @author janv
  */
@@ -903,6 +905,97 @@ public class NodeApiTest extends AbstractBaseApiTest
         // -ve test
         NodeRef chNodeRef = repositoryHelper.getCompanyHome();
         delete("nodes", user1, chNodeRef.getId(), 403);
+    }
+
+    /**
+     * Tests move (file or folder)
+     * <p>PUT:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
+     */
+    @Test
+    public void testMove() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        String postUrl = getChildrenUrl(Nodes.PATH_MY);
+
+        Folder f = new Folder();
+        f.setName("f1");
+        f.setNodeType("cm:folder");
+
+        // create folder f1
+        HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(f), 201);
+        Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        String f1Id = folderResp.getId();
+
+        f = new Folder();
+        f.setName("f2");
+        f.setNodeType("cm:folder");
+
+        // create folder f2
+        response = post(postUrl, user1, toJsonAsStringNonNull(f), 201);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        String f2Id = folderResp.getId();
+
+        // create doc d1
+        NodeRef f1Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, f1Id);
+        String d1Name = "content" + System.currentTimeMillis() + "_1";
+        NodeRef d1Ref = repoService.createDocument(f1Ref, d1Name, "The quick brown fox jumps over the lazy dog.");
+        String d1Id = d1Ref.getId();
+
+        // create doc d2
+        NodeRef f2Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, f2Id);
+        String d2Name = "content" + System.currentTimeMillis() + "_2";
+        NodeRef d2Ref = repoService.createDocument(f2Ref, d2Name, "The quick brown fox jumps over the lazy dog 2.");
+        String d2Id = d2Ref.getId();
+
+        // move file (without rename)
+
+        Document dUpdate = new Document();
+        dUpdate.setParentId(f2Id);
+
+        response = put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(d1Name, documentResp.getName());
+        assertEquals(f2Id, documentResp.getParentId());
+
+        // move file (with rename)
+
+        String d1NewName = d1Name+" updated !!";
+
+        dUpdate = new Document();
+        dUpdate.setName(d1NewName);
+        dUpdate.setParentId(f1Id);
+
+        response = put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(d1NewName, documentResp.getName());
+        assertEquals(f1Id, documentResp.getParentId());
+
+        // -ve tests
+
+        // name already exists
+        dUpdate = new Document();
+        dUpdate.setName(d2Name);
+        dUpdate.setParentId(f2Id);
+        put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 409);
+
+        // unknown source nodeId
+        dUpdate = new Document();
+        dUpdate.setParentId(f2Id);
+        put("nodes", user1, UUID.randomUUID().toString(), toJsonAsStringNonNull(dUpdate), null, 404);
+
+        // unknown target nodeId
+        dUpdate = new Document();
+        dUpdate.setParentId(UUID.randomUUID().toString());
+        put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 404);
+
+        // target is not a folder
+        dUpdate = new Document();
+        dUpdate.setParentId(d2Id);
+        put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 400);
     }
 
     /**

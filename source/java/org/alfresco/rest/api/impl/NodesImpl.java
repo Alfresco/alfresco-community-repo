@@ -39,6 +39,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.antlr.WhereClauseParser;
@@ -74,6 +75,7 @@ import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
+import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
@@ -569,7 +571,7 @@ public class NodesImpl implements Nodes
         catch (FileNotFoundException fnfe)
         {
             // convert checked exception
-            throw new InvalidNodeRefException(fnfe.getMessage()+" ["+path+"]", parentNodeRef);
+            throw new EntityNotFoundException(fnfe.getMessage()+" ["+parentNodeRef+","+path+"]");
         }
 
         return fileInfo.getNodeRef();
@@ -1030,6 +1032,7 @@ public class NodesImpl implements Nodes
         }
         catch (DuplicateChildNodeNameException dcne)
         {
+            // duplicate - name clash
             throw new ConstraintViolatedException(dcne.getMessage());
         }
     }
@@ -1074,6 +1077,13 @@ public class NodesImpl implements Nodes
             {
                 throw new InvalidArgumentException("Failed to change (specialise) node type - from "+nodeTypeQName+" to "+destNodeTypeQName);
             }
+        }
+
+        NodeRef parentNodeRef = nodeInfo.getParentId();
+        if (parentNodeRef != null)
+        {
+            // move/rename - with exception mapping
+            move(nodeRef, parentNodeRef, name);
         }
 
         List<String> aspectNames = nodeInfo.getAspectNames();
@@ -1157,6 +1167,39 @@ public class NodesImpl implements Nodes
         }
 
         return getFolderOrDocument(nodeRef.getId(), parameters);
+    }
+
+    private void move(NodeRef nodeRef, NodeRef parentNodeRef, String name)
+    {
+        NodeRef currentParentNodeRef = getParentNodeRef(nodeRef);
+        if (! currentParentNodeRef.equals(parentNodeRef))
+        {
+            try
+            {
+                // updating "parentId" means moving primary parent !
+                // note: in the future (as and when we support secondary parent/child assocs) we may also
+                // wish to select which parent to "move from" (in case where the node resides in multiple locations)
+                fileFolderService.move(nodeRef, parentNodeRef, name);
+            }
+            catch (InvalidNodeRefException inre)
+            {
+                throw new EntityNotFoundException(inre.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
+            }
+            catch (FileNotFoundException fnfe)
+            {
+                // convert checked exception
+                throw new EntityNotFoundException(fnfe.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
+            }
+            catch (FileExistsException fee)
+            {
+                // duplicate - name clash
+                throw new ConstraintViolatedException(fee.getMessage());
+            }
+            catch (FileFolderServiceImpl.InvalidTypeException ite)
+            {
+                throw new InvalidArgumentException("Expect target parentId to be a folder: "+parentNodeRef);
+            }
+        }
     }
 
     @Override

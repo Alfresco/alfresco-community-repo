@@ -13,7 +13,6 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     NodeApiTest.class,
-    RenditionsTest.class,
     TestSites.class,
     TestNodeComments.class,
     TestCMIS.class,
@@ -32,7 +31,8 @@ import org.junit.runners.Suite;
     TestRemovePermissions.class,
     TestPublicApi128.class,
     TestPublicApiCaching.class,
-    ModulePackagesApiTest.class
+    ModulePackagesApiTest.class,
+    RenditionsTest.class
 })
 public class ApiTest
 {

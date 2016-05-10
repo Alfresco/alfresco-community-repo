@@ -129,7 +129,7 @@ public class NodesImpl implements Nodes
         DOCUMENT, FOLDER
     }
 
-    private final static String PARAM_RELATIVE_PATH = "relativePath"; // TODO wip
+    private final static String PARAM_RELATIVE_PATH = "relativePath";
 
     private final static String PARAM_SELECT_PROPERTIES = "properties";
     private final static String PARAM_SELECT_PATH = "path";
@@ -842,7 +842,8 @@ public class NodesImpl implements Nodes
 
     public CollectionWithPagingInfo<Node> listChildren(String parentFolderNodeId, Parameters parameters)
     {
-        final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
+        String path = parameters.getParameter(PARAM_RELATIVE_PATH);
+        final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, path);
 
         final List<String> selectParam = parameters.getSelectedProperties();
 

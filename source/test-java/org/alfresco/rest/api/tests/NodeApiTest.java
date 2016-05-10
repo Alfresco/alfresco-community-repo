@@ -330,15 +330,15 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         Map<String,Object> props = new HashMap<>(1);
         props.put("cm:title", "This is folder 1");
-        String folder1 = "folder" + System.currentTimeMillis() + "_1";
+        String folder1 = "folder " + System.currentTimeMillis() + " 1";
         String folder1_Id = createFolder(user1, myNodeId, folder1, props).getId();
 
         props = new HashMap<>(1);
         props.put("cm:title", "This is folder 2");
-        String folder2 = "folder" + System.currentTimeMillis() + "_2";
+        String folder2 = "folder " + System.currentTimeMillis() + " 2";
         String folder2_Id = createFolder(user1, myNodeId, folder2, props).getId();
 
-        String content1 = "content" + System.currentTimeMillis() + "_1";
+        String content1 = "content" + System.currentTimeMillis() + " 1";
         NodeRef contentNodeRef = repoService.createDocument(myFilesNodeRef, content1, "The quick brown fox jumps over the lazy dog.");
         repoService.getNodeService().setProperty(contentNodeRef, ContentModel.PROP_OWNER, user1);
         repoService.getNodeService().setProperty(contentNodeRef, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA,
@@ -447,6 +447,18 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(1, nodes.size());
         assertFalse(nodes.get(0).getIsFolder());
         assertTrue(contentIds.contains(nodes.get(0).getId()));
+
+        // get node info via relativePath
+
+        params = Collections.singletonMap("relativePath", folder1);
+        response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 200);
+        Folder folderResp = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(folder1_Id, folderResp.getId());
+
+        params = Collections.singletonMap("relativePath", "User Homes/"+user1+"/"+folder2);
+        response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, params, 200);
+        folderResp = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(folder2_Id, folderResp.getId());
         
         // -ve test - Invalid QName (Namespace prefix cm... is not mapped to a namespace URI) for the orderBy parameter.
         orderBy = Collections.singletonMap("orderBy", "isFolder DESC,cm" + System.currentTimeMillis() + ":modified DESC");
@@ -460,9 +472,12 @@ public class NodeApiTest extends AbstractBaseApiTest
         // -ve test - list folder children for unknown node should return 404
         getAll(getChildrenUrl(UUID.randomUUID().toString()), user1, paging, 404);
 
-        AuthenticationUtil.setFullyAuthenticatedUser(user2);
         // -ve test - user2 tries to access user1's home folder
+        AuthenticationUtil.setFullyAuthenticatedUser(user2);
         getAll(getChildrenUrl(myFilesNodeRef), user2, paging, 403);
+
+        params = Collections.singletonMap("relativePath", "User Homes/"+user1+"/unknown");
+        getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, params, 404);
     }
 
     /**
@@ -577,7 +592,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         NodeRef folderB_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderB_Id);
 
         // /Company Home/User Homes/user<timestamp>/folder<timestamp>_A/folder<timestamp>_B/content<timestamp>
-        String contentName = "content" + System.currentTimeMillis();
+        String contentName = "content " + System.currentTimeMillis();
         NodeRef contentNodeRef = repoService.createDocument(folderB_Ref, contentName, "The quick brown fox jumps over the lazy dog.");
 
         // Add property
@@ -587,18 +602,19 @@ public class NodeApiTest extends AbstractBaseApiTest
         // get node info
         response = getSingle(NodesEntityResource.class, user1, contentNodeRef.getId(), null, 200);
         Document documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        String content_Id = documentResp.getId();
 
         // Expected result ...
         UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
 
         Document d1 = new Document();
-        d1.setId(documentResp.getId());
+        d1.setId(content_Id);
         d1.setParentId(folderB_Id);
         d1.setName(contentName);
         d1.setNodeType("cm:content");
         ContentInfo ci = new ContentInfo();
 
-        // TODO fix me !!
+        // TODO fix me !! (is this an issue with repoService.createDocument ?)
         //ci.setMimeType("text/plain");
         //ci.setMimeTypeName("Plain Text");
         ci.setMimeType("application/octet-stream");
@@ -637,6 +653,28 @@ public class NodeApiTest extends AbstractBaseApiTest
         d1.setPath(expectedPath);
 
         d1.expected(documentResp);
+
+        // get node info via relativePath
+
+        params = Collections.singletonMap("relativePath", "/"+folderA+"/"+folderB);
+        response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 200);
+        Folder folderResp = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(folderB_Id, folderResp.getId());
+
+        params = Collections.singletonMap("relativePath", folderA+"/"+folderB+"/"+contentName);
+        response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 200);
+        documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        assertEquals(content_Id, documentResp.getId());
+
+        // -ve test - get info for unknown node should return 404
+        getSingle(NodesEntityResource.class, user1, UUID.randomUUID().toString(), null, 404);
+
+        // -ve test - user2 tries to get node info about user1's home folder
+        AuthenticationUtil.setFullyAuthenticatedUser(user2);
+        getSingle(NodesEntityResource.class, user2, myFilesNodeId, null, 403);
+
+        params = Collections.singletonMap("relativePath", folderA+"/unknown");
+        getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 404);
     }
 
     /**

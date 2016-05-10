@@ -559,6 +559,11 @@ public class NodesImpl implements Nodes
 
         QName typeQName = nodeService.getType(nodeRef);
 
+        return getFolderOrDocumentFullInfo(nodeRef, getParentNodeRef(nodeRef), typeQName, parameters);
+    }
+
+    private Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters)
+    {
         List<String> selectParam = new ArrayList<>();
         selectParam.addAll(parameters.getSelectedProperties());
 
@@ -566,7 +571,7 @@ public class NodesImpl implements Nodes
         selectParam.add(PARAM_SELECT_ASPECTNAMES);
         selectParam.add(PARAM_SELECT_PROPERTIES);
 
-        return getFolderOrDocument(nodeRef, getParentNodeRef(nodeRef), typeQName, selectParam, null);
+        return getFolderOrDocument(nodeRef, parentNodeRef, nodeTypeQName, selectParam, null);
     }
 
     private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> selectParam, Map<String,UserInfo> mapUserInfo)
@@ -736,7 +741,7 @@ public class NodesImpl implements Nodes
 
         for (Entry<String, Object> entry : props.entrySet())
         {
-            QName propQName = QName.createQName(entry.getKey(), namespaceService);
+            QName propQName = createQName(entry.getKey());
 
             PropertyDefinition pd = dictionaryService.getProperty(propQName);
             if (pd != null)
@@ -970,19 +975,8 @@ public class NodesImpl implements Nodes
             props = mapToNodeProperties(nodeInfo.getProperties());
         }
 
-        props.put(ContentModel.PROP_NAME, nodeName);
-
-        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
-
-        NodeRef nodeRef;
-        try
-        {
-            nodeRef = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, nodeTypeQName, props).getChildRef();
-        }
-        catch (DuplicateChildNodeNameException dcne)
-        {
-            throw new ConstraintViolatedException(dcne.getMessage());
-        }
+        // Create the node
+        NodeRef nodeRef = createNodeImpl(parentNodeRef, nodeName, nodeTypeQName, props);
 
         List<String> aspectNames = nodeInfo.getAspectNames();
         if (aspectNames != null)
@@ -990,7 +984,7 @@ public class NodesImpl implements Nodes
             // node aspects - set any additional aspects
             for (String aspectName : aspectNames)
             {
-                QName aspectQName = QName.createQName(aspectName, namespaceService);
+                QName aspectQName = createQName(aspectName);
                 if (EXCLUDED_ASPECTS.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
                 {
                     continue; // ignore
@@ -1009,6 +1003,25 @@ public class NodesImpl implements Nodes
         }
 
         return getFolderOrDocument(nodeRef.getId(), parameters);
+    }
+
+    private NodeRef createNodeImpl(NodeRef parentNodeRef, String nodeName, QName nodeTypeQName, Map<QName, Serializable> props)
+    {
+        if(props == null)
+        {
+            props = new HashMap<>(1);
+        }
+        props.put(ContentModel.PROP_NAME, nodeName);
+
+        QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
+        try
+        {
+            return nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, nodeTypeQName, props).getChildRef();
+        }
+        catch (DuplicateChildNodeNameException dcne)
+        {
+            throw new ConstraintViolatedException(dcne.getMessage());
+        }
     }
 
     public Node updateNode(String nodeId, Node nodeInfo, Parameters parameters)
@@ -1041,7 +1054,7 @@ public class NodesImpl implements Nodes
         if ((nodeType != null) && (! nodeType.isEmpty()))
         {
             // update node type - ensure that we are performing a specialise (we do not support generalise)
-            QName destNodeTypeQName = QName.createQName(nodeType, namespaceService);
+            QName destNodeTypeQName = createQName(nodeType);
 
             if ((! destNodeTypeQName.equals(nodeTypeQName)) && dictionaryService.isSubClass(destNodeTypeQName, nodeTypeQName))
             {
@@ -1060,7 +1073,7 @@ public class NodesImpl implements Nodes
             Set<QName> aspectQNames = new HashSet<>(aspectNames.size());
             for (String aspectName : aspectNames)
             {
-                QName aspectQName = QName.createQName(aspectName, namespaceService);
+                QName aspectQName = createQName(aspectName);
                 aspectQNames.add(aspectQName);
             }
 
@@ -1179,7 +1192,10 @@ public class NodesImpl implements Nodes
         String fileName = null;
         Content content = null;
         boolean autoRename = false;
+        QName nodeTypeQName = null;
         boolean overwrite = false; // If a fileName clashes for a versionable file
+        Map<String, Object> qnameStrProps = new HashMap<>();
+        Map<QName, Serializable> properties = null;
 
         for (FormData.FormField field : formData.getFields())
         {
@@ -1201,27 +1217,50 @@ public class NodesImpl implements Nodes
                     autoRename = Boolean.valueOf(field.getValue());
                     break;
 
+                case "nodetype":
+                    nodeTypeQName = createQName(getStringOrNull(field.getValue()));
+                    if (!dictionaryService.isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT))
+                    {
+                        throw new InvalidArgumentException("Can only upload type of cm:content: " + nodeTypeQName);
+                    }
+                    break;
+
                 // case "overwrite":
                 // overwrite = Boolean.valueOf(field.getValue());
                 // break;
+
+                default:
+                {
+                    final String propName = field.getName();
+                    if (propName.indexOf(QName.NAMESPACE_PREFIX) > -1)
+                    {
+                        qnameStrProps.put(propName, field.getValue());
+                    }
+                }
             }
+        }
+
+        // MNT-7213 When alf_data runs out of disk space, Share uploads
+        // result in a success message, but the files do not appear.
+        if (formData.getFields().length == 0)
+        {
+            throw new ConstraintViolatedException(" No disk space available");
+        }
+        // Ensure mandatory file attributes have been located. Need either
+        // destination, or site + container or updateNodeRef
+        if ((fileName == null || content == null))
+        {
+            throw new InvalidArgumentException("Required parameters are missing");
         }
 
         try
         {
-            // MNT-7213 When alf_data runs out of disk space, Share uploads
-            // result in a success message, but the files do not appear.
-            if (formData.getFields().length == 0)
+            // Map the given properties, if any.
+            if (qnameStrProps.size() > 0)
             {
-                throw new ConstraintViolatedException(" No disk space available");
+                properties = mapToNodeProperties(qnameStrProps);
             }
 
-            // Ensure mandatory file attributes have been located. Need either
-            // destination, or site + container or updateNodeRef
-            if ((fileName == null || content == null))
-            {
-                throw new InvalidArgumentException("Required parameters are missing");
-            }
             /*
              * Existing file handling
              */
@@ -1255,7 +1294,7 @@ public class NodesImpl implements Nodes
             }
 
             // Create a new file.
-            return createNewFile(parentNodeRef, fileName, content);
+            return createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, parameters);
 
             // Do not clean formData temp files to allow for retries.
             // Temp files will be deleted later when GC call DiskFileItem#finalize() method or by temp file cleaner.
@@ -1292,13 +1331,16 @@ public class NodesImpl implements Nodes
     /**
      * Helper to create a new node and writes its content to the repository.
      */
-    private Node createNewFile(NodeRef parentNodeRef, String fileName, Content content)
+    private Node createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, Parameters params)
     {
-        FileInfo fileInfo = fileFolderService.create(parentNodeRef, fileName, ContentModel.TYPE_CONTENT);
-        NodeRef newFile = fileInfo.getNodeRef();
+        if (nodeType == null)
+        {
+            nodeType = ContentModel.TYPE_CONTENT;
+        }
+        NodeRef newFile = createNodeImpl(parentNodeRef, fileName, nodeType, props);
 
         // Write content
-        write(newFile, content, fileName, false, true);
+        write(newFile, content, fileName, true, true);
 
         // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)
         ensureVersioningEnabled(newFile, true, false);
@@ -1307,12 +1349,7 @@ public class NodesImpl implements Nodes
         extractMetadata(newFile);
 
         // Create the response
-        return createUploadResponse(parentNodeRef, newFile);
-    }
-
-    private Node createUploadResponse(NodeRef parentNodeRef, NodeRef newFileNodeRef)
-    {
-        return getFolderOrDocument(newFileNodeRef, parentNodeRef, ContentModel.TYPE_CONTENT, Collections.<String>emptyList(), null);
+        return getFolderOrDocumentFullInfo(newFile, parentNodeRef, nodeType, params);
     }
 
     private String getStringOrNull(String value)
@@ -1331,7 +1368,7 @@ public class NodesImpl implements Nodes
      * @param content       the content
      * @param fileName      the uploaded file name
      * @param applyMimeType If true, apply the mimeType from the Content object,
-     *                      else leave the original mimeType
+     *                      else leave the original mimeType (if the original type is null, then guess the mimeType)
      * @param guessEncoding If true, guess the encoding from the underlying
      *                      input stream, else use encoding set in the Content object as supplied
      */
@@ -1340,7 +1377,9 @@ public class NodesImpl implements Nodes
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         InputStream is;
         String mimeType = content.getMimetype();
-        if (!applyMimeType)
+        // Per RA-637 requirement the mimeType provided by the client takes precedent, however,
+        // if the mimeType is null, then it will be retrieved or guessed.
+        if (mimeType == null || !applyMimeType)
         {
             ContentData existingContentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
             if (existingContentData != null)

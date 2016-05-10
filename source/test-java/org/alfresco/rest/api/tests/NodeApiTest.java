@@ -554,6 +554,9 @@ public class NodeApiTest extends AbstractBaseApiTest
         ContentInfo contentInfo = document.getContent();
         assertNotNull(contentInfo);
         assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
+        // Check there is no path info returned.
+        // The path info should only be returned when it is requested via a select statement.
+        assertNull(document.getPath());
 
         // Retrieve the uploaded file
         response = getSingle(NodesEntityResource.class, user1, document.getId(), null, 200);
@@ -587,11 +590,12 @@ public class NodeApiTest extends AbstractBaseApiTest
         // Check the upload response
         assertEquals("quick-1.pdf", document.getName());
 
-        // upload the same file again
-        response = post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        // upload the same file again, and request the path info to be present in the response
+        response = post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), "?select=path", reqBody.getContentType(), 201);
         document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals("quick-2.pdf", document.getName());
+        assertNotNull(document.getPath());
 
         response = getAll(getChildrenUrl(Nodes.PATH_MY), user1, paging, 200);
         pagingResult = parsePaging(response.getJsonResponse());
@@ -619,6 +623,15 @@ public class NodeApiTest extends AbstractBaseApiTest
         // Try to upload a file without defining the required formData
         reqBody = MultiPartBuilder.create().setAutoRename(true).build();
         post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
+
+        // Test unsupported node type
+        reqBody = MultiPartBuilder.create()
+                    .setFileData(new FileData(fileName2, file2, null))
+                    .setAutoRename(true)
+                    .setNodeType("cm:link")
+                    .build();
+        post(getChildrenUrl(user1Home.getId()), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
+
     }
 
     /**
@@ -643,7 +656,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         final int numOfNodes = pagingResult.getCount().intValue();
 
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_TEXT_PLAIN));
+                    .setFileData(new FileData(fileName, file, null));
         MultiPartRequest reqBody = multiPartBuilder.build();
         // Try to upload
         response = post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
@@ -652,6 +665,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(fileName, document.getName());
         ContentInfo contentInfo = document.getContent();
         assertNotNull(contentInfo);
+        // As the client didn't set the mimeType, the API must guess it.
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
 
         // Retrieve the uploaded file
@@ -683,6 +697,51 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .build();
         // userTwoN1 tries to upload a new file into the folderA of userOneN1
         post(getChildrenUrl(folderA_Ref), userTwoN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 403);
+
+        // Test upload with properties
+        response = post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        // Check the upload response
+        assertEquals(fileName2, document.getName());
+        contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+        assertNotNull(document.getProperties());
+        assertNull(document.getProperties().get("cm:title"));
+        assertNull(document.getProperties().get("cm:description"));
+
+        // upload a file with properties. Also, set autoRename=true
+        Map<String, String> props = new HashMap<>(2);
+        props.put("cm:title", "test title");
+        props.put("cm:description", "test description");
+        reqBody = MultiPartBuilder.create()
+                    .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .setAutoRename(true)
+                    .setProperties(props)
+                    .build();
+
+        response = post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        // Check the upload response
+        // "quick-2-1.txt" => fileName2 + autoRename
+        assertEquals("quick-2-1.txt", document.getName());
+        contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+        assertNotNull(document.getProperties());
+        assertEquals("test title", document.getProperties().get("cm:title"));
+        assertEquals("test description", document.getProperties().get("cm:description"));
+
+        // Test unknown property name
+        props = new HashMap<>(1);
+        props.put("unknownPrefix" + System.currentTimeMillis() + ":description", "test description");
+        reqBody = MultiPartBuilder.create()
+                    .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .setAutoRename(true)
+                    .setProperties(props)
+                    .build();
+        // Prop prefix is unknown
+        post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
     }
 
     /**

@@ -30,7 +30,11 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
  * <i><b>multipart/form-data</b></i> builder.
@@ -47,10 +51,12 @@ public class MultiPartBuilder
     private String updateNodeRef;
     private String description;
     private String contentTypeQNameStr;
-    private List<String> aspects;
+    private List<String> aspects = Collections.emptyList();
     private Boolean majorVersion;
     private Boolean overwrite;
     private Boolean autoRename;
+    private String nodeType;
+    private Map<String, String> properties = Collections.emptyMap();
 
     private MultiPartBuilder()
     {
@@ -66,10 +72,12 @@ public class MultiPartBuilder
         this.updateNodeRef = that.updateNodeRef;
         this.description = that.description;
         this.contentTypeQNameStr = that.contentTypeQNameStr;
-        this.aspects = that.aspects;
+        this.aspects = new ArrayList<>(that.aspects);
         this.majorVersion = that.majorVersion;
         this.overwrite = that.overwrite;
         this.autoRename = that.autoRename;
+        this.nodeType = that.nodeType;
+        this.properties = new HashMap<>(that.properties);
     }
 
     public static MultiPartBuilder create()
@@ -154,9 +162,21 @@ public class MultiPartBuilder
         return this;
     }
 
+    public MultiPartBuilder setNodeType(String nodeType)
+    {
+        this.nodeType = nodeType;
+        return this;
+    }
+
+    public MultiPartBuilder setProperties(Map<String, String> properties)
+    {
+        this.properties = properties;
+        return this;
+    }
+
     private String getAspects(List<String> aspects)
     {
-        if (aspects != null)
+        if (!aspects.isEmpty())
         {
             StringBuilder sb = new StringBuilder(aspects.size() * 2);
             for (String str : aspects)
@@ -236,7 +256,11 @@ public class MultiPartBuilder
 
         if (fileData != null)
         {
-            parts.add(new FilePart("filedata", fileData.getFileName(), fileData.getFile(), fileData.getMimetype(), null));
+            FilePart fp = new FilePart("filedata", fileData.getFileName(), fileData.getFile(), fileData.getMimetype(), null);
+            // Get rid of the default values added upon FilePart instantiation
+            fp.setCharSet(null);
+            fp.setContentType(fileData.getMimetype());
+            parts.add(fp);
             addPartIfNotNull(parts, "filename", fileData.getFileName());
         }
         addPartIfNotNull(parts, "siteid", siteId);
@@ -250,6 +274,15 @@ public class MultiPartBuilder
         addPartIfNotNull(parts, "majorversion", majorVersion);
         addPartIfNotNull(parts, "overwrite", overwrite);
         addPartIfNotNull(parts, "autoRename", autoRename);
+        addPartIfNotNull(parts, "nodeType", nodeType);
+
+        if (!properties.isEmpty())
+        {
+            for (Entry<String, String> prop : properties.entrySet())
+            {
+                parts.add(new StringPart(prop.getKey(), prop.getValue()));
+            }
+        }
 
         MultipartRequestEntity req = new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), new HttpMethodParams());
 

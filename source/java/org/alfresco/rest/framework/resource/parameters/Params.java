@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.rest.framework.resource.parameters;
 
 import java.io.InputStream;
@@ -33,7 +51,7 @@ public class Params implements Parameters
     private final WebScriptRequest request;
 
     //Constants
-    private static final RecognizedParams NULL_PARAMS = new RecognizedParams(null, null, null, null, null, null, null, false);
+    private static final RecognizedParams NULL_PARAMS = new RecognizedParams(null, null, null, null, null, null, null, null, false);
     private static final BasicContentInfo DEFAULT_CONTENT_INFO = new ContentInfoImpl(MimetypeMap.MIMETYPE_BINARY, "UTF-8", -1, null);
     
     protected Params(String entityId, String relationshipId, Object passedIn, InputStream stream, String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo, WebScriptRequest request)
@@ -51,7 +69,7 @@ public class Params implements Parameters
 
     public static Params valueOf(BeanPropertiesFilter paramFilter, String entityId, WebScriptRequest request)
     {
-        return new Params(entityId, null, null, null, null, new RecognizedParams(null, null, paramFilter, null, null, null, null, false), null, request);
+        return new Params(entityId, null, null, null, null, new RecognizedParams(null, null, paramFilter, null, null, null, null, null, false), null, request);
     }
 
     public static Params valueOf(String entityId, String relationshipId, WebScriptRequest request)
@@ -145,6 +163,8 @@ public class Params implements Parameters
         builder.append(this.recognizedParams.query);
         builder.append(", sorting=");
         builder.append(this.recognizedParams.sorting);
+        builder.append(", include=");
+        builder.append(this.recognizedParams.include);
         builder.append(", select=");
         builder.append(this.recognizedParams.select);
         builder.append(", filter=");
@@ -211,6 +231,12 @@ public class Params implements Parameters
     {
         return recognizedParams.select;
     }
+
+    @Override
+    public List<String> getInclude()
+    {
+        return recognizedParams.include;
+    }
     
     @Override
     public BasicContentInfo getContentInfo()
@@ -234,21 +260,30 @@ public class Params implements Parameters
         private final Map<String, BeanPropertiesFilter> relationshipFilter;
         private final Map<String, String[]> requestParameters;
         private final Query query;
-        private final List<String> select;
+
+        private final List<String> include;
+        @Deprecated
+        private final List<String> select; // see include
+
         private final List<SortColumn> sorting;
         private final boolean includeSource;
         
         @SuppressWarnings("unchecked")
-        public RecognizedParams(Map<String, String[]> requestParameters, Paging paging, BeanPropertiesFilter filter, Map<String, BeanPropertiesFilter> relationshipFilter, List<String> select,
+        public RecognizedParams(Map<String, String[]> requestParameters, Paging paging, BeanPropertiesFilter filter,
+                                Map<String, BeanPropertiesFilter> relationshipFilter, List<String> include, List<String> select,
                                 Query query, List<SortColumn> sorting, boolean includeSource)
         {
             super();
+
             this.requestParameters = requestParameters;
             this.paging = paging==null?Paging.DEFAULT:paging;
             this.filter = filter==null?BeanPropertiesFilter.ALLOW_ALL:filter;
             this.query = query==null?QueryImpl.EMPTY:query;
             this.relationshipFilter = (Map<String, BeanPropertiesFilter>) (relationshipFilter==null?Collections.emptyMap():relationshipFilter);
+
+            this.include = (List<String>) (include==null?Collections.emptyList():include);
             this.select = (List<String>) (select==null?Collections.emptyList():select);
+
             this.sorting = (List<SortColumn>) (sorting==null?Collections.emptyList():sorting);
             this.includeSource = includeSource;
         }

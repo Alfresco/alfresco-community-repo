@@ -183,7 +183,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
 
         // auth access to get shared link info - as user1
-        Map<String, String> params = Collections.singletonMap("select", "allowableOperations");
+        Map<String, String> params = Collections.singletonMap("include", "allowableOperations");
         response = getSingle(QuickShareLinkEntityResource.class, user1, sharedId, params, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
 
@@ -197,7 +197,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertNull(resp.getAllowableOperations());
 
         // auth access to get shared link info - as user2
-        params = Collections.singletonMap("select", "allowableOperations");
+        params = Collections.singletonMap("include", "allowableOperations");
         response = getSingle(QuickShareLinkEntityResource.class, user2, sharedId, params, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
 
@@ -211,21 +211,21 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(1, resp.getAllowableOperations().size());
         assertEquals("delete", resp.getAllowableOperations().get(0));
 
-        // allowable operations not selected
+        // allowable operations not included
         response = getSingle(QuickShareLinkEntityResource.class, user2, sharedId, null, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
         assertNull(resp.getAllowableOperations());
 
 
         // unauth access to get shared link info
-        params = Collections.singletonMap("select", "allowableOperations"); // note: this will be ignore for unauth access
+        params = Collections.singletonMap("include", "allowableOperations"); // note: this will be ignore for unauth access
         response = getSingle(QuickShareLinkEntityResource.class, null, sharedId, params, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
 
         assertEquals(sharedId, resp.getId());
         assertEquals(docName1, resp.getName());
         assertNull(resp.getNodeId()); // nodeId not returned
-        assertNull(resp.getAllowableOperations()); // select is ignored
+        assertNull(resp.getAllowableOperations()); // include is ignored
 
         assertNull(resp.getModifiedByUser().getId()); // userId not returned
         assertEquals(user1+" "+user1, resp.getModifiedByUser().getDisplayName());

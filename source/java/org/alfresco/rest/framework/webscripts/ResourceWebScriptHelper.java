@@ -82,7 +82,6 @@ import org.springframework.http.HttpMethod;
  */
 public class ResourceWebScriptHelper
 {
-
     private static Log logger = LogFactory.getLog(ResourceWebScriptHelper.class);
     public static final String PARAM_RELATIONS = "relations";
 
@@ -95,7 +94,10 @@ public class ResourceWebScriptHelper
     public static final String PARAM_PAGING_MAX = "maxItems";
     public static final String PARAM_ORDERBY = "orderBy";
     public static final String PARAM_WHERE = "where";
+
     public static final String PARAM_SELECT = "select";
+
+    public static final String PARAM_INCLUDE = "include";
     public static final String PARAM_INCLUDE_SOURCE_ENTITY = "includeSource";
 
     public static final List<String> KNOWN_PARAMS = Arrays.asList(
@@ -231,15 +233,32 @@ public class ResourceWebScriptHelper
      * @return List<String> bean property names potentially using JSON Pointer syntax
      */
     @SuppressWarnings("unchecked")
+    @Deprecated
     public static List<String> getSelectClause(String selectParam) throws InvalidArgumentException
     {
-        if (selectParam == null) return Collections.emptyList();
+        return getClause(selectParam, "SELECT");
+    }
+
+    /**
+     * Takes the "include" parameter and turns it into a List<String> property names
+     * @param includeParam String
+     * @return List<String> bean property names potentially using JSON Pointer syntax
+     */
+    @SuppressWarnings("unchecked")
+    public static List<String> getIncludeClause(String includeParam) throws InvalidArgumentException
+    {
+        return getClause(includeParam, "INCLUDE");
+    }
+
+    private static List<String> getClause(String param, String paramName)
+    {
+        if (param == null) return Collections.emptyList();
         
 		try {
-			CommonTree selectedPropsTree = WhereCompiler.compileSelectClause(selectParam);
+			CommonTree selectedPropsTree = WhereCompiler.compileSelectClause(param);
 			if (selectedPropsTree instanceof CommonErrorNode)
 			{
-				logger.debug("Error parsing the SELECT clause "+selectedPropsTree);
+				logger.debug("Error parsing the "+paramName+" clause "+selectedPropsTree);
 				throw new InvalidSelectException(selectedPropsTree);
 			}
 			if (selectedPropsTree.getChildCount() == 0 && !selectedPropsTree.getText().isEmpty())
@@ -255,13 +274,19 @@ public class ResourceWebScriptHelper
 				}
 				return properties;
 			}
-		} catch (RewriteCardinalityException re) {  //Catch any error so it doesn't get thrown up the stack
-			logger.debug("Unhandled Error parsing the SELECT clause: "+re);
-		} catch (RecognitionException e) {
-			logger.debug("Error parsing the SELECT clause: "+selectParam);
 		}
+        catch (RewriteCardinalityException re)
+        {
+            //Catch any error so it doesn't get thrown up the stack
+			logger.debug("Unhandled Error parsing the "+paramName+" clause: "+re);
+		}
+        catch (RecognitionException e)
+        {
+			logger.debug("Error parsing the \"+paramName+\" clause: "+param);
+		}
+
         //Default to throw out an invalid query
-        throw new InvalidSelectException(selectParam); 
+        throw new InvalidSelectException(param);
     }
     
     /**
@@ -595,7 +620,7 @@ public class ResourceWebScriptHelper
      * the ExecutionResult object.
      *
      * @param api Api
-     * @param filters Map<String, BeanPropertiesFilter>
+     * @param params Params
      * @param relatedResources Map<String, ResourceWithMetadata>
      * @param uniqueEntityId String
      * @return Map
@@ -621,7 +646,7 @@ public class ResourceWebScriptHelper
      * the ExecutionResult object.
      *
      * @param api Api
-     * @param filters Map<String, BeanPropertiesFilter>
+     * @param params Params
      * @param uniqueEntityId String
      * @param resourceKey String
      * @param resource ResourceWithMetadata
@@ -714,7 +739,8 @@ public class ResourceWebScriptHelper
         Map<String, String[]> requestParams = getRequestParameters(req);
         boolean includeSource = Boolean.valueOf(req.getParameter(ResourceWebScriptHelper.PARAM_INCLUDE_SOURCE_ENTITY));
 
-        List<String> theSelect = getSelectClause(req.getParameter(ResourceWebScriptHelper.PARAM_SELECT));
+        List<String> includedFields = getIncludeClause(req.getParameter(ResourceWebScriptHelper.PARAM_INCLUDE));
+        List<String> selectFields = getSelectClause(req.getParameter(ResourceWebScriptHelper.PARAM_SELECT));
 
         String fields = req.getParameter(ResourceWebScriptHelper.PARAM_FILTER_FIELDS);
         String properties = req.getParameter(ResourceWebScriptHelper.PARAM_FILTER_PROPERTIES);
@@ -727,9 +753,9 @@ public class ResourceWebScriptHelper
             }
         }
 
-        BeanPropertiesFilter filter = getFilter((fields != null ? fields : properties), theSelect);
-    	
-        return new RecognizedParams(requestParams, paging, filter, relationFilter, theSelect, whereQuery, sorting, includeSource);
+        BeanPropertiesFilter filter = getFilter((fields != null ? fields : properties), includedFields);
+
+        return new RecognizedParams(requestParams, paging, filter, relationFilter, includedFields, selectFields, whereQuery, sorting, includeSource);
     }
 
     /**

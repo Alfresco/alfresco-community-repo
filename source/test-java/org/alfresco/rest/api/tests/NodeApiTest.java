@@ -366,7 +366,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(node.getContent().getEncoding());
         assertTrue(node.getContent().getSizeInBytes() > 0);
 
-        // request without select
+        // request without "include"
         Map<String, String> params = new HashMap<>();
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
@@ -378,9 +378,9 @@ public class NodeApiTest extends AbstractBaseApiTest
             assertNull("There shouldn't be a 'aspectNames' object in the response.", n.getAspectNames());
         }
 
-        // request with select - example 1
+        // request with include - example 1
         params = new HashMap<>();
-        params.put("select", "isLink");
+        params.put("include", "isLink");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         for (Node n : nodes)
@@ -388,9 +388,9 @@ public class NodeApiTest extends AbstractBaseApiTest
             assertNotNull("There should be a 'isLink' object in the response.", n.getIsLink());
         }
 
-        // request with select - example 2
+        // request with include - example 2
         params = new HashMap<>();
-        params.put("select", "aspectNames,properties, path,isLink");
+        params.put("include", "aspectNames,properties, path,isLink");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         for (Node n : nodes)
@@ -401,9 +401,9 @@ public class NodeApiTest extends AbstractBaseApiTest
             assertNotNull("There should be a 'aspectNames' object in the response.", n.getAspectNames());
         }
 
-        // request specific property via select
+        // request specific property via include
         params = new HashMap<>();
-        params.put("select", "cm:lastThumbnailModification");
+        params.put("include", "cm:lastThumbnailModification");
         params.put("orderBy", "isFolder DESC,modifiedAt DESC");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
@@ -522,7 +522,7 @@ public class NodeApiTest extends AbstractBaseApiTest
     /**
      * Tests get node with path information.
      * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>?select=path}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>?include=path}
      */
     @Test
     public void testGetPathElements_DocLib() throws Exception
@@ -559,8 +559,8 @@ public class NodeApiTest extends AbstractBaseApiTest
         // Grant userTwoN1 permission for folderC
         permissionService.setPermission(folderC_Ref, userTwoN1.getId(), PermissionService.CONSUMER, true);
 
-        //...nodes/nodeId?select=path
-        Map<String, String> params = Collections.singletonMap("select", "path");
+        //...nodes/nodeId?include=path
+        Map<String, String> params = Collections.singletonMap("include", "path");
         HttpResponse response = getSingle(NodesEntityResource.class, userOneN1.getId(), content1_Id, params, 200);
         Document node = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         PathInfo path = node.getPath();
@@ -673,8 +673,8 @@ public class NodeApiTest extends AbstractBaseApiTest
         d1.expected(documentResp);
 
         // get node info + path
-        //...nodes/nodeId?select=path
-        Map<String, String> params = Collections.singletonMap("select", "path");
+        //...nodes/nodeId?include=path
+        Map<String, String> params = Collections.singletonMap("include", "path");
         response = getSingle(NodesEntityResource.class, user1, content1Id, params, 200);
         documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
 
@@ -760,7 +760,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(user1, node.getName());
         assertTrue(node.getIsFolder());
         assertFalse(node.getIsFile());
-        assertNull(node.getPath()); // note: path can be optionally "select"'ed - see separate test
+        assertNull(node.getPath()); // note: path can be optionally "include"'ed - see separate test
 
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_SHARED, null, 200);
         node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
@@ -814,7 +814,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         // Default encoding
         assertEquals("UTF-8", contentInfo.getEncoding());
         // Check there is no path info returned.
-        // The path info should only be returned when it is requested via a select statement.
+        // The path info should only be returned when it is requested via a include statement.
         assertNull(document.getPath());
 
         // Retrieve the uploaded file
@@ -850,7 +850,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals("quick-1.pdf", document.getName());
 
         // upload the same file again, and request the path info to be present in the response
-        response = post(getChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), "?select=path", reqBody.getContentType(), 201);
+        response = post(getChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), "?include=path", reqBody.getContentType(), 201);
         document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals("quick-2.pdf", document.getName());
@@ -2151,7 +2151,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         File pdfFile = getResourceFile("quick.pdf");
         payload = new BinaryPayload(pdfFile, MimetypeMap.MIMETYPE_PDF, "ISO-8859-1");
 
-        response = putBinary(url + "?select=path", user1, payload, null, null, 200);
+        response = putBinary(url + "?include=path", user1, payload, null, null, 200);
         docResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         assertEquals(docName, docResp.getName());
         assertNotNull(docResp.getContent());

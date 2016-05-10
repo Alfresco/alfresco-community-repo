@@ -19,7 +19,12 @@
 
 package org.alfresco.rest.api.tests.client;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.MessageFormat;
@@ -48,6 +53,7 @@ import org.apache.commons.httpclient.methods.HeadMethod;
 import org.apache.commons.httpclient.methods.OptionsMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.methods.TraceMethod;
 import org.apache.commons.logging.Log;
@@ -563,6 +569,23 @@ public class PublicApiHttpClient
         return submitRequest(req, rq);
     }
 
+    public HttpResponse putBinary(final RequestContext rq, final String scope, final int version, final String entityCollectionName,
+                final Object entityId, final String relationCollectionName, final Object relationshipEntityId, final BinaryPayload payload,
+                final Map<String, String> params) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
+                    relationshipEntityId, params);
+        String url = endpoint.getUrl();
+
+        PutMethod req = new PutMethod(url);
+        if (payload != null)
+        {
+            BinaryRequestEntity requestEntity = new BinaryRequestEntity(payload.getFile(), payload.getMimeType(), payload.getCharset());
+            req.setRequestEntity(requestEntity);
+        }
+        return submitRequest(req, rq);
+    }
+
     /*
      * Encapsulates information relating to a rest api end point, generating and
      * encoding urls based on the rest api implementation class.
@@ -815,6 +838,102 @@ public class PublicApiHttpClient
         public String getUrl() throws UnsupportedEncodingException
         {
             return url;
+        }
+    }
+
+    /**
+     * @author Jamal Kaabi-Mofrad
+     */
+    public static class BinaryRequestEntity implements RequestEntity
+    {
+        private final File file;
+        private final String mimeType;
+        private final String charset;
+
+        public BinaryRequestEntity(File file, String mimeType, String charset)
+        {
+            this.file = file;
+            this.mimeType = (mimeType == null) ? "application/octet-stream" : mimeType;
+            this.charset = (charset == null) ? "UTF-8" : charset;
+        }
+
+        @Override
+        public boolean isRepeatable()
+        {
+            return true;
+        }
+
+        @Override
+        public void writeRequest(OutputStream out) throws IOException
+        {
+            InputStream inputStream = new BufferedInputStream(new FileInputStream(file));
+            try
+            {
+                int len;
+                byte[] buffer = new byte[8190];
+                while ((len = inputStream.read(buffer)) != -1)
+                {
+                    out.write(buffer, 0, len);
+                }
+            }
+            finally
+            {
+                inputStream.close();
+            }
+        }
+
+        @Override
+        public long getContentLength()
+        {
+            return file.length();
+        }
+
+        @Override
+        public String getContentType()
+        {
+            return mimeType + "; " + charset;
+        }
+    }
+
+    /**
+     * @author Jamal Kaabi-Mofrad
+     */
+    public static class BinaryPayload
+    {
+        private File file;
+        private String mimeType;
+        private String charset;
+
+        public BinaryPayload(File file, String mimeType, String charset)
+        {
+            this.file = file;
+            this.mimeType = mimeType;
+            this.charset = charset;
+        }
+
+        public BinaryPayload(File file, String mimeType)
+        {
+            this(file, mimeType, null);
+        }
+
+        public BinaryPayload(File file)
+        {
+            this(file, null, null);
+        }
+
+        public File getFile()
+        {
+            return file;
+        }
+
+        public String getMimeType()
+        {
+            return mimeType;
+        }
+
+        public String getCharset()
+        {
+            return charset;
         }
     }
 }

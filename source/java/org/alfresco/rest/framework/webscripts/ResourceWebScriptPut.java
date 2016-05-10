@@ -1,3 +1,22 @@
+/*
+ * Copyright (C) 2005-2015 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package org.alfresco.rest.framework.webscripts;
 
 import java.io.IOException;
@@ -6,7 +25,6 @@ import java.util.Locale;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.web.scripts.BufferedRequest;
 import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
@@ -171,10 +189,8 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 {
                     throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
                 }
-                BinaryResourceAction.Update binUpdater = (BinaryResourceAction.Update) resource.getResource();
-                binUpdater.updateProperty(params.getEntityId(),params.getContentInfo(), params.getStream(), params);
-                //Don't pass anything to the callback - its just successful
-                return null;
+                BinaryResourceAction.Update<Object> binUpdater = (BinaryResourceAction.Update<Object>) resource.getResource();
+                return binUpdater.updateProperty(params.getEntityId(), params.getContentInfo(), params.getStream(), params);
             default:
                 throw new UnsupportedResourceOperationException("PUT not supported for Actions");
         }

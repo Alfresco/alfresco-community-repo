@@ -15,16 +15,16 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.TempFileProvider;
 
 @EntityResource(name="flock",title="A resource used for testing binary properties")
-public class FlockEntityResource implements BinaryResourceAction.Read, BinaryResourceAction.Delete, BinaryResourceAction.Update
+public class FlockEntityResource implements BinaryResourceAction.Read, BinaryResourceAction.Delete, BinaryResourceAction.Update<Flock>
 {
 
     //versions/1/flock/xyz/photo PUT
     @Override
     @WebApiDescription(title = "Updates a photo")
     @BinaryProperties("photo")
-    public void updateProperty(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params)
+    public Flock updateProperty(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params)
     {
-        return;
+        return null;
     }
 
     //versions/1/flock/xyz/photo DELETE

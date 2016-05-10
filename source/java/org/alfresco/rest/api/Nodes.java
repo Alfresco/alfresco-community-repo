@@ -118,8 +118,7 @@ public interface Nodes
     // TODO update REST fwk - to optionally support "attachment" (Content-Disposition) header
     BinaryResource getContent(String fileNodeId, Parameters parameters);
 
-    // TODO update REST fwk - to optionally support return of json
-    void updateContent(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters);
+    Node updateContent(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters);
 
     /**
      * Uploads file content and meta-data into the repository.

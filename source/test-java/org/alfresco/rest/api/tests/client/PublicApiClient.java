@@ -14,6 +14,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.cmis.client.impl.AlfrescoObjectFactoryImpl;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
+import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.data.Activities;
 import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.CMISNode;
@@ -523,7 +524,18 @@ public class PublicApiClient
 
 		return response;
 	}
-	
+
+    public HttpResponse putBinary(String scope, int version, String entityCollectionName, Object entityId, String relationCollectionName,
+                Object relationshipEntityId, BinaryPayload payload, Map<String, String> params) throws IOException
+    {
+        HttpResponse response = client.putBinary(getRequestContext(), scope, version, entityCollectionName, entityId, relationCollectionName, relationshipEntityId,
+                                payload, params);
+
+        logger.debug(response.toString());
+
+        return response;
+    }
+
 	public HttpResponse delete(String scope, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId) throws IOException
 	{
 		HttpResponse response = client.delete(getRequestContext(), scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId);

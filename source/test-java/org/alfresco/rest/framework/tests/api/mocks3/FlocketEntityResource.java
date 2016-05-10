@@ -12,15 +12,15 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
 @EntityResource(name="flocket",title="A resource used for testing binary properties with lost of properties")
-public class FlocketEntityResource implements BinaryResourceAction.Read, BinaryResourceAction.Delete, BinaryResourceAction.Update
+public class FlocketEntityResource implements BinaryResourceAction.Read, BinaryResourceAction.Delete, BinaryResourceAction.Update<Flocket>
 {
 
     @Override
     @WebApiDescription(title = "Updates a flocket")
     @BinaryProperties({"photo","album"})
-    public void updateProperty(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params)
+    public Flocket updateProperty(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params)
     {
-        return;
+        return null;
     }
 
     @Override

@@ -28,6 +28,7 @@ import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
+import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.service.cmr.site.SiteVisibility;
 
@@ -138,6 +139,27 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         checkStatus(expectedStatus, response.getStatusCode());
 
         return response;
+    }
+
+    protected HttpResponse putBinary(String url, int version, String runAsUser, BinaryPayload payload, String queryString, Map<String, String> params,
+                int expectedStatus) throws Exception
+    {
+        publicApiClient.setRequestContext(new RequestContext(runAsUser));
+        if (queryString != null)
+        {
+            url += queryString;
+        }
+
+        HttpResponse response = publicApiClient.putBinary(getScope(), version, url, null, null, null, payload, params);
+        checkStatus(expectedStatus, response.getStatusCode());
+
+        return response;
+    }
+
+    protected HttpResponse putBinary(String url, String runAsUser, BinaryPayload payload, String queryString, Map<String, String> params,
+                int expectedStatus) throws Exception
+    {
+        return putBinary(url, 1, runAsUser, payload, queryString, params, expectedStatus);
     }
 
     protected HttpResponse delete(String url, String runAsUser, String entityId, int expectedStatus) throws Exception

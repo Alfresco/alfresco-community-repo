@@ -18,6 +18,20 @@
  */
 package org.alfresco.rest.api.impl;
 
+import java.io.InputStream;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
@@ -55,6 +69,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
@@ -85,20 +100,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.servlet.FormData;
-
-import java.io.InputStream;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
 /**
  * Centralises access to file/folder/node services and maps between representations.
@@ -645,13 +646,13 @@ public class NodesImpl implements Nodes
             boolean isLink = typeMatches(nodeTypeQName, Collections.singleton(ContentModel.TYPE_LINK), null);
             node.setIsLink(isLink);
         }
-
+        
         node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
         node.setPath(pathInfo);
 
         return node;
     }
-
+    
     protected PathInfo lookupPathInfo(NodeRef nodeRefIn)
     {
         final Path nodePath = nodeService.getPath(nodeRefIn);
@@ -701,6 +702,28 @@ public class NodesImpl implements Nodes
         }
         return new PathInfo(pathStr, isComplete, pathElements);
     }
+    
+    protected Set<QName> mapToNodeAspects(List<String> aspectNames)
+    {
+    	Set<QName> nodeAspects = new HashSet<>(aspectNames.size());
+
+        for (String aspectName : aspectNames)
+        {
+            QName aspectQName = createQName(aspectName);
+
+            AspectDefinition ad = dictionaryService.getAspect(aspectQName);
+            if (ad != null)
+            {
+                nodeAspects.add(aspectQName);
+            }
+            else 
+            {
+            	throw new InvalidArgumentException("Unknown aspect: "+aspectName);
+            }
+        }
+
+        return nodeAspects;
+    }
 
     protected Map<QName, Serializable> mapToNodeProperties(Map<String, Object> props)
     {
@@ -708,7 +731,8 @@ public class NodesImpl implements Nodes
 
         for (Entry<String, Object> entry : props.entrySet())
         {
-            QName propQName = createQName(entry.getKey());
+        	String propName = entry.getKey();
+            QName propQName = createQName(propName);
 
             PropertyDefinition pd = dictionaryService.getProperty(propQName);
             if (pd != null)
@@ -731,6 +755,10 @@ public class NodesImpl implements Nodes
                     value = (Serializable)entry.getValue();
                 }
                 nodeProps.put(propQName, value);
+            }
+            else 
+            {
+            	throw new InvalidArgumentException("Unknown property: "+propName);
             }
         }
 
@@ -805,7 +833,7 @@ public class NodesImpl implements Nodes
         return aspectNames;
     }
 
-    public CollectionWithPagingInfo<Node> getChildren(String parentFolderNodeId, Parameters parameters)
+    public CollectionWithPagingInfo<Node> listChildren(String parentFolderNodeId, Parameters parameters)
     {
         final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
 
@@ -818,7 +846,7 @@ public class NodesImpl implements Nodes
 
         if (q != null)
         {
-            // TODO confirm list of filter props - what about custom props (+ across types/aspects) ?
+            // TODO confirm list of filter props - what about custom props (+ across types/aspects) ? What about VF extension ?
             MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES, null);
             QueryHelper.walk(q, propertyWalker);
 
@@ -950,9 +978,9 @@ public class NodesImpl implements Nodes
         if (aspectNames != null)
         {
             // node aspects - set any additional aspects
-            for (String aspectName : aspectNames)
+        	Set<QName> aspectQNames = mapToNodeAspects(aspectNames);
+            for (QName aspectQName : aspectQNames)
             {
-                QName aspectQName = createQName(aspectName);
                 if (EXCLUDED_ASPECTS.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
                 {
                     continue; // ignore
@@ -1048,12 +1076,8 @@ public class NodesImpl implements Nodes
         if (aspectNames != null)
         {
             // update aspects - note: can be empty (eg. to remove existing aspects+properties) but not cm:auditable, sys:referencable, sys:localized
-            Set<QName> aspectQNames = new HashSet<>(aspectNames.size());
-            for (String aspectName : aspectNames)
-            {
-                QName aspectQName = createQName(aspectName);
-                aspectQNames.add(aspectQName);
-            }
+        	
+            Set<QName> aspectQNames = mapToNodeAspects(aspectNames);
 
             Set<QName> existingAspects = nodeService.getAspects(nodeRef);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -18,6 +18,9 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -30,9 +33,6 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.webscripts.servlet.FormData;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Node Children
@@ -83,7 +83,7 @@ public class NodeChildrenRelation implements RelationshipResourceAction.Read<Nod
     @WebApiDescription(title = "Return a paged list of nodes for the document/folder identified by parentFolderNodeId")
     public CollectionWithPagingInfo<Node> readAll(String parentFolderNodeId, Parameters parameters)
     {
-        return nodes.getChildren(parentFolderNodeId, parameters);
+        return nodes.listChildren(parentFolderNodeId, parameters);
     }
 
     /**

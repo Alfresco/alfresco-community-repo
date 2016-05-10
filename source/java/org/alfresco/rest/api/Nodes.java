@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -90,7 +90,7 @@ public interface Nodes
      *        - incFiles, incFolders (both true by default)
      * @return a paged list of {@code org.alfresco.rest.api.model.Node} objects
      */
-    CollectionWithPagingInfo<Node> getChildren(String parentFolderNodeId, Parameters parameters);
+    CollectionWithPagingInfo<Node> listChildren(String parentFolderNodeId, Parameters parameters);
     
     /**
      * Delete the given node. Note: will cascade delete for a folder.

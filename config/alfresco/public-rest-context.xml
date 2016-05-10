@@ -146,6 +146,7 @@
                 <entry key="org.alfresco.rest.framework.core.exceptions.DisabledServiceException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_IMPLEMENTED}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.InsufficientStorageException" value="507" />
                 <entry key="org.alfresco.repo.node.integrity.IntegrityException" value="422" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_UNSUPPORTED_MEDIA_TYPE}" />
             </map>
         </property>
     </bean>

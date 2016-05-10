@@ -8,6 +8,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.rest.api.Activities;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiException;
@@ -16,7 +17,9 @@ import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
+import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -120,6 +123,23 @@ public class ActivitiesPostingTest extends AbstractBaseApiTest
         assertNotNull(act);
     }
 
+    @Test
+    public void testNonFileActivities() throws Exception
+    {
+        String folder1 = "InSitefolder" + System.currentTimeMillis() + "_1";
+        Folder createdFolder = createFolder(u1.getId(), docLibNodeRef.getId(), folder1, null);
+        assertNotNull(createdFolder);
+
+        List<Activity> activities = getMyActivites();
+
+        Node aNode = createNode(u1.getId(), createdFolder.getId(), "mynode", "cm:failedThumbnail", null);
+        assertNotNull(aNode);
+
+        delete(URL_NODES, u1.getId(), aNode.getId(), 204);
+
+        List<Activity> activitiesAgain = getMyActivites();
+        assertEquals("No activites should be created for non-file activities", activities, activitiesAgain);
+    }
 
     @Test
     public void testNonSite() throws Exception
@@ -166,8 +186,6 @@ public class ActivitiesPostingTest extends AbstractBaseApiTest
         HttpResponse response = post(getNodeChildrenUrl(parentFolder.getId()), u1.getId(), toJsonAsStringNonNull(d1), 201);
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
-
-    //TODO: Test non-site and non-file activities.
 
     private Activity matchActivity(List<Activity> list, String type, String user, String siteId, String parentId, String title)
     {

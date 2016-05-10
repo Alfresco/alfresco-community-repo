@@ -4,7 +4,7 @@
    <groupId>org.alfresco</groupId>
    <artifactId>alfresco-rm-parent</artifactId>
    <packaging>pom</packaging>
-   <version>2.3.0.5-SNAPSHOT</version>
+   <version>2.3.0.4</version>
    <name>Alfresco Records Management</name>
 
    <url>http://www.alfresco.org/</url>

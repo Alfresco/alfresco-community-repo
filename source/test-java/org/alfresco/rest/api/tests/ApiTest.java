@@ -30,7 +30,8 @@ import org.junit.runners.Suite;
     TestRemovePermissions.class,
     TestPublicApi128.class,
     TestPublicApiCaching.class,
-    ModulePackagesApiTest.class
+    ModulePackagesApiTest.class,
+    NodeApiTest.class
 })
 public class ApiTest
 {

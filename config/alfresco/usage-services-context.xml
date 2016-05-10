@@ -52,7 +52,6 @@
       <property name="authorityService" ref="authorityService"/>
       <property name="attributeService" ref="attributeService"/>
       <property name="dictionaryService" ref="dictionaryService"/>
-      <property name="jobLockService" ref="jobLockService"/>
       <property name="cannedQueryDAO" ref="cannedQueryDAO"/>
       <property name="qnameDAO" ref="qnameDAO"/>
    </bean>
@@ -61,6 +60,7 @@
       <property name="scheduler" ref="schedulerFactory" />
       <property name="transactionService" ref="transactionService"/>
       <property name="repoUsageComponent" ref="repoUsageComponent"/>
+      <property name="jobLockService" ref="jobLockService"/>
    </bean>
    
 </beans>

@@ -202,6 +202,25 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return response;
     }
 
+    protected HttpResponse getSingleWithDelayRetry(String url, String runAsUser, String entityId, Map<String, String> params,
+                Map<String, String> headers, int repeat, long pauseInMillisecond, int expectedStatus) throws Exception
+    {
+        int retryCount = 0;
+        while (retryCount < repeat)
+        {
+            try
+            {
+                return getSingle(url, runAsUser, entityId, params, headers, expectedStatus);
+            }
+            catch (AssertionError ex)
+            {
+                retryCount++;
+                Thread.sleep(pauseInMillisecond);
+            }
+        }
+        return null;
+    }
+
     protected HttpResponse put(String url, String runAsUser, String entityId, String body, String queryString, int expectedStatus) throws Exception
     {
         publicApiClient.setRequestContext(new RequestContext(runAsUser));

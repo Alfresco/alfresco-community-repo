@@ -21,6 +21,7 @@ package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -114,7 +115,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload quick.pdf file into 'folder'
-        HttpResponse response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        HttpResponse response = post(getNodeChildrenUrl(folder_Id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
 
@@ -253,7 +254,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload quick.pdf file into 'folder'
-        HttpResponse response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        HttpResponse response = post(getNodeChildrenUrl(folder_Id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
 
@@ -302,7 +303,7 @@ public class RenditionsTest extends AbstractBaseApiTest
                     .build();
 
         // Upload quick.jpg file into 'folder'
-        response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        response = post(getNodeChildrenUrl(folder_Id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document jpgImage = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String jpgImageNodeId = jpgImage.getId();
 
@@ -336,7 +337,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload quick.pdf file into 'folder'
-        HttpResponse response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        HttpResponse response = post(getNodeChildrenUrl(folder_Id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
 
@@ -403,7 +404,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         file = TempFileProvider.createTempFile(new ByteArrayInputStream(content.getBytes()), getClass().getSimpleName(), ".bin");
         multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData("binaryFileName", file, MimetypeMap.MIMETYPE_BINARY));
         reqBody = multiPartBuilder.build();
-        response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        response = post(getNodeChildrenUrl(folder_Id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document binaryDocument = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         // No transformer is currently available for 'application/octet-stream'
@@ -420,7 +421,7 @@ public class RenditionsTest extends AbstractBaseApiTest
             reqBody = MultiPartBuilder.create().setFileData(new FileData(txtFileName, txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN)).build();
 
             // Upload quick-1.txt file into 'folder'
-            response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+            response = post(getNodeChildrenUrl(folder_Id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
             Document txtDocument = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
             // Thumbnail generation has been disabled
             response = post(getNodeRenditionsUrl(txtDocument.getId()), userOneN1.getId(), toJsonAsString(renditionRequest), 501);
@@ -458,7 +459,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload quick.pdf file into 'folder'
-        HttpResponse response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        HttpResponse response = post(getNodeChildrenUrl(folder_Id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String contentNodeId = document.getId();
 
@@ -481,8 +482,6 @@ public class RenditionsTest extends AbstractBaseApiTest
         String contentType = responseHeaders.get("Content-Type");
         assertNotNull(contentType);
         assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
-        assertNotNull(response.getHeaders().get("Last-Modified"));
-        assertNotNull(response.getHeaders().get("Expires"));
 
         // Download placeholder - without Content-Disposition header (attachment=false)
         params.put("attachment", "false");
@@ -494,8 +493,14 @@ public class RenditionsTest extends AbstractBaseApiTest
         contentType = responseHeaders.get("Content-Type");
         assertNotNull(contentType);
         assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
-        assertNotNull(response.getHeaders().get("Last-Modified"));
-        assertNotNull(response.getHeaders().get("Expires"));
+
+        // Test 304 response - placeholder=true&attachment=false
+        String lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
+        assertNotNull(lastModifiedHeader);
+        Map<String, String> headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
+        // Currently the placeholder file is not cached.
+        // As the placeholder is not a NodeRef, so we can't get the ContentModel.PROP_MODIFIED date.
+        getSingle(getNodeRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib/content", params, headers, 200);
 
         // Create and get 'doclib' rendition
         rendition = createAndGetRendition(userOneN1.getId(), contentNodeId, "doclib");
@@ -513,8 +518,6 @@ public class RenditionsTest extends AbstractBaseApiTest
         contentType = responseHeaders.get("Content-Type");
         assertNotNull(contentType);
         assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
-        assertNotNull(response.getHeaders().get("Last-Modified"));
-        assertNotNull(response.getHeaders().get("Expires"));
 
         // Download rendition - without Content-Disposition header (attachment=false)
         params = Collections.singletonMap("attachment", "false");
@@ -526,8 +529,6 @@ public class RenditionsTest extends AbstractBaseApiTest
         contentType = responseHeaders.get("Content-Type");
         assertNotNull(contentType);
         assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
-        assertNotNull(response.getHeaders().get("Last-Modified"));
-        assertNotNull(response.getHeaders().get("Expires"));
 
         // Download rendition - with Content-Disposition header (attachment=true) same as default
         params = Collections.singletonMap("attachment", "true");
@@ -541,8 +542,34 @@ public class RenditionsTest extends AbstractBaseApiTest
         contentType = responseHeaders.get("Content-Type");
         assertNotNull(contentType);
         assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
-        assertNotNull(response.getHeaders().get("Last-Modified"));
-        assertNotNull(response.getHeaders().get("Expires"));
+
+        // Test 304 response - doclib rendition (attachment=true)
+        lastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
+        assertNotNull(lastModifiedHeader);
+        headers = Collections.singletonMap(IF_MODIFIED_SINCE_HEADER, lastModifiedHeader);
+        getSingle(getNodeRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib/content", params, headers, 304);
+
+        // Here we want to overwrite/update the existing content in order to force a new rendition creation,
+        // so the ContentModel.PROP_MODIFIED date would be different. Hence, we use the multipart upload by providing
+        // the old fileName and setting overwrite field to true
+        file = getResourceFile("quick-2.pdf");
+        multiPartBuilder = MultiPartBuilder.create()
+                    .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
+                    .setOverwrite(true);
+        reqBody = multiPartBuilder.build();
+
+        // Update quick.pdf
+        post(getNodeChildrenUrl(folder_Id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+
+        // The requested "If-Modified-Since" date is older than rendition modified date
+        response = getSingleWithDelayRetry(getNodeRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib/content", params, headers, MAX_RETRY,
+                    PAUSE_TIME, 200);
+        assertNotNull(response);
+        responseHeaders = response.getHeaders();
+        assertNotNull(responseHeaders);
+        String newLastModifiedHeader = responseHeaders.get(LAST_MODIFIED_HEADER);
+        assertNotNull(newLastModifiedHeader);
+        assertNotEquals(lastModifiedHeader, newLastModifiedHeader);
 
         //-ve tests
         // nodeId in the path parameter does not represent a file
@@ -560,7 +587,7 @@ public class RenditionsTest extends AbstractBaseApiTest
                     .setFileData(new FileData(file.getName(), file, MimetypeMap.MIMETYPE_TEXT_PLAIN))
                     .build();
         // Upload temp file into 'folder'
-        response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        response = post(getNodeChildrenUrl(folder_Id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         contentNodeId = document.getId();
 
@@ -580,7 +607,6 @@ public class RenditionsTest extends AbstractBaseApiTest
         // The source node has no content
         getSingle(getNodeRenditionsUrl(emptyContentNodeId), userOneN1.getId(), "doclib/content", params, 400);
 
-        //TODO add tests for 304 response
     }
 
     private String addToDocumentLibrary(final TestSite testSite, final String name, final QName type, String user)

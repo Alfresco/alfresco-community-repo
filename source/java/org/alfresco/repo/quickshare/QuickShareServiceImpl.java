@@ -84,7 +84,6 @@ import org.apache.commons.logging.LogFactory;
 import org.safehaus.uuid.UUID;
 import org.safehaus.uuid.UUIDGenerator;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.util.StringUtils;
 
 
 /**

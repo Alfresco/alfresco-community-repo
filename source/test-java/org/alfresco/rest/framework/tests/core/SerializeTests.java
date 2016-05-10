@@ -106,51 +106,9 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:test-rest-context.xml" })
-public class SerializeTests
+public class SerializeTests extends AbstractContextTest
 {
-    @Autowired
-    private ResourceLookupDictionary locator;
 
-    @Autowired
-    private ApplicationContext applicationContext;
-    
-    @Autowired
-    private ResourceWebScriptHelper helper;
-    
-    private static Api api = Api.valueOf("alfrescomock", "private", "1");
-    private static Params NOT_USED = Params.valueOf("notUsed", null);
-    
-    @Autowired
-    protected JacksonHelper jsonHelper;
-    
-    @SuppressWarnings("unchecked")
-    @Before
-    public void setUp() throws Exception
-    {
-        Map<String, Object> entityResourceBeans = applicationContext.getBeansWithAnnotation(EntityResource.class);
-        Map<String, Object> relationResourceBeans = applicationContext.getBeansWithAnnotation(RelationshipResource.class);
-        locator.setDictionary(ResourceDictionaryBuilder.build(entityResourceBeans.values(), relationResourceBeans.values()));
-        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
-        
-        //Mock transaction service
-        TransactionService transerv = mock(TransactionService.class);
-        RetryingTransactionHelper tHelper = mock(RetryingTransactionHelper.class);
-        when(transerv.getRetryingTransactionHelper()).thenReturn(tHelper);
-        when(tHelper.doInTransaction(any(RetryingTransactionCallback.class), anyBoolean(), anyBoolean())).thenAnswer(new Answer<Object>() {
-            @SuppressWarnings("rawtypes")
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-              Object[] args = invocation.getArguments();
-              RetryingTransactionCallback cb = (RetryingTransactionCallback) args[0];
-              cb.execute();
-              return null;
-            }
-          });
-        executor.setTransactionService(transerv);
-    }
-    
     @Test
     public void testInvokeEntity() throws IOException
     {
@@ -450,44 +408,6 @@ public class SerializeTests
                 assertNotNull(result);
             }});
         
-    }
-
-    @Test
-    public void testInvokeEntities() throws IOException
-    {
-        ResourceWithMetadata entityResource = locator.locateEntityResource(api,"sheep", HttpMethod.GET);
-        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
-        executor.execute(entityResource, Params.valueOf((String)null, null), new ExecutionCallback<CollectionWithPagingInfo>(){
-            @Override
-            public void onSuccess(CollectionWithPagingInfo result, ContentInfo contentInfo)
-            {
-                assertNotNull(result);
-            }});
-
-        ResourceWithMetadata baa = locator.locateRelationResource(api,"sheep", "baaahh", HttpMethod.GET);
-        executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
-        executor.execute(baa, Params.valueOf("4", null), new ExecutionCallback<CollectionWithPagingInfo>(){
-            @Override
-            public void onSuccess(CollectionWithPagingInfo result, ContentInfo contentInfo)
-            {
-                assertNotNull(result);
-            }});
-
-        executor.execute(baa, Params.valueOf("4", "45"), new ExecutionCallback<ExecutionResult>(){
-            @Override
-            public void onSuccess(ExecutionResult result, ContentInfo contentInfo)
-            {
-                assertNotNull(result);
-            }});
-
-        ResourceWithMetadata baaPhoto = locator.locateRelationResource(api,"sheep/{entityId}/baaahh", "photo", HttpMethod.GET);
-        executor.execute(baaPhoto, Params.valueOf("4", "45"), new ExecutionCallback<ExecutionResult>(){
-            @Override
-            public void onSuccess(ExecutionResult result, ContentInfo contentInfo)
-            {
-                assertNull(result);
-            }});
-
     }
 
         @Test

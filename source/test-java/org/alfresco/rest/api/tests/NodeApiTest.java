@@ -478,17 +478,29 @@ public class NodeApiTest extends AbstractBaseApiTest
         params = new HashMap<>();
         params.put(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user1 + "/" + folder2);
         params.put("includeSource", "true");
+        params.put("include", "path,isLink");
+        params.put("fields", "id");
         response = getAll(rootChildrenUrl, user1, paging, params, 200);
         jsonResponse = response.getJsonResponse();
         nodes = RestApiUtil.parseRestApiEntries(jsonResponse, Document.class);
         assertEquals(1, nodes.size());
-        assertEquals(contentF2_Id, nodes.get(0).getId());
+        Document doc = nodes.get(0);
+        assertEquals(contentF2_Id, doc.getId());
+        assertNotNull(doc.getPath());
+        assertEquals(Boolean.FALSE, doc.getIsLink());
+        assertNull(doc.getName());
 
         jsonList = (JSONObject)jsonResponse.get("list");
         assertNotNull(jsonList);
 
+        // source is not affected by include (or fields for that matter) - returns the default node response
         Folder src = RestApiUtil.parsePojo("source", jsonList, Folder.class);
         assertEquals(folder2_Id, src.getId());
+        assertNull(src.getPath());
+        assertNull(src.getIsLink());
+        assertNotNull(src.getName());
+        assertNotNull(src.getAspectNames());
+        assertNotNull(src.getProperties());
 
         // -ve test - Invalid QName (Namespace prefix cm... is not mapped to a namespace URI) for the orderBy parameter.
         params = Collections.singletonMap("orderBy", Nodes.PARAM_ISFOLDER+" DESC,cm" + System.currentTimeMillis() + ":modified DESC");
@@ -614,7 +626,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         HttpResponse response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, null, 200);
         Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-        NodeRef companyHomeNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, node.getId());
+        String rootNodeId = node.getId();
 
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
         node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
@@ -685,11 +697,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         // Expected path ...
         // note: the pathInfo should only include the parents (not the requested node)
         List<ElementInfo> elements = new ArrayList<>(5);
-        elements.add(new ElementInfo(companyHomeNodeRef, "Company Home"));
-        elements.add(new ElementInfo(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userHomesId), "User Homes"));
-        elements.add(new ElementInfo(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myFilesNodeId), user1));
-        elements.add(new ElementInfo(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderA_Id), folderA));
-        elements.add(new ElementInfo(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderB_Id), folderB));
+        elements.add(new ElementInfo(rootNodeId, "Company Home"));
+        elements.add(new ElementInfo(userHomesId, "User Homes"));
+        elements.add(new ElementInfo(myFilesNodeId, user1));
+        elements.add(new ElementInfo(folderA_Id, folderA));
+        elements.add(new ElementInfo(folderB_Id, folderB));
         PathInfo expectedPath = new PathInfo("/Company Home/User Homes/"+user1+"/"+folderA+"/"+folderB, true, elements);
         d1.setPath(expectedPath);
 
@@ -1093,7 +1105,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(elementInfos);
         // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A/X/Y/Z
         assertEquals(8, elementInfos.size());
-        assertEquals(document.getParentId(), elementInfos.get(7).getId().getId());
+        assertEquals(document.getParentId(), elementInfos.get(7).getId());
         assertEquals("Z", elementInfos.get(7).getName());
         assertEquals("Y", elementInfos.get(6).getName());
         assertEquals("X", elementInfos.get(5).getName());

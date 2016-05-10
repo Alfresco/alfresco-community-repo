@@ -73,14 +73,14 @@ public class PathInfo
     public static class ElementInfo
     {
 
-        private NodeRef id;
+        private String id;
         private String name;
 
         public ElementInfo()
         {
         }
 
-        public ElementInfo(NodeRef id, String name)
+        public ElementInfo(String id, String name)
         {
             this.id = id;
             this.name = name;
@@ -91,7 +91,7 @@ public class PathInfo
             return name;
         }
 
-        public NodeRef getId()
+        public String getId()
         {
             return id;
         }

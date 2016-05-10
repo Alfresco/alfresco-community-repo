@@ -109,15 +109,20 @@ public class Node implements Comparable<Node>
         this.modifiedByUser = lookupUserInfo((String)nodeProps.get(ContentModel.PROP_MODIFIER), mapUserInfo, personService);
     }
 
-    public static UserInfo lookupUserInfo(String userName, Map<String, UserInfo> mapUserInfo, PersonService personService) {
+    public static UserInfo lookupUserInfo(String userName, Map<String, UserInfo> mapUserInfo, PersonService personService)
+    {
+        return lookupUserInfo(userName, mapUserInfo, personService, false);
+    }
 
+    public static UserInfo lookupUserInfo(String userName, Map<String, UserInfo> mapUserInfo, PersonService personService, boolean displayNameOnly)
+    {
         UserInfo userInfo = mapUserInfo.get(userName);
         if ((userInfo == null) && (userName != null))
         {
             String sysUserName = AuthenticationUtil.getSystemUserName();
             if (userName.equals(sysUserName) || (AuthenticationUtil.isMtEnabled() && userName.startsWith(sysUserName + "@")))
             {
-                userInfo = new UserInfo(userName, userName, "");
+                userInfo = new UserInfo((displayNameOnly ? null : userName), userName, "");
             }
             else
             {
@@ -137,14 +142,13 @@ public class Node implements Comparable<Node>
 
                 if (pInfo != null)
                 {
-                    userInfo = new UserInfo(userName, pInfo.getFirstName(), pInfo.getLastName());
+                    userInfo = new UserInfo((displayNameOnly ? null : userName), pInfo.getFirstName(), pInfo.getLastName());
                 }
                 else
                 {
                     logger.warn("Unknown person: "+userName);
-                    userInfo = new UserInfo(userName, userName, "");
+                    userInfo = new UserInfo((displayNameOnly ? null : userName), userName, "");
                 }
-
             }
 
             mapUserInfo.put(userName, userInfo);

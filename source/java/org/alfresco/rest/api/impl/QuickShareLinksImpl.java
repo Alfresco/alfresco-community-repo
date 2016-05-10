@@ -22,16 +22,21 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.repo.quickshare.QuickShareServiceImpl.QuickShareEmailRequest;
+import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.ContentInfo;
+import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.QuickShareLinkEmailRequest;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -40,7 +45,12 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.where.Query;
+import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
+import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareDTO;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
@@ -50,15 +60,18 @@ import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.QueryParameterDefinition;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -66,9 +79,13 @@ import org.springframework.extensions.surf.util.I18NUtil;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Centralises access to shared link (public "quick share") services and maps between representations.
@@ -95,6 +112,8 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
     private AuthorityService authorityService;
     private MimetypeService mimeTypeService;
     private SearchService searchService;
+    private DictionaryService dictionaryService;
+    private NamespaceService namespaceService;
 
     public void setServiceRegistry(ServiceRegistry sr)
     {
@@ -134,6 +153,8 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         this.authorityService = sr.getAuthorityService();
         this.mimeTypeService = sr.getMimetypeService();
         this.searchService = sr.getSearchService();
+        this.dictionaryService = sr.getDictionaryService();
+        this.namespaceService = sr.getNamespaceService();
     }
 
     /**
@@ -163,7 +184,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         catch (InvalidSharedIdException ex)
         {
             logger.warn("Unable to find: " + sharedId);
-            throw new EntityNotFoundException("Unable to find: " + sharedId);
+            throw new EntityNotFoundException(sharedId);
         }
     }
 
@@ -216,12 +237,12 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         catch (InvalidSharedIdException ex)
         {
             logger.warn("Unable to find: " + sharedId);
-            throw new EntityNotFoundException("Unable to find: " + sharedId);
+            throw new EntityNotFoundException(sharedId);
         }
         catch (InvalidNodeRefException inre)
         {
             logger.warn("Unable to find: " + sharedId + " [" + inre.getNodeRef() + "]");
-            throw new EntityNotFoundException("Unable to find: " + sharedId);
+            throw new EntityNotFoundException(sharedId);
         }
     }
 
@@ -260,12 +281,12 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         catch (InvalidSharedIdException ex)
         {
             logger.warn("Unable to find: " + sharedId);
-            throw new EntityNotFoundException("Unable to find: " + sharedId);
+            throw new EntityNotFoundException(sharedId);
         }
         catch (InvalidNodeRefException inre)
         {
             logger.warn("Unable to find: " + sharedId + " [" + inre.getNodeRef() + "]");
-            throw new EntityNotFoundException("Unable to find: " + sharedId);
+            throw new EntityNotFoundException(sharedId);
         }
     }
 
@@ -303,7 +324,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
                 String sharedId = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
                 if (sharedId != null)
                 {
-                    throw new InvalidArgumentException("sharedId already exists: "+nodeId+" ["+sharedId+"]");
+                    throw new ConstraintViolatedException("sharedId already exists: "+nodeId+" ["+sharedId+"]");
                 }
 
                 // Note: will throw AccessDeniedException (=> 403) via QuickShareService (when NodeService tries to getAspects)
@@ -325,7 +346,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             catch (InvalidNodeRefException inre)
             {
                 logger.warn("Unable to create shared link: [" + nodeRef + "]");
-                throw new EntityNotFoundException("Unable to create shared link: " + nodeId);
+                throw new EntityNotFoundException(nodeId);
             }
         }
 
@@ -365,22 +386,46 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
     // Helper find (search) method
 
+    private static final String PARAM_SHAREDBY = "sharedByUser/id";
+
+    private final static Set<String> FIND_SHARED_LINKS_QUERY_PROPERTIES =
+            new HashSet<>(Arrays.asList(new String[] {PARAM_SHAREDBY}));
+
     public CollectionWithPagingInfo<QuickShareLink> findLinks(Parameters parameters)
     {
         checkEnabled();
-
-        /*
-        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-
-        String queryString =
-                "ASPECT:\"" + QuickShareModel.ASPECT_QSHARE.toString() +
-                        "\" +@\\{http\\://www.alfresco.org/model/content/1.0\\}" + QuickShareModel.PROP_QSHARE_SHAREDBY.getLocalName() + ":\"" + currentUser + "\"";
-                        */
 
         String queryString =
                 "ASPECT:\"" + QuickShareModel.ASPECT_QSHARE.toString() + "\"";
 
         SearchParameters sp = new SearchParameters();
+
+        // note: REST API query parameter (ie. where clause filter) - not to be confused with search query ;-)
+        Query q = parameters.getQuery();
+        if (q != null)
+        {
+            // filtering via "where" clause
+            MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(FIND_SHARED_LINKS_QUERY_PROPERTIES, null);
+            QueryHelper.walk(q, propertyWalker);
+
+            String sharedByUserId = propertyWalker.getProperty(PARAM_SHAREDBY, WhereClauseParser.EQUALS, String.class);
+
+            if (sharedByUserId != null)
+            {
+                if (People.DEFAULT_USER.equalsIgnoreCase(sharedByUserId))
+                {
+                    sharedByUserId =  AuthenticationUtil.getFullyAuthenticatedUser();
+                }
+
+                QueryParameterDefinition qpd = new QueryParameterDefImpl(QuickShareModel.PROP_QSHARE_SHAREDBY, dictionaryService.getDataType(DataTypeDefinition.TEXT),
+                        true, sharedByUserId);
+                sp.addQueryParameterDefinition(qpd);
+
+                String qsharedBy = QuickShareModel.PROP_QSHARE_SHAREDBY.toPrefixString(namespaceService);
+                queryString += " +@"+SearchLanguageConversion.escapeLuceneQuery(qsharedBy)+":\"${"+qsharedBy+"}\"";
+            }
+        }
+
         sp.setLanguage(SearchService.LANGUAGE_LUCENE);
         sp.setQuery(queryString);
         sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -438,47 +483,15 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             String mimeTypeName = mimeTypeService.getDisplaysByMimetype().get(mimeType);
             ContentInfo contentInfo = new ContentInfo(mimeType, mimeTypeName, cd.getSize(), cd.getEncoding());
 
-            //
-            // modifiedByUser
-            //
-            UserInfo modifiedByUser = null;
-            if (noAuth)
-            {
-                // note: if not authenticated then we do not currently return userids (to be consistent with v0 internal - limited disclosure)
-                modifiedByUser = new UserInfo(null, (String) map.get("modifierFirstName"), (String) map.get("modifierLastName"));
-            }
-            else
-            {
-                String modifiedByUserId = (String)nodeProps.get(ContentModel.PROP_MODIFIER);
-                modifiedByUser = new UserInfo(modifiedByUserId, (String) map.get("modifierFirstName"), (String) map.get("modifierLastName"));
-            }
+            Map<String, UserInfo> mapUserInfo = new HashMap<>(2);
 
-            //
-            // sharedByUser
-            // TODO review - should we return for authenticated users only ?? (not exposed by V0 but needed for "find")
-            //
-            UserInfo sharedByUser = null;
-            String sharedByUserId = (String)nodeProps.get(QuickShareModel.PROP_QSHARE_SHAREDBY);
-            if (sharedByUserId != null)
-            {
-                NodeRef pRef = personService.getPerson(sharedByUserId);
-                if (pRef != null)
-                {
-                    PersonService.PersonInfo pInfo = personService.getPerson(pRef);
-                    if (pInfo != null)
-                    {
-                        if (noAuth)
-                        {
-                            // note: if not authenticated then we do not currently return userids (to be consistent with v0 internal - limited disclosure)
-                            sharedByUser = new UserInfo(null, pInfo.getFirstName(), pInfo.getLastName());
-                        }
-                        else
-                        {
-                            sharedByUser = new UserInfo(sharedByUserId, pInfo.getFirstName(), pInfo.getLastName());
-                        }
-                    }
-                }
-            }
+            // note: if not authenticated then we do not currently return userids (to be consistent with v0 internal - limited disclosure)
+            boolean displayNameOnly = noAuth;
+
+            UserInfo modifiedByUser = Node.lookupUserInfo((String)nodeProps.get(ContentModel.PROP_MODIFIER), mapUserInfo, personService, displayNameOnly);
+
+            // TODO review - should we return sharedByUser for authenticated users only ?? (not exposed by V0 but needed for "find")
+            UserInfo sharedByUser = Node.lookupUserInfo((String)nodeProps.get(QuickShareModel.PROP_QSHARE_SHAREDBY), mapUserInfo, personService, displayNameOnly);
 
             // TODO other "properties" (if needed) - eg. cm:title, cm:lastThumbnailModificationData, ... thumbnail info ...
 
@@ -494,12 +507,12 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         catch (InvalidSharedIdException ex)
         {
             logger.warn("Unable to find: " + sharedId);
-            throw new EntityNotFoundException("Unable to find: " + sharedId);
+            throw new EntityNotFoundException(sharedId);
         }
         catch (InvalidNodeRefException inre)
         {
             logger.warn("Unable to find: " + sharedId + " [" + inre.getNodeRef() + "]");
-            throw new EntityNotFoundException("Unable to find: " + sharedId);
+            throw new EntityNotFoundException(sharedId);
         }
     }
 

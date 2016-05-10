@@ -154,7 +154,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = post(URL_SHARED_LINKS, user2, toJsonAsStringNonNull(body), 201);
         QuickShareLink resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
 
-        String sharedId = resp.getSharedId();
+        String sharedId = resp.getId();
         assertNotNull(sharedId);
 
         assertEquals(d1Id, resp.getNodeId());
@@ -175,14 +175,14 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(user2+" "+user2, resp.getSharedByUser().getDisplayName());
 
         // -ve test - try to create again (same user) - already exists
-        post(URL_SHARED_LINKS, user2, toJsonAsStringNonNull(body), 400);
+        post(URL_SHARED_LINKS, user2, toJsonAsStringNonNull(body), 409);
 
 
         // auth access to get shared link info
         response = getSingle(QuickShareLinkEntityResource.class, user1, sharedId, null, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
 
-        assertEquals(sharedId, resp.getSharedId());
+        assertEquals(sharedId, resp.getId());
         assertEquals(d1Id, resp.getNodeId());
         assertEquals(docName1, resp.getName());
 
@@ -194,7 +194,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = getSingle(QuickShareLinkEntityResource.class, null, sharedId, null, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
 
-        assertEquals(sharedId, resp.getSharedId());
+        assertEquals(sharedId, resp.getId());
         assertEquals(d1Id, resp.getNodeId());
         assertEquals(docName1, resp.getName());
 
@@ -230,7 +230,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             // As user 1 ...
 
             // -ve test - try to create again (different user, that has read permission) - already exists
-            post(URL_SHARED_LINKS, user1, toJsonAsStringNonNull(body), 400);
+            post(URL_SHARED_LINKS, user1, toJsonAsStringNonNull(body), 409);
 
             // -ve - create - missing nodeId
             body = new HashMap<>();
@@ -336,7 +336,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         body.put("nodeId", d1Id);
         response = post(URL_SHARED_LINKS, user2, toJsonAsStringNonNull(body), 201);
         QuickShareLink resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
-        String shared1Id = resp.getSharedId();
+        String shared1Id = resp.getId();
 
         // As user 1 ...
 
@@ -345,7 +345,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         body.put("nodeId", d2Id);
         response = post(URL_SHARED_LINKS, user1, toJsonAsStringNonNull(body), 201);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
-        String shared2Id = resp.getSharedId();
+        String shared2Id = resp.getId();
 
         //
         // find links
@@ -354,15 +354,15 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = getAll(URL_SHARED_LINKS, user1, paging, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         assertEquals(2, sharedLinks.size());
-        assertEquals(shared2Id, sharedLinks.get(0).getSharedId());
+        assertEquals(shared2Id, sharedLinks.get(0).getId());
         assertEquals(d2Id, sharedLinks.get(0).getNodeId());
-        assertEquals(shared1Id, sharedLinks.get(1).getSharedId());
+        assertEquals(shared1Id, sharedLinks.get(1).getId());
         assertEquals(d1Id, sharedLinks.get(1).getNodeId());
 
         response = getAll(URL_SHARED_LINKS, user2, paging, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         assertEquals(1, sharedLinks.size());
-        assertEquals(shared1Id, sharedLinks.get(0).getSharedId());
+        assertEquals(shared1Id, sharedLinks.get(0).getId());
         assertEquals(d1Id, sharedLinks.get(0).getNodeId());
 
 

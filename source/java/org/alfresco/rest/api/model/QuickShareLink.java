@@ -23,9 +23,11 @@ import java.util.Date;
 /**
  * Representation of quick share link
  *
- * The "sharedId" provides a short link/url that is easy to copy/paste/send (via email or other).
- * As of now, these links are public in that they provide unauthenticated access to the
- * node's content and limited metadata info, such as file name and last modifer/modification.
+ * The shared link id provides a short id that can be part of a short app url that is easy to
+ * copy/paste/send (via email or other).
+ *
+ * As of now, these shared links are public in that they provide unauthenticated access to the
+ * node's content and limited metadata info, such as file name and last modifier/modification.
  *
  * In the future, the QuickShareService *could* be enhanced to provide additional features,
  * such as link expiry &/or "password" protection, etc.
@@ -35,7 +37,7 @@ import java.util.Date;
  */
 public class QuickShareLink
 {
-	// unique "short" link (ie. shorter than a guid, 22 vs 36 chars)
+	// unique short id (ie. shorter than a guid, 22 vs 36 chars)
 	private String sharedId;
 
 	private String nodeId;
@@ -58,11 +60,11 @@ public class QuickShareLink
 		this.nodeId = nodeId;
 	}
 
-    public String getSharedId() {
+    public String getId() {
         return sharedId;
     }
 
-	public void setSharedId(String sharedId) {
+	public void setId(String sharedId) {
 		this.sharedId = sharedId;
 	}
 
@@ -129,7 +131,7 @@ public class QuickShareLink
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("QuickShareLink [sharedId=").append(getSharedId());
+		sb.append("QuickShareLink [id=").append(getId());
 		sb.append(", nodeId=").append(getNodeId());
 		sb.append(", name=").append(getName());
 		sb.append(", modifiedAt=").append(getModifiedAt());

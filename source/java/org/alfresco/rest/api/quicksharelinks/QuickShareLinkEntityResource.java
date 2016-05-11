@@ -30,6 +30,7 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
@@ -44,8 +45,11 @@ import java.util.List;
  */
 @EntityResource(name="shared-links", title = "Shared Links")
 public class QuickShareLinkEntityResource implements EntityResourceAction.ReadById<QuickShareLink>,
-                                                     BinaryResourceAction.Read, EntityResourceAction.Delete,
-                                                     EntityResourceAction.Create<QuickShareLink>, InitializingBean
+                                                     BinaryResourceAction.Read,
+                                                     EntityResourceAction.Delete,
+                                                     EntityResourceAction.Create<QuickShareLink>,
+                                                     EntityResourceAction.Read<QuickShareLink>,
+                                                     InitializingBean
 {
     private QuickShareLinks quickShareLinks;
 
@@ -131,4 +135,16 @@ public class QuickShareLinkEntityResource implements EntityResourceAction.ReadBy
     {
         quickShareLinks.emailSharedLink(nodeId, emailRequest, parameters);
     }
+
+    /**
+     * Find shared links
+     *
+     */
+    @Override
+    @WebApiDescription(title="Find shared links", description = "Find ('search') & return result set of shared links")
+    public CollectionWithPagingInfo<QuickShareLink> readAll(Parameters parameters)
+    {
+        return quickShareLinks.findLinks(parameters);
+    }
+
 }

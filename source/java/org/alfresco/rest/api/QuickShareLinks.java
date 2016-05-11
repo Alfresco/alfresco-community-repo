@@ -97,4 +97,9 @@ public interface QuickShareLinks
      * @return
      */
     CollectionWithPagingInfo<QuickShareLink> findLinks(Parameters parameters);
+
+    /**
+     * API Constants - query parameters, etc
+     */
+    String PARAM_SHAREDBY = "sharedByUser";
 }

@@ -31,7 +31,7 @@ import org.alfresco.service.cmr.security.NoSuchPersonException;
 
 public interface People
 {
-	public static String DEFAULT_USER = "-me-";
+	String DEFAULT_USER = "-me-";
 
 	String validatePerson(String personId);
 	String validatePerson(String personId, boolean validateIsCurrentUser);

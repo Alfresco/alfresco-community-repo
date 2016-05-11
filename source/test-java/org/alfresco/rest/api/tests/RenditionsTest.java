@@ -68,9 +68,6 @@ import java.util.UUID;
  */
 public class RenditionsTest extends AbstractBaseApiTest
 {
-    private static final long PAUSE_TIME = 5000; //millisecond
-    private static final int MAX_RETRY = 10;
-
     /**
      * User one from network one
      */
@@ -177,7 +174,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertTrue(expectedPaging.getTotalItems() >= 5);
 
         // Create 'doclib' rendition
-        createAndGetRendition(contentNodeId, docLib.getId());
+        createAndGetRendition(userOneN1.getId(), contentNodeId, docLib.getId());
 
         // List all available renditions (includes those that have been created and those that are yet to be created)
         paging = getPaging(0, 50);
@@ -273,7 +270,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertNull("Shouldn't have returned the size, as the rendition hasn't been created yet.", contentInfo.getSizeInBytes());
 
         // Create and get 'doclib' rendition
-        rendition = createAndGetRendition(contentNodeId, "doclib");
+        rendition = createAndGetRendition(userOneN1.getId(), contentNodeId, "doclib");
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
         contentInfo = rendition.getContent();
@@ -350,7 +347,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertEquals(RenditionStatus.NOT_CREATED, rendition.getStatus());
 
         // Create and get 'imgpreview' rendition
-        rendition = createAndGetRendition(contentNodeId, "imgpreview");
+        rendition = createAndGetRendition(userOneN1.getId(), contentNodeId, "imgpreview");
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
         ContentInfo contentInfo = rendition.getContent();
@@ -497,7 +494,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertTrue(contentType.startsWith(MimetypeMap.MIMETYPE_IMAGE_PNG));
 
         // Create and get 'doclib' rendition
-        rendition = createAndGetRendition(contentNodeId, "doclib");
+        rendition = createAndGetRendition(userOneN1.getId(), contentNodeId, "doclib");
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
 
@@ -586,52 +583,6 @@ public class RenditionsTest extends AbstractBaseApiTest
                 return repoService.addToDocumentLibrary(testSite, name, type).getId();
             }
         }, user, testSite.getNetworkId());
-    }
-
-    private Rendition createAndGetRendition(String sourceNodeId, String renditionId) throws Exception
-    {
-        Rendition renditionRequest = new Rendition();
-        renditionRequest.setId(renditionId);
-
-        int retryCount = 0;
-        while (retryCount < MAX_RETRY)
-        {
-            try
-            {
-                HttpResponse res = post(getRenditionsUrl(sourceNodeId), userOneN1.getId(), toJsonAsString(renditionRequest), 202);
-                assertNull(res.getJsonResponse());
-                break;
-            }
-            catch (AssertionError ex)
-            {
-                // If no transformer is currently available,
-                // wait for 'PAUSE_TIME' and try again.
-                retryCount++;
-                Thread.sleep(PAUSE_TIME);
-            }
-        }
-
-        retryCount = 0;
-        while (retryCount < MAX_RETRY)
-        {
-            try
-            {
-                HttpResponse response = getSingle(getRenditionsUrl(sourceNodeId), userOneN1.getId(), renditionId, 200);
-                Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
-                assertNotNull(rendition);
-                assertEquals(RenditionStatus.CREATED, rendition.getStatus());
-                return rendition;
-            }
-            catch (AssertionError ex)
-            {
-                // If the asynchronous create rendition action is not finished yet,
-                // wait for 'PAUSE_TIME' and try again.
-                retryCount++;
-                Thread.sleep(PAUSE_TIME);
-            }
-        }
-
-        return null;
     }
 
     private Rendition getRendition(List<Rendition> renditions, String renditionName)

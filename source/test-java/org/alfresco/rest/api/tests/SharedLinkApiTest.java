@@ -21,6 +21,9 @@ package org.alfresco.rest.api.tests;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.People;
+import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.impl.QuickShareLinksImpl;
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -29,6 +32,7 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -212,7 +216,20 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals("attachment; filename=\"" + docName1 + "\"; filename*=UTF-8''" + docName1 + "", response.getHeaders().get("Content-Disposition"));
 
 
-        // TODO unauth access to get shared-link rendition content
+        // -ve test - try to get non-existent rendition content
+        getSingle(QuickShareLinkEntityResource.class, null, sharedId + "/renditions/doclib/content", null, 404);
+
+        // create rendition
+        Rendition rendition = createAndGetRendition(user2, d1Id, "doclib");
+        assertNotNull(rendition);
+        assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+
+        // unauth access to get shared link file rendition content
+        response = getSingle(QuickShareLinkEntityResource.class, null, sharedId + "/renditions/doclib/content", null, 200);
+
+        String docName = "doclib";
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=UTF-8", response.getHeaders().get("Content-Type"));
+        assertEquals("attachment; filename=\"" + docName + "\"; filename*=UTF-8''" + docName + "", response.getHeaders().get("Content-Disposition"));
 
 
         // -ve delete tests
@@ -283,16 +300,21 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // (else need to verify test mechanism for enterprise admin via jmx ... etc)
 
         QuickShareLinksImpl quickShareLinks = applicationContext.getBean("quickShareLinks", QuickShareLinksImpl.class);
-        quickShareLinks.setEnabled(false);
-
-        // -ve - disabled service tests
+        try
         {
+            quickShareLinks.setEnabled(false);
+
+            // -ve - disabled service tests
             body.put("nodeId", "dummy");
             post(URL_SHARED_LINKS, user1, toJsonAsStringNonNull(body), 501);
 
             getSingle(QuickShareLinkEntityResource.class, null, "dummy", null, 501);
             getSingle(QuickShareLinkEntityResource.class, null, "dummy/content", null, 501);
             delete(URL_SHARED_LINKS, user1, "dummy", 501);
+        }
+        finally
+        {
+            quickShareLinks.setEnabled(true);
         }
     }
 
@@ -309,43 +331,46 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
     {
         Paging paging = getPaging(0, 100);
 
+        // Get all shared links visible to user 1 (note: for now assumes clean repo)
         HttpResponse response = getAll(URL_SHARED_LINKS, user1, paging, 200);
         List<QuickShareLink> sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         assertEquals(0, sharedLinks.size());
 
         // As user 1 ...
 
-        // create doc d1
-        String sharedFolderNodeId = getSharedNodeId(user1);
+        // create doc d1 - in "My" folder
+        String myFolderNodeId = getMyNodeId(user1);
         String content1Text = "The quick brown fox jumps over the lazy dog 1.";
         String docName1 = "content" + RUNID + "_1.txt";
-        Document doc1 = createTextFile(sharedFolderNodeId, user1, docName1, content1Text);
+        Document doc1 = createTextFile(user1, myFolderNodeId, docName1, content1Text);
         String d1Id = doc1.getId();
 
-        // create doc d2
-        String myFolderNodeId = getMyNodeId(user1);
-        String content2Text = "The quick brown fox jumps over the lazy dog 1.";
+        // create doc d2 - in "Shared" folder
+        String sharedFolderNodeId = getSharedNodeId(user1);
+        String content2Text = "The quick brown fox jumps over the lazy dog 2.";
         String docName2 = "content" + RUNID + "_2.txt";
-        Document doc2 = createTextFile(myFolderNodeId, user1, docName2, content2Text);
+        Document doc2 = createTextFile(user1, sharedFolderNodeId, docName2, content1Text);
         String d2Id = doc2.getId();
 
-        // As user 2 ...
-
-        // create shared link
-        Map<String, String> body = new HashMap<>();
-        body.put("nodeId", d1Id);
-        response = post(URL_SHARED_LINKS, user2, toJsonAsStringNonNull(body), 201);
-        QuickShareLink resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
-        String shared1Id = resp.getId();
 
         // As user 1 ...
 
-        // create shared link
+        // create shared link to doc 1
+        Map<String, String> body = new HashMap<>();
+        body.put("nodeId", d1Id);
+        response = post(URL_SHARED_LINKS, user1, toJsonAsStringNonNull(body), 201);
+        QuickShareLink resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
+        String shared1Id = resp.getId();
+
+        // As user 2 ...
+
+        // create shared link to doc 2
         body = new HashMap<>();
         body.put("nodeId", d2Id);
-        response = post(URL_SHARED_LINKS, user1, toJsonAsStringNonNull(body), 201);
+        response = post(URL_SHARED_LINKS, user2, toJsonAsStringNonNull(body), 201);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
         String shared2Id = resp.getId();
+
 
         //
         // find links
@@ -362,19 +387,49 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = getAll(URL_SHARED_LINKS, user2, paging, 200);
         sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
         assertEquals(1, sharedLinks.size());
+        assertEquals(shared2Id, sharedLinks.get(0).getId());
+        assertEquals(d2Id, sharedLinks.get(0).getNodeId());
+
+        // find my links
+        Map<String, String> params = new HashMap<>();
+        params.put("where", "("+ QuickShareLinks.PARAM_SHAREDBY+"='"+People.DEFAULT_USER+"')");
+
+        response = getAll(URL_SHARED_LINKS, user1, paging, params, 200);
+        sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
+        assertEquals(1, sharedLinks.size());
         assertEquals(shared1Id, sharedLinks.get(0).getId());
         assertEquals(d1Id, sharedLinks.get(0).getNodeId());
+
+        // find links shared by a given user
+        params = new HashMap<>();
+        params.put("where", "("+ QuickShareLinks.PARAM_SHAREDBY+"='"+user2+"')");
+
+        response = getAll(URL_SHARED_LINKS, user1, paging, params, 200);
+        sharedLinks = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), QuickShareLink.class);
+        assertEquals(1, sharedLinks.size());
+        assertEquals(shared2Id, sharedLinks.get(0).getId());
+        assertEquals(d2Id, sharedLinks.get(0).getNodeId());
+
+
+        // delete the shared links
+        delete(URL_SHARED_LINKS, user1, shared1Id, 204);
+        delete(URL_SHARED_LINKS, user2, shared2Id, 204);
 
 
         // TODO if and when these tests are optionally runnable via remote env then we could skip this part of the test
         // (else need to verify test mechanism for enterprise admin via jmx ... etc)
 
         QuickShareLinksImpl quickShareLinks = applicationContext.getBean("quickShareLinks", QuickShareLinksImpl.class);
-        quickShareLinks.setEnabled(false);
-
-        // -ve - disabled service tests
+        try
         {
+            quickShareLinks.setEnabled(false);
+
+            // -ve - disabled service tests
             getAll(URL_SHARED_LINKS, user1, paging, 501);
+        }
+        finally
+        {
+            quickShareLinks.setEnabled(true);
         }
     }
 

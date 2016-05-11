@@ -63,6 +63,8 @@ public class Node
 
     protected ContentInfo contentInfo;
 
+    protected List<String> allowableOperations;
+
     public Node()
     {
     }
@@ -207,6 +209,16 @@ public class Node
         return this.contentInfo;
     }
 
+    public List<String> getAllowableOperations()
+    {
+        return allowableOperations;
+    }
+
+    public void setAllowableOperations(List<String> allowableOperations)
+    {
+        this.allowableOperations = allowableOperations;
+    }
+
     public void expected(Object o)
     {
         Node other = (Node) o;
@@ -309,6 +321,20 @@ public class Node
         else
         {
             assertNull(other.getContent());
+        }
+
+        if (allowableOperations != null)
+        {
+            assertNotNull(other.getAllowableOperations());
+            assertEquals("Expected: "+allowableOperations+", actual: "+other.getAllowableOperations(), allowableOperations.size(), other.getAllowableOperations().size());
+            for (String allowableOperation : allowableOperations)
+            {
+                assertTrue(other.getAllowableOperations().contains(allowableOperation));
+            }
+        }
+        else
+        {
+            assertNull(other.getAllowableOperations());
         }
     }
 }

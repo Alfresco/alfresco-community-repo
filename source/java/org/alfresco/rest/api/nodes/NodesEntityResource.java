@@ -44,6 +44,7 @@ import org.alfresco.util.ParameterCheck;
 import org.apache.lucene.store.Lock;
 import org.springframework.beans.factory.InitializingBean;
 
+import javax.servlet.http.HttpServletResponse;
 import java.io.InputStream;
 
 /**
@@ -140,7 +141,9 @@ public class NodesEntityResource implements
     }
 
     @Operation("move")
-    @WebApiDescription(title = "Move Node", description="Moves one or more nodes (files or folders) to a new target folder, with option to rename.")
+    @WebApiDescription(title = "Move Node",
+            description="Moves one or more nodes (files or folders) to a new target folder, with option to rename.",
+            successStatus = HttpServletResponse.SC_OK)
     public Node moveById(String nodeId, NodeTarget target, Parameters parameters, WithResponse withResponse)
     {
         return nodes.moveOrCopyNode(nodeId, target.getTargetParentId(), target.getName(), parameters, false);

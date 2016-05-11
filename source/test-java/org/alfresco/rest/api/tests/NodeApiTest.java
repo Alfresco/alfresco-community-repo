@@ -1320,7 +1320,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         NodeTarget tgt = new NodeTarget();
         tgt.setTargetParentId(f2Id);
 
-        HttpResponse response = post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(tgt), null, 201);
+        HttpResponse response = post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(tgt), null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1Name, documentResp.getName());
@@ -1334,7 +1334,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         tgt.setName(d1NewName);
         tgt.setTargetParentId(f1Id);
 
-        response = post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(tgt), null, 201);
+        response = post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(tgt), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1NewName, documentResp.getName());

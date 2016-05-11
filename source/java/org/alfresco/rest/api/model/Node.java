@@ -26,13 +26,19 @@
 package org.alfresco.rest.api.model;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
@@ -44,20 +50,45 @@ import org.apache.chemistry.opencmis.commons.data.PropertyData;
  * 
  * @author steveglover
  * @author Gethin James
+ * @author janv
  */
 public class Node implements Comparable<Node>
 {
 	protected NodeRef nodeRef;
 	protected String name;
 	protected String title;
-	protected NodeRef guid;
+	protected NodeRef guid; // TODO review - do we need for favorites (backwards compat') ?
 	protected String description;
     protected Date createdAt;
     protected Date modifiedAt;
     protected String createdBy;
     protected String modifiedBy;
     
-    public Node(NodeRef nodeRef, Map<QName, Serializable> nodeProps)
+    protected String primaryPath;
+    protected String prefixTypeQName;
+
+    protected Map<String, Serializable> props;
+
+    private  static final List<QName> EXCLUDED_PROPS = Arrays.asList(
+            ContentModel.PROP_NAME,
+            ContentModel.PROP_TITLE,
+			ContentModel.PROP_DESCRIPTION,
+			ContentModel.PROP_MODIFIER,
+			ContentModel.PROP_MODIFIED,
+			ContentModel.PROP_CREATOR,
+			ContentModel.PROP_CREATED,
+            ContentModel.PROP_CONTENT,
+            ContentModel.PROP_LOCALE,
+            ContentModel.PROP_NODE_UUID,
+            ContentModel.PROP_STORE_IDENTIFIER,
+            ContentModel.PROP_STORE_PROTOCOL,
+            ContentModel.PROP_NODE_DBID,
+            ContentModel.PROP_INITIAL_VERSION,
+            ContentModel.PROP_AUTO_VERSION_PROPS,
+            ContentModel.PROP_AUTO_VERSION);
+
+    // TODO fixme !
+    public Node(NodeRef nodeRef, Map<QName, Serializable> nodeProps, NamespaceService namespaceService)
     {
     	if(nodeRef == null)
     	{
@@ -65,7 +96,7 @@ public class Node implements Comparable<Node>
     	}
 
     	this.nodeRef = nodeRef;
-        mapProperties(nodeProps);
+        mapProperties(nodeProps, namespaceService);
     }
     
 	protected Object getValue(Map<String, PropertyData<?>> props, String name)
@@ -75,14 +106,19 @@ public class Node implements Comparable<Node>
 		return value;
 	}
 
+    /*
 	public Node(NodeRef nodeRef, Properties properties)
 	{
     	this.nodeRef = nodeRef;
 
 		Map<String, PropertyData<?>> props = properties.getProperties();
+
+        this.guid = nodeRef;
+
 		this.name = (String)getValue(props, PropertyIds.NAME);
 		this.title = (String)getValue(props, ContentModel.PROP_TITLE.toString());
-    	this.guid = nodeRef;
+		this.description = (String)getValue(props, PropertyIds.DESCRIPTION);
+
 		GregorianCalendar cal = (GregorianCalendar)getValue(props, PropertyIds.CREATION_DATE);
 		this.createdAt = cal.getTime();
 		cal = (GregorianCalendar)getValue(props, PropertyIds.LAST_MODIFICATION_DATE);
@@ -90,21 +126,34 @@ public class Node implements Comparable<Node>
 		this.createdBy = (String)getValue(props, PropertyIds.CREATED_BY);
 		this.modifiedBy = (String)getValue(props, PropertyIds.LAST_MODIFIED_BY);
 	}
+	*/
 
     public Node()
     {
     }
 
-    protected void mapProperties(Map<QName, Serializable> nodeProps)
+    protected void mapProperties(Map<QName, Serializable> nodeProps, NamespaceService namespaceService)
     {
+        // TODO review backwards compat' for favorites & others (eg. set guid explicitly where still needed)
+        //this.guid = nodeRef;
+
     	this.name = (String)nodeProps.get(ContentModel.PROP_NAME);
-    	this.guid = nodeRef;
 		this.title = (String)nodeProps.get(ContentModel.PROP_TITLE);
+        this.description = (String)nodeProps.get(ContentModel.PROP_DESCRIPTION);
+
     	this.createdAt = (Date)nodeProps.get(ContentModel.PROP_CREATED);
     	this.createdBy = (String)nodeProps.get(ContentModel.PROP_CREATOR);
     	this.modifiedAt = (Date)nodeProps.get(ContentModel.PROP_MODIFIED);
     	this.modifiedBy = (String)nodeProps.get(ContentModel.PROP_MODIFIER);
-    	this.description = (String)nodeProps.get(ContentModel.PROP_DESCRIPTION);
+
+        this.props = new HashMap<>(nodeProps.size());
+
+        for (Map.Entry<QName, Serializable> entry : nodeProps.entrySet()) {
+            QName propQName = entry.getKey();
+            if (! EXCLUDED_PROPS.contains(propQName)) {
+                props.put(entry.getKey().toPrefixString(namespaceService), entry.getValue());
+            }
+        }
     }
     
     public void setGuid(NodeRef guid)
@@ -182,6 +231,30 @@ public class Node implements Comparable<Node>
         this.createdBy = createdBy;
     }
     
+	public String getPrimaryPath()
+	{
+		return primaryPath;
+	}
+	
+	public void setPrimaryPath(String primaryPath)
+    {	
+		this.primaryPath = primaryPath;
+    }
+	
+	public String getType()
+	{
+		return prefixTypeQName;
+	}
+	
+	public void setType(String prefixType)
+    {	
+		this.prefixTypeQName = prefixType;
+    }
+
+	public Map getProperties() {
+        return this.props;
+    }
+    
 	public boolean equals(Object other)
 	{
 		if(this == other)
@@ -207,9 +280,9 @@ public class Node implements Comparable<Node>
 	@Override
 	public String toString()
 	{
-		return "Node [nodeRef=" + nodeRef + ", name=" + name + ", title="
+		return "Node [nodeRef=" + nodeRef + ", type=" + prefixTypeQName + ", name=" + name + ", title="
 				+ title + ", description=" + description + ", createdAt="
 				+ createdAt + ", modifiedAt=" + modifiedAt + ", createdBy=" + createdBy + ", modifiedBy="
-				+ modifiedBy + "]";
+				+ modifiedBy + ", primaryPath =" + primaryPath +"]";
 	}
 }

@@ -30,10 +30,16 @@ import java.util.Set;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 
+/**
+ * @author steveglover
+ * @author janv
+ */
 public interface Nodes
 {
 	NodeRef validateNode(StoreRef storeRef, String nodeId);
@@ -61,4 +67,49 @@ public interface Nodes
      * @return Folder
      */
     Folder getFolder(NodeRef nodeRef);
+    
+    /**
+     * Get the folder or document representation (as appropriate) for the given node.
+     * @param nodeId String nodeId or well-known alias, eg. "-root-" or "-my-"
+     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     *        including:
+     *        - incPrimaryParent
+     * @return
+     */
+    Node getFolderOrDocument(String nodeId, Parameters parameters);
+    
+    /**
+     * Get list of children of a parent folder.
+     * @param parentFolderNodeId String id of parent folder node or well-known alias, eg. "-root-" or "-my-"
+     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     *        including:
+     *        - filter, sort & paging params (where, orderBy, skipCount, maxItems)
+     *        - incFiles, incFolders (both true by default)
+     * @return a paged list of {@code org.alfresco.rest.api.model.Node} objects
+     */
+    CollectionWithPagingInfo<Node> getChildren(String parentFolderNodeId, Parameters parameters);
+    
+    /**
+     * Delete the given node. Note: will cascade delete for a folder.
+     * @param nodeId String id of node (folder or document)
+     */
+    void deleteNode(String nodeId);
+
+    /**
+     *
+     * @param parentFolderNodeId
+     * @param folderInfo
+     * @param parameters
+     * @return
+     */
+    Folder createFolder(String parentFolderNodeId, Folder folderInfo, Parameters parameters);
+
+    /**
+     *
+     * @param nodeId
+     * @param entity
+     * @param parameters
+     * @return
+     */
+    Node updateNode(String nodeId, Node entity, Parameters parameters);
 }

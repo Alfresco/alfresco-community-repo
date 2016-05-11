@@ -30,6 +30,7 @@ import java.math.BigInteger;
 import java.util.Map;
 
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.apache.chemistry.opencmis.commons.PropertyIds;
 import org.apache.chemistry.opencmis.commons.data.Properties;
@@ -39,6 +40,7 @@ import org.apache.chemistry.opencmis.commons.data.PropertyData;
  * Representation of a document node.
  * 
  * @author steveglover
+ * @author janv
  *
  */
 public class Document extends Node
@@ -51,7 +53,8 @@ public class Document extends Node
 	{
 		super();
 	}
-	
+
+	/*
 	public Document(NodeRef nodeRef, Properties properties)
 	{
 		super(nodeRef, properties);
@@ -61,10 +64,11 @@ public class Document extends Node
 		this.sizeInBytes = (BigInteger)getValue(props, PropertyIds.CONTENT_STREAM_LENGTH);
 		this.versionLabel = (String)getValue(props, PropertyIds.VERSION_LABEL);
 	}
+	*/
 
-	public Document(NodeRef nodeRef, Map<QName, Serializable> nodeProps)
+	public Document(NodeRef nodeRef, Map<QName, Serializable> nodeProps, NamespaceService namespaceService)
 	{
-		super(nodeRef, nodeProps);
+		super(nodeRef, nodeProps, namespaceService);
 	}
 
 	public String getMimeType()
@@ -80,6 +84,11 @@ public class Document extends Node
 	public String getVersionLabel()
 	{
 		return versionLabel;
+	}
+
+	public Boolean getIsFolder()
+	{
+		return false;
 	}
 
 	@Override

@@ -29,6 +29,7 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.alfresco.model.ContentModel;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.ContentData;
@@ -42,14 +43,10 @@ import org.alfresco.service.namespace.QName;
  * @author janv
  *
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Document extends Node
 {
     private ContentInfo contentInfo;
-
-    // instance init block
-    {
-        this.isFolder = Boolean.FALSE;
-    }
 
     public Document() {
         super();
@@ -67,6 +64,8 @@ public class Document extends Node
             String mimeTypeName = sr.getMimetypeService().getDisplaysByMimetype().get(mimeType);
             this.contentInfo = new ContentInfo(mimeType, mimeTypeName, cd.getSize(), cd.getEncoding());
         }
+
+        this.isFolder = false;
     }
 
     public ContentInfo getContent()

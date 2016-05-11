@@ -29,6 +29,7 @@ package org.alfresco.rest.api.model;
 import java.io.Serializable;
 import java.util.Map;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
@@ -39,13 +40,9 @@ import org.alfresco.service.namespace.QName;
  * @author steveglover
  * @author janv
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Folder extends Node
 {
-    // instance init block
-    {
-        this.isFolder = Boolean.TRUE;
-    }
-
     public Folder()
     {
         super();
@@ -54,6 +51,7 @@ public class Folder extends Node
     public Folder(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
         super(nodeRef, parentNodeRef, nodeProps, mapUserInfo, sr);
+        this.isFolder = true;
     }
 
     @Override

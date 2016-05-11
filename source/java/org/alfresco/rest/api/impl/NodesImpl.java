@@ -72,6 +72,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -952,7 +953,16 @@ public class NodesImpl implements Nodes
         props.put(ContentModel.PROP_NAME, nodeName);
 
         QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
-        NodeRef nodeRef = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, nodeTypeQName, props).getChildRef();
+
+        NodeRef nodeRef;
+        try
+        {
+            nodeRef = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, nodeTypeQName, props).getChildRef();
+        }
+        catch (DuplicateChildNodeNameException dcne)
+        {
+            throw new ConstraintViolatedException(dcne.getMessage());
+        }
 
         List<String> aspectNames = nodeInfo.getAspectNames();
         if (aspectNames != null)

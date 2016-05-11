@@ -658,6 +658,47 @@ public class NodeApiTest extends AbstractBaseApiTest
         post(getChildrenUrl(folderA_Ref), userTwoN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 403);
     }
 
+    /**
+     * Tests delete.
+     * <p>DELETE:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
+     */
+    @Test
+    public void testDelete() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+        NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personService.getPerson(user1));
+
+        String content1 = "content" + System.currentTimeMillis() + "_1";
+        NodeRef content1Ref = repoService.createDocument(myFilesNodeRef, content1, "The quick brown fox jumps over the lazy dog.");
+
+        // delete file
+        delete("nodes", user1, content1Ref.getId(), 204);
+
+        // -ve test
+        delete("nodes", user1, content1Ref.getId(), 404);
+
+        String folder1 = "folder" + System.currentTimeMillis() + "_1";
+        NodeRef folder1Ref = repoService.createFolder(myFilesNodeRef, folder1);
+
+        String folder2 = "folder" + System.currentTimeMillis() + "_2";
+        NodeRef folder2Ref = repoService.createFolder(folder1Ref, folder2);
+
+        String content2 = "content" + System.currentTimeMillis() + "_2";
+        NodeRef content2Ref = repoService.createDocument(folder2Ref, content2, "The quick brown fox jumps over the lazy dog.");
+
+        // cascade delete folder
+        delete("nodes", user1, folder1Ref.getId(), 204);
+
+        // -ve test
+        delete("nodes", user1, folder2Ref.getId(), 404);
+        delete("nodes", user1, content2Ref.getId(), 404);
+
+        // -ve test
+        NodeRef chNodeRef = repositoryHelper.getCompanyHome();
+        delete("nodes", user1, chNodeRef.getId(), 403);
+    }
+
     private String getChildrenUrl(NodeRef parentNodeRef)
     {
         return getChildrenUrl(parentNodeRef.getId());

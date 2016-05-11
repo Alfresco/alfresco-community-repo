@@ -178,7 +178,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                     throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
                 }
 
-                if (resObj instanceof MultiPartResourceAction.Create<?>)
+                if (resObj instanceof MultiPartResourceAction.Create<?> && params.getPassedIn() instanceof FormData)
                 {
                     MultiPartResourceAction.Create<Object> creator = (MultiPartResourceAction.Create<Object>) resObj;
                     return creator.create((FormData) params.getPassedIn(), params);
@@ -205,7 +205,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                     throw new DeletedResourceException("(DELETE) " + resource.getMetaData().getUniqueId());
                 }
 
-                if (resObj instanceof MultiPartRelationshipResourceAction.Create<?>)
+                if (resObj instanceof MultiPartRelationshipResourceAction.Create<?> && params.getPassedIn() instanceof FormData)
                 {
                     MultiPartRelationshipResourceAction.Create<Object> creator = (MultiPartRelationshipResourceAction.Create<Object>) resObj;
                     return creator.create(params.getEntityId(), (FormData) params.getPassedIn(), params);

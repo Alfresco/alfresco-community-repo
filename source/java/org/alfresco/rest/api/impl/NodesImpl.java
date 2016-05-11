@@ -242,6 +242,8 @@ public class NodesImpl implements Nodes
             ContentModel.PROP_WORKING_COPY_OWNER);
 
     private final static String PARAM_ISFOLDER = "isFolder";
+    private final static String PARAM_SUBTYPES = "subTypes";
+
     private final static String PARAM_NAME = "name";
     private final static String PARAM_CREATEDAT = "createdAt";
     private final static String PARAM_MODIFIEDAT = "modifiedAt";
@@ -270,7 +272,7 @@ public class NodesImpl implements Nodes
     }
 
     private final static Set<String> LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES =
-            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER}));
+            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_NODETYPE, PARAM_SUBTYPES}));
 
     /*
      * Note: assumes workspace://SpacesStore
@@ -875,19 +877,35 @@ public class NodesImpl implements Nodes
         boolean includeFolders = true;
         boolean includeFiles = true;
 
+        QName filterNodeTypeQName = null;
+        boolean filterIncludeSubTypes = true;
+
         Query q = parameters.getQuery();
 
         if (q != null)
         {
-            // TODO confirm list of filter props - what about custom props (+ across types/aspects) ? What about VF extension ?
+            // filtering via "where" clause
             MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES, null);
             QueryHelper.walk(q, propertyWalker);
 
-            Boolean b = propertyWalker.getProperty(PARAM_ISFOLDER, WhereClauseParser.EQUALS, Boolean.class);
-            if (b != null)
+            Boolean isFolder = propertyWalker.getProperty(PARAM_ISFOLDER, WhereClauseParser.EQUALS, Boolean.class);
+            if (isFolder != null)
             {
-                includeFiles = !b;
-                includeFolders = b;
+                includeFiles = !isFolder;
+                includeFolders = isFolder;
+            }
+
+            String nodeTypeStr = propertyWalker.getProperty(PARAM_NODETYPE, WhereClauseParser.EQUALS, String.class);
+            if ((nodeTypeStr != null) && (! nodeTypeStr.isEmpty()))
+            {
+                filterNodeTypeQName = createQName(nodeTypeStr);
+            }
+
+            // optionally used with nodeType filter (default is to include subTypes, if not specified as "subTypes=false")
+            Boolean subTypes = propertyWalker.getProperty(PARAM_SUBTYPES, WhereClauseParser.EQUALS, Boolean.class);
+            if (subTypes != null)
+            {
+                filterIncludeSubTypes = subTypes;
             }
         }
 
@@ -928,10 +946,14 @@ public class NodesImpl implements Nodes
         PagingRequest pagingRequest = Util.getPagingRequest(paging);
 
         final PagingResults<FileInfo> pagingResults;
-        if (includeFolders && includeFiles)
+        if ((filterNodeTypeQName != null) || (includeFolders && includeFiles))
         {
-            // note: this allows to include other types (eg. that derive from cm:cmobject) - not just folders & files
-            Pair<Set<QName>, Set<QName>> pair = buildSearchTypesAndIgnoreAspects(ignoreQNames);
+            if (filterNodeTypeQName == null)
+            {
+                filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
+            }
+
+            Pair<Set<QName>, Set<QName>> pair = buildSearchTypesAndIgnoreAspects(filterNodeTypeQName, filterIncludeSubTypes, ignoreQNames);
             Set<QName> searchTypeQNames = pair.getFirst();
             Set<QName> ignoreAspectQNames = pair.getSecond();
 
@@ -967,26 +989,32 @@ public class NodesImpl implements Nodes
         return CollectionWithPagingInfo.asPaged(paging, nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst());
     }
 
-    protected Pair<Set<QName>, Set<QName>> buildSearchTypesAndIgnoreAspects(Set<QName> ignoreQNameTypes)
+    protected Pair<Set<QName>, Set<QName>> buildSearchTypesAndIgnoreAspects(QName filterNodeTypeQName, boolean filterIncludeSubTypes, Set<QName> ignoreQNameTypes)
     {
         Set<QName> searchTypeQNames = new HashSet<QName>(100);
         Set<QName> ignoreAspectQNames = null;
 
-        // Build a list of cmobject types
-        Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_CMOBJECT, true);
-        searchTypeQNames.addAll(qnames);
-        searchTypeQNames.add(ContentModel.TYPE_CMOBJECT);
+        // Build a list of (sub-)types
+        if (filterIncludeSubTypes)
+        {
+            Collection<QName> qnames = dictionaryService.getSubTypes(filterNodeTypeQName, true);
+            searchTypeQNames.addAll(qnames);
+        }
+        searchTypeQNames.add(filterNodeTypeQName);
 
         // Remove 'system' folders
-        qnames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
-        searchTypeQNames.removeAll(qnames);
+        if (filterIncludeSubTypes)
+        {
+            Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
+            searchTypeQNames.removeAll(qnames);
+        }
         searchTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
 
         if (ignoreQNameTypes != null)
         {
             Set<QName> ignoreQNamesNotSearchTypes = new HashSet<QName>(ignoreQNameTypes);
             ignoreQNamesNotSearchTypes.removeAll(searchTypeQNames);
-            ignoreQNamesNotSearchTypes.remove(ContentModel.TYPE_SYSTEM_FOLDER); // note: not included in buildFolderTypes()
+            ignoreQNamesNotSearchTypes.remove(ContentModel.TYPE_SYSTEM_FOLDER);
 
             if (ignoreQNamesNotSearchTypes.size() > 0)
             {

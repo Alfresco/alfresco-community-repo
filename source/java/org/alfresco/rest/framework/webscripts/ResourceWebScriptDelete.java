@@ -113,7 +113,8 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
      * @param params parameters to use
      * @return anObject the result of the execute
      */
-    public Object executeAction(ResourceWithMetadata resource, Params params)
+    @Override
+    public Object executeAction(ResourceWithMetadata resource, Params params, ResponseCallBack withResponse)
     {
         switch (resource.getMetaData().getType())
         {
@@ -174,7 +175,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 @Override
                 public Void execute() throws Throwable
                 {
-                    executeAction(resource, params); //ignore return result
+                    executeAction(resource, params, callBack); //ignore return result
                     return null;
                 }
             }, false, true);

@@ -159,7 +159,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                     public Object execute() throws Throwable
                     {
 
-                        Object result = executeAction(resource, params);
+                        Object result = executeAction(resource, params, callBack);
                         if (result instanceof BinaryResource)
                         {
                             return result; //don't postprocess it.
@@ -170,8 +170,6 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         setResponse(res,callBack);
         return toReturn;
     }
-
-    public abstract Object executeAction(ResourceWithMetadata resource, Params params) throws Throwable;
 
     protected void streamResponse(final WebScriptRequest req, final WebScriptResponse res, BinaryResource resource) throws IOException
     {

@@ -46,6 +46,6 @@ public class MultiPartTestEntityResource
     @WebApiDescription(title = "Creates a multipart", successStatus = Status.STATUS_ACCEPTED)
     public MultiPartTestResponse create(FormData formData, Parameters parameters, WithResponse withResponse)
     {
-        return new MultiPartTestResponse(formData.getParameters().get("filename")[0]);
+        return new MultiPartTestResponse(formData.getParameters().get("name")[0]);
     }
 }

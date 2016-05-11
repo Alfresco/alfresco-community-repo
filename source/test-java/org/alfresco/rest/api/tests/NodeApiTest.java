@@ -590,7 +590,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         HttpResponse response = getAll(getChildrenUrl(Nodes.PATH_MY), user1, paging, 200);
         PublicApiClient.ExpectedPaging pagingResult = parsePaging(response.getJsonResponse());
         assertNotNull(paging);
-        final int numOfNodes = pagingResult.getCount().intValue();
+        final int numOfNodes = pagingResult.getCount();
 
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
                     .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF));
@@ -706,7 +706,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         HttpResponse response = getAll(getChildrenUrl(folderA_Ref), userOneN1.getId(), paging, 200);
         PublicApiClient.ExpectedPaging pagingResult = parsePaging(response.getJsonResponse());
         assertNotNull(paging);
-        final int numOfNodes = pagingResult.getCount().intValue();
+        final int numOfNodes = pagingResult.getCount();
 
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
                     .setFileData(new FileData(fileName, file, null));
@@ -1232,6 +1232,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         final String docName = "testdoc";
         doc.setName(docName);
         doc.setNodeType("cm:content");
+        doc.setProperties(Collections.singletonMap("cm:title", (Object)"test title"));
         ContentInfo contentInfo = new ContentInfo();
         contentInfo.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         doc.setContent(contentInfo);
@@ -1263,10 +1264,26 @@ public class NodeApiTest extends AbstractBaseApiTest
         response = putBinary(url, user1, payload, null, null, 200);
         docResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals(docName, docResp.getName());
+        assertNotNull(docResp.getId());
+        assertNotNull(docResp.getCreatedAt());
+        assertNotNull(docResp.getCreatedByUser());
+        assertNotNull(docResp.getModifiedAt());
+        assertNotNull(docResp.getModifiedByUser());
+        assertFalse(docResp.getIsFolder());
+        assertNull(docResp.getIsLink());
+        assertEquals("cm:content", docResp.getNodeType());
+        assertNotNull(docResp.getParentId());
+        assertEquals(f1_nodeId, docResp.getParentId());
+        assertNotNull(docResp.getProperties());
+        assertNotNull(docResp.getAspectNames());
+        contentInfo = docResp.getContent();
+        assertNotNull(contentInfo);
+        assertNotNull(contentInfo.getEncoding());
+        assertTrue(contentInfo.getSizeInBytes() > 0);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+        assertNotNull(contentInfo.getMimeTypeName());
+        // path is not part of the default response
         assertNull(docResp.getPath());
-        assertNotNull(docResp.getContent());
-        assertTrue(docResp.getContent().getSizeInBytes().intValue() > 0);
-        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, docResp.getContent().getMimeType());
 
         // Download the file
         response = getSingle(url, user1, null, 200);

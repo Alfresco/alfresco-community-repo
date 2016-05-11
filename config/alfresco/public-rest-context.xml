@@ -146,7 +146,6 @@
                 <entry key="org.alfresco.rest.framework.core.exceptions.DisabledServiceException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_IMPLEMENTED}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.InsufficientStorageException" value="507" />
                 <entry key="org.alfresco.repo.node.integrity.IntegrityException" value="422" />
-                <entry key="org.alfresco.service.cmr.security.NoSuchPersonException" value="422" />
             </map>
         </property>
     </bean>

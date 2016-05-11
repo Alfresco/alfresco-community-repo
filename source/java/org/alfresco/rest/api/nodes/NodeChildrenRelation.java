@@ -38,7 +38,7 @@ import java.util.List;
  * @author janv
  */
 @RelationshipResource(name = "children",  entityResource = NodesEntityResource.class, title = "Folder children")
-public class NodeChildrenRelation implements RelationshipResourceAction.Read<Node>, RelationshipResourceAction.Create<Folder>, InitializingBean
+public class NodeChildrenRelation implements RelationshipResourceAction.Read<Node>, RelationshipResourceAction.Create<Node>, InitializingBean
 {
 	private Nodes nodes;
 
@@ -84,22 +84,22 @@ public class NodeChildrenRelation implements RelationshipResourceAction.Read<Nod
     }
 
     /**
-     * Create one or more sub-folders below parent folder. Note: can also use well-known alias, eg. -root- or -my-
+     * Create one or more nodes (folder or empty file) below parent folder.
      *
-     * TODO also consider option to create path - eg. by passing name path in name (see Sparta API as an example) ... or should this be a separate API ?
+     * Note: for parent folder nodeId, can also use well-known alias, eg. -root- or -my-
      *
      * If parentFolderNodeId does not exist, EntityNotFoundException (status 404).
      * If parentFolderNodeId does not represent a folder, InvalidArgumentException (status 400).
      */
     @Override
-    @WebApiDescription(title="Create one (or more) folder(s) as a child of folder identified by parentFolderNodeId")
-    public List<Folder> create(String parentFolderNodeId, List<Folder> folderInfos, Parameters parameters)
+    @WebApiDescription(title="Create one (or more) nodes as children of folder identified by parentFolderNodeId")
+    public List<Node> create(String parentFolderNodeId, List<Node> nodeInfos, Parameters parameters)
     {
-        List<Folder> result = new ArrayList<>(folderInfos.size());
+        List<Node> result = new ArrayList<>(nodeInfos.size());
 
-        for (Folder folderInfo : folderInfos)
+        for (Node nodeInfo : nodeInfos)
         {
-            result.add(nodes.createFolder(parentFolderNodeId, folderInfo, parameters));
+            result.add(nodes.createNode(parentFolderNodeId, nodeInfo, parameters));
         }
 
         return result;

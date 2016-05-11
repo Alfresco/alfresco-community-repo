@@ -26,167 +26,139 @@
 package org.alfresco.rest.api.model;
 
 import java.io.Serializable;
-import java.util.Arrays;
 import java.util.Date;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.framework.resource.UniqueId;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
-import org.apache.chemistry.opencmis.commons.PropertyIds;
-import org.apache.chemistry.opencmis.commons.data.Properties;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
 
 /**
  * Concrete class carrying general information for <b>alf_node</b> data
- * 
+ *
  * @author steveglover
  * @author Gethin James
  * @author janv
  */
 public class Node implements Comparable<Node>
 {
-	protected NodeRef nodeRef;
-	protected String name;
-	protected String title;
-	protected NodeRef guid; // TODO review - do we need for favorites (backwards compat') ?
-	protected String description;
-    protected Date createdAt;
-    protected Date modifiedAt;
+    protected NodeRef nodeRef;
+    protected String name;
+
+    // TODO needed for favourties - backwards compat' - we could also choose to split of NodeInfo / Node impl's etc
+    protected String title;
+    protected NodeRef guid;
+    protected String description;
     protected String createdBy;
     protected String modifiedBy;
-    
-    protected String primaryPath;
+
+    protected Date createdAt;
+    protected Date modifiedAt;
+    protected UserInfo createdByUser;
+    protected UserInfo modifiedByUser;
+
+    protected NodeRef parentNodeRef;
+    protected PathInfo pathInfo;
     protected String prefixTypeQName;
+
+    protected List<String> aspectNames;
 
     protected Map<String, Serializable> props;
 
-    private  static final List<QName> EXCLUDED_PROPS = Arrays.asList(
-            ContentModel.PROP_NAME,
-            ContentModel.PROP_TITLE,
-			ContentModel.PROP_DESCRIPTION,
-			ContentModel.PROP_MODIFIER,
-			ContentModel.PROP_MODIFIED,
-			ContentModel.PROP_CREATOR,
-			ContentModel.PROP_CREATED,
-            ContentModel.PROP_CONTENT,
-            ContentModel.PROP_LOCALE,
-            ContentModel.PROP_NODE_UUID,
-            ContentModel.PROP_STORE_IDENTIFIER,
-            ContentModel.PROP_STORE_PROTOCOL,
-            ContentModel.PROP_NODE_DBID,
-            ContentModel.PROP_INITIAL_VERSION,
-            ContentModel.PROP_AUTO_VERSION_PROPS,
-            ContentModel.PROP_AUTO_VERSION);
-
     // TODO fixme !
-    public Node(NodeRef nodeRef, Map<QName, Serializable> nodeProps, NamespaceService namespaceService)
+    // also need to optionally pass in user map - eg. when listing children (to avoid multiple lookups for same user)
+    public Node(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, ServiceRegistry sr)
     {
-    	if(nodeRef == null)
-    	{
-    		throw new IllegalArgumentException();
-    	}
+        if(nodeRef == null)
+        {
+            throw new IllegalArgumentException();
+        }
 
-    	this.nodeRef = nodeRef;
-        mapProperties(nodeProps, namespaceService);
+        this.nodeRef = nodeRef;
+        this.parentNodeRef = parentNodeRef;
+
+        mapBasicInfo(nodeProps, sr);
     }
-    
-	protected Object getValue(Map<String, PropertyData<?>> props, String name)
-	{
-		PropertyData<?> prop = props.get(name);
-		Object value = (prop != null ? prop.getFirstValue() : null);
-		return value;
-	}
 
-    /*
-	public Node(NodeRef nodeRef, Properties properties)
-	{
-    	this.nodeRef = nodeRef;
-
-		Map<String, PropertyData<?>> props = properties.getProperties();
-
-        this.guid = nodeRef;
-
-		this.name = (String)getValue(props, PropertyIds.NAME);
-		this.title = (String)getValue(props, ContentModel.PROP_TITLE.toString());
-		this.description = (String)getValue(props, PropertyIds.DESCRIPTION);
-
-		GregorianCalendar cal = (GregorianCalendar)getValue(props, PropertyIds.CREATION_DATE);
-		this.createdAt = cal.getTime();
-		cal = (GregorianCalendar)getValue(props, PropertyIds.LAST_MODIFICATION_DATE);
-		this.modifiedAt = cal.getTime();
-		this.createdBy = (String)getValue(props, PropertyIds.CREATED_BY);
-		this.modifiedBy = (String)getValue(props, PropertyIds.LAST_MODIFIED_BY);
-	}
-	*/
+    protected Object getValue(Map<String, PropertyData<?>> props, String name)
+    {
+        PropertyData<?> prop = props.get(name);
+        Object value = (prop != null ? prop.getFirstValue() : null);
+        return value;
+    }
 
     public Node()
     {
     }
 
-    protected void mapProperties(Map<QName, Serializable> nodeProps, NamespaceService namespaceService)
+    protected void mapBasicInfo(Map<QName, Serializable> nodeProps, ServiceRegistry sr)
     {
+        PersonService personService = sr.getPersonService();
+
         // TODO review backwards compat' for favorites & others (eg. set guid explicitly where still needed)
         //this.guid = nodeRef;
+        //this.title = (String)nodeProps.get(ContentModel.PROP_TITLE);
+        //this.description = (String)nodeProps.get(ContentModel.PROP_DESCRIPTION);
+        //this.createdBy = (String)nodeProps.get(ContentModel.PROP_CREATOR);
+        //this.modifiedBy = (String)nodeProps.get(ContentModel.PROP_MODIFIER);
 
-    	this.name = (String)nodeProps.get(ContentModel.PROP_NAME);
-		this.title = (String)nodeProps.get(ContentModel.PROP_TITLE);
-        this.description = (String)nodeProps.get(ContentModel.PROP_DESCRIPTION);
+        this.name = (String)nodeProps.get(ContentModel.PROP_NAME);
 
-    	this.createdAt = (Date)nodeProps.get(ContentModel.PROP_CREATED);
-    	this.createdBy = (String)nodeProps.get(ContentModel.PROP_CREATOR);
-    	this.modifiedAt = (Date)nodeProps.get(ContentModel.PROP_MODIFIED);
-    	this.modifiedBy = (String)nodeProps.get(ContentModel.PROP_MODIFIER);
+        this.createdAt = (Date)nodeProps.get(ContentModel.PROP_CREATED);
+        this.createdByUser = lookupUserInfo((String)nodeProps.get(ContentModel.PROP_CREATOR), personService);
 
-        this.props = new HashMap<>(nodeProps.size());
+        this.modifiedAt = (Date)nodeProps.get(ContentModel.PROP_MODIFIED);
+        this.modifiedByUser = lookupUserInfo((String)nodeProps.get(ContentModel.PROP_MODIFIER), personService);
+    }
 
-        for (Map.Entry<QName, Serializable> entry : nodeProps.entrySet()) {
-            QName propQName = entry.getKey();
-            if (! EXCLUDED_PROPS.contains(propQName)) {
-                props.put(entry.getKey().toPrefixString(namespaceService), entry.getValue());
-            }
+    // TODO refactor & optimise to avoid multiple person lookups
+    private UserInfo lookupUserInfo(final String userName, final PersonService personService) {
+
+        String sysUserName = AuthenticationUtil.getSystemUserName();
+        if (userName.equals(sysUserName) || (AuthenticationUtil.isMtEnabled() && userName.startsWith(sysUserName+"@")))
+        {
+            return new UserInfo(userName, userName, "");
+        }
+        else
+        {
+            PersonService.PersonInfo pInfo = personService.getPerson(personService.getPerson(userName));
+            return new UserInfo(userName, pInfo.getFirstName(), pInfo.getLastName());
         }
     }
-    
+
     public void setGuid(NodeRef guid)
-	{
-		this.guid = guid;
-	}
+    {
+        this.guid = guid;
+    }
 
-	public NodeRef getGuid()
-	{
-		return guid;
-	}
+    public NodeRef getGuid() {
+        return guid;
+    }
 
-	public String getTitle()
-	{
-		return title;
-	}
+    public String getTitle()
+    {
+        return title;
+    }
 
-	@UniqueId
+    @UniqueId
     public NodeRef getNodeRef()
     {
-		return nodeRef;
-	}
+        return nodeRef;
+    }
 
-	public void setNodeRef(NodeRef nodeRef)
-	{
-//    	if(nodeRef == null)
-//    	{
-//    		throw new IllegalArgumentException();
-//    	}
-		this.nodeRef = nodeRef;
-	}
-	
-	public Date getCreatedAt()
+    public void setNodeRef(NodeRef nodeRef)
+    {
+        this.nodeRef = nodeRef;
+    }
+
+    public Date getCreatedAt()
     {
         return this.createdAt;
     }
@@ -196,20 +168,28 @@ public class Node implements Comparable<Node>
         this.createdAt = createdAt;
     }
 
-	public Date getModifiedAt()
-	{
-		return modifiedAt;
-	}
+    public Date getModifiedAt()
+    {
+        return modifiedAt;
+    }
 
-	public String getModifiedBy()
-	{
-		return modifiedBy;
-	}
+    public String getModifiedBy()
+    {
+        return modifiedBy;
+    }
+
+    public UserInfo getModifiedByUser() {
+        return modifiedByUser;
+    }
+
+    public UserInfo getCreatedByUser() {
+        return createdByUser;
+    }
 
     public String getDescription()
-	{
-		return description;
-	}
+    {
+        return description;
+    }
 
     public String getName()
     {
@@ -230,59 +210,76 @@ public class Node implements Comparable<Node>
     {
         this.createdBy = createdBy;
     }
-    
-	public String getPrimaryPath()
-	{
-		return primaryPath;
-	}
-	
-	public void setPrimaryPath(String primaryPath)
-    {	
-		this.primaryPath = primaryPath;
-    }
-	
-	public String getType()
-	{
-		return prefixTypeQName;
-	}
-	
-	public void setType(String prefixType)
-    {	
-		this.prefixTypeQName = prefixType;
+
+    public PathInfo getPath()
+    {
+        return pathInfo;
     }
 
-	public Map getProperties() {
+    public void setPath(PathInfo pathInfo)
+    {
+        this.pathInfo = pathInfo;
+    }
+
+    public String getNodeType()
+    {
+        return prefixTypeQName;
+    }
+
+    public void setNodeType(String prefixType)
+    {
+        this.prefixTypeQName = prefixType;
+    }
+
+    public Map getProperties() {
         return this.props;
     }
-    
-	public boolean equals(Object other)
-	{
-		if(this == other)
-		{
-			return true;
-		}
 
-		if(!(other instanceof Node))
-		{
-			return false;
-		}
-		
-		Node node = (Node)other;
-		return EqualsHelper.nullSafeEquals(getNodeRef(), node.getNodeRef());
-	}
+    public void setProperties(Map props) {
+        this.props = props;
+    }
 
-	@Override
-	public int compareTo(Node node)
-	{
-		return getNodeRef().toString().compareTo(node.getNodeRef().toString());
-	}
+    public List<String> getAspectNames() {
+        return aspectNames;
+    }
 
-	@Override
-	public String toString()
-	{
-		return "Node [nodeRef=" + nodeRef + ", type=" + prefixTypeQName + ", name=" + name + ", title="
-				+ title + ", description=" + description + ", createdAt="
-				+ createdAt + ", modifiedAt=" + modifiedAt + ", createdBy=" + createdBy + ", modifiedBy="
-				+ modifiedBy + ", primaryPath =" + primaryPath +"]";
-	}
+    public void setAspectNames(List<String> aspectNames) {
+        this.aspectNames = aspectNames;
+    }
+
+    public NodeRef getParentId()
+    {
+        return parentNodeRef;
+    }
+
+    public boolean equals(Object other)
+    {
+        if(this == other)
+        {
+            return true;
+        }
+
+        if(!(other instanceof Node))
+        {
+            return false;
+        }
+
+        Node node = (Node)other;
+        return EqualsHelper.nullSafeEquals(getNodeRef(), node.getNodeRef());
+    }
+
+    @Override
+    public int compareTo(Node node)
+    {
+        return getNodeRef().toString().compareTo(node.getNodeRef().toString());
+    }
+
+    @Override
+    public String toString()
+    {
+        return "Node [nodeRef=" + nodeRef + ", type=" + prefixTypeQName + ", name=" + name + ", title="
+                + title + ", description=" + description + ", createdAt="
+                + createdAt + ", modifiedAt=" + modifiedAt + ", createdByUser=" + createdByUser + ", modifiedBy="
+                + modifiedByUser + ", pathInfo =" + pathInfo +"]";
+    }
 }

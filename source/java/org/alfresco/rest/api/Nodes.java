@@ -25,11 +25,14 @@
  */
 package org.alfresco.rest.api;
 
+import java.io.InputStream;
 import java.util.Set;
 
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.framework.resource.content.BasicContentInfo;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -96,13 +99,14 @@ public interface Nodes
     void deleteNode(String nodeId);
 
     /**
+     * Create node(s) - folder or (empty) file
      *
      * @param parentFolderNodeId
-     * @param folderInfo
+     * @param nodeInfo
      * @param parameters
      * @return
      */
-    Folder createFolder(String parentFolderNodeId, Folder folderInfo, Parameters parameters);
+    Node createNode(String parentFolderNodeId, Node nodeInfo, Parameters parameters);
 
     /**
      *
@@ -112,4 +116,10 @@ public interface Nodes
      * @return
      */
     Node updateNode(String nodeId, Node entity, Parameters parameters);
+
+    // TODO update REST fwk - to optionally support "attachment" (Content-Disposition) header
+    BinaryResource getContent(String fileNodeId, Parameters parameters);
+
+    // TODO update REST fwk - to optionally support return of json
+    void updateContent(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters);
 }

@@ -28,10 +28,9 @@ package org.alfresco.rest.api.model;
 import java.io.Serializable;
 import java.util.Map;
 
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.chemistry.opencmis.commons.data.Properties;
 
 /**
  * Representation of a folder node.
@@ -47,17 +46,10 @@ public class Folder extends Node
 		super();
 	}
 
-	/*
-	public Folder(NodeRef nodeRef, Properties properties)
-	{
-		super(nodeRef, properties);
-	}
-	*/
-
-	public Folder(NodeRef nodeRef, Map<QName, Serializable> nodeProps, NamespaceService namespaceService)
-	{
-		super(nodeRef, nodeProps, namespaceService);
-	}
+    public Folder(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, ServiceRegistry sr)
+    {
+        super(nodeRef, parentNodeRef, nodeProps, sr);
+    }
 
 	public Boolean getIsFolder()
 	{

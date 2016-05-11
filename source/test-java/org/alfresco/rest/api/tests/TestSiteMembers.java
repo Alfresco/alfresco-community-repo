@@ -123,8 +123,7 @@ public class TestSiteMembers extends EnterpriseTestApi
 				JSONObject source = sitesProxy.parseListSource(response.getJsonResponse());
 				Site sourceSite = SiteImpl.parseSite(source);
 				assertNotNull(sourceSite);
-				assertEquals(testSite.getSiteId(), sourceSite.getSiteId());
-				assertEquals(testSite.getGuid(), sourceSite.getGuid());
+				testSite.expected(sourceSite);
 	    	}
 	    	
 	    	// invalid site id

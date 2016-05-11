@@ -78,7 +78,7 @@ public class ResourceInspectorUtil
      * @return - the List of Method or an empty List
      */
     @SuppressWarnings("rawtypes")
-    protected static List<Method> findMethodsByAnnotation(Class objClass, Class<? extends Annotation> annotationType)
+    public static List<Method> findMethodsByAnnotation(Class objClass, Class<? extends Annotation> annotationType)
     {
     
         List<Method> annotatedMethods = new ArrayList<Method>();

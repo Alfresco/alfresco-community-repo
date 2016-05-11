@@ -32,9 +32,11 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -51,6 +53,7 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
 import org.alfresco.rest.framework.tests.api.mocks.GoatEntityResource;
+import org.alfresco.rest.framework.tests.api.mocks.GrassEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks.SheepBaaaahResource;
 import org.alfresco.rest.framework.tests.api.mocks.SheepBlackSheepResource;
 import org.alfresco.rest.framework.tests.api.mocks.SheepEntityResource;
@@ -148,7 +151,30 @@ public class ResourceLocatorTests
         collResource = locator.locateResource(api,templateVars, HttpMethod.GET);
         
     }
-    
+
+    @Test
+    public void testLocateActions()
+    {
+        Map<String, String> templateVars = new HashMap<String, String>();
+        ResourceWithMetadata collResource = null;
+        templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "grass");
+        templateVars.put(ResourceLocator.ENTITY_ID, "grassId");
+        templateVars.put(ResourceLocator.RELATIONSHIP_RESOURCE, "cut");
+        try
+        {
+            collResource = locator.locateResource(api, templateVars, HttpMethod.GET);
+            fail("Should throw an UnsupportedResourceOperationException");
+        }
+        catch (UnsupportedResourceOperationException error)
+        {
+            //this is correct
+        }
+
+        collResource = locator.locateResource(api, templateVars, HttpMethod.POST);
+        assertEquals(GrassEntityResource.class, collResource.getResource().getClass());
+        assertEquals(ResourceMetadata.RESOURCE_TYPE.ACTION, collResource.getMetaData().getType());
+    }
+
     @Test
     public void testLocateProperties()
     {

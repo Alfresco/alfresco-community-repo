@@ -40,13 +40,17 @@ import java.util.Map;
 
 import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.api.nodes.NodeCommentsRelation;
+import org.alfresco.rest.framework.Action;
 import org.alfresco.rest.framework.Api;
+import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.core.ResourceInspector;
+import org.alfresco.rest.framework.core.ResourceInspectorUtil;
 import org.alfresco.rest.framework.core.ResourceMetadata;
 import org.alfresco.rest.framework.core.ResourceOperation;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
 import org.alfresco.rest.framework.tests.api.mocks.GoatEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks.Grass;
@@ -61,6 +65,7 @@ import org.alfresco.rest.framework.tests.api.mocks.SheepNoActionEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks2.FarmersDaughter;
 import org.alfresco.rest.framework.tests.api.mocks2.FarmersGrandson;
 import org.alfresco.rest.framework.tests.api.mocks2.FarmersSon;
+import org.alfresco.rest.framework.tests.api.mocks3.Flock;
 import org.alfresco.rest.framework.tests.api.mocks3.FlockEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks3.FlocketEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks3.GrassEntityResourceNowDeleted;
@@ -358,13 +363,83 @@ public class InspectorTests
         op = ResourceInspector.inspectOperation(FlockEntityResource.class, aMethod, HttpMethod.GET);
         assertNotNull(op);
         assertTrue(op.getTitle().startsWith("Deletes a photo"));
-       
+
         aMethod = ResourceInspector.findMethod(BinaryResourceAction.Update.class, FlockEntityResource.class);
         op = ResourceInspector.inspectOperation(FlockEntityResource.class, aMethod, HttpMethod.GET);
         assertNotNull(op);
         assertTrue(op.getTitle().startsWith("Updates a photo"));
     }
-    
+
+    @Test
+    public void testInspectBodyParam()
+    {
+        Method aMethod = ResourceInspector.findMethod(BinaryResourceAction.Update.class, FlockEntityResource.class);
+        ResourceOperation op = ResourceInspector.inspectOperation(FlockEntityResource.class, aMethod, HttpMethod.PUT);
+        assertNotNull(op);
+        List<ResourceParameter> params  = op.getParameters();
+        assertNotNull(params);
+        for (ResourceParameter param:params)
+        {
+            if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(param.getParamType()))
+            {
+                assertEquals(Flock.class, param.getDataType());
+            }
+        }
+
+        aMethod = ResourceInspector.findMethod(RelationshipResourceAction.Create.class, SheepBlackSheepResource.class);
+        op = ResourceInspector.inspectOperation(SheepBlackSheepResource.class, aMethod, HttpMethod.POST);
+        assertNotNull(op);
+        params  = op.getParameters();
+        assertNotNull(params);
+        for (ResourceParameter param:params)
+        {
+            if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(param.getParamType()))
+            {
+                assertEquals(Sheep.class, param.getDataType());
+            }
+        }
+
+        aMethod = ResourceInspector.findMethod(EntityResourceAction.Update.class, SheepEntityResourceWithDeletedMethods.class);
+        op = ResourceInspector.inspectOperation(SheepEntityResourceWithDeletedMethods.class, aMethod, HttpMethod.POST);
+        assertNotNull(op);
+        params  = op.getParameters();
+        assertNotNull(params);
+        for (ResourceParameter param:params)
+        {
+            if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(param.getParamType()))
+            {
+                assertEquals(Sheep.class, param.getDataType());
+            }
+        }
+    }
+
+    @Test
+    public void testInspectActions()
+    {
+        Api api = Api.valueOf("alfrescomock", "private", "1");
+        List<ResourceMetadata> metainfo = new ArrayList<ResourceMetadata>();
+
+        ResourceInspector.inspectActions(api, GrassEntityResource.class,"-root-", metainfo);
+        assertTrue(metainfo.size()==2);
+        for (ResourceMetadata resourceMetadata : metainfo)
+        {
+            assertEquals(ResourceMetadata.RESOURCE_TYPE.ACTION, resourceMetadata.getType());
+            switch (resourceMetadata.getUniqueId())
+            {
+                case "/-root-/{entityId}/grow":
+                    assertTrue("GrassEntityResource supports POST", resourceMetadata.supports(HttpMethod.POST));
+                    assertFalse("GrassEntityResource does not support DELETE", resourceMetadata.supports(HttpMethod.DELETE));
+                    break;
+                case "/-root-/{entityId}/cut":
+                    assertTrue("GrassEntityResource supports POST", resourceMetadata.supports(HttpMethod.POST));
+                    assertFalse("GrassEntityResource does not support GET", resourceMetadata.supports(HttpMethod.GET));
+                    break;
+                default:
+                    fail("Invalid action information.");
+            }
+        }
+    }
+
     @Test
     public void testInspectAddressedProperties()
     {

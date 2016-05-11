@@ -204,10 +204,13 @@ public class NodesImpl implements Nodes
         this.defaultIgnoreTypes = ignoreTypes;
     }
 
-    private static final List<QName> EXCLUDED_ASPECTS = Arrays.asList(
-            ContentModel.ASPECT_REFERENCEABLE,
-            ContentModel.ASPECT_LOCALIZED);
+    // excluded namespaces (aspects and properties)
+    private static final List<String> EXCLUDED_NS = Arrays.asList(NamespaceService.SYSTEM_MODEL_1_0_URI);
 
+    // excluded aspects
+    private static final List<QName> EXCLUDED_ASPECTS = Arrays.asList();
+
+    // excluded properties
     private static final List<QName> EXCLUDED_PROPS = Arrays.asList(
             // top-level minimal info
             ContentModel.PROP_NAME,
@@ -216,13 +219,6 @@ public class NodesImpl implements Nodes
             ContentModel.PROP_CREATOR,
             ContentModel.PROP_CREATED,
             ContentModel.PROP_CONTENT,
-            // sys:localized
-            ContentModel.PROP_LOCALE,
-            // sys:referenceable
-            ContentModel.PROP_NODE_UUID,
-            ContentModel.PROP_STORE_IDENTIFIER,
-            ContentModel.PROP_STORE_PROTOCOL,
-            ContentModel.PROP_NODE_DBID,
             // other - TBC
             ContentModel.PROP_INITIAL_VERSION,
             ContentModel.PROP_AUTO_VERSION_PROPS,
@@ -477,7 +473,7 @@ public class NodesImpl implements Nodes
         }
     }
 
-    private NodeRef getParentNodeRef(final NodeRef nodeRef) 
+    private NodeRef getParentNodeRef(NodeRef nodeRef)
     {
         if (repositoryHelper.getCompanyHome().equals(nodeRef))
         {
@@ -788,11 +784,11 @@ public class NodesImpl implements Nodes
         {
             // return all properties
             selectedProperties = new ArrayList<>(nodeProps.size());
-            for (QName name : nodeProps.keySet())
+            for (QName propQName : nodeProps.keySet())
             {
-                if (!EXCLUDED_PROPS.contains(name))
+                if ((! EXCLUDED_NS.contains(propQName.getNamespaceURI())) && (! EXCLUDED_PROPS.contains(propQName)))
                 {
-                    selectedProperties.add(name);
+                    selectedProperties.add(propQName);
                 }
             }
         }
@@ -832,11 +828,11 @@ public class NodesImpl implements Nodes
     {
         List<String> aspectNames = new ArrayList<>(nodeAspects.size());
 
-        for (QName aspectName : nodeAspects)
+        for (QName aspectQName : nodeAspects)
         {
-            if (! EXCLUDED_ASPECTS.contains(aspectName))
+            if ((! EXCLUDED_NS.contains(aspectQName.getNamespaceURI())) && (! EXCLUDED_ASPECTS.contains(aspectQName)))
             {
-                aspectNames.add(aspectName.toPrefixString(namespaceService));
+                aspectNames.add(aspectQName.toPrefixString(namespaceService));
             }
         }
 
@@ -1101,7 +1097,7 @@ public class NodesImpl implements Nodes
 
             for (QName aspectQName : aspectQNames)
             {
-                if (EXCLUDED_ASPECTS.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
+                if (EXCLUDED_NS.contains(aspectQName.getNamespaceURI()) || EXCLUDED_ASPECTS.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
                 {
                     continue; // ignore
                 }
@@ -1114,7 +1110,7 @@ public class NodesImpl implements Nodes
 
             for (QName existingAspect : existingAspects)
             {
-                if (EXCLUDED_ASPECTS.contains(existingAspect) || existingAspect.equals(ContentModel.ASPECT_AUDITABLE))
+                if (EXCLUDED_NS.contains(existingAspect.getNamespaceURI()) || EXCLUDED_ASPECTS.contains(existingAspect) || existingAspect.equals(ContentModel.ASPECT_AUDITABLE))
                 {
                     continue; // ignore
                 }
@@ -1592,7 +1588,7 @@ public class NodesImpl implements Nodes
         List<QName> result = new ArrayList<>(qnameStrList.size());
         for (String str : qnameStrList)
         {
-            if (str.startsWith(PREFIX)) 
+            if (str.startsWith(PREFIX))
             {
                 str = str.substring(PREFIX.length());
             }

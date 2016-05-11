@@ -41,6 +41,7 @@ import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationE
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -157,6 +158,10 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
                             if (BinaryResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
                             {
                                 resAction = BinaryResourceAction.Read.class;
+                            }
+                            else if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
+                            {
+                                resAction = RelationshipResourceBinaryAction.Read.class;
                             }
                             break;
                         default:

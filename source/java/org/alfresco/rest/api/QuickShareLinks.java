@@ -45,16 +45,17 @@ public interface QuickShareLinks
     QuickShareLink readById(String sharedId, Parameters parameters);
 
     /**
-     * Download content via shared link.
+     * Download file content (or rendition content) via shared link.
      *
      * Note: does *not* require authenticated access for (public) shared link.
      *
      * @param sharedId
+     * @param renditionId - optional
      * @param parameters {@link Parameters}
      * @return
      * @throws EntityNotFoundException
      */
-    BinaryResource readProperty(String sharedId, final Parameters parameters) throws EntityNotFoundException;
+    BinaryResource readProperty(String sharedId, String renditionId, Parameters parameters) throws EntityNotFoundException;
 
     /**
      * Delete the shared link.

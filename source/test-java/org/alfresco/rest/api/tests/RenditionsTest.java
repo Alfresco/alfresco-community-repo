@@ -401,14 +401,16 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // -ve test - we do not currently accept multiple create entities
         List<Rendition> request = new ArrayList<>(2);
-        request .add(new Rendition().setId("doclib"));
-        request .add(new Rendition().setId("imgpreview"));
+        request.add(new Rendition().setId("doclib"));
+        request.add(new Rendition().setId("imgpreview"));
         post(getNodeRenditionsUrl(contentNodeId), userOneN1.getId(), toJsonAsString(request), 400);
 
         // Create a node without any content
         String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", ContentModel.TYPE_CONTENT, userOneN1.getId());
 
         // The source node has no content
+        request = new ArrayList<>(2);
+        request.add(new Rendition().setId("doclib"));
         post(getNodeRenditionsUrl(emptyContentNodeId), userOneN1.getId(), toJsonAsString(renditionRequest), 400);
 
         String content = "The quick brown fox jumps over the lazy dog.";
@@ -465,14 +467,14 @@ public class RenditionsTest extends AbstractBaseApiTest
         String folderName = "folder" + System.currentTimeMillis();
         String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, ContentModel.TYPE_FOLDER, userId);
 
-        // Create multipart request
+        // Create multipart request - pdf file
         String renditionName = "doclib";
         String fileName = "quick.pdf";
         File file = getResourceFile(fileName);
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+        MultiPartRequest reqBody = MultiPartBuilder.create()
                 .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
-                .setRenditions(Collections.singletonList(renditionName));
-        MultiPartRequest reqBody = multiPartBuilder.build();
+                .setRenditions(Collections.singletonList(renditionName))
+                .build();
 
         // Upload quick.pdf file into 'folder' - including request to create 'doclib' thumbnail
         HttpResponse response = post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 201);
@@ -484,12 +486,31 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
 
+        // Create multipart request - Word doc file
+        renditionName = "doclib";
+        fileName = "CAP-v1.2-os.doc";
+        file = getResourceFile(fileName);
+        reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_WORD))
+                .setRenditions(Collections.singletonList(renditionName))
+                .build();
+
+        // Upload quick.txt file into 'folder' - including request to create 'doclib' thumbnail
+        response = post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        contentNodeId = document.getId();
+
+        // wait and check that rendition is created ...
+        rendition = waitAndGetRendition(userId, contentNodeId, renditionName);
+        assertNotNull(rendition);
+        assertEquals(RenditionStatus.CREATED, rendition.getStatus());
+
         /*
-        // TODO open question
+        // TODO open question (RA-834)
         // - should we accept for  JSON when creating empty file (ie. with zero-byte content)
         // - eg. might fail, eg. doclib for empty plain text / pdf ?
         Document d1 = new Document();
-        d1.setName("d1.pdf");
+        d1.setName("d1.txt");
         d1.setNodeType("cm:content");
         ContentInfo ci = new ContentInfo();
         ci.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);

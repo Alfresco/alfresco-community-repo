@@ -42,6 +42,7 @@ import java.io.PrintWriter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -459,7 +460,8 @@ public class SerializeTests
             //this is correct
         }
     }
-    
+
+    // note: exposed as "properties" query param
     @Test
     public void testFilter() throws IOException, JSONException
     {
@@ -473,7 +475,21 @@ public class SerializeTests
         res = new ExecutionResult(new Sheep("bob"),theFilter);  
         out = writeResponse(res);
         JSONObject jsonRsp = new JSONObject(new JSONTokener(out));
+        assertEquals(1, jsonRsp.length());
         JSONObject entry = jsonRsp.getJSONObject("entry");
+        assertEquals(2, entry.length());
+        assertEquals("The name should be 'Dolly'", "Dolly", entry.getString("name"));
+        assertTrue("The age should be 3", entry.getInt("age") == 3);
+
+        // unit test filter with select taking precendence
+        List<String> theSelect = ResourceWebScriptHelper.getSelectClause("name");
+        theFilter  = ResourceWebScriptHelper.getFilter("age", theSelect);
+        res = new ExecutionResult(new Sheep("bob"),theFilter);
+        out = writeResponse(res);
+        jsonRsp = new JSONObject(new JSONTokener(out));
+        assertEquals(1, jsonRsp.length());
+        entry = jsonRsp.getJSONObject("entry");
+        assertEquals(2, entry.length());
         assertEquals("The name should be 'Dolly'", "Dolly", entry.getString("name"));
         assertTrue("The age should be 3", entry.getInt("age") == 3);
         
@@ -494,7 +510,6 @@ public class SerializeTests
         res = helper.postProcessResponse(v3,"goat",ParamsExtender.valueOf(relFiler, "notUsed"),new SlimGoat()); 
         out = writeResponse(res);
         assertTrue("Must return only the herd name.", StringUtils.contains(out, "{\"name\":\"bigun\"}"));
-        
     }
     
     @Test

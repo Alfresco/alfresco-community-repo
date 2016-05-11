@@ -1,12 +1,17 @@
 package org.alfresco.rest.framework.tests.api.mocks;
 
+import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
+import org.alfresco.rest.framework.resource.content.BasicContentInfo;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 
+import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
@@ -15,7 +20,11 @@ public class CowEntityResource implements EntityResourceAction.ReadByIdWithRespo
                                             EntityResourceAction.ReadWithResponse<Goat>,
                                             EntityResourceAction.CreateWithResponse<Goat>,
                                             EntityResourceAction.UpdateWithResponse<Goat>,
-                                            EntityResourceAction.DeleteWithResponse{
+                                            EntityResourceAction.DeleteWithResponse,
+        BinaryResourceAction.ReadWithResponse,
+        BinaryResourceAction.DeleteWithResponse,
+        BinaryResourceAction.UpdateWithResponse<Goat>
+{
 
     @Override
     public Goat readById(String id, Parameters parameters, WithResponse withResponse)
@@ -45,5 +54,27 @@ public class CowEntityResource implements EntityResourceAction.ReadByIdWithRespo
     public Goat update(String id, Goat entity, Parameters parameters, WithResponse withResponse)
     {
         return entity;
+    }
+
+    
+    @Override
+    @BinaryProperties("photo")
+    public void deleteProperty(String entityId, Parameters parameters, WithResponse withResponse)
+    {
+
+    }
+
+    @Override
+    @BinaryProperties("photo")
+    public BinaryResource readProperty(String entityId, Parameters parameters, WithResponse withResponse) throws EntityNotFoundException
+    {
+        return null;
+    }
+
+    @Override
+    @BinaryProperties("photo")
+    public Goat updateProperty(String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params, WithResponse withResponse)
+    {
+        return null;
     }
 }

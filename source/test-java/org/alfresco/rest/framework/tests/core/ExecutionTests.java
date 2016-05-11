@@ -17,6 +17,7 @@ import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tests.api.mocks.Goat;
 import org.alfresco.rest.framework.tests.api.mocks.Grass;
 import org.alfresco.rest.framework.tests.api.mocks.Sheep;
+import org.alfresco.rest.framework.tests.api.mocks3.FlockEntityResource;
 import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -63,6 +64,21 @@ public class ExecutionTests extends AbstractContextTest
         executor.execute(baa, Params.valueOf("4", "45", mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
         assertNotNull(result);
 
+        ResourceWithMetadata cowResource = locator.locateRelationResource(api,"cow","photo", HttpMethod.GET);
+        result = executor.execute(cowResource, Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
+        assertNull(result);
+
+        ResourceWithMetadata calf = locator.locateRelationResource(api,"cow", "calf", HttpMethod.GET);
+        result = executor.execute(calf, Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
+        assertNotNull(result);
+
+        executor.execute(calf, Params.valueOf("4", "45", mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
+        assertNotNull(result);
+
+        calf = locator.locateRelationResource(api,"cow/{entityId}/calf", "photo", HttpMethod.GET);
+        executor.execute(calf, Params.valueOf("4", "45", mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
+        assertNotNull(result);
+
         ResourceWithMetadata baaPhoto = locator.locateRelationResource(api,"sheep/{entityId}/baaahh", "photo", HttpMethod.GET);
         executor.execute(baaPhoto, Params.valueOf("4", "45", mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
         assertNotNull(result);
@@ -85,13 +101,18 @@ public class ExecutionTests extends AbstractContextTest
         result = executor.execute(grassResource, Params.valueOf("654", null, NULL_PARAMS, Arrays.asList(grr), mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
         assertEquals(grr,((ExecutionResult)result).getRoot());
 
+        final Goat goat = new Goat("xyz");
         ResourceWithMetadata cowresource = locator.locateEntityResource(api,"cow", HttpMethod.POST);
-        result = executor.execute(cowresource, Params.valueOf("654", null, NULL_PARAMS, Arrays.asList(grr), mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
-        assertEquals(grr,((ExecutionResult)result).getRoot());
+        result = executor.execute(cowresource, Params.valueOf("654", null, NULL_PARAMS, Arrays.asList(goat), mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertEquals(goat,((ExecutionResult)result).getRoot());
 
         ResourceWithMetadata entityResource = locator.locateRelationResource(api,"grass", "grow", HttpMethod.POST);
         result = executor.execute(entityResource,  Params.valueOf("654", null, NULL_PARAMS, grr, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
         assertEquals("Growing well",result);
+
+        ResourceWithMetadata calfResource = locator.locateRelationResource(api,"cow", "calf", HttpMethod.POST);
+        result = executor.execute(calfResource,  Params.valueOf("654", null, NULL_PARAMS, Arrays.asList(goat), mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertEquals(goat,((ExecutionResult)result).getRoot());
 
         Map<String, String> templateVars = new HashMap();
         templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "sheep");
@@ -115,8 +136,24 @@ public class ExecutionTests extends AbstractContextTest
         result = executor.execute(cowResource,  Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
         assertNull(result);
 
+        cowResource = locator.locateRelationResource(api,"cow","photo", HttpMethod.DELETE);
+        result = executor.execute(cowResource,  Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNull(result);
+
         ResourceWithMetadata resource = locator.locateRelationResource(api, "sheep", "blacksheep", HttpMethod.DELETE);
         result = executor.execute(resource,  Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNull(result);
+
+        ResourceWithMetadata calf = locator.locateRelationResource(api,"cow", "calf", HttpMethod.DELETE);
+        result = executor.execute(calf,  Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNull(result);
+
+        ResourceWithMetadata flockEntityResource = locator.locateRelationResource(api3,"flock","photo", HttpMethod.DELETE);
+        result = executor.execute(flockEntityResource,  Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNull(result);
+
+        calf = locator.locateRelationResource(api,"cow/{entityId}/calf", "photo", HttpMethod.DELETE);
+        result = executor.execute(calf,  Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
         assertNull(result);
 
         ResourceWithMetadata goatDelete = locator.locateRelationResource(api3,"goat/{entityId}/herd", "content", HttpMethod.DELETE);
@@ -148,6 +185,23 @@ public class ExecutionTests extends AbstractContextTest
 
         ResourceWithMetadata baaPhoto = locator.locateRelationResource(api,"sheep/{entityId}/baaahh", "photo", HttpMethod.PUT);
         result = executor.execute(baaPhoto,  Params.valueOf("4", "56", mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNull(result);
+
+        ResourceWithMetadata flockEntityResource = locator.locateRelationResource(api3,"flock","photo", HttpMethod.PUT);
+        result = executor.execute(flockEntityResource, Params.valueOf("654", null, NULL_PARAMS, goat, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNull(result);
+
+        ResourceWithMetadata calf = locator.locateRelationResource(api,"cow", "calf", HttpMethod.PUT);
+        result = executor.execute(calf, Params.valueOf("654", null, NULL_PARAMS, goat, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNotNull(result);
+        assertEquals(goat,((ExecutionResult)result).getRoot());
+
+        cowResource = locator.locateRelationResource(api,"cow","photo", HttpMethod.PUT);
+        result = executor.execute(cowResource, Params.valueOf("654", null, NULL_PARAMS, goat, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNull(result);
+
+        calf = locator.locateRelationResource(api,"cow/{entityId}/calf", "photo", HttpMethod.PUT);
+        result = executor.execute(calf,  Params.valueOf("4", "56", mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
         assertNull(result);
     }
 }

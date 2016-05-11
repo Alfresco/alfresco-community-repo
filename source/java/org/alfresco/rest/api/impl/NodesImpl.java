@@ -345,9 +345,20 @@ public class NodesImpl implements Nodes
 
     private Type getType(QName typeQName, NodeRef nodeRef)
     {
+        // quick check for common types
+        if (typeQName.equals(ContentModel.TYPE_FOLDER) || typeQName.equals(ApplicationModel.TYPE_FOLDERLINK))
+        {
+            return Type.FOLDER;
+        }
+        else if (typeQName.equals(ContentModel.TYPE_CONTENT) || typeQName.equals(ApplicationModel.TYPE_FILELINK))
+        {
+            return Type.DOCUMENT;
+        }
+
+        // further checks
+
         if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_LINK))
         {
-            // handle file/folder link type (we do not explicitly validate that the destination type matches)
             if (dictionaryService.isSubClass(typeQName, ApplicationModel.TYPE_FOLDERLINK))
             {
                 return Type.FOLDER;
@@ -356,27 +367,37 @@ public class NodesImpl implements Nodes
             {
                 return Type.DOCUMENT;
             }
-            else
+
+            NodeRef linkNodeRef = (NodeRef)nodeService.getProperty(nodeRef, ContentModel.PROP_LINK_DESTINATION);
+            if (linkNodeRef != null)
             {
-                // cm:link (or other subclass)
-                NodeRef linkNodeRef = (NodeRef)nodeService.getProperty(nodeRef, ContentModel.PROP_LINK_DESTINATION);
-                if (linkNodeRef != null)
+                try
                 {
-                    try
-                    {
-                        typeQName = nodeService.getType(linkNodeRef);
-                    }
-                    catch (InvalidNodeRefException inre)
-                    {
-                        // ignore
-                    }
+                    typeQName = nodeService.getType(linkNodeRef);
+                    // drop-through to check type of destination
+                    // note: edge-case - if link points to another link then we will return null
+                }
+                catch (InvalidNodeRefException inre)
+                {
+                    // ignore
                 }
             }
         }
 
-        boolean isContainer = (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER) &&
-                               (! dictionaryService.isSubClass(typeQName, ContentModel.TYPE_SYSTEM_FOLDER)));
-        return isContainer ? Type.FOLDER : Type.DOCUMENT;
+        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER))
+        {
+            if (! dictionaryService.isSubClass(typeQName, ContentModel.TYPE_SYSTEM_FOLDER))
+            {
+                return Type.FOLDER;
+            }
+            return null; // unknown
+        }
+        else if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
+        {
+            return Type.DOCUMENT;
+        }
+
+        return null; // unknown
     }
 
     /**
@@ -385,7 +406,7 @@ public class NodesImpl implements Nodes
     public Document getDocument(NodeRef nodeRef)
     {
         Type type = getType(nodeRef);
-        if (type.equals(Type.DOCUMENT))
+        if ((type != null) && type.equals(Type.DOCUMENT))
         {
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
 
@@ -423,7 +444,7 @@ public class NodesImpl implements Nodes
     public Folder getFolder(NodeRef nodeRef)
     {
         Type type = getType(nodeRef);
-        if (type.equals(Type.FOLDER))
+        if ((type != null) && type.equals(Type.FOLDER))
         {
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
 
@@ -572,6 +593,12 @@ public class NodesImpl implements Nodes
         Node node;
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
 
+        if (type == null)
+        {
+            // unknown type
+            node = new Document(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
+            node.setIsFolder(null);
+        }
         if (type.equals(Type.DOCUMENT))
         {
             node = new Document(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
@@ -583,7 +610,7 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            throw new InvalidArgumentException("Node is not a folder or file");
+            throw new RuntimeException("Unexpected - should not reach here");
         }
 
         if (selectParam.size() > 0)

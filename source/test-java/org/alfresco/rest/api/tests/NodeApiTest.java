@@ -498,6 +498,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         // -ve test - try to list children using relative path to node that is of wrong type (ie. not a folder/container)
         params = Collections.singletonMap("relativePath", folder1 + "/" + contentF1);
         getAll(myChildrenUrl, user1, paging, params, 400);
+
+        // -ve test - list folder children for non-folder node with relative path should return 400
+        params = Collections.singletonMap("relativePath", "/unknown");
+        getAll(getChildrenUrl(contentNodeRef), user1, paging, params, 400);
     }
 
     /**

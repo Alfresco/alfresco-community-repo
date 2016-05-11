@@ -263,14 +263,17 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = getSingle(QuickShareLinkEntityResource.class, null, shared1Id + "/content", null, 200);
         assertArrayEquals(content1Text.getBytes(), response.getResponseAsBytes());
         assertEquals(file1_MimeType+";charset=UTF-8", response.getHeaders().get("Content-Type"));
+        assertNotNull(response.getHeaders().get("Last-Modified"));
+        assertNotNull(response.getHeaders().get("Expires"));
         assertEquals("attachment; filename=\"" + fileName1 + "\"; filename*=UTF-8''" + fileName1 + "", response.getHeaders().get("Content-Disposition"));
+
+
+        response = getSingle(QuickShareLinkEntityResource.class, null, shared1Id + "/content", null, 30);
 
         // -ve test - unauth access to get shared link file content - without Content-Disposition header (attachment=false) - header ignored (plain text is not in white list)
         params = new HashMap<>();
         params.put("attachment", "false");
         response = getSingle(QuickShareLinkEntityResource.class, null, shared1Id + "/content", params, 200);
-        assertEquals(file1_MimeType+";charset=UTF-8", response.getHeaders().get("Content-Type"));
-        assertArrayEquals(content1Text.getBytes(), response.getResponseAsBytes());
         assertEquals("attachment; filename=\"" + fileName1 + "\"; filename*=UTF-8''" + fileName1 + "", response.getHeaders().get("Content-Disposition"));
 
 
@@ -278,14 +281,18 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         response = getSingle(QuickShareLinkEntityResource.class, null, shared2Id + "/content", null, 200);
         assertArrayEquals(file2_originalBytes, response.getResponseAsBytes());
         assertEquals(file2_MimeType+";charset=UTF-8", response.getHeaders().get("Content-Type"));
+        assertNotNull(response.getHeaders().get("Last-Modified"));
+        assertNotNull(response.getHeaders().get("Expires"));
         assertEquals("attachment; filename=\"" + fileName2 + "\"; filename*=UTF-8''" + fileName2 + "", response.getHeaders().get("Content-Disposition"));
 
         // unauth access to file 2 content (via shared link) - without Content-Disposition header (attachment=false)
         params = new HashMap<>();
         params.put("attachment", "false");
         response = getSingle(QuickShareLinkEntityResource.class, null, shared2Id + "/content", params, 200);
-        assertEquals(file2_MimeType+";charset=UTF-8", response.getHeaders().get("Content-Type"));
         assertArrayEquals(file2_originalBytes, response.getResponseAsBytes());
+        assertEquals(file2_MimeType+";charset=UTF-8", response.getHeaders().get("Content-Type"));
+        assertNotNull(response.getHeaders().get("Last-Modified"));
+        assertNotNull(response.getHeaders().get("Expires"));
         assertNull(response.getHeaders().get("Content-Disposition"));
 
 
@@ -306,7 +313,10 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         // unauth access to get shared link file rendition content
         response = getSingle(QuickShareLinkEntityResource.class, null, shared1Id + "/renditions/doclib/content", null, 200);
+        assertTrue(response.getResponseAsBytes().length > 0);
         assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=UTF-8", response.getHeaders().get("Content-Type"));
+        assertNotNull(response.getHeaders().get("Last-Modified"));
+        assertNotNull(response.getHeaders().get("Expires"));
         String docName = "doclib";
         assertEquals("attachment; filename=\"" + docName + "\"; filename*=UTF-8''" + docName + "", response.getHeaders().get("Content-Disposition"));
 
@@ -314,7 +324,10 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         params = new HashMap<>();
         params.put("attachment", "false");
         response = getSingle(QuickShareLinkEntityResource.class, null, shared1Id + "/renditions/doclib/content", params, 200);
+        assertTrue(response.getResponseAsBytes().length > 0);
         assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG+";charset=UTF-8", response.getHeaders().get("Content-Type"));
+        assertNotNull(response.getHeaders().get("Last-Modified"));
+        assertNotNull(response.getHeaders().get("Expires"));
         assertNull(response.getHeaders().get("Content-Disposition"));
 
 

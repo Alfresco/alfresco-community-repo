@@ -1436,7 +1436,17 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // filtering, via where clause (nodeType + subTypes)
 
-        List<String> linkIds = Arrays.asList(n1Id, n2Id);
+        // note: subtle issue - in order to filter by "cm:link" the qname must have been created in the DB (in a write txn)
+        // otherwise query will not match a missing qname (hmm). Workaround here by forcing the create of an explicit "cm:link".
+
+        // create link (dangling here)
+        nodeName = "link 3";
+        nodeType = "cm:link";
+
+        nodeResp = createNode(user1, f2Id, nodeName, nodeType, props);
+        String n3Id = nodeResp.getId();
+
+        List<String> linkIds = Arrays.asList(n1Id, n2Id, n3Id);
 
         Map<String, String> params = new HashMap<>();
         params.put("where", "(nodeType='cm:link')");
@@ -1446,9 +1456,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         response = getAll(getChildrenUrl(f2Id), user1, paging, params, 200);
         List<Node> nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
 
-        // TODO review
-        //assertEquals(0, nodes.size());
-        assertEquals(2, nodes.size());
+        assertEquals(1, nodes.size());
 
         params = new HashMap<>();
         params.put("where", "(nodeType='cm:link' and subTypes=true)");
@@ -1457,7 +1465,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         response = getAll(getChildrenUrl(f2Id), user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
-        assertEquals(2, nodes.size());
+        assertEquals(3, nodes.size());
         assertTrue(linkIds.contains(nodes.get(0).getId()));
         assertTrue(linkIds.contains(nodes.get(1).getId()));
 

@@ -478,7 +478,7 @@ public class NodesImpl implements Nodes
         return nodeService.getPrimaryParent(nodeRef).getParentRef();
     }
 
-    private NodeRef validateOrLookupNode(String nodeId, String path)
+    protected NodeRef validateOrLookupNode(String nodeId, String path)
     {
         NodeRef parentNodeRef;
 

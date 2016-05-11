@@ -23,7 +23,7 @@ package org.alfresco.rest.api.model;
  * 
  * @author Gethin James
  */
-public class NodeTarget extends Target
+public class NodeTarget
 {
     String targetParentId;
     String name;

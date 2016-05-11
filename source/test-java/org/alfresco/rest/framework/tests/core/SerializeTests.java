@@ -35,18 +35,6 @@ import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
-
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -66,9 +54,9 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor.ExecutionCallback;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.Read;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.ReadById;
+import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.content.BinaryProperty;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
@@ -84,7 +72,9 @@ import org.alfresco.rest.framework.tests.api.mocks3.Flock;
 import org.alfresco.rest.framework.tests.api.mocks3.SlimGoat;
 import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.apache.commons.lang.StringUtils;
 import org.codehaus.jackson.JsonGenerationException;
@@ -108,6 +98,19 @@ import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringReader;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:test-rest-context.xml" })
@@ -385,6 +388,17 @@ public class SerializeTests
         String out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
        
+    }
+
+    @Test
+    public void testSerializeCustom() throws IOException
+    {
+        assertNotNull(helper);
+        String uuid = GUID.generate();
+        String out = writeResponse(uuid);
+        NodeRef n = jsonHelper.construct(new StringReader(out),NodeRef.class);
+        assertNotNull(n);
+        assertEquals(uuid, n.getId());
     }
 
     @Test

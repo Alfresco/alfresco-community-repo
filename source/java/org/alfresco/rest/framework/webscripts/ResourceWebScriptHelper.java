@@ -478,7 +478,7 @@ public class ResourceWebScriptHelper
      * @param objectToWrap Object
      * @return Object - Either ExecutionResult or CollectionWithPagingInfo<ExecutionResult>
      */
-    public Object postProcessResponse(Api api, String entityCollectionName, Params params, Object objectToWrap)
+    public Object processAdditionsToTheResponse(Api api, String entityCollectionName, Params params, Object objectToWrap)
     {
         PropertyCheck.mandatory(this, null, params);
         if (objectToWrap == null ) return null;
@@ -490,7 +490,7 @@ public class ResourceWebScriptHelper
                 Collection<Object> resultCollection = new ArrayList(collectionToWrap.getCollection().size());
                 for (Object obj : collectionToWrap.getCollection())
                 {
-                    resultCollection.add(postProcessResponse(api,entityCollectionName,params,obj));
+                    resultCollection.add(processAdditionsToTheResponse(api,entityCollectionName,params,obj));
                 }
                 return CollectionWithPagingInfo.asPaged(collectionToWrap.getPaging(), resultCollection, collectionToWrap.hasMoreItems(), collectionToWrap.getTotalItems());
             }

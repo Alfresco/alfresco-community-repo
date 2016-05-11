@@ -102,7 +102,7 @@ public class NetworksWebScriptGet extends ApiWebScript
                             {
                                 // TODO this is not ideal, but the only way to populate the embedded network entities (this would normally be
                                 // done automatically by the api framework).
-                                Object wrapped = helper.postProcessResponse(Api.ALFRESCO_PUBLIC, NetworksEntityResource.NAME, Params.valueOf(personId, null), networkMember);
+                                Object wrapped = helper.processAdditionsToTheResponse(Api.ALFRESCO_PUBLIC, NetworksEntityResource.NAME, Params.valueOf(personId, null), networkMember);
                                 entities.add(wrapped);
                             }
             

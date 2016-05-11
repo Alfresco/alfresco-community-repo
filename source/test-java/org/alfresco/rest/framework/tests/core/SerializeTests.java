@@ -161,12 +161,12 @@ public class SerializeTests
         assertNotNull(entityResource);
         EntityResourceAction.ReadById<?> getter = (ReadById<?>) entityResource.getResource();
 
-        String out = writeResponse(helper.postProcessResponse(api,null, NOT_USED, getter.readById("1234A3", NOT_USED)));
+        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, NOT_USED, getter.readById("1234A3", NOT_USED)));
         assertTrue("There must be json output", StringUtils.startsWith(out, "{\"entry\":"));
         
         EntityResourceAction.Read<?> getAll = (Read<?>) entityResource.getResource();
         CollectionWithPagingInfo<?> resources = getAll.readAll(null);
-        out = writeResponse(helper.postProcessResponse(api,null, Params.valueOf("notUsed", null), resources));
+        out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), resources));
         assertTrue("There must be json output as List", StringUtils.startsWith(out, "{\"list\":"));
     }
 
@@ -190,7 +190,7 @@ public class SerializeTests
         mockRequest.setContent(reqBody.getBody());
         mockRequest.setContentType(reqBody.getContentType());
 
-        String out = writeResponse(helper.postProcessResponse(api,null, NOT_USED, resource.create(new FormData(mockRequest), NOT_USED)));
+        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, NOT_USED, resource.create(new FormData(mockRequest), NOT_USED)));
         assertTrue("There must be json output", StringUtils.startsWith(out, "{\"entry\":"));
     }
 
@@ -201,7 +201,7 @@ public class SerializeTests
         assertNotNull(relationResource);
         RelationshipResourceAction.Read<?> getter = (RelationshipResourceAction.Read<?>) relationResource.getResource();
         CollectionWithPagingInfo<?> resources = getter.readAll("123",Params.valueOf("", null));
-        String out = writeResponse(helper.postProcessResponse(api,null, Params.valueOf("notUsed", null), resources));
+        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), resources));
         assertTrue("There must be json output as List", StringUtils.startsWith(out, "{\"list\":"));
     }
     
@@ -215,13 +215,13 @@ public class SerializeTests
         assertNotNull(resources);
         assertTrue(resources.getTotalItems().intValue() == 3);
         assertFalse(resources.hasMoreItems());
-        String out = writeResponse(helper.postProcessResponse(api,null, Params.valueOf("notUsed", null), resources));
+        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), resources));
         assertTrue("There must be json output as List with pagination", StringUtils.startsWith(out, "{\"list\":{\"pagination\":{\"count\":3,"));
         
         resources = getter.readAll("123",ParamsExtender.valueOf(Paging.valueOf(0, 1),"123"));
         assertTrue(resources.getCollection().size() == 1);
         assertTrue(resources.hasMoreItems());
-        out = writeResponse(helper.postProcessResponse(api,null, Params.valueOf("notUsed", null), resources));
+        out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), resources));
         assertTrue("There must be json output as List with pagination", StringUtils.startsWith(out, "{\"list\":{\"pagination\":{\"count\":1,"));
 
     }
@@ -233,7 +233,7 @@ public class SerializeTests
         Farmer aFarmer = new Farmer("180");
         aFarmer.setGoatId("1111");
         aFarmer.setSheepId("2222");
-        ExecutionResult res = (ExecutionResult) helper.postProcessResponse(api,null,Params.valueOf("notUsed", null),aFarmer);
+        ExecutionResult res = (ExecutionResult) helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),aFarmer);
         assertNotNull(res);
         assertTrue(Farmer.class.equals(res.getRoot().getClass()));
         Map<String,Object> embeds = res.getEmbedded();
@@ -258,14 +258,14 @@ public class SerializeTests
     {
         assertNotNull(helper);
         Map<String, BeanPropertiesFilter> rFilter = ResourceWebScriptHelper.getRelationFilter("blacksheep,baaahh");
-        ExecutionResult res = (ExecutionResult) helper.postProcessResponse(api,"sheep",ParamsExtender.valueOf(rFilter,"1"),new Farmer("180"));
+        ExecutionResult res = (ExecutionResult) helper.processAdditionsToTheResponse(api,"sheep",ParamsExtender.valueOf(rFilter,"1"),new Farmer("180"));
         assertNotNull(res);
         String out = writeResponse(res);
         assertTrue(Farmer.class.equals(res.getRoot().getClass()));
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
         Paging pageRequest = Paging.valueOf(1, 2);
         
-        Object resultCollection =  helper.postProcessResponse(api,"sheep",ParamsExtender.valueOf(rFilter,"1"),CollectionWithPagingInfo.asPaged(pageRequest,Arrays.asList(new Farmer("180"), new Farmer("190"), new Farmer("280"))));
+        Object resultCollection =  helper.processAdditionsToTheResponse(api,"sheep",ParamsExtender.valueOf(rFilter,"1"),CollectionWithPagingInfo.asPaged(pageRequest,Arrays.asList(new Farmer("180"), new Farmer("190"), new Farmer("280"))));
         assertNotNull(resultCollection);
         out = writeResponse(resultCollection);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
@@ -291,7 +291,7 @@ public class SerializeTests
     public void testSerializeExecutionResult() throws IOException
     {
         assertNotNull(helper);
-        Object res = helper.postProcessResponse(api,null,Params.valueOf("notUsed", null),new Farmer("180"));        
+        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),new Farmer("180"));
         String out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
        
@@ -303,16 +303,16 @@ public class SerializeTests
     {
         assertNotNull(helper);
         CollectionWithPagingInfo paged = CollectionWithPagingInfo.asPaged(null,null);
-        String out = writeResponse(helper.postProcessResponse(api,null, Params.valueOf("notUsed", null), paged));
+        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), paged));
         assertTrue("There must be json output as List with pagination", StringUtils.startsWith(out, "{\"list\":{\"pagination\":{\"count\":0,"));
         Paging pageRequest = Paging.valueOf(1, 2);
         
         paged = CollectionWithPagingInfo.asPaged(pageRequest,Arrays.asList(new Goat(), new Sheep("ABCD"), new Sheep("XYZ")));
-        out = writeResponse(helper.postProcessResponse(api,null, Params.valueOf("notUsed", null), paged));
+        out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), paged));
         assertTrue("There must be json output as List with pagination", StringUtils.startsWith(out, "{\"list\":{\"pagination\":{\"count\":3,"));
         
         paged = CollectionWithPagingInfo.asPaged(pageRequest,Arrays.asList(new Goat(), new Sheep("ABCD"), new Sheep("XYZ")),true,5000);
-        out = writeResponse(helper.postProcessResponse(api,null, Params.valueOf("notUsed", null), paged));
+        out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), paged));
         assertTrue("There must be json output as List with pagination", StringUtils.startsWith(out, "{\"list\":{\"pagination\":{\"count\":3,\"hasMoreItems\":true,\"totalItems\":5000"));
        
     }
@@ -325,7 +325,7 @@ public class SerializeTests
         aMap.put("goatie", new Goat());
         aMap.put("sheepie", new Sheep("ABCD"));
         aMap.put("sheepy", new Sheep("XYZ"));
-        Object res = helper.postProcessResponse(api,null,Params.valueOf("notUsed", null),aMap);        
+        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),aMap);
         String out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
        
@@ -339,7 +339,7 @@ public class SerializeTests
         aSet.add(new Goat());
         aSet.add(new Sheep("ABCD"));
         aSet.add(new Sheep("XYZ"));
-        Object res = helper.postProcessResponse(api,null,Params.valueOf("notUsed", null),aSet);        
+        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),aSet);
         String out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
        
@@ -350,11 +350,11 @@ public class SerializeTests
     {
         assertNotNull(helper);
         CollectionWithPagingInfo<String> pString = CollectionWithPagingInfo.asPaged(null,Arrays.asList("goat", "sheep", "horse")); 
-        Object res = helper.postProcessResponse(api,null,Params.valueOf("notUsed", null),pString);        
+        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),pString);
         String out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
         CollectionWithPagingInfo<Integer> pInts = CollectionWithPagingInfo.asPaged(null,Arrays.asList(234, 45, 890, 3456)); 
-        res = helper.postProcessResponse(api,null,Params.valueOf("notUsed", null),pInts);
+        res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),pInts);
         out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
     } 
@@ -363,7 +363,7 @@ public class SerializeTests
     public void testSerializeList() throws IOException
     {
         assertNotNull(helper);
-        Object res = helper.postProcessResponse(api,null,Params.valueOf("notUsed", null),Arrays.asList(new Goat(), new Sheep("ABCD"), new Sheep("XYZ")));        
+        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),Arrays.asList(new Goat(), new Sheep("ABCD"), new Sheep("XYZ")));
         String out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
        
@@ -373,7 +373,7 @@ public class SerializeTests
     public void testSerializeUniqueId() throws IOException
     {
         assertNotNull(helper);
-        Object res = helper.postProcessResponse(api,null,Params.valueOf("notUsed", null), new Sheep("ABCD"));        
+        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null), new Sheep("ABCD"));
         String out = writeResponse(res);
         assertTrue("Id field must be called sheepGuid.",  StringUtils.contains(out, "\"sheepGuid\":\"ABCD\""));      
     }
@@ -384,7 +384,7 @@ public class SerializeTests
         ResourceWithMetadata relationResource = locator.locateRelationResource(api,"sheep", "baaahh", HttpMethod.GET);
         assertNotNull(relationResource);
         RelationshipResourceAction.Read<?> getter = (RelationshipResourceAction.Read<?>) relationResource.getResource();
-        String out = writeResponse(helper.postProcessResponse(api,null, Params.valueOf("notUsed", null), getter.readAll("1234A3", Params.valueOf("notUsed", null))));
+        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), getter.readAll("1234A3", Params.valueOf("notUsed", null))));
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
     }
 
@@ -495,7 +495,7 @@ public class SerializeTests
         
         Api v3 = Api.valueOf(api.getName(), api.getScope().toString(), "3");
         Map<String, BeanPropertiesFilter> relFiler = ResourceWebScriptHelper.getRelationFilter("herd");
-        res = helper.postProcessResponse(v3,"goat",ParamsExtender.valueOf(relFiler, "notUsed"),new SlimGoat()); 
+        res = helper.processAdditionsToTheResponse(v3,"goat",ParamsExtender.valueOf(relFiler, "notUsed"),new SlimGoat());
         out = writeResponse(res);
         jsonRsp = new JSONObject(new JSONTokener(out));
         entry = jsonRsp.getJSONObject("relations")
@@ -507,7 +507,7 @@ public class SerializeTests
         assertTrue("The quantity should be 56", entry.getInt("quantity") == 56);
 
         relFiler = ResourceWebScriptHelper.getRelationFilter("herd(name)");
-        res = helper.postProcessResponse(v3,"goat",ParamsExtender.valueOf(relFiler, "notUsed"),new SlimGoat()); 
+        res = helper.processAdditionsToTheResponse(v3,"goat",ParamsExtender.valueOf(relFiler, "notUsed"),new SlimGoat());
         out = writeResponse(res);
         assertTrue("Must return only the herd name.", StringUtils.contains(out, "{\"name\":\"bigun\"}"));
     }

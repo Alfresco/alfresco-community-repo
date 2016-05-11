@@ -60,6 +60,7 @@ public class Node implements Comparable<Node>
     protected UserInfo modifiedByUser;
 
     protected Boolean isFolder;
+    protected Boolean isLink;
 
     protected NodeRef parentNodeRef;
     protected PathInfo pathInfo;
@@ -238,7 +239,17 @@ public class Node implements Comparable<Node>
 
     public void setIsFolder(Boolean isFolder)
     {
-        this.isFolder=isFolder;
+        this.isFolder = isFolder;
+    }
+
+    public Boolean getIsLink()
+    {
+        return isLink;
+    }
+
+    public void setIsLink(Boolean isLink)
+    {
+        this.isLink = isLink;
     }
 
     public boolean equals(Object other)

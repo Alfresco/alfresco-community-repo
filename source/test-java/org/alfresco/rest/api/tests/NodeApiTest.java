@@ -67,6 +67,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.TempFileProvider;
+import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -366,7 +367,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(node.getContent().getSizeInBytes() > 0);
 
         // request without select
-        Map<String, String> params = new LinkedHashMap<>();
+        Map<String, String> params = new HashMap<>();
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         for (Node n : nodes)
@@ -378,7 +379,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         }
 
         // request with select - example 1
-        params = new LinkedHashMap<>();
+        params = new HashMap<>();
         params.put("select", "isLink");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
@@ -388,7 +389,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         }
 
         // request with select - example 2
-        params = new LinkedHashMap<>();
+        params = new HashMap<>();
         params.put("select", "aspectNames,properties, path,isLink");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
@@ -401,7 +402,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         }
 
         // request specific property via select
-        params = new LinkedHashMap<>();
+        params = new HashMap<>();
         params.put("select", "cm:lastThumbnailModification");
         params.put("orderBy", "isFolder DESC,modifiedAt DESC");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
@@ -418,7 +419,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
 
         // filtering, via where clause - folders only
-        params = new LinkedHashMap<>();
+        params = new HashMap<>();
         params.put("where", "("+Nodes.PARAM_ISFOLDER+"=true)");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
@@ -433,7 +434,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(folderIds.contains(nodes.get(1).getId()));
 
         // filtering, via where clause - content only
-        params = new LinkedHashMap<>();
+        params = new HashMap<>();
         params.put("where", "("+Nodes.PARAM_ISFILE+"=true)");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
@@ -446,15 +447,44 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folder1);
         response = getAll(myChildrenUrl, user1, paging, params, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        JSONObject jsonResponse = response.getJsonResponse();
+        nodes = jacksonUtil.parseEntries(jsonResponse, Document.class);
         assertEquals(1, nodes.size());
         assertEquals(contentF1_Id, nodes.get(0).getId());
 
+        JSONObject jsonList = (JSONObject)jsonResponse.get("list");
+        assertNotNull(jsonList);
+        JSONObject jsonSrcObj = (JSONObject)jsonResponse.get("source");
+        assertNull(jsonSrcObj);
+
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user1 + "/" + folder2);
         response = getAll(rootChildrenUrl, user1, paging, params, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        jsonResponse = response.getJsonResponse();
+        nodes = jacksonUtil.parseEntries(jsonResponse, Document.class);
         assertEquals(1, nodes.size());
         assertEquals(contentF2_Id, nodes.get(0).getId());
+
+        jsonList = (JSONObject)jsonResponse.get("list");
+        assertNotNull(jsonList);
+        jsonSrcObj = (JSONObject)jsonResponse.get("source");
+        assertNull(jsonSrcObj);
+
+        // list children via relativePath and also return the source entity
+
+        params = new HashMap<>();
+        params.put(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user1 + "/" + folder2);
+        params.put("includeSource", "true");
+        response = getAll(rootChildrenUrl, user1, paging, params, 200);
+        jsonResponse = response.getJsonResponse();
+        nodes = jacksonUtil.parseEntries(jsonResponse, Document.class);
+        assertEquals(1, nodes.size());
+        assertEquals(contentF2_Id, nodes.get(0).getId());
+
+        jsonList = (JSONObject)jsonResponse.get("list");
+        assertNotNull(jsonList);
+
+        Folder src = RestApiUtil.parsePojo("source", jsonList, Folder.class);
+        assertEquals(folder2_Id, src.getId());
 
         // -ve test - Invalid QName (Namespace prefix cm... is not mapped to a namespace URI) for the orderBy parameter.
         params = Collections.singletonMap("orderBy", Nodes.PARAM_ISFOLDER+" DESC,cm" + System.currentTimeMillis() + ":modified DESC");

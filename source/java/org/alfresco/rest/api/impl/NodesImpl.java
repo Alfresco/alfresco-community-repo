@@ -650,9 +650,7 @@ public class NodesImpl implements Nodes
         String path = parameters.getParameter(PARAM_RELATIVE_PATH);
         NodeRef nodeRef = validateOrLookupNode(nodeId, path);
 
-        QName typeQName = getNodeType(nodeRef);
-
-        return getFolderOrDocumentFullInfo(nodeRef, getParentNodeRef(nodeRef), typeQName, parameters);
+        return getFolderOrDocumentFullInfo(nodeRef, null, null, parameters);
     }
 
     private Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters)
@@ -680,10 +678,20 @@ public class NodesImpl implements Nodes
             pathInfo = lookupPathInfo(nodeRef);
         }
 
-        Type type = getType(nodeTypeQName, nodeRef);
+        if (nodeTypeQName == null)
+        {
+            nodeTypeQName = getNodeType(nodeRef);
+        }
+
+        if (parentNodeRef == null)
+        {
+            parentNodeRef = getParentNodeRef(nodeRef);
+        }
 
         Node node;
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
+
+        Type type = getType(nodeTypeQName, nodeRef);
 
         if (type == null)
         {
@@ -916,9 +924,9 @@ public class NodesImpl implements Nodes
         final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, path);
 
         // check that resolved node is a folder
-        if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
+        if (!nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
         {
-            throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef.getId());
+            throw new InvalidArgumentException("NodeId of folder is expected: " + parentNodeRef.getId());
         }
 
         final List<String> selectParam = parameters.getSelectedProperties();
@@ -1040,7 +1048,14 @@ public class NodesImpl implements Nodes
             }
         };
 
-        return CollectionWithPagingInfo.asPaged(paging, nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst());
+        Node sourceEntity = null;
+        if (parameters.includeSource())
+        {
+            sourceEntity = getFolderOrDocument(parentNodeRef, null, null, selectParam, mapUserInfo);
+        }
+
+
+        return CollectionWithPagingInfo.asPaged(paging, nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst(), sourceEntity);
     }
 
     private Pair<QName,Boolean> parseNodeTypeFilter(String nodeTypeStr)
@@ -1553,10 +1568,7 @@ public class NodesImpl implements Nodes
         setWriterContentType(writer, new ContentInfoWrapper(contentInfo), nodeRef, true);
         writer.putContent(stream);
 
-        return getFolderOrDocumentFullInfo(nodeRef,
-                    getParentNodeRef(nodeRef),
-                    nodeService.getType(nodeRef),
-                    parameters);
+        return getFolderOrDocumentFullInfo(nodeRef, null, null, parameters);
     }
 
     private void setWriterContentType(ContentWriter writer, ContentInfoWrapper contentInfo, NodeRef nodeRef, boolean guessEncodingIfNull)

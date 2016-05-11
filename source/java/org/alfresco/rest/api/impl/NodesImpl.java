@@ -322,7 +322,7 @@ public class NodesImpl implements Nodes
         return nodeMatches(nodeRef, expectedTypes, excludedTypes, true);
     }
 
-    public boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes, boolean existsCheck)
+    private boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes, boolean existsCheck)
     {
         if (existsCheck && (! nodeService.exists(nodeRef)))
         {
@@ -508,7 +508,7 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            throw new InvalidArgumentException("Node is not a folder");
+            throw new InvalidArgumentException("Node is not a folder: "+nodeRef.getId());
         }
     }
 
@@ -539,7 +539,7 @@ public class NodesImpl implements Nodes
             NodeRef person = repositoryHelper.getPerson();
             if (person == null)
             {
-                throw new InvalidArgumentException("Unexpected: cannot use " + PATH_MY);
+                throw new InvalidArgumentException("Unexpected - cannot use: " + PATH_MY);
             }
             parentNodeRef = repositoryHelper.getUserHome(person);
             if (parentNodeRef == null)
@@ -557,7 +557,7 @@ public class NodesImpl implements Nodes
             // check that parent is a folder before resolving relative path
             if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
             {
-                throw new InvalidArgumentException("NodeId of folder is expected");
+                throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef.getId());
             }
 
             // resolve path relative to current nodeId
@@ -621,7 +621,7 @@ public class NodesImpl implements Nodes
         catch (FileNotFoundException fnfe)
         {
             // convert checked exception
-            throw new EntityNotFoundException(fnfe.getMessage()+" ["+parentNodeRef+","+path+"]");
+            throw new EntityNotFoundException(fnfe.getMessage()+" ["+parentNodeRef.getId()+","+path+"]");
         }
 
         return fileInfo.getNodeRef();
@@ -685,7 +685,7 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            throw new RuntimeException("Unexpected - should not reach here");
+            throw new RuntimeException("Unexpected - should not reach here: "+type);
         }
 
         if (selectParam.size() > 0)
@@ -899,7 +899,7 @@ public class NodesImpl implements Nodes
         // check that resolved node is a folder
         if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
         {
-            throw new InvalidArgumentException("NodeId of folder is expected");
+            throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef.getId());
         }
 
         final List<String> selectParam = parameters.getSelectedProperties();
@@ -1079,21 +1079,21 @@ public class NodesImpl implements Nodes
 
         if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
         {
-            throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef);
+            throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef.getId());
         }
 
         // node name - mandatory
         String nodeName = nodeInfo.getName();
         if ((nodeName == null) || nodeName.isEmpty())
         {
-            throw new InvalidArgumentException("Node name is expected: "+parentNodeRef);
+            throw new InvalidArgumentException("Node name is expected: "+parentNodeRef.getId());
         }
 
         // node type - check that requested type is a (sub-) type of cm:object
         String nodeType = nodeInfo.getNodeType();
         if ((nodeType == null) || nodeType.isEmpty())
         {
-            throw new InvalidArgumentException("Node type is expected: "+parentNodeRef+","+nodeName);
+            throw new InvalidArgumentException("Node type is expected: "+parentNodeRef.getId()+","+nodeName);
         }
 
         QName nodeTypeQName = createQName(nodeType);
@@ -1101,10 +1101,7 @@ public class NodesImpl implements Nodes
         boolean isContent = isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT);
         if (! isContent)
         {
-            if (! isSubClass(nodeTypeQName, ContentModel.TYPE_CMOBJECT))
-            {
-                throw new InvalidArgumentException("Invalid type: " + nodeTypeQName + " [expected (sub-)type of cm:object]");
-            }
+            validateCmObject(nodeTypeQName);
         }
 
         Map<QName, Serializable> props = new HashMap<>(1);
@@ -1177,16 +1174,27 @@ public class NodesImpl implements Nodes
         }
     }
 
+    // check cm:cmobject (but *not* cm:systemfolder)
+    private void validateCmObject(QName nodeTypeQName)
+    {
+        if (! isSubClass(nodeTypeQName, ContentModel.TYPE_CMOBJECT))
+        {
+            throw new InvalidArgumentException("Invalid type: " + nodeTypeQName + " - expected (sub-)type of cm:cmobject");
+        }
+
+        if (isSubClass(nodeTypeQName, ContentModel.TYPE_SYSTEM_FOLDER))
+        {
+            throw new InvalidArgumentException("Invalid type: " + nodeTypeQName + " - cannot be (sub-)type of cm:systemfolder");
+        }
+    }
+
     public Node updateNode(String nodeId, Node nodeInfo, Parameters parameters)
     {
         final NodeRef nodeRef = validateNode(nodeId);
 
         QName nodeTypeQName = getNodeType(nodeRef);
 
-        if (! isSubClass(nodeTypeQName, ContentModel.TYPE_CMOBJECT))
-        {
-            throw new InvalidArgumentException("Invalid type: " + nodeTypeQName + " [expected (sub-)type of cm:object]");
-        }
+        validateCmObject(nodeTypeQName);
 
         Map<QName, Serializable> props = new HashMap<>(0);
 
@@ -1208,7 +1216,9 @@ public class NodesImpl implements Nodes
             // update node type - ensure that we are performing a specialise (we do not support generalise)
             QName destNodeTypeQName = createQName(nodeType);
 
-            if ((! destNodeTypeQName.equals(nodeTypeQName)) && isSubClass(destNodeTypeQName, nodeTypeQName))
+            if ((! destNodeTypeQName.equals(nodeTypeQName)) &&
+                 isSubClass(destNodeTypeQName, nodeTypeQName) &&
+                 (! isSubClass(destNodeTypeQName, ContentModel.TYPE_SYSTEM_FOLDER)))
             {
                 nodeService.setType(nodeRef, destNodeTypeQName);
             }
@@ -1354,25 +1364,25 @@ public class NodesImpl implements Nodes
         }
         catch (InvalidNodeRefException inre)
         {
-            throw new EntityNotFoundException(inre.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
+            throw new EntityNotFoundException(inre.getMessage());
         }
         catch (FileNotFoundException fnfe)
         {
             // convert checked exception
-            throw new EntityNotFoundException(fnfe.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
+            throw new EntityNotFoundException(fnfe.getMessage());
         }
         catch (FileExistsException fee)
         {
             // duplicate - name clash
-            throw new ConstraintViolatedException(fee.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
+            throw new ConstraintViolatedException(fee.getMessage());
         }
         catch (FileFolderServiceImpl.InvalidTypeException ite)
         {
-            throw new InvalidArgumentException(ite.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
+            throw new InvalidArgumentException(ite.getMessage());
         }
         catch (CyclicChildRelationshipException ccre)
         {
-            throw new InvalidArgumentException(ccre.getMessage() + " [" + nodeRef + "," + parentNodeRef + "]");
+            throw new InvalidArgumentException(ccre.getMessage());
         }
     }
 
@@ -1383,7 +1393,7 @@ public class NodesImpl implements Nodes
 
         if (! nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
-            throw new InvalidArgumentException("NodeId of content is expected: "+nodeRef);
+            throw new InvalidArgumentException("NodeId of content is expected: "+nodeRef.getId());
         }
 
         Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
@@ -1426,9 +1436,9 @@ public class NodesImpl implements Nodes
     {
         final NodeRef nodeRef = validateNode(fileNodeId);
 
-        if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
+        if (! nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
-            throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef);
+            throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef.getId());
         }
 
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
@@ -1473,13 +1483,14 @@ public class NodesImpl implements Nodes
     {
         if (formData == null || !formData.getIsMultiPart())
         {
-            throw new InvalidArgumentException("The request content-type is not multipart");
+            throw new InvalidArgumentException("The request content-type is not multipart: "+parentFolderNodeId);
         }
 
         final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
-        if (Type.DOCUMENT == getType(parentNodeRef))
+
+        if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
         {
-            throw new InvalidArgumentException(parentFolderNodeId + " is not a folder.");
+            throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef.getId());
         }
 
         String fileName = null;
@@ -1537,7 +1548,7 @@ public class NodesImpl implements Nodes
         // result in a success message, but the files do not appear.
         if (formData.getFields().length == 0)
         {
-            throw new ConstraintViolatedException(" No disk space available");
+            throw new ConstraintViolatedException("No disk space available");
         }
         // Ensure mandatory file attributes have been located. Need either
         // destination, or site + container or updateNodeRef

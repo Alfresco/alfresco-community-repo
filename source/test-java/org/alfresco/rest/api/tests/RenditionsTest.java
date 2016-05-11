@@ -57,6 +57,7 @@ import org.junit.Test;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -396,8 +397,15 @@ public class RenditionsTest extends AbstractBaseApiTest
         // renditionId is empty
         post(getNodeRenditionsUrl(contentNodeId), userOneN1.getId(), toJsonAsString(new Rendition().setId("")), 400);
 
+        // -ve test - we do not currently accept multiple create entities
+        List<Rendition> request = new ArrayList<>(2);
+        request .add(new Rendition().setId("doclib"));
+        request .add(new Rendition().setId("imgpreview"));
+        post(getNodeRenditionsUrl(contentNodeId), userOneN1.getId(), toJsonAsString(request), 400);
+
         // Create a node without any content
         String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", ContentModel.TYPE_CONTENT, userOneN1.getId());
+
         // The source node has no content
         post(getNodeRenditionsUrl(emptyContentNodeId), userOneN1.getId(), toJsonAsString(renditionRequest), 400);
 

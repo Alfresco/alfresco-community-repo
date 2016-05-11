@@ -29,6 +29,7 @@ import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -46,6 +47,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -55,8 +57,6 @@ import java.util.Map;
  */
 public class QueriesImpl implements Queries, InitializingBean
 {
-    //private static final Log logger = LogFactory.getLog(QueriesImpl.class);
-
     private ServiceRegistry sr;
     private SearchService searchService;
     private NodeService nodeService;
@@ -65,6 +65,19 @@ public class QueriesImpl implements Queries, InitializingBean
     private final static String QT_FIELD = "keywords";
 
     private final static String QUERY_LIVE_SEARCH_NODES = "live-search-nodes";
+
+    private final static Map<String,QName> MAP_PARAM_SORT_QNAME;
+    static
+    {
+        Map<String,QName> aMap = new HashMap<>(3);
+
+        aMap.put(PARAM_NAME, ContentModel.PROP_NAME);
+        aMap.put(PARAM_CREATEDAT, ContentModel.PROP_CREATED);
+        aMap.put(PARAM_MODIFIEDAT, ContentModel.PROP_MODIFIED);
+
+        MAP_PARAM_SORT_QNAME = Collections.unmodifiableMap(aMap);
+    }
+
 
     private Nodes nodes;
 
@@ -142,7 +155,7 @@ public class QueriesImpl implements Queries, InitializingBean
         sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
 
         // query template / field
-        sp.addQueryTemplate(QT_FIELD, "%(cm:name cm:title cm:description lnk:title lnk:description TEXT TAG)");
+        sp.addQueryTemplate(QT_FIELD, "%(cm:name cm:title cm:description TEXT TAG)");
 
         Paging paging = parameters.getPaging();
         PagingRequest pagingRequest = Util.getPagingRequest(paging);
@@ -150,8 +163,24 @@ public class QueriesImpl implements Queries, InitializingBean
         sp.setSkipCount(pagingRequest.getSkipCount());
         sp.setMaxItems(pagingRequest.getMaxItems());
 
-        // TODO modifiedAt, createdAt or name
-        sp.addSort("@" + ContentModel.PROP_MODIFIED, false);
+        List<SortColumn> sortCols = parameters.getSorting();
+        if ((sortCols != null) && (sortCols.size() > 0))
+        {
+            for (SortColumn sortCol : sortCols)
+            {
+                QName sortPropQName = MAP_PARAM_SORT_QNAME.get(sortCol.column);
+                if (sortPropQName == null)
+                {
+                    throw new InvalidArgumentException("Invalid sort field: "+sortCol.column);
+                }
+                sp.addSort("@" + sortPropQName,  sortCol.asc);
+            }
+        }
+        else
+        {
+            // default sort order
+            sp.addSort("@" + ContentModel.PROP_MODIFIED, false);
+        }
 
         ResultSet results = searchService.query(sp);
 

@@ -1066,6 +1066,10 @@ public class NodeApiTest extends AbstractBaseApiTest
      * <p>PUT:</p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
      */
+
+    // TODO update these tests for RA-806 (ie. use "POST /nodes/{nodeId}/move" instead of "PUT /nodes/{nodeId}")
+
+    /*
     @Test
     public void testMove() throws Exception
     {
@@ -1164,6 +1168,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         dUpdate.setParentId(my2NodeId);
         put("nodes", user2, f1Id, toJsonAsStringNonNull(dUpdate), null, 403);
     }
+
 
     /**
      * Tests copy (file or folder)
@@ -1772,6 +1777,20 @@ public class NodeApiTest extends AbstractBaseApiTest
         fUpdate = new Folder();
         fUpdate.setNodeType("cm:folder");
         put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 400);
+
+        // -ve test - try to move to a different parent using PUT (note: should use new POST /nodes/{nodeId}/move operation instead)
+
+        folderResp = createFolder(user1, myNodeId, "folder 2");
+        String f2Id = folderResp.getId();
+
+        fUpdate = new Folder();
+        fUpdate.setParentId(f2Id);
+        put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 400);
+
+        // ok - if parent does not change
+        fUpdate = new Folder();
+        fUpdate.setParentId(myNodeId);
+        put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
     }
 
     /**
@@ -1894,8 +1913,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         response = getSingle(url, user1, null, 200);
         assertNotNull(content, response.getResponse());
     }
-
-    // TODO add test to create multiple folders & empty files (within same parent folder)
 
     /**
      * Tests download of file/content.

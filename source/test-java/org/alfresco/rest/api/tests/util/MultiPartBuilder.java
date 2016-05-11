@@ -57,7 +57,7 @@ public class MultiPartBuilder
     private String contentTypeQNameStr;
     private List<String> aspects;
     private boolean majorVersion;
-    private boolean overwrite = true; // If a fileName clashes for a versionable file
+    private boolean overwrite = false; // If a fileName clashes for a versionable file
 
     private MultiPartBuilder()
     {
@@ -232,11 +232,13 @@ public class MultiPartBuilder
 
     public MultiPartRequest build() throws IOException
     {
-        assertNotNull(fileData);
         List<Part> parts = new ArrayList<>();
 
-        parts.add(new FilePart("filedata", fileData.getFileName(), fileData.getFile(), fileData.getMimetype(), null));
-        addPartIfNotNull(parts, "filename", fileData.getFileName());
+        if (fileData != null)
+        {
+            parts.add(new FilePart("filedata", fileData.getFileName(), fileData.getFile(), fileData.getMimetype(), null));
+            addPartIfNotNull(parts, "filename", fileData.getFileName());
+        }
         addPartIfNotNull(parts, "siteid", siteId);
         addPartIfNotNull(parts, "containerid", containerId);
         addPartIfNotNull(parts, "destination", destination);

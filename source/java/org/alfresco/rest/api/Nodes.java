@@ -38,6 +38,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
  * @author steveglover
@@ -45,11 +46,11 @@ import org.alfresco.service.namespace.QName;
  */
 public interface Nodes
 {
-	NodeRef validateNode(StoreRef storeRef, String nodeId);
-	NodeRef validateNode(String nodeId);
-	NodeRef validateNode(NodeRef nodeRef);
-	boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes);
-	
+    NodeRef validateNode(StoreRef storeRef, String nodeId);
+    NodeRef validateNode(String nodeId);
+    NodeRef validateNode(NodeRef nodeRef);
+    boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes);
+
     /**
      * Get the node representation for the given node.
      * @param nodeId String
@@ -122,4 +123,14 @@ public interface Nodes
 
     // TODO update REST fwk - to optionally support return of json
     void updateContent(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters);
+
+    /**
+     * Uploads file content and meta-data into the repository.
+     *
+     * @param parentFolderNodeId String id of parent folder node or well-known alias, eg. "-root-" or "-my-"
+     * @param formData           the {@link FormData}
+     * @param parameters         the {@link Parameters} object to get the parameters passed into the request
+     * @return {@code Node} if successful
+     */
+    Node upload(String parentFolderNodeId, FormData formData, Parameters parameters);
 }

@@ -19,18 +19,22 @@
 
 package org.alfresco.rest.api.tests;
 
+import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Document;
+import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.PathInfo.ElementInfo;
@@ -40,10 +44,14 @@ import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.util.JacksonUtil;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
+import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -54,8 +62,12 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.util.ResourceUtils;
 
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.Serializable;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -67,14 +79,16 @@ import java.util.Set;
 /**
  * API tests for:
  * <ul>
- * <li> {@literal host:port/alfresco/api/{networkId}/public/alfresco/versions/1/nodes/{nodeId}} </li>
- * <li> {@literal host:port/alfresco/api/{networkId}/public/alfresco/versions/1/nodes/{nodeId}/children} </li>
+ * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>} </li>
+ * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/children} </li>
  * </ul>
  *
  * @author Jamal Kaabi-Mofrad
  */
 public class NodeApiTest extends AbstractBaseApiTest
 {
+    private static final String RESOURCE_PREFIX = "publicapi/upload/";
+
     /**
      * User one from network one
      */
@@ -145,6 +159,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.clearCurrentSecurityContext();
     }
 
+    /**
+     * Tests get document library children.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/children}
+     */
     @Test
     public void testListDocLibChildren() throws Exception
     {
@@ -246,6 +265,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         getAll(getChildrenUrl(docLibNodeRef), userTwoN1.getId(), paging, 403);
     }
 
+    /**
+     * Tests get user's home children.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
+     */
     @Test
     public void testListMyFilesChildren() throws Exception
     {
@@ -317,6 +341,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals("doclib:1444660852296", ((List<?>) entry.getValue()).get(0));
     }
 
+    /**
+     * Tests get node with path information.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>?select=path}
+     */
     @Test
     public void testGetPathElements_DocLib() throws Exception
     {
@@ -385,6 +414,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(folderC, pathElements.get(0).getName());
     }
 
+    /**
+     * Tests get node with path information.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>?select=path}
+     */
     @Test
     public void testGetPathElements_MyFiles() throws Exception
     {
@@ -434,6 +468,14 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(pathElements.get(4).getId());
     }
 
+    /**
+     * Tests well-known aliases.
+     * <p>GET:</p>
+     * <ul>
+     * <li> {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/-root-}</li>
+     * <li> {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/-my-} </li>
+     * </ul>
+     */
     @Test
     public void testGetNodeWithKnownAlias() throws Exception
     {
@@ -472,9 +514,170 @@ public class NodeApiTest extends AbstractBaseApiTest
         getSingle(NodesEntityResource.class, user1, userNodeAlias, null, 404); // Not found
     }
 
-    private String getChildrenUrl(NodeRef nodeRef)
+    /**
+     * Tests Multipart upload to user's home (a.k.a My Files).
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
+     */
+    @Test
+    public void testUploadToMyFiles() throws Exception
     {
-        return "nodes/" + nodeRef.getId() + "/children";
+        final String userNodeAlias = "-my-";
+        final String fileName = "quick.pdf";
+        final File file = getResourceFile(fileName);
+
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+        HttpResponse response = getAll(getChildrenUrl(userNodeAlias), user1, paging, 200);
+        PublicApiClient.ExpectedPaging pagingResult = parsePaging(response.getJsonResponse());
+        assertNotNull(paging);
+        final int numOfNodes = pagingResult.getCount().intValue();
+
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                    .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF));
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Try to upload
+        response = post(getChildrenUrl(userNodeAlias), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        Document document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        ContentInfo contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
+
+        // Retrieve the uploaded file
+        response = getSingle(NodesEntityResource.class, user1, document.getNodeRef().getId(), null, 200);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        assertEquals(fileName, document.getName());
+        contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
+
+        // Check 'get children' is confirming the upload
+        response = getAll(getChildrenUrl(userNodeAlias), user1, paging, 200);
+        pagingResult = parsePaging(response.getJsonResponse());
+        assertNotNull(paging);
+        assertEquals(numOfNodes + 1, pagingResult.getCount().intValue());
+
+        // Upload the same file again to check the name conflicts handling
+        post(getChildrenUrl(userNodeAlias), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 409);
+
+        response = getAll(getChildrenUrl(userNodeAlias), user1, paging, 200);
+        pagingResult = parsePaging(response.getJsonResponse());
+        assertNotNull(paging);
+        assertEquals("Duplicate file name. The file shouldn't have been uploaded.", numOfNodes + 1, pagingResult.getCount().intValue());
+
+        // User2 tries to upload a new file into the user1's home folder.
+        response = getSingle(NodesEntityResource.class, user1, userNodeAlias, null, 200);
+        Folder user1Home = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
+        final String fileName2 = "quick-2.txt";
+        final File file2 = getResourceFile(fileName2);
+        reqBody = MultiPartBuilder.create()
+                    .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .build();
+        post(getChildrenUrl(user1Home.getNodeRef()), user2, new String(reqBody.getBody()), null, reqBody.getContentType(), 403);
+
+        response = getAll(getChildrenUrl(userNodeAlias), user1, paging, 200);
+        pagingResult = parsePaging(response.getJsonResponse());
+        assertNotNull(paging);
+        assertEquals("Access Denied. The file shouldn't have been uploaded.", numOfNodes + 1, pagingResult.getCount().intValue());
+
+        // User1 tries to upload a file into a document rather than a folder!
+        post(getChildrenUrl(document.getNodeRef()), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
+
+        // Try to upload a file without defining the required formData
+        reqBody = MultiPartBuilder.create().build();
+        post(getChildrenUrl(userNodeAlias), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
+    }
+
+    /**
+     * Tests Multipart upload to a Site.
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/children}
+     */
+    @Test
+    public void testUploadToSite() throws Exception
+    {
+        final String fileName = "quick-1.txt";
+        final File file = getResourceFile(fileName);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getId());
+        String folderA = "folder" + System.currentTimeMillis() + "_A";
+        NodeRef folderA_Ref = repoService.addToDocumentLibrary(userOneN1Site, folderA, ContentModel.TYPE_FOLDER);
+
+        Paging paging = getPaging(0, Integer.MAX_VALUE);
+        HttpResponse response = getAll(getChildrenUrl(folderA_Ref), userOneN1.getId(), paging, 200);
+        PublicApiClient.ExpectedPaging pagingResult = parsePaging(response.getJsonResponse());
+        assertNotNull(paging);
+        final int numOfNodes = pagingResult.getCount().intValue();
+
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                    .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_TEXT_PLAIN));
+        MultiPartRequest reqBody = multiPartBuilder.build();
+        // Try to upload
+        response = post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        Document document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        // Check the upload response
+        assertEquals(fileName, document.getName());
+        ContentInfo contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        // Retrieve the uploaded file
+        response = getSingle(NodesEntityResource.class, userOneN1.getId(), document.getNodeRef().getId(), null, 200);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        assertEquals(fileName, document.getName());
+        contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+
+        // Check 'get children' is confirming the upload
+        response = getAll(getChildrenUrl(folderA_Ref), userOneN1.getId(), paging, 200);
+        pagingResult = parsePaging(response.getJsonResponse());
+        assertNotNull(paging);
+        assertEquals(numOfNodes + 1, pagingResult.getCount().intValue());
+
+        // Upload the same file again to check the name conflicts handling
+        post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 409);
+
+        // Set overwrite=true and upload the same file again
+        reqBody = MultiPartBuilder.copy(multiPartBuilder)
+                    .setOverwrite(true)
+                    .build();
+        post(getChildrenUrl(folderA_Ref), userOneN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+
+        response = getAll(getChildrenUrl(folderA_Ref), userOneN1.getId(), paging, 200);
+        pagingResult = parsePaging(response.getJsonResponse());
+        assertNotNull(paging);
+        assertEquals(numOfNodes + 1, pagingResult.getCount().intValue());
+
+        final String fileName2 = "quick-2.txt";
+        final File file2 = getResourceFile(fileName2);
+        reqBody = MultiPartBuilder.create()
+                    .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .build();
+        // userTwoN1 tries to upload a new file into the folderA of userOneN1
+        post(getChildrenUrl(folderA_Ref), userTwoN1.getId(), new String(reqBody.getBody()), null, reqBody.getContentType(), 403);
+    }
+
+    private String getChildrenUrl(NodeRef parentNodeRef)
+    {
+        return getChildrenUrl(parentNodeRef.getId());
+    }
+
+    private String getChildrenUrl(String parentId)
+    {
+        return "nodes/" + parentId + "/children";
+    }
+
+    private File getResourceFile(String fileName) throws FileNotFoundException
+    {
+        URL url = NodeApiTest.class.getClassLoader().getResource(RESOURCE_PREFIX + fileName);
+        if (url == null)
+        {
+            fail("Cannot get the resource: " + fileName);
+        }
+        return ResourceUtils.getFile(url);
     }
 
     @Override

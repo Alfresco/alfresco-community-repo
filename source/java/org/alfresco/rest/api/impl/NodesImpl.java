@@ -28,8 +28,10 @@ package org.alfresco.rest.api.impl;
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Document;
@@ -38,8 +40,12 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.PathInfo.ElementInfo;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.framework.core.exceptions.ApiException;
+import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
@@ -51,14 +57,19 @@ import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.action.Action;
+import org.alfresco.service.cmr.action.ActionDefinition;
+import org.alfresco.service.cmr.action.ActionService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -66,13 +77,23 @@ import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.usage.ContentQuotaException;
+import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.surf.util.Content;
+import org.springframework.extensions.webscripts.servlet.FormData;
 
+import java.io.BufferedInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -95,6 +116,8 @@ import java.util.Set;
  */
 public class NodesImpl implements Nodes
 {
+    private static final Log logger = LogFactory.getLog(NodesImpl.class);
+
     private static enum Type
     {
         // Note: ordered
@@ -114,6 +137,10 @@ public class NodesImpl implements Nodes
     private FileFolderService fileFolderService;
     private NamespaceService namespaceService;
     private PermissionService permissionService;
+    private MimetypeService mimetypeService;
+    private ContentService contentService;
+    private ActionService actionService;
+    private VersionService versionService;
     private Repository repositoryHelper;
     private ServiceRegistry sr;
     private Set<String> defaultIgnoreTypes;
@@ -121,6 +148,16 @@ public class NodesImpl implements Nodes
 
     public void init()
     {
+        this.namespaceService = sr.getNamespaceService();
+        this.fileFolderService = sr.getFileFolderService();
+        this.nodeService = sr.getNodeService();
+        this.permissionService = sr.getPermissionService();
+        this.dictionaryService = sr.getDictionaryService();
+        this.mimetypeService = sr.getMimetypeService();
+        this.contentService = sr.getContentService();
+        this.actionService = sr.getActionService();
+        this.versionService = sr.getVersionService();
+
         if (defaultIgnoreTypes != null)
         {
             ignoreTypeQNames = new HashSet<>(defaultIgnoreTypes.size());
@@ -133,12 +170,6 @@ public class NodesImpl implements Nodes
 
     public void setServiceRegistry(ServiceRegistry sr) {
         this.sr = sr;
-
-        this.namespaceService = sr.getNamespaceService();
-        this.fileFolderService = sr.getFileFolderService();
-        this.nodeService = sr.getNodeService();
-        this.permissionService = sr.getPermissionService();
-        this.dictionaryService = sr.getDictionaryService();
     }
 
     public void setRepositoryHelper(Repository repositoryHelper)
@@ -792,15 +823,15 @@ public class NodesImpl implements Nodes
     }
 
     // TODO should we able to specify content properties (eg. mimeType ... or use extension for now, or encoding)
-	public Node createNode(String parentFolderNodeId, Node nodeInfo, Parameters parameters)
-	{
+    public Node createNode(String parentFolderNodeId, Node nodeInfo, Parameters parameters)
+    {
         // check that requested parent node exists and it's type is a (sub-)type of folder
         final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
 
-		if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null))
-		{
-			throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef);
-		}
+        if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null))
+        {
+            throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef);
+        }
 
         String nodeName = nodeInfo.getName();
         if ((nodeName == null) || nodeName.isEmpty())
@@ -849,7 +880,7 @@ public class NodesImpl implements Nodes
         }
 
         return getFolderOrDocument(nodeRef.getId(), parameters);
-	}
+    }
 
     public Node updateNode(String nodeId, Node nodeInfo, Parameters parameters)
     {
@@ -931,6 +962,259 @@ public class NodesImpl implements Nodes
 
         // TODO - hmm - we may wish to return json info !!
         return;
+    }
+
+    @Override
+    public Node upload(String parentFolderNodeId, FormData formData, Parameters parameters)
+    {
+        if (formData == null || !formData.getIsMultiPart())
+        {
+            throw new InvalidArgumentException("The request content-type is not multipart");
+        }
+
+        final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
+        if (Type.DOCUMENT == getType(parentNodeRef))
+        {
+            throw new InvalidArgumentException(parentFolderNodeId + " is not a folder.");
+        }
+
+        String fileName = null;
+        Content content = null;
+        boolean overwrite = false; // If a fileName clashes for a versionable file
+
+        for (FormData.FormField field : formData.getFields())
+        {
+            switch (field.getName().toLowerCase())
+            {
+                case "filename":
+                    fileName = getStringOrNull(field.getValue());
+                    break;
+
+                case "filedata":
+                    if (field.getIsFile())
+                    {
+                        fileName = fileName != null ? fileName : field.getFilename();
+                        content = field.getContent();
+                    }
+                    break;
+
+                case "overwrite":
+                    overwrite = Boolean.valueOf(field.getValue());
+                    break;
+            }
+        }
+
+        try
+        {
+            // MNT-7213 When alf_data runs out of disk space, Share uploads
+            // result in a success message, but the files do not appear.
+            if (formData.getFields().length == 0)
+            {
+                throw new ConstraintViolatedException(" No disk space available");
+            }
+
+            // Ensure mandatory file attributes have been located. Need either
+            // destination, or site + container or updateNodeRef
+            if ((fileName == null || content == null))
+            {
+                throw new InvalidArgumentException("Required parameters are missing");
+            }
+            /*
+             * Existing file handling
+             */
+            NodeRef existingFile = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, fileName);
+            if (existingFile != null)
+            {
+                // File already exists, decide what to do
+                if (overwrite && nodeService.hasAspect(existingFile, ContentModel.ASPECT_VERSIONABLE))
+                {
+                    // Upload component was configured to overwrite files if name clashes
+                    write(existingFile, content, fileName, false, true);
+
+                    // Extract the metadata (The overwrite policy controls
+                    // which if any parts of the document's properties are updated from this)
+                    extractMetadata(existingFile);
+
+                    // Do not clean formData temp files to
+                    // allow for retries. Temp files will be deleted later
+                    // when GC call DiskFileItem#finalize() method or by temp file cleaner.
+                    return createUploadResponse(parentNodeRef, existingFile);
+                }
+                else
+                {
+                    throw new ConstraintViolatedException(fileName + " already exists.");
+                }
+            }
+
+            // Create a new file.
+            return createNewFile(parentNodeRef, fileName, content);
+
+            // Do not clean formData temp files to allow for retries.
+            // Temp files will be deleted later when GC call DiskFileItem#finalize() method or by temp file cleaner.
+        }
+        catch (ApiException apiEx)
+        {
+            // As this is an public API fwk exception, there is no need to convert it, so just throw it.
+            throw apiEx;
+        }
+        catch (AccessDeniedException ade)
+        {
+            throw new PermissionDeniedException();
+        }
+        catch (ContentQuotaException cqe)
+        {
+            throw new RequestEntityTooLargeException();
+        }
+        catch (ContentLimitViolationException clv)
+        {
+            throw new ConstraintViolatedException();
+        }
+        catch (Exception ex)
+        {
+            /*
+             * NOTE: Do not clean formData temp files to allow for retries. It's
+             * possible for a temp file to remain if max retry attempts are
+             * made, but this is rare, so leave to usual temp file cleanup.
+             */
+
+            throw new ApiException("Unexpected error occurred during upload of new content.", ex);
+        }
+    }
+
+    /**
+     * Helper to create a new node and writes its content to the repository.
+     */
+    private Node createNewFile(NodeRef parentNodeRef, String fileName, Content content)
+    {
+        FileInfo fileInfo = fileFolderService.create(parentNodeRef, fileName, ContentModel.TYPE_CONTENT);
+        NodeRef newFile = fileInfo.getNodeRef();
+
+        // Write content
+        write(newFile, content, fileName, false, true);
+
+        // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)
+        ensureVersioningEnabled(newFile, true, false);
+
+        // Extract the metadata
+        extractMetadata(newFile);
+
+        // Create the response
+        return createUploadResponse(parentNodeRef, newFile);
+    }
+
+    private Node createUploadResponse(NodeRef parentNodeRef, NodeRef newFileNodeRef)
+    {
+        return getFolderOrDocument(newFileNodeRef, parentNodeRef, ContentModel.TYPE_CONTENT, Collections.<String>emptyList(), true, null);
+    }
+
+    private String getStringOrNull(String value)
+    {
+        if (StringUtils.isNotEmpty(value))
+        {
+            return value.equalsIgnoreCase("null") ? null : value;
+        }
+        return null;
+    }
+
+    /**
+     * Writes the content to the repository.
+     *
+     * @param nodeRef       the reference to the node having a content property
+     * @param content       the content
+     * @param fileName      the uploaded file name
+     * @param applyMimeType If true, apply the mimeType from the Content object,
+     *                      else leave the original mimeType
+     * @param guessEncoding If true, guess the encoding from the underlying
+     *                      input stream, else use encoding set in the Content object as supplied
+     */
+    protected void write(NodeRef nodeRef, Content content, String fileName, boolean applyMimeType, boolean guessEncoding)
+    {
+        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        InputStream is;
+        String mimeType = content.getMimetype();
+        if (!applyMimeType)
+        {
+            ContentData existingContentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            if (existingContentData != null)
+            {
+                mimeType = existingContentData.getMimetype();
+            }
+            else
+            {
+                mimeType = mimetypeService.guessMimetype(fileName);
+            }
+        }
+        if (guessEncoding)
+        {
+            is = new BufferedInputStream(content.getInputStream());
+            is.mark(1024);
+
+            writer.setEncoding(guessEncoding(is, mimeType));
+            try
+            {
+                is.reset();
+            }
+            catch (IOException e)
+            {
+                logger.error("Failed to reset input stream", e);
+            }
+        }
+        else
+        {
+            writer.setEncoding(content.getEncoding());
+            is = content.getInputStream();
+        }
+        writer.setMimetype(mimeType);
+        writer.putContent(is);
+    }
+
+    /**
+     * Ensures the given node has the {@code cm:versionable} aspect applied to it, and
+     * that it has the initial version in the version store.
+     *
+     * @param nodeRef          the reference to the node to be checked
+     * @param autoVersion      If the {@code cm:versionable} aspect is applied, should auto
+     *                         versioning be requested?
+     * @param autoVersionProps If the {@code cm:versionable} aspect is applied, should
+     *                         auto versioning of properties be requested?
+     */
+    protected void ensureVersioningEnabled(NodeRef nodeRef, boolean autoVersion, boolean autoVersionProps)
+    {
+        Map<QName, Serializable> props = new HashMap<>(2);
+        props.put(ContentModel.PROP_AUTO_VERSION, autoVersion);
+        props.put(ContentModel.PROP_AUTO_VERSION_PROPS, autoVersionProps);
+
+        versionService.ensureVersioningEnabled(nodeRef, props);
+    }
+
+    /**
+     * Guesses the character encoding of the given inputStream.
+     */
+    protected String guessEncoding(InputStream in, String mimeType)
+    {
+        String encoding = "UTF-8";
+
+        if (in != null)
+        {
+            Charset charset = mimetypeService.getContentCharsetFinder().getCharset(in, mimeType);
+            encoding = charset.name();
+        }
+
+        return encoding;
+    }
+
+    /**
+     * Extracts the given node metadata asynchronously.
+     */
+    private void extractMetadata(NodeRef nodeRef)
+    {
+        final String actionName = "extract-metadata";
+        ActionDefinition actionDef = actionService.getActionDefinition(actionName);
+        if (actionDef != null)
+        {
+            Action action = actionService.createAction(actionName);
+            actionService.executeAction(action, nodeRef);
+        }
     }
 
     /**

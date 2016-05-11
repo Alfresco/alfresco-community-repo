@@ -1223,7 +1223,7 @@ public class NodesImpl implements Nodes
             {
                 FileInfo fInfo = page.get(index);
 
-                // minimal info by default (unless "select"ed otherwise)
+                // minimal info by default (unless "include"d otherwise)
                 return getFolderOrDocument(fInfo.getNodeRef(), parentNodeRef, fInfo.getType(), includeParam, mapUserInfo);
             }
 

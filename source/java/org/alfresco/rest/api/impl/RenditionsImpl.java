@@ -24,15 +24,22 @@ import org.alfresco.query.PagingResults;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
+import org.alfresco.repo.thumbnail.script.ScriptThumbnailService;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.model.Rendition.RenditionStatus;
+import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
+import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
+import org.alfresco.rest.framework.resource.content.FileBinaryResource;
+import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -52,8 +59,16 @@ import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.PropertyCheck;
+import org.alfresco.util.TempFileProvider;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.springframework.context.ResourceLoaderAware;
+import org.springframework.core.io.ResourceLoader;
 
+import java.io.File;
+import java.io.InputStream;
+import java.io.Serializable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -63,19 +78,23 @@ import java.util.TreeMap;
 /**
  * @author Jamal Kaabi-Mofrad
  */
-public class RenditionsImpl implements Renditions
+public class RenditionsImpl implements Renditions, ResourceLoaderAware
 {
+    private static final Log LOGGER = LogFactory.getLog(RenditionsImpl.class);
+
     private static final String PARAM_status = "status";
     private static final Set<String> RENDITION_STATUS_COLLECTION_EQUALS_QUERY_PROPERTIES = Collections.singleton(PARAM_status);
 
     private Nodes nodes;
     private NodeService nodeService;
     private ThumbnailService thumbnailService;
+    private ScriptThumbnailService scriptThumbnailService;
     private RenditionService renditionService;
     private MimetypeService mimetypeService;
     private ActionService actionService;
     private NamespaceService namespaceService;
     private ServiceRegistry serviceRegistry;
+    private ResourceLoader resourceLoader;
 
     public void setNodes(Nodes nodes)
     {
@@ -87,15 +106,27 @@ public class RenditionsImpl implements Renditions
         this.thumbnailService = thumbnailService;
     }
 
+    public void setScriptThumbnailService(ScriptThumbnailService scriptThumbnailService)
+    {
+        this.scriptThumbnailService = scriptThumbnailService;
+    }
+
     public void setServiceRegistry(ServiceRegistry serviceRegistry)
     {
         this.serviceRegistry = serviceRegistry;
+    }
+
+    @Override
+    public void setResourceLoader(ResourceLoader resourceLoader)
+    {
+        this.resourceLoader = resourceLoader;
     }
 
     public void init()
     {
         PropertyCheck.mandatory(this, "nodes", nodes);
         PropertyCheck.mandatory(this, "thumbnailService", thumbnailService);
+        PropertyCheck.mandatory(this, "scriptThumbnailService", scriptThumbnailService);
         PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
 
         this.nodeService = serviceRegistry.getNodeService();
@@ -236,6 +267,86 @@ public class RenditionsImpl implements Renditions
         Action action = ThumbnailHelper.createCreateThumbnailAction(thumbnailDefinition, serviceRegistry);
         // Queue async creation of thumbnail
         actionService.executeAction(action, sourceNodeRef, true, true);
+    }
+
+    @Override
+    public BinaryResource getContent(String nodeId, String renditionId, Parameters parameters)
+    {
+        final NodeRef sourceNodeRef = validateSourceNode(nodeId);
+        final NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, renditionId, parameters);
+
+        // By default set attachment header (with rendition Id) unless attachment=false
+        boolean attach = true;
+        String attachment = parameters.getParameter("attachment");
+        if (attachment != null)
+        {
+            attach = Boolean.valueOf(attachment);
+        }
+        final String attachFileName = (attach ? renditionId : null);
+
+        if (renditionNodeRef == null)
+        {
+            boolean isPlaceholder = Boolean.valueOf(parameters.getParameter("placeholder"));
+            if (!isPlaceholder)
+            {
+                throw new NotFoundException("Thumbnail was not found for [" + renditionId + ']');
+            }
+            ContentData contentData = (ContentData) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_CONTENT);
+            String sourceNodeMimeType = null;
+            if (contentData != null)
+            {
+                sourceNodeMimeType = contentData.getMimetype();
+            }
+            // resource based on the content's mimeType and rendition id
+            String phPath = scriptThumbnailService.getMimeAwarePlaceHolderResourcePath(renditionId, sourceNodeMimeType);
+            if (phPath == null)
+            {
+                // 404 since no thumbnail was found
+                throw new NotFoundException("Thumbnail was not found and no placeholder resource available for [" + renditionId + ']');
+            }
+            else
+            {
+                if (LOGGER.isDebugEnabled())
+                {
+                    LOGGER.debug("Retrieving content from resource path [" + phPath + ']');
+                }
+                // get extension of resource
+                String ext = "";
+                int extIndex = phPath.lastIndexOf('.');
+                if (extIndex != -1)
+                {
+                    ext = phPath.substring(extIndex);
+                }
+
+                try
+                {
+                    final String resourcePath = "classpath:" + phPath;
+                    InputStream inputStream = resourceLoader.getResource(resourcePath).getInputStream();
+                    // create temporary file
+                    File file = TempFileProvider.createTempFile(inputStream, "RenditionsApi-", ext);
+                    return new FileBinaryResource(file, attachFileName);
+                }
+                catch (Exception ex)
+                {
+                    if (LOGGER.isErrorEnabled())
+                    {
+                        LOGGER.error("Couldn't load the placeholder." + ex.getMessage());
+                    }
+                    new ApiException("Couldn't load the placeholder.");
+                }
+            }
+        }
+
+        Map<QName, Serializable> nodeProps = nodeService.getProperties(renditionNodeRef);
+        ContentData contentData = (ContentData) nodeProps.get(ContentModel.PROP_CONTENT);
+
+        org.alfresco.rest.framework.resource.content.ContentInfo contentInfo = null;
+        if (contentData != null)
+        {
+            contentInfo = new ContentInfoImpl(contentData.getMimetype(), contentData.getEncoding(), contentData.getSize(), contentData.getLocale());
+        }
+
+        return new NodeBinaryResource(renditionNodeRef, ContentModel.PROP_CONTENT, contentInfo, attachFileName);
     }
 
     protected NodeRef getRenditionByName(NodeRef nodeRef, String renditionId, Parameters parameters)

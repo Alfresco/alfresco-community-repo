@@ -30,16 +30,21 @@ import java.io.File;
 
 /**
  * A binary resource based on a File.
- * 
+ *
  * @author Gethin James
  */
-public class FileBinaryResource implements BinaryResource
+public class FileBinaryResource extends AbstractBinaryResource
 {
     final File file;
 
     public FileBinaryResource(File file)
     {
-        super();
+        this(file, null);
+    }
+
+    public FileBinaryResource(File file, String attachFileName)
+    {
+        super(attachFileName);
         this.file = file;
     }
 

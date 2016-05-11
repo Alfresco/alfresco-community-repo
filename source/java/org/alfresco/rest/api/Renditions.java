@@ -20,6 +20,7 @@
 package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.Rendition;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
@@ -58,4 +59,14 @@ public interface Renditions
      * @param parameters the {@link Parameters} object to get the parameters passed into the request
      */
     void createRendition(String nodeId, Rendition rendition, Parameters parameters);
+
+    /**
+     * Downloads rendition.
+     *
+     * @param nodeId      the source node id
+     * @param renditionId the rendition id
+     * @param parameters  the {@link Parameters} object to get the parameters passed into the request
+     * @return the rendition stream
+     */
+    BinaryResource getContent(String nodeId, String renditionId, Parameters parameters);
 }

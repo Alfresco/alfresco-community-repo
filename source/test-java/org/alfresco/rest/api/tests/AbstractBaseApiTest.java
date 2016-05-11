@@ -148,9 +148,14 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected HttpResponse getSingle(String url, String runAsUser, String entityId, int expectedStatus) throws Exception
     {
+        return getSingle(url, runAsUser, entityId, null, expectedStatus);
+    }
+
+    protected HttpResponse getSingle(String url, String runAsUser, String entityId, Map<String, String> params, int expectedStatus) throws Exception
+    {
         publicApiClient.setRequestContext(new RequestContext(runAsUser));
 
-        HttpResponse response = publicApiClient.get(getScope(), url, entityId, null, null, null);
+        HttpResponse response = publicApiClient.get(getScope(), url, entityId, null, null, params);
         checkStatus(expectedStatus, response.getStatusCode());
 
         return response;

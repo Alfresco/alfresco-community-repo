@@ -21,9 +21,12 @@ package org.alfresco.rest.api.nodes;
 
 import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.Rendition;
+import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
+import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.PropertyCheck;
@@ -42,6 +45,7 @@ import java.util.List;
 public class NodeRenditionsRelation implements RelationshipResourceAction.Read<Rendition>,
             RelationshipResourceAction.ReadById<Rendition>,
             RelationshipResourceAction.Create<Rendition>,
+            RelationshipResourceBinaryAction.Read,
             InitializingBean
 {
 
@@ -79,5 +83,13 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
             renditions.createRendition(nodeId, rendition, parameters);
         }
         return Collections.emptyList();
+    }
+
+    @WebApiDescription(title = "Download rendition", description = "Download rendition")
+    @BinaryProperties({ "content" })
+    @Override
+    public BinaryResource readProperty(String nodeId, String renditionId, Parameters parameters)
+    {
+        return renditions.getContent(nodeId, renditionId, parameters);
     }
 }

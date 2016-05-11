@@ -47,6 +47,7 @@ import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Params;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.JsonGenerationException;
@@ -90,11 +91,11 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     @Override
     public void execute(final Api api, final WebScriptRequest req, final WebScriptResponse res) throws IOException
     {
-    	try
-    	{
+        try
+        {
             final Map<String, Object> respons = new HashMap<String, Object>();
             final Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-	        final ResourceWithMetadata resource = locator.locateResource(api,templateVars, httpMethod);
+            final ResourceWithMetadata resource = locator.locateResource(api,templateVars, httpMethod);
             final Params params = paramsExtractor.extractParams(resource.getMetaData(),req);
             final boolean isReadOnly = HttpMethod.GET==httpMethod;
 
@@ -132,19 +133,19 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 }
             }
 
-		}
-		catch (ApiException apiException)
-		{
-			renderErrorResponse(resolveException(apiException), res);
-		}
-		catch (WebScriptException webException)
-		{
-			renderErrorResponse(resolveException(webException), res);
-		}
-		catch (RuntimeException runtimeException)
-		{
-			renderErrorResponse(resolveException(runtimeException), res);
-		}
+        }
+        catch (ApiException apiException)
+        {
+            renderErrorResponse(resolveException(apiException), res);
+        }
+        catch (WebScriptException webException)
+        {
+            renderErrorResponse(resolveException(webException), res);
+        }
+        catch (RuntimeException runtimeException)
+        {
+            renderErrorResponse(resolveException(runtimeException), res);
+        }
     }
 
     public Object execute(final ResourceWithMetadata resource, final Params params, final WebScriptResponse res, boolean isReadOnly)
@@ -176,6 +177,8 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         if (resource instanceof FileBinaryResource)
         {
             FileBinaryResource fileResource = (FileBinaryResource) resource;
+            // if requested, set attachment
+            setAttachment(res, fileResource.getAttachFileName());
             streamer.streamContent(req, res, fileResource.getFile(), null, false, null, null);
         }
         else if (resource instanceof NodeBinaryResource)
@@ -183,13 +186,18 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
             NodeBinaryResource nodeResource = (NodeBinaryResource) resource;
             ContentInfo contentInfo = nodeResource.getContentInfo();
             setContentInfoOnResponse(res,contentInfo);
-            String attachFileName = nodeResource.getAttachFileName();
-            if ((attachFileName != null) && (attachFileName.length() > 0))
-            {
-                String headerValue = "attachment; filename=\"" + attachFileName + "\"; filename*=UTF-8''" + URLEncoder.encode(attachFileName);
-                res.setHeader(HDR_NAME_CONTENT_DISPOSITION, headerValue);
-            }
+            // if requested, set attachment
+            setAttachment(res, nodeResource.getAttachFileName());
             streamer.streamContent(req, res, nodeResource.getNodeRef(), nodeResource.getPropertyQName(), false, null, null);        
+        }
+    }
+
+    private void setAttachment(final WebScriptResponse res, final String attachFileName)
+    {
+        if (StringUtils.isNotEmpty(attachFileName))
+        {
+            String headerValue = "attachment; filename=\"" + attachFileName + "\"; filename*=UTF-8''" + URLEncoder.encode(attachFileName);
+            res.setHeader(HDR_NAME_CONTENT_DISPOSITION, headerValue);
         }
     }
 

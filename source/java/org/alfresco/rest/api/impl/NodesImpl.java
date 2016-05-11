@@ -1907,7 +1907,13 @@ public class NodesImpl implements Nodes
             if (isCopy)
             {
                 // copy
-                return fileFolderService.copy(nodeRef, parentNodeRef, name);
+                FileInfo newFileInfo = fileFolderService.copy(nodeRef, parentNodeRef, name);
+                if (newFileInfo.getNodeRef().equals(nodeRef))
+                {
+                    // copy did not happen - eg. same parent folder and name (name can be null or same)
+                    throw new FileExistsException(nodeRef, "");
+                }
+                return newFileInfo;
             }
             else
             {

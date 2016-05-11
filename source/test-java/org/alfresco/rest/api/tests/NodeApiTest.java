@@ -785,6 +785,94 @@ public class NodeApiTest extends AbstractBaseApiTest
         post(postUrl, user1, toJsonAsStringNonNull(f1), 409);
     }
 
+    /**
+     * Tests create empty file.
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
+     */
+    @Test
+    public void testCreateEmptyFile() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        NodeRef personNodeRef = personService.getPerson(user1);
+        NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personNodeRef);
+
+        String postUrl = "nodes/"+myFilesNodeRef.getId()+"/children";
+
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType("cm:content");
+        ContentInfo ci = new ContentInfo();
+        ci.setMimeType("text/plain");
+        d1.setContent(ci);
+
+        // create empty file
+        HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(d1), 201);
+
+        Document d1Created = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertNotNull(d1Created.getId());
+        assertEquals("d1.txt",d1Created.getName());
+        assertEquals("cm:content",d1Created.getNodeType());
+        assertEquals(false, d1Created.getIsFolder());
+        assertNotNull(d1Created.getCreatedAt());
+        assertEquals(user1,d1Created.getCreatedByUser().getUserName());
+        assertNotNull(d1Created.getModifiedAt());
+        assertEquals(user1,d1Created.getModifiedByUser().getUserName());
+        assertEquals(myFilesNodeRef.getId(), d1Created.getParentId());
+        assertTrue(d1Created.getAspectNames().contains("cm:auditable"));
+        assertEquals(0L, d1Created.getContent().getSizeInBytes());
+        assertEquals("text/plain", d1Created.getContent().getMimeType());
+        assertEquals("Plain Text", d1Created.getContent().getMimeTypeName());
+        assertEquals("UTF-8", d1Created.getContent().getEncoding());
+        assertNull(d1Created.getProperties());
+        assertNull(d1Created.getPath());
+        assertNull(d1Created.getIsLink());
+
+        // create empty file with properties
+        Map<String,Object> props = new HashMap<>();
+        props.put("cm:title","my file title");
+        props.put("cm:description","my file description");
+
+        Document d2 = new Document();
+        d2.setName("d2.txt");
+        d2.setNodeType("cm:content");
+        d2.setProperties(props);
+
+        response = post(postUrl, user1, toJsonAsStringNonNull(d2), 201);
+        Document d2Created = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertNotNull(d2Created.getId());
+
+        assertTrue(d2Created.getAspectNames().contains("cm:auditable"));
+        assertTrue(d2Created.getAspectNames().contains("cm:titled"));
+        assertEquals(d2Created.getProperties().get("cm:title"),"my file title");
+        assertEquals(d2Created.getProperties().get("cm:description"),"my file description");
+
+        // -ve test - name is mandatory
+        Document invalid = new Document();
+        invalid.setNodeType("cm:content");
+        post(postUrl, user1, toJsonAsStringNonNull(invalid), 400);
+
+        // -ve test - node type is mandatory
+        invalid = new Document();
+        invalid.setName("my file.txt");
+        post(postUrl, user1, toJsonAsStringNonNull(invalid), 400);
+
+        // -ve test - invalid (eg. not a folder) parent id
+        Document d3 = new Document();
+        d3.setName("d3.txt");
+        d3.setNodeType("cm:content");
+        post("nodes/"+personNodeRef.getId()+"/children", user1, toJsonAsStringNonNull(d3), 400);
+
+        // -ve test - unknown parent folder node id
+        post("nodes/"+UUID.randomUUID().toString()+"/children", user1, toJsonAsStringNonNull(d3), 404);
+
+        // -ve test - duplicate name
+        post(postUrl, user1, toJsonAsStringNonNull(d1), 409);
+    }
+
+    // TODO add test to create multiple folders & empty files (within same parent folder)
+
     // TODO add test for file/folder links - creating, getting, listing, deleting
 
     private String getChildrenUrl(NodeRef parentNodeRef)

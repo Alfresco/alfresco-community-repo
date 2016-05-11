@@ -29,6 +29,10 @@ public class ContentInfo
         return mimeType;
     }
 
+	public void setMimeType(String mimeType) {
+		this.mimeType = mimeType;
+	}
+
     public String getMimeTypeName() {
         return mimeTypeName;
     }

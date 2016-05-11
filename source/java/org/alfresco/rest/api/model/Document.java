@@ -46,8 +46,6 @@ import org.alfresco.service.namespace.QName;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Document extends Node
 {
-    private ContentInfo contentInfo;
-
     public Document() {
         super();
     }
@@ -62,20 +60,10 @@ public class Document extends Node
             ContentData cd = (ContentData)val;
             String mimeType = cd.getMimetype();
             String mimeTypeName = sr.getMimetypeService().getDisplaysByMimetype().get(mimeType);
-            this.contentInfo = new ContentInfo(mimeType, mimeTypeName, cd.getSize(), cd.getEncoding());
+            contentInfo = new ContentInfo(mimeType, mimeTypeName, cd.getSize(), cd.getEncoding());
         }
 
         this.isFolder = false;
-    }
-
-    public ContentInfo getContent()
-    {
-        return contentInfo;
-    }
-
-    public void setContent(ContentInfo contentInfo)
-    {
-        this.contentInfo = contentInfo;
     }
 
     @Override

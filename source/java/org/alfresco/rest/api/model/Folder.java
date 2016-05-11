@@ -55,6 +55,12 @@ public class Folder extends Node
     }
 
     @Override
+    public ContentInfo getContent()
+    {
+        return null;
+    }
+
+    @Override
     public String toString()
     {
         return "Folder [nodeRef=" + nodeRef + ", name=" + name + ", title="

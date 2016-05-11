@@ -30,6 +30,7 @@ import java.net.URLEncoder;
 import java.util.Date;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.Client;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.rest.api.model.DocumentRatingSummary;
@@ -229,7 +230,7 @@ public abstract class AbstractRatingScheme implements RatingScheme, Initializing
     	JSONObject activityData = getActivityData(nodeRef, siteId);
 		if(activityData != null)
 		{
-			activityService.postActivity(activityType, siteId, "nodeRatings", activityData.toString());
+			activityService.postActivity(activityType, siteId, "nodeRatings", activityData.toString(), Client.asType(Client.ClientType.restapi));
 		}
     }
 }

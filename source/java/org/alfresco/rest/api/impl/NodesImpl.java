@@ -733,14 +733,22 @@ public class NodesImpl implements Nodes
 
     private Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters)
     {
+        return getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeTypeQName, parameters, null);
+    }
+
+    private Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters, Map<String,UserInfo> mapUserInfo)
+    {
         List<String> includeParam = new ArrayList<>();
-        includeParam.addAll(parameters.getInclude());
+        if (parameters != null)
+        {
+            includeParam.addAll(parameters.getInclude());
+        }
 
         // Add basic info for single get (above & beyond minimal that is used for listing collections)
         includeParam.add(PARAM_INCLUDE_ASPECTNAMES);
         includeParam.add(PARAM_INCLUDE_PROPERTIES);
 
-        return getFolderOrDocument(nodeRef, parentNodeRef, nodeTypeQName, includeParam, null);
+        return getFolderOrDocument(nodeRef, parentNodeRef, nodeTypeQName, includeParam, mapUserInfo);
     }
 
     private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> includeParam, Map<String,UserInfo> mapUserInfo)
@@ -866,7 +874,7 @@ public class NodesImpl implements Nodes
                     if (permissionService.hasPermission(childNodeRef, PermissionService.READ) == AccessStatus.ALLOWED)
                     {
                         Serializable nameProp = nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
-                        pathElements.add(0, new ElementInfo(childNodeRef, nameProp.toString()));
+                        pathElements.add(0, new ElementInfo(childNodeRef.getId(), nameProp.toString()));
                     }
                     else
                     {
@@ -1169,9 +1177,8 @@ public class NodesImpl implements Nodes
         Node sourceEntity = null;
         if (parameters.includeSource())
         {
-            sourceEntity = getFolderOrDocument(parentNodeRef, null, null, includeParam, mapUserInfo);
+            sourceEntity = getFolderOrDocumentFullInfo(parentNodeRef, null, null, null, mapUserInfo);
         }
-
 
         return CollectionWithPagingInfo.asPaged(paging, nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst(), sourceEntity);
     }

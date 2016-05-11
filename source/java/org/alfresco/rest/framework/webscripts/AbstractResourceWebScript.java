@@ -55,8 +55,6 @@ import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Cache;
-import org.springframework.extensions.webscripts.Description;
-import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
@@ -152,15 +150,16 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     public Object execute(final ResourceWithMetadata resource, final Params params, final WebScriptResponse res, boolean isReadOnly)
     {
         final String entityCollectionName = ResourceInspector.findEntityCollectionNameName(resource.getMetaData());
-        return transactionService.getRetryingTransactionHelper().doInTransaction(
+        final ResourceOperation operation = resource.getMetaData().getOperation(getHttpMethod());
+        final ResponseCallBack callBack = new ResponseCallBack(operation.getSuccessStatus(),DEFAULT_JSON_CONTENT,ApiWebScript.CACHE_NEVER);
+        Object toReturn = transactionService.getRetryingTransactionHelper().doInTransaction(
                 new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
                 {
                     @Override
                     public Object execute() throws Throwable
                     {
-                        final ResourceOperation operation = resource.getMetaData().getOperation(getHttpMethod());
+
                         Object result = executeAction(resource, params);
-                        setResponse(res,operation.getSuccessStatus(),ApiWebScript.CACHE_NEVER, DEFAULT_JSON_CONTENT);
                         if (result instanceof BinaryResource)
                         {
                             return result; //don't postprocess it.
@@ -168,6 +167,8 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                         return helper.processAdditionsToTheResponse(res, resource.getMetaData().getApi(), entityCollectionName, params, result);
                     }
                 }, isReadOnly, true);
+        setResponse(res,callBack);
+        return toReturn;
     }
 
     public abstract Object executeAction(ResourceWithMetadata resource, Params params) throws Throwable;
@@ -201,14 +202,20 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
      * @param status
      * @param cache
      * @param contentInfo
+     * @param headers
      */
-    protected void setResponse(final WebScriptResponse res, int status, Cache cache, ContentInfo contentInfo)
+    protected void setResponse(final WebScriptResponse res, int status, Cache cache, ContentInfo contentInfo, Map<String, String> headers)
     {
         res.setStatus(status);
         res.setCache(cache);
         setContentInfoOnResponse(res,contentInfo);
     }
-    
+
+    protected void setResponse(final WebScriptResponse res, ResponseCallBack withResponse)
+    {
+        setResponse(res, withResponse.getStatus(), withResponse.getCache(), withResponse.getContentInfo(), withResponse.getHeaders());
+    }
+
     /**
      * Renders the result of an execution.
      * 

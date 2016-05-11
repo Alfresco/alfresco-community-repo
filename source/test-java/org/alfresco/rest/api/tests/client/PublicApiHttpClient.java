@@ -54,6 +54,7 @@ import org.alfresco.util.Pair;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.HeadMethod;
@@ -252,7 +253,7 @@ public class PublicApiHttpClient
                         }
                     }
 
-                    return new HttpResponse(method, rq.getRunAsUser(), method.getResponseBodyAsString(), headersMap, (end - start));
+                    return new HttpResponse(method, rq.getRunAsUser(), method.getResponseBody(), headersMap, (end - start));
                 }
 
                 @Override
@@ -508,6 +509,32 @@ public class PublicApiHttpClient
                 contentType = "application/json";
             }
             StringRequestEntity requestEntity = new StringRequestEntity(body, contentType, "UTF-8");
+            req.setRequestEntity(requestEntity);
+        }
+        return submitRequest(req, rq);
+    }
+
+    public HttpResponse post(final RequestContext rq, final String scope, final String entityCollectionName, final Object entityId,
+                             final String relationCollectionName, final Object relationshipEntityId, final byte[] body, String contentType) throws IOException
+    {
+        return post(rq, scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, body, contentType);
+    }
+
+    public HttpResponse post(final RequestContext rq, final String scope, final int version, final String entityCollectionName, final Object entityId,
+                             final String relationCollectionName, final Object relationshipEntityId, final byte[] body, String contentType) throws IOException
+    {
+        RestApiEndpoint endpoint = new RestApiEndpoint(rq.getNetworkId(), scope, version, entityCollectionName, entityId, relationCollectionName,
+                relationshipEntityId, null);
+        String url = endpoint.getUrl();
+
+        PostMethod req = new PostMethod(url.toString());
+        if (body != null)
+        {
+            if (contentType == null || contentType.isEmpty())
+            {
+                contentType = "application/octet-stream";
+            }
+            ByteArrayRequestEntity requestEntity = new ByteArrayRequestEntity(body, contentType);
             req.setRequestEntity(requestEntity);
         }
         return submitRequest(req, rq);

@@ -36,7 +36,7 @@ import org.json.JSONException;
 
 public interface Activities
 {
-	static final String APP_TOOL = "API";
+	static final String APP_TOOL = "restapi";
 	static final Client RESTAPI_CLIENT = Client.asType(Client.ClientType.restapi);
 
 	public static enum ActivityWho

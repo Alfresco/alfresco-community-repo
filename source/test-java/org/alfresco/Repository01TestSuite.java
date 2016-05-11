@@ -268,6 +268,7 @@ public class Repository01TestSuite extends TestSuite
     
     static void tests40(TestSuite suite)
     {
+        suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.quickshare.ClientAppConfigTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.quickshare.QuickShareServiceIntegrationTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.rating.RatingServiceIntegrationTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.remotecredentials.RemoteCredentialsServicesTest.class));

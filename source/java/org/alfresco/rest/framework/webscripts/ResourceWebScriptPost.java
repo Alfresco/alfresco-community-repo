@@ -29,7 +29,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.rest.framework.core.ActionResourceMetaData;
 import org.alfresco.rest.framework.core.ResourceInspector;
+import org.alfresco.rest.framework.core.ResourceInspectorUtil;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
 import org.alfresco.rest.framework.core.ResourceParameter;
@@ -67,18 +69,17 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
        setParamsExtractor(this);
     }
     
-    
     @Override
     public Params extractParams(ResourceMetadata resourceMeta, WebScriptRequest req)
     {
         final RecognizedParams params = ResourceWebScriptHelper.getRecognizedParams(req);
-        
+        final String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
+
         switch (resourceMeta.getType())
         {
             case ENTITY:
 
-                String entityIdCheck = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
-                if (StringUtils.isNotBlank(entityIdCheck))
+                if (StringUtils.isNotBlank(entityId))
                 {
                     throw new UnsupportedResourceOperationException("POST is executed against the collection URL");
                 }
@@ -88,7 +89,6 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                     return Params.valueOf(null, params, postedObj);
                 }
             case RELATIONSHIP:
-                String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
                 String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
                 if (StringUtils.isNotBlank(relationshipId))
                 {
@@ -99,6 +99,20 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                     Object postedRel = processRequest(resourceMeta, req);
                     return Params.valueOf(entityId, params, postedRel);
                 }
+            case ACTION:
+                final String actionName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
+                if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(actionName))
+                {
+                    Class objectType = resourceMeta.getObjectType(HttpMethod.POST);
+                    Object postedObj =  null;
+                    if (objectType!= null)
+                    {
+                        //Actions don't support a List as json body
+                        postedObj = ResourceWebScriptHelper.extractJsonContent(req, jsonHelper, objectType);
+                    }
+                    return Params.valueOf(entityId, params, postedObj);
+                }
+                //Fall through to unsupported.
             default:
                 throw new UnsupportedResourceOperationException("POST not supported for Actions");
         }
@@ -160,6 +174,30 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
         return ResourceWebScriptHelper.extractJsonContentAsList(req, jsonHelper, objType);
     }
 
+
+    /**
+     * Execute a generic action method
+     * @param resource
+     * @param params
+     * @return the result of the execution.
+     */
+    private Object executeAction(ResourceWithMetadata resource, Params params)  throws Throwable
+    {
+        ActionResourceMetaData actionResourceMetaData = (ActionResourceMetaData) resource.getMetaData();
+
+        switch (actionResourceMetaData.getActionMethod().getParameterTypes().length)
+        {
+            case 3:
+                //EntityResource action by id
+                return ResourceInspectorUtil.invokeMethod(actionResourceMetaData.getActionMethod(),resource.getResource(), params.getEntityId(), params.getPassedIn(), params);
+            case 4:
+                //RelationshipEntityResource action by id
+                return ResourceInspectorUtil.invokeMethod(actionResourceMetaData.getActionMethod(),resource.getResource(), params.getEntityId(), params.getRelationshipId(), params.getPassedIn(), params);
+        }
+
+        throw new UnsupportedResourceOperationException("The action method has an invalid signature");
+    }
+
     /**
      * Executes the action on the resource
      * @param resource ResourceWithMetadata
@@ -167,7 +205,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
      * @return anObject the result of the execute
      */
     @SuppressWarnings("unchecked")
-    private Object executeInternal(ResourceWithMetadata resource, Params params)
+    private Object executeInternal(ResourceWithMetadata resource, Params params) throws Throwable
     {
         final Object resObj = resource.getResource();
         switch (resource.getMetaData().getType())
@@ -224,6 +262,8 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                         return wrapWithCollectionWithPaging(createdRel);
                     }
                 }
+            case ACTION:
+                return executeAction(resource, params);
             default:
                 throw new UnsupportedResourceOperationException("POST not supported for Actions");
         }

@@ -84,24 +84,27 @@ public class ResourceInspectorUtil
     {
         //Its an Action annotated method and its a bit special
         Class<?>[] paramTypes = method.getParameterTypes();
+        if (paramTypes!= null)
+        {
+            switch (paramTypes.length)
+            {
+                case 3:
+                    //EntityResource action by id, same logic as RelationshipEntityResource action by id
+                case 4:
+                int position = paramTypes.length-2;
+                if (Void.class.equals(paramTypes[position]))
+                {
+                    return null;
+                }
+                    else
+                {
+                    return paramTypes[position];
+                }
+            }
+        }
 
-        if (!String.class.equals(paramTypes[0]) || !Parameters.class.equals(paramTypes[paramTypes.length-1]))
-        {
-            throw new IllegalArgumentException("An action method signature must start with a String uniqueId and end with the 'Parameters' object ");
-        }
-        if (paramTypes.length == 2)
-        {
-            //No parameter required
-            return null;
-        }
-        else if (paramTypes.length == 3)
-        {
-            return paramTypes[1]; // Return the middle parameter
-        }
-        else
-        {
-            throw new IllegalArgumentException("An action method signature should have 3 parameters (uniqueId, typePassedin, Parameters)");
-        }
+        throw new IllegalArgumentException("An action method signature should have 3 parameters (uniqueId, typePassedin, Parameters)," +
+                " use Void if you are not interested in the second argument.");
     }
 
     /**
@@ -144,7 +147,15 @@ public class ResourceInspectorUtil
      */
     public static Object invokeMethod(Method annotatedMethod, Object obj)
     {
-        return invokeMethod(annotatedMethod, obj, null);
+        try
+        {
+            return invokeMethod(annotatedMethod, obj, null);
+        }
+        catch (Throwable error)
+        {
+            logger.error("Invocation failure", error);
+            return null;
+        }
     }
 
     /**
@@ -153,7 +164,7 @@ public class ResourceInspectorUtil
      * @param obj Object
      * @return result of method call
      */
-    public static Object invokeMethod(Method annotatedMethod, Object obj, Object... args)
+    public static Object invokeMethod(Method annotatedMethod, Object obj, Object... args) throws Throwable
     {
         if (annotatedMethod != null)
         {
@@ -172,6 +183,7 @@ public class ResourceInspectorUtil
             catch (InvocationTargetException error)
             {
                 logger.warn("InvocationTargetException", error);
+                throw error.getCause();
             }
         }
         return null;

@@ -445,7 +445,7 @@ public class InspectorTests
                     assertTrue("GrassEntityResource supports POST", resourceMetadata.supports(HttpMethod.POST));
                     assertFalse("GrassEntityResource does not support GET", resourceMetadata.supports(HttpMethod.GET));
                     assertNull(resourceMetadata.getObjectType(HttpMethod.POST));
-                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", Params.valueOf("notUsed", null));
+                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", null, Params.valueOf("notUsed", null));
                     assertEquals("All done",result);
                     break;
                 default:

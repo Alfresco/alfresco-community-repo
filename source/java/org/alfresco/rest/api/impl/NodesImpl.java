@@ -69,6 +69,7 @@ import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.rest.antlr.WhereClauseParser;
+import org.alfresco.rest.api.Activities;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.model.ContentInfo;
@@ -170,7 +171,7 @@ import org.springframework.http.MediaType;
 public class NodesImpl implements Nodes
 {
     private static final Log logger = LogFactory.getLog(NodesImpl.class);
-    private static final String APP_TOOL = "API";
+
 
     private enum Type
     {
@@ -1579,7 +1580,7 @@ public class NodesImpl implements Nodes
             if (aSync)
             {
                 ActivitiesTransactionListener txListener = new ActivitiesTransactionListener(activityType, activityInfo,
-                        TenantUtil.getCurrentDomain(), APP_TOOL, Client.asType(Client.ClientType.script),
+                        TenantUtil.getCurrentDomain(), Activities.APP_TOOL, Activities.RESTAPI_CLIENT,
                         poster, retryingTransactionHelper);
                 AlfrescoTransactionSupport.bindListener(txListener);
             }
@@ -1587,7 +1588,7 @@ public class NodesImpl implements Nodes
             {
                 poster.postFileFolderActivity(activityType, null, TenantUtil.getCurrentDomain(),
                         activityInfo.getSiteId(), activityInfo.getParentNodeRef(), activityInfo.getNodeRef(),
-                        activityInfo.getFileName(), APP_TOOL, Client.asType(Client.ClientType.script),
+                        activityInfo.getFileName(), Activities.APP_TOOL, Activities.RESTAPI_CLIENT,
                         activityInfo.getFileInfo());
             }
         }

@@ -27,6 +27,7 @@ package org.alfresco.rest.api;
 
 import java.util.Map;
 
+import org.alfresco.repo.Client;
 import org.alfresco.repo.domain.activities.ActivityFeedEntity;
 import org.alfresco.rest.api.model.Activity;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -35,6 +36,9 @@ import org.json.JSONException;
 
 public interface Activities
 {
+	static final String APP_TOOL = "API";
+	static final Client RESTAPI_CLIENT = Client.asType(Client.ClientType.restapi);
+
 	public static enum ActivityWho
 	{
 		me, others;

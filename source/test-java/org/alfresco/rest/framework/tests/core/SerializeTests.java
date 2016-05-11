@@ -153,7 +153,7 @@ public class SerializeTests extends AbstractContextTest
         mockRequest.setContent(reqBody.getBody());
         mockRequest.setContentType(reqBody.getContentType());
 
-        String out = writeResponse(helper.processAdditionsToTheResponse(mock(WebScriptResponse.class), api,null, NOT_USED, resource.create(new FormData(mockRequest), NOT_USED)));
+        String out = writeResponse(helper.processAdditionsToTheResponse(mock(WebScriptResponse.class), api,null, NOT_USED, resource.create(new FormData(mockRequest), NOT_USED, callBack)));
         assertTrue("There must be json output", StringUtils.startsWith(out, "{\"entry\":"));
     }
 

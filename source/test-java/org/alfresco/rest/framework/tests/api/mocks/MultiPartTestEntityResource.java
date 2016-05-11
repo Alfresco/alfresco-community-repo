@@ -30,6 +30,7 @@ import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.webscripts.ResponseCallBack;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
@@ -43,7 +44,7 @@ public class MultiPartTestEntityResource
 
     @Override
     @WebApiDescription(title = "Creates a multipart", successStatus = Status.STATUS_ACCEPTED)
-    public MultiPartTestResponse create(FormData formData, Parameters parameters)
+    public MultiPartTestResponse create(FormData formData, Parameters parameters, ResponseCallBack withResponse)
     {
         return new MultiPartTestResponse(formData.getParameters().get("filename")[0]);
     }

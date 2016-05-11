@@ -38,8 +38,8 @@ public class InvalidSelectException extends InvalidArgumentException
     
     public static String DEFAULT_MESSAGE_ID = "framework.exception.InvalidSelect";
     
-    public InvalidSelectException(Object queryParam)
+    public InvalidSelectException(String paramName, Object queryParam)
     {
-        super(DEFAULT_MESSAGE_ID, new Object[] {queryParam});
+        super(DEFAULT_MESSAGE_ID, new Object[] {queryParam, paramName});
     }
 }

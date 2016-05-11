@@ -267,7 +267,7 @@ public class ResourceWebScriptHelper
 			if (selectedPropsTree instanceof CommonErrorNode)
 			{
 				logger.debug("Error parsing the "+paramName+" clause "+selectedPropsTree);
-				throw new InvalidSelectException(selectedPropsTree);
+				throw new InvalidSelectException(paramName, selectedPropsTree);
 			}
 			if (selectedPropsTree.getChildCount() == 0 && !selectedPropsTree.getText().isEmpty())
 			{
@@ -292,9 +292,12 @@ public class ResourceWebScriptHelper
         {
 			logger.debug("Error parsing the \"+paramName+\" clause: "+param);
 		}
-
+        catch (InvalidQueryException iqe)
+        {
+            throw new InvalidSelectException(paramName, iqe.getQueryParam());
+        }
         //Default to throw out an invalid query
-        throw new InvalidSelectException(param);
+        throw new InvalidSelectException(paramName, param);
     }
     
     /**

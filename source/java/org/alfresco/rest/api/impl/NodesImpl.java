@@ -1114,7 +1114,7 @@ public class NodesImpl implements Nodes
 
         // Existing file/folder name handling
         final boolean autoRename = Boolean.valueOf(parameters.getParameter(PARAM_AUTO_RENAME));
-        if (autoRename && (isContent || FileFolderServiceType.FOLDER.equals(fileFolderService.getType(nodeTypeQName))))
+        if (autoRename && (isContent || isSubClass(nodeTypeQName, ContentModel.TYPE_FOLDER)))
         {
             NodeRef existingNode = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, nodeName);
             if (existingNode != null)

@@ -979,7 +979,7 @@ public class NodesImpl implements Nodes
         List<Pair<QName, Boolean>> sortProps = null;
         if ((sortCols != null) && (sortCols.size() > 0))
         {
-            // TODO should we allow isContent in sort (and map to reverse of isFolder) ?
+            // TODO should we allow isFile in sort (and map to reverse of isFolder) ?
             sortProps = new ArrayList<>(sortCols.size());
             for (SortColumn sortCol : sortCols)
             {

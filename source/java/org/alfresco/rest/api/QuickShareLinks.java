@@ -90,7 +90,8 @@ public interface QuickShareLinks
     void emailSharedLink(String nodeId, QuickShareLinkEmailRequest emailRequest, Parameters parameters);
 
     /**
-     * Find (search) for shared links visible to current user
+     * Find (search) for shared links visible to current user.
+     * Optionally filter by "sharedByUser/id" (if -me- then filter by current user).
      *
      * @param parameters
      * @return

@@ -103,8 +103,10 @@ public interface Nodes
      * Delete the given node. Note: will cascade delete for a folder.
      *
      * @param nodeId String id of node (folder or document)
+     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     *                   - permanent (default false)
      */
-    void deleteNode(String nodeId);
+    void deleteNode(String nodeId, Parameters parameters);
 
     /**
      * Create node - folder or (empty) file.

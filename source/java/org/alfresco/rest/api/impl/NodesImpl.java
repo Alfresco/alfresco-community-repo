@@ -144,6 +144,7 @@ public class NodesImpl implements Nodes
 
     private final static String PARAM_RELATIVE_PATH = "relativePath";
     private final static String PARAM_AUTO_RENAME = "autoRename";
+    private final static String PARAM_PERMANENT = "permanent";
 
     private final static String PARAM_SELECT_PROPERTIES = "properties";
     private final static String PARAM_SELECT_PATH = "path";
@@ -1134,9 +1135,19 @@ public class NodesImpl implements Nodes
     }
 
     @Override
-    public void deleteNode(String nodeId)
+    public void deleteNode(String nodeId, Parameters parameters)
     {
         NodeRef nodeRef = validateNode(nodeId);
+
+        // default false (if not provided)
+        boolean permanentDelete = Boolean.valueOf(parameters.getParameter(PARAM_PERMANENT));
+
+        if (permanentDelete == true)
+        {
+            // Set as temporary to delete node instead of archiving.
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
+        }
+
         fileFolderService.delete(nodeRef);
     }
 

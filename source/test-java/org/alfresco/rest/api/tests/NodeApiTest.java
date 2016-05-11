@@ -26,10 +26,13 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+
+import junit.framework.Assert;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
@@ -58,6 +61,7 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -123,6 +127,9 @@ public class NodeApiTest extends AbstractBaseApiTest
     protected JacksonUtil jacksonUtil;
     protected PermissionService permissionService;
 
+    protected NodeArchiveService nodeArchiveService;
+    protected NodeService nodeService;
+
 
     @Before
     public void setup() throws Exception
@@ -131,6 +138,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         personService = applicationContext.getBean("personService", PersonService.class);
         jacksonUtil = new JacksonUtil(applicationContext.getBean("jsonHelper", JacksonHelper.class));
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
+
+        // TODO replace with future V1 REST API for Trashcan
+        nodeArchiveService = applicationContext.getBean("nodeArchiveService", NodeArchiveService.class);
+        nodeService = applicationContext.getBean("nodeService", NodeService.class);
 
         user1 = createUser("user1" + System.currentTimeMillis());
         user2 = createUser("user2" + System.currentTimeMillis());
@@ -1010,37 +1021,62 @@ public class NodeApiTest extends AbstractBaseApiTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
+        long runId = System.currentTimeMillis();
+
         String myNodeId = getMyNodeId(user1);
         NodeRef myFilesNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myNodeId);
 
-        String content1 = "content" + System.currentTimeMillis() + "_1";
-        NodeRef content1Ref = repoService.createDocument(myFilesNodeRef, content1, "The quick brown fox jumps over the lazy dog.");
+        NodeRef content1Ref = repoService.createDocument(myFilesNodeRef,
+                "content" + runId + "_1", "The quick brown fox jumps over the lazy dog.");
+        String content1Id = content1Ref.getId();
 
         // delete file
         delete("nodes", user1, content1Ref.getId(), 204);
 
+        assertTrue(existsArchiveNode(content1Id));
+
         // -ve test
         delete("nodes", user1, content1Ref.getId(), 404);
 
-        String folder1 = "folder" + System.currentTimeMillis() + "_1";
-        String folder1Ref = createFolder(user1, myNodeId, folder1).getId();
+        String folder1Id = createFolder(user1, myNodeId, "folder " + runId + "_1").getId();
+        String folder2Id = createFolder(user1, folder1Id, "folder " + runId + "_2").getId();
 
-        String folder2 = "folder" + System.currentTimeMillis() + "_2";
-        String folder2Ref = createFolder(user1, folder1Ref, folder2).getId();
-
-        String content2 = "content" + System.currentTimeMillis() + "_2";
-        NodeRef content2Ref = repoService.createDocument(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder2Ref), content2, "The quick brown fox jumps over the lazy dog.");
+        NodeRef content2Ref = repoService.createDocument(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder2Id),
+                "content " + runId + "_2", "The quick brown fox jumps over the lazy dog.");
+        String content2Id = content2Ref.getId();
 
         // cascade delete folder
-        delete("nodes", user1, folder1Ref, 204);
+        delete("nodes", user1, folder1Id, 204);
+
+        assertTrue(existsArchiveNode(folder1Id));
+        assertTrue(existsArchiveNode(folder2Id));
+        assertTrue(existsArchiveNode(content2Id));
+
+        String folder3Id = createFolder(user1, myNodeId, "folder " + runId + "_3").getId();
+        String folder4Id = createFolder(user1, folder3Id, "folder " + runId + "_4").getId();
+
+        // bypass trashcan
+        Map<String, String> params = Collections.singletonMap("permanent", "true");
+        delete("nodes", user1, folder3Id, params, 204);
+
+        assertFalse(existsArchiveNode(folder3Id));
+        assertFalse(existsArchiveNode(folder4Id));
 
         // -ve test
-        delete("nodes", user1, folder2Ref, 404);
+        delete("nodes", user1, folder2Id, 404);
         delete("nodes", user1, content2Ref.getId(), 404);
 
         // -ve test
         String rootNodeId = getRootNodeId(user1);
         delete("nodes", user1, rootNodeId, 403);
+    }
+
+    private boolean existsArchiveNode(String nodeId)
+    {
+        // TODO replace with calls to future V1 REST API for Trashcan
+        NodeRef originalNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+        NodeRef archiveNodeRef = nodeArchiveService.getArchivedNode(originalNodeRef);
+        return nodeService.exists(archiveNodeRef);
     }
 
     /**

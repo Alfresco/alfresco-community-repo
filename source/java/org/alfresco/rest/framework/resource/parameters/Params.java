@@ -39,7 +39,7 @@ import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryImpl;
 import org.apache.commons.beanutils.ConvertUtils;
 import org.apache.poi.ss.formula.functions.T;
-import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 /**
  * Parameters passed in from a Rest client for use in calls to the rest api.
@@ -55,12 +55,13 @@ public class Params implements Parameters
     private final RecognizedParams recognizedParams;
     private final String addressedProperty;
     private final BasicContentInfo contentInfo;
+    private final WebScriptRequest request;
 
     //Constants
     private static final RecognizedParams NULL_PARAMS = new RecognizedParams(null, null, null, null, null, null, null, false);
     private static final BasicContentInfo DEFAULT_CONTENT_INFO = new ContentInfoImpl(MimetypeMap.MIMETYPE_BINARY, "UTF-8", -1, null);
     
-    protected Params(String entityId, String relationshipId, Object passedIn, InputStream stream, String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo)
+    protected Params(String entityId, String relationshipId, Object passedIn, InputStream stream, String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo, WebScriptRequest request)
     {
         super();
         this.entityId = entityId;
@@ -69,37 +70,39 @@ public class Params implements Parameters
         this.stream = stream;
         this.recognizedParams = recognizedParams;
         this.addressedProperty = addressedProperty;
+        this.request = request;
         this.contentInfo = contentInfo==null?DEFAULT_CONTENT_INFO:contentInfo;
     }
 
-    public static Params valueOf(BeanPropertiesFilter paramFilter, String entityId)
+    public static Params valueOf(BeanPropertiesFilter paramFilter, String entityId, WebScriptRequest request)
     {
-        return new Params(entityId, null, null, null, null, new RecognizedParams(null, null, paramFilter, null, null, null, null, false), null);
+        return new Params(entityId, null, null, null, null, new RecognizedParams(null, null, paramFilter, null, null, null, null, false), null, request);
     }
 
-    public static Params valueOf(String entityId, String relationshipId)
+    public static Params valueOf(String entityId, String relationshipId, WebScriptRequest request)
     {
-        return new Params(entityId, relationshipId, null, null, null, NULL_PARAMS, null);
+        return new Params(entityId, relationshipId, null, null, null, NULL_PARAMS, null, request);
     }
     
-    public static Params valueOf(RecognizedParams recognizedParams, String entityId, String relationshipId)
+    public static Params valueOf(RecognizedParams recognizedParams, String entityId, String relationshipId, WebScriptRequest request)
     {
-        return new Params(entityId, relationshipId, null, null, null, recognizedParams, null);
+        return new Params(entityId, relationshipId, null, null, null, recognizedParams, null, request);
     }
     
-    public static Params valueOf(String entityId, RecognizedParams recognizedParams, Object passedIn)
+    public static Params valueOf(String entityId, RecognizedParams recognizedParams, Object passedIn, WebScriptRequest request)
     {
-        return new Params(entityId, null, passedIn, null, null, recognizedParams, null);
+        return new Params(entityId, null, passedIn, null, null, recognizedParams, null, request);
     }
 
-    public static Params valueOf(String entityId, String relationshipId, RecognizedParams recognizedParams, Object passedIn)
+    public static Params valueOf(String entityId, String relationshipId, RecognizedParams recognizedParams, Object passedIn, WebScriptRequest request)
     {
-        return new Params(entityId, relationshipId, passedIn, null, null, recognizedParams, null);
+        return new Params(entityId, relationshipId, passedIn, null, null, recognizedParams, null, request);
     }
 
-    public static Params valueOf(String entityId, String relationshipId, Object passedIn, InputStream stream, String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo)
+    public static Params valueOf(String entityId, String relationshipId, Object passedIn, InputStream stream,
+                                 String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo, WebScriptRequest request)
     {
-        return new Params(entityId, relationshipId, passedIn, stream, addressedProperty, recognizedParams, contentInfo);
+        return new Params(entityId, relationshipId, passedIn, stream, addressedProperty, recognizedParams, contentInfo, request);
     }
     
     public String getEntityId()
@@ -237,6 +240,12 @@ public class Params implements Parameters
     public BasicContentInfo getContentInfo()
     {
         return contentInfo;
+    }
+
+    @Override
+    public WebScriptRequest getRequest()
+    {
+        return request;
     }
 
     /**

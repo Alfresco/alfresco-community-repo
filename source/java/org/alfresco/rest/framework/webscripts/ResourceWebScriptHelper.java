@@ -486,7 +486,7 @@ public class ResourceWebScriptHelper
         if (objectToWrap instanceof SerializablePagedCollection<?>)
         {
             SerializablePagedCollection<?> collectionToWrap = (SerializablePagedCollection<?>) objectToWrap;
-            Object sourceEntity = executeIncludedSource(api,entityCollectionName,params.getEntityId(),params.includeSource());
+            Object sourceEntity = executeIncludedSource(api, params, entityCollectionName);
             Collection<Object> resultCollection = new ArrayList(collectionToWrap.getCollection().size());
             if (!collectionToWrap.getCollection().isEmpty())
             {
@@ -518,7 +518,7 @@ public class ResourceWebScriptHelper
             {
                 Map<String, ResourceWithMetadata> relationshipResources = locator.locateRelationResource(api,entityCollectionName, params.getRelationsFilter().keySet(), HttpMethod.GET);
                 String uniqueEntityId = ResourceInspector.findUniqueId(objectToWrap);
-                Map<String,Object> relatedResources = executeRelatedResources(api,params.getRelationsFilter(), relationshipResources, uniqueEntityId);
+                Map<String,Object> relatedResources = executeRelatedResources(api, params, relationshipResources, uniqueEntityId);
                 execRes.addRelated(relatedResources);
             }
 
@@ -527,14 +527,14 @@ public class ResourceWebScriptHelper
         }
     }
 
-    private Object executeIncludedSource(Api api, String entityCollectionName, String uniqueEntityId, boolean includeSource)
+    private Object executeIncludedSource(Api api, Params params, String entityCollectionName)
     {
-        if (includeSource)
+        if (params.includeSource())
         {
             ResourceWithMetadata res = locator.locateEntityResource(api, entityCollectionName, HttpMethod.GET);
             if (res != null)
             {
-                Object result = executeRelatedResource(api, null, uniqueEntityId, null, res);
+                Object result = executeRelatedResource(api, params, params.getEntityId(), null, res);
                 if (result!=null && result instanceof ExecutionResult) return ((ExecutionResult) result).getRoot();
             }
         }
@@ -562,7 +562,7 @@ public class ResourceWebScriptHelper
                 Object id = ResourceInspectorUtil.invokeMethod(embeddedEntry.getValue().getSecond(), objectToWrap);
                 if (id != null)
                 {
-                    Object execEmbeddedResult = executeRelatedResource(api, params.getRelationsFilter(), String.valueOf(id), embeddedEntry.getKey(), res);
+                    Object execEmbeddedResult = executeRelatedResource(api, params, String.valueOf(id), embeddedEntry.getKey(), res);
                     if (execEmbeddedResult != null)
                     {
                         if (execEmbeddedResult instanceof ExecutionResult)
@@ -592,14 +592,14 @@ public class ResourceWebScriptHelper
      * @param uniqueEntityId String
      * @return Map
      */
-    private Map<String,Object> executeRelatedResources(final Api api, Map<String, BeanPropertiesFilter> filters,
-                Map<String, ResourceWithMetadata> relatedResources,
-                String uniqueEntityId)
+    private Map<String,Object> executeRelatedResources(final Api api, Params params,
+                                                       Map<String, ResourceWithMetadata> relatedResources,
+                                                       String uniqueEntityId)
     {
         final Map<String,Object> results = new HashMap<String,Object>(relatedResources.size());
         for (final Entry<String, ResourceWithMetadata> relation : relatedResources.entrySet())
         {
-            Object execResult = executeRelatedResource(api, filters, uniqueEntityId, relation.getKey(), relation.getValue());
+            Object execResult = executeRelatedResource(api, params, uniqueEntityId, relation.getKey(), relation.getValue());
             if (execResult != null)
             {
               results.put(relation.getKey(), execResult);
@@ -619,19 +619,19 @@ public class ResourceWebScriptHelper
      * @param resource ResourceWithMetadata
      * @return Object
      */
-    private Object executeRelatedResource(final Api api, final Map<String, BeanPropertiesFilter> filters,
+    private Object executeRelatedResource(final Api api, Params params,
                 final String uniqueEntityId, final String resourceKey, final ResourceWithMetadata resource)
     {
         try
         {
             BeanPropertiesFilter paramFilter = null;
             final Object[] resultOfExecution = new Object[1];
-            
+            Map<String, BeanPropertiesFilter> filters = params.getRelationsFilter();
             if (filters!=null)
             {
                 paramFilter = filters.get(resourceKey);
             }
-            final Params executionParams = Params.valueOf(paramFilter, uniqueEntityId);
+            final Params executionParams = Params.valueOf(paramFilter, uniqueEntityId, params.getRequest());
             executor.execute(resource, executionParams, new ExecutionCallback()
             {
                 @Override

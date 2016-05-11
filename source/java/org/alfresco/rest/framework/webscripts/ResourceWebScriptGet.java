@@ -80,20 +80,20 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
             case ENTITY:
                 if (StringUtils.isNotBlank(entityId))
                 {
-                    return Params.valueOf(params, entityId, null);
+                    return Params.valueOf(params, entityId, null, req);
                 } 
                 else
                 {
-                    return Params.valueOf(params, null, null);// collection resource
+                    return Params.valueOf(params, null, null, req);// collection resource
                 }
             case RELATIONSHIP:
                 if (StringUtils.isNotBlank(relationshipId))
                 {
-                    return Params.valueOf(params, entityId, relationshipId);                    
+                    return Params.valueOf(params, entityId, relationshipId, req);
                 }
                 else
                 {
-                    return Params.valueOf(params, entityId, null); //relationship collection resource                   
+                    return Params.valueOf(params, entityId, null, req); //relationship collection resource
                 }
             case PROPERTY:
                 final String resourceName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
@@ -103,11 +103,11 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                 {
                     if (StringUtils.isNotBlank(propertyName))
                     {
-                        return Params.valueOf(entityId, relationshipId, null, null, propertyName, params, null);
+                        return Params.valueOf(entityId, relationshipId, null, null, propertyName, params, null, req);
                     }
                     else
                     {
-                        return Params.valueOf(entityId, null, null, null, resourceName, params, null);
+                        return Params.valueOf(entityId, null, null, null, resourceName, params, null, req);
                     }
                 }
                 //Fall through to unsupported.

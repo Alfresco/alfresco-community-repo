@@ -73,7 +73,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                  } 
                  else
                  {
-                   return Params.valueOf(entityId, relationshipId);
+                   return Params.valueOf(entityId, relationshipId, req);
 
                  }
             case RELATIONSHIP:
@@ -84,7 +84,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 } 
                 else
                 {
-                  return Params.valueOf(entityId, relationshipId);
+                  return Params.valueOf(entityId, relationshipId, req);
                 }   
             case PROPERTY:
                 final String resourceName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
@@ -94,11 +94,11 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 {
                     if (StringUtils.isNotBlank(propertyName))
                     {
-                        return Params.valueOf(entityId, relationshipId, null, null, propertyName, null, null);
+                        return Params.valueOf(entityId, relationshipId, null, null, propertyName, null, null, req);
                     }
                     else
                     {
-                        return Params.valueOf(entityId, null, null, null, resourceName, null, null);
+                        return Params.valueOf(entityId, null, null, null, resourceName, null, null, req);
                     }
                 }
                 //Fall through to unsupported.

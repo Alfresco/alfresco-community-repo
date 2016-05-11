@@ -92,7 +92,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 {
 
                     Object putEnt = ResourceWebScriptHelper.extractJsonContent(req, jsonHelper, resourceMeta.getObjectType(operation));
-                    return Params.valueOf(entityId,params,putEnt);
+                    return Params.valueOf(entityId,params,putEnt, req);
                 }
             case RELATIONSHIP:
                 if (StringUtils.isBlank(relationshipId))
@@ -102,7 +102,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 {
                     Object putRel = ResourceWebScriptHelper.extractJsonContent(req, jsonHelper, resourceMeta.getObjectType(operation));
                     ResourceWebScriptHelper.setUniqueId(putRel,relationshipId);
-                    return Params.valueOf(entityId, params, putRel);
+                    return Params.valueOf(entityId, params, putRel, req);
                 }
             case PROPERTY:
                 final String resourceName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
@@ -112,11 +112,11 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 {
                     if (StringUtils.isNotBlank(propertyName))
                     {
-                        return Params.valueOf(entityId, relationshipId, null, getStream(req), propertyName, params, getContentInfo(req));
+                        return Params.valueOf(entityId, relationshipId, null, getStream(req), propertyName, params, getContentInfo(req), req);
                     }
                     else
                     {
-                        return Params.valueOf(entityId, null, null, getStream(req), resourceName, params, getContentInfo(req));
+                        return Params.valueOf(entityId, null, null, getStream(req), resourceName, params, getContentInfo(req), req);
                     }
 
                 }

@@ -223,7 +223,7 @@ public class ProcessesImplTest extends TestCase
     private CollectionWithPagingInfo<ProcessInfo> queryActiveProcessesAndAssertResult(int skipCount, int maxItems)
     {
         Query query = ResourceWebScriptHelper.getWhereClause(QUERY_STATUS_ACTIVE);
-        Parameters parameters = Params.valueOf(new RecognizedParams(null, Paging.valueOf(skipCount, maxItems), null, null, null, query, null, false), null, null);
+        Parameters parameters = Params.valueOf(new RecognizedParams(null, Paging.valueOf(skipCount, maxItems), null, null, null, query, null, false), null, null, null);
 
         CollectionWithPagingInfo<ProcessInfo> result = processes.getProcesses(parameters);
 

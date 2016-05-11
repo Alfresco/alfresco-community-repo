@@ -33,6 +33,7 @@ import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.apache.poi.ss.formula.functions.T;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 
 /**
@@ -116,5 +117,11 @@ public interface Parameters
      * Gets the basic information about content, typically taken from a HTTPServletRequest.
      * @return BasicContentInfo the content info
      */
-    BasicContentInfo getContentInfo();
+    public BasicContentInfo getContentInfo();
+
+    /**
+     * Gets access to the entire webscript request.
+     * @return WebScriptRequest
+     */
+    public WebScriptRequest getRequest();
 }

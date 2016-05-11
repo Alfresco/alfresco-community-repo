@@ -89,7 +89,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                 else
                 {
                     Object postedObj = processRequest(resourceMeta, operation, req);
-                    return Params.valueOf(null, params, postedObj);
+                    return Params.valueOf(null, params, postedObj, req);
                 }
             case RELATIONSHIP:
                 if (StringUtils.isNotBlank(relationshipId))
@@ -99,7 +99,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                 else
                 {
                     Object postedRel = processRequest(resourceMeta, operation, req);
-                    return Params.valueOf(entityId, params, postedRel);
+                    return Params.valueOf(entityId, params, postedRel, req);
                 }
             case OPERATION:
                 final String operationName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
@@ -117,11 +117,11 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
 
                     if (StringUtils.isNotBlank(propertyName))
                     {
-                        return Params.valueOf(entityId, relationshipId, params, postedObj);
+                        return Params.valueOf(entityId, relationshipId, params, postedObj, req);
                     }
                     else
                     {
-                        return Params.valueOf(entityId, params, postedObj);
+                        return Params.valueOf(entityId, params, postedObj, req);
                     }
                 }
                 //Fall through to unsupported.

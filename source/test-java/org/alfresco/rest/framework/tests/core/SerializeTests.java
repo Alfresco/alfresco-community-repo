@@ -128,7 +128,7 @@ public class SerializeTests extends AbstractContextTest
         
         EntityResourceAction.Read<?> getAll = (Read<?>) entityResource.getResource();
         CollectionWithPagingInfo<?> resources = getAll.readAll(null);
-        out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), resources));
+        out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null, null), resources));
         assertTrue("There must be json output as List", StringUtils.startsWith(out, "{\"list\":"));
     }
 
@@ -162,8 +162,8 @@ public class SerializeTests extends AbstractContextTest
         ResourceWithMetadata relationResource = locator.locateRelationResource(api,"sheep", "baaahh", HttpMethod.GET);
         assertNotNull(relationResource);
         RelationshipResourceAction.Read<?> getter = (RelationshipResourceAction.Read<?>) relationResource.getResource();
-        CollectionWithPagingInfo<?> resources = getter.readAll("123",Params.valueOf("", null));
-        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), resources));
+        CollectionWithPagingInfo<?> resources = getter.readAll("123",Params.valueOf("", null, null));
+        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null, null), resources));
         assertTrue("There must be json output as List", StringUtils.startsWith(out, "{\"list\":"));
     }
     
@@ -173,17 +173,17 @@ public class SerializeTests extends AbstractContextTest
         ResourceWithMetadata relationResource = locator.locateRelationResource(api,"sheep", "baaahh", HttpMethod.GET);
         assertNotNull(relationResource);
         RelationshipResourceAction.Read<?> getter = (RelationshipResourceAction.Read<?>) relationResource.getResource();
-        CollectionWithPagingInfo<?> resources = getter.readAll("123",Params.valueOf("", null));
+        CollectionWithPagingInfo<?> resources = getter.readAll("123",Params.valueOf("", null, null));
         assertNotNull(resources);
         assertTrue(resources.getTotalItems().intValue() == 3);
         assertFalse(resources.hasMoreItems());
-        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), resources));
+        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null, null), resources));
         assertTrue("There must be json output as List with pagination", StringUtils.startsWith(out, "{\"list\":{\"pagination\":{\"count\":3,"));
         
         resources = getter.readAll("123",ParamsExtender.valueOf(Paging.valueOf(0, 1),"123"));
         assertTrue(resources.getCollection().size() == 1);
         assertTrue(resources.hasMoreItems());
-        out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), resources));
+        out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null, null), resources));
         assertTrue("There must be json output as List with pagination", StringUtils.startsWith(out, "{\"list\":{\"pagination\":{\"count\":1,"));
 
     }
@@ -195,7 +195,7 @@ public class SerializeTests extends AbstractContextTest
         Farmer aFarmer = new Farmer("180");
         aFarmer.setGoatId("1111");
         aFarmer.setSheepId("2222");
-        ExecutionResult res = (ExecutionResult) helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),aFarmer);
+        ExecutionResult res = (ExecutionResult) helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null, null),aFarmer);
         assertNotNull(res);
         assertTrue(Farmer.class.equals(res.getRoot().getClass()));
         Map<String,Object> embeds = res.getEmbedded();
@@ -271,7 +271,7 @@ public class SerializeTests extends AbstractContextTest
     public void testSerializeExecutionResult() throws IOException
     {
         assertNotNull(helper);
-        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),new Farmer("180"));
+        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null, null),new Farmer("180"));
         String out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
        
@@ -283,16 +283,16 @@ public class SerializeTests extends AbstractContextTest
     {
         assertNotNull(helper);
         CollectionWithPagingInfo paged = CollectionWithPagingInfo.asPaged(null,null);
-        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), paged));
+        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null, null), paged));
         assertTrue("There must be json output as List with pagination", StringUtils.startsWith(out, "{\"list\":{\"pagination\":{\"count\":0,"));
         Paging pageRequest = Paging.valueOf(1, 2);
         
         paged = CollectionWithPagingInfo.asPaged(pageRequest,Arrays.asList(new Goat(), new Sheep("ABCD"), new Sheep("XYZ")));
-        out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), paged));
+        out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null, null), paged));
         assertTrue("There must be json output as List with pagination", StringUtils.startsWith(out, "{\"list\":{\"pagination\":{\"count\":3,"));
         
         paged = CollectionWithPagingInfo.asPaged(pageRequest,Arrays.asList(new Goat(), new Sheep("ABCD"), new Sheep("XYZ")),true,5000);
-        out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), paged));
+        out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null, null), paged));
         assertTrue("There must be json output as List with pagination", StringUtils.startsWith(out, "{\"list\":{\"pagination\":{\"count\":3,\"hasMoreItems\":true,\"totalItems\":5000"));
        
     }
@@ -305,7 +305,7 @@ public class SerializeTests extends AbstractContextTest
         aMap.put("goatie", new Goat());
         aMap.put("sheepie", new Sheep("ABCD"));
         aMap.put("sheepy", new Sheep("XYZ"));
-        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),aMap);
+        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null, null),aMap);
         String out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
        
@@ -319,7 +319,7 @@ public class SerializeTests extends AbstractContextTest
         aSet.add(new Goat());
         aSet.add(new Sheep("ABCD"));
         aSet.add(new Sheep("XYZ"));
-        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),aSet);
+        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null, null),aSet);
         String out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
        
@@ -330,11 +330,11 @@ public class SerializeTests extends AbstractContextTest
     {
         assertNotNull(helper);
         CollectionWithPagingInfo<String> pString = CollectionWithPagingInfo.asPaged(null,Arrays.asList("goat", "sheep", "horse")); 
-        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),pString);
+        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null, null),pString);
         String out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
         CollectionWithPagingInfo<Integer> pInts = CollectionWithPagingInfo.asPaged(null,Arrays.asList(234, 45, 890, 3456)); 
-        res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),pInts);
+        res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null, null),pInts);
         out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
     } 
@@ -343,7 +343,7 @@ public class SerializeTests extends AbstractContextTest
     public void testSerializeList() throws IOException
     {
         assertNotNull(helper);
-        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null),Arrays.asList(new Goat(), new Sheep("ABCD"), new Sheep("XYZ")));
+        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null, null),Arrays.asList(new Goat(), new Sheep("ABCD"), new Sheep("XYZ")));
         String out = writeResponse(res);
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
        
@@ -364,7 +364,7 @@ public class SerializeTests extends AbstractContextTest
     public void testSerializeUniqueId() throws IOException
     {
         assertNotNull(helper);
-        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null), new Sheep("ABCD"));
+        Object res = helper.processAdditionsToTheResponse(api,null,Params.valueOf("notUsed", null, null), new Sheep("ABCD"));
         String out = writeResponse(res);
         assertTrue("Id field must be called sheepGuid.",  StringUtils.contains(out, "\"sheepGuid\":\"ABCD\""));      
     }
@@ -375,7 +375,7 @@ public class SerializeTests extends AbstractContextTest
         ResourceWithMetadata relationResource = locator.locateRelationResource(api,"sheep", "baaahh", HttpMethod.GET);
         assertNotNull(relationResource);
         RelationshipResourceAction.Read<?> getter = (RelationshipResourceAction.Read<?>) relationResource.getResource();
-        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null), getter.readAll("1234A3", Params.valueOf("notUsed", null))));
+        String out = writeResponse(helper.processAdditionsToTheResponse(api,null, Params.valueOf("notUsed", null, null), getter.readAll("1234A3", Params.valueOf("notUsed", null, null))));
         assertTrue("There must be json output", StringUtils.isNotBlank(out));
     }
 
@@ -408,7 +408,7 @@ public class SerializeTests extends AbstractContextTest
         Api api3 = Api.valueOf("alfrescomock", "private", "3");
         ResourceWithMetadata propResource = locator.locateRelationResource(api3,"flock", "photo", HttpMethod.GET);
         AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
-        executor.execute(propResource, Params.valueOf("234", null), new ExecutionCallback<BinaryResource>(){
+        executor.execute(propResource, Params.valueOf("234", null, null), new ExecutionCallback<BinaryResource>(){
             @Override
             public void onSuccess(BinaryResource result, ContentInfo contentInfo, int statusCode)
             {

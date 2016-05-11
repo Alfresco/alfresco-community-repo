@@ -37,15 +37,19 @@ import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareDTO;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
+import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
+import org.alfresco.service.cmr.repository.MimetypeService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.logging.Log;
@@ -53,6 +57,7 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.I18NUtil;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -73,11 +78,19 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
     private final static String DISABLED = "QuickShare is disabled system-wide";
     private boolean enabled = true;
 
+    private ServiceRegistry sr;
     private QuickShareService quickShareService;
     private Nodes nodes;
     private NodeService nodeService;
     private PersonService personService;
     private AuthorityService authorityService;
+    private MimetypeService mimeTypeService;
+
+    public void setServiceRegistry(ServiceRegistry sr)
+    {
+        this.sr = sr;
+    }
+
 
     public void setQuickShareService(QuickShareService quickShareService)
     {
@@ -89,21 +102,6 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         this.nodes = nodes;
     }
 
-    public void setNodeService(NodeService nodeService)
-    {
-        this.nodeService = nodeService;
-    }
-
-    public void setPersonService(PersonService personService)
-    {
-        this.personService = personService;
-    }
-
-    public void setAuthorityService(AuthorityService authorityService)
-    {
-        this.authorityService = authorityService;
-    }
-
     public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
@@ -112,11 +110,14 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
     @Override
     public void afterPropertiesSet()
     {
+        ParameterCheck.mandatory("sr", this.sr);
         ParameterCheck.mandatory("quickShareService", this.quickShareService);
         ParameterCheck.mandatory("nodes", this.nodes);
-        ParameterCheck.mandatory("nodeService", this.nodeService);
-        ParameterCheck.mandatory("personService", this.personService);
-        ParameterCheck.mandatory("authorityService", this.authorityService);
+
+        this.nodeService = sr.getNodeService();
+        this.personService = sr.getPersonService();
+        this.authorityService = sr.getAuthorityService();
+        this.mimeTypeService = sr.getMimetypeService();
     }
 
     /**
@@ -133,11 +134,13 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
             String networkTenantDomain = pair.getFirst();
 
+            final boolean noAuth = (AuthenticationUtil.getRunAsUser() == null);
+
             return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<QuickShareLink>()
             {
                 public QuickShareLink doWork() throws Exception
                 {
-                    return getQuickShareInfo(sharedId);
+                    return getQuickShareInfo(sharedId, noAuth);
                 }
             }, networkTenantDomain);
         }
@@ -255,6 +258,8 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
         List<QuickShareLink> result = new ArrayList<>(nodeIds.size());
 
+        boolean noAuth = (AuthenticationUtil.getRunAsUser() == null);
+
         for (QuickShareLink qs : nodeIds)
         {
             String nodeId = qs.getNodeId();
@@ -268,15 +273,28 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
             try
             {
-                // Note: this throws AccessDeniedException (=> 403) via QuickShareService (when NodeService tries to getAspects)
-                QuickShareDTO qsDto = quickShareService.shareContent(nodeRef);
+                // Note: will throw InvalidNodeRefException (=> 404) if node does not exist
+                String sharedId = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
+                if (sharedId != null)
+                {
+                    throw new InvalidArgumentException("sharedId already exists: "+nodeId+" ["+sharedId+"]");
+                }
 
-                result.add(getQuickShareInfo(qsDto.getId()));
+                // Note: will throw AccessDeniedException (=> 403) via QuickShareService (when NodeService tries to getAspects)
+                // Note: since we already check node exists above, we can assume that InvalidNodeRefException (=> 404) here means not content (see type check)
+                try
+                {
+                    QuickShareDTO qsDto = quickShareService.shareContent(nodeRef);
+                    result.add(getQuickShareInfo(qsDto.getId(), noAuth));
+                }
+                catch (InvalidNodeRefException inre)
+                {
+                    throw new InvalidArgumentException("Unable to create shared link to non-file content: " + nodeId);
+                }
             }
             catch (AccessDeniedException ade)
             {
-                logger.warn("Unable to create shared link: [" + nodeRef + "]");
-                throw new PermissionDeniedException("Unable to create shared link: " + nodeId);
+                throw new PermissionDeniedException("Unable to create shared link to node that does not exist: " + nodeId);
             }
             catch (InvalidNodeRefException inre)
             {
@@ -319,7 +337,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         }
     }
 
-    private QuickShareLink getQuickShareInfo(String sharedId)
+    private QuickShareLink getQuickShareInfo(String sharedId, boolean noAuth)
     {
         checkValidShareId(sharedId);
 
@@ -329,10 +347,12 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
             NodeRef nodeRef = new NodeRef((String) map.get("nodeRef"));
 
-            ContentInfo contentInfo = new ContentInfo((String) map.get("mimetype"), null, (Long) map.get("size"), null);
+            Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
+            ContentData cd = (ContentData)nodeProps.get(ContentModel.PROP_CONTENT);
 
-            // note: if not authenticated then we do not currently return userids (to be consistent with v0 internal - limited disclosure)
-            boolean noAuth = (AuthenticationUtil.isRunAsUserTheSystemUser()); // TODO review - for now assume "System" implies unauthenticated access
+            String mimeType = cd.getMimetype();
+            String mimeTypeName = mimeTypeService.getDisplaysByMimetype().get(mimeType);
+            ContentInfo contentInfo = new ContentInfo(mimeType, mimeTypeName, cd.getSize(), cd.getEncoding());
 
             //
             // modifiedByUser
@@ -340,19 +360,21 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             UserInfo modifiedByUser = null;
             if (noAuth)
             {
+                // note: if not authenticated then we do not currently return userids (to be consistent with v0 internal - limited disclosure)
                 modifiedByUser = new UserInfo(null, (String) map.get("modifierFirstName"), (String) map.get("modifierLastName"));
             }
             else
             {
-                String modifiedByUserId = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_MODIFIER);
+                String modifiedByUserId = (String)nodeProps.get(ContentModel.PROP_MODIFIER);
                 modifiedByUser = new UserInfo(modifiedByUserId, (String) map.get("modifierFirstName"), (String) map.get("modifierLastName"));
             }
 
             //
             // sharedByUser
+            // TODO review - should we return for authenticated users only ?? (not exposed by V0 but needed for "find")
             //
             UserInfo sharedByUser = null;
-            String sharedByUserId = (String) nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);
+            String sharedByUserId = (String)nodeProps.get(QuickShareModel.PROP_QSHARE_SHAREDBY);
             if (sharedByUserId != null)
             {
                 NodeRef pRef = personService.getPerson(sharedByUserId);
@@ -361,9 +383,9 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
                     PersonService.PersonInfo pInfo = personService.getPerson(pRef);
                     if (pInfo != null)
                     {
-                        // TODO review - limit to authenticated users only ?? (not exposed by V0 but needed for "find")
                         if (noAuth)
                         {
+                            // note: if not authenticated then we do not currently return userids (to be consistent with v0 internal - limited disclosure)
                             sharedByUser = new UserInfo(null, pInfo.getFirstName(), pInfo.getLastName());
                         }
                         else

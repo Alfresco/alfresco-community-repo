@@ -32,6 +32,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
@@ -422,9 +423,8 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testGetPathElements_MyFiles() throws Exception
     {
-        final String userNodeAlias = "-my-";
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
-        HttpResponse response = getSingle(NodesEntityResource.class, user1, userNodeAlias, null, 200);
+        HttpResponse response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
         Node node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
         NodeRef myFilesNodeRef = node.getNodeRef();
         assertNotNull(myFilesNodeRef);
@@ -474,44 +474,43 @@ public class NodeApiTest extends AbstractBaseApiTest
      * <ul>
      * <li> {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/-root-}</li>
      * <li> {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/-my-} </li>
+     * <li> {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/-shared-} </li>
      * </ul>
      */
     @Test
     public void testGetNodeWithKnownAlias() throws Exception
     {
-        final String rootNodeAlias = "-root-";
-        HttpResponse response = getSingle(NodesEntityResource.class, user1, rootNodeAlias, null, 200);
+        HttpResponse response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, null, 200);
         Node node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
         assertEquals("Company Home", node.getName());
         assertNotNull(node.getNodeRef());
-        PathInfo pathInfo = node.getPath();
-        // empty JSON object ("path":{})
-        assertNotNull(pathInfo);
-        // as this is the root node, there will be no name or path elements.
-        assertNull(pathInfo.getIsComplete());
-        assertNull(pathInfo.getName());
-        assertNull(pathInfo.getElements());
+        assertNull(node.getPath());
 
         // unknown alias
         getSingle(NodesEntityResource.class, user1, "testSomeUndefinedAlias", null, 404);
 
-        final String userNodeAlias = "-my-";
-        response = getSingle(NodesEntityResource.class, user1, userNodeAlias, null, 200);
+        response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
         node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
         NodeRef myFilesNodeRef = node.getNodeRef();
         assertNotNull(myFilesNodeRef);
         assertEquals(user1, node.getName());
         assertTrue(node.getIsFolder());
-        pathInfo = node.getPath();
-        assertNotNull(pathInfo);
-        assertTrue(pathInfo.getIsComplete());
+        assertNull(node.getPath()); // note: path can be optionally "select"'ed - see separate test
+
+        response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_SHARED, null, 200);
+        node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+        NodeRef sharedFilesNodeRef = node.getNodeRef();
+        assertNotNull(sharedFilesNodeRef);
+        assertEquals("Shared", node.getName());
+        assertTrue(node.getIsFolder());
+        assertNull(node.getPath());
 
         //Delete user1's home
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         repoService.getNodeService().deleteNode(myFilesNodeRef);
 
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
-        getSingle(NodesEntityResource.class, user1, userNodeAlias, null, 404); // Not found
+        getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 404); // Not found
     }
 
     /**
@@ -522,12 +521,11 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testUploadToMyFiles() throws Exception
     {
-        final String userNodeAlias = "-my-";
         final String fileName = "quick.pdf";
         final File file = getResourceFile(fileName);
 
         Paging paging = getPaging(0, Integer.MAX_VALUE);
-        HttpResponse response = getAll(getChildrenUrl(userNodeAlias), user1, paging, 200);
+        HttpResponse response = getAll(getChildrenUrl(Nodes.PATH_MY), user1, paging, 200);
         PublicApiClient.ExpectedPaging pagingResult = parsePaging(response.getJsonResponse());
         assertNotNull(paging);
         final int numOfNodes = pagingResult.getCount().intValue();
@@ -537,7 +535,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Try to upload
-        response = post(getChildrenUrl(userNodeAlias), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
+        response = post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 201);
         Document document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals(fileName, document.getName());
@@ -554,21 +552,21 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
 
         // Check 'get children' is confirming the upload
-        response = getAll(getChildrenUrl(userNodeAlias), user1, paging, 200);
+        response = getAll(getChildrenUrl(Nodes.PATH_MY), user1, paging, 200);
         pagingResult = parsePaging(response.getJsonResponse());
         assertNotNull(paging);
         assertEquals(numOfNodes + 1, pagingResult.getCount().intValue());
 
         // Upload the same file again to check the name conflicts handling
-        post(getChildrenUrl(userNodeAlias), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 409);
+        post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 409);
 
-        response = getAll(getChildrenUrl(userNodeAlias), user1, paging, 200);
+        response = getAll(getChildrenUrl(Nodes.PATH_MY), user1, paging, 200);
         pagingResult = parsePaging(response.getJsonResponse());
         assertNotNull(paging);
         assertEquals("Duplicate file name. The file shouldn't have been uploaded.", numOfNodes + 1, pagingResult.getCount().intValue());
 
         // User2 tries to upload a new file into the user1's home folder.
-        response = getSingle(NodesEntityResource.class, user1, userNodeAlias, null, 200);
+        response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
         Folder user1Home = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
         final String fileName2 = "quick-2.txt";
         final File file2 = getResourceFile(fileName2);
@@ -577,7 +575,7 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .build();
         post(getChildrenUrl(user1Home.getNodeRef()), user2, new String(reqBody.getBody()), null, reqBody.getContentType(), 403);
 
-        response = getAll(getChildrenUrl(userNodeAlias), user1, paging, 200);
+        response = getAll(getChildrenUrl(Nodes.PATH_MY), user1, paging, 200);
         pagingResult = parsePaging(response.getJsonResponse());
         assertNotNull(paging);
         assertEquals("Access Denied. The file shouldn't have been uploaded.", numOfNodes + 1, pagingResult.getCount().intValue());
@@ -587,7 +585,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // Try to upload a file without defining the required formData
         reqBody = MultiPartBuilder.create().build();
-        post(getChildrenUrl(userNodeAlias), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
+        post(getChildrenUrl(Nodes.PATH_MY), user1, new String(reqBody.getBody()), null, reqBody.getContentType(), 400);
     }
 
     /**

@@ -124,10 +124,6 @@ public class NodesImpl implements Nodes
         DOCUMENT, FOLDER;
     };
 
-    private final static String PATH_ROOT = "-root-";
-    private final static String PATH_MY = "-my-";
-    private final static String PATH_SHARED = "-shared-";
-
     private final static String PARAM_RELATIVE_PATH = "relativePath"; // TODO wip
 
     private final static String PARAM_SELECT_PROPERTIES = "properties";

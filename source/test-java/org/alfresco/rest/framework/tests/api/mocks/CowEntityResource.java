@@ -10,6 +10,7 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
+import org.springframework.extensions.webscripts.Status;
 
 import java.io.InputStream;
 import java.util.Arrays;
@@ -41,6 +42,7 @@ public class CowEntityResource implements EntityResourceAction.ReadByIdWithRespo
     @Override
     public List<Goat> create(List<Goat> entities, Parameters parameters, WithResponse withResponse)
     {
+        withResponse.setStatus(Status.STATUS_ACCEPTED);
         return entities;
     }
 

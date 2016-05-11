@@ -1536,6 +1536,98 @@ public class NodeApiTest extends AbstractBaseApiTest
     }
 
     /**
+     * Tests move and copy folder between sites.
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/move}
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/copy}
+     */
+    @Test
+    public void testMoveCopyBetweenSites() throws Exception
+    {
+        /*
+         * Precondition - create two sites, invite users, create folders
+         */
+        AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getId());
+        // userOneN1 creates a public site and adds userTwoN1 as a site collaborator
+        TestSite user1Site = createSite(userOneN1.getDefaultAccount(), userOneN1, SiteVisibility.PUBLIC);
+        inviteToSite(user1Site, userTwoN1, SiteRole.SiteCollaborator);
+
+        // Get user1Site's docLib node id
+        final String user1SiteDocLibNodeId = getSiteDocLib(user1Site).getId();
+
+        // userOneN1 creates a folder in the docLib of his site (user1Site)
+        String user1Folder = "folder" + System.currentTimeMillis() + "_user1";
+        String user1FolderNodeId = createFolder(userOneN1.getId(), user1SiteDocLibNodeId, user1Folder, null).getId();
+
+        AuthenticationUtil.setFullyAuthenticatedUser(userTwoN1.getId());
+        // userTwoN1 creates a public site and adds userOneN1 as a site collaborator
+        TestSite user2Site = createSite(userTwoN1.getDefaultAccount(), userTwoN1, SiteVisibility.PUBLIC);
+        inviteToSite(user2Site, userOneN1, SiteRole.SiteCollaborator);
+
+        // Get user2Site's docLib node id
+        final String user2SiteDocLibNodeId = getSiteDocLib(user2Site).getId();
+
+        // userTwoN1 creates 2 folders within the docLib of the user1Site
+        String user2Folder1 = "folder1" + System.currentTimeMillis() + "_user2";
+        String user2FolderNodeId = createFolder(userTwoN1.getId(), user1SiteDocLibNodeId, user2Folder1, null).getId();
+
+        String user2Folder2 = "folder2" + System.currentTimeMillis() + "_user2";
+        String user2Folder2NodeId = createFolder(userTwoN1.getId(), user1SiteDocLibNodeId, user2Folder2, null).getId();
+
+        /*
+         * Test move between sites
+         */
+        // userOneN1 moves the folder created by userTwoN1 to the user2Site's docLib
+        AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getId());
+        NodeTarget target = new NodeTarget();
+        target.setTargetParentId(user2SiteDocLibNodeId);
+        HttpResponse response = post("nodes/" + user2FolderNodeId + "/move", userOneN1.getId(), toJsonAsStringNonNull(target), null, 200);
+        Folder moveFolderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(user2SiteDocLibNodeId, moveFolderResp.getParentId());
+
+        // userOneN1 tries to undo the move (moves back the folder to its original place)
+        // as userOneN1 is just a SiteCollaborator in the user2Site, he can't move the folder which he doesn't own - ACL access permission.
+        target = new NodeTarget();
+        target.setTargetParentId(user1SiteDocLibNodeId);
+        post("nodes/" + user2FolderNodeId + "/move", userOneN1.getId(), toJsonAsStringNonNull(target), null, 403);
+
+        // userOneN1 moves the folder created by himself to the docLib of the user2Site
+        target = new NodeTarget();
+        target.setTargetParentId(user2SiteDocLibNodeId);
+        response = post("nodes/" + user1FolderNodeId + "/move", userOneN1.getId(), toJsonAsStringNonNull(target), null, 200);
+        moveFolderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(user2SiteDocLibNodeId, moveFolderResp.getParentId());
+
+        // userOneN1 tries to undo the move (moves back the folder to its original place)
+        // The undo should be successful as userOneN1 owns the folder
+        target = new NodeTarget();
+        target.setTargetParentId(user1SiteDocLibNodeId);
+        response = post("nodes/" + user1FolderNodeId + "/move", userOneN1.getId(), toJsonAsStringNonNull(target), null, 200);
+        moveFolderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(user1SiteDocLibNodeId, moveFolderResp.getParentId());
+
+
+        /*
+         * Test copy between sites
+         */
+        // userOneN1 copies the folder created by userTwoN1 to the user2Site's docLib
+        target = new NodeTarget();
+        target.setTargetParentId(user2SiteDocLibNodeId);
+        response = post("nodes/" + user2Folder2NodeId + "/copy", userOneN1.getId(), toJsonAsStringNonNull(target), null, 201);
+        Folder copyFolderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(user2SiteDocLibNodeId, copyFolderResp.getParentId());
+
+        // userOneN1 tries to undo the copy (hard deletes the created copy)
+        Map<String, String> params = Collections.singletonMap("permanent", "true");
+        delete("nodes", userOneN1.getId(), copyFolderResp.getId(), params, 204);
+        // Check it's deleted
+        getSingle("nodes", userOneN1.getId(), copyFolderResp.getId(), 404);
+    }
+
+    /**
      * Tests create folder.
      * <p>POST:</p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}

@@ -32,6 +32,7 @@ import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.model.Rendition.RenditionStatus;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
+import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
@@ -257,7 +258,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         final NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, rendition.getId(), parameters);
         if (renditionNodeRef != null)
         {
-            throw new InvalidArgumentException(rendition.getId() + " rendition already exists.");
+            throw new ConstraintViolatedException(rendition.getId() + " rendition already exists.");
         }
 
         // Use the thumbnail registry to get the details of the thumbnail

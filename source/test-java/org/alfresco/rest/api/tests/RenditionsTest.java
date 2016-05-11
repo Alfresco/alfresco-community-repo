@@ -362,14 +362,14 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // -ve Tests
         // The rendition requested already exists
-        response = post(getRenditionsUrl(contentNodeId), userOneN1.getId(), toJsonAsString(new Rendition().setId("imgpreview")), 400);
+        response = post(getRenditionsUrl(contentNodeId), userOneN1.getId(), toJsonAsString(new Rendition().setId("imgpreview")), 409);
         ExpectedErrorResponse errorResponse = RestApiUtil.parseErrorResponse(response.getJsonResponse());
         assertNotNull(errorResponse);
         assertNotNull(errorResponse.getErrorKey());
         assertNotNull(errorResponse.getBriefSummary());
         assertNotNull(errorResponse.getStackTrace());
         assertNotNull(errorResponse.getDescriptionURL());
-        assertEquals(400, errorResponse.getStatusCode());
+        assertEquals(409, errorResponse.getStatusCode());
 
         // Create 'doclib' rendition request
         Rendition renditionRequest = new Rendition().setId("doclib");

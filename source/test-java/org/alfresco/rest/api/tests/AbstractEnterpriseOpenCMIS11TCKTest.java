@@ -38,7 +38,9 @@ import org.apache.chemistry.opencmis.tck.tests.crud.CRUDTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.filing.FilingTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.query.ContentChangesSmokeTest;
 import org.apache.chemistry.opencmis.tck.tests.query.QuerySmokeTest;
-import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningTestGroup;
+import org.apache.chemistry.opencmis.tck.tests.versioning.VersionDeleteTest;
+import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningSmokeTest;
+import org.apache.chemistry.opencmis.tck.tests.versioning.VersioningStateCreateTest;
 import org.junit.Test;
 
 public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterpriseOpenCMISTCKTest
@@ -60,7 +62,7 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
     @Test
     public void testCMISTCKVersioning() throws Exception
     {
-        VersioningTestGroup versioningTestGroup = new VersioningTestGroup();
+        OverrideVersioningTestGroup versioningTestGroup = new OverrideVersioningTestGroup();
         JUnitHelper.run(versioningTestGroup);
     }
 
@@ -85,24 +87,24 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
         JUnitHelper.run(queryTestGroup);
     }
     
-//    class OverrideVersioningTestGroup extends AbstractSessionTestGroup
-//    {
-//        @Override
-//        public void init(Map<String, String> parameters) throws Exception
-//        {
-//            super.init(parameters);
-//
-//            setName("Versioning Test Group");
-//            setDescription("Versioning tests.");
-//
-//            addTest(new VersioningSmokeTest());
-//            addTest(new VersionDeleteTest());
-//            addTest(new VersioningStateCreateTest());
-//            // relies on Solr being available
-////            addTest(new CheckedOutTest());
-//        }
-//    }
-//        
+    class OverrideVersioningTestGroup extends AbstractSessionTestGroup
+    {
+        @Override
+        public void init(Map<String, String> parameters) throws Exception
+        {
+            super.init(parameters);
+
+            setName("Versioning Test Group");
+            setDescription("Versioning tests.");
+
+            addTest(new VersioningSmokeTest());
+            addTest(new VersionDeleteTest());
+            addTest(new VersioningStateCreateTest());
+            // relies on Solr being available
+//            addTest(new CheckedOutTest());
+        }
+    }
+       
 //    class OverrideCRUDTestGroup extends AbstractSessionTestGroup
 //    {
 //        @Override

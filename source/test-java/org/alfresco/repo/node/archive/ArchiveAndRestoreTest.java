@@ -1022,7 +1022,10 @@ public class ArchiveAndRestoreTest extends TestCase
 
         // USER_B deletes "bb"
         nodeService.deleteNode(bb);
-        
+
+        result = nodeArchiveService.listArchivedNodes(queryBuilder);
+        assertEquals("USER_B deleted 1 item and USER_B can see it.", 1, result.getPage().size());
+
         result = runListArchivedNodesAsAdmin(queryBuilder);
         assertEquals("USER_B deleted only 1 item.", 1, result.getPage().size());
 
@@ -1034,6 +1037,9 @@ public class ArchiveAndRestoreTest extends TestCase
         queryBuilder = new ArchivedNodesCannedQueryBuilder.Builder(
                     this.archiveStoreRootNodeRef, paging)
                     .build();
+
+        result = nodeArchiveService.listArchivedNodes(queryBuilder);
+        assertEquals("USER_A deleted 1 item and USER_A can see it.", 1, result.getPage().size());
 
         result = runListArchivedNodesAsAdmin(queryBuilder);
         assertEquals("USER_A deleted only 1 item.", 1, result.getPage().size());

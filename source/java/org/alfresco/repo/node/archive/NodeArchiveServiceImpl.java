@@ -731,7 +731,7 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
     
     private Pair<NodeRef, QName> getArchiveNodeRefAssocTypePair(final NodeRef archiveStoreRootNodeRef)
     {
-        String currentUser = getCurrentUser();
+        final String currentUser = getCurrentUser();
 
         if (archiveStoreRootNodeRef == null || !nodeService.exists(archiveStoreRootNodeRef))
         {
@@ -745,12 +745,19 @@ public class NodeArchiveServiceImpl implements NodeArchiveService
         }
         else
         {
-            List<ChildAssociationRef> list = nodeService.getChildrenByName(archiveStoreRootNodeRef,
-                        ContentModel.ASSOC_ARCHIVE_USER_LINK,
-                        Collections.singletonList(currentUser));
+            List<ChildAssociationRef> list = AuthenticationUtil.runAs(new RunAsWork<List<ChildAssociationRef>>()
+            {
+                @Override
+                public List<ChildAssociationRef> doWork() throws Exception
+                {
+                    return nodeService.getChildrenByName(archiveStoreRootNodeRef,
+                            ContentModel.ASSOC_ARCHIVE_USER_LINK,
+                            Collections.singletonList(currentUser));
+                }
+            }, AuthenticationUtil.getAdminUserName());
 
             // Empty list means that the current user hasn't deleted anything yet.
-            if (list.isEmpty())
+            if (list == null || list.isEmpty())
             {
                 return new Pair<NodeRef, QName>(null, null);
             }

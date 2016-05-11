@@ -79,6 +79,7 @@ import org.alfresco.rest.framework.core.exceptions.InsufficientStorageException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException;
+import org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
@@ -1803,6 +1804,11 @@ public class NodesImpl implements Nodes
     @Override
     public Node updateContent(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
     {
+        if (contentInfo.getMimeType().toLowerCase().startsWith("multipart"))
+        {
+            throw new UnsupportedMediaTypeException("Cannot update using "+contentInfo.getMimeType());
+        }
+
         final NodeRef nodeRef = validateNode(fileNodeId);
 
         if (! nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))

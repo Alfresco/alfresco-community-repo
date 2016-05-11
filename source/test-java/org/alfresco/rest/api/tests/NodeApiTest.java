@@ -2558,6 +2558,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         // Download the file
         response = getSingle(url, user1, null, 200);
         assertNotNull(content, response.getResponse());
+
+        // -ve - try to  update content using multi-part form data
+        payload = new BinaryPayload(txtFile, "multipart/form-data", null);
+        putBinary(url, user1, payload, null, null, 415);
     }
 
     /**

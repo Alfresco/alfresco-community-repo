@@ -28,6 +28,7 @@ package org.alfresco.rest.framework.tests.core;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Matchers.any;
@@ -457,8 +458,46 @@ public class SerializeTests
             }});
         
     }
-    
+
     @Test
+    public void testInvokeEntities() throws IOException
+    {
+        ResourceWithMetadata entityResource = locator.locateEntityResource(api,"sheep", HttpMethod.GET);
+        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
+        executor.execute(entityResource, Params.valueOf((String)null, null), new ExecutionCallback<CollectionWithPagingInfo>(){
+            @Override
+            public void onSuccess(CollectionWithPagingInfo result, ContentInfo contentInfo)
+            {
+                assertNotNull(result);
+            }});
+
+        ResourceWithMetadata baa = locator.locateRelationResource(api,"sheep", "baaahh", HttpMethod.GET);
+        executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
+        executor.execute(baa, Params.valueOf("4", null), new ExecutionCallback<CollectionWithPagingInfo>(){
+            @Override
+            public void onSuccess(CollectionWithPagingInfo result, ContentInfo contentInfo)
+            {
+                assertNotNull(result);
+            }});
+
+        executor.execute(baa, Params.valueOf("4", "45"), new ExecutionCallback<ExecutionResult>(){
+            @Override
+            public void onSuccess(ExecutionResult result, ContentInfo contentInfo)
+            {
+                assertNotNull(result);
+            }});
+
+        ResourceWithMetadata baaPhoto = locator.locateRelationResource(api,"sheep/{entityId}/baaahh", "photo", HttpMethod.GET);
+        executor.execute(baaPhoto, Params.valueOf("4", "45"), new ExecutionCallback<ExecutionResult>(){
+            @Override
+            public void onSuccess(ExecutionResult result, ContentInfo contentInfo)
+            {
+                assertNull(result);
+            }});
+
+    }
+
+        @Test
     public void testInvokeVersions() throws IOException
     {
         final Map<String, Object> respons = new HashMap<String, Object>();

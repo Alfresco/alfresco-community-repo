@@ -1427,19 +1427,30 @@ public class NodeApiTest extends AbstractBaseApiTest
         n1.expected(nodeResp);
 
 
-        // filtering, via where clause (nodeType)
+        // filtering, via where clause (nodeType + subTypes)
+
+        List<String> linkIds = Arrays.asList(n1Id, n2Id);
+
         Map<String, String> params = new HashMap<>();
         params.put("where", "(nodeType='cm:link')");
 
         Paging paging = getPaging(0, Integer.MAX_VALUE);
 
-        List<String> linkIds = Arrays.asList(n1Id, n2Id);
-
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         List<Node> nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
+        assertEquals(0, nodes.size());
+
+        params = new HashMap<>();
+        params.put("where", "(nodeType='cm:link' and subTypes=true)");
+
+        paging = getPaging(0, Integer.MAX_VALUE);
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
         assertEquals(2, nodes.size());
         assertTrue(linkIds.contains(nodes.get(0).getId()));
         assertTrue(linkIds.contains(nodes.get(1).getId()));
+
 
         // delete file
         delete("nodes", user1, n1Id, 204);
@@ -1465,6 +1476,11 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // -ve test - create - duplicate name
         post(myChildrenUrl, user1, toJsonAsStringNonNull(n2), 409);
+
+        // -ve test - unknown nodeType when filtering
+        params = new HashMap<>();
+        params.put("where", "(nodeType='my:unknown'");
+        getAll(myChildrenUrl, user1, paging, params, 400);
     }
 
 

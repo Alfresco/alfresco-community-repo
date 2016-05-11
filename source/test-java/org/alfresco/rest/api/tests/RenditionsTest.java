@@ -488,10 +488,10 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // Create multipart request - Word doc file
         renditionName = "doclib";
-        fileName = "quick.docx";
+        fileName = "farmers_markets_list_2003.doc";
         file = getResourceFile(fileName);
         reqBody = MultiPartBuilder.create()
-                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING))
+                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_WORD))
                 .setRenditions(Collections.singletonList(renditionName))
                 .build();
 

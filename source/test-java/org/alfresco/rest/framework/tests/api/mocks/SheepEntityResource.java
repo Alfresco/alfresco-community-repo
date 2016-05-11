@@ -33,11 +33,13 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.springframework.extensions.webscripts.Status;
 
 @EntityResource(name=SheepEntityResource.ENTITY_KEY,title="Sheep")
 public class SheepEntityResource implements EntityResourceAction.Read<Sheep>,EntityResourceAction.ReadById<Sheep>, EntityResourceAction.Update<Sheep>, EntityResourceAction.Delete
 {
     public static final String ENTITY_KEY = "sheep";
+
     @Override
     public void delete(String id, Parameters parameters)
     {
@@ -56,7 +58,7 @@ public class SheepEntityResource implements EntityResourceAction.Read<Sheep>,Ent
     }
 
     @Override
-    @WebApiDescription(title = "Gets all the Sheep")
+    @WebApiDescription(title = "Gets all the Sheep", successStatus = Status.STATUS_ACCEPTED)
     @WebApiParameters({
                 @WebApiParam(name = "siteId", title = "Site id", description="What ever."),
                 @WebApiParam(name = "who", title = "Who", kind=ResourceParameter.KIND.HTTP_HEADER),

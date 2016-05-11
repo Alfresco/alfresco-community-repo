@@ -38,6 +38,7 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.TempFileProvider;
+import org.springframework.extensions.webscripts.Status;
 
 @EntityResource(name="flock",title="A resource used for testing binary properties")
 public class FlockEntityResource implements BinaryResourceAction.Read, BinaryResourceAction.Delete, BinaryResourceAction.Update<Flock>
@@ -62,7 +63,7 @@ public class FlockEntityResource implements BinaryResourceAction.Read, BinaryRes
 
     //versions/1/flock/xyz/photo GET
     @Override
-    @WebApiDescription(title = "Reads a photo as a Stream")
+    @WebApiDescription(title = "Reads a photo as a Stream", successStatus = Status.STATUS_FOUND)
     @BinaryProperties("photo")
     public BinaryResource readProperty(String entityId, Parameters parameters) throws EntityNotFoundException
     {

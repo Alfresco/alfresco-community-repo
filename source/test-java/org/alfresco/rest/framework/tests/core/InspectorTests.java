@@ -99,7 +99,9 @@ public class InspectorTests
         assertNotNull("SheepEntityResource supports PUT", metaData.getOperation(HttpMethod.PUT));
         assertNotNull("SheepEntityResource supports DELETE", metaData.getOperation(HttpMethod.DELETE));
         assertNull("SheepEntityResource does not support POST", metaData.getOperation(HttpMethod.POST));
-        ResourceOperation op = metaData.getOperation(HttpMethod.PUT);
+        ResourceOperation op = metaData.getOperation(HttpMethod.GET);
+        assertEquals("Sheep ReadALL should return ACCEPTED", Status.STATUS_ACCEPTED, op.getSuccessStatus());
+        op = metaData.getOperation(HttpMethod.PUT);
         assertTrue("SheepEntityResource must support Sheep", Sheep.class.equals(metaData.getObjectType(op)));
         
         metainfo = ResourceInspector.inspect(SheepNoActionEntityResource.class);
@@ -122,7 +124,6 @@ public class InspectorTests
         assertNotNull("FlockEntityResource supports PUT", metaData.getOperation(HttpMethod.PUT));
         assertNotNull("FlockEntityResource supports DELETE", metaData.getOperation(HttpMethod.DELETE));
         assertNull("FlockEntityResource does not support POST", metaData.getOperation(HttpMethod.POST));
-
         metainfo = ResourceInspector.inspect(MultiPartTestEntityResource.class);
         assertTrue("Must be one ResourceMetadata",metainfo.size()==1);
         metaData = metainfo.get(0);
@@ -133,6 +134,7 @@ public class InspectorTests
         assertNull("MultiPartTestEntityResource does not supports DELETE", metaData.getOperation(HttpMethod.DELETE));
         op = metaData.getOperation(HttpMethod.POST);
         assertTrue("MultiPartTestEntityResource must support MultiPartTestResponse", MultiPartTestResponse.class.equals(metaData.getObjectType(op)));
+        assertEquals("MultiPartTestEntityResource should return ACCEPTED", Status.STATUS_ACCEPTED, op.getSuccessStatus());
 
     }
 
@@ -166,6 +168,7 @@ public class InspectorTests
         }
         assertNotNull("SheepBlackSheepResource supports DELETE", metaData.getOperation(HttpMethod.DELETE));
         op = metaData.getOperation(HttpMethod.DELETE);
+        assertEquals("SheepBlackSheepResource should return STATUS_CONFLICT", Status.STATUS_CONFLICT, op.getSuccessStatus());
         params = op.getParameters();
         assertTrue("DELETE method on a relations should have 2 url params.", params.size() == 2);
         
@@ -315,6 +318,7 @@ public class InspectorTests
         assertNotNull(op);
         assertTrue(HttpMethod.GET.equals(op.getHttpMethod()));
         assertTrue("Gets all the Sheep".equals(op.getTitle()));
+        assertEquals("Sheep ReadALL should return ACCEPTED", Status.STATUS_ACCEPTED, op.getSuccessStatus());
         assertTrue("".equals(op.getDescription()));
         assertNotNull(op.getParameters());
         assertTrue(op.getParameters().size() == 7);
@@ -463,6 +467,7 @@ public class InspectorTests
                     assertNotNull("GrassEntityResource supports POST", resourceMetadata.getOperation(HttpMethod.POST));
                     assertNull("GrassEntityResource does not support DELETE", resourceMetadata.getOperation(HttpMethod.DELETE));
                     ResourceOperation op = resourceMetadata.getOperation(HttpMethod.POST);
+                    assertEquals("grow should return ACCEPTED", Status.STATUS_ACCEPTED, op.getSuccessStatus());
                     Class paramType = resourceMetadata.getObjectType(op);
                     Object paramObj = paramType.newInstance();
                     result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", paramObj, Params.valueOf("notUsed", null));
@@ -473,6 +478,7 @@ public class InspectorTests
                     assertNull("GrassEntityResource does not support GET", resourceMetadata.getOperation(HttpMethod.GET));
                     op = resourceMetadata.getOperation(HttpMethod.POST);
                     assertNull(resourceMetadata.getObjectType(op));
+                    assertEquals("cut should return ACCEPTED", Status.STATUS_NOT_IMPLEMENTED, op.getSuccessStatus());
                     result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", null, Params.valueOf("notUsed", null));
                     assertEquals("All done",result);
                     break;

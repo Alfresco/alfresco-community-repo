@@ -29,12 +29,14 @@ package org.alfresco.rest.framework.tests.api.mocks;
 import java.util.Arrays;
 import java.util.List;
 
+import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.springframework.extensions.webscripts.Status;
 
 /**
  * Implements Get
@@ -55,6 +57,7 @@ public class SheepBlackSheepResource implements RelationshipResourceAction.Read<
     }
 
     @Override
+    @WebApiDescription(title = "Deletes only black Sheep", successStatus = Status.STATUS_CONFLICT)
     public void delete(String entityResourceId, String id, Parameters parameters)
     {
     }

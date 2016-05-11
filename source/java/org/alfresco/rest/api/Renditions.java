@@ -69,4 +69,6 @@ public interface Renditions
      * @return the rendition stream
      */
     BinaryResource getContent(String nodeId, String renditionId, Parameters parameters);
+
+    String PARAM_STATUS = "status";
 }

@@ -37,18 +37,24 @@ import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.QuickShareLinkEmailRequest;
+import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
+import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
+import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -78,8 +84,10 @@ import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -386,6 +394,48 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
         catch (QuickShareClientNotFoundException ex)
         {
             throw new InvalidArgumentException("Client is not registered [" + emailRequest.getClient() + "]");
+        }
+    }
+
+    @Override
+    public CollectionWithPagingInfo<Rendition> getRenditions(String sharedId)
+    {
+        checkEnabled();
+        checkValidShareId(sharedId);
+
+        try
+        {
+            Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
+
+            String networkTenantDomain = pair.getFirst();
+            final NodeRef nodeRef = pair.getSecond();
+
+            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<CollectionWithPagingInfo<Rendition>>()
+            {
+                public CollectionWithPagingInfo<Rendition> doWork() throws Exception
+                {
+                    String nodeId = nodeRef.getId();
+
+                    // hmm ... can we simplify ?
+                    String filterStatusCreated = "("+Renditions.PARAM_STATUS+"='"+Rendition.RenditionStatus.CREATED+"')";
+                    Query whereQuery = ResourceWebScriptHelper.getWhereClause(filterStatusCreated);
+                    Params.RecognizedParams recParams = new Params.RecognizedParams(null, null, null, null, null, null, whereQuery, null, false);
+                    Parameters params = Params.valueOf(recParams, null, null, null);
+
+                    return renditions.getRenditions(nodeId, params);
+
+                }
+            }, networkTenantDomain);
+        }
+        catch (InvalidSharedIdException ex)
+        {
+            logger.warn("Unable to find: " + sharedId);
+            throw new EntityNotFoundException(sharedId);
+        }
+        catch (InvalidNodeRefException inre)
+        {
+            logger.warn("Unable to find: " + sharedId + " [" + inre.getNodeRef() + "]");
+            throw new EntityNotFoundException(sharedId);
         }
     }
 

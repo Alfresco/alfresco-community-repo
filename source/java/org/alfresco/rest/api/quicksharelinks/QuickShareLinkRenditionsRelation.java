@@ -20,13 +20,16 @@ package org.alfresco.rest.api.quicksharelinks;
 
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.Renditions;
+import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiNoAuth;
 import org.alfresco.rest.framework.resource.RelationshipResource;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
+import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
@@ -38,6 +41,7 @@ import org.springframework.beans.factory.InitializingBean;
  */
 @RelationshipResource(name = "renditions", entityResource = QuickShareLinkEntityResource.class, title = "Node renditions via shared link")
 public class QuickShareLinkRenditionsRelation implements
+            RelationshipResourceAction.Read<Rendition>,
             RelationshipResourceBinaryAction.Read,
             InitializingBean
 {
@@ -61,5 +65,13 @@ public class QuickShareLinkRenditionsRelation implements
     public BinaryResource readProperty(String sharedId, String renditionId, Parameters parameters)
     {
         return quickShareLinks.readProperty(sharedId, renditionId, parameters);
+    }
+
+    @WebApiDescription(title = "List renditions", description = "List available (created) renditions")
+    @WebApiNoAuth
+    @Override
+    public CollectionWithPagingInfo<Rendition> readAll(String sharedId, Parameters parameters)
+    {
+        return quickShareLinks.getRenditions(sharedId);
     }
 }

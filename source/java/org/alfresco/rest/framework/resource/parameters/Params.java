@@ -135,6 +135,7 @@ public class Params implements Parameters
         return this.recognizedParams.filter;
     }
 
+    @Override
     public boolean includeSource()
     {
         return this.recognizedParams.includeSource;

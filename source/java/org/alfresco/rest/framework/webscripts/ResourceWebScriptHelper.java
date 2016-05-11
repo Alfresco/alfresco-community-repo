@@ -483,10 +483,10 @@ public class ResourceWebScriptHelper
     {
         PropertyCheck.mandatory(this, null, params);
         if (objectToWrap == null ) return null;
-        if (objectToWrap instanceof SerializablePagedCollection<?>)
+        if (objectToWrap instanceof CollectionWithPagingInfo<?>)
         {
-            SerializablePagedCollection<?> collectionToWrap = (SerializablePagedCollection<?>) objectToWrap;
-            Object sourceEntity = executeIncludedSource(res, api, params, entityCollectionName);
+            CollectionWithPagingInfo<?> collectionToWrap = (CollectionWithPagingInfo<?>) objectToWrap;
+            Object sourceEntity = executeIncludedSource(res, api, params, entityCollectionName, collectionToWrap);
             Collection<Object> resultCollection = new ArrayList(collectionToWrap.getCollection().size());
             if (!collectionToWrap.getCollection().isEmpty())
             {
@@ -527,10 +527,16 @@ public class ResourceWebScriptHelper
         }
     }
 
-    private Object executeIncludedSource(WebScriptResponse response, Api api, Params params, String entityCollectionName)
+    private Object executeIncludedSource(WebScriptResponse response, Api api, Params params, String entityCollectionName, CollectionWithPagingInfo<?> collectionToWrap)
     {
         if (params.includeSource())
         {
+            if (collectionToWrap.getSourceEntity() != null)
+            {
+                //The implementation has already set it so return it;
+                return collectionToWrap.getSourceEntity();
+            }
+
             ResourceWithMetadata res = locator.locateEntityResource(api, entityCollectionName, HttpMethod.GET);
             if (res != null)
             {

@@ -215,7 +215,7 @@ public class ProcessesImplTest extends TestCase
     private CollectionWithPagingInfo<ProcessInfo> queryMatchesProcesses(String matchesString)
     {
         Query query = ResourceWebScriptHelper.getWhereClause(String.format(QUERY_WORKFLOWDESCRIPTION_MATCHES, matchesString));
-        Parameters parameters = Params.valueOf(new RecognizedParams(null, Paging.valueOf(0, ACTIVE_WORKFLOWS_INITIAL_AMOUNT), null, null, null, query, null), null, null);
+        Parameters parameters = Params.valueOf(new RecognizedParams(null, Paging.valueOf(0, ACTIVE_WORKFLOWS_INITIAL_AMOUNT), null, null, null, null, query, null, false), null, null, null);
         
         return processes.getProcesses(parameters);
     }

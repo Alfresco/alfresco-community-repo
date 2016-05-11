@@ -484,16 +484,19 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
 
-        // also accepted for JSON when creating empty file (albeit with no content)
+        /*
+        // TODO open question
+        // - should we accept for  JSON when creating empty file (ie. with zero-byte content)
+        // - eg. might fail, eg. doclib for empty plain text / pdf ?
         Document d1 = new Document();
-        d1.setName("d1.txt");
+        d1.setName("d1.pdf");
         d1.setNodeType("cm:content");
         ContentInfo ci = new ContentInfo();
-        ci.setMimeType("text/plain");
+        ci.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         d1.setContent(ci);
 
-        // create empty file including request to generate imgpreview thumbnail
-        renditionName = "medium";
+        // create empty file including request to generate a thumbnail
+        renditionName = "doclib";
         response = post(getNodeChildrenUrl(folder_Id), userId, toJsonAsStringNonNull(d1), "?renditions="+renditionName, 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String d1Id = documentResp.getId();
@@ -502,7 +505,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         rendition = waitAndGetRendition(userId, d1Id, renditionName);
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
-
+        */
 
         // -ve - currently we do not support multiple rendition requests on create
         reqBody = MultiPartBuilder.create()

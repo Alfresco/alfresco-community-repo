@@ -26,11 +26,14 @@
 package org.alfresco.rest.api;
 
 import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -84,7 +87,21 @@ public interface Nodes
      * @return
      */
     Node getFolderOrDocument(String nodeId, Parameters parameters);
-    
+
+    Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters, Map<String, UserInfo> mapUserInfo);
+
+    /**
+     * Get the folder or document representation (as appropriate) for the given node.
+     *
+     * @param nodeRef A real Node
+     * @param parentNodeRef
+     * @param nodeTypeQName
+     * @param includeParam
+     * @param mapUserInfo
+     * @return
+     */
+    Node getFolderOrDocument(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> includeParam, Map<String, UserInfo> mapUserInfo);
+
     /**
      * Get list of children of a parent folder.
      *

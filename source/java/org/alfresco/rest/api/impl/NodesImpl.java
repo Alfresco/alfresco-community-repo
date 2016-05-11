@@ -774,7 +774,8 @@ public class NodesImpl implements Nodes
         return getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeTypeQName, parameters, null);
     }
 
-    private Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters, Map<String,UserInfo> mapUserInfo)
+    @Override
+    public Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters, Map<String,UserInfo> mapUserInfo)
     {
         List<String> includeParam = new ArrayList<>();
         if (parameters != null)
@@ -789,7 +790,8 @@ public class NodesImpl implements Nodes
         return getFolderOrDocument(nodeRef, parentNodeRef, nodeTypeQName, includeParam, mapUserInfo);
     }
 
-    private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> includeParam, Map<String,UserInfo> mapUserInfo)
+    @Override
+    public Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> includeParam, Map<String, UserInfo> mapUserInfo)
     {
         if (mapUserInfo == null)
         {

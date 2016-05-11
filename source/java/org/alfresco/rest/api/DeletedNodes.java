@@ -34,4 +34,5 @@ public interface DeletedNodes
     CollectionWithPagingInfo<Node> listDeleted(Parameters parameters);
     Node getDeletedNode(String originalId, Parameters parameters);
     Node restoreArchivedNode(String archivedId);
+    void purgeArchivedNode(String archivedId);
 }

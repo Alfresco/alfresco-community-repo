@@ -160,4 +160,12 @@ public class DeletedNodesImpl implements DeletedNodes
                 throw new ApiException("Unable to restore node "+archivedId);
         }
     }
+
+    @Override
+    public void purgeArchivedNode(String archivedId)
+    {
+        //First check the node is valid and has been archived.
+        NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, archivedId);
+        nodeArchiveService.purgeArchivedNode(validatedNodeRef);
+    }
 }

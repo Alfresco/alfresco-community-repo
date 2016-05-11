@@ -155,24 +155,53 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         Document documentSameName = createDocument(createdFolder, "restoreme.txt");
 
         //Can't restore a node of the same name
-        HttpResponse response = post("deleted-nodes/"+document.getId()+"/restore", u1.getId(), null, null, Status.STATUS_CONFLICT);
+        HttpResponse response = post(URL_DELETED_NODES+"/"+document.getId()+"/restore", u1.getId(), null, null, Status.STATUS_CONFLICT);
 
         delete(URL_NODES, u1.getId(), documentSameName.getId(), 204);
 
         //Now we can restore it.
-        response = post("deleted-nodes/"+document.getId()+"/restore", u1.getId(), null, null, 201);
+        response = post(URL_DELETED_NODES+"/"+document.getId()+"/restore", u1.getId(), null, null, 201);
 
         delete(URL_NODES, u1.getId(), createdFolder.getId(), 204);
 
         //We deleted the parent folder so lets see if we can restore a child doc, hopefully not.
-        response = post("deleted-nodes/"+documentSameName.getId()+"/restore", u1.getId(), null, null, Status.STATUS_NOT_FOUND);
+        response = post(URL_DELETED_NODES+"/"+documentSameName.getId()+"/restore", u1.getId(), null, null, Status.STATUS_NOT_FOUND);
 
         //Can't delete "nonsense" noderef
         response = post("deleted-nodes/nonsense/restore", u1.getId(), null, null, Status.STATUS_NOT_FOUND);
 
         //User 2 can't restore it but user 1 can.
-        response = post("deleted-nodes/"+createdFolder.getId()+"/restore", u2.getId(), null, null, Status.STATUS_FORBIDDEN);
-        response = post("deleted-nodes/"+createdFolder.getId()+"/restore", u1.getId(), null, null, 201);
+        response = post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", u2.getId(), null, null, Status.STATUS_FORBIDDEN);
+        response = post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", u1.getId(), null, null, 201);
+    }
+
+    @Test
+    public void testCreateAndPurge() throws Exception
+    {
+        publicApiClient.setRequestContext(new RequestContext(u1.getId()));
+        Date now = new Date();
+        String folder1 = "folder" + now.getTime() + "_1";
+        Folder createdFolder = createFolder(u1.getId(), docLibNodeRef.getId(), folder1, null);
+        assertNotNull(createdFolder);
+
+        delete(URL_NODES, u1.getId(), createdFolder.getId(), 204);
+
+        HttpResponse response = getSingle(URL_DELETED_NODES, u1.getId(), createdFolder.getId(), 200);
+        Folder fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
+        assertNotNull(fNode);
+
+        //try purging "nonsense"
+        delete(URL_DELETED_NODES, u1.getId(), "nonsense", 404);
+
+        //User 2 can't do it
+        delete(URL_DELETED_NODES, u2.getId(), createdFolder.getId(), Status.STATUS_FORBIDDEN);
+
+        //Now purge the folder
+        delete(URL_DELETED_NODES, u1.getId(), createdFolder.getId(), 204);
+
+        //This time we can't find it.
+        response = getSingle(URL_DELETED_NODES, u1.getId(), createdFolder.getId(), 404);
+
     }
 
     protected void checkDeletedNodes(Date now, Folder createdFolder, Folder createdFolderNonSite, Document document, List<Node> nodes)

@@ -50,7 +50,7 @@ import java.util.List;
  */
 @EntityResource(name="deleted-nodes", title = "Deleted Nodes")
 public class TrashcanEntityResource implements
-        EntityResourceAction.ReadById<Node>, EntityResourceAction.Read<Node>
+        EntityResourceAction.ReadById<Node>, EntityResourceAction.Read<Node>, EntityResourceAction.Delete
 {
     private DeletedNodes deletedNodes;
 
@@ -66,9 +66,9 @@ public class TrashcanEntityResource implements
     }
 
     @Override
-    public Node readById(String id, Parameters parameters) throws EntityNotFoundException
+    public Node readById(String nodeId, Parameters parameters) throws EntityNotFoundException
     {
-        return deletedNodes.getDeletedNode(id, parameters);
+        return deletedNodes.getDeletedNode(nodeId, parameters);
     }
 
     @Operation("restore")
@@ -76,5 +76,11 @@ public class TrashcanEntityResource implements
     public Node restoreDeletedNode(String nodeId, Void ignored, Parameters parameters, WithResponse withResponse)
     {
         return deletedNodes.restoreArchivedNode(nodeId);
+    }
+
+    @Override
+    public void delete(String nodeId, Parameters parameters)
+    {
+        deletedNodes.purgeArchivedNode(nodeId);
     }
 }

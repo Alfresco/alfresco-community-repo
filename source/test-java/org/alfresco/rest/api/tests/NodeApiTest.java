@@ -368,9 +368,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         for (Node n : nodes)
         {
-            assertNotNull("There should be a 'properties' object in the response.", n.getIsLink()); // eg. cm:title, see above
+            assertNotNull("There should be a 'properties' object in the response.", n.getProperties()); // eg. cm:title, see above
         	assertNotNull("There should be a 'isLink' object in the response.", n.getIsLink());
         	assertNotNull("There should be a 'path' object in the response.", n.getPath());
+        	assertNotNull("There should be a 'aspectNames' object in the response.", n.getAspectNames());
         }
         
         // request specific property via select

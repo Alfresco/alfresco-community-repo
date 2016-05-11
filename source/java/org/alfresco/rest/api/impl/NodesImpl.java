@@ -477,8 +477,8 @@ public class NodesImpl implements Nodes
         }
     }
 
-    private NodeRef getParentNodeRef(final NodeRef nodeRef) {
-
+    private NodeRef getParentNodeRef(final NodeRef nodeRef) 
+    {
         if (repositoryHelper.getCompanyHome().equals(nodeRef))
         {
             return null; // note: does not make sense to return parent above C/H
@@ -700,7 +700,7 @@ public class NodesImpl implements Nodes
         }
 
         String pathStr = null;
-        if(pathElements.size() > 0)
+        if (pathElements.size() > 0)
         {
             StringBuilder sb = new StringBuilder(120);
             for (PathInfo.ElementInfo e : pathElements)
@@ -1592,7 +1592,8 @@ public class NodesImpl implements Nodes
         List<QName> result = new ArrayList<>(qnameStrList.size());
         for (String str : qnameStrList)
         {
-            if (str.startsWith(PREFIX)) {
+            if (str.startsWith(PREFIX)) 
+            {
                 str = str.substring(PREFIX.length());
             }
 

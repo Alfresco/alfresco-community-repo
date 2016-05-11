@@ -110,12 +110,14 @@ public class ParamsExtractorTests
         params = extractor.extractParams(mockEntity(), request);
         assertNotNull(params);
         assertNotNull(params.getRelationsFilter());
+        assertFalse(params.includeSource());
         
         templateVars.put(ResourceLocator.RELATIONSHIP_ID, "45678");
         params = extractor.extractParams(mockRelationship(), request);
         assertNotNull(params);
         assertEquals("1234", params.getEntityId());
         assertEquals("45678", params.getRelationshipId());
+        assertFalse(params.includeSource());
 
         testExtractAddressedParams(templateVars, request, extractor);
     }

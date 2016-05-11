@@ -98,7 +98,8 @@ public class ResourceWebScriptHelper
     public static final String PARAM_ORDERBY = "orderBy";
     public static final String PARAM_WHERE = "where";
     public static final String PARAM_SELECT = "select";
-    public static final List<String> KNOWN_PARAMS = Arrays.asList(PARAM_RELATIONS,PARAM_FILTER_PROPS,PARAM_PAGING_SKIP,PARAM_PAGING_MAX, PARAM_ORDERBY, PARAM_WHERE, PARAM_SELECT);
+    public static final String PARAM_INCLUDE_SOURCE_ENTITY = "includeSource";
+    public static final List<String> KNOWN_PARAMS = Arrays.asList(PARAM_RELATIONS,PARAM_FILTER_PROPS,PARAM_PAGING_SKIP,PARAM_PAGING_MAX, PARAM_ORDERBY, PARAM_WHERE, PARAM_SELECT, PARAM_INCLUDE_SOURCE_ENTITY);
     
     private ResourceLocator locator;
 
@@ -695,13 +696,14 @@ public class ResourceWebScriptHelper
         Map<String, BeanPropertiesFilter> relationFilter = getRelationFilter(req.getParameter(ResourceWebScriptHelper.PARAM_RELATIONS));
         Query whereQuery = getWhereClause(req.getParameter(ResourceWebScriptHelper.PARAM_WHERE));
         Map<String, String[]> requestParams = getRequestParameters(req);
+        boolean includeSource = Boolean.valueOf(req.getParameter(ResourceWebScriptHelper.PARAM_INCLUDE_SOURCE_ENTITY));
 
         List<String> theSelect = getSelectClause(req.getParameter(ResourceWebScriptHelper.PARAM_SELECT));
         BeanPropertiesFilter filter = getFilter(req.getParameter(ResourceWebScriptHelper.PARAM_FILTER_PROPS), theSelect);
     	
-        return new RecognizedParams(requestParams, paging, filter, relationFilter, theSelect, whereQuery, sorting);
+        return new RecognizedParams(requestParams, paging, filter, relationFilter, theSelect, whereQuery, sorting, includeSource);
     }
-    
+
     /**
      * Find paging setings based on the request parameters.
      * 

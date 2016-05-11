@@ -25,8 +25,6 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
-import org.junit.Assert;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +60,8 @@ public class Node
     protected List<String> aspectNames;
 
     protected Map<String, Object> properties;
+
+    protected ContentInfo contentInfo;
 
     public Node()
     {
@@ -197,6 +197,16 @@ public class Node
         this.properties = properties;
     }
 
+    public void setContent(ContentInfo contentInfo)
+    {
+        this.contentInfo = contentInfo;
+    }
+
+    public ContentInfo getContent()
+    {
+        return this.contentInfo;
+    }
+
     public void expected(Object o)
     {
         Node other = (Node) o;
@@ -283,8 +293,22 @@ public class Node
         AssertUtil.assertEquals("isFile", isFile, other.getIsFile());
         AssertUtil.assertEquals("isLink", isLink, other.getIsLink());
 
-        if (path != null) {
+        if (path != null)
+        {
             path.expected(other.getPath());
+        }
+        else
+        {
+            assertNull(other.getPath());
+        }
+
+        if (contentInfo != null)
+        {
+            contentInfo.expected(other.getContent());
+        }
+        else
+        {
+            assertNull(other.getContent());
         }
     }
 }

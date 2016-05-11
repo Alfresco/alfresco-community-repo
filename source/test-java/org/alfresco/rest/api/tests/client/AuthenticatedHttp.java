@@ -156,7 +156,7 @@ public class AuthenticatedHttp extends AbstractHttp
     /**
      * Execute the given method, authenticated as the given user using Basic Authentication.
      * @param method method to execute
-     * @param userName name of user to authenticate
+     * @param userName name of user to authenticate (note: if null then attempts to run with no authentication - eq. Quick/Shared Link test)
      * @param callback called after http-call is executed. When callback returns, the 
      *  response stream is closed, so all respose-related operations should be done in the callback. Can be null.
      * @return result returned by the callback or null if no callback is given.
@@ -166,9 +166,13 @@ public class AuthenticatedHttp extends AbstractHttp
         try
         {
             HttpState state = new HttpState();
-            state.setCredentials(
+
+            if (userName != null)
+            {
+                state.setCredentials(
                         new AuthScope(null, AuthScope.ANY_PORT),
                         new UsernamePasswordCredentials(userName, password));
+            }
             
             httpProvider.getHttpClient().executeMethod(null, method, state);
             

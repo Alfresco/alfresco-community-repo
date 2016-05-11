@@ -31,6 +31,7 @@ import java.math.BigInteger;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -159,8 +160,10 @@ public class NodesImpl implements Nodes
     private QuickShareService quickShareService;
     private Repository repositoryHelper;
     private ServiceRegistry sr;
-    private Set<String> defaultIgnoreTypes;
-    private Set<QName> ignoreTypeQNames;
+    private Set<String> defaultIgnoreTypesAndAspects;
+
+    // ignore types/aspects
+    private Set<QName> ignoreQNames;
 
     private Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
 
@@ -181,12 +184,12 @@ public class NodesImpl implements Nodes
         this.actionService = sr.getActionService();
         this.versionService = sr.getVersionService();
 
-        if (defaultIgnoreTypes != null)
+        if (defaultIgnoreTypesAndAspects != null)
         {
-            ignoreTypeQNames = new HashSet<>(defaultIgnoreTypes.size());
-            for (String type : defaultIgnoreTypes)
+            ignoreQNames = new HashSet<>(defaultIgnoreTypesAndAspects.size());
+            for (String type : defaultIgnoreTypesAndAspects)
             {
-                ignoreTypeQNames.add(createQName(type));
+                ignoreQNames.add(createQName(type));
             }
         }
     }
@@ -206,9 +209,9 @@ public class NodesImpl implements Nodes
         this.quickShareService = quickShareService;
     }
 
-    public void setIgnoreTypes(Set<String> ignoreTypes)
+    public void setIgnoreTypes(Set<String> ignoreTypesAndAspects)
     {
-        this.defaultIgnoreTypes = ignoreTypes;
+        this.defaultIgnoreTypesAndAspects = ignoreTypesAndAspects;
     }
 
     // excluded namespaces (aspects and properties)
@@ -314,7 +317,17 @@ public class NodesImpl implements Nodes
             throw new EntityNotFoundException(nodeRef.getId());
         }
 
-        return typeMatches(nodeService.getType(nodeRef), expectedTypes, excludedTypes);
+        return typeMatches(getNodeType(nodeRef), expectedTypes, excludedTypes);
+    }
+
+    private QName getNodeType(NodeRef nodeRef)
+    {
+        return nodeService.getType(nodeRef);
+    }
+
+    private boolean isSubClass(QName className, QName ofClassQName)
+    {
+        return dictionaryService.isSubClass(className, ofClassQName);
     }
 
     protected boolean typeMatches(QName type, Set<QName> expectedTypes, Set<QName> excludedTypes)
@@ -362,7 +375,7 @@ public class NodesImpl implements Nodes
 
     private Type getType(NodeRef nodeRef)
     {
-        return getType(nodeService.getType(nodeRef), nodeRef);
+        return getType(getNodeType(nodeRef), nodeRef);
     }
 
     private Type getType(QName typeQName, NodeRef nodeRef)
@@ -379,13 +392,13 @@ public class NodesImpl implements Nodes
 
         // further checks
 
-        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_LINK))
+        if (isSubClass(typeQName, ContentModel.TYPE_LINK))
         {
-            if (dictionaryService.isSubClass(typeQName, ApplicationModel.TYPE_FOLDERLINK))
+            if (isSubClass(typeQName, ApplicationModel.TYPE_FOLDERLINK))
             {
                 return Type.FOLDER;
             }
-            else if (dictionaryService.isSubClass(typeQName, ApplicationModel.TYPE_FILELINK))
+            else if (isSubClass(typeQName, ApplicationModel.TYPE_FILELINK))
             {
                 return Type.DOCUMENT;
             }
@@ -395,7 +408,7 @@ public class NodesImpl implements Nodes
             {
                 try
                 {
-                    typeQName = nodeService.getType(linkNodeRef);
+                    typeQName = getNodeType(linkNodeRef);
                     // drop-through to check type of destination
                     // note: edge-case - if link points to another link then we will return null
                 }
@@ -406,15 +419,15 @@ public class NodesImpl implements Nodes
             }
         }
 
-        if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_FOLDER))
+        if (isSubClass(typeQName, ContentModel.TYPE_FOLDER))
         {
-            if (! dictionaryService.isSubClass(typeQName, ContentModel.TYPE_SYSTEM_FOLDER))
+            if (! isSubClass(typeQName, ContentModel.TYPE_SYSTEM_FOLDER))
             {
                 return Type.FOLDER;
             }
             return null; // unknown
         }
-        else if (dictionaryService.isSubClass(typeQName, ContentModel.TYPE_CONTENT))
+        else if (isSubClass(typeQName, ContentModel.TYPE_CONTENT))
         {
             return Type.DOCUMENT;
         }
@@ -594,7 +607,7 @@ public class NodesImpl implements Nodes
         String path = parameters.getParameter(PARAM_RELATIVE_PATH);
         NodeRef nodeRef = validateOrLookupNode(nodeId, path);
 
-        QName typeQName = nodeService.getType(nodeRef);
+        QName typeQName = getNodeType(nodeRef);
 
         return getFolderOrDocumentFullInfo(nodeRef, getParentNodeRef(nodeRef), typeQName, parameters);
     }
@@ -631,9 +644,10 @@ public class NodesImpl implements Nodes
 
         if (type == null)
         {
-            // unknown type
+            // not direct folder (or file) ...
+            // might be sub-type of cm:cmobject (or a cm:link pointing to cm:cmobject or possibly even another cm:link)
             node = new Document(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
-            node.setIsFolder(null);
+            node.setIsFolder(false);
         }
         else if (type.equals(Type.DOCUMENT))
         {
@@ -906,14 +920,28 @@ public class NodesImpl implements Nodes
 
         Paging paging = parameters.getPaging();
 
-        if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null))
+        if (!nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null))
         {
             throw new InvalidArgumentException("NodeId of folder is expected");
         }
 
         PagingRequest pagingRequest = Util.getPagingRequest(paging);
 
-        final PagingResults<FileInfo> pagingResults = fileFolderService.list(parentNodeRef, includeFiles, includeFolders, ignoreTypeQNames, sortProps, pagingRequest);
+        final PagingResults<FileInfo> pagingResults;
+        if (includeFolders && includeFiles)
+        {
+            // note: this allows to include other types (eg. that derive from cm:cmobject) - not just folders & files
+            Pair<Set<QName>, Set<QName>> pair = buildSearchTypesAndIgnoreAspects(ignoreQNames);
+            Set<QName> searchTypeQNames = pair.getFirst();
+            Set<QName> ignoreAspectQNames = pair.getSecond();
+
+            pagingResults = fileFolderService.list(parentNodeRef, searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
+        }
+        else
+        {
+            // files *or* folders only
+            pagingResults = fileFolderService.list(parentNodeRef, includeFiles, includeFolders, ignoreQNames, sortProps, pagingRequest);
+        }
 
         final Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
 
@@ -937,6 +965,51 @@ public class NodesImpl implements Nodes
         };
 
         return CollectionWithPagingInfo.asPaged(paging, nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst());
+    }
+
+    protected Pair<Set<QName>, Set<QName>> buildSearchTypesAndIgnoreAspects(Set<QName> ignoreQNameTypes)
+    {
+        Set<QName> searchTypeQNames = new HashSet<QName>(100);
+        Set<QName> ignoreAspectQNames = null;
+
+        // Build a list of cmobject types
+        Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_CMOBJECT, true);
+        searchTypeQNames.addAll(qnames);
+        searchTypeQNames.add(ContentModel.TYPE_CMOBJECT);
+
+        // Remove 'system' folders
+        qnames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
+        searchTypeQNames.removeAll(qnames);
+        searchTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
+
+        if (ignoreQNameTypes != null)
+        {
+            Set<QName> ignoreQNamesNotSearchTypes = new HashSet<QName>(ignoreQNameTypes);
+            ignoreQNamesNotSearchTypes.removeAll(searchTypeQNames);
+            ignoreQNamesNotSearchTypes.remove(ContentModel.TYPE_SYSTEM_FOLDER); // note: not included in buildFolderTypes()
+
+            if (ignoreQNamesNotSearchTypes.size() > 0)
+            {
+                ignoreAspectQNames = getAspectsToIgnore(ignoreQNamesNotSearchTypes);
+            }
+
+            searchTypeQNames.removeAll(ignoreQNameTypes);
+        }
+
+        return new Pair<>(searchTypeQNames, ignoreAspectQNames);
+    }
+
+    private Set<QName> getAspectsToIgnore(Set<QName> ignoreQNames)
+    {
+        Set<QName> ignoreQNameAspects = new HashSet<QName>(ignoreQNames.size());
+        for (QName qname : ignoreQNames)
+        {
+            if (dictionaryService.getAspect(qname) != null)
+            {
+                ignoreQNameAspects.add(qname);
+            }
+        }
+        return ignoreQNameAspects;
     }
 
     public void deleteNode(String nodeId)
@@ -963,7 +1036,7 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("Node name is expected: "+parentNodeRef);
         }
 
-        // node type - check that requested type is a (sub-) type of folder or content
+        // node type - check that requested type is a (sub-) type of cm:object
         String nodeType = nodeInfo.getNodeType();
         if ((nodeType == null) || nodeType.isEmpty())
         {
@@ -972,15 +1045,14 @@ public class NodesImpl implements Nodes
 
         QName nodeTypeQName = createQName(nodeType);
 
-        Set<QName> contentAndFolders = new HashSet<>(
-                Arrays.asList(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT, ContentModel.TYPE_LINK));
-
-        if (! typeMatches(nodeTypeQName, contentAndFolders, null))
+        boolean isContent = isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT);
+        if (! isContent)
         {
-            throw new InvalidArgumentException("Type of cm:folder cm:content or cm:link is expected: "+ nodeType);
+            if (! isSubClass(nodeTypeQName, ContentModel.TYPE_CMOBJECT))
+            {
+                throw new InvalidArgumentException("Invalid type: " + nodeTypeQName + " [expected (sub-)type of cm:object]");
+            }
         }
-
-        boolean isContent = typeMatches(nodeTypeQName, Collections.singleton(ContentModel.TYPE_CONTENT), null);
 
         Map<QName, Serializable> props = new HashMap<>(1);
 
@@ -1056,12 +1128,11 @@ public class NodesImpl implements Nodes
     {
         final NodeRef nodeRef = validateNode(nodeId);
 
-        QName nodeTypeQName = nodeService.getType(nodeRef);
+        QName nodeTypeQName = getNodeType(nodeRef);
 
-        final Set<QName> fileOrFolder = new HashSet<>(Arrays.asList(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT));
-        if (! typeMatches(nodeTypeQName, fileOrFolder, null))
+        if (! isSubClass(nodeTypeQName, ContentModel.TYPE_CMOBJECT))
         {
-            throw new InvalidArgumentException("NodeId of file or folder is expected");
+            throw new InvalidArgumentException("Invalid type: " + nodeTypeQName + " [expected (sub-)type of cm:object]");
         }
 
         Map<QName, Serializable> props = new HashMap<>(0);
@@ -1084,7 +1155,7 @@ public class NodesImpl implements Nodes
             // update node type - ensure that we are performing a specialise (we do not support generalise)
             QName destNodeTypeQName = createQName(nodeType);
 
-            if ((! destNodeTypeQName.equals(nodeTypeQName)) && dictionaryService.isSubClass(destNodeTypeQName, nodeTypeQName))
+            if ((! destNodeTypeQName.equals(nodeTypeQName)) && isSubClass(destNodeTypeQName, nodeTypeQName))
             {
                 nodeService.setType(nodeRef, destNodeTypeQName);
             }
@@ -1388,7 +1459,7 @@ public class NodesImpl implements Nodes
 
                 case "nodetype":
                     nodeTypeQName = createQName(getStringOrNull(field.getValue()));
-                    if (!dictionaryService.isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT))
+                    if (! isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT))
                     {
                         throw new InvalidArgumentException("Can only upload type of cm:content: " + nodeTypeQName);
                     }

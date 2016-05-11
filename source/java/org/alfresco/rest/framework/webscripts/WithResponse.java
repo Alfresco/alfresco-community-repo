@@ -13,14 +13,14 @@ import java.util.Map;
  *
  * @author Gethin James
  */
-public class ResponseCallBack
+public class WithResponse
 {
     private ContentInfo contentInfo;
     private int status;
     private Map<String, String> headers;
     private Cache cache;
 
-    public ResponseCallBack(int status, ContentInfo contentInfo, Cache cache)
+    public WithResponse(int status, ContentInfo contentInfo, Cache cache)
     {
         this.contentInfo = contentInfo;
         this.status = status;

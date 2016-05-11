@@ -29,7 +29,7 @@ package org.alfresco.rest.framework.tests.api.mocks;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.webscripts.ResponseCallBack;
+import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
 /**
@@ -42,7 +42,7 @@ public class MultiPartTestRelationshipResource
 
     @Override
     public MultiPartTestResponse create(String entityResourceId, FormData formData,
-                                        Parameters parameters, ResponseCallBack withResponse)
+                                        Parameters parameters, WithResponse withResponse)
     {
         return new MultiPartTestResponse(formData.getParameters().get("filename")[0]);
     }

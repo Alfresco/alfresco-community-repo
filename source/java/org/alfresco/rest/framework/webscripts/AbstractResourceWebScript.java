@@ -152,7 +152,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     {
         final String entityCollectionName = ResourceInspector.findEntityCollectionNameName(resource.getMetaData());
         final ResourceOperation operation = resource.getMetaData().getOperation(getHttpMethod());
-        final ResponseCallBack callBack = new ResponseCallBack(operation.getSuccessStatus(),DEFAULT_JSON_CONTENT,ApiWebScript.CACHE_NEVER);
+        final WithResponse callBack = new WithResponse(operation.getSuccessStatus(),DEFAULT_JSON_CONTENT,ApiWebScript.CACHE_NEVER);
         Object toReturn = transactionService.getRetryingTransactionHelper().doInTransaction(
                 new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
                 {
@@ -217,7 +217,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         setContentInfoOnResponse(res,contentInfo);
     }
 
-    protected void setResponse(final WebScriptResponse res, ResponseCallBack withResponse)
+    protected void setResponse(final WebScriptResponse res, WithResponse withResponse)
     {
         setResponse(res, withResponse.getStatus(), withResponse.getCache(), withResponse.getContentInfo(), withResponse.getHeaders());
     }

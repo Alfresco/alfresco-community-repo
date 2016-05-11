@@ -105,6 +105,10 @@ public class NodesImpl implements Nodes
     private final static String PATH_MY = "-my-";
     private final static String PATH_SHARED = "-shared-";
 
+    private final static String PARAM_RELATIVE_PATH = "relativePath"; // TODO wip
+
+    private final static String PARAM_SELECT_PROPERTIES = "properties";
+
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     private FileFolderService fileFolderService;
@@ -472,15 +476,16 @@ public class NodesImpl implements Nodes
 
     public Node getFolderOrDocument(String nodeId, Parameters parameters)
     {
-        String path = parameters.getParameter("path");
+        String path = parameters.getParameter(PARAM_RELATIVE_PATH);
         NodeRef nodeRef = validateOrLookupNode(nodeId, path);
 
         QName typeQName = nodeService.getType(nodeRef);
-        List<QName> requestedProperties = createQNames(parameters.getSelectedProperties());
-        return getFolderOrDocument(nodeRef, getParentNodeRef(nodeRef), typeQName, requestedProperties, false, null);
+
+        List<String> selectParam = parameters.getSelectedProperties();
+        return getFolderOrDocument(nodeRef, getParentNodeRef(nodeRef), typeQName, selectParam, false, null);
     }
 
-    private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName typeQName, List<QName> selectedProperties, boolean minimalInfo, Map<String,UserInfo> mapUserInfo)
+    private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName typeQName, List<String> selectParam, boolean minimalInfo, Map<String,UserInfo> mapUserInfo)
     {
         if (mapUserInfo == null) {
             mapUserInfo = new HashMap<>(2);
@@ -513,7 +518,7 @@ public class NodesImpl implements Nodes
 
         if (! minimalInfo)
         {
-            node.setProperties(mapProperties(properties, selectedProperties, mapUserInfo));
+            node.setProperties(mapProperties(properties, selectParam, mapUserInfo));
             node.setAspectNames(mapAspects(nodeService.getAspects(nodeRef)));
         }
 
@@ -625,12 +630,33 @@ public class NodesImpl implements Nodes
         return new PathInfo(pathStr, isComplete, pathElements);
     }
 
-    protected Map<String, Object> mapProperties(Map<QName, Serializable> nodeProps, List<QName> selectedProperties, Map<String,UserInfo> mapUserInfo)
+    protected Map<String, Object> mapProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo)
     {
+        List<QName> selectedProperties;
+
+        if ((selectParam.size() == 0) || selectParam.contains(PARAM_SELECT_PROPERTIES))
+        {
+            // return all properties
+            selectedProperties = new ArrayList<>(nodeProps.size());
+            for (QName name : nodeProps.keySet())
+            {
+                if (!EXCLUDED_PROPS.contains(name))
+                {
+                    selectedProperties.add(name);
+                }
+            }
+        }
+        else
+        {
+            // return selected properties
+            selectedProperties = createQNames(selectParam);
+        }
+
         Map<String, Object> props = null;
         if (!selectedProperties.isEmpty())
         {
             props = new HashMap<>(selectedProperties.size());
+
             for (QName qName : selectedProperties)
             {
                 Serializable value = nodeProps.get(qName);
@@ -675,8 +701,8 @@ public class NodesImpl implements Nodes
     {
         final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
 
-        final boolean minimalInfo = (parameters.getSelectedProperties().size() == 0);
-        final List<QName> requestedProperties = createQNames(parameters.getSelectedProperties());
+        final List<String> selectParam = parameters.getSelectedProperties();
+        final boolean minimalInfo = (selectParam.size() == 0);
 
         boolean includeFolders = true;
         boolean includeFiles = true;
@@ -746,7 +772,7 @@ public class NodesImpl implements Nodes
                 FileInfo fInfo = page.get(index);
 
                 // minimal info by default (unless "select"ed otherwise)
-                return getFolderOrDocument(fInfo.getNodeRef(), parentNodeRef, fInfo.getType(), requestedProperties, minimalInfo, mapUserInfo);
+                return getFolderOrDocument(fInfo.getNodeRef(), parentNodeRef, fInfo.getType(), selectParam, minimalInfo, mapUserInfo);
             }
 
             @Override
@@ -947,10 +973,17 @@ public class NodesImpl implements Nodes
      */
     protected List<QName> createQNames(List<String> qnameStrList)
     {
+        String PREFIX = PARAM_SELECT_PROPERTIES+"/";
+
         List<QName> result = new ArrayList<>(qnameStrList.size());
         for (String str : qnameStrList)
         {
+            if (str.startsWith(PREFIX)) {
+                str = str.substring(PREFIX.length());
+            }
+
             str = str.replaceFirst("_", ":"); // FIXME remove this when we have fixed the framework.
+
             QName name = createQName(str);
             if (!EXCLUDED_PROPS.contains(name))
             {

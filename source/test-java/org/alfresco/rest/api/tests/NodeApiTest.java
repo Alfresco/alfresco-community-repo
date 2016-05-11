@@ -427,12 +427,12 @@ public class NodeApiTest extends AbstractBaseApiTest
     }
 
     /**
-     * Tests get node with path information.
+     * Tests get node information.
      * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>?select=path}
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
      */
     @Test
-    public void testGetPathElements_MyFiles() throws Exception
+    public void testGetNodeInfo() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
         HttpResponse response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
@@ -450,20 +450,71 @@ public class NodeApiTest extends AbstractBaseApiTest
         String folderB = "folder" + System.currentTimeMillis() + "_B";
         NodeRef folderB_Ref = repoService.createFolder(folderA_Ref, folderB);
 
-        // /Company Home/User Homes/user<timestamp>/folder<timestamp>_A/folder<timestamp>_B/folder<timestamp>_C
-        String folderC = "folder" + System.currentTimeMillis() + "_C";
-        NodeRef folderC_Ref = repoService.createFolder(folderB_Ref, folderC);
+        // /Company Home/User Homes/user<timestamp>/folder<timestamp>_A/folder<timestamp>_B/content<timestamp>
+        String content = "content" + System.currentTimeMillis();
+        NodeRef contentNodeRef = repoService.createDocument(folderB_Ref, content, "The quick brown fox jumps over the lazy dog.");
+        // Add property
+        repoService.nodeService.setProperty(contentNodeRef, ContentModel.PROP_TITLE, "test title");
 
-        //...nodes/nodeId?select=pathInfo
+        // get node info
+        response = getSingle(NodesEntityResource.class, user1, contentNodeRef.getId(), null, 200);
+        Document document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        // Check all the default info the node API should return
+        assertEquals(content, document.getName());
+        assertNotNull(document.getId());
+        assertNotNull(document.getCreatedAt());
+        assertNotNull(document.getCreatedByUser());
+        UserInfo createdByUser = document.getCreatedByUser();
+        assertEquals(user1, createdByUser.getId());
+        assertEquals(user1 + " " + user1, createdByUser.getDisplayName());
+        assertNotNull(document.getModifiedAt());
+        assertNotNull(document.getModifiedByUser());
+        UserInfo modifiedByUser = document.getModifiedByUser();
+        assertEquals(user1, modifiedByUser.getId());
+        assertEquals(user1 + " " + user1, modifiedByUser.getDisplayName());
+        assertFalse(document.getIsFolder());
+        assertNull(document.getIsLink());
+        assertEquals("cm:content", document.getNodeType());
+        assertNotNull(document.getParentId());
+        assertNotNull(document.getProperties());
+        assertTrue(document.getProperties().containsKey("cm:title"));
+        assertNotNull(document.getAspectNames());
+        assertTrue(document.getAspectNames().contains("cm:titled"));
+        ContentInfo contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertNotNull(contentInfo.getEncoding());
+        assertTrue(contentInfo.getSizeInBytes() > 0);
+        assertNotNull(contentInfo.getMimeType());
+        assertNotNull(contentInfo.getMimeTypeName());
+        // Path is not part of the default info
+        assertNull(document.getPath());
+
+        // get node info + path
+        //...nodes/nodeId?select=path
         Map<String, String> params = Collections.singletonMap("select", "path");
-        response = getSingle(NodesEntityResource.class, user1, folderC_Ref.getId(), params, 200);
-        node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
-        PathInfo pathInfo = node.getPath();
+        response = getSingle(NodesEntityResource.class, user1, contentNodeRef.getId(), params, 200);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        // default info
+        assertEquals(content, document.getName());
+        assertNotNull(document.getId());
+        assertNotNull(document.getCreatedAt());
+        assertNotNull(document.getCreatedByUser());
+        assertNotNull(document.getModifiedAt());
+        assertNotNull(document.getModifiedByUser());
+        assertFalse(document.getIsFolder());
+        assertNull(document.getIsLink());
+        assertEquals("cm:content", document.getNodeType());
+        assertNotNull(document.getParentId());
+        assertNotNull(document.getProperties());
+        assertNotNull(document.getAspectNames());
+        assertNotNull(document.getContent());
+        // Path info
+        PathInfo pathInfo = document.getPath();
         assertNotNull(pathInfo);
         assertTrue(pathInfo.getIsComplete());
         assertNotNull(pathInfo.getName());
         // the pathInfo should only include the parents (not the requested node)
-        assertFalse(pathInfo.getName().endsWith(folderC));
+        assertFalse(pathInfo.getName().endsWith(content));
         assertTrue(pathInfo.getName().startsWith("/Company Home"));
         List<ElementInfo> pathElements = pathInfo.getElements();
         assertEquals(5, pathElements.size());

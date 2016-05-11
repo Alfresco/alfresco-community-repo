@@ -20,7 +20,6 @@ package org.alfresco.rest.api.model;
 
 import java.util.List;
 
-import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Representation of a path info
@@ -63,7 +62,7 @@ public class PathInfo
     public String toString()
     {
         final StringBuilder sb = new StringBuilder(120);
-        sb.append("PathInfo [name='").append(name)
+        sb.append("PathInfo [name=").append(name)
                     .append(", isComplete=").append(isComplete)
                     .append(", elements=").append(elements)
                     .append(']');
@@ -101,7 +100,7 @@ public class PathInfo
         {
             final StringBuilder sb = new StringBuilder(250);
             sb.append("PathElement [id=").append(id)
-                        .append(", name='").append(name)
+                        .append(", name=").append(name)
                         .append(']');
             return sb.toString();
         }

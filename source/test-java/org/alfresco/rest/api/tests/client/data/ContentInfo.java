@@ -86,10 +86,10 @@ public class ContentInfo
     public String toString()
     {
         final StringBuilder sb = new StringBuilder(150);
-        sb.append("ContentInfo [mimeType='").append(mimeType)
-                    .append(", mimeTypeName='").append(mimeTypeName)
+        sb.append("ContentInfo [mimeType=").append(mimeType)
+                    .append(", mimeTypeName=").append(mimeTypeName)
                     .append(", sizeInBytes=").append(sizeInBytes)
-                    .append(", encoding='").append(encoding)
+                    .append(", encoding=").append(encoding)
                     .append(']');
         return sb.toString();
     }

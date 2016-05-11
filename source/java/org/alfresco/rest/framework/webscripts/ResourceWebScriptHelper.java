@@ -55,9 +55,7 @@ import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
-import org.alfresco.rest.framework.resource.SerializablePagedCollection;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor;
-import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.InvalidSelectException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -486,7 +484,7 @@ public class ResourceWebScriptHelper
         if (objectToWrap instanceof CollectionWithPagingInfo<?>)
         {
             CollectionWithPagingInfo<?> collectionToWrap = (CollectionWithPagingInfo<?>) objectToWrap;
-            Object sourceEntity = executeIncludedSource(res, api, params, entityCollectionName, collectionToWrap);
+            Object sourceEntity = executeIncludedSource(api, params, entityCollectionName, collectionToWrap);
             Collection<Object> resultCollection = new ArrayList(collectionToWrap.getCollection().size());
             if (!collectionToWrap.getCollection().isEmpty())
             {
@@ -510,7 +508,7 @@ public class ResourceWebScriptHelper
             Map<String,Pair<String,Method>> embeddded = ResourceInspector.findEmbeddedResources(objectToWrap.getClass());
             if (embeddded != null && !embeddded.isEmpty())
             {
-                Map<String, Object> results = executeEmbeddedResources(res, api, params,objectToWrap, embeddded);
+                Map<String, Object> results = executeEmbeddedResources(api, params,objectToWrap, embeddded);
                 execRes.addEmbedded(results);
             }
             
@@ -518,7 +516,7 @@ public class ResourceWebScriptHelper
             {
                 Map<String, ResourceWithMetadata> relationshipResources = locator.locateRelationResource(api,entityCollectionName, params.getRelationsFilter().keySet(), HttpMethod.GET);
                 String uniqueEntityId = ResourceInspector.findUniqueId(objectToWrap);
-                Map<String,Object> relatedResources = executeRelatedResources(res, api, params, relationshipResources, uniqueEntityId);
+                Map<String,Object> relatedResources = executeRelatedResources(api, params, relationshipResources, uniqueEntityId);
                 execRes.addRelated(relatedResources);
             }
 
@@ -527,7 +525,7 @@ public class ResourceWebScriptHelper
         }
     }
 
-    private Object executeIncludedSource(WebScriptResponse response, Api api, Params params, String entityCollectionName, CollectionWithPagingInfo<?> collectionToWrap)
+    private Object executeIncludedSource(Api api, Params params, String entityCollectionName, CollectionWithPagingInfo<?> collectionToWrap)
     {
         if (params.includeSource())
         {
@@ -540,7 +538,7 @@ public class ResourceWebScriptHelper
             ResourceWithMetadata res = locator.locateEntityResource(api, entityCollectionName, HttpMethod.GET);
             if (res != null)
             {
-                Object result = executeRelatedResource(response, api, params, params.getEntityId(), null, res);
+                Object result = executeResource(api, params, params.getEntityId(), null, res);
                 if (result!=null && result instanceof ExecutionResult) return ((ExecutionResult) result).getRoot();
             }
         }
@@ -557,7 +555,7 @@ public class ResourceWebScriptHelper
      * @param embeddded Map<String, Pair<String, Method>>
      * @return Map
      */
-    private Map<String, Object> executeEmbeddedResources(WebScriptResponse response, Api api, Params params, Object objectToWrap, Map<String, Pair<String, Method>> embeddded)
+    private Map<String, Object> executeEmbeddedResources(Api api, Params params, Object objectToWrap, Map<String, Pair<String, Method>> embeddded)
     {
         final Map<String,Object> results = new HashMap<String,Object>(embeddded.size());
         for (Entry<String, Pair<String,Method>> embeddedEntry : embeddded.entrySet())
@@ -568,7 +566,7 @@ public class ResourceWebScriptHelper
                 Object id = ResourceInspectorUtil.invokeMethod(embeddedEntry.getValue().getSecond(), objectToWrap);
                 if (id != null)
                 {
-                    Object execEmbeddedResult = executeRelatedResource(response, api, params, String.valueOf(id), embeddedEntry.getKey(), res);
+                    Object execEmbeddedResult = executeResource(api, params, String.valueOf(id), embeddedEntry.getKey(), res);
                     if (execEmbeddedResult != null)
                     {
                         if (execEmbeddedResult instanceof ExecutionResult)
@@ -598,14 +596,14 @@ public class ResourceWebScriptHelper
      * @param uniqueEntityId String
      * @return Map
      */
-    private Map<String,Object> executeRelatedResources(final WebScriptResponse res, final Api api, Params params,
+    private Map<String,Object> executeRelatedResources(final Api api, Params params,
                                                        Map<String, ResourceWithMetadata> relatedResources,
                                                        String uniqueEntityId)
     {
         final Map<String,Object> results = new HashMap<String,Object>(relatedResources.size());
         for (final Entry<String, ResourceWithMetadata> relation : relatedResources.entrySet())
         {
-            Object execResult = executeRelatedResource(res, api, params, uniqueEntityId, relation.getKey(), relation.getValue());
+            Object execResult = executeResource(api, params, uniqueEntityId, relation.getKey(), relation.getValue());
             if (execResult != null)
             {
               results.put(relation.getKey(), execResult);
@@ -625,8 +623,8 @@ public class ResourceWebScriptHelper
      * @param resource ResourceWithMetadata
      * @return Object
      */
-    private Object executeRelatedResource(final WebScriptResponse res, final Api api, Params params,
-                final String uniqueEntityId, final String resourceKey, final ResourceWithMetadata resource)
+    private Object executeResource(final Api api, Params params,
+                                   final String uniqueEntityId, final String resourceKey, final ResourceWithMetadata resource)
     {
         try
         {
@@ -639,7 +637,8 @@ public class ResourceWebScriptHelper
             }
             final Params executionParams = Params.valueOf(paramFilter, uniqueEntityId, params.getRequest());
             //Read only because this only occurs for GET requests
-            return executor.execute(resource, executionParams,res, true);
+            Object result = executor.executeAction(resource, executionParams);
+            return processAdditionsToTheResponse(null, api, null, executionParams, result);
         }
         catch(NotFoundException e)
         {
@@ -656,8 +655,11 @@ public class ResourceWebScriptHelper
             {
                 logger.debug("Ignored error, cannot access the object so can't embed it ", e);
             }
+        } catch (Throwable throwable)
+        {
+            logger.warn("Failed to execute a RelatedResource for "+resourceKey+" "+throwable.getMessage());
         }
-        
+
         return null; //default
     }
 

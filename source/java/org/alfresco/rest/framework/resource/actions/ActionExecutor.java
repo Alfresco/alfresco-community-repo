@@ -44,9 +44,8 @@ public interface ActionExecutor extends HttpMethodSupport
      * Invokes the resource with the Params
      * @param resource ResourceWithMetadata
      * @param params Params
-     * @param boolean should we use a readonly transaction.
      */
     @SuppressWarnings("rawtypes")
-    public Object execute(ResourceWithMetadata resource, Params params, WebScriptResponse res, boolean isReadOnly);
+    public Object executeAction(ResourceWithMetadata resource, Params params) throws Throwable;
 
 }

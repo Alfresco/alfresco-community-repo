@@ -98,11 +98,10 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
             final Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
 	        final ResourceWithMetadata resource = locator.locateResource(api,templateVars, httpMethod);
             final Params params = paramsExtractor.extractParams(resource.getMetaData(),req);
-            final ActionExecutor executor = findExecutor(httpMethod, params, resource, req.getContentType());
             final boolean isReadOnly = HttpMethod.GET==httpMethod;
 
             //This execution usually takes place in a Retrying Transaction (see subclasses)
-            final Object toSerialize = executor.execute(resource, params, res, isReadOnly);
+            final Object toSerialize = execute(resource, params, res, isReadOnly);
             
             //Outside the transaction.
             if (toSerialize != null)
@@ -150,7 +149,6 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
 		}
     }
 
-    @Override
     public Object execute(final ResourceWithMetadata resource, final Params params, final WebScriptResponse res, boolean isReadOnly)
     {
         final String entityCollectionName = ResourceInspector.findEntityCollectionNameName(resource.getMetaData());
@@ -172,7 +170,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 }, isReadOnly, true);
     }
 
-    protected abstract Object executeAction(ResourceWithMetadata resource, Params params) throws Throwable;
+    public abstract Object executeAction(ResourceWithMetadata resource, Params params) throws Throwable;
 
     protected void streamResponse(final WebScriptRequest req, final WebScriptResponse res, BinaryResource resource) throws IOException
     {
@@ -230,20 +228,6 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 objectMapper.writeValue(generator, toSerialize);
             }
         });
-    }
-
-    /**
-     * Finds the action executor to execute actions on.
-     * @param httpMethod - the http method
-     * @param params Params
-     * @param resource ResourceWithMetadata
-     * @param contentType Request content type
-     * @return ActionExecutor the action executor
-     */
-    public ActionExecutor findExecutor(HttpMethod httpMethod, Params params, ResourceWithMetadata resource, String contentType)
-    {
-        //Ignore all params and return this
-        return this;
     }
 
     public void setLocator(ResourceLocator locator)

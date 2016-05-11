@@ -144,6 +144,7 @@
                 <entry key="org.alfresco.rest.framework.core.exceptions.StaleEntityException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_REQUEST_ENTITY_TOO_LARGE}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.DisabledServiceException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_IMPLEMENTED}" />
+                <entry key="org.alfresco.rest.framework.core.exceptions.InsufficientStorageException" value="507" />
             </map>
         </property>
     </bean>

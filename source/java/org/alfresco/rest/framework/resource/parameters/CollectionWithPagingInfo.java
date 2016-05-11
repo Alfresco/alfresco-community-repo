@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.framework.resource.parameters;
 
+import org.alfresco.rest.framework.resource.SerializablePagedCollection;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,7 +42,7 @@ import java.util.Collections;
  * 
  * @author Gethin James.
  */
-public class CollectionWithPagingInfo<T>
+public class CollectionWithPagingInfo<T> implements SerializablePagedCollection
 {
 
     private final Collection<T> collection;
@@ -120,6 +122,7 @@ public class CollectionWithPagingInfo<T>
      * Returns the Collection object
      * @return Collection
      */
+    @Override
     public Collection<T> getCollection()
     {
         return this.collection;
@@ -128,6 +131,7 @@ public class CollectionWithPagingInfo<T>
     /**
      * Indicates if the returned collection has more items after the current returned list.
      */
+    @Override
     public boolean hasMoreItems()
     {
         return this.hasMoreItems;
@@ -139,6 +143,7 @@ public class CollectionWithPagingInfo<T>
      * Can be greater than the number of items returned in the list.
      * 
      */
+    @Override
     public Integer getTotalItems()
     {
         return this.totalItems;
@@ -147,6 +152,7 @@ public class CollectionWithPagingInfo<T>
     /**
      * The requested paging parameters set by the client
      */
+    @Override
     public Paging getPaging()
     {
         return this.paging;

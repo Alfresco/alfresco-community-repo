@@ -27,6 +27,7 @@ package org.alfresco.rest.framework.jacksonextensions;
 
 import java.io.IOException;
 
+import org.alfresco.rest.framework.resource.SerializablePagedCollection;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
 import org.codehaus.jackson.JsonGenerationException;
@@ -36,21 +37,21 @@ import org.codehaus.jackson.map.SerializerProvider;
 import org.codehaus.jackson.map.ser.std.SerializerBase;
 
 /**
- * Serializes CollectionWithPagingInfo into the correct response format, with Paging information and entries//
+ * Serializes SerializablePagedCollection into the correct response format, with Paging information and entries
  * 
  * @author Gethin James
  */
 @SuppressWarnings("rawtypes")
-public class SerializerOfCollectionWithPaging extends SerializerBase<CollectionWithPagingInfo>
+public class SerializerOfCollectionWithPaging extends SerializerBase<SerializablePagedCollection>
 {
 
     protected SerializerOfCollectionWithPaging()
     {
-        super(CollectionWithPagingInfo.class);
+        super(SerializablePagedCollection.class);
     }
     
     @Override
-    public void serialize(CollectionWithPagingInfo pagedCol, JsonGenerator jgen, SerializerProvider provider)
+    public void serialize(SerializablePagedCollection pagedCol, JsonGenerator jgen, SerializerProvider provider)
                 throws IOException, JsonGenerationException
     {
         if (pagedCol != null)
@@ -65,7 +66,7 @@ public class SerializerOfCollectionWithPaging extends SerializerBase<CollectionW
         }
     }
 
-    private void serializePagination(CollectionWithPagingInfo pagedCol, JsonGenerator jgen) throws IOException,
+    private void serializePagination(SerializablePagedCollection pagedCol, JsonGenerator jgen) throws IOException,
     JsonProcessingException
     {
         jgen.writeFieldName("pagination");

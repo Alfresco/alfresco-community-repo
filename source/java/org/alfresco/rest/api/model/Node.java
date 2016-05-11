@@ -64,6 +64,7 @@ public class Node implements Comparable<Node>
     protected UserInfo modifiedByUser;
 
     protected Boolean isFolder;
+    protected Boolean isContent;
     protected Boolean isLink;
 
     protected NodeRef parentNodeRef;
@@ -260,6 +261,16 @@ public class Node implements Comparable<Node>
         this.isFolder = isFolder;
     }
 
+    public Boolean getIsContent()
+    {
+        return isContent;
+    }
+
+    public void setIsContent(Boolean isContent)
+    {
+        this.isContent = isContent;
+    }
+
     public Boolean getIsLink()
     {
         return isLink;
@@ -298,10 +309,11 @@ public class Node implements Comparable<Node>
         return "Node [nodeRef=" + nodeRef + ", type=" + prefixTypeQName + ", name=" + name + ", title="
                 + title + ", description=" + description + ", createdAt="
                 + createdAt + ", modifiedAt=" + modifiedAt + ", createdByUser=" + createdByUser + ", modifiedBy="
-                + modifiedByUser + ", pathInfo =" + pathInfo +"]";
+                + modifiedByUser + ", isFolder =" + isFolder + ", isContent =" + isContent + ", pathInfo =" + pathInfo +"]";
     }
 
     // here to allow POST /nodes/{id}/children when creating empty file with specified content.mimeType
+    // also allows list of results to be returned as "nodes"
 
     protected ContentInfo contentInfo;
 

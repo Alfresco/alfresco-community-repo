@@ -62,7 +62,8 @@ public class Document extends Node
             contentInfo = new ContentInfo(mimeType, mimeTypeName, cd.getSize(), cd.getEncoding());
         }
 
-        this.isFolder = false;
+        setIsFolder(false);
+        setIsContent(true);
     }
 
     @Override

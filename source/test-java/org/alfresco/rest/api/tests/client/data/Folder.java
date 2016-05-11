@@ -28,7 +28,7 @@ package org.alfresco.rest.api.tests.client.data;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Representation of a folder node (initially for client tests for File Folder API)
+ * Representation of a folder node - initially for client tests for Nodes (aka File Folder) API
  *
  * @author janv
  */

@@ -248,6 +248,7 @@ public class NodesImpl implements Nodes
             ContentModel.PROP_WORKING_COPY_OWNER);
 
     private final static String PARAM_ISFOLDER = "isFolder";
+    private final static String PARAM_ISCONTENT = "isContent";
     private final static String PARAM_SUBTYPES = "subTypes";
 
     private final static String PARAM_NAME = "name";
@@ -277,8 +278,9 @@ public class NodesImpl implements Nodes
         MAP_PARAM_QNAME = Collections.unmodifiableMap(aMap);
     }
 
+    // list children filtering (via where clause)
     private final static Set<String> LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES =
-            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_NODETYPE, PARAM_SUBTYPES}));
+            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_ISCONTENT, PARAM_NODETYPE, PARAM_SUBTYPES}));
 
     /*
      * Validates that node exists.
@@ -677,8 +679,9 @@ public class NodesImpl implements Nodes
         {
             // not direct folder (or file) ...
             // might be sub-type of cm:cmobject (or a cm:link pointing to cm:cmobject or possibly even another cm:link)
-            node = new Document(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
+            node = new Node(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
             node.setIsFolder(false);
+            node.setIsContent(false);
         }
         else if (type.equals(Type.DOCUMENT))
         {
@@ -686,7 +689,6 @@ public class NodesImpl implements Nodes
         }
         else if (type.equals(Type.FOLDER))
         {
-            // container/folder
             node = new Folder(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
         }
         else
@@ -927,10 +929,22 @@ public class NodesImpl implements Nodes
             QueryHelper.walk(q, propertyWalker);
 
             Boolean isFolder = propertyWalker.getProperty(PARAM_ISFOLDER, WhereClauseParser.EQUALS, Boolean.class);
-            if (isFolder != null)
+            Boolean isContent = propertyWalker.getProperty(PARAM_ISCONTENT, WhereClauseParser.EQUALS, Boolean.class);
+
+            if ((isFolder != null) && (isContent != null))
+            {
+                includeFiles = isContent;
+                includeFolders = isFolder;
+            }
+            else if (isFolder != null)
             {
                 includeFiles = !isFolder;
                 includeFolders = isFolder;
+            }
+            else if (isContent != null)
+            {
+                 includeFiles = isContent;
+                 includeFolders = !isContent;
             }
 
             String nodeTypeStr = propertyWalker.getProperty(PARAM_NODETYPE, WhereClauseParser.EQUALS, String.class);
@@ -961,6 +975,7 @@ public class NodesImpl implements Nodes
         List<Pair<QName, Boolean>> sortProps = null;
         if ((sortCols != null) && (sortCols.size() > 0))
         {
+            // TODO should we allow isContent in sort (and map to reverse of isFolder) ?
             sortProps = new ArrayList<>(sortCols.size());
             for (SortColumn sortCol : sortCols)
             {

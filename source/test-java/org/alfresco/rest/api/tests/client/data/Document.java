@@ -28,14 +28,14 @@ package org.alfresco.rest.api.tests.client.data;
 import static org.junit.Assert.assertTrue;
 
 /**
- * Representation of a document node (initially for client tests for File Folder API)
+ * Representation of a document node - initially for client tests for Nodes (aka File Folder) API
  *
  * @author janv
  *
  */
 public class Document extends Node
 {
-    private ContentInfo content;
+    private ContentInfo contentInfo;
 
     public Document() {
         super();
@@ -43,12 +43,12 @@ public class Document extends Node
 
     public ContentInfo getContent()
     {
-        return content;
+        return contentInfo;
     }
 
-    public void setContent(ContentInfo content)
+    public void setContent(ContentInfo contentInfo)
     {
-        this.content = content;
+        this.contentInfo = contentInfo;
     }
 
     @Override
@@ -60,6 +60,6 @@ public class Document extends Node
 
         Document other = (Document) o;
 
-        content.expected(((Document) o).getContent());
+        contentInfo.expected(other.getContent());
     }
 }

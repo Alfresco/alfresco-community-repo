@@ -49,7 +49,9 @@ public class Folder extends Node
     public Folder(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
         super(nodeRef, parentNodeRef, nodeProps, mapUserInfo, sr);
-        this.isFolder = true;
+
+        setIsFolder(true);
+        setIsContent(false);
     }
 
     @Override

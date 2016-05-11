@@ -48,6 +48,7 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -64,6 +65,7 @@ import org.springframework.http.HttpMethod;
  * 5) Renders the response
  * 
  * @author Gethin James
+ * @author janv
  */
 // TODO for requests that pass in input streams e.g. binary content for workflow, this is going to need a way to re-read the input stream a la
 // code in RepositoryContainer due to retrying transaction logic
@@ -76,6 +78,8 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     private ParamsExtractor paramsExtractor;
     private ContentStreamer streamer;
     protected ResourceWebScriptHelper helper;
+
+    public final static String HDR_NAME_CONTENT_DISPOSITION = "Content-Disposition";
 
     @SuppressWarnings("rawtypes")
     @Override
@@ -97,6 +101,17 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 {
                     respons.put("toSerialize", result); 
                     respons.put("contentInfo", contentInfo);
+
+                    if (result instanceof NodeBinaryResource)
+                    {
+                        String attachFileName = ((NodeBinaryResource)result).getAttachFileName();
+                        if ((attachFileName != null) && (attachFileName.length() > 0))
+                        {
+                            String headerValue = "attachment; filename=\"" + attachFileName + "\"; filename*=UTF-8''" + URLEncoder.encode(attachFileName);
+                            res.setHeader(HDR_NAME_CONTENT_DISPOSITION, headerValue);
+                        }
+                    }
+
                     if (params.getStatus().getRedirect())
                     {
                         res.setStatus(params.getStatus().getCode());

@@ -33,7 +33,9 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * Created by gethin on 24/02/16.
+ * Tests the interactions with WithResponse
+ *
+ * @author Gethin James
  */
 public class WithResponseTest
 {

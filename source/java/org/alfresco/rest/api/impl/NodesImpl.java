@@ -1115,12 +1115,12 @@ public class NodesImpl implements Nodes
 
             if (isFile != null)
             {
-                 includeFiles = isFile;
+                includeFiles = isFile;
             }
 
             if (Boolean.TRUE.equals(includeFiles) && Boolean.TRUE.equals(includeFolders))
             {
-                throw new InvalidArgumentException("Invalid filter (isFile=true and isFolder = true) - a node cannot be both a file and a folder");
+                throw new InvalidArgumentException("Invalid filter (isFile=true and isFolder=true) - a node cannot be both a file and a folder");
             }
 
             String nodeTypeStr = propertyWalker.getProperty(PARAM_NODETYPE, WhereClauseParser.EQUALS, String.class);
@@ -1135,8 +1135,6 @@ public class NodesImpl implements Nodes
                 filterNodeTypeQName = pair.getFirst();
                 filterIncludeSubTypes = pair.getSecond();
             }
-
-
         }
 
         List<SortColumn> sortCols = parameters.getSorting();
@@ -1172,30 +1170,49 @@ public class NodesImpl implements Nodes
         PagingRequest pagingRequest = Util.getPagingRequest(paging);
 
         final PagingResults<FileInfo> pagingResults;
-        if (((includeFiles == null) && (includeFolders == null)) ||
-            (filterNodeTypeQName != null) ||
-            (Boolean.FALSE.equals(includeFiles) && Boolean.FALSE.equals(includeFolders)))
+
+        // notes (see also earlier validation checks):
+        // - node type filtering is mutually exclusive from isFile/isFolder, can optionally also include sub-types
+        // - isFile & isFolder cannot both be true
+        // - (isFile=false) means any other types/sub-types (other than files)
+        // - (isFolder=false) means any other types/sub-types (other than folders)
+        // - (isFile=false and isFolder=false) means any types/sub-types (other than files or folders)
+
+        if (filterNodeTypeQName == null)
         {
-            // either no filtering or some filtering (but not just files or folders)
-            if (filterNodeTypeQName == null)
+            if (Boolean.FALSE.equals(includeFiles) && Boolean.FALSE.equals(includeFolders))
             {
+                includeFiles = false;
+                includeFolders = false;
+
                 filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
             }
 
-            Pair<Set<QName>, Set<QName>> pair = buildSearchTypesAndIgnoreAspects(filterNodeTypeQName, filterIncludeSubTypes, ignoreQNames, includeFiles, includeFolders);
-            Set<QName> searchTypeQNames = pair.getFirst();
-            Set<QName> ignoreAspectQNames = pair.getSecond();
+            if (includeFiles != null)
+            {
+                if ((! includeFiles) && (includeFolders == null))
+                {
+                    // isFile=false
+                    filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
+                }
+            }
 
-            pagingResults = fileFolderService.list(parentNodeRef, searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
+            if (includeFolders != null)
+            {
+                if ((! includeFolders) && (includeFiles == null))
+                {
+                    // isFolder=false
+                    filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
+                }
+            }
         }
-        else
-        {
-            // files or folders only
-            includeFiles = (includeFiles != null ? includeFiles : false);
-            includeFolders = (includeFolders != null ? includeFolders : false);
 
-            pagingResults = fileFolderService.list(parentNodeRef, includeFiles, includeFolders, ignoreQNames, sortProps, pagingRequest);
-        }
+        Pair<Set<QName>, Set<QName>> pair = buildSearchTypesAndIgnoreAspects(filterNodeTypeQName, filterIncludeSubTypes, ignoreQNames, includeFiles, includeFolders);
+        Set<QName> searchTypeQNames = pair.getFirst();
+        Set<QName> ignoreAspectQNames = pair.getSecond();
+
+        pagingResults = fileFolderService.list(parentNodeRef, searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
+
 
         final Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
 
@@ -1253,34 +1270,32 @@ public class NodesImpl implements Nodes
 
     protected Pair<Set<QName>, Set<QName>> buildSearchTypesAndIgnoreAspects(QName nodeTypeQName, boolean includeSubTypes, Set<QName> ignoreQNameTypes, Boolean includeFiles, Boolean includeFolders)
     {
-        Set<QName> searchTypeQNames = new HashSet<QName>(100);
+        Set<QName> searchTypeQNames = new HashSet<>(100);
         Set<QName> ignoreAspectQNames = null;
 
-        // Build a list of (sub-)types
-        if (includeSubTypes)
+        if (nodeTypeQName != null)
         {
-            Collection<QName> qnames = dictionaryService.getSubTypes(nodeTypeQName, true);
-            searchTypeQNames.addAll(qnames);
-        }
-        searchTypeQNames.add(nodeTypeQName);
+            // Build a list of (sub-)types
+            if (includeSubTypes)
+            {
+                Collection<QName> qnames = dictionaryService.getSubTypes(nodeTypeQName, true);
+                searchTypeQNames.addAll(qnames);
+            }
+            searchTypeQNames.add(nodeTypeQName);
 
-        // Remove 'system' folders
-        if (includeSubTypes)
-        {
-            Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
-            searchTypeQNames.removeAll(qnames);
+            // Remove 'system' folders
+            if (includeSubTypes)
+            {
+                Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
+                searchTypeQNames.removeAll(qnames);
+            }
+            searchTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
         }
-        searchTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
 
         if (includeFiles != null)
         {
             if (includeFiles)
             {
-                if (! dictionaryService.isSubClass(ContentModel.TYPE_CONTENT, nodeTypeQName))
-                {
-                    throw new InvalidArgumentException("Cannot filter for isFile since not sub-type of: "+nodeTypeQName);
-                }
-
                 if (includeSubTypes)
                 {
                     Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_CONTENT, true);
@@ -1300,17 +1315,20 @@ public class NodesImpl implements Nodes
         {
             if (includeFolders)
             {
-                if (! dictionaryService.isSubClass(ContentModel.TYPE_FOLDER, nodeTypeQName))
-                {
-                    throw new InvalidArgumentException("Cannot filter for isFolder since not sub-type of: "+nodeTypeQName);
-                }
-
                 if (includeSubTypes)
                 {
                     Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_FOLDER, true);
                     searchTypeQNames.addAll(qnames);
                 }
                 searchTypeQNames.add(ContentModel.TYPE_FOLDER);
+
+                // Remove 'system' folders
+                if (includeSubTypes)
+                {
+                    Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_SYSTEM_FOLDER, true);
+                    searchTypeQNames.removeAll(qnames);
+                }
+                searchTypeQNames.remove(ContentModel.TYPE_SYSTEM_FOLDER);
             }
             else
             {
@@ -1322,7 +1340,7 @@ public class NodesImpl implements Nodes
 
         if (ignoreQNameTypes != null)
         {
-            Set<QName> ignoreQNamesNotSearchTypes = new HashSet<QName>(ignoreQNameTypes);
+            Set<QName> ignoreQNamesNotSearchTypes = new HashSet<>(ignoreQNameTypes);
             ignoreQNamesNotSearchTypes.removeAll(searchTypeQNames);
             ignoreQNamesNotSearchTypes.remove(ContentModel.TYPE_SYSTEM_FOLDER);
 
@@ -1339,7 +1357,7 @@ public class NodesImpl implements Nodes
 
     private Set<QName> getAspectsToIgnore(Set<QName> ignoreQNames)
     {
-        Set<QName> ignoreQNameAspects = new HashSet<QName>(ignoreQNames.size());
+        Set<QName> ignoreQNameAspects = new HashSet<>(ignoreQNames.size());
         for (QName qname : ignoreQNames)
         {
             if (dictionaryService.getAspect(qname) != null)

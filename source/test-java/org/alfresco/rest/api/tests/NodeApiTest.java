@@ -1737,6 +1737,14 @@ public class NodeApiTest extends AbstractBaseApiTest
         folderAndFileIds.addAll(folderIds);
         folderAndFileIds.addAll(fileIds);
 
+        List<String> notFileIds = new ArrayList<>(folderCnt+objCnt);
+        notFileIds.addAll(folderIds);
+        notFileIds.addAll(objIds);
+
+        List<String> notFolderIds = new ArrayList<>(fileCnt+objCnt);
+        notFolderIds.addAll(fileIds);
+        notFolderIds.addAll(objIds);
+
         Paging paging = getPaging(0, Integer.MAX_VALUE);
 
         // no filtering
@@ -1813,6 +1821,22 @@ public class NodeApiTest extends AbstractBaseApiTest
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         checkNodeIds(nodes, objIds);
+
+        // filtering, via where clause - not files
+        params = new HashMap<>();
+        params.put("where", "(isFile=false)");
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, notFileIds);
+
+        // filtering, via where clause - not folders
+        params = new HashMap<>();
+        params.put("where", "(isFolder=false)");
+
+        response = getAll(myChildrenUrl, user1, paging, params, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        checkNodeIds(nodes, notFolderIds);
 
         // -ve - node cannot be both a file and a folder
         params = new HashMap<>();

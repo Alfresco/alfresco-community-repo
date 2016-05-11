@@ -41,6 +41,7 @@ import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.webscripts.WithResponse;
 
 /**
  * Implements Get
@@ -90,7 +91,7 @@ public class SheepBaaaahResource implements RelationshipResourceAction.Read<Shee
     }
 
     @Operation("chew")
-    public String chewTheGrass(String entityId, String id, Void notused, Parameters parameters) {
+    public String chewTheGrass(String entityId, String id, Void notused, Parameters parameters, WithResponse withResponse) {
         return "All done";
     }
 }

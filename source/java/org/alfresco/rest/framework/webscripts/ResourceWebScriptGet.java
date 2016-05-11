@@ -136,6 +136,16 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         CollectionWithPagingInfo<?> resources = getter.readAll(params);
                         return resources;              
                     }
+                    else if (EntityResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(EntityResourceAction.ReadWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
+                        }
+                        EntityResourceAction.ReadWithResponse<?> getter = (EntityResourceAction.ReadWithResponse<?>) resource.getResource();
+                        CollectionWithPagingInfo<?> resources = getter.readAll(params, withResponse);
+                        return resources;
+                    }
                     else
                     {
                         throw new UnsupportedResourceOperationException();
@@ -153,6 +163,16 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         EntityResourceAction.ReadById<?> entityGetter = (ReadById<?>) resource.getResource();
                         Object result = entityGetter.readById(params.getEntityId(), params);
                         return result;   
+                    }
+                    else if (EntityResourceAction.ReadByIdWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(EntityResourceAction.ReadByIdWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(GET by id) "+resource.getMetaData().getUniqueId());
+                        }
+                        EntityResourceAction.ReadByIdWithResponse<?> entityGetter = (EntityResourceAction.ReadByIdWithResponse<?>) resource.getResource();
+                        Object result = entityGetter.readById(params.getEntityId(), params, withResponse);
+                        return result;
                     }
                     else
                     {
@@ -172,22 +192,45 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         Object result = relationGetter.readById(params.getEntityId(), params.getRelationshipId(), params);
                         return result;
                     }
+                    else if (RelationshipResourceAction.ReadByIdWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.ReadByIdWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(GET by id) "+resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceAction.ReadByIdWithResponse<?> relationGetter = (RelationshipResourceAction.ReadByIdWithResponse<?>) resource.getResource();
+                        Object result = relationGetter.readById(params.getEntityId(), params.getRelationshipId(), params, withResponse);
+                        return result;
+                    }
                     else
                     {
                         throw new UnsupportedResourceOperationException();
                     } 
                 } 
                 else 
-                {   
-                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.Read.class))
+                {
+
+                    if (RelationshipResourceAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
                     {
-                        throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.Read.class))
+                        {
+                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceAction.Read<?> relationGetter = (RelationshipResourceAction.Read<?>) resource.getResource();
+                        CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(),params);
+                        return relations;
                     }
-                    RelationshipResourceAction.Read<?> relationGetter = (RelationshipResourceAction.Read<?>) resource.getResource();
-                    CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(),params);
-                    return relations;
+                    else
+                    {
+                        if (resource.getMetaData().isDeleted(RelationshipResourceAction.ReadWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceAction.ReadWithResponse<?> relationGetter = (RelationshipResourceAction.ReadWithResponse<?>) resource.getResource();
+                        CollectionWithPagingInfo<?> relations = relationGetter.readAll(params.getEntityId(),params,withResponse);
+                        return relations;
+                    }
                 }
-                
             case PROPERTY:
                 if (StringUtils.isNotBlank(params.getEntityId()))
                 {
@@ -201,6 +244,16 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         BinaryResource prop = getter.readProperty(params.getEntityId(), params);
                         return prop;
                     }
+                    if (BinaryResourceAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(BinaryResourceAction.ReadWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
+                        }
+                        BinaryResourceAction.ReadWithResponse getter = (BinaryResourceAction.ReadWithResponse) resource.getResource();
+                        BinaryResource prop = getter.readProperty(params.getEntityId(), params, withResponse);
+                        return prop;
+                    }
                     if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
                     {
                         if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.Read.class))
@@ -209,6 +262,16 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         }
                         RelationshipResourceBinaryAction.Read getter = (RelationshipResourceBinaryAction.Read) resource.getResource();
                         BinaryResource prop = getter.readProperty(params.getEntityId(), params.getRelationshipId(), params);
+                        return prop;
+                    }
+                    if (RelationshipResourceBinaryAction.ReadWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                    {
+                        if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.ReadWithResponse.class))
+                        {
+                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceBinaryAction.ReadWithResponse getter = (RelationshipResourceBinaryAction.ReadWithResponse) resource.getResource();
+                        BinaryResource prop = getter.readProperty(params.getEntityId(), params.getRelationshipId(), params, withResponse);
                         return prop;
                     }
                 }

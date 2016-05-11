@@ -119,24 +119,59 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
         switch (resource.getMetaData().getType())
         {
             case ENTITY:
-                if (resource.getMetaData().isDeleted(EntityResourceAction.Delete.class))
+                if (EntityResourceAction.DeleteWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                 {
-                    throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                    if (resource.getMetaData().isDeleted(EntityResourceAction.DeleteWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                    }
+                    EntityResourceAction.DeleteWithResponse entityDeleter = (EntityResourceAction.DeleteWithResponse) resource.getResource();
+                    entityDeleter.delete(params.getEntityId(), params, withResponse);
                 }
-                EntityResourceAction.Delete entityDeleter = (EntityResourceAction.Delete) resource.getResource();
-                entityDeleter.delete(params.getEntityId(), params);
+                else
+                {
+                    if (resource.getMetaData().isDeleted(EntityResourceAction.Delete.class))
+                    {
+                        throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                    }
+                    EntityResourceAction.Delete entityDeleter = (EntityResourceAction.Delete) resource.getResource();
+                    entityDeleter.delete(params.getEntityId(), params);
+                }
                 //Don't pass anything to the callback - its just successful
                 return null;
             case RELATIONSHIP:
-                if (resource.getMetaData().isDeleted(RelationshipResourceAction.Delete.class))
+                if (RelationshipResourceAction.DeleteWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
                 {
-                    throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.DeleteWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceAction.DeleteWithResponse relationDeleter = (RelationshipResourceAction.DeleteWithResponse) resource.getResource();
+                    relationDeleter.delete(params.getEntityId(), params.getRelationshipId(), params, withResponse);
                 }
-                RelationshipResourceAction.Delete relationDeleter = (RelationshipResourceAction.Delete) resource.getResource();
-                relationDeleter.delete(params.getEntityId(), params.getRelationshipId(), params);
+                else
+                {
+                    if (resource.getMetaData().isDeleted(RelationshipResourceAction.Delete.class))
+                    {
+                        throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceAction.Delete relationDeleter = (RelationshipResourceAction.Delete) resource.getResource();
+                    relationDeleter.delete(params.getEntityId(), params.getRelationshipId(), params);
+                }
                 //Don't pass anything to the callback - its just successful
                 return null;
             case PROPERTY:
+                if (BinaryResourceAction.DeleteWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(BinaryResourceAction.DeleteWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                    }
+                    BinaryResourceAction.DeleteWithResponse binDeleter = (BinaryResourceAction.DeleteWithResponse) resource.getResource();
+                    binDeleter.deleteProperty(params.getEntityId(), params, withResponse);
+                    //Don't pass anything to the callback - its just successful
+                    return null;
+                }
                 if (BinaryResourceAction.Delete.class.isAssignableFrom(resource.getResource().getClass()))
                 {
                     if (resource.getMetaData().isDeleted(BinaryResourceAction.Delete.class))
@@ -145,6 +180,17 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                     }
                     BinaryResourceAction.Delete binDeleter = (BinaryResourceAction.Delete) resource.getResource();
                     binDeleter.deleteProperty(params.getEntityId(), params);
+                    //Don't pass anything to the callback - its just successful
+                    return null;
+                }
+                if (RelationshipResourceBinaryAction.DeleteWithResponse.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.DeleteWithResponse.class))
+                    {
+                        throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceBinaryAction.DeleteWithResponse binDeleter = (RelationshipResourceBinaryAction.DeleteWithResponse) resource.getResource();
+                    binDeleter.deleteProperty(params.getEntityId(), params.getRelationshipId(), params, withResponse);
                     //Don't pass anything to the callback - its just successful
                     return null;
                 }

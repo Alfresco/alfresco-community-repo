@@ -51,7 +51,7 @@ public class Folder extends Node
         super(nodeRef, parentNodeRef, nodeProps, mapUserInfo, sr);
 
         setIsFolder(true);
-        setIsContent(false);
+        setIsFile(false);
     }
 
     @Override

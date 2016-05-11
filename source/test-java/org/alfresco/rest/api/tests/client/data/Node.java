@@ -52,7 +52,7 @@ public class Node
     protected UserInfo modifiedByUser;
 
     protected Boolean isFolder;
-    protected Boolean isContent;
+    protected Boolean isFile;
     protected Boolean isLink;
 
     protected String parentId;
@@ -127,14 +127,14 @@ public class Node
         this.isFolder = isFolder;
     }
 
-    public Boolean getIsContent()
+    public Boolean getIsFile()
     {
-        return isContent;
+        return isFile;
     }
 
-    public void setIsContent(Boolean isContent)
+    public void setIsFile(Boolean isFile)
     {
-        this.isContent = isContent;
+        this.isFile = isFile;
     }
 
     public Boolean getIsLink()
@@ -280,7 +280,7 @@ public class Node
         }
 
         AssertUtil.assertEquals("isFolder", isFolder, other.getIsFolder());
-        AssertUtil.assertEquals("isContent", isContent, other.getIsContent());
+        AssertUtil.assertEquals("isFile", isFile, other.getIsFile());
         AssertUtil.assertEquals("isLink", isLink, other.getIsLink());
 
         if (path != null) {

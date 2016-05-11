@@ -58,6 +58,14 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 {
 
     protected static final String URL_DELETED_NODES = "deleted-nodes";
+    private RepoService.TestPerson u2;
+
+    @Override
+    public void setup() throws Exception
+    {
+        super.setup();
+        u2 = networkOne.createUser();
+    }
 
     @Test
     public void testCreateAndDelete() throws Exception
@@ -112,6 +120,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         //The list is ordered with the most recently deleted node first
         checkDeletedNodes(now, createdFolder, createdFolderNonSite, document, nodes);
 
+        //User 2 can't get it but user 1 can.
+        response = getSingle(URL_DELETED_NODES, u2.getId(), createdFolderNonSite.getId(), Status.STATUS_FORBIDDEN);
+
         //Invalid node ref
         response = getSingle(URL_DELETED_NODES, u1.getId(), "iddontexist", 404);
         assertNotNull(response);
@@ -159,7 +170,6 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         //Can't delete "nonsense" noderef
         response = post("deleted-nodes/nonsense/restore", u1.getId(), null, null, Status.STATUS_NOT_FOUND);
 
-        RepoService.TestPerson u2 = networkOne.createUser();
         //User 2 can't restore it but user 1 can.
         response = post("deleted-nodes/"+createdFolder.getId()+"/restore", u2.getId(), null, null, Status.STATUS_FORBIDDEN);
         response = post("deleted-nodes/"+createdFolder.getId()+"/restore", u1.getId(), null, null, 201);

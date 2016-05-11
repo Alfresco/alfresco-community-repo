@@ -19,12 +19,14 @@
 
 package org.alfresco.rest.api.model;
 
+import java.io.Serializable;
+
 /**
  * Representation of a user info
  *
  * @author janv
  */
-public class UserInfo
+public class UserInfo implements Serializable
 {
     private String userName;
     private String displayName;

@@ -37,6 +37,7 @@ import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.PathInfo.ElementInfo;
+import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
@@ -151,7 +152,7 @@ public class NodesImpl implements Nodes
             ContentModel.ASPECT_LOCALIZED);
 
     private static final List<QName> EXCLUDED_PROPS = Arrays.asList(
-            // top-level basic info
+            // top-level minimal info
             ContentModel.PROP_NAME,
             ContentModel.PROP_MODIFIER,
             ContentModel.PROP_MODIFIED,
@@ -169,6 +170,13 @@ public class NodesImpl implements Nodes
             ContentModel.PROP_INITIAL_VERSION,
             ContentModel.PROP_AUTO_VERSION_PROPS,
             ContentModel.PROP_AUTO_VERSION);
+
+    private static final List<QName> PROPS_USERLOOKUP = Arrays.asList(
+            ContentModel.PROP_CREATOR,
+            ContentModel.PROP_MODIFIER,
+            ContentModel.PROP_OWNER,
+            ContentModel.PROP_LOCK_OWNER,
+            ContentModel.PROP_WORKING_COPY_OWNER);
 
     private final static String PARAM_ISFOLDER = "isFolder";
     private final static String PARAM_NAME = "name";
@@ -280,7 +288,7 @@ public class NodesImpl implements Nodes
     {
         NodeRef nodeRef = validateNode(nodeId);
 
-        return new Node(nodeRef, null, nodeService.getProperties(nodeRef), sr);
+        return new Node(nodeRef, null, nodeService.getProperties(nodeRef), null, sr);
     }
 
     /**
@@ -288,7 +296,7 @@ public class NodesImpl implements Nodes
      */
     public Node getNode(NodeRef nodeRef)
     {
-        return new Node(nodeRef, null, nodeService.getProperties(nodeRef), sr);
+        return new Node(nodeRef, null, nodeService.getProperties(nodeRef), null, sr);
     }
 
     private Type getType(NodeRef nodeRef)
@@ -313,7 +321,7 @@ public class NodesImpl implements Nodes
         {
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
 
-            Document doc = new Document(nodeRef, getParentNodeRef(nodeRef), properties, sr);
+            Document doc = new Document(nodeRef, getParentNodeRef(nodeRef), properties, null, sr);
 
             doc.setVersionLabel((String) properties.get(ContentModel.PROP_VERSION_LABEL));
             ContentData cd = (ContentData) properties.get(ContentModel.PROP_CONTENT);
@@ -351,7 +359,7 @@ public class NodesImpl implements Nodes
         {
             Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
 
-            Folder folder = new Folder(nodeRef, getParentNodeRef(nodeRef), properties, sr);
+            Folder folder = new Folder(nodeRef, getParentNodeRef(nodeRef), properties, null, sr);
             setCommonProps(folder, nodeRef, properties);
             return folder;
         }
@@ -468,14 +476,18 @@ public class NodesImpl implements Nodes
         NodeRef nodeRef = validateOrLookupNode(nodeId, path);
 
         QName typeQName = nodeService.getType(nodeRef);
-         List<QName> requestedProperties = createQNames(parameters.getSelectedProperties());
-        return getFolderOrDocument(nodeRef, getParentNodeRef(nodeRef), typeQName, requestedProperties, false);
+        List<QName> requestedProperties = createQNames(parameters.getSelectedProperties());
+        return getFolderOrDocument(nodeRef, getParentNodeRef(nodeRef), typeQName, requestedProperties, false, null);
     }
 
-    private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName typeQName, List<QName> selectedProperties, boolean minimalnfo)
+    private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName typeQName, List<QName> selectedProperties, boolean minimalInfo, Map<String,UserInfo> mapUserInfo)
     {
+        if (mapUserInfo == null) {
+            mapUserInfo = new HashMap<>(2);
+        }
+
         PathInfo pathInfo = null;
-        if (!minimalnfo)
+        if (!minimalInfo)
         {
             pathInfo = lookupPathInfo(nodeRef);
         }
@@ -487,21 +499,21 @@ public class NodesImpl implements Nodes
 
         if (type.equals(Type.DOCUMENT))
         {
-            node = new Document(nodeRef, parentNodeRef, properties, sr);
+            node = new Document(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
         }
         else if (type.equals(Type.FOLDER))
         {
             // container/folder
-            node = new Folder(nodeRef, parentNodeRef, properties, sr);
+            node = new Folder(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
         }
         else
         {
             throw new InvalidArgumentException("Node is not a folder or file");
         }
 
-        if (!minimalnfo)
+        if (! minimalInfo)
         {
-            node.setProperties(mapProperties(properties, selectedProperties));
+            node.setProperties(mapProperties(properties, selectedProperties, mapUserInfo));
             node.setAspectNames(mapAspects(nodeService.getAspects(nodeRef)));
         }
 
@@ -613,7 +625,7 @@ public class NodesImpl implements Nodes
         return new PathInfo(pathStr, isComplete, pathElements);
     }
 
-    protected Map<String, Object> mapProperties(Map<QName, Serializable> nodeProps, List<QName> selectedProperties)
+    protected Map<String, Object> mapProperties(Map<QName, Serializable> nodeProps, List<QName> selectedProperties, Map<String,UserInfo> mapUserInfo)
     {
         Map<String, Object> props = null;
         if (!selectedProperties.isEmpty())
@@ -624,6 +636,9 @@ public class NodesImpl implements Nodes
                 Serializable value = nodeProps.get(qName);
                 if (value != null)
                 {
+                    if (PROPS_USERLOOKUP.contains(qName)) {
+                        value = Node.lookupUserInfo((String)value, mapUserInfo, sr.getPersonService());
+                    }
                     props.put(qName.toPrefixString(namespaceService), value);
                 }
             }
@@ -658,18 +673,9 @@ public class NodesImpl implements Nodes
 
     public CollectionWithPagingInfo<Node> getChildren(String parentFolderNodeId, Parameters parameters)
     {
-        // TODO do we want to support path with list folder children ?
-        String path = null;
-        // String path = parameters.getParameter("path");
+        final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
 
-        final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, path);
-
-        // TODO
-        // map - where (filter) properties - including isFolder
-        // map - orderBy (sort) properties - including isFolder
-
-        // TODO refactor & fix !
-        final boolean minimalnfo = (parameters.getSelectedProperties().size() == 0);
+        final boolean minimalInfo = (parameters.getSelectedProperties().size() == 0);
         final List<QName> requestedProperties = createQNames(parameters.getSelectedProperties());
 
         boolean includeFolders = true;
@@ -729,6 +735,8 @@ public class NodesImpl implements Nodes
 
         final PagingResults<FileInfo> pagingResults = fileFolderService.list(parentNodeRef, includeFiles, includeFolders, ignoreTypeQNames, sortProps, pagingRequest);
 
+        final Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
+
         final List<FileInfo> page = pagingResults.getPage();
         List<Node> nodes = new AbstractList<Node>()
         {
@@ -737,8 +745,8 @@ public class NodesImpl implements Nodes
             {
                 FileInfo fInfo = page.get(index);
 
-                // basic info by default (unless "select"ed otherwise)
-                return getFolderOrDocument(fInfo.getNodeRef(), parentNodeRef, fInfo.getType(), requestedProperties, minimalnfo);
+                // minimal info by default (unless "select"ed otherwise)
+                return getFolderOrDocument(fInfo.getNodeRef(), parentNodeRef, fInfo.getType(), requestedProperties, minimalInfo, mapUserInfo);
             }
 
             @Override
@@ -796,7 +804,7 @@ public class NodesImpl implements Nodes
         {
             for (Entry<String, Object> entry : nodeInfo.getProperties().entrySet())
             {
-                QName propQName = QName.createQName((String)entry.getKey(), namespaceService);
+                QName propQName = QName.createQName(entry.getKey(), namespaceService);
                 props.put(propQName, (Serializable)entry.getValue());
             }
         }
@@ -834,7 +842,7 @@ public class NodesImpl implements Nodes
         {
             for (Entry<String, Object> entry : nodeInfo.getProperties().entrySet())
             {
-                QName propQName = QName.createQName((String)entry.getKey(), namespaceService);
+                QName propQName = QName.createQName(entry.getKey(), namespaceService);
                 props.put(propQName, (Serializable)entry.getValue());
             }
         }

@@ -27,6 +27,7 @@ package org.alfresco.rest.api.model;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,6 +36,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
@@ -67,9 +69,7 @@ public class Node implements Comparable<Node>
 
     protected Map<String, Object> properties;
 
-    // TODO fixme !
-    // also need to optionally pass in user map - eg. when listing children (to avoid multiple lookups for same user)
-    public Node(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, ServiceRegistry sr)
+    public Node(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
         if(nodeRef == null)
         {
@@ -79,7 +79,7 @@ public class Node implements Comparable<Node>
         this.nodeRef = nodeRef;
         this.parentNodeRef = parentNodeRef;
 
-        mapMinimalInfo(nodeProps, sr);
+        mapMinimalInfo(nodeProps, mapUserInfo, sr);
     }
 
     protected Object getValue(Map<String, PropertyData<?>> props, String name)
@@ -93,39 +93,52 @@ public class Node implements Comparable<Node>
     {
     }
 
-    protected void mapMinimalInfo(Map<QName, Serializable> nodeProps, ServiceRegistry sr)
+    protected void mapMinimalInfo(Map<QName, Serializable> nodeProps,  Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
     {
         PersonService personService = sr.getPersonService();
 
-        // TODO review backwards compat' for favorites & others (eg. set guid explicitly where still needed)
-        //this.guid = nodeRef;
-        //this.title = (String)nodeProps.get(ContentModel.PROP_TITLE);
-        //this.description = (String)nodeProps.get(ContentModel.PROP_DESCRIPTION);
-        //this.createdBy = (String)nodeProps.get(ContentModel.PROP_CREATOR);
-        //this.modifiedBy = (String)nodeProps.get(ContentModel.PROP_MODIFIER);
-
         this.name = (String)nodeProps.get(ContentModel.PROP_NAME);
 
+        if (mapUserInfo == null) {
+            // minor: save one lookup if creator & modifier are the same
+            mapUserInfo = new HashMap<>(2);
+        }
+
         this.createdAt = (Date)nodeProps.get(ContentModel.PROP_CREATED);
-        this.createdByUser = lookupUserInfo((String)nodeProps.get(ContentModel.PROP_CREATOR), personService);
+        this.createdByUser = lookupUserInfo((String)nodeProps.get(ContentModel.PROP_CREATOR), mapUserInfo, personService);
 
         this.modifiedAt = (Date)nodeProps.get(ContentModel.PROP_MODIFIED);
-        this.modifiedByUser = lookupUserInfo((String)nodeProps.get(ContentModel.PROP_MODIFIER), personService);
+        this.modifiedByUser = lookupUserInfo((String)nodeProps.get(ContentModel.PROP_MODIFIER), mapUserInfo, personService);
     }
 
-    // TODO refactor & optimise to avoid multiple person lookups
-    private UserInfo lookupUserInfo(final String userName, final PersonService personService) {
+    public static UserInfo lookupUserInfo(String userName, Map<String, UserInfo> mapUserInfo, PersonService personService) {
 
-        String sysUserName = AuthenticationUtil.getSystemUserName();
-        if (userName.equals(sysUserName) || (AuthenticationUtil.isMtEnabled() && userName.startsWith(sysUserName+"@")))
+        UserInfo userInfo = mapUserInfo.get(userName);
+        if (userInfo == null)
         {
-            return new UserInfo(userName, userName, "");
+            String sysUserName = AuthenticationUtil.getSystemUserName();
+            if (userName.equals(sysUserName) || (AuthenticationUtil.isMtEnabled() && userName.startsWith(sysUserName + "@")))
+            {
+                userInfo = new UserInfo(userName, userName, "");
+            }
+            else
+            {
+                try
+                {
+                    PersonService.PersonInfo pInfo = personService.getPerson(personService.getPerson(userName));
+                    userInfo = new UserInfo(userName, pInfo.getFirstName(), pInfo.getLastName());
+                }
+                catch (NoSuchPersonException nspe)
+                {
+                    // belts-and-braces (seen in dev/test env, eg. userName = Bobd58ba329-b702-41ee-a9ae-2b3c7029b5bc
+                    userInfo = new UserInfo(userName, userName, "");
+                }
+
+            }
+
+            mapUserInfo.put(userName, userInfo);
         }
-        else
-        {
-            PersonService.PersonInfo pInfo = personService.getPerson(personService.getPerson(userName));
-            return new UserInfo(userName, pInfo.getFirstName(), pInfo.getLastName());
-        }
+        return userInfo;
     }
 
     @UniqueId

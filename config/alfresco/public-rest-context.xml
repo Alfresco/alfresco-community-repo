@@ -481,6 +481,28 @@
        </property>
     </bean>
 
+    <!-- TODO - experimental (review) -->
+    <bean id="quickShareLinks" class="org.alfresco.rest.api.impl.QuickShareLinksImpl">
+        <property name="quickShareService" ref="QuickShareService"/>
+        <property name="nodes" ref="nodes"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="enabled" value="${system.quickshare.enabled}" />
+    </bean>
+
+    <bean id="QuickShareLinks" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.QuickShareLinks</value>
+        </property>
+        <property name="target">
+            <ref bean="quickShareLinks" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
     <bean id="favourites" class="org.alfresco.rest.api.impl.FavouritesImpl">
         <property name="people" ref="People" />
         <property name="sites" ref="Sites" />
@@ -702,9 +724,7 @@
 
     <!-- TODO - experimental (review) -->
     <bean class="org.alfresco.rest.api.quicksharelinks.QuickShareLinkEntityResource">
-        <property name="quickShareService" ref="QuickShareService" />
-        <property name="nodes" ref="Nodes" />
-        <property name="nodeService" ref="NodeService" />
+        <property name="quickShareLinks" ref="QuickShareLinks" />
     </bean>
 
     <bean class="org.alfresco.rest.api.people.PersonFavouritesRelation">

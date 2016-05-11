@@ -1503,6 +1503,32 @@ public class NodeApiTest extends AbstractBaseApiTest
         tgt.setTargetParentId(rootNodeId);
         post("nodes/"+d1Id+"/copy", user1, toJsonAsStringNonNull(tgt), null, 403);
     }
+
+    @Test
+    public void testCopySite() throws Exception
+    {
+        TestNetwork networkOne = getTestFixture().getRandomNetwork();
+        TestPerson cs1 = networkOne.createUser();
+        TestSite tSite = createSite(networkOne, cs1, SiteVisibility.PRIVATE);
+
+        // create folder
+        Folder folderResp = createFolder(cs1.getId(), Nodes.PATH_MY, "siteCopytarget");
+        String targetId = folderResp.getId();
+
+        Map<String, String> body = new HashMap<>();
+        body.put("targetParentId", targetId);
+
+        //test that you can't copy a site
+        post("nodes/"+tSite.getSiteInfo().getNodeRef().getId()+"/copy", cs1.getId(), toJsonAsStringNonNull(body), null, 422);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(cs1.getId());
+        NodeRef docLibNodeRef = tSite.getContainerNodeRef("documentLibrary");
+
+        //test that you can't copy a site doclib
+        post("nodes/"+docLibNodeRef.getId()+"/copy", cs1.getId(), toJsonAsStringNonNull(body), null, 422);
+
+    }
+
     /**
      * Tests create folder.
      * <p>POST:</p>

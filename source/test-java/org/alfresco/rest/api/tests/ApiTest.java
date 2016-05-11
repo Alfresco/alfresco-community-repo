@@ -56,6 +56,7 @@ import org.junit.runners.Suite;
     TestRemovePermissions.class,
     TestPublicApi128.class,
     TestPublicApiCaching.class,
+    ActivitiesPostingTest.class,
     ModulePackagesApiTest.class,
     RenditionsTest.class
 })

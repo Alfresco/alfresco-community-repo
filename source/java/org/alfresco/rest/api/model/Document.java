@@ -46,6 +46,11 @@ public class Document extends Node
 {
     private ContentInfo contentInfo;
 
+    // instance init block
+    {
+        this.isFolder = Boolean.FALSE;
+    }
+
     public Document() {
         super();
     }
@@ -64,76 +69,76 @@ public class Document extends Node
         }
     }
 
-	public Boolean getIsFolder()
-	{
-		return false;
-	}
-
     public ContentInfo getContent()
     {
         return contentInfo;
     }
 
-	@Override
-	public String toString()
-	{
-		return "Document [contentInfo=" + contentInfo.toString() + ", nodeRef="
-				+ nodeRef + ", name=" + name + ", createdAt=" + createdAt
-				+ ", modifiedAt=" + modifiedAt + ", createdBy=" + createdBy
-				+ ", modifiedBy=" + modifiedBy + "]";
-	}
+    public void setContent(ContentInfo contentInfo)
+    {
+        this.contentInfo = contentInfo;
+    }
 
-	// TODO for backwards compat' - set explicitly when needed (ie. favourites)
-	private String mimeType;
-	private BigInteger sizeInBytes;
-	private String versionLabel;
+    @Override
+    public String toString()
+    {
+        return "Document [contentInfo=" + contentInfo.toString() + ", nodeRef="
+                    + nodeRef + ", name=" + name + ", createdAt=" + createdAt
+                    + ", modifiedAt=" + modifiedAt + ", createdBy=" + createdBy
+                    + ", modifiedBy=" + modifiedBy + "]";
+    }
 
-	/**
-	 * @deprecated
+    // TODO for backwards compat' - set explicitly when needed (ie. favourites)
+    private String mimeType;
+    private BigInteger sizeInBytes;
+    private String versionLabel;
+
+    /**
+     * @deprecated
      */
-	public String getMimeType()
-	{
-		return mimeType;
-	}
+    public String getMimeType()
+    {
+        return mimeType;
+    }
 
-	/**
-	 * @deprecated
-	 */
-	public BigInteger getSizeInBytes()
-	{
-		return sizeInBytes;
-	}
+    /**
+     * @deprecated
+     */
+    public BigInteger getSizeInBytes()
+    {
+        return sizeInBytes;
+    }
 
-	/**
-	 * @deprecated
-	 */
-	public String getVersionLabel()
-	{
-		return versionLabel;
-	}
+    /**
+     * @deprecated
+     */
+    public String getVersionLabel()
+    {
+        return versionLabel;
+    }
 
-	/**
-	 * @deprecated
-	 */
-	public void setMimeType(String mimeType)
-	{
-		this.mimeType = mimeType;
-	}
+    /**
+     * @deprecated
+     */
+    public void setMimeType(String mimeType)
+    {
+        this.mimeType = mimeType;
+    }
 
-	/**
-	 * @deprecated
-	 */
-	public void setSizeInBytes(BigInteger sizeInBytes)
-	{
-		this.sizeInBytes = sizeInBytes;
-	}
+    /**
+     * @deprecated
+     */
+    public void setSizeInBytes(BigInteger sizeInBytes)
+    {
+        this.sizeInBytes = sizeInBytes;
+    }
 
-	/**
-	 * @deprecated
-	 */
-	public void setVersionLabel(String versionLabel)
-	{
-		this.versionLabel = versionLabel;
-	}
+    /**
+     * @deprecated
+     */
+    public void setVersionLabel(String versionLabel)
+    {
+        this.versionLabel = versionLabel;
+    }
 
 }

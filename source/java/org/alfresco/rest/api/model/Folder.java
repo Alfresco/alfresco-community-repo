@@ -23,6 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.rest.api.model;
 
 import java.io.Serializable;
@@ -37,31 +38,30 @@ import org.alfresco.service.namespace.QName;
  * 
  * @author steveglover
  * @author janv
- *
  */
 public class Folder extends Node
 {
-	public Folder()
-	{
-		super();
-	}
+    // instance init block
+    {
+        this.isFolder = Boolean.TRUE;
+    }
+
+    public Folder()
+    {
+        super();
+    }
 
     public Folder(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, ServiceRegistry sr)
     {
         super(nodeRef, parentNodeRef, nodeProps, sr);
     }
 
-	public Boolean getIsFolder()
-	{
-		return true;
-	}
-
-	@Override
-	public String toString()
-	{
-		return "Folder [nodeRef=" + nodeRef + ", name=" + name + ", title="
-				+ title + ", description=" + description + ", createdAt="
-				+ createdAt + ", modifiedAt=" + modifiedAt + ", createdBy="
-				+ createdBy + ", modifiedBy=" + modifiedBy + "]";
-	}
+    @Override
+    public String toString()
+    {
+        return "Folder [nodeRef=" + nodeRef + ", name=" + name + ", title="
+                    + title + ", description=" + description + ", createdAt="
+                    + createdAt + ", modifiedAt=" + modifiedAt + ", createdBy="
+                    + createdBy + ", modifiedBy=" + modifiedBy + "]";
+    }
 }

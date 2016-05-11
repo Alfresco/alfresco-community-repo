@@ -26,10 +26,17 @@
 package org.alfresco.rest.api.tests;
 
 import static org.junit.Assert.fail;
+import static org.junit.Assert.assertNotNull;
 
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.rest.api.tests.RepoService.SiteInformation;
+import org.alfresco.rest.api.tests.RepoService.TestNetwork;
+import org.alfresco.rest.api.tests.RepoService.TestPerson;
+import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.service.cmr.site.SiteVisibility;
 
 import java.util.Map;
 
@@ -83,10 +90,25 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected HttpResponse getAll(String url, String runAsUser, PublicApiClient.Paging paging, int expectedStatus) throws Exception
     {
+        return getAll(url, runAsUser, paging, null, expectedStatus);
+    }
+
+    protected HttpResponse getAll(String url, String runAsUser, PublicApiClient.Paging paging, Map<String, String> otherParams, int expectedStatus) throws Exception
+    {
         publicApiClient.setRequestContext(new RequestContext(runAsUser));
-        Map<String, String> params = (paging == null) ? null : createParams(paging, null);
+        Map<String, String> params = (paging == null) ? null : createParams(paging, otherParams);
 
         HttpResponse response = publicApiClient.get(getScope(), url, null, null, null, params);
+        checkStatus(expectedStatus, response.getStatusCode());
+
+        return response;
+    }
+
+    protected HttpResponse getAll(Class<?> entityResource, String runAsUser, PublicApiClient.Paging paging, Map<String, String> otherParams, int expectedStatus) throws Exception
+    {
+        publicApiClient.setRequestContext(new RequestContext(runAsUser));
+
+        HttpResponse response = publicApiClient.get(entityResource, null, null, otherParams);
         checkStatus(expectedStatus, response.getStatusCode());
 
         return response;
@@ -97,6 +119,16 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         publicApiClient.setRequestContext(new RequestContext(runAsUser));
 
         HttpResponse response = publicApiClient.get(getScope(), url, entityId, null, null, null);
+        checkStatus(expectedStatus, response.getStatusCode());
+
+        return response;
+    }
+
+    protected HttpResponse getSingle(Class<?> entityResource, String runAsUser, String entityId, Map<String, String> params, int expectedStatus) throws Exception
+    {
+        publicApiClient.setRequestContext(new RequestContext(runAsUser));
+
+        HttpResponse response = publicApiClient.get(entityResource, entityId, null, params);
         checkStatus(expectedStatus, response.getStatusCode());
 
         return response;
@@ -130,6 +162,23 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
         RepoService.TestPerson person = repoService.createUser(personInfo, username, null);
         return person.getId();
+    }
+
+    protected TestSite createSite(final TestNetwork testNetwork, TestPerson user, final SiteVisibility siteVisibility)
+    {
+        final String siteName = "RandomSite" + System.currentTimeMillis();
+        final TestSite site = TenantUtil.runAsUserTenant(new TenantUtil.TenantRunAsWork<TestSite>()
+        {
+            @Override
+            public TestSite doWork() throws Exception
+            {
+                SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, siteVisibility);
+                return repoService.createSite(testNetwork, siteInfo);
+            }
+        }, user.getId(), testNetwork.getId());
+        assertNotNull(site);
+
+        return site;
     }
 
     protected void checkStatus(int expectedStatus, int actualStatus)

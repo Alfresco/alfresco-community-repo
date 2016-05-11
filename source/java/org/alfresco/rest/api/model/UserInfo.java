@@ -16,41 +16,42 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
+
 package org.alfresco.rest.api.model;
 
 /**
  * Representation of a user info
  *
  * @author janv
- *
  */
 public class UserInfo
 {
-	private String userName;
-	private String displayName;
+    private String userName;
+    private String displayName;
 
-	public UserInfo()
-	{
-	}
+    public UserInfo()
+    {
+    }
 
-	public UserInfo(String userName, String firstName, String lastName)
-	{
-		this.userName = userName;
-		this.displayName = ((firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "")).replaceAll("^\\s+|\\s+$", "");
-	}
+    public UserInfo(String userName, String firstName, String lastName)
+    {
+        this.userName = userName;
+        this.displayName = ((firstName != null ? firstName + " " : "") + (lastName != null ? lastName : "")).trim();
+    }
 
-	public String getDisplayName() {
-		return displayName;
-	}
+    public String getDisplayName()
+    {
+        return displayName;
+    }
 
-	public String getUserName() {
-		return userName;
-	}
+    public String getUserName()
+    {
+        return userName;
+    }
 
-
-	@Override
-	public String toString()
-	{
-		return "User [userName=" + userName + ", displayName=" + displayName + "]";
-	}
+    @Override
+    public String toString()
+    {
+        return "User [userName=" + userName + ", displayName=" + displayName + "]";
+    }
 }

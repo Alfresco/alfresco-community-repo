@@ -428,10 +428,23 @@
           </list>
        </property>
     </bean>
-    
-    <bean id="nodes" class="org.alfresco.rest.api.impl.NodesImpl">
+
+    <bean id="nodes.ignoreTypes" class="org.springframework.beans.factory.config.SetFactoryBean">
+        <property name="sourceSet">
+            <set>
+                <value>cm:systemfolder</value>
+                <value>fm:forums</value>
+                <value>fm:forum</value>
+                <value>fm:topic</value>
+                <value>fm:post</value>
+            </set>
+        </property>
+    </bean>
+
+    <bean id="nodes" class="org.alfresco.rest.api.impl.NodesImpl" init-method="init">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="repositoryHelper" ref="repositoryHelper"/>
+        <property name="ignoreTypes" ref="nodes.ignoreTypes"/>
     </bean>
 
     <bean id="Nodes" class="org.springframework.aop.framework.ProxyFactoryBean">

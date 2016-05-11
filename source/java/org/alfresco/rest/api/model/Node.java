@@ -57,13 +57,15 @@ public class Node implements Comparable<Node>
     protected UserInfo createdByUser;
     protected UserInfo modifiedByUser;
 
+    protected Boolean isFolder;
+
     protected NodeRef parentNodeRef;
     protected PathInfo pathInfo;
     protected String prefixTypeQName;
 
     protected List<String> aspectNames;
 
-    protected Map<String, Serializable> props;
+    protected Map<String, Object> properties;
 
     // TODO fixme !
     // also need to optionally pass in user map - eg. when listing children (to avoid multiple lookups for same user)
@@ -190,12 +192,12 @@ public class Node implements Comparable<Node>
         this.prefixTypeQName = prefixType;
     }
 
-    public Map getProperties() {
-        return this.props;
+    public Map<String, Object> getProperties() {
+        return this.properties;
     }
 
-    public void setProperties(Map props) {
-        this.props = props;
+    public void setProperties(Map<String, Object> props) {
+        this.properties = props;
     }
 
     public List<String> getAspectNames() {
@@ -209,6 +211,21 @@ public class Node implements Comparable<Node>
     public NodeRef getParentId()
     {
         return parentNodeRef;
+    }
+
+    public void setParentId(NodeRef parentNodeRef)
+    {
+        this.parentNodeRef = parentNodeRef;
+    }
+
+    public Boolean getIsFolder()
+    {
+        return isFolder;
+    }
+
+    public void setIsFolder(Boolean isFolder)
+    {
+        this.isFolder=isFolder;
     }
 
     public boolean equals(Object other)

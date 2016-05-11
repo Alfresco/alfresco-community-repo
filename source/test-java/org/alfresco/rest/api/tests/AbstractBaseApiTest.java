@@ -426,7 +426,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     }
 
     protected static final long PAUSE_TIME = 5000; //millisecond
-    protected static final int MAX_RETRY = 10;
+    protected static final int MAX_RETRY = 20;
 
     protected Rendition waitAndGetRendition(String userId, String sourceNodeId, String renditionId) throws Exception
     {
@@ -446,6 +446,8 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
                 // If the asynchronous create rendition action is not finished yet,
                 // wait for 'PAUSE_TIME' and try again.
                 retryCount++;
+
+                System.out.println("waitAndGetRendition: "+retryCount);
                 Thread.sleep(PAUSE_TIME);
             }
         }
@@ -472,6 +474,8 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
                 // If no transformer is currently available,
                 // wait for 'PAUSE_TIME' and try again.
                 retryCount++;
+
+                System.out.println("waitAndGetRendition: "+retryCount);
                 Thread.sleep(PAUSE_TIME);
             }
         }

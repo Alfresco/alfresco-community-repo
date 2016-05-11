@@ -393,6 +393,16 @@ public class QueriesApiTest extends AbstractBaseApiTest
             params.put(Queries.PARAM_ROOT_NODE_ID, myFolderNodeId);
             getAll(URL_QUERIES_LSN, user1, paging, params, 400);
 
+            // -ve test - term too short
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "ab");
+            getAll(URL_QUERIES_LSN, user1, paging, params, 400);
+
+            // -ve test - term is still too short
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "  \"a b *\"  ");
+            getAll(URL_QUERIES_LSN, user1, paging, params, 400);
+
             // -ve test - invalid sort field
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);

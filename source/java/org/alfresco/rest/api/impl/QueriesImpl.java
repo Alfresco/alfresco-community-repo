@@ -66,6 +66,9 @@ public class QueriesImpl implements Queries, InitializingBean
 
     private final static String QUERY_LIVE_SEARCH_NODES = "live-search-nodes";
 
+    private final static int TERM_MIN_LEN = 3; // review: should this be configurable system-wide (&/or per-tenant in the cloud) ?
+
+
     private final static Map<String,QName> MAP_PARAM_SORT_QNAME;
     static
     {
@@ -112,11 +115,32 @@ public class QueriesImpl implements Queries, InitializingBean
 
         StringBuilder sb = new StringBuilder();
 
-        // TODO check min length, excluding quotes etc
         String term = parameters.getParameter(PARAM_TERM);
         if (term == null)
         {
             throw new InvalidArgumentException("Query 'term' not specified");
+        }
+        else
+        {
+            String s = term.trim();
+            int cnt = 0;
+            for (int i = 0; i <  s.length(); i++)
+            {
+                char c = s.charAt(i);
+                if (Character.isLetterOrDigit(c))
+                {
+                    cnt++;
+                    if (cnt == TERM_MIN_LEN)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (cnt < TERM_MIN_LEN)
+            {
+                throw new InvalidArgumentException("Query 'term' is too short. Must have at least "+TERM_MIN_LEN+" alphanumeric chars");
+            }
         }
 
         String rootNodeId = parameters.getParameter(PARAM_ROOT_NODE_ID);

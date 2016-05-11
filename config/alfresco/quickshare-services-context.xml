@@ -51,6 +51,19 @@
       </property>
    </bean>
 
+    <bean id="quickShareDefaultProperties" class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+        <property name="locations">
+            <list>
+                <value>classpath*:alfresco/quickshare/quickshare-clients.properties</value>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="quickShareClientsConfig" class="org.alfresco.repo.quickshare.ClientAppConfig">
+        <property name="defaultProperties" ref="quickShareDefaultProperties"/>
+        <property name="globalProperties" ref="global-properties"/>
+    </bean>
+
     <!-- QuickShare Service base bean -->
     <bean id="quickShareService" class="org.alfresco.repo.quickshare.QuickShareServiceImpl" init-method="init">
         <property name="attributeService" ref="AttributeService"/>
@@ -67,16 +80,7 @@
         <property name="actionService" ref="ActionService" />
         <property name="preferenceService" ref="PreferenceService" />
         <property name="defaultEmailSender" value="${system.quickshare.email.from.default}" />
-        <property name="templateRegistry" ref="quickShare.emailTemplates" />
-    </bean>
-
-    <bean id="quickShare.emailTemplates" class="org.springframework.beans.factory.config.MapFactoryBean">
-        <property name="sourceMap">
-            <map>
-                <!-- key=> template Id    value=> template classpath -->
-                <entry key="default" value="alfresco/templates/quickshare-email-templates/quickshare-email.default.template.ftl" />
-            </map>
-        </property>
+        <property name="clientAppConfig" ref="quickShareClientsConfig" />
     </bean>
 
     <bean id="quickShareResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">

@@ -34,15 +34,21 @@
     </bean>
     <bean id="simpleMappingExceptionResolver" class="org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver">
        <property name="exceptionMappings">
-            <map>
-                <entry key="org.alfresco.rest.framework.core.exceptions.ApiException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_INTERNAL_SERVER_ERROR}" />
-                <entry key="org.alfresco.rest.framework.core.exceptions.InvalidArgumentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
-                <entry key="org.alfresco.rest.framework.core.exceptions.NotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
-                <entry key="org.alfresco.rest.framework.core.exceptions.PermissionDeniedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_FORBIDDEN}" />
-                <entry key="org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_METHOD_NOT_ALLOWED}" />
-                <entry key="org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
-                <entry key="org.alfresco.rest.framework.core.exceptions.StaleEntityException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />         
-            </map>
+           <map>
+               <entry key="org.alfresco.rest.framework.core.exceptions.ApiException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_INTERNAL_SERVER_ERROR}" />
+               <entry key="org.alfresco.rest.framework.core.exceptions.InvalidArgumentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
+               <entry key="org.alfresco.rest.framework.core.exceptions.NotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
+               <entry key="org.alfresco.rest.framework.core.exceptions.EntityNotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
+               <entry key="org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
+               <entry key="org.alfresco.rest.framework.core.exceptions.PermissionDeniedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_FORBIDDEN}" />
+               <entry key="org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_METHOD_NOT_ALLOWED}" />
+               <entry key="org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
+               <entry key="org.alfresco.rest.framework.core.exceptions.StaleEntityException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
+               <entry key="org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_REQUEST_ENTITY_TOO_LARGE}" />
+               <entry key="org.alfresco.rest.framework.core.exceptions.DisabledServiceException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_IMPLEMENTED}" />
+               <entry key="org.alfresco.rest.framework.core.exceptions.InsufficientStorageException" value="507" />
+               <entry key="org.alfresco.repo.node.integrity.IntegrityException" value="422" />
+           </map>
         </property>
     </bean>
     <context:component-scan base-package="org.alfresco.rest.framework.tests.api"/> 

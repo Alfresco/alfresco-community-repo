@@ -36,7 +36,8 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({ InspectorTests.class, JsonJacksonTests.class, ParamsExtractorTests.class,
             ResourceLocatorTests.class, ResourceWebScriptHelperTests.class, SerializeTests.class,
-            WhereTests.class, ExecutionTests.class, WithResponseTest.class })
+            WhereTests.class, ExecutionTests.class, WithResponseTest.class,
+            ExceptionResolverTests.class })
 public class AllRestFrameworkTest
 {
 

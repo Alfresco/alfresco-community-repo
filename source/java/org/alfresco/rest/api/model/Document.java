@@ -44,11 +44,6 @@ import org.alfresco.service.namespace.QName;
  */
 public class Document extends Node
 {
-    // TODO backward compat' - favourites etc
-	private String mimeType;
-	private BigInteger sizeInBytes;
-    private String versionLabel;
-
     private ContentInfo contentInfo;
 
     public Document() {
@@ -67,24 +62,7 @@ public class Document extends Node
             String mimeTypeName = sr.getMimetypeService().getDisplaysByMimetype().get(mimeType);
             this.contentInfo = new ContentInfo(mimeType, mimeTypeName, cd.getSize(), cd.getEncoding());
         }
-
-        //this.versionLabel = (String)nodeProps.get(ContentModel.PROP_VERSION_LABEL);
     }
-
-	public String getMimeType()
-	{
-		return mimeType;
-	}
-
-	public BigInteger getSizeInBytes()
-	{
-		return sizeInBytes;
-	}
-
-	public String getVersionLabel()
-	{
-		return versionLabel;
-	}
 
 	public Boolean getIsFolder()
 	{
@@ -104,4 +82,58 @@ public class Document extends Node
 				+ ", modifiedAt=" + modifiedAt + ", createdBy=" + createdBy
 				+ ", modifiedBy=" + modifiedBy + "]";
 	}
+
+	// TODO for backwards compat' - set explicitly when needed (ie. favourites)
+	private String mimeType;
+	private BigInteger sizeInBytes;
+	private String versionLabel;
+
+	/**
+	 * @deprecated
+     */
+	public String getMimeType()
+	{
+		return mimeType;
+	}
+
+	/**
+	 * @deprecated
+	 */
+	public BigInteger getSizeInBytes()
+	{
+		return sizeInBytes;
+	}
+
+	/**
+	 * @deprecated
+	 */
+	public String getVersionLabel()
+	{
+		return versionLabel;
+	}
+
+	/**
+	 * @deprecated
+	 */
+	public void setMimeType(String mimeType)
+	{
+		this.mimeType = mimeType;
+	}
+
+	/**
+	 * @deprecated
+	 */
+	public void setSizeInBytes(BigInteger sizeInBytes)
+	{
+		this.sizeInBytes = sizeInBytes;
+	}
+
+	/**
+	 * @deprecated
+	 */
+	public void setVersionLabel(String versionLabel)
+	{
+		this.versionLabel = versionLabel;
+	}
+
 }

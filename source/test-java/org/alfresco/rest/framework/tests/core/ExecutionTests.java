@@ -3,6 +3,7 @@ package org.alfresco.rest.framework.tests.core;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -15,6 +16,8 @@ import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceLookupDictionary;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
+import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
+import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
 import org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver;
 import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor;
@@ -278,10 +281,32 @@ public class ExecutionTests extends AbstractContextTest
         verify(response, times(1)).setStatus(HttpServletResponse.SC_NOT_FOUND);
     }
 
+    @Test
+    public void testRenderError() throws IOException
+    {
+        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
+        executor.setResolver(simpleMappingExceptionResolver);
+        executor.setJsonHelper(jsonHelper);
+
+        ErrorResponse defaultError = new DefaultExceptionResolver().resolveException(new NullPointerException());
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        executor.renderErrorResponse(defaultError, mockResponse(out));
+        String errorMessage = out.toString();
+        //System.out.println(errorMessage);
+        assertTrue(errorMessage.contains("\"errorKey\":\"framework.exception.ApiDefault\""));
+        assertTrue(errorMessage.contains("\"statusCode\":500"));
+        assertTrue(errorMessage.contains("\"stackTrace\":\"[org.alfresco.rest.framework.tests.core.ExecutionTests.testRenderError("));
+        assertTrue(errorMessage.contains("\"descriptionURL\":\""+DefaultExceptionResolver.ERROR_URL+"\""));
+    }
+
     private WebScriptResponse mockResponse() throws IOException
     {
+        return mockResponse(new ByteArrayOutputStream());
+    }
+    private WebScriptResponse mockResponse(ByteArrayOutputStream byteArrayOutputStream) throws IOException
+    {
         WebScriptResponse res = mock(WebScriptResponse.class);
-        when(res.getOutputStream()).thenReturn(new ByteArrayOutputStream());
+        when(res.getOutputStream()).thenReturn(byteArrayOutputStream);
         return res;
     }
 

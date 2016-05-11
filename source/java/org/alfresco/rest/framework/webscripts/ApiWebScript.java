@@ -210,7 +210,7 @@ public abstract class ApiWebScript extends AbstractWebScript
      */
     public void renderErrorResponse(final ErrorResponse errorResponse, final WebScriptResponse res) throws IOException {
         
-        errorResponse.setDescriptionURL("http://developer.alfresco.com/ErrorsExplained.html#"+errorResponse.getErrorKey());
+        errorResponse.setDescriptionURL(DefaultExceptionResolver.ERROR_URL);
 
         setContentInfoOnResponse(res, DEFAULT_JSON_CONTENT);
         

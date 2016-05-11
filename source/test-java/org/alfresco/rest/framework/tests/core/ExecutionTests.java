@@ -3,6 +3,7 @@ package org.alfresco.rest.framework.tests.core;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -17,15 +18,18 @@ import org.alfresco.rest.framework.resource.actions.ActionExecutor;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.rest.framework.tests.api.mocks.CowEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks.Goat;
 import org.alfresco.rest.framework.tests.api.mocks.Grass;
 import org.alfresco.rest.framework.tests.api.mocks.Sheep;
 import org.alfresco.rest.framework.tests.api.mocks3.FlockEntityResource;
 import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
+import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
@@ -54,12 +58,16 @@ public class ExecutionTests extends AbstractContextTest
         Object result = executor.execute(entityResource, Params.valueOf((String)null, null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
         assertNotNull(result);
 
+        WebScriptResponse response = mock(WebScriptResponse.class);
         entityResource = locator.locateEntityResource(api,"cow", HttpMethod.GET);
-        result = executor.execute(entityResource, Params.valueOf((String)null, null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
+        result = executor.execute(entityResource, Params.valueOf((String)null, null, mock(WebScriptRequest.class)), response, true);
         assertNotNull(result);
+        verify(response, times(1)).setCache((Cache) ApiWebScript.CACHE_NEVER);
 
-        result = executor.execute(entityResource, Params.valueOf("543", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
+        response = mock(WebScriptResponse.class);
+        result = executor.execute(entityResource, Params.valueOf("543", null, mock(WebScriptRequest.class)),  response, true);
         assertNotNull(result);
+        verify(response, times(1)).setCache((Cache) CowEntityResource.CACHE_COW);
 
         ResourceWithMetadata baa = locator.locateRelationResource(api,"sheep", "baaahh", HttpMethod.GET);
         result = executor.execute(baa, Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);

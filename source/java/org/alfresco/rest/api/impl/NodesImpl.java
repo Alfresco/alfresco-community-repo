@@ -549,8 +549,8 @@ public class NodesImpl implements Nodes
 
         if (! minimalInfo)
         {
-            node.setProperties(mapProperties(properties, selectParam, mapUserInfo));
-            node.setAspectNames(mapAspects(nodeService.getAspects(nodeRef)));
+            node.setProperties(mapFromNodeProperties(properties, selectParam, mapUserInfo));
+            node.setAspectNames(mapFromNodeAspects(nodeService.getAspects(nodeRef)));
         }
 
         node.setNodeType(typeQName.toPrefixString(namespaceService));
@@ -661,7 +661,20 @@ public class NodesImpl implements Nodes
         return new PathInfo(pathStr, isComplete, pathElements);
     }
 
-    protected Map<String, Object> mapProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo)
+    protected Map<QName, Serializable> mapToNodeProperties(Map<String, Object> props)
+    {
+        Map<QName, Serializable> nodeProps = new HashMap<>(props.size());
+
+        for (Entry<String, Object> entry : props.entrySet())
+        {
+            QName propQName = QName.createQName(entry.getKey(), namespaceService);
+            nodeProps.put(propQName, (Serializable)entry.getValue());
+        }
+
+        return nodeProps;
+    }
+
+    protected Map<String, Object> mapFromNodeProperties(Map<QName, Serializable> nodeProps, List<String> selectParam, Map<String,UserInfo> mapUserInfo)
     {
         List<QName> selectedProperties;
 
@@ -708,7 +721,7 @@ public class NodesImpl implements Nodes
         return props;
     }
 
-    protected List<String> mapAspects(Set<QName> nodeAspects)
+    protected List<String> mapFromNodeAspects(Set<QName> nodeAspects)
     {
         List<String> aspectNames = new ArrayList<>(nodeAspects.size());
 
@@ -833,19 +846,20 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef);
         }
 
+        // node name - mandatory
         String nodeName = nodeInfo.getName();
         if ((nodeName == null) || nodeName.isEmpty())
         {
             throw new InvalidArgumentException("Node name is expected: "+parentNodeRef);
         }
 
+        // node type - check that requested type is a (sub-) type of folder or content
         String nodeType = nodeInfo.getNodeType();
         if ((nodeType == null) || nodeType.isEmpty())
         {
             throw new InvalidArgumentException("Node type is expected: "+parentNodeRef+","+nodeName);
         }
 
-        // check that requested type is a (sub-) type of folder or content
         QName nodeTypeQName = createQName(nodeType);
 
         Set<QName> contentAndFolders = new HashSet<>(Arrays.asList(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT));
@@ -855,21 +869,34 @@ public class NodesImpl implements Nodes
 
         boolean isContent = typeMatches(nodeTypeQName, Collections.singleton(ContentModel.TYPE_CONTENT), null);
 
-        Map<QName, Serializable> props = new HashMap<>(10);
+        Map<QName, Serializable> props = new HashMap<>(1);
 
         if (nodeInfo.getProperties() != null)
         {
-            for (Entry<String, Object> entry : nodeInfo.getProperties().entrySet())
-            {
-                QName propQName = QName.createQName(entry.getKey(), namespaceService);
-                props.put(propQName, (Serializable)entry.getValue());
-            }
+            // node properties - set any additional properties
+            props = mapToNodeProperties(nodeInfo.getProperties());
         }
 
         props.put(ContentModel.PROP_NAME, nodeName);
 
         QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
         NodeRef nodeRef = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, nodeTypeQName, props).getChildRef();
+
+        List<String> aspectNames = nodeInfo.getAspectNames();
+        if (aspectNames != null)
+        {
+            // node aspects - set any additional aspects
+            for (String aspectName : aspectNames)
+            {
+                QName aspectQName = QName.createQName(aspectName, namespaceService);
+                if (EXCLUDED_ASPECTS.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
+                {
+                    continue; // ignore
+                }
+
+                nodeService.addAspect(nodeRef, aspectQName, null);
+            }
+        }
 
         if (isContent) {
             // add empty file
@@ -886,34 +913,48 @@ public class NodesImpl implements Nodes
     {
         final NodeRef nodeRef = validateNode(nodeId);
 
+        QName nodeTypeQName = nodeService.getType(nodeRef);
+
         final Set<QName> fileOrFolder = new HashSet<>(Arrays.asList(ContentModel.TYPE_FOLDER, ContentModel.TYPE_CONTENT));
-        if (! nodeMatches(nodeRef, fileOrFolder, null))
+        if (! typeMatches(nodeTypeQName, fileOrFolder, null))
         {
             throw new InvalidArgumentException("NodeId of file or folder is expected");
         }
 
-        Map<QName, Serializable> props = new HashMap<>(10);
+        Map<QName, Serializable> props = new HashMap<>(0);
 
         if (nodeInfo.getProperties() != null)
         {
-            for (Entry<String, Object> entry : nodeInfo.getProperties().entrySet())
-            {
-                QName propQName = QName.createQName(entry.getKey(), namespaceService);
-                props.put(propQName, (Serializable)entry.getValue());
-            }
+            props = mapToNodeProperties(nodeInfo.getProperties());
         }
 
         String name = nodeInfo.getName();
         if ((name != null) && (! name.isEmpty()))
         {
-            // note: this is equivalent of a rename within target folder
+            // update node name if needed - note: if the name is different than existing then this is equivalent of a rename (within parent folder)
             props.put(ContentModel.PROP_NAME, name);
+        }
+
+        String nodeType = nodeInfo.getNodeType();
+        if ((nodeType != null) && (! nodeType.isEmpty()))
+        {
+            // update node type - ensure that we are performing a specialise (we do not support generalise)
+            QName destNodeTypeQName = QName.createQName(nodeType, namespaceService);
+
+            if ((! destNodeTypeQName.equals(nodeTypeQName)) && dictionaryService.isSubClass(destNodeTypeQName, nodeTypeQName))
+            {
+                nodeService.setType(nodeRef, destNodeTypeQName);
+            }
+            else
+            {
+                throw new IllegalArgumentException("Cannot generalise the node type (from "+nodeTypeQName+" to "+destNodeTypeQName+")");
+            }
         }
 
         List<String> aspectNames = nodeInfo.getAspectNames();
         if (aspectNames != null)
         {
-            // note: can be empty (eg. to remove existing aspects (+ aspect properties) ... apart from cm:auditable, sys:referencable, sys:localized)
+            // update aspects - note: can be empty (eg. to remove existing aspects+properties) but not cm:auditable, sys:referencable, sys:localized
             Set<QName> aspectQNames = new HashSet<>(aspectNames.size());
             for (String aspectName : aspectNames)
             {
@@ -967,6 +1008,7 @@ public class NodesImpl implements Nodes
 
         if (props.size() > 0)
         {
+            // update node properties - note: null will unset the specified property
             nodeService.addProperties(nodeRef, props);
         }
 

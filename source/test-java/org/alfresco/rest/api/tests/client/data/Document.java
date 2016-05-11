@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Representation of a document node (initially for client tests for File Folder API)
  *
@@ -47,5 +49,17 @@ public class Document extends Node
     public void setContent(ContentInfo content)
     {
         this.content = content;
+    }
+
+    @Override
+    public void expected(Object o)
+    {
+        super.expected(o);
+
+        assertTrue(o instanceof Document);
+
+        Document other = (Document) o;
+
+        content.expected(((Document) o).getContent());
     }
 }

@@ -19,6 +19,8 @@
 
 package org.alfresco.rest.api.tests.client.data;
 
+import static org.junit.Assert.assertTrue;
+
 /**
  * Representation of a user info (initially for client tests for File Folder API)
  *
@@ -33,6 +35,12 @@ public class UserInfo
     {
     }
 
+    public UserInfo(String userName, String displayName)
+    {
+        this.userName = userName;
+        this.displayName = displayName;
+    }
+
     public String getDisplayName()
     {
         return displayName;
@@ -41,5 +49,15 @@ public class UserInfo
     public String getUserName()
     {
         return userName;
+    }
+
+    public void expected(Object o)
+    {
+        assertTrue(o instanceof UserInfo);
+
+        UserInfo other = (UserInfo) o;
+
+        AssertUtil.assertEquals("userName", userName, other.getUserName());
+        AssertUtil.assertEquals("displayName", displayName, other.getDisplayName());
     }
 }

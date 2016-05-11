@@ -27,6 +27,7 @@ package org.alfresco.rest.api.tests.client;
 
 import java.util.Map;
 
+import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.URIException;
@@ -145,7 +146,12 @@ public class HttpResponse
 		sb.append("user ").append(user).append("\n");
 		sb.append("returned ").append(method.getStatusCode()).append(" and took ").append(time).append("ms").append("\n");
 
-        String contentType = method.getResponseHeader("Content-Type").getValue();
+        String contentType = null;
+        Header hdr = method.getResponseHeader("Content-Type");
+        if (hdr != null)
+        {
+            contentType = hdr.getValue();
+        }
         sb.append("Response content type: ").append(contentType).append("\n");
 
         if (contentType != null)

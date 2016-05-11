@@ -1650,7 +1650,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         docResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         assertEquals(docName, docResp.getName());
         assertNotNull(docResp.getContent());
-        assertNotNull("ISO-8859-1", docResp.getContent());
+        assertEquals("ISO-8859-1", docResp.getContent().getEncoding());
         assertTrue(docResp.getContent().getSizeInBytes().intValue() > 0);
         assertEquals(MimetypeMap.MIMETYPE_PDF, docResp.getContent().getMimeType());
         PathInfo pathInfo = docResp.getPath();
@@ -1668,7 +1668,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         docResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         assertEquals(docName, docResp.getName());
         assertNotNull(docResp.getContent());
-        assertNotNull("ISO-8859-15", docResp.getContent());
+        assertEquals("ISO-8859-15", docResp.getContent().getEncoding());
         assertTrue(docResp.getContent().getSizeInBytes().intValue() > 0);
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, docResp.getContent().getMimeType());
 

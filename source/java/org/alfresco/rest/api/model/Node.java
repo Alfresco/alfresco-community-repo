@@ -299,20 +299,6 @@ public class Node implements Comparable<Node>
     }
 
 
-    // TODO experimental (API subject to change) - special property (request-only) to allow move/copy via POST /nodes/{id}/children
-
-    protected String action;
-
-    public String getAction()
-    {
-        return action;
-    }
-
-    public void setAction(String action)
-    {
-        this.action = action;
-    }
-
     // TODO for backwards compat' - set explicitly when needed (ie. favourites) (note: we could choose to have separate old Node/NodeImpl etc)
 
     protected String title;

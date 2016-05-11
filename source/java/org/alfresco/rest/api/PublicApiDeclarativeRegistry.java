@@ -65,6 +65,12 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.http.HttpMethod;
 
+/**
+ *
+ * @author steveglover
+ * @author janv
+ * @since PublicApi1.0
+ */
 public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
 {
 	private WebScript getNetworksWebScript;
@@ -99,277 +105,283 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
      */
     public Match findWebScript(String method, String uri)
     {
-    	if(method.equalsIgnoreCase("get") && uri.equals(PublicApiTenantWebScriptServletRequest.NETWORKS_PATH))
-    	{
-    		Map<String, String> templateVars = new HashMap<String, String>();
-    		templateVars.put("apiScope", "public");
-    		templateVars.put("apiVersion", "1");
-    		templateVars.put("apiName", "networks");
-    		Match match = new Match("", templateVars, "", getNetworksWebScript);
-    		return match;
-    	}
-    	else if(method.equalsIgnoreCase("get") && uri.equals(PublicApiTenantWebScriptServletRequest.NETWORK_PATH))
-    	{
-    	    Map<String, String> templateVars = new HashMap<String, String>();
-            templateVars.put("apiScope", "public");
-            templateVars.put("apiVersion", "1");
-            templateVars.put("apiName", "network");
-    		Match match = new Match("", templateVars, "", getNetworkWebScript);
-    		return match;
-    	} 
-    	else
-    	{
-			Match match = super.findWebScript(method, uri);
+        Match match = null;
 
-            HttpMethod httpMethod = HttpMethod.valueOf(method);
-
-            if (httpMethod.equals(HttpMethod.GET))
+        HttpMethod httpMethod = HttpMethod.valueOf(method);
+        if (httpMethod.equals(HttpMethod.GET))
+        {
+            if (uri.equals(PublicApiTenantWebScriptServletRequest.NETWORKS_PATH))
+            {
+                Map<String, String> templateVars = new HashMap<String, String>();
+                templateVars.put("apiScope", "public");
+                templateVars.put("apiVersion", "1");
+                templateVars.put("apiName", "networks");
+                match = new Match("", templateVars, "", getNetworksWebScript);
+            }
+            else if (uri.equals(PublicApiTenantWebScriptServletRequest.NETWORK_PATH))
+            {
+                Map<String, String> templateVars = new HashMap<String, String>();
+                templateVars.put("apiScope", "public");
+                templateVars.put("apiVersion", "1");
+                templateVars.put("apiName", "network");
+                match = new Match("", templateVars, "", getNetworkWebScript);
+            }
+            else
             {
                 // TODO - review (experimental)
+                match = super.findWebScript(method, uri);
 
-                // noAuth currently only exposed for GET
                 Map<String, String> templateVars = match.getTemplateVars();
-                Api api = determineApi(templateVars);
 
-                // TODO can we avoid locating resource more than once ?
-                ResourceWithMetadata rwm = locator.locateResource(api, templateVars, HttpMethod.valueOf(method));
-
-                Class resAction = null;
-
-                switch (rwm.getMetaData().getType())
+                if (templateVars.get("apiName") != null)
                 {
-                    case ENTITY:
-                        // TODO check params for entity id (for now - assume there is)
-                        if (EntityResourceAction.ReadById.class.isAssignableFrom(rwm.getResource().getClass()))
-                        {
-                            resAction = EntityResourceAction.ReadById.class;
-                        }
-                        break;
-                    case PROPERTY:
-                        // TODO check params for entity id (for now - assume there is)
-                        if (BinaryResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
-                        {
-                            resAction = BinaryResourceAction.Read.class;
-                        }
-                        break;
-                    default:
-                        break;
-                }
+                    // NOTE: noAuth currently only exposed for GET
+                    Api api = determineApi(templateVars);
 
-                final boolean noAuth = (resAction != null && rwm.getMetaData().isNoAuth(resAction));
+                    // TODO can we avoid locating resource more than once ?
+                    ResourceWithMetadata rwm = locator.locateResource(api, templateVars, HttpMethod.valueOf(method));
 
-                if (noAuth)
-                {
-                    final WebScript webScript = match.getWebScript();
+                    Class resAction = null;
 
-                    // hack ! - is there a better way (to dynamically override "requiredAuthentication") or handle noAuth check earlier ?
-                    WebScript noAuthWebScriptWrapper = new WebScript()
+                    switch (rwm.getMetaData().getType())
                     {
-                        @Override
-                        public void init(Container container, Description description)
-                        {
-                            webScript.init(container, description);
-                        }
-
-                        @Override
-                        public Description getDescription()
-                        {
-                            final Description d = webScript.getDescription();
-                            return new Description()
+                        case ENTITY:
+                            // TODO check params for entity id (for now - assume there is)
+                            if (EntityResourceAction.ReadById.class.isAssignableFrom(rwm.getResource().getClass()))
                             {
-                                @Override
-                                public String getStorePath()
-                                {
-                                    return d.getStorePath();
-                                }
+                                resAction = EntityResourceAction.ReadById.class;
+                            }
+                            break;
+                        case PROPERTY:
+                            // TODO check params for entity id (for now - assume there is)
+                            if (BinaryResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
+                            {
+                                resAction = BinaryResourceAction.Read.class;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
 
-                                @Override
-                                public String getScriptPath()
-                                {
-                                    return d.getScriptPath();
-                                }
+                    final boolean noAuth = (resAction != null && rwm.getMetaData().isNoAuth(resAction));
 
-                                @Override
-                                public Path getPackage()
-                                {
-                                    return d.getPackage();
-                                }
+                    if (noAuth)
+                    {
+                        final WebScript webScript = match.getWebScript();
 
-                                @Override
-                                public String getDescPath()
-                                {
-                                    return d.getDescPath();
-                                }
-
-                                @Override
-                                public InputStream getDescDocument() throws IOException
-                                {
-                                    return d.getDescDocument();
-                                }
-
-                                @Override
-                                public String getKind()
-                                {
-                                    return d.getKind();
-                                }
-
-                                @Override
-                                public Set<String> getFamilys()
-                                {
-                                    return d.getFamilys();
-                                }
-
-                                @Override
-                                public RequiredAuthentication getRequiredAuthentication()
-                                {
-                                    return RequiredAuthentication.none;
-                                }
-
-                                @Override
-                                public String getRunAs()
-                                {
-                                    return d.getRunAs();
-                                }
-
-                                @Override
-                                public RequiredTransaction getRequiredTransaction()
-                                {
-                                    return d.getRequiredTransaction();
-                                }
-
-                                @Override
-                                public RequiredTransactionParameters getRequiredTransactionParameters()
-                                {
-                                    return d.getRequiredTransactionParameters();
-                                }
-
-                                @Override
-                                public RequiredCache getRequiredCache()
-                                {
-                                    return d.getRequiredCache();
-                                }
-
-                                @Override
-                                public String getMethod()
-                                {
-                                    return d.getMethod();
-                                }
-
-                                @Override
-                                public String[] getURIs()
-                                {
-                                    return d.getURIs();
-                                }
-
-                                @Override
-                                public FormatStyle getFormatStyle()
-                                {
-                                    return d.getFormatStyle();
-                                }
-
-                                @Override
-                                public String getDefaultFormat()
-                                {
-                                    return d.getDefaultFormat();
-                                }
-
-                                @Override
-                                public NegotiatedFormat[] getNegotiatedFormats()
-                                {
-                                    return d.getNegotiatedFormats();
-                                }
-
-                                @Override
-                                public Map<String, Serializable> getExtensions()
-                                {
-                                    return d.getExtensions();
-                                }
-
-                                @Override
-                                public Lifecycle getLifecycle()
-                                {
-                                    return d.getLifecycle();
-                                }
-
-                                @Override
-                                public boolean getMultipartProcessing()
-                                {
-                                    return d.getMultipartProcessing();
-                                }
-
-                                @Override
-                                public void setMultipartProcessing(boolean b)
-                                {
-                                    d.setMultipartProcessing(b);
-                                }
-
-                                @Override
-                                public ArgumentTypeDescription[] getArguments()
-                                {
-                                    return d.getArguments();
-                                }
-
-                                @Override
-                                public TypeDescription[] getRequestTypes()
-                                {
-                                    return d.getRequestTypes();
-                                }
-
-                                @Override
-                                public TypeDescription[] getResponseTypes()
-                                {
-                                    return d.getResponseTypes();
-                                }
-
-                                @Override
-                                public String getId()
-                                {
-                                    return d.getId();
-                                }
-
-                                @Override
-                                public String getShortName()
-                                {
-                                    return d.getShortName();
-                                }
-
-                                @Override
-                                public String getDescription()
-                                {
-                                    return d.getDescription();
-                                }
-                            };
-                        }
-
-                        @Override
-                        public ResourceBundle getResources()
+                        // TODO is there a better way (to dynamically override "requiredAuthentication") or handle noAuth check earlier ?
+                        WebScript noAuthWebScriptWrapper = new WebScript()
                         {
-                            return webScript.getResources();
-                        }
+                            @Override
+                            public void init(Container container, Description description)
+                            {
+                                webScript.init(container, description);
+                            }
 
-                        @Override
-                        public void execute(WebScriptRequest webScriptRequest, WebScriptResponse webScriptResponse) throws IOException
-                        {
-                            webScript.execute(webScriptRequest, webScriptResponse);
-                        }
+                            @Override
+                            public Description getDescription()
+                            {
+                                final Description d = webScript.getDescription();
+                                return new Description()
+                                {
+                                    @Override
+                                    public String getStorePath()
+                                    {
+                                        return d.getStorePath();
+                                    }
 
-                        @Override
-                        public void setURLModelFactory(URLModelFactory urlModelFactory)
-                        {
-                            webScript.setURLModelFactory(urlModelFactory);
-                        }
-                    };
+                                    @Override
+                                    public String getScriptPath()
+                                    {
+                                        return d.getScriptPath();
+                                    }
 
-                    match = new Match(match.getTemplate(), match.getTemplateVars(), match.getPath(), noAuthWebScriptWrapper);
+                                    @Override
+                                    public Path getPackage()
+                                    {
+                                        return d.getPackage();
+                                    }
+
+                                    @Override
+                                    public String getDescPath()
+                                    {
+                                        return d.getDescPath();
+                                    }
+
+                                    @Override
+                                    public InputStream getDescDocument() throws IOException
+                                    {
+                                        return d.getDescDocument();
+                                    }
+
+                                    @Override
+                                    public String getKind()
+                                    {
+                                        return d.getKind();
+                                    }
+
+                                    @Override
+                                    public Set<String> getFamilys()
+                                    {
+                                        return d.getFamilys();
+                                    }
+
+                                    @Override
+                                    public RequiredAuthentication getRequiredAuthentication()
+                                    {
+                                        return RequiredAuthentication.none;
+                                    }
+
+                                    @Override
+                                    public String getRunAs()
+                                    {
+                                        return d.getRunAs();
+                                    }
+
+                                    @Override
+                                    public RequiredTransaction getRequiredTransaction()
+                                    {
+                                        return d.getRequiredTransaction();
+                                    }
+
+                                    @Override
+                                    public RequiredTransactionParameters getRequiredTransactionParameters()
+                                    {
+                                        return d.getRequiredTransactionParameters();
+                                    }
+
+                                    @Override
+                                    public RequiredCache getRequiredCache()
+                                    {
+                                        return d.getRequiredCache();
+                                    }
+
+                                    @Override
+                                    public String getMethod()
+                                    {
+                                        return d.getMethod();
+                                    }
+
+                                    @Override
+                                    public String[] getURIs()
+                                    {
+                                        return d.getURIs();
+                                    }
+
+                                    @Override
+                                    public FormatStyle getFormatStyle()
+                                    {
+                                        return d.getFormatStyle();
+                                    }
+
+                                    @Override
+                                    public String getDefaultFormat()
+                                    {
+                                        return d.getDefaultFormat();
+                                    }
+
+                                    @Override
+                                    public NegotiatedFormat[] getNegotiatedFormats()
+                                    {
+                                        return d.getNegotiatedFormats();
+                                    }
+
+                                    @Override
+                                    public Map<String, Serializable> getExtensions()
+                                    {
+                                        return d.getExtensions();
+                                    }
+
+                                    @Override
+                                    public Lifecycle getLifecycle()
+                                    {
+                                        return d.getLifecycle();
+                                    }
+
+                                    @Override
+                                    public boolean getMultipartProcessing()
+                                    {
+                                        return d.getMultipartProcessing();
+                                    }
+
+                                    @Override
+                                    public void setMultipartProcessing(boolean b)
+                                    {
+                                        d.setMultipartProcessing(b);
+                                    }
+
+                                    @Override
+                                    public ArgumentTypeDescription[] getArguments()
+                                    {
+                                        return d.getArguments();
+                                    }
+
+                                    @Override
+                                    public TypeDescription[] getRequestTypes()
+                                    {
+                                        return d.getRequestTypes();
+                                    }
+
+                                    @Override
+                                    public TypeDescription[] getResponseTypes()
+                                    {
+                                        return d.getResponseTypes();
+                                    }
+
+                                    @Override
+                                    public String getId()
+                                    {
+                                        return d.getId();
+                                    }
+
+                                    @Override
+                                    public String getShortName()
+                                    {
+                                        return d.getShortName();
+                                    }
+
+                                    @Override
+                                    public String getDescription()
+                                    {
+                                        return d.getDescription();
+                                    }
+                                };
+                            }
+
+                            @Override
+                            public ResourceBundle getResources()
+                            {
+                                return webScript.getResources();
+                            }
+
+                            @Override
+                            public void execute(WebScriptRequest webScriptRequest, WebScriptResponse webScriptResponse) throws IOException
+                            {
+                                webScript.execute(webScriptRequest, webScriptResponse);
+                            }
+
+                            @Override
+                            public void setURLModelFactory(URLModelFactory urlModelFactory)
+                            {
+                                webScript.setURLModelFactory(urlModelFactory);
+                            }
+                        };
+
+                        // override match with noAuth
+                        match = new Match(match.getTemplate(), match.getTemplateVars(), match.getPath(), noAuthWebScriptWrapper);
+                    }
                 }
-
             }
+        }
+        else
+        {
+            match = super.findWebScript(method, uri);
+        }
 
-			return match;
-    	}
+        return match;
     }
 
-    // note: same as ApiWebscript
+    // note: same as ApiWebscript (apiName must not be null)
     private Api determineApi(Map<String, String> templateVars)
     {
         String apiScope = templateVars.get("apiScope");

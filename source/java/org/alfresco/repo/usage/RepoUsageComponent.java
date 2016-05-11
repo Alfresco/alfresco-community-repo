@@ -39,11 +39,6 @@ import org.alfresco.service.namespace.QName;
  */
 public interface RepoUsageComponent
 {
-    public static final Long LOCK_TTL = 60000L;
-    public static final QName LOCK_USAGE = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "RepoUsageComponent");
-    public static final QName LOCK_USAGE_USERS = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "RepoUsageComponent.Users");
-    public static final QName LOCK_USAGE_DOCUMENTS = QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, "RepoUsageComponent.Documents");
-    
     public static final String KEY_USAGE_ROOT = ".repoUsages";
     public static final String KEY_USAGE_CURRENT = "current";
     public static final String KEY_USAGE_LAST_UPDATE_USERS = "lastUpdateUsers";

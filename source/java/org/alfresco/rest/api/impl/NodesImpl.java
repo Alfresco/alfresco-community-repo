@@ -25,29 +25,11 @@
  */
 package org.alfresco.rest.api.impl;
 
-import java.io.InputStream;
-import java.io.Serializable;
-import java.math.BigInteger;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.StringTokenizer;
-import java.util.concurrent.ConcurrentHashMap;
-
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
-import org.alfresco.repo.Client;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.ContentLimitViolationException;
@@ -58,7 +40,6 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
-import org.alfresco.repo.security.authentication.HashPasswordTransactionListener;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.TenantUtil;
@@ -152,6 +133,23 @@ import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.servlet.FormData;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
+
+import java.io.InputStream;
+import java.io.Serializable;
+import java.math.BigInteger;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Centralises access to file/folder/node services and maps between representations.
@@ -1950,7 +1948,7 @@ public class NodesImpl implements Nodes
     }
 
     @Override
-    public BinaryResource getContent(String fileNodeId, Parameters parameters)
+    public BinaryResource getContent(String fileNodeId, Parameters parameters, boolean recordActivity)
     {
         final NodeRef nodeRef = validateNode(fileNodeId);
 
@@ -1991,8 +1989,11 @@ public class NodesImpl implements Nodes
         }
         String attachFileName = (attach ? name : null);
 
-        final ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
-        postActivity(Activity_Type.DOWNLOADED, activityInfo, true);
+        if (recordActivity)
+        {
+            final ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
+            postActivity(Activity_Type.DOWNLOADED, activityInfo, true);
+        }
 
         return new NodeBinaryResource(nodeRef, ContentModel.PROP_CONTENT, ci, attachFileName);
     }

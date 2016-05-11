@@ -91,7 +91,7 @@ public class NodesEntityResource implements
     @BinaryProperties({"content"})
     public BinaryResource readProperty(String fileNodeId, Parameters parameters) throws EntityNotFoundException
     {
-        return nodes.getContent(fileNodeId, parameters);
+        return nodes.getContent(fileNodeId, parameters, true);
     }
 
     @Override

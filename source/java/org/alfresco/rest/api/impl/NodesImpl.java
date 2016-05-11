@@ -487,7 +487,7 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            throw new InvalidArgumentException("Node is not a file");
+            throw new InvalidArgumentException("Node is not a file: "+nodeRef.getId());
         }
     }
 
@@ -533,6 +533,11 @@ public class NodesImpl implements Nodes
     protected NodeRef validateOrLookupNode(String nodeId, String path)
     {
         NodeRef parentNodeRef;
+
+        if ((nodeId == null) || (nodeId.isEmpty()))
+        {
+            throw new InvalidArgumentException("Missing nodeId");
+        }
 
         if (nodeId.equals(PATH_ROOT))
         {
@@ -629,7 +634,7 @@ public class NodesImpl implements Nodes
         catch (FileNotFoundException fnfe)
         {
             // convert checked exception
-            throw new EntityNotFoundException(fnfe.getMessage()+" ["+parentNodeRef.getId()+","+path+"]");
+            throw new EntityNotFoundException(parentNodeRef.getId());
         }
 
         return fileInfo.getNodeRef();
@@ -1109,7 +1114,7 @@ public class NodesImpl implements Nodes
     {
         if (nodeInfo.getNodeRef() != null)
         {
-            throw new InvalidArgumentException("Unexpected id when trying to create a new node: "+nodeInfo.getNodeRef());
+            throw new InvalidArgumentException("Unexpected id when trying to create a new node: "+nodeInfo.getNodeRef().getId());
         }
 
         // check that requested parent node exists and it's type is a (sub-)type of folder
@@ -1388,26 +1393,29 @@ public class NodesImpl implements Nodes
         return getFolderOrDocument(nodeRef.getId(), parameters);
     }
 
-    public Node moveNode(String sourceNodeId, String parentFolderNodeId, String name, Parameters parameters)
+    public Node moveOrCopyNode(String sourceNodeId, String targetParentId, String name, Parameters parameters, boolean isCopy)
     {
-        final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
+        if ((sourceNodeId == null) || (sourceNodeId.isEmpty()))
+        {
+            throw new InvalidArgumentException("Missing sourceNodeId");
+        }
+
+        if ((targetParentId == null) || (targetParentId.isEmpty()))
+        {
+            throw new InvalidArgumentException("Missing targetParentId");
+        }
+
+        final NodeRef parentNodeRef = validateOrLookupNode(targetParentId, null);
         final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId, null);
 
-        FileInfo fi = moveOrCopy(sourceNodeRef, parentNodeRef, name, false);
+        FileInfo fi = moveOrCopyImpl(sourceNodeRef, parentNodeRef, name, isCopy);
         return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
     }
 
-    public Node copyNode(String sourceNodeId, String parentFolderNodeId, String name, Parameters parameters)
+    protected FileInfo moveOrCopyImpl(NodeRef nodeRef, NodeRef parentNodeRef, String name, boolean isCopy)
     {
-        final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
-        final NodeRef sourceNodeRef = validateOrLookupNode(sourceNodeId, null);
+        String targetParentId = parentNodeRef.getId();
 
-        FileInfo fi = moveOrCopy(sourceNodeRef, parentNodeRef, name, true);
-        return getFolderOrDocument(fi.getNodeRef().getId(), parameters);
-    }
-
-    protected FileInfo moveOrCopy(NodeRef nodeRef, NodeRef parentNodeRef, String name, boolean isCopy)
-    {
         try
         {
             if (isCopy)
@@ -1424,25 +1432,25 @@ public class NodesImpl implements Nodes
         }
         catch (InvalidNodeRefException inre)
         {
-            throw new EntityNotFoundException(inre.getMessage());
+            throw new EntityNotFoundException(targetParentId);
         }
         catch (FileNotFoundException fnfe)
         {
             // convert checked exception
-            throw new EntityNotFoundException(fnfe.getMessage());
+            throw new EntityNotFoundException(targetParentId);
         }
         catch (FileExistsException fee)
         {
             // duplicate - name clash
-            throw new ConstraintViolatedException(fee.getMessage());
+            throw new ConstraintViolatedException("Name already exists in target parent: "+name);
         }
         catch (FileFolderServiceImpl.InvalidTypeException ite)
         {
-            throw new InvalidArgumentException(ite.getMessage());
+            throw new InvalidArgumentException("Invalid type of target parent: "+targetParentId);
         }
         catch (CyclicChildRelationshipException ccre)
         {
-            throw new InvalidArgumentException(ccre.getMessage());
+            throw new InvalidArgumentException("Parent/child cycle detected: "+targetParentId);
         }
     }
 

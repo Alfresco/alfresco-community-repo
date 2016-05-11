@@ -117,7 +117,7 @@ public interface Nodes
     Node createNode(String parentFolderNodeId, Node nodeInfo, Parameters parameters);
 
     /**
-     * Move node
+     * Move or Copy node
      *
      * @param sourceNodeId
      * @param parentFolderNodeId
@@ -125,18 +125,7 @@ public interface Nodes
      * @param parameters
      * @return
      */
-    Node moveNode(String sourceNodeId, String parentFolderNodeId, String name, Parameters parameters);
-
-    /**
-     * Copy node
-     *
-     * @param sourceNodeId
-     * @param parentFolderNodeId
-     * @param name
-     * @param parameters
-     * @return
-     */
-    Node copyNode(String sourceNodeId, String parentFolderNodeId, String name, Parameters parameters);
+    Node moveOrCopyNode(String sourceNodeId, String parentFolderNodeId, String name, Parameters parameters, boolean isCopy);
 
     /**
      * Update node meta-data.

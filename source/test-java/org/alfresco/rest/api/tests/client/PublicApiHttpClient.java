@@ -36,6 +36,7 @@ import java.net.URLEncoder;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.opencmis.CMISDispatcherRegistry.Binding;
@@ -53,6 +54,7 @@ import org.alfresco.util.Pair;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.methods.ByteArrayRequestEntity;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -619,6 +621,11 @@ public class PublicApiHttpClient
         return submitRequest(req, rq);
     }
 
+    public HttpResponse execute(RequestBuilder requestBuilder) throws IOException
+    {
+        return submitRequest(requestBuilder.getHttpMethod(), requestBuilder.getRequestContext());
+    }
+
     /*
      * Encapsulates information relating to a rest api end point, generating and
      * encoding urls based on the rest api implementation class.
@@ -975,6 +982,296 @@ public class PublicApiHttpClient
         public String getCharset()
         {
             return charset;
+        }
+    }
+
+    /**
+     * @author Jamal Kaabi-Mofrad
+     */
+    public abstract class RequestBuilder<T extends HttpMethod>
+    {
+        private RequestContext requestContext;
+        private String scope;
+        private int version = 1;
+        private String entityCollectionName;
+        private Object entityId;
+        private String relationCollectionName;
+        private Object relationshipEntityId;
+        private Map<String, String> params;
+        private Map<String, String> headers;
+
+        public abstract T getHttpMethod() throws IOException;
+
+        protected void setRequestHeaderIfAny(T methodBase)
+        {
+            if (headers != null)
+            {
+                for (Entry<String, String> headerNameValue : headers.entrySet())
+                {
+                    methodBase.addRequestHeader(headerNameValue.getKey(), headerNameValue.getValue());
+                }
+            }
+        }
+
+        public RequestContext getRequestContext()
+        {
+            return requestContext;
+        }
+
+        public RequestBuilder setRequestContext(RequestContext requestContext)
+        {
+            this.requestContext = requestContext;
+            return this;
+        }
+
+        public String getScope()
+        {
+            return scope;
+        }
+
+        public RequestBuilder setScope(String scope)
+        {
+            this.scope = scope;
+            return this;
+        }
+
+        public int getVersion()
+        {
+            return version;
+        }
+
+        public RequestBuilder setVersion(int version)
+        {
+            this.version = version;
+            return this;
+        }
+
+        public String getEntityCollectionName()
+        {
+            return entityCollectionName;
+        }
+
+        public RequestBuilder setEntityCollectionName(String entityCollectionName)
+        {
+            this.entityCollectionName = entityCollectionName;
+            return this;
+        }
+
+        public Object getEntityId()
+        {
+            return entityId;
+        }
+
+        public RequestBuilder setEntityId(Object entityId)
+        {
+            this.entityId = entityId;
+            return this;
+        }
+
+        public String getRelationCollectionName()
+        {
+            return relationCollectionName;
+        }
+
+        public RequestBuilder setRelationCollectionName(String relationCollectionName)
+        {
+            this.relationCollectionName = relationCollectionName;
+            return this;
+        }
+
+        public Object getRelationshipEntityId()
+        {
+            return relationshipEntityId;
+        }
+
+        public RequestBuilder setRelationshipEntityId(Object relationshipEntityId)
+        {
+            this.relationshipEntityId = relationshipEntityId;
+            return this;
+        }
+
+        public Map<String, String> getParams()
+        {
+            return params;
+        }
+
+        public RequestBuilder setParams(Map<String, String> params)
+        {
+            this.params = params;
+            return this;
+        }
+
+        public Map<String, String> getHeaders()
+        {
+            return headers;
+        }
+
+        public RequestBuilder setHeaders(Map<String, String> headers)
+        {
+            this.headers = headers;
+            return this;
+        }
+    }
+
+    public class GetRequestBuilder extends RequestBuilder<GetMethod>
+    {
+        private String password;
+
+        public String getPassword()
+        {
+            return password;
+        }
+
+        public GetRequestBuilder setPassword(String password)
+        {
+            this.password = password;
+            return this;
+        }
+
+        @Override
+        public GetMethod getHttpMethod() throws IOException
+        {
+            RestApiEndpoint endpoint = new RestApiEndpoint(getRequestContext().getNetworkId(),
+                        getScope(), getVersion(), getEntityCollectionName(),
+                        getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
+            String url = endpoint.getUrl();
+
+            GetMethod req = new GetMethod(url);
+            setRequestHeaderIfAny(req);
+            return req;
+        }
+    }
+
+    public class DeleteRequestBuilder extends RequestBuilder<DeleteMethod>
+    {
+        @Override
+        public DeleteMethod getHttpMethod() throws IOException
+        {
+            RestApiEndpoint endpoint = new RestApiEndpoint(getRequestContext().getNetworkId(),
+                        getScope(), getVersion(), getEntityCollectionName(),
+                        getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
+            String url = endpoint.getUrl();
+
+            DeleteMethod req = new DeleteMethod(url);
+            setRequestHeaderIfAny(req);
+            return req;
+        }
+    }
+
+    public abstract class PostPutRequestBuilder<T extends HttpMethodBase> extends RequestBuilder<T>
+    {
+        private String bodyAsString;
+        private byte[] bodyAsByteArray;
+        private String contentType;
+
+        public String getBodyAsString()
+        {
+            return bodyAsString;
+        }
+
+        public PostPutRequestBuilder setBodyAsString(String bodyAsString)
+        {
+            this.bodyAsString = bodyAsString;
+            return this;
+        }
+
+        public byte[] getBodyAsByteArray()
+        {
+            return bodyAsByteArray;
+        }
+
+        public PostPutRequestBuilder setBodyAsByteArray(byte[] bodyAsByteArray)
+        {
+            this.bodyAsByteArray = bodyAsByteArray;
+            return this;
+        }
+
+        public String getContentType()
+        {
+            return contentType;
+        }
+
+        public PostPutRequestBuilder setContentType(String contentType)
+        {
+            this.contentType = contentType;
+            return this;
+        }
+    }
+
+    public class PostRequestBuilder extends PostPutRequestBuilder<PostMethod>
+    {
+
+        @Override
+        public PostMethod getHttpMethod() throws IOException
+        {
+            RestApiEndpoint endpoint = new RestApiEndpoint(getRequestContext().getNetworkId(),
+                        getScope(), getVersion(), getEntityCollectionName(),
+                        getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
+            String url = endpoint.getUrl();
+
+            PostMethod req = new PostMethod(url.toString());
+            String contentType = getContentType();
+            if (getBodyAsString() != null)
+            {
+
+                if (contentType == null || contentType.isEmpty())
+                {
+                    contentType = "application/json";
+                }
+                StringRequestEntity requestEntity = new StringRequestEntity(getBodyAsString(), contentType, "UTF-8");
+                req.setRequestEntity(requestEntity);
+            }
+            else if (getBodyAsByteArray() != null)
+            {
+                if (contentType == null || contentType.isEmpty())
+                {
+                    contentType = "application/octet-stream";
+                }
+                ByteArrayRequestEntity requestEntity = new ByteArrayRequestEntity(getBodyAsByteArray(), contentType);
+                req.setRequestEntity(requestEntity);
+            }
+            setRequestHeaderIfAny(req);
+            return req;
+        }
+    }
+
+    public class PutRequestBuilder extends PostPutRequestBuilder<PutMethod>
+    {
+        private BinaryPayload binaryPayload;
+
+        public BinaryPayload getBinaryPayload()
+        {
+            return binaryPayload;
+        }
+
+        public PutRequestBuilder setBinaryPayload(BinaryPayload binaryPayload)
+        {
+            this.binaryPayload = binaryPayload;
+            return this;
+        }
+
+        @Override
+        public PutMethod getHttpMethod() throws IOException
+        {
+            RestApiEndpoint endpoint = new RestApiEndpoint(getRequestContext().getNetworkId(),
+                        getScope(), getVersion(), getEntityCollectionName(),
+                        getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
+            String url = endpoint.getUrl();
+
+            PutMethod req = new PutMethod(url);
+            if (getBodyAsString() != null)
+            {
+                StringRequestEntity requestEntity = new StringRequestEntity(getBodyAsString(), "application/json", "UTF-8");
+                req.setRequestEntity(requestEntity);
+            }
+            else if (binaryPayload != null)
+            {
+                BinaryRequestEntity requestEntity = new BinaryRequestEntity(binaryPayload.getFile(), binaryPayload.getMimeType(),
+                            binaryPayload.getCharset());
+                req.setRequestEntity(requestEntity);
+            }
+            setRequestHeaderIfAny(req);
+            return req;
         }
     }
 }

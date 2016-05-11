@@ -1633,15 +1633,17 @@ public class NodesImpl implements Nodes
             // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)
             ensureVersioningEnabled(nodeRef, true, false);
         }
-
-        Map<String, Serializable> versionProperties = new HashMap<>(2);
-        versionProperties.put(VersionModel.PROP_VERSION_TYPE, versionType);
-        if (reason != null)
+        else
         {
-            versionProperties.put(VersionModel.PROP_DESCRIPTION, reason);
-        }
+            Map<String, Serializable> versionProperties = new HashMap<>(2);
+            versionProperties.put(VersionModel.PROP_VERSION_TYPE, versionType);
+            if (reason != null)
+            {
+                versionProperties.put(VersionModel.PROP_DESCRIPTION, reason);
+            }
 
-        versionService.createVersion(nodeRef, versionProperties);
+            versionService.createVersion(nodeRef, versionProperties);
+        }
     }
 
     private void setWriterContentType(ContentWriter writer, ContentInfoWrapper contentInfo, NodeRef nodeRef, boolean guessEncodingIfNull)
@@ -1761,6 +1763,11 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("Required parameters are missing");
         }
 
+        if (autoRename && overwrite)
+        {
+            throw new InvalidArgumentException("Both 'overwrite' and 'autoRename' should not be true when uploading a file");
+        }
+
         try
         {
             // Map the given properties, if any.
@@ -1775,8 +1782,6 @@ public class NodesImpl implements Nodes
             NodeRef existingFile = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, fileName);
             if (existingFile != null)
             {
-                // TODO throw 400 error if both autoRename and overwrite are true ?
-
                 // File already exists, decide what to do
                 if (autoRename)
                 {

@@ -352,11 +352,22 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected Document createTextFile(String userId, String parentId, String fileName, String textContent) throws IOException, Exception
     {
-        return createTextFile(userId, parentId, fileName, textContent, "UTF-8", Collections.EMPTY_MAP);
+        return createTextFile(userId, parentId, fileName, textContent, "UTF-8", null);
     }
 
     protected Document createTextFile(String userId, String parentId, String fileName, String textContent, String encoding, Map<String,String> props) throws IOException, Exception
     {
+        return createTextFile(userId, parentId, fileName, textContent, encoding, props, 201);
+    }
+
+    protected Document createTextFile(String userId, String parentId, String fileName, String textContent, String encoding, Map<String,String> props, int expectedStatus) throws IOException, Exception
+    {
+        if (props == null)
+        {
+            props = Collections.EMPTY_MAP;
+
+        }
+
         ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
         File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
 
@@ -365,7 +376,23 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
                 .setProperties(props)
                 .build();
 
-        HttpResponse response = post(getNodeChildrenUrl(parentId), userId, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        HttpResponse response = post(getNodeChildrenUrl(parentId), userId, reqBody.getBody(), null, reqBody.getContentType(), expectedStatus);
+
+        if (response.getJsonResponse().get("error") != null)
+        {
+            return null;
+        }
+
+        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+    }
+
+    protected Document updateTextFile(String userId, String contentId, String textContent, Map<String,String> parameters) throws IOException, Exception
+    {
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
+        File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+        BinaryPayload payload = new BinaryPayload(txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+
+        HttpResponse response = putBinary(getNodeContentUrl(contentId), userId, payload, null, parameters, 200);
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 

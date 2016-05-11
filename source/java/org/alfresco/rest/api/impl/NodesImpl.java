@@ -145,15 +145,6 @@ public class NodesImpl implements Nodes
         DOCUMENT, FOLDER
     }
 
-    private final static String PARAM_RELATIVE_PATH = "relativePath";
-    private final static String PARAM_AUTO_RENAME = "autoRename";
-    private final static String PARAM_PERMANENT = "permanent";
-
-    private final static String PARAM_SELECT_PROPERTIES = "properties";
-    private final static String PARAM_SELECT_PATH = "path";
-    private final static String PARAM_SELECT_ASPECTNAMES = "aspectNames";
-    private final static String PARAM_SELECT_ISLINK = "isLink";
-
     private NodeService nodeService;
     private DictionaryService dictionaryService;
     private FileFolderService fileFolderService;
@@ -256,20 +247,6 @@ public class NodesImpl implements Nodes
             ContentModel.PROP_LOCK_OWNER,
             ContentModel.PROP_WORKING_COPY_OWNER);
 
-    private final static String PARAM_ISFOLDER = "isFolder";
-    private final static String PARAM_ISCONTENT = "isContent";
-
-    private final static String PARAM_INCLUDE_SUBTYPES = "INCLUDESUBTYPES";
-
-    private final static String PARAM_NAME = "name";
-    private final static String PARAM_CREATEDAT = "createdAt";
-    private final static String PARAM_MODIFIEDAT = "modifiedAt";
-    private final static String PARAM_CREATEBYUSER = "createdByUser";
-    private final static String PARAM_MODIFIEDBYUSER = "modifiedByUser";
-    private final static String PARAM_MIMETYPE = "mimeType";
-    private final static String PARAM_SIZEINBYTES = "sizeInBytes";
-    private final static String PARAM_NODETYPE = "nodeType";
-
     private final static Map<String,QName> MAP_PARAM_QNAME;
     static
     {
@@ -290,7 +267,7 @@ public class NodesImpl implements Nodes
 
     // list children filtering (via where clause)
     private final static Set<String> LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES =
-            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_ISCONTENT, PARAM_NODETYPE}));
+            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_ISFILE, PARAM_NODETYPE}));
 
     /*
      * Validates that node exists.
@@ -963,11 +940,11 @@ public class NodesImpl implements Nodes
             QueryHelper.walk(q, propertyWalker);
 
             Boolean isFolder = propertyWalker.getProperty(PARAM_ISFOLDER, WhereClauseParser.EQUALS, Boolean.class);
-            Boolean isContent = propertyWalker.getProperty(PARAM_ISCONTENT, WhereClauseParser.EQUALS, Boolean.class);
+            Boolean isFile = propertyWalker.getProperty(PARAM_ISFILE, WhereClauseParser.EQUALS, Boolean.class);
 
-            if ((isFolder != null) && (isContent != null))
+            if ((isFolder != null) && (isFile != null))
             {
-                includeFiles = isContent;
+                includeFiles = isFile;
                 includeFolders = isFolder;
             }
             else if (isFolder != null)
@@ -975,10 +952,10 @@ public class NodesImpl implements Nodes
                 includeFiles = !isFolder;
                 includeFolders = isFolder;
             }
-            else if (isContent != null)
+            else if (isFile != null)
             {
-                 includeFiles = isContent;
-                 includeFolders = !isContent;
+                 includeFiles = isFile;
+                 includeFolders = !isFile;
             }
 
             String nodeTypeStr = propertyWalker.getProperty(PARAM_NODETYPE, WhereClauseParser.EQUALS, String.class);

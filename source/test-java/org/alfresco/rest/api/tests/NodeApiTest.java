@@ -27,7 +27,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import junit.framework.Assert;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
@@ -46,6 +45,7 @@ import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
+import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
@@ -105,6 +105,8 @@ import java.util.UUID;
 public class NodeApiTest extends AbstractBaseApiTest
 {
     private static final String URL_NODES = "nodes/";
+
+    private static final String PROP_OWNER = "cm:owner";
 
     /**
      * User one from network one
@@ -1019,9 +1021,9 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testDelete() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
         long runId = System.currentTimeMillis();
+
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         String myNodeId = getMyNodeId(user1);
         NodeRef myFilesNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myNodeId);
@@ -1052,16 +1054,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(existsArchiveNode(folder2Id));
         assertTrue(existsArchiveNode(content2Id));
 
-        String folder3Id = createFolder(user1, myNodeId, "folder " + runId + "_3").getId();
-        String folder4Id = createFolder(user1, folder3Id, "folder " + runId + "_4").getId();
-
-        // bypass trashcan
-        Map<String, String> params = Collections.singletonMap("permanent", "true");
-        delete("nodes", user1, folder3Id, params, 204);
-
-        assertFalse(existsArchiveNode(folder3Id));
-        assertFalse(existsArchiveNode(folder4Id));
-
         // -ve test
         delete("nodes", user1, folder2Id, 404);
         delete("nodes", user1, content2Ref.getId(), 404);
@@ -1069,6 +1061,59 @@ public class NodeApiTest extends AbstractBaseApiTest
         // -ve test
         String rootNodeId = getRootNodeId(user1);
         delete("nodes", user1, rootNodeId, 403);
+
+        //
+        // permanently delete - ie. bypass trashcan (archive store)
+        //
+
+        String folder3Id = createFolder(user1, myNodeId, "folder " + runId + "_3").getId();
+        String folder4Id = createFolder(user1, folder3Id, "folder " + runId + "_4").getId();
+
+        Map<String, String> params = Collections.singletonMap("permanent", "true");
+        delete("nodes", user1, folder3Id, params, 204);
+
+        assertFalse(existsArchiveNode(folder3Id));
+        assertFalse(existsArchiveNode(folder4Id));
+
+        String sharedNodeId = getSharedNodeId(user1);
+        String folder5Id = createFolder(user1, sharedNodeId, "folder " + runId + "_5").getId();
+
+        AuthenticationUtil.setFullyAuthenticatedUser(user2);
+
+        // -ve test - another user cannot delete
+        delete("nodes", user2, folder5Id, 403);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        Map<String, Object> props = new HashMap<>();
+        props.put(PROP_OWNER, user2);
+        Node nUpdate = new Node();
+        nUpdate.setProperties(props);
+
+        HttpResponse response = put("nodes", user1, folder5Id, toJsonAsStringNonNull(nUpdate), null, 200);
+        Node nodeResp = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+        assertEquals(user2, ((Map)nodeResp.getProperties().get(PROP_OWNER)).get("id"));
+
+        // -ve test - user1 can no longer delete
+        delete("nodes", user1, folder5Id, 403);
+
+        permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder5Id), user1, PermissionService.DELETE, true);
+
+        // -ve test - non-owner cannot bypass trashcan
+        params = Collections.singletonMap("permanent", "true");
+        delete("nodes", user1, folder5Id, params, 403);
+
+        // user1 has permission to delete (via trashcan)
+        delete("nodes", user1, folder5Id, 204);
+
+        // admin can permanently delete
+        String folder6Id = createFolder(user1, sharedNodeId, "folder " + runId + "_6").getId();
+        params = Collections.singletonMap("permanent", "true");
+
+        // TODO improve - admin-related tests
+        publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
+        response = publicApiClient.delete(getScope(), 1, "nodes", folder6Id, null, null, params);
+        checkStatus(204, response.getStatusCode());
     }
 
     private boolean existsArchiveNode(String nodeId)
@@ -1899,8 +1944,6 @@ public class NodeApiTest extends AbstractBaseApiTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
-        String ownerProp = "cm:owner";
-
         // create folder f1
         String folderName = "f1 "+System.currentTimeMillis();
         Folder folderResp = createFolder(user1, Nodes.PATH_SHARED, folderName);
@@ -1910,14 +1953,14 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // explicitly set owner to oneself
         Map<String, Object> props = new HashMap<>();
-        props.put(ownerProp, user1);
+        props.put(PROP_OWNER, user1);
         Folder fUpdate = new Folder();
         fUpdate.setProperties(props);
 
         HttpResponse response = put("nodes", user1, f1Id, toJsonAsStringNonNull(fUpdate), null, 200);
         folderResp = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
 
-        assertEquals(user1, ((Map)folderResp.getProperties().get(ownerProp)).get("id"));
+        assertEquals(user1, ((Map)folderResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // create doc d1
         NodeRef f1Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, f1Id);
@@ -1932,19 +1975,19 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNull(user1, documentResp.getProperties()); // owner is implied
 
         props = new HashMap<>();
-        props.put(ownerProp, user1);
+        props.put(PROP_OWNER, user1);
         Document dUpdate = new Document();
         dUpdate.setProperties(props);
 
         response = put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
         documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
 
-        assertEquals(user1, ((Map)documentResp.getProperties().get(ownerProp)).get("id"));
+        assertEquals(user1, ((Map)documentResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // -ve test - cannot set owner to a nonexistent user
 
         props = new HashMap<>();
-        props.put(ownerProp, "unknownusernamedoesnotexist");
+        props.put(PROP_OWNER, "unknownusernamedoesnotexist");
         dUpdate = new Document();
         dUpdate.setProperties(props);
 
@@ -1955,19 +1998,19 @@ public class NodeApiTest extends AbstractBaseApiTest
         response = getSingle("nodes", user1, d1Id, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        assertEquals(user1, ((Map)documentResp.getProperties().get(ownerProp)).get("id"));
+        assertEquals(user1, ((Map)documentResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // -ve test - cannot take/change ownership
 
         props = new HashMap<>();
-        props.put(ownerProp, user2);
+        props.put(PROP_OWNER, user2);
         dUpdate = new Document();
         dUpdate.setProperties(props);
 
         put("nodes", user2, d1Id, toJsonAsStringNonNull(dUpdate), null, 403);
 
         props = new HashMap<>();
-        props.put(ownerProp, user1);
+        props.put(PROP_OWNER, user1);
         dUpdate = new Document();
         dUpdate.setProperties(props);
 
@@ -1976,21 +2019,21 @@ public class NodeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         props = new HashMap<>();
-        props.put(ownerProp, user2);
+        props.put(PROP_OWNER, user2);
         dUpdate = new Document();
         dUpdate.setProperties(props);
 
         response = put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
         documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
 
-        assertEquals(user2, ((Map)documentResp.getProperties().get(ownerProp)).get("id"));
+        assertEquals(user2, ((Map)documentResp.getProperties().get(PROP_OWNER)).get("id"));
 
         AuthenticationUtil.setFullyAuthenticatedUser(user2);
 
         response = getSingle("nodes", user2, d1Id, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        assertEquals(user2, ((Map)documentResp.getProperties().get(ownerProp)).get("id"));
+        assertEquals(user2, ((Map)documentResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // -ve test - user2 cannot delete the test folder/file - TODO is that expected ?
         delete("nodes", user2, f1Id, 403);

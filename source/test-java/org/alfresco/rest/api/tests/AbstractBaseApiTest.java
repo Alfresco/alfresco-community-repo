@@ -247,7 +247,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         }
     }
 
-    // root (eg. Company Home for on-prem)
+    // -root- (eg. Company Home for on-prem)
     protected String getRootNodeId(String runAsUserId) throws Exception
     {
         HttpResponse response = getSingle(NodesEntityResource.class, runAsUserId, Nodes.PATH_ROOT, null, 200);
@@ -255,10 +255,18 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return node.getId();
     }
 
-    // my (eg. User's Home for on-prem)
+    // -my- (eg. User's Home for on-prem)
     protected String getMyNodeId(String runAsUserId) throws Exception
     {
         HttpResponse response = getSingle(NodesEntityResource.class, runAsUserId, Nodes.PATH_MY, null, 200);
+        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        return node.getId();
+    }
+
+    // -shared- (eg. "Shared" folder for on-prem)
+    protected String getSharedNodeId(String runAsUserId) throws Exception
+    {
+        HttpResponse response = getSingle(NodesEntityResource.class, runAsUserId, Nodes.PATH_SHARED, null, 200);
         Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         return node.getId();
     }

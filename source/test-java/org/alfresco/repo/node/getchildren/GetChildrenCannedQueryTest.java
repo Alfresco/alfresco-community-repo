@@ -440,6 +440,21 @@ public class GetChildrenCannedQueryTest extends TestCase
         antiChildTypeQNames.add(ContentModel.TYPE_FOLDER);
         
         filterByTypeAndCheck(parentNodeRef, childTypeQNames, antiChildTypeQNames);
+        
+        // Specific super-type (that likely does not exist in DB, at least yet - see ACE-5114 - alternatively could create custom type to ensure this)
+        // note: results should return 0
+        
+        childTypeQNames.clear();
+        childTypeQNames.add(ContentModel.TYPE_LINK);
+    
+        PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0, childTypeQNames, null, null);
+        assertEquals(0, results.getPage().size());
+        
+        childTypeQNames.clear();
+        childTypeQNames.add(ContentModel.TYPE_CMOBJECT);
+        
+        results = list(parentNodeRef, -1, -1, 0, childTypeQNames, null, null);
+        assertEquals(0, results.getPage().size());
     }
     
     public void testPropertyStringFiltering() throws Exception

@@ -864,20 +864,44 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(paging);
         assertEquals(numOfNodes + 3, pagingResult.getCount().intValue());
 
+        // upload without specifying content type or without overriding filename - hence guess mimetype and use file's name
+        final String fileName1 = "quick-1.txt";
+        final File file1 = getResourceFile(fileName1);
+        reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData(null, file1, null))
+                .build();
+        response = post(getNodeChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        // Check the upload response
+        assertEquals(fileName1, document.getName());
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, document.getContent().getMimeType());
+
+        // upload with "default" binary content type and override filename - hence guess mimetype & use overridden name
+        final String fileName2 = "quick-2.txt";
+        final String fileName2b = "quick-2b.txt";
+        final File file2 = getResourceFile(fileName2);
+        reqBody = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName2b, file2, MimetypeMap.MIMETYPE_BINARY))
+                .build();
+        response = post(getNodeChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        // Check the upload response
+        assertEquals(fileName2b, document.getName());
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, document.getContent().getMimeType());
+
         // User2 tries to upload a new file into the user1's home folder.
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
         Folder user1Home = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-        final String fileName2 = "quick-2.txt";
-        final File file2 = getResourceFile(fileName2);
+        final File file3 = getResourceFile(fileName2);
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .setFileData(new FileData(fileName2, file3, MimetypeMap.MIMETYPE_TEXT_PLAIN))
                     .build();
         post(getNodeChildrenUrl(user1Home.getId()), user2, reqBody.getBody(), null, reqBody.getContentType(), 403);
 
         response = getAll(getNodeChildrenUrl(Nodes.PATH_MY), user1, paging, 200);
         pagingResult = parsePaging(response.getJsonResponse());
         assertNotNull(paging);
-        assertEquals("Access Denied. The file shouldn't have been uploaded.", numOfNodes + 3, pagingResult.getCount().intValue());
+        assertEquals("Access Denied. The file shouldn't have been uploaded.", numOfNodes + 5, pagingResult.getCount().intValue());
 
         // User1 tries to upload a file into a document rather than a folder!
         post(getNodeChildrenUrl(document.getId()), user1, reqBody.getBody(), null, reqBody.getContentType(), 400);

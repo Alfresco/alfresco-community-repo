@@ -49,6 +49,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.content.ContentLimitViolationException;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
@@ -153,11 +154,13 @@ public class NodesImpl implements Nodes
 {
     private static final Log logger = LogFactory.getLog(NodesImpl.class);
 
-    private static enum Type
+    private enum Type
     {
         // Note: ordered
         DOCUMENT, FOLDER
     }
+
+    private static final String DEFAULT_MIMETYPE = MimetypeMap.MIMETYPE_BINARY;
 
     private NodeService nodeService;
     private DictionaryService dictionaryService;
@@ -171,7 +174,6 @@ public class NodesImpl implements Nodes
     private PersonService personService;
     private OwnableService ownableService;
     private AuthorityService authorityService;
-    private SiteServiceInternal siteServiceInternal;
 
     private BehaviourFilter behaviourFilter;
 
@@ -1817,9 +1819,9 @@ public class NodesImpl implements Nodes
     {
         String mimeType = contentInfo.mimeType;
         // Manage MimeType
-        if (mimeType == null)
+        if ((mimeType == null) || mimeType.equals(DEFAULT_MIMETYPE))
         {
-            // the mimeType was not provided via the contentInfo, so try to guess
+            // the mimeType was not provided (or was the default binary mimeType) via the contentInfo, so try to guess
             final String fileName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
             mimeType = mimetypeService.guessMimetype(fileName);
         }
@@ -1871,13 +1873,17 @@ public class NodesImpl implements Nodes
             switch (field.getName().toLowerCase())
             {
                 case "filename":
-                    fileName = getStringOrNull(field.getValue());
+                    String str = getStringOrNull(field.getValue());
+                    if ((str != null) && (! str.isEmpty()))
+                    {
+                        fileName = str;
+                    }
                     break;
 
                 case "filedata":
                     if (field.getIsFile())
                     {
-                        fileName = fileName != null ? fileName : field.getFilename();
+                        fileName = (fileName != null ? fileName : field.getFilename());
                         content = field.getContent();
                     }
                     break;
@@ -1929,7 +1935,7 @@ public class NodesImpl implements Nodes
         }
         // Ensure mandatory file attributes have been located. Need either
         // destination, or site + container or updateNodeRef
-        if ((fileName == null || content == null))
+        if ((fileName == null) || fileName.isEmpty() || (content == null))
         {
             throw new InvalidArgumentException("Required parameters are missing");
         }
@@ -2051,8 +2057,8 @@ public class NodesImpl implements Nodes
     protected void write(NodeRef nodeRef, Content content)
     {
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-        // Per RA-637 requirement the mimeType provided by the client takes precedence, however,
-        // if the mimeType is null, then it will be guessed.
+        // Per RA-637 & RA-885 requirement the mimeType provided by the client takes precedence, however,
+        // if the mimeType is null (or default binary mimeType) then it will be guessed.
         setWriterContentType(writer, new ContentInfoWrapper(content), nodeRef, true);
         writer.putContent(content.getInputStream());
     }

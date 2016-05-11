@@ -32,7 +32,6 @@ import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.apache.poi.ss.formula.functions.T;
-import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 
 
@@ -49,7 +48,7 @@ public interface Parameters
      * @param parameterName String
      * @return String The Parameter value
      */
-    public String getParameter(String parameterName);
+    String getParameter(String parameterName);
     
     /**
      * Gets a single request parameter passed in by the user.
@@ -61,7 +60,7 @@ public interface Parameters
      * @return The Parameter value
      * @throws InvalidArgumentException
      */
-    public T getParameter(String parameterName, Class<T> clazz) throws InvalidArgumentException;
+    T getParameter(String parameterName, Class<T> clazz) throws InvalidArgumentException;
     
     /**
      * Returns a representation of the Paging of collections of resources, with skip count and max items. 
@@ -69,21 +68,21 @@ public interface Parameters
      * Specified by the "skipCount" and "maxItems" request parameters.
      * @return Paging Paging information
      */
-    public Paging getPaging();
+    Paging getPaging();
     
     /**
      * Returns a List of {@link SortColumn} for sorting properties.
      * Specified by the "orderBy" request parameter.
      * @return List of {@link SortColumn}
      */
-    public List<SortColumn> getSorting();
+    List<SortColumn> getSorting();
     
     /**
      * Returns a {@link BeanPropertiesFilter} for filtering out properties.
      * Specified by the "properties" request parameter.
      * @return BeanPropertiesFilter {@link BeanPropertiesFilter}
      */
-    public BeanPropertiesFilter getFilter();
+    BeanPropertiesFilter getFilter();
     
     /**
      * Indicates if the specified property was requested.
@@ -91,13 +90,13 @@ public interface Parameters
      * Specified as part of the url request.
      * @return true if the propertyName was specified as part of the url request
      */
-    public boolean hasBinaryProperty(String propertyName);
+    boolean hasBinaryProperty(String propertyName);
     
     /**
      * Gets the name of the property that was requested.
      * @return String the propertyName
      */
-    public String getBinaryProperty();
+    String getBinaryProperty();
 
     /**
      * Indicates if the source entity should be includes in the request.
@@ -112,24 +111,32 @@ public interface Parameters
      * Specified by the "WHERE" request parameter.
      * @return Query {@link Query}
      */
-    public Query getQuery();
+    Query getQuery();
     
     /**
      * A list of property names passed in the request using the json pointer syntax
      * Specified by the "SELECT" request parameter.
      * @return List<String> the propertyNames
      */
-    public List<String> getSelectedProperties();
+    @Deprecated
+    List<String> getSelectedProperties();
+
+    /**
+     * A list of property names passed in the request using the json pointer syntax
+     * Specified by the "INCLUDE" request parameter.
+     * @return List<String> the propertyNames
+     */
+    List<String> getInclude();
 
     /**
      * Gets the basic information about content, typically taken from a HTTPServletRequest.
      * @return BasicContentInfo the content info
      */
-    public BasicContentInfo getContentInfo();
+    BasicContentInfo getContentInfo();
 
     /**
      * Gets access to the entire webscript request.
      * @return WebScriptRequest
      */
-    public WebScriptRequest getRequest();
+    WebScriptRequest getRequest();
 }

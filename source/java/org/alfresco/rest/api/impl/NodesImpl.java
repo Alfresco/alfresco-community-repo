@@ -655,14 +655,14 @@ public class NodesImpl implements Nodes
 
     private Node getFolderOrDocumentFullInfo(NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, Parameters parameters)
     {
-        List<String> selectParam = new ArrayList<>();
-        selectParam.addAll(parameters.getSelectedProperties());
+        List<String> includeParam = new ArrayList<>();
+        includeParam.addAll(parameters.getInclude());
 
         // Add basic info for single get (above & beyond minimal that is used for listing collections)
-        selectParam.add(PARAM_SELECT_ASPECTNAMES);
-        selectParam.add(PARAM_SELECT_PROPERTIES);
+        includeParam.add(PARAM_INCLUDE_ASPECTNAMES);
+        includeParam.add(PARAM_INCLUDE_PROPERTIES);
 
-        return getFolderOrDocument(nodeRef, parentNodeRef, nodeTypeQName, selectParam, null);
+        return getFolderOrDocument(nodeRef, parentNodeRef, nodeTypeQName, includeParam, null);
     }
 
     private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> selectParam, Map<String,UserInfo> mapUserInfo)
@@ -673,7 +673,7 @@ public class NodesImpl implements Nodes
         }
 
         PathInfo pathInfo = null;
-        if (selectParam.contains(PARAM_SELECT_PATH))
+        if (selectParam.contains(PARAM_INCLUDE_PATH))
         {
             pathInfo = lookupPathInfo(nodeRef);
         }
@@ -719,12 +719,12 @@ public class NodesImpl implements Nodes
             node.setProperties(mapFromNodeProperties(properties, selectParam, mapUserInfo));
         }
 
-        if (selectParam.contains(PARAM_SELECT_ASPECTNAMES))
+        if (selectParam.contains(PARAM_INCLUDE_ASPECTNAMES))
         {
             node.setAspectNames(mapFromNodeAspects(nodeService.getAspects(nodeRef)));
         }
 
-        if (selectParam.contains(PARAM_SELECT_ISLINK))
+        if (selectParam.contains(PARAM_INCLUDE_ISLINK))
         {
             boolean isLink = isSubClass(nodeTypeQName, ContentModel.TYPE_LINK);
             node.setIsLink(isLink);
@@ -852,7 +852,7 @@ public class NodesImpl implements Nodes
     {
         List<QName> selectedProperties;
 
-        if ((selectParam.size() == 0) || selectParam.contains(PARAM_SELECT_PROPERTIES))
+        if ((selectParam.size() == 0) || selectParam.contains(PARAM_INCLUDE_PROPERTIES))
         {
             // return all properties
             selectedProperties = new ArrayList<>(nodeProps.size());
@@ -929,7 +929,7 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("NodeId of folder is expected: " + parentNodeRef.getId());
         }
 
-        final List<String> selectParam = parameters.getSelectedProperties();
+        final List<String> includeParam = parameters.getInclude();
 
         boolean includeFolders = true;
         boolean includeFiles = true;
@@ -1038,7 +1038,7 @@ public class NodesImpl implements Nodes
                 FileInfo fInfo = page.get(index);
 
                 // minimal info by default (unless "select"ed otherwise)
-                return getFolderOrDocument(fInfo.getNodeRef(), parentNodeRef, fInfo.getType(), selectParam, mapUserInfo);
+                return getFolderOrDocument(fInfo.getNodeRef(), parentNodeRef, fInfo.getType(), includeParam, mapUserInfo);
             }
 
             @Override
@@ -1051,7 +1051,7 @@ public class NodesImpl implements Nodes
         Node sourceEntity = null;
         if (parameters.includeSource())
         {
-            sourceEntity = getFolderOrDocument(parentNodeRef, null, null, selectParam, mapUserInfo);
+            sourceEntity = getFolderOrDocument(parentNodeRef, null, null, includeParam, mapUserInfo);
         }
 
 
@@ -1913,7 +1913,7 @@ public class NodesImpl implements Nodes
      */
     protected List<QName> createQNames(List<String> qnameStrList)
     {
-        String PREFIX = PARAM_SELECT_PROPERTIES+"/";
+        String PREFIX = PARAM_INCLUDE_PROPERTIES +"/";
 
         List<QName> result = new ArrayList<>(qnameStrList.size());
         for (String str : qnameStrList)

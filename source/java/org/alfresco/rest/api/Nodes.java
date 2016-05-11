@@ -197,10 +197,10 @@ public interface Nodes
     String PARAM_AUTO_RENAME = "autoRename";
     String PARAM_PERMANENT = "permanent";
 
-    String PARAM_SELECT_PROPERTIES = "properties";
-    String PARAM_SELECT_PATH = "path";
-    String PARAM_SELECT_ASPECTNAMES = "aspectNames";
-    String PARAM_SELECT_ISLINK = "isLink";
+    String PARAM_INCLUDE_PROPERTIES = "properties";
+    String PARAM_INCLUDE_PATH = "path";
+    String PARAM_INCLUDE_ASPECTNAMES = "aspectNames";
+    String PARAM_INCLUDE_ISLINK = "isLink";
 
     String PARAM_ISFOLDER = "isFolder";
     String PARAM_ISFILE = "isFile";

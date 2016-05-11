@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.rest.framework.tests.core;
 
 import static org.mockito.Matchers.any;
@@ -51,7 +69,7 @@ public abstract class AbstractContextTest
     JacksonHelper jsonHelper;
 
     static Params NOT_USED = Params.valueOf("notUsed", null, mock(WebScriptRequest.class));
-    static final Params.RecognizedParams NULL_PARAMS = new Params.RecognizedParams(null, null, null, null, null, null, null, false);
+    static final Params.RecognizedParams NULL_PARAMS = new Params.RecognizedParams(null, null, null, null, null, null, null, null, false);
     static final WithResponse callBack = new WithResponse(Status.STATUS_OK, ApiWebScript.DEFAULT_JSON_CONTENT,ApiWebScript.CACHE_NEVER);
     static Api api = Api.valueOf("alfrescomock", "private", "1");
 

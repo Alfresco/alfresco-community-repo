@@ -78,9 +78,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.I18NUtil;
-import org.springframework.extensions.webscripts.WebScriptException;
 
-import javax.servlet.http.HttpServletResponse;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -184,7 +182,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             {
                 public QuickShareLink doWork() throws Exception
                 {
-                    return getQuickShareInfo(sharedId, noAuth, parameters.getSelectedProperties());
+                    return getQuickShareInfo(sharedId, noAuth, parameters.getInclude());
                 }
             }, networkTenantDomain);
         }
@@ -309,7 +307,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
         boolean noAuth = (AuthenticationUtil.getRunAsUser() == null);
 
-        List<String> selectParam = parameters.getSelectedProperties();
+        List<String> includeParam = parameters.getInclude();
 
         for (QuickShareLink qs : nodeIds)
         {
@@ -336,7 +334,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
                 try
                 {
                     QuickShareDTO qsDto = quickShareService.shareContent(nodeRef);
-                    result.add(getQuickShareInfo(qsDto.getId(), noAuth, selectParam));
+                    result.add(getQuickShareInfo(qsDto.getId(), noAuth, includeParam));
                 }
                 catch (InvalidNodeRefException inre)
                 {
@@ -444,12 +442,12 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
         List<QuickShareLink> qsLinks = new ArrayList<>(results.length());
 
-        List<String> selectParam = parameters.getSelectedProperties();
+        List<String> includeParam = parameters.getInclude();
 
         for (ResultSetRow row : results)
         {
             NodeRef nodeRef = row.getNodeRef();
-            qsLinks.add(getQuickShareInfo(nodeRef, false, selectParam));
+            qsLinks.add(getQuickShareInfo(nodeRef, false, includeParam));
         }
 
         results.close();

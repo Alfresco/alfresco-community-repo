@@ -127,8 +127,8 @@ public class NodesImpl implements Nodes
     private static enum Type
     {
         // Note: ordered
-        DOCUMENT, FOLDER;
-    };
+        DOCUMENT, FOLDER
+    }
 
     private final static String PARAM_RELATIVE_PATH = "relativePath"; // TODO wip
 
@@ -151,7 +151,7 @@ public class NodesImpl implements Nodes
     private Set<String> defaultIgnoreTypes;
     private Set<QName> ignoreTypeQNames;
 
-    private Set<String> nonAttachContentTypes = Collections.EMPTY_SET; // pre-configured whitelist, eg. images & pdf
+    private Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
 
     public void setNonAttachContentTypes(Set<String> nonAttachWhiteList)
     {
@@ -661,59 +661,7 @@ public class NodesImpl implements Nodes
 
     protected PathInfo lookupPathInfo(NodeRef nodeRefIn)
     {
-        // TODO which implementation?
-        return getPathInfo(nodeRefIn);
-
-        // List<PathInfo.ElementInfo> elements = new ArrayList<>(5);
-        //
-        // NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
-        // boolean isComplete = true;
-        //
-        // NodeRef pNodeRef = nodeRefIn;
-        // while (pNodeRef != null)
-        // {
-        // if (pNodeRef.equals(companyHomeNodeRef))
-        // {
-        // pNodeRef = null;
-        // }
-        // else {
-        // pNodeRef = nodeService.getPrimaryParent(pNodeRef).getParentRef();
-        //
-        // if (pNodeRef == null)
-        // {
-        // // belts-and-braces - is it even possible to get here ?
-        // isComplete = false;
-        // }
-        // else
-        // {
-        // if (permissionService.hasPermission(pNodeRef, PermissionService.READ)
-        // == AccessStatus.ALLOWED)
-        // {
-        // String name = (String) nodeService.getProperty(pNodeRef,
-        // ContentModel.PROP_NAME);
-        // elements.add(0, new ElementInfo(pNodeRef, name));
-        // }
-        // else
-        // {
-        // isComplete = false;
-        // pNodeRef = null;
-        // }
-        // }
-        // }
-        // }
-        //
-        // StringBuilder sb = new StringBuilder();
-        // for (PathInfo.ElementInfo e : elements)
-        // {
-        // sb.append("/").append(e.getName());
-        // }
-        //
-        // return new PathInfo(sb.toString(), isComplete, elements);
-    }
-
-    private PathInfo getPathInfo(NodeRef nodeRef)
-    {
-        final Path nodePath = nodeService.getPath(nodeRef);
+        final Path nodePath = nodeService.getPath(nodeRefIn);
 
         List<ElementInfo> pathElements = new ArrayList<>();
         Boolean isComplete = Boolean.TRUE;
@@ -1189,9 +1137,11 @@ public class NodesImpl implements Nodes
         String name = (String)nodeProps.get(ContentModel.PROP_NAME);
 
         org.alfresco.rest.framework.resource.content.ContentInfo ci = null;
+        String mimeType = null;
         if (cd != null)
         {
-            ci = new org.alfresco.rest.framework.resource.content.ContentInfoImpl(cd.getMimetype(), cd.getEncoding(), cd.getSize(), cd.getLocale());
+            mimeType = cd.getMimetype();
+            ci = new org.alfresco.rest.framework.resource.content.ContentInfoImpl(mimeType, cd.getEncoding(), cd.getSize(), cd.getLocale());
         }
 
         // By default set attachment header (with filename) unless attachment=false *and* content type is pre-configured as non-attach
@@ -1199,16 +1149,16 @@ public class NodesImpl implements Nodes
         String attachment = parameters.getParameter("attachment");
         if (attachment != null)
         {
-            Boolean a = new Boolean(attachment);
-            if ((a != null) && (a == false))
+            Boolean a = Boolean.valueOf(attachment);
+            if (!a)
             {
-                if (nonAttachContentTypes.contains(cd.getMimetype()))
+                if (nonAttachContentTypes.contains(mimeType))
                 {
                     attach = false;
                 }
                 else
                 {
-                    logger.warn("Ignored attachment=false for "+fileNodeId+" since "+cd.getMimetype()+" is not in the whitelist for non-attach content types");
+                    logger.warn("Ignored attachment=false for "+fileNodeId+" since "+mimeType+" is not in the whitelist for non-attach content types");
                 }
             }
         }

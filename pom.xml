@@ -320,6 +320,14 @@
                             <asWebapp>true</asWebapp>
                             <contextFile>${runtime.tomcat.conf.folder}/solr-context.xml</contextFile>
                         </webapp>
+                        <webapp>
+                            <groupId>org.alfresco</groupId>
+                            <artifactId>api-explorer</artifactId>
+                            <version>${dependency.api-explorer.version}</version>
+                            <contextPath>/api-explorer</contextPath>
+                            <type>war</type>
+                            <asWebapp>true</asWebapp>
+                        </webapp>
                     </webapps>
                 </configuration>
             </plugin>

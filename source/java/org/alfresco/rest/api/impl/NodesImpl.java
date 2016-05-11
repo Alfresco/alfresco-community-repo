@@ -58,8 +58,10 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
-import org.alfresco.repo.site.SiteServiceInternal;
 import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.thumbnail.ThumbnailDefinition;
+import org.alfresco.repo.thumbnail.ThumbnailHelper;
+import org.alfresco.repo.thumbnail.ThumbnailRegistry;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
@@ -74,9 +76,11 @@ import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InsufficientStorageException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException;
@@ -121,6 +125,7 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
@@ -175,6 +180,7 @@ public class NodesImpl implements Nodes
     private PersonService personService;
     private OwnableService ownableService;
     private AuthorityService authorityService;
+    private ThumbnailService thumbnailService;
 
     private BehaviourFilter behaviourFilter;
 
@@ -211,6 +217,7 @@ public class NodesImpl implements Nodes
         this.personService = sr.getPersonService();
         this.ownableService = sr.getOwnableService();
         this.authorityService = sr.getAuthorityService();
+        this.thumbnailService = sr.getThumbnailService();
 
         if (defaultIgnoreTypesAndAspects != null)
         {
@@ -1379,6 +1386,18 @@ public class NodesImpl implements Nodes
             validateCmObject(nodeTypeQName);
         }
 
+        List<ThumbnailDefinition> thumbnailDefs = null;
+        String renditionsParam = parameters.getParameter(PARAM_RENDITIONS);
+        if (renditionsParam != null)
+        {
+            if (!isContent)
+            {
+                throw new InvalidArgumentException("Renditions ['"+renditionsParam+"'] only apply to content types: "+parentNodeRef.getId()+","+nodeName);
+            }
+
+            thumbnailDefs = getThumbnailDefs(renditionsParam);
+        }
+
         Map<QName, Serializable> props = new HashMap<>(1);
 
         if (nodeInfo.getProperties() != null)
@@ -1429,7 +1448,11 @@ public class NodesImpl implements Nodes
             writer.putContent("");
         }
 
-        return getFolderOrDocument(nodeRef.getId(), parameters);
+        Node newNode = getFolderOrDocument(nodeRef.getId(), parameters);
+
+        requestRenditions(thumbnailDefs, newNode); // note: noop for folder
+
+        return newNode;
     }
 
     private NodeRef getOrCreatePath(NodeRef parentNodeRef, String relativePath)
@@ -1933,6 +1956,8 @@ public class NodesImpl implements Nodes
         Boolean majorVersion = null;
         String versionComment = null;
         String relativePath = null;
+        String renditionNames = null;
+
         Map<String, Object> qnameStrProps = new HashMap<>();
         Map<QName, Serializable> properties = null;
 
@@ -1984,6 +2009,10 @@ public class NodesImpl implements Nodes
                     relativePath = getStringOrNull(field.getValue());
                     break;
 
+                case "renditions":
+                    renditionNames = getStringOrNull(field.getValue());
+                    break;
+
                 default:
                 {
                     final String propName = field.getName();
@@ -2018,6 +2047,8 @@ public class NodesImpl implements Nodes
 
         try
         {
+            List<ThumbnailDefinition> thumbnailDefs = getThumbnailDefs(renditionNames);
+
             // Map the given properties, if any.
             if (qnameStrProps.size() > 0)
             {
@@ -2052,7 +2083,11 @@ public class NodesImpl implements Nodes
             }
 
             // Create a new file.
-            return createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, parameters);
+            Node fileNode = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, parameters);
+
+            requestRenditions(thumbnailDefs, fileNode);
+
+            return fileNode;
 
             // Do not clean formData temp files to allow for retries.
             // Temp files will be deleted later when GC call DiskFileItem#finalize() method or by temp file cleaner.
@@ -2115,6 +2150,77 @@ public class NodesImpl implements Nodes
         }
         return null;
     }
+
+    private List<ThumbnailDefinition> getThumbnailDefs(String renditionsParam)
+    {
+        List<ThumbnailDefinition> thumbnailDefs = null;
+
+        if (renditionsParam != null)
+        {
+            // If thumbnail generation has been configured off, then don't bother.
+            if (!thumbnailService.getThumbnailsEnabled())
+            {
+                throw new DisabledServiceException("Thumbnail generation has been disabled.");
+            }
+
+            String[] renditionNames = renditionsParam.split(",");
+
+            // Temporary - pending future improvements to thumbnail service to minimise chance of
+            // missing/failed thumbnails (when requested/generated 'concurrently')
+            if (renditionNames.length > 1)
+            {
+                throw new InvalidArgumentException("Please specify one rendition entity id only");
+            }
+
+            thumbnailDefs = new ArrayList<>(renditionNames.length);
+            ThumbnailRegistry registry = thumbnailService.getThumbnailRegistry();
+            for (String renditionName : renditionNames)
+            {
+                renditionName = renditionName.trim();
+                if (!renditionName.isEmpty())
+                {
+                    // Use the thumbnail registry to get the details of the thumbnail
+                    ThumbnailDefinition thumbnailDef = registry.getThumbnailDefinition(renditionName);
+                    if (thumbnailDef == null)
+                    {
+                        throw new NotFoundException(renditionName + " is not registered.");
+                    }
+
+                    thumbnailDefs.add(thumbnailDef);
+                }
+            }
+        }
+
+        return thumbnailDefs;
+    }
+
+    private void requestRenditions(List<ThumbnailDefinition> thumbnailDefs, Node fileNode)
+    {
+        if (thumbnailDefs != null)
+        {
+            ThumbnailRegistry registry = thumbnailService.getThumbnailRegistry();
+            for (ThumbnailDefinition thumbnailDef : thumbnailDefs)
+            {
+                NodeRef sourceNodeRef = fileNode.getNodeRef();
+                String mimeType = fileNode.getContent().getMimeType();
+                long size = fileNode.getContent().getSizeInBytes();
+
+                // Check if anything is currently available to generate thumbnails for the specified mimeType
+                if (! registry.isThumbnailDefinitionAvailable(null, mimeType, size, sourceNodeRef, thumbnailDef))
+                {
+                    throw new InvalidArgumentException("Unable to create thumbnail '" + thumbnailDef.getName() + "' for " +
+                            mimeType + " as no transformer is currently available.");
+                }
+
+                Action action = ThumbnailHelper.createCreateThumbnailAction(thumbnailDef, sr);
+
+                // Queue async creation of thumbnail
+                actionService.executeAction(action, sourceNodeRef, true, true);
+            }
+        }
+    }
+
+
 
     /**
      * Writes the content to the repository.

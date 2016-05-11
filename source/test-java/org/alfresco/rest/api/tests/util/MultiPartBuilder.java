@@ -60,6 +60,7 @@ public class MultiPartBuilder
     private Boolean overwrite;
     private Boolean autoRename;
     private String nodeType;
+    private List<String> renditionIds = Collections.emptyList(); // initially single rendition name/id (in the future we may support multiple)
     private Map<String, String> properties = Collections.emptyMap();
 
     private MultiPartBuilder()
@@ -78,6 +79,7 @@ public class MultiPartBuilder
         this.overwrite = that.overwrite;
         this.autoRename = that.autoRename;
         this.nodeType = that.nodeType;
+        this.renditionIds = that.renditionIds;
         this.properties = new HashMap<>(that.properties);
     }
 
@@ -157,12 +159,18 @@ public class MultiPartBuilder
         return this;
     }
 
-    private String getAspects(List<String> aspects)
+    public MultiPartBuilder setRenditions(List<String> renditionIds)
     {
-        if (!aspects.isEmpty())
+        this.renditionIds = renditionIds;
+        return this;
+    }
+
+    private String getCommaSeparated(List<String> names)
+    {
+        if (! names.isEmpty())
         {
-            StringBuilder sb = new StringBuilder(aspects.size() * 2);
-            for (String str : aspects)
+            StringBuilder sb = new StringBuilder(names.size() * 2);
+            for (String str : names)
             {
                 sb.append(str).append(',');
             }
@@ -262,11 +270,12 @@ public class MultiPartBuilder
         addPartIfNotNull(parts, "updatenoderef", updateNodeRef);
         addPartIfNotNull(parts, "description", description);
         addPartIfNotNull(parts, "contenttype", contentTypeQNameStr);
-        addPartIfNotNull(parts, "aspects", getAspects(aspects));
+        addPartIfNotNull(parts, "aspects", getCommaSeparated(aspects));
         addPartIfNotNull(parts, "majorversion", majorVersion);
         addPartIfNotNull(parts, "overwrite", overwrite);
         addPartIfNotNull(parts, "autorename", autoRename);
         addPartIfNotNull(parts, "nodetype", nodeType);
+        addPartIfNotNull(parts, "renditions", getCommaSeparated(renditionIds));
 
         if (!properties.isEmpty())
         {

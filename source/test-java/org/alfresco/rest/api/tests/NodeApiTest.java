@@ -745,7 +745,7 @@ public class NodeApiTest extends AbstractBaseApiTest
     }
 
     /**
-     * Tests delete (folder or file).
+     * Tests delete (file or folder)
      * <p>DELETE:</p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
      */
@@ -958,6 +958,199 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // -ve test - duplicate name
         post(postUrl, user1, toJsonAsStringNonNull(d1), 409);
+    }
+
+    /**
+     * Tests update node info (file or folder)
+     * <p>PUT:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>}
+     */
+    @Test
+    public void testUpdateNodeInfo() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        NodeRef personNodeRef = personService.getPerson(user1);
+        NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personNodeRef);
+
+        UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
+
+        String postUrl = "nodes/"+myFilesNodeRef.getId()+"/children";
+
+        String folderName = "My Folder";
+
+        // create folder
+
+        Folder f1 = new Folder();
+        f1.setName(folderName);
+        f1.setNodeType("cm:folder");
+
+        HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(f1), 201);
+        Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+
+        String fId = folderResp.getId();
+
+        f1.setIsFolder(true);
+        f1.setParentId(myFilesNodeRef.getId());
+        f1.setAspectNames(Collections.singletonList("cm:auditable"));
+
+        f1.setCreatedByUser(expectedUser);
+        f1.setModifiedByUser(expectedUser);
+
+        f1.expected(folderResp);
+
+        // create empty file
+
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType("cm:content");
+        ContentInfo ci = new ContentInfo();
+        ci.setMimeType("text/plain");
+        d1.setContent(ci);
+
+        response = post(postUrl, user1, toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        String dId = documentResp.getId();
+
+        d1.setIsFolder(false);
+        d1.setParentId(myFilesNodeRef.getId());
+        d1.setAspectNames(Collections.singletonList("cm:auditable"));
+
+        d1.setCreatedByUser(expectedUser);
+        d1.setModifiedByUser(expectedUser);
+
+        d1.getContent().setMimeTypeName("Plain Text");
+        d1.getContent().setSizeInBytes(0L);
+        d1.getContent().setEncoding("UTF-8");
+
+        d1.expected(documentResp);
+
+        // update file - name (=> rename within current folder)
+
+        Document dUpdate = new Document();
+        dUpdate.setName("d1b.txt");
+
+        response = put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        d1.setName("d1b.txt");
+        d1.expected(documentResp);
+
+        // update file - add some properties
+
+        Map<String,Object> props = new HashMap<>();
+        props.put("cm:title","my file title");
+        props.put("cm:description","my file description");
+
+        dUpdate = new Document();
+        dUpdate.setProperties(props);
+
+        response = put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        d1.setProperties(props);
+        d1.setAspectNames(Arrays.asList("cm:auditable","cm:titled"));
+        d1.expected(documentResp);
+
+        // update file - add versionable aspect
+
+        dUpdate = new Document();
+        dUpdate.setAspectNames(Arrays.asList("cm:auditable","cm:titled","cm:versionable"));
+
+        response = put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        //d1.getProperties().put("cm:versionLabel","1.0"); // TODO ... fix api ?!
+        d1.setAspectNames(Arrays.asList("cm:auditable","cm:titled","cm:versionable"));
+        d1.expected(documentResp);
+
+        response = getSingle("nodes", user1, dId, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        d1.getProperties().put("cm:versionLabel","1.0");
+        d1.expected(documentResp);
+
+        // update file - remove titled aspect (and it's related aspect properties)
+
+        dUpdate = new Document();
+        dUpdate.setAspectNames(Arrays.asList("cm:auditable","cm:versionable"));
+
+        response = put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        d1.getProperties().remove("cm:title");
+        d1.getProperties().remove("cm:description");
+        d1.setAspectNames(Arrays.asList("cm:auditable","cm:versionable"));
+        d1.expected(documentResp);
+
+        // update folder - rename and add some properties
+
+        props = new HashMap<>();
+        props.put("cm:title","my folder title");
+        props.put("cm:description","my folder description");
+
+        folderName = "My Updated Folder";
+        Folder fUpdate = new Folder();
+        fUpdate.setProperties(props);
+        fUpdate.setName(folderName);
+
+        response = put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+
+        f1.setName(folderName);
+        f1.setAspectNames(Arrays.asList("cm:auditable","cm:titled"));
+        f1.setProperties(props);
+        f1.expected(folderResp);
+
+        // update folder - unset a property
+
+        props = new HashMap<>();
+        props.put("cm:title",null);
+
+        fUpdate = new Folder();
+        fUpdate.setProperties(props);
+
+        response = put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+
+        f1.getProperties().remove("cm:title");
+        f1.expected(folderResp);
+
+        // update folder - specialise node type
+
+        fUpdate = new Folder();
+        fUpdate.setNodeType("app:glossary");
+
+        response = put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+
+        f1.setNodeType("app:glossary");
+        f1.expected(folderResp);
+
+        // -ve test - ignore unknown property
+        props = new HashMap<>();
+        props.put("cm:xyz","my unknown property");
+        dUpdate = new Document();
+        dUpdate.setProperties(props);
+        response = put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        d1.expected(documentResp);
+
+        // -ve test - duplicate name
+        dUpdate = new Document();
+        dUpdate.setName(folderName);
+        put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 409);
+
+        // -ve test - unknown node id
+        dUpdate = new Document();
+        dUpdate.setName("some.txt");
+        put("nodes", user1, UUID.randomUUID().toString(), toJsonAsStringNonNull(dUpdate), null, 404);
+
+        // -ve test - generalise node type
+        fUpdate = new Folder();
+        fUpdate.setNodeType("cm:folder");
+        put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 400);
     }
 
     // TODO add test to create multiple folders & empty files (within same parent folder)

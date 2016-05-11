@@ -19,6 +19,7 @@
 package org.alfresco.rest.api.model;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * Representation of quick share link
@@ -45,10 +46,13 @@ public class QuickShareLink
 	private String name;
 	private ContentInfo content;
 
-	protected Date modifiedAt;
-	protected UserInfo modifiedByUser;
+	private Date modifiedAt;
+	private UserInfo modifiedByUser;
 
-	protected UserInfo sharedByUser;
+	private UserInfo sharedByUser;
+
+	private List<String> allowableOperations;
+
 
 	public QuickShareLink()
 	{
@@ -126,6 +130,16 @@ public class QuickShareLink
 		this.sharedByUser = sharedByUser;
 	}
 
+	public List<String> getAllowableOperations()
+	{
+		return allowableOperations;
+	}
+
+	public void setAllowableOperations(List<String> allowableOperations)
+	{
+		this.allowableOperations = allowableOperations;
+	}
+
 	// eg. for debug logging etc
     @Override
 	public String toString()
@@ -138,6 +152,7 @@ public class QuickShareLink
 		sb.append(", modifiedByUser=").append(getModifiedByUser());
 		sb.append(", sharedByUser=").append(getSharedByUser());
 		sb.append(", content=").append(getContent());
+		sb.append(", allowableOperations=").append(getAllowableOperations());
 		sb.append("]");
 		return sb.toString();
 	}

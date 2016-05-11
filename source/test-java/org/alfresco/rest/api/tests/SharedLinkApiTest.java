@@ -21,7 +21,6 @@ package org.alfresco.rest.api.tests;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.impl.QuickShareLinksImpl;
@@ -41,6 +40,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -182,29 +182,54 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         post(URL_SHARED_LINKS, user2, toJsonAsStringNonNull(body), 409);
 
 
-        // auth access to get shared link info
-        response = getSingle(QuickShareLinkEntityResource.class, user1, sharedId, null, 200);
+        // auth access to get shared link info - as user1
+        Map<String, String> params = Collections.singletonMap("select", "allowableOperations");
+        response = getSingle(QuickShareLinkEntityResource.class, user1, sharedId, params, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
 
         assertEquals(sharedId, resp.getId());
-        assertEquals(d1Id, resp.getNodeId());
         assertEquals(docName1, resp.getName());
+        assertEquals(d1Id, resp.getNodeId());
 
         assertEquals(user1, resp.getModifiedByUser().getId()); // returned if authenticated
         assertEquals(user2, resp.getSharedByUser().getId()); // returned if authenticated
 
+        assertNull(resp.getAllowableOperations());
 
-        // unauth access to get shared link info
-        response = getSingle(QuickShareLinkEntityResource.class, null, sharedId, null, 200);
+        // auth access to get shared link info - as user2
+        params = Collections.singletonMap("select", "allowableOperations");
+        response = getSingle(QuickShareLinkEntityResource.class, user2, sharedId, params, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
 
         assertEquals(sharedId, resp.getId());
-        assertEquals(d1Id, resp.getNodeId());
         assertEquals(docName1, resp.getName());
+        assertEquals(d1Id, resp.getNodeId());
 
-        assertNull(resp.getModifiedByUser().getId());
+        assertEquals(user1, resp.getModifiedByUser().getId()); // returned if authenticated
+        assertEquals(user2, resp.getSharedByUser().getId()); // returned if authenticated
+
+        assertEquals(1, resp.getAllowableOperations().size());
+        assertEquals("delete", resp.getAllowableOperations().get(0));
+
+        // allowable operations not selected
+        response = getSingle(QuickShareLinkEntityResource.class, user2, sharedId, null, 200);
+        resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
+        assertNull(resp.getAllowableOperations());
+
+
+        // unauth access to get shared link info
+        params = Collections.singletonMap("select", "allowableOperations"); // note: this will be ignore for unauth access
+        response = getSingle(QuickShareLinkEntityResource.class, null, sharedId, params, 200);
+        resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
+
+        assertEquals(sharedId, resp.getId());
+        assertEquals(docName1, resp.getName());
+        assertNull(resp.getNodeId()); // nodeId not returned
+        assertNull(resp.getAllowableOperations()); // select is ignored
+
+        assertNull(resp.getModifiedByUser().getId()); // userId not returned
         assertEquals(user1+" "+user1, resp.getModifiedByUser().getDisplayName());
-        assertNull(resp.getSharedByUser().getId());
+        assertNull(resp.getSharedByUser().getId()); // userId not returned
         assertEquals(user2+" "+user2, resp.getSharedByUser().getDisplayName());
 
 

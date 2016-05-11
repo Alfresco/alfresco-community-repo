@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.rest.DeletedNodesTest;
 import org.junit.AfterClass;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -42,6 +43,7 @@ import org.junit.runners.Suite;
     RenditionsTest.class,
     SharedLinkApiTest.class,
     ActivitiesPostingTest.class,
+    DeletedNodesTest.class,
     TestSites.class,
     TestNodeComments.class,
     TestCMIS.class,

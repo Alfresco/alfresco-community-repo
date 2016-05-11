@@ -22,7 +22,7 @@
         <alfresco.googledocs.version>3.0.3</alfresco.googledocs.version>
 
         <!-- Alfresco Office Services Module -->
-        <alfresco.aos-module.version>1.1.1</alfresco.aos-module.version>
+        <alfresco.aos-module.version>1.1.2-SNAPSHOT</alfresco.aos-module.version>
 
         <!-- Versions of binaries packaged in the installer -->
         <installer.common.version>5.1-20151118</installer.common.version>

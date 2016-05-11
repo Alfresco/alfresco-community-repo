@@ -10,6 +10,8 @@
   <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}</url>
   <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}/{relationshipId}/</url>
   <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}/{relationshipId}</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}/{relationshipId}/{property}</url>
+  <url>/{apiScope}/{apiName}/versions/{apiVersion}/{collectionResource}/{entityId}/{relationResource}/{relationshipId}/{property}/</url>
   <authentication>user</authentication>
   <format default="json">argument</format>
   <!-- Note: the transaction is created in AbstractResourceWebScript -->

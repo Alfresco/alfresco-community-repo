@@ -203,6 +203,9 @@ public class ResourceInspector
         Map<String, Object> annotAttribs = AnnotationUtils.getAnnotationAttributes(annot);
         String urlPath = String.valueOf(annotAttribs.get("name"));
         String entityPath = findEntityNameByAnnotationAttributes(annotAttribs);
+        String relationshipKey = ResourceDictionary.resourceKey(entityPath,urlPath);
+        Api api = inspectApi(resource);
+        List<ResourceMetadata> metainfo = new ArrayList<ResourceMetadata>();
 
         MetaHelper helper = new MetaHelper(resource);
         findOperation(RelationshipResourceAction.Create.class,   HttpMethod.POST, helper);
@@ -222,13 +225,16 @@ public class ResourceInspector
 
         if (resource.isAnnotationPresent(WebApiDeleted.class))
         {
-            return Arrays.asList(new ResourceMetadata(ResourceDictionary.resourceKey(entityPath,urlPath), RESOURCE_TYPE.RELATIONSHIP, null, inspectApi(resource), ALL_RELATIONSHIP_RESOURCE_INTERFACES, apiNoAuth, entityPath));
+            metainfo.add(new ResourceMetadata(relationshipKey, RESOURCE_TYPE.RELATIONSHIP, null, inspectApi(resource), ALL_RELATIONSHIP_RESOURCE_INTERFACES, apiNoAuth, entityPath));
         }
         else 
         {
-            return Arrays.asList(new ResourceMetadata(ResourceDictionary.resourceKey(entityPath,urlPath), RESOURCE_TYPE.RELATIONSHIP, helper.operations, inspectApi(resource), helper.apiDeleted, apiNoAuth, entityPath));
+            metainfo.add(new ResourceMetadata(relationshipKey, RESOURCE_TYPE.RELATIONSHIP, helper.operations, inspectApi(resource), helper.apiDeleted, apiNoAuth, entityPath));
         }
-        
+
+        inspectAddressedProperties(api, resource, relationshipKey, metainfo);
+        inspectOperations(api, resource, relationshipKey, metainfo);
+        return metainfo;
    }
 
     /**
@@ -607,7 +613,7 @@ public class ResourceInspector
                 {
                     Map<String, Object> annotAttribs = AnnotationUtils.getAnnotationAttributes(annot);
                     String actionName = String.valueOf(annotAttribs.get("value"));
-                    String actionPath = ResourceDictionary.resourceKey(entityPath,actionName);
+                    String actionPath = ResourceDictionary.propertyResourceKey(entityPath,actionName);
                     ResourceOperation ro = inspectOperation(anyClass, annotatedMethod, HttpMethod.POST);
                     embeds.put(actionPath, new Pair<ResourceOperation,Method>(ro,annotatedMethod));
                 }

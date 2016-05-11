@@ -67,11 +67,12 @@ public class ResourceDictionary
     }
 
     /*
-     * Return a key by combining the entity and property ids
+     * Return a key by combining the rootEntity and property ids
      */
     public static String propertyResourceKey(String entity, String property)
     {
-      return "/"+entity+"/"+property;
+      String rootEntity = entity.startsWith("/")?entity:"/"+entity;
+      return rootEntity+"/{id}/"+property;
     }
     
     /**

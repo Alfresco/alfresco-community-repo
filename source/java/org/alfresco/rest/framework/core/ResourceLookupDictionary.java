@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.alfresco.rest.framework.Api;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.apache.commons.lang.StringUtils;
@@ -53,20 +52,20 @@ public class ResourceLookupDictionary implements ResourceLocator
     private ResourceDictionary dictionary;
 
     @Override
-    public ResourceWithMetadata locateEntityResource(Api api, String entityResource, HttpMethod httpMethod) throws InvalidArgumentException, UnsupportedResourceOperationException
+    public ResourceWithMetadata locateEntityResource(Api api, String entityResource, HttpMethod httpMethod) throws NotFoundException, UnsupportedResourceOperationException
     {
         return locateRelationResource(api, entityResource, (String)null, httpMethod);
     }
 
     @Override
-    public ResourceWithMetadata locateRelationPropertyResource(Api api, String entityResource, String relationResource, String property, HttpMethod httpMethod) throws InvalidArgumentException,UnsupportedResourceOperationException
+    public ResourceWithMetadata locateRelationPropertyResource(Api api, String entityResource, String relationResource, String property, HttpMethod httpMethod) throws NotFoundException,UnsupportedResourceOperationException
     {
         String resourceKey = ResourceDictionary.resourceKey(entityResource, relationResource);
         String propertyResourceKey = ResourceDictionary.propertyResourceKey(resourceKey, property);
         Map<String, ResourceWithMetadata> apiResources = dictionary.getAllResources().get(api);
         if (apiResources == null)
         {
-            throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_INVALID_API);
+            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID);
         }
 
         ResourceWithMetadata resource = apiResources.get(propertyResourceKey);
@@ -78,12 +77,12 @@ public class ResourceLookupDictionary implements ResourceLocator
         }
 
         logger.warn("Unable to locate resource resource for :"+entityResource+" "+relationResource==null?"":relationResource+" "+property==null?"":property);
-        throw new InvalidArgumentException("Unable to locate resource resource for :"+entityResource+" "+(relationResource==null?"":relationResource+" "+property==null?"":property));
+        throw new NotFoundException("Unable to locate resource resource for :"+entityResource+" "+(relationResource==null?"":relationResource+" "+property==null?"":property));
 
     }
 
     @Override
-    public ResourceWithMetadata locateRelationResource(Api api, String entityResource, String relationResource, HttpMethod httpMethod) throws InvalidArgumentException,UnsupportedResourceOperationException
+    public ResourceWithMetadata locateRelationResource(Api api, String entityResource, String relationResource, HttpMethod httpMethod) throws NotFoundException,UnsupportedResourceOperationException
     {
         String resourceKey = ResourceDictionary.resourceKey(entityResource, relationResource);
         if (logger.isDebugEnabled())
@@ -93,7 +92,7 @@ public class ResourceLookupDictionary implements ResourceLocator
         Map<String, ResourceWithMetadata> apiResources = dictionary.getAllResources().get(api);
         if (apiResources == null)
         {
-          throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_INVALID_API);         
+          throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID);
         } 
         ResourceWithMetadata resource = apiResources.get(resourceKey);
         if (resource == null)
@@ -111,7 +110,7 @@ public class ResourceLookupDictionary implements ResourceLocator
               }
           }
           logger.warn("Unable to locate resource resource for :"+entityResource+" "+relationResource==null?"":relationResource);
-          throw new InvalidArgumentException("Unable to locate resource resource for :"+entityResource+" "+(relationResource==null?"":relationResource));      
+          throw new NotFoundException("Unable to locate resource resource for :"+entityResource+" "+(relationResource==null?"":relationResource));
         } 
         else
         {

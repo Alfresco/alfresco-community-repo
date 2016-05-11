@@ -259,6 +259,25 @@ public class ExecutionTests extends AbstractContextTest
 
     }
 
+    @Test
+    public void testInvalidUrls() throws IOException
+    {
+        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
+        executor.setLocator(locator);
+        executor.setResolver(simpleMappingExceptionResolver);
+        executor.setJsonHelper(jsonHelper);
+        Map<String, String> templateVars = new HashMap();
+        templateVars.put("apiScope", "private");
+        templateVars.put("apiVersion", "1");
+        templateVars.put("apiName", "alfrescomock");
+
+        WebScriptResponse response = mockResponse();
+        templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "blah:");
+        executor.execute(api, mockRequest(templateVars, new HashMap<String, List<String>>(1)), response);
+        //Can't find it so a 404
+        verify(response, times(1)).setStatus(HttpServletResponse.SC_NOT_FOUND);
+    }
+
     private WebScriptResponse mockResponse() throws IOException
     {
         WebScriptResponse res = mock(WebScriptResponse.class);

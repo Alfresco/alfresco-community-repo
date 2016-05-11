@@ -47,6 +47,7 @@ import org.alfresco.rest.framework.core.ResourceMetadata;
 import org.alfresco.rest.framework.core.ResourceOperation;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.RelationshipResource;
@@ -276,9 +277,9 @@ public class ResourceLocatorTests
         {
             //Tests by passing invalid propery
             collResource = locator.locateResource(api, templateVars, HttpMethod.GET);
-            fail("Should throw an InvalidArgumentException");
+            fail("Should throw an NotFoundException");
         }
-        catch (InvalidArgumentException error)
+        catch (NotFoundException error)
         {
             //this is correct
         }
@@ -353,9 +354,9 @@ public class ResourceLocatorTests
         try
         {
             entityResource = locator.locateEntityResource(Api.valueOf("alfrescomock", "public", "1"),"sheep", HttpMethod.GET);
-            fail("Should throw an InvalidArgumentException");
+            fail("Should throw an NotFoundException");
         }
-        catch (InvalidArgumentException error)
+        catch (NotFoundException error)
         {
             //this is correct
         }
@@ -363,9 +364,9 @@ public class ResourceLocatorTests
         try
         {
             entityResource = locator.locateEntityResource(Api.valueOf("alfrescomock", "public", "999"),"sheep", HttpMethod.GET);
-            fail("Should throw an InvalidArgumentException");
+            fail("Should throw an NotFoundException");
         }
-        catch (InvalidArgumentException error)
+        catch (NotFoundException error)
         {
             //this is correct
         }
@@ -383,9 +384,9 @@ public class ResourceLocatorTests
         try
         {
             aResource = locator.locateEntityResource(api, "sheepnoaction", HttpMethod.GET);
-            fail("Should throw an InvalidArgumentException");
+            fail("Should throw an NotFoundException");
         }
-        catch (InvalidArgumentException error)
+        catch (NotFoundException error)
         {
             //this is correct
         }
@@ -405,7 +406,7 @@ public class ResourceLocatorTests
             aResource = locator.locateRelationResource(api, "sheepnoaction","v3isaresource", HttpMethod.GET);
             fail("Only available in v3");
         }
-        catch (InvalidArgumentException error)
+        catch (NotFoundException error)
         {
             //this is correct
         }
@@ -416,7 +417,7 @@ public class ResourceLocatorTests
             aResource = locator.locateRelationResource(v2, "sheepnoaction","v3isaresource", HttpMethod.GET);
             fail("Only available in v3");
         }
-        catch (InvalidArgumentException error)
+        catch (NotFoundException error)
         {
             //this is correct
         }
@@ -474,7 +475,7 @@ public class ResourceLocatorTests
         assertEquals ("sheepnoaction", name);
     }
     
-    @Test(expected=org.alfresco.rest.framework.core.exceptions.InvalidArgumentException.class)
+    @Test(expected=org.alfresco.rest.framework.core.exceptions.NotFoundException.class)
     public void testLocateRelationResource()
     {
         Collection<String> relKeys = Arrays.asList("blacksheep","baaahh");

@@ -139,6 +139,7 @@ import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.alfresco.util.PropertyCheck;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -210,7 +211,7 @@ public class NodesImpl implements Nodes
     // ignore types/aspects
     private Set<QName> ignoreQNames;
 
-    private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<String, NodeRef>();
+    private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<>();
 
     private Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
 
@@ -221,6 +222,12 @@ public class NodesImpl implements Nodes
 
     public void init()
     {
+        PropertyCheck.mandatory(this, "serviceRegistry", sr);
+        PropertyCheck.mandatory(this, "behaviourFilter", behaviourFilter);
+        PropertyCheck.mandatory(this, "repositoryHelper", repositoryHelper);
+        PropertyCheck.mandatory(this, "quickShareLinks", quickShareLinks);
+        PropertyCheck.mandatory(this, "poster", poster);
+
         this.namespaceService = sr.getNamespaceService();
         this.fileFolderService = sr.getFileFolderService();
         this.nodeService = sr.getNodeService();
@@ -1498,7 +1505,7 @@ public class NodesImpl implements Nodes
 
             // Checks for the presence of, and creates as necessary,
             // the folder structure in the provided path elements list.
-            if (pathElements != null && !pathElements.isEmpty())
+            if (!pathElements.isEmpty())
             {
                 parentNodeRef = makeFolders(parentNodeRef, pathElements);
             }

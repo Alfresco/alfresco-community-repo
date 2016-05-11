@@ -493,7 +493,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         d1.setContent(ci);
 
         // create empty file including request to generate imgpreview thumbnail
-        renditionName = "imgpreview";
+        renditionName = "medium";
         response = post(getNodeChildrenUrl(folder_Id), userId, toJsonAsStringNonNull(d1), "?renditions="+renditionName, 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String d1Id = documentResp.getId();

@@ -204,12 +204,19 @@ public class MultiPartBuilder
         private final String fileName;
         private final File file;
         private final String mimetype;
+        private final String encoding;
 
         public FileData(String fileName, File file, String mimetype)
+        {
+            this(fileName, file, mimetype, null);
+        }
+
+        public FileData(String fileName, File file, String mimetype, String encoding)
         {
             this.fileName = fileName;
             this.file = file;
             this.mimetype = mimetype;
+            this.encoding = encoding;
         }
 
         public String getFileName()
@@ -225,6 +232,11 @@ public class MultiPartBuilder
         public String getMimetype()
         {
             return mimetype;
+        }
+
+        public String getEncoding()
+        {
+            return encoding;
         }
     }
 
@@ -265,7 +277,7 @@ public class MultiPartBuilder
         {
             FilePart fp = new FilePart("filedata", fileData.getFileName(), fileData.getFile(), fileData.getMimetype(), null);
             // Get rid of the default values added upon FilePart instantiation
-            fp.setCharSet(null);
+            fp.setCharSet(fileData.getEncoding());
             fp.setContentType(fileData.getMimetype());
             parts.add(fp);
             addPartIfNotNull(parts, "filename", fileData.getFileName());

@@ -112,6 +112,8 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.servlet.FormData;
+import org.springframework.http.InvalidMediaTypeException;
+import org.springframework.http.MediaType;
 
 /**
  * Centralises access to file/folder/node services and maps between representations.
@@ -719,7 +721,7 @@ public class NodesImpl implements Nodes
     
     protected Set<QName> mapToNodeAspects(List<String> aspectNames)
     {
-    	Set<QName> nodeAspects = new HashSet<>(aspectNames.size());
+        Set<QName> nodeAspects = new HashSet<>(aspectNames.size());
 
         for (String aspectName : aspectNames)
         {
@@ -732,7 +734,7 @@ public class NodesImpl implements Nodes
             }
             else 
             {
-            	throw new InvalidArgumentException("Unknown aspect: "+aspectName);
+                throw new InvalidArgumentException("Unknown aspect: " + aspectName);
             }
         }
 
@@ -745,7 +747,7 @@ public class NodesImpl implements Nodes
 
         for (Entry<String, Object> entry : props.entrySet())
         {
-        	String propName = entry.getKey();
+            String propName = entry.getKey();
             QName propQName = createQName(propName);
 
             PropertyDefinition pd = dictionaryService.getProperty(propQName);
@@ -772,7 +774,7 @@ public class NodesImpl implements Nodes
             }
             else 
             {
-            	throw new InvalidArgumentException("Unknown property: "+propName);
+                throw new InvalidArgumentException("Unknown property: " + propName);
             }
         }
 
@@ -993,7 +995,7 @@ public class NodesImpl implements Nodes
         if (aspectNames != null)
         {
             // node aspects - set any additional aspects
-        	Set<QName> aspectQNames = mapToNodeAspects(aspectNames);
+            Set<QName> aspectQNames = mapToNodeAspects(aspectNames);
             for (QName aspectQName : aspectQNames)
             {
                 if (EXCLUDED_ASPECTS.contains(aspectQName) || aspectQName.equals(ContentModel.ASPECT_AUDITABLE))
@@ -1009,17 +1011,7 @@ public class NodesImpl implements Nodes
         {
             // add empty file
             ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-            String mimeType;
-            ContentInfo contentInfo = nodeInfo.getContent();
-            if (contentInfo != null && contentInfo.getMimeType() != null)
-            {
-                mimeType = contentInfo.getMimeType();
-            }
-            else
-            {
-                mimeType = mimetypeService.guessMimetype(nodeName);
-            }
-            writer.setMimetype(mimeType);
+            setWriterContentType(writer, new ContentInfoWrapper(nodeInfo.getContent()), nodeRef, false);
             writer.putContent("");
         }
 
@@ -1109,7 +1101,7 @@ public class NodesImpl implements Nodes
         if (aspectNames != null)
         {
             // update aspects - note: can be empty (eg. to remove existing aspects+properties) but not cm:auditable, sys:referencable, sys:localized
-        	
+
             Set<QName> aspectQNames = mapToNodeAspects(aspectNames);
 
             Set<QName> existingAspects = nodeService.getAspects(nodeRef);
@@ -1302,24 +1294,40 @@ public class NodesImpl implements Nodes
         }
 
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-
-        String mimeType = contentInfo.getMimeType();
-        if (mimeType == null)
-        {
-            String fileName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-            writer.guessMimetype(fileName);
-        }
-        else
-        {
-            writer.setMimetype(mimeType);
-        }
-        writer.guessEncoding();
+        setWriterContentType(writer, new ContentInfoWrapper(contentInfo), nodeRef, true);
         writer.putContent(stream);
 
         return getFolderOrDocumentFullInfo(nodeRef,
                     getParentNodeRef(nodeRef),
                     nodeService.getType(nodeRef),
                     parameters);
+    }
+
+    private void setWriterContentType(ContentWriter writer, ContentInfoWrapper contentInfo, NodeRef nodeRef, boolean guessEncodingIfNull)
+    {
+        String mimeType = contentInfo.mimeType;
+        // Manage MimeType
+        if (mimeType == null)
+        {
+            // the mimeType was not provided via the contentInfo, so try to guess
+            final String fileName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+            mimeType = mimetypeService.guessMimetype(fileName);
+        }
+        writer.setMimetype(mimeType);
+
+        // Manage Encoding
+        if (contentInfo.encoding == null)
+        {
+            if (guessEncodingIfNull)
+            {
+                // the encoding was not provided, so try to guess
+                writer.guessEncoding();
+            }
+        }
+        else
+        {
+            writer.setEncoding(contentInfo.encoding);
+        }
     }
 
     @Override
@@ -1423,7 +1431,7 @@ public class NodesImpl implements Nodes
                 // else if (overwrite && nodeService.hasAspect(existingFile, ContentModel.ASPECT_VERSIONABLE))
                 // {
                 //     // Upload component was configured to overwrite files if name clashes
-                //     write(existingFile, content, fileName, false, true);
+                //     write(existingFile, content);
                 //
                 //     // Extract the metadata (The overwrite policy controls
                 //     // which if any parts of the document's properties are updated from this)
@@ -1487,7 +1495,7 @@ public class NodesImpl implements Nodes
         NodeRef newFile = createNodeImpl(parentNodeRef, fileName, nodeType, props);
 
         // Write content
-        write(newFile, content, fileName, true, true);
+        write(newFile, content);
 
         // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)
         ensureVersioningEnabled(newFile, true, false);
@@ -1513,40 +1521,13 @@ public class NodesImpl implements Nodes
      *
      * @param nodeRef       the reference to the node having a content property
      * @param content       the content
-     * @param fileName      the uploaded file name
-     * @param applyMimeType If true, apply the mimeType from the Content object,
-     *                      else leave the original mimeType (if the original type is null, then guess the mimeType)
-     * @param guessEncoding If true, guess the encoding from the underlying
-     *                      input stream, else use encoding set in the Content object as supplied
      */
-    protected void write(NodeRef nodeRef, Content content, String fileName, boolean applyMimeType, boolean guessEncoding)
+    protected void write(NodeRef nodeRef, Content content)
     {
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-        String mimeType = content.getMimetype();
         // Per RA-637 requirement the mimeType provided by the client takes precedence, however,
-        // if the mimeType is null, then it will be retrieved or guessed.
-        if (mimeType == null || !applyMimeType)
-        {
-            ContentData existingContentData = (ContentData) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
-            if (existingContentData != null)
-            {
-                mimeType = existingContentData.getMimetype();
-            }
-            else
-            {
-                mimeType = mimetypeService.guessMimetype(fileName);
-            }
-        }
-        writer.setMimetype(mimeType);
-
-        if (guessEncoding)
-        {
-            writer.guessEncoding();
-        }
-        else
-        {
-            writer.setEncoding(content.getEncoding());
-        }
+        // if the mimeType is null, then it will be guessed.
+        setWriterContentType(writer, new ContentInfoWrapper(content), nodeRef, true);
         writer.putContent(content.getInputStream());
     }
 
@@ -1682,4 +1663,52 @@ public class NodesImpl implements Nodes
         return result;
     }
 
+    /**
+     * @author Jamal Kaabi-Mofrad
+     */
+    private static class ContentInfoWrapper
+    {
+        private String mimeType;
+        private String encoding;
+
+        ContentInfoWrapper(BasicContentInfo basicContentInfo)
+        {
+            if (basicContentInfo != null)
+            {
+                this.mimeType = basicContentInfo.getMimeType();
+                this.encoding = basicContentInfo.getEncoding();
+            }
+        }
+
+        ContentInfoWrapper(ContentInfo contentInfo)
+        {
+            if (contentInfo != null)
+            {
+                this.mimeType = contentInfo.getMimeType();
+                this.encoding = contentInfo.getEncoding();
+            }
+        }
+
+        ContentInfoWrapper(Content content)
+        {
+            if (content != null && StringUtils.isNotEmpty(content.getMimetype()))
+            {
+                try
+                {
+                    // TODO I think it makes sense to push contentType parsing into org.springframework.extensions.webscripts.servlet.FormData
+                    MediaType media = MediaType.parseMediaType(content.getMimetype());
+                    this.mimeType = media.getType() + '/' + media.getSubtype();
+
+                    if (media.getCharSet() != null)
+                    {
+                        this.encoding = media.getCharSet().name();
+                    }
+                }
+                catch (InvalidMediaTypeException ime)
+                {
+                    throw new InvalidArgumentException(ime.getMessage());
+                }
+            }
+        }
+    }
 }

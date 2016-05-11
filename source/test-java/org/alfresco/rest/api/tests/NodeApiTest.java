@@ -788,6 +788,8 @@ public class NodeApiTest extends AbstractBaseApiTest
         ContentInfo contentInfo = document.getContent();
         assertNotNull(contentInfo);
         assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
+        // Default encoding
+        assertEquals("UTF-8", contentInfo.getEncoding());
         // Check there is no path info returned.
         // The path info should only be returned when it is requested via a select statement.
         assertNull(document.getPath());
@@ -863,6 +865,26 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .setFileData(new FileData(fileName2, file2, null))
                     .setAutoRename(true)
                     .setNodeType("cm:link")
+                    .build();
+        post(getChildrenUrl(user1Home.getId()), user1, reqBody.getBody(), null, reqBody.getContentType(), 400);
+
+        // User1 uploads a new file
+        reqBody = MultiPartBuilder.create()
+                    .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN, "windows-1252"))
+                    .build();
+        response = post(getChildrenUrl(user1Home.getId()), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        // Check the upload response
+        assertEquals(fileName2, document.getName());
+        contentInfo = document.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+        assertEquals("windows-1252", contentInfo.getEncoding());
+
+        // Test invalid mimeType
+        reqBody = MultiPartBuilder.create()
+                    .setFileData(new FileData(fileName2, file2, "*/invalidSubType", "ISO-8859-1"))
+                    .setAutoRename(true)
                     .build();
         post(getChildrenUrl(user1Home.getId()), user1, reqBody.getBody(), null, reqBody.getContentType(), 400);
 
@@ -1548,8 +1570,8 @@ public class NodeApiTest extends AbstractBaseApiTest
         // Update the empty node's content
         String content = "The quick brown fox jumps over the lazy dog.";
         ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes());
-        File file = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
-        BinaryPayload payload = new BinaryPayload(file, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+        BinaryPayload payload = new BinaryPayload(txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN);
 
         // Try to update a folder!
         putBinary(URL_NODES + f1_nodeId + "/content", user1, payload, null, null, 400);
@@ -1576,6 +1598,8 @@ public class NodeApiTest extends AbstractBaseApiTest
         contentInfo = docResp.getContent();
         assertNotNull(contentInfo);
         assertNotNull(contentInfo.getEncoding());
+        // Default encoding
+        assertEquals("UTF-8", contentInfo.getEncoding());
         assertTrue(contentInfo.getSizeInBytes() > 0);
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
         assertNotNull(contentInfo.getMimeTypeName());
@@ -1587,13 +1611,14 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(content, response.getResponse());
 
         // Update the node's content again. Also, change the mimeType and make the response to return path!
-        file = getResourceFile("quick.pdf");
-        payload = new BinaryPayload(file, MimetypeMap.MIMETYPE_PDF);
+        File pdfFile = getResourceFile("quick.pdf");
+        payload = new BinaryPayload(pdfFile, MimetypeMap.MIMETYPE_PDF, "ISO-8859-1");
 
         response = putBinary(url + "?select=path", user1, payload, null, null, 200);
         docResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         assertEquals(docName, docResp.getName());
         assertNotNull(docResp.getContent());
+        assertNotNull("ISO-8859-1", docResp.getContent());
         assertTrue(docResp.getContent().getSizeInBytes().intValue() > 0);
         assertEquals(MimetypeMap.MIMETYPE_PDF, docResp.getContent().getMimeType());
         PathInfo pathInfo = docResp.getPath();
@@ -1604,6 +1629,16 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(pathElements.size() > 0);
         // check the last element is F1
         assertEquals(f1.getName(), pathElements.get(pathElements.size() - 1).getName());
+
+        // update the original content with different encoding
+        payload = new BinaryPayload(txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN, "ISO-8859-15");
+        response = putBinary(url, user1, payload, null, null, 200);
+        docResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        assertEquals(docName, docResp.getName());
+        assertNotNull(docResp.getContent());
+        assertNotNull("ISO-8859-15", docResp.getContent());
+        assertTrue(docResp.getContent().getSizeInBytes().intValue() > 0);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, docResp.getContent().getMimeType());
 
         // Download the file
         response = getSingle(url, user1, null, 200);

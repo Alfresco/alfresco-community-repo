@@ -107,7 +107,7 @@ public interface Nodes
     void deleteNode(String nodeId);
 
     /**
-     * Create node(s) - folder or (empty) file.
+     * Create node - folder or (empty) file.
      *
      * @param parentFolderNodeId
      * @param nodeInfo
@@ -115,6 +115,28 @@ public interface Nodes
      * @return
      */
     Node createNode(String parentFolderNodeId, Node nodeInfo, Parameters parameters);
+
+    /**
+     * Move node
+     *
+     * @param sourceNodeId
+     * @param parentFolderNodeId
+     * @param name
+     * @param parameters
+     * @return
+     */
+    Node moveNode(String sourceNodeId, String parentFolderNodeId, String name, Parameters parameters);
+
+    /**
+     * Copy node
+     *
+     * @param sourceNodeId
+     * @param parentFolderNodeId
+     * @param name
+     * @param parameters
+     * @return
+     */
+    Node copyNode(String sourceNodeId, String parentFolderNodeId, String name, Parameters parameters);
 
     /**
      * Update node meta-data.

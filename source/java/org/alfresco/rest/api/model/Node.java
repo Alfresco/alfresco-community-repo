@@ -34,7 +34,6 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.framework.resource.UniqueId;
-import org.alfresco.rest.framework.resource.content.*;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
@@ -68,7 +67,6 @@ public class Node implements Comparable<Node>
     protected String prefixTypeQName;
 
     protected List<String> aspectNames;
-
     protected Map<String, Object> properties;
 
     public Node(NodeRef nodeRef, NodeRef parentNodeRef, Map<QName, Serializable> nodeProps, Map<String, UserInfo> mapUserInfo, ServiceRegistry sr)
@@ -142,6 +140,8 @@ public class Node implements Comparable<Node>
         }
         return userInfo;
     }
+
+    // note: nodeRef maps to json "id" (when serializing/deserializng)
 
     @UniqueId
     public NodeRef getNodeRef()
@@ -285,6 +285,7 @@ public class Node implements Comparable<Node>
     }
 
     // here to allow POST /nodes/{id}/children when creating empty file with specified content.mimeType
+
     protected ContentInfo contentInfo;
 
     public void setContent(ContentInfo contentInfo)
@@ -295,6 +296,21 @@ public class Node implements Comparable<Node>
     public ContentInfo getContent()
     {
         return this.contentInfo;
+    }
+
+
+    // TODO experimental (API subject to change) - special property (request-only) to allow move/copy via POST /nodes/{id}/children
+
+    protected String action;
+
+    public String getAction()
+    {
+        return action;
+    }
+
+    public void setAction(String action)
+    {
+        this.action = action;
     }
 
     // TODO for backwards compat' - set explicitly when needed (ie. favourites) (note: we could choose to have separate old Node/NodeImpl etc)
@@ -383,4 +399,5 @@ public class Node implements Comparable<Node>
     {
         this.modifiedBy = modifiedBy;
     }
+
 }

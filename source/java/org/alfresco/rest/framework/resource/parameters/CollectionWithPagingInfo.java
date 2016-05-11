@@ -49,6 +49,7 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection
     private final boolean hasMoreItems;
     private final Integer totalItems;
     private final Paging paging;
+    private final Object sourceEntity;
         
     /**
      * Constructs a new CollectionWithPagingInfo.
@@ -57,7 +58,7 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection
      * @param hasMoreItems - Are there more items after this Collection?
      * @param totalItems - The total number of items available.
      */
-    protected CollectionWithPagingInfo(Collection<T> collection, Paging paging, boolean hasMoreItems, Integer totalItems)
+    protected CollectionWithPagingInfo(Collection<T> collection, Paging paging, boolean hasMoreItems, Integer totalItems, Object sourceEntity)
     {
         super();
         this.hasMoreItems = hasMoreItems;
@@ -73,6 +74,7 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection
             this.collection = collection;
             this.totalItems = totalItems;    
         }
+        this.sourceEntity = sourceEntity;
     }
     
     /**
@@ -87,7 +89,7 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection
     public static <T> CollectionWithPagingInfo<T> asPaged(Paging paging, Collection<T> aCollection)
     {
         int collectionSize = aCollection==null?0:aCollection.size();
-        return new CollectionWithPagingInfo<T>(aCollection, paging, false, collectionSize);
+        return new CollectionWithPagingInfo<T>(aCollection, paging, false, collectionSize, null);
     }
     
     /**
@@ -101,12 +103,12 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection
     public static <T> CollectionWithPagingInfo<T> asPagedCollection(T ...entity)
     {
         Collection<T> aNewCollection = Arrays.asList(entity);
-        return new CollectionWithPagingInfo<T>(aNewCollection, Paging.DEFAULT, false, aNewCollection.size());
+        return new CollectionWithPagingInfo<T>(aNewCollection, Paging.DEFAULT, false, aNewCollection.size(), null);
     }
-    
+
     /**
      * Constructs a new CollectionWithPagingInfo.
-     * 
+     *
      * @param paging - Paging request info
      * @param aCollection - the collection that needs to be paged.
      * @param hasMoreItems - Are there more items after this Collection?
@@ -115,7 +117,22 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection
      */
     public static <T> CollectionWithPagingInfo<T> asPaged(Paging paging, Collection<T> aCollection, boolean hasMoreItems, Integer totalItems)
     {
-        return new CollectionWithPagingInfo<T>(aCollection, paging, hasMoreItems, totalItems);
+        return new CollectionWithPagingInfo<T>(aCollection, paging, hasMoreItems, totalItems, null);
+    }
+
+    /**
+     * Constructs a new CollectionWithPagingInfo. Not for public use.
+     * 
+     * @param paging - Paging request info
+     * @param aCollection - the collection that needs to be paged.
+     * @param hasMoreItems - Are there more items after this Collection?
+     * @param totalItems - The total number of items available.
+     * @param sourceEntity - The parent/source entity responsible for the collection
+     * @return CollectionWithPagingInfo
+     */
+    public static <T> CollectionWithPagingInfo<T> asPaged(Paging paging, Collection<T> aCollection, boolean hasMoreItems, Integer totalItems, Object sourceEntity)
+    {
+        return new CollectionWithPagingInfo<T>(aCollection, paging, hasMoreItems, totalItems, sourceEntity);
     }
     
     /**
@@ -147,6 +164,15 @@ public class CollectionWithPagingInfo<T> implements SerializablePagedCollection
     public Integer getTotalItems()
     {
         return this.totalItems;
+    }
+
+    /**
+     * The parent/source entity responsible for the collection
+     */
+    @Override
+    public Object getSourceEntity()
+    {
+        return sourceEntity;
     }
 
     /**

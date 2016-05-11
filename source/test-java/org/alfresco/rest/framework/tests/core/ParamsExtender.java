@@ -49,7 +49,12 @@ public class ParamsExtender extends Params
     {
         return new ParamsExtender(entityId, null, null, null, null, new Params.RecognizedParams(null, null, null, rFilter, null, null, null, false));
     }
-    
+
+    public static Params valueOf(boolean includeSource, String entityId)
+    {
+        return new ParamsExtender(entityId, null, null, null, null, new Params.RecognizedParams(null, null, null, null, null, null, null, includeSource));
+    }
+
     public static Params valueOf(Paging paging, String entityId)
     {
         return new ParamsExtender(entityId, null, null, null, null, new Params.RecognizedParams(null, paging, null, null, null, null, null, false));

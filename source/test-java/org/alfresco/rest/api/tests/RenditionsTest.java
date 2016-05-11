@@ -509,10 +509,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
         */
 
-        /*
-        // TODO open question (RA-834)
-        // - should we accept for  JSON when creating empty file (ie. with zero-byte content)
-        // - eg. might fail, eg. doclib for empty plain text / pdf ?
+        /* RA-834: commented-out since not currently applicable for empty file
         Document d1 = new Document();
         d1.setName("d1.txt");
         d1.setNodeType("cm:content");

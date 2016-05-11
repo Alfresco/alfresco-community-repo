@@ -1352,7 +1352,6 @@ public class NodesImpl implements Nodes
         fileFolderService.delete(nodeRef);
     }
 
-    // TODO should we able to specify content properties (eg. mimeType ... or use extension for now, or encoding)
     @Override
     public Node createNode(String parentFolderNodeId, Node nodeInfo, Parameters parameters)
     {
@@ -1391,6 +1390,7 @@ public class NodesImpl implements Nodes
             validateCmObject(nodeTypeQName);
         }
 
+        /* RA-834: commented-out since not currently applicable for empty file
         List<ThumbnailDefinition> thumbnailDefs = null;
         String renditionsParam = parameters.getParameter(PARAM_RENDITIONS);
         if (renditionsParam != null)
@@ -1402,6 +1402,7 @@ public class NodesImpl implements Nodes
 
             thumbnailDefs = getThumbnailDefs(renditionsParam);
         }
+        */
 
         Map<QName, Serializable> props = new HashMap<>(1);
 
@@ -1455,7 +1456,9 @@ public class NodesImpl implements Nodes
 
         Node newNode = getFolderOrDocument(nodeRef.getId(), parameters);
 
+        /* RA-834: commented-out since not currently applicable for empty file
         requestRenditions(thumbnailDefs, newNode); // note: noop for folder
+        */
 
         return newNode;
     }

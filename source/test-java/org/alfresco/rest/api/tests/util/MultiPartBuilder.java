@@ -26,7 +26,6 @@
 
 package org.alfresco.rest.api.tests.util;
 
-import static org.junit.Assert.assertNotNull;
 
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
@@ -56,8 +55,9 @@ public class MultiPartBuilder
     private String description;
     private String contentTypeQNameStr;
     private List<String> aspects;
-    private boolean majorVersion;
-    private boolean overwrite = false; // If a fileName clashes for a versionable file
+    private Boolean majorVersion;
+    private Boolean overwrite;
+    private Boolean autoRename;
 
     private MultiPartBuilder()
     {
@@ -76,6 +76,7 @@ public class MultiPartBuilder
         this.aspects = that.aspects;
         this.majorVersion = that.majorVersion;
         this.overwrite = that.overwrite;
+        this.autoRename = that.autoRename;
     }
 
     public static MultiPartBuilder create()
@@ -144,13 +145,19 @@ public class MultiPartBuilder
 
     public MultiPartBuilder setMajorVersion(boolean majorVersion)
     {
-        this.majorVersion = majorVersion;
+        this.majorVersion = Boolean.valueOf(majorVersion);
         return this;
     }
 
     public MultiPartBuilder setOverwrite(boolean overwrite)
     {
-        this.overwrite = overwrite;
+        this.overwrite = Boolean.valueOf(overwrite);
+        return this;
+    }
+
+    public MultiPartBuilder setAutoRename(boolean autoRename)
+    {
+        this.autoRename = Boolean.valueOf(autoRename);
         return this;
     }
 
@@ -247,8 +254,9 @@ public class MultiPartBuilder
         addPartIfNotNull(parts, "description", description);
         addPartIfNotNull(parts, "contenttype", contentTypeQNameStr);
         addPartIfNotNull(parts, "aspects", getAspects(aspects));
-        addPartIfNotNull(parts, "majorversion", Boolean.toString(majorVersion));
-        addPartIfNotNull(parts, "overwrite", Boolean.toString(overwrite));
+        addPartIfNotNull(parts, "majorversion", majorVersion);
+        addPartIfNotNull(parts, "overwrite", overwrite);
+        addPartIfNotNull(parts, "autoRename", autoRename);
 
         MultipartRequestEntity req = new MultipartRequestEntity(parts.toArray(new Part[parts.size()]), new HttpMethodParams());
 
@@ -258,11 +266,11 @@ public class MultiPartBuilder
         return new MultiPartRequest(os.toByteArray(), req.getContentType(), req.getContentLength());
     }
 
-    private void addPartIfNotNull(List<Part> list, String partName, String partValue)
+    private void addPartIfNotNull(List<Part> list, String partName, Object partValue)
     {
         if (partValue != null)
         {
-            list.add(new StringPart(partName, partValue));
+            list.add(new StringPart(partName, partValue.toString()));
         }
     }
 }

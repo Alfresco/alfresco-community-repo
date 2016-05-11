@@ -1158,6 +1158,7 @@ public class NodesImpl implements Nodes
 
         String fileName = null;
         Content content = null;
+        boolean autoRename = false;
         boolean overwrite = false; // If a fileName clashes for a versionable file
 
         for (FormData.FormField field : formData.getFields())
@@ -1176,9 +1177,13 @@ public class NodesImpl implements Nodes
                     }
                     break;
 
-                case "overwrite":
-                    overwrite = Boolean.valueOf(field.getValue());
+                case "autorename":
+                    autoRename = Boolean.valueOf(field.getValue());
                     break;
+
+                // case "overwrite":
+                // overwrite = Boolean.valueOf(field.getValue());
+                // break;
             }
         }
 
@@ -1204,20 +1209,25 @@ public class NodesImpl implements Nodes
             if (existingFile != null)
             {
                 // File already exists, decide what to do
-                if (overwrite && nodeService.hasAspect(existingFile, ContentModel.ASPECT_VERSIONABLE))
+                if (autoRename)
                 {
-                    // Upload component was configured to overwrite files if name clashes
-                    write(existingFile, content, fileName, false, true);
-
-                    // Extract the metadata (The overwrite policy controls
-                    // which if any parts of the document's properties are updated from this)
-                    extractMetadata(existingFile);
-
-                    // Do not clean formData temp files to
-                    // allow for retries. Temp files will be deleted later
-                    // when GC call DiskFileItem#finalize() method or by temp file cleaner.
-                    return createUploadResponse(parentNodeRef, existingFile);
+                    fileName = findUniqueName(parentNodeRef, fileName);
                 }
+                // TODO uncomment when we decide on uploading a new version vs overwriting
+                // else if (overwrite && nodeService.hasAspect(existingFile, ContentModel.ASPECT_VERSIONABLE))
+                // {
+                //     // Upload component was configured to overwrite files if name clashes
+                //     write(existingFile, content, fileName, false, true);
+                //
+                //     // Extract the metadata (The overwrite policy controls
+                //     // which if any parts of the document's properties are updated from this)
+                //     extractMetadata(existingFile);
+                //
+                //     // Do not clean formData temp files to
+                //     // allow for retries. Temp files will be deleted later
+                //     // when GC call DiskFileItem#finalize() method or by temp file cleaner.
+                //     return createUploadResponse(parentNodeRef, existingFile);
+                // }
                 else
                 {
                     throw new ConstraintViolatedException(fileName + " already exists.");
@@ -1393,6 +1403,46 @@ public class NodesImpl implements Nodes
             Action action = actionService.createAction(actionName);
             actionService.executeAction(action, nodeRef);
         }
+    }
+
+    /**
+     * Creates a unique file name, if the upload component was configured to
+     * find a new unique name for clashing filenames.
+     *
+     * @param parentNodeRef the parent node
+     * @param fileName      the original fileName
+     * @return a new file name
+     */
+    private String findUniqueName(NodeRef parentNodeRef, String fileName)
+    {
+        int counter = 1;
+        String tmpFilename;
+        NodeRef existingFile;
+        do
+        {
+            int dotIndex = fileName.lastIndexOf('.');
+            if (dotIndex == 0)
+            {
+                // File didn't have a proper 'name' instead it
+                // had just a suffix and started with a ".", create "1.txt"
+                tmpFilename = counter + fileName;
+            }
+            else if (dotIndex > 0)
+            {
+                // Filename contained ".", create "fileName-1.txt"
+                tmpFilename = fileName.substring(0, dotIndex) + "-" + counter + fileName.substring(dotIndex);
+            }
+            else
+            {
+                // Filename didn't contain a dot at all, create "fileName-1"
+                tmpFilename = fileName + "-" + counter;
+            }
+            existingFile = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, tmpFilename);
+            counter++;
+
+        } while (existingFile != null);
+
+        return tmpFilename;
     }
 
     /**

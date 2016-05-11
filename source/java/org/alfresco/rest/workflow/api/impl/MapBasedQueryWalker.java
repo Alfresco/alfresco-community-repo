@@ -316,9 +316,9 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
             if (stringValue != null)
             {
                 result = ConvertUtils.convert(stringValue, returnType);
-                if (result instanceof String)
+                if ((result instanceof String) && (! returnType.equals(String.class)))
                 {
-                    // If a string is returned, no converter has been found
+                    // If a string is returned, no converter has been found (for non-String return type)
                     throw new IllegalArgumentException("Unable to convert parameter to type: " + returnType.getName());
                 }
             }

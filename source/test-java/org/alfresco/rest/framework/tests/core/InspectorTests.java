@@ -43,6 +43,7 @@ import org.alfresco.rest.api.nodes.NodeCommentsRelation;
 import org.alfresco.rest.framework.Action;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.BinaryProperties;
+import org.alfresco.rest.framework.core.ActionResourceMetaData;
 import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceInspectorUtil;
 import org.alfresco.rest.framework.core.ResourceMetadata;
@@ -51,6 +52,7 @@ import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
 import org.alfresco.rest.framework.tests.api.mocks.GoatEntityResource;
 import org.alfresco.rest.framework.tests.api.mocks.Grass;
@@ -377,7 +379,7 @@ public class InspectorTests
         ResourceOperation op = ResourceInspector.inspectOperation(FlockEntityResource.class, aMethod, HttpMethod.PUT);
         assertNotNull(op);
         List<ResourceParameter> params  = op.getParameters();
-        assertNotNull(params);
+        assertTrue(params.size()==2);
         for (ResourceParameter param:params)
         {
             if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(param.getParamType()))
@@ -390,7 +392,7 @@ public class InspectorTests
         op = ResourceInspector.inspectOperation(SheepBlackSheepResource.class, aMethod, HttpMethod.POST);
         assertNotNull(op);
         params  = op.getParameters();
-        assertNotNull(params);
+        assertTrue(params.size()==2);
         for (ResourceParameter param:params)
         {
             if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(param.getParamType()))
@@ -414,29 +416,44 @@ public class InspectorTests
     }
 
     @Test
-    public void testInspectActions()
+    public void testInspectActions() throws IllegalAccessException, InstantiationException
     {
         Api api = Api.valueOf("alfrescomock", "private", "1");
         List<ResourceMetadata> metainfo = new ArrayList<ResourceMetadata>();
 
+        GrassEntityResource grassEntityResource = new GrassEntityResource();
         ResourceInspector.inspectActions(api, GrassEntityResource.class,"-root-", metainfo);
         assertTrue(metainfo.size()==2);
+
         for (ResourceMetadata resourceMetadata : metainfo)
         {
             assertEquals(ResourceMetadata.RESOURCE_TYPE.ACTION, resourceMetadata.getType());
+            ActionResourceMetaData actionResourceMetaData = (ActionResourceMetaData) resourceMetadata;
+            Method actionMethod = actionResourceMetaData.getActionMethod();
+            String result = null;
             switch (resourceMetadata.getUniqueId())
             {
                 case "/-root-/{entityId}/grow":
                     assertTrue("GrassEntityResource supports POST", resourceMetadata.supports(HttpMethod.POST));
                     assertFalse("GrassEntityResource does not support DELETE", resourceMetadata.supports(HttpMethod.DELETE));
+                    Class paramType = resourceMetadata.getObjectType(HttpMethod.POST);
+                    Object paramObj = paramType.newInstance();
+                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", paramObj, Params.valueOf("notUsed", null));
+                    assertEquals("Growing well",result);
                     break;
                 case "/-root-/{entityId}/cut":
                     assertTrue("GrassEntityResource supports POST", resourceMetadata.supports(HttpMethod.POST));
                     assertFalse("GrassEntityResource does not support GET", resourceMetadata.supports(HttpMethod.GET));
+                    assertNull(resourceMetadata.getObjectType(HttpMethod.POST));
+                    result = (String) ResourceInspectorUtil.invokeMethod(actionMethod,grassEntityResource, "xyz", Params.valueOf("notUsed", null));
+                    assertEquals("All done",result);
                     break;
                 default:
                     fail("Invalid action information.");
             }
+
+
+
         }
     }
 

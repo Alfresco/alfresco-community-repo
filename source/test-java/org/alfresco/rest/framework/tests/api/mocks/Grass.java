@@ -36,6 +36,11 @@ public class Grass
     final private String id;
     private String color = "green";
 
+    public Grass()
+    {
+        this.id = null;
+    }
+
     public Grass(String id)
     {
         super();

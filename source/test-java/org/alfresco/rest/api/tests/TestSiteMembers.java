@@ -41,17 +41,21 @@ import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
+import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Sites;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Person;
+import org.alfresco.rest.api.tests.client.data.Site;
+import org.alfresco.rest.api.tests.client.data.SiteImpl;
 import org.alfresco.rest.api.tests.client.data.SiteMember;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
+import org.json.simple.JSONObject;
 import org.junit.Test;
 
 public class TestSiteMembers extends EnterpriseTestApi
@@ -113,6 +117,14 @@ public class TestSiteMembers extends EnterpriseTestApi
 				publicApiClient.setRequestContext(new RequestContext(testNetwork.getId(), personId));
 				ListResponse<SiteMember> siteMembers = sitesProxy.getSiteMembers(testSite.getSiteId(), createParams(paging, null));
 				checkList(expectedSiteMembers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), siteMembers);
+
+				HttpResponse response = sitesProxy.getAll("sites", testSite.getSiteId(), "members", null, createParams(paging,Collections.singletonMap("includeSource", "true")), "Failed to get all site members");
+				checkList(expectedSiteMembers.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), SiteMember.parseSiteMembers(testSite.getSiteId(), response.getJsonResponse()));
+				JSONObject source = sitesProxy.parseListSource(response.getJsonResponse());
+				Site sourceSite = SiteImpl.parseSite(source);
+				assertNotNull(sourceSite);
+				assertEquals(testSite.getSiteId(), sourceSite.getSiteId());
+				assertEquals(testSite.getGuid(), sourceSite.getGuid());
 	    	}
 	    	
 	    	// invalid site id

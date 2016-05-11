@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.tests.client;
 
+import static org.junit.Assert.assertNotNull;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
@@ -749,6 +751,16 @@ public class PublicApiClient
 			{
 		        throw new PublicApiException(e);
 			}
+		}
+
+		public JSONObject parseListSource(JSONObject jsonResponse)
+		{
+			JSONObject jsonList = (JSONObject)jsonResponse.get("list");
+			assertNotNull(jsonList);
+
+			JSONObject source = (JSONObject)jsonList.get("source");
+			assertNotNull(source);
+			return source;
 		}
 	}
 

@@ -170,13 +170,13 @@ public class QueriesApiTest extends AbstractBaseApiTest
 
             String f1Id = createFolder(user1, myFolderNodeId, "folder 1").getId();
             String f2Id = createFolder(user1, myFolderNodeId, "folder 2").getId();
-            String f3Id = createFolder(user1, myFolderNodeId, "folder 3").getId();
 
             String name = "name";
             String title = "title";
             String descrip = "descrip";
 
             String folderNameSuffix = " "+testTerm+" folder";
+            String txtSuffix = ".txt";
 
             Map<String,String> idNameMap = new HashMap<>();
 
@@ -187,7 +187,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 String contentText = "f1 " + testTerm + " test document " + user1 + " document " + i;
 
                 String num = String.format("%05d", nameIdx);
-                String docName = name+num+name;
+                String docName = name+num+name+txtSuffix;
 
                 Map<String,String> docProps = new HashMap<>(2);
                 docProps.put("cm:title", title+num+title);
@@ -208,7 +208,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 String contentText = "f2 " + testTerm + " test document";
 
                 String num = String.format("%05d", nameIdx);
-                String docName = name+num+name;
+                String docName = name+num+name+txtSuffix;
 
                 Map<String, String> props = new HashMap<>(2);
                 props.put("cm:title", title+num+title);
@@ -284,7 +284,31 @@ public class QueriesApiTest extends AbstractBaseApiTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, f3NodeIds, null);
 
-            // Search hits based on FTS (content) - with folder 2 as the root node (for path-based / in-tree search)
+            // Search - with -root- as the root node (for path-based / in-tree search)
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put(Queries.PARAM_ROOT_NODE_ID, Nodes.PATH_ROOT);
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, allIds, null);
+
+            // Search - with -shared- as the root node (for path-based / in-tree search)
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put(Queries.PARAM_ROOT_NODE_ID, Nodes.PATH_SHARED);
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            // Search - with folder 1 as root node (for path-based / in-tree search)
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put(Queries.PARAM_ROOT_NODE_ID, f1Id);
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, f1NodeIds, null);
+
+            // Search - with folder 2 as the root node (for path-based / in-tree search)
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);
             params.put(Queries.PARAM_ROOT_NODE_ID, f2Id);
@@ -292,13 +316,13 @@ public class QueriesApiTest extends AbstractBaseApiTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, f2NodeIds, null);
 
-            // Search hits based on FTS (content) - with folder 1 as root node (for path-based / in-tree search)
+            // Search - with -my- as the root node (for path-based / in-tree search)
             params = new HashMap<>(2);
-            params.put(Queries.PARAM_TERM, testTerm);
-            params.put(Queries.PARAM_ROOT_NODE_ID, f1Id);
+            params.put(Queries.PARAM_TERM, name+"*");
+            params.put(Queries.PARAM_ROOT_NODE_ID, Nodes.PATH_MY);
             response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            checkNodeIds(nodes, f1NodeIds, null);
+            checkNodeIds(nodes, allIds, null);
 
             // Search hits based on cm:name
             String term = name+String.format("%05d", 1)+name;
@@ -315,9 +339,25 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 }
                 else
                 {
-                    assertEquals(term, node.getName());
+                    assertEquals(term+txtSuffix, node.getName());
                 }
             }
+
+            // search for name with . (eg. ".txt") without double quotes
+            term = name+String.format("%05d", 1)+name+txtSuffix;
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, term);
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+
+            // search for name with . (eg. ".txt") with double quotes
+            term = name+String.format("%05d", 1)+name+txtSuffix;
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "\""+term+"\"");
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
 
             // Search hits based on cm:title
             term = title+String.format("%05d", 2)+title;

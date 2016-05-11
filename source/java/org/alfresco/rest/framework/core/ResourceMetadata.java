@@ -39,6 +39,7 @@ import org.springframework.http.HttpMethod;
  * the resource can perform and what properties it has.
  *
  * @author Gethin James
+ * @author janv
  */
 public class ResourceMetadata
 {
@@ -50,10 +51,15 @@ public class ResourceMetadata
     
     @JsonIgnore
     private final Api api;
+
     private final Set<Class<? extends ResourceAction>> apiDeleted;
+    private Set<Class<? extends ResourceAction>> apiNoAuth;
 
     @SuppressWarnings("unchecked")
-    public ResourceMetadata(String uniqueId, RESOURCE_TYPE type, List<ResourceOperation> operations, Api api, Set<Class<? extends ResourceAction>> apiDeleted, String parentResource)
+    public ResourceMetadata(String uniqueId, RESOURCE_TYPE type, List<ResourceOperation> operations, Api api,
+                            Set<Class<? extends ResourceAction>> apiDeleted,
+                            Set<Class<? extends ResourceAction>> apiNoAuth,
+                            String parentResource)
     {
         super();
         this.uniqueId = uniqueId;
@@ -61,6 +67,7 @@ public class ResourceMetadata
         this.operations = (List<ResourceOperation>) (operations==null?Collections.emptyList():operations);
         this.api = api;
         this.apiDeleted  = (Set<Class<? extends ResourceAction>>) (apiDeleted==null?Collections.emptySet():apiDeleted);
+        this.apiNoAuth  = (Set<Class<? extends ResourceAction>>) (apiNoAuth==null?Collections.emptySet():apiNoAuth);
         this.parentResource = parentResource!=null?(parentResource.startsWith("/")?parentResource:"/"+parentResource):null;
     }
 
@@ -110,7 +117,17 @@ public class ResourceMetadata
     {
        return apiDeleted.contains(resourceAction);
     }
-    
+
+    /**
+     * Indicates if this resource action supports unauthenticated access.
+     * @param resourceAction
+     * @return
+     */
+    public boolean isNoAuth(Class<? extends ResourceAction> resourceAction)
+    {
+        return apiNoAuth.contains(resourceAction);
+    }
+
     /**
      * URL uniqueId to the resource
      * 
@@ -158,6 +175,8 @@ public class ResourceMetadata
         builder.append(this.operations);
         builder.append(", apiDeleted=");
         builder.append(this.apiDeleted);
+        builder.append(", apiNoAuth=");
+        builder.append(this.apiNoAuth);
         builder.append("]");
         return builder.toString();
     }

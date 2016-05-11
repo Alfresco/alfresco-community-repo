@@ -33,6 +33,7 @@ import org.alfresco.repo.Client.ClientType;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.model.filefolder.HiddenAspect;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.service.cmr.activities.ActivityInfo;
 import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileFolderServiceType;
@@ -289,56 +290,5 @@ public class ActivityPosterImpl implements CmisActivityPoster, InitializingBean
             return null;
         }
     }
-    
-    public static class ActivityInfo
-    {
-        private NodeRef nodeRef;
-        private String parentPath;
-        private NodeRef parentNodeRef;
-        private String siteId;
-        private String fileName;
-        private boolean isFolder;
 
-        public ActivityInfo(NodeRef nodeRef, String parentPath, NodeRef parentNodeRef,
-                String siteId, String fileName, boolean isFolder)
-        {
-            super();
-            this.nodeRef = nodeRef;
-            this.parentPath = parentPath;
-            this.parentNodeRef = parentNodeRef;
-            this.siteId = siteId;
-            this.fileName = fileName;
-            this.isFolder = isFolder;
-        }
-        
-        public NodeRef getNodeRef()
-        {
-            return nodeRef;
-        }
-
-        public String getParentPath()
-        {
-            return parentPath;
-        }
-
-        public NodeRef getParentNodeRef()
-        {
-            return parentNodeRef;
-        }
-
-        public String getSiteId()
-        {
-            return siteId;
-        }
-        
-        public String getFileName()
-        {
-            return fileName;
-        }
-        
-        public boolean isFolder()
-        {
-            return isFolder;
-        }
-    }
 }

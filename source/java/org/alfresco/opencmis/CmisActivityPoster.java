@@ -25,7 +25,7 @@
  */
 package org.alfresco.opencmis;
 
-import org.alfresco.opencmis.ActivityPosterImpl.ActivityInfo;
+import org.alfresco.service.cmr.activities.ActivityInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**

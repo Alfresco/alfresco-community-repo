@@ -83,9 +83,9 @@ import org.alfresco.rest.api.impl.node.ratings.RatingScheme;
 import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.Comment;
 import org.alfresco.rest.api.tests.client.data.Company;
-import org.alfresco.rest.api.tests.client.data.Document;
+import org.alfresco.rest.api.tests.client.data.FavouriteDocument;
+import org.alfresco.rest.api.tests.client.data.FavouriteFolder;
 import org.alfresco.rest.api.tests.client.data.FavouriteSite;
-import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.MemberOfSite;
 import org.alfresco.rest.api.tests.client.data.NetworkImpl;
 import org.alfresco.rest.api.tests.client.data.NodeRating;
@@ -924,20 +924,20 @@ public class RepoService
 		return wrapProperties;
     }
     
-    public Document getDocument(String networkId, final NodeRef nodeRef)
+    public FavouriteDocument getDocument(String networkId, final NodeRef nodeRef)
     {
-    	return TenantUtil.runAsSystemTenant(new TenantRunAsWork<Document>()
+    	return TenantUtil.runAsSystemTenant(new TenantRunAsWork<FavouriteDocument>()
 		{
 			@Override
-			public Document doWork() throws Exception
+			public FavouriteDocument doWork() throws Exception
 			{
-				Document document = null;
+				FavouriteDocument document = null;
 
 		    	QName type = nodeService.getType(nodeRef);
 		    	if(dictionaryService.isSubClass(type, ContentModel.TYPE_CONTENT))
 		    	{
 		    		Properties properties = getProperties(nodeRef);
-		    		document = Document.getDocument(nodeRef.getId(), nodeRef.getId(), properties);
+		    		document = FavouriteDocument.getDocument(nodeRef.getId(), nodeRef.getId(), properties);
 		    	}
 		    	else
 		    	{
@@ -949,20 +949,20 @@ public class RepoService
 		}, networkId);
     }
     
-    public Folder getFolder(String networkId, final NodeRef nodeRef)
+    public FavouriteFolder getFolder(String networkId, final NodeRef nodeRef)
     {
-    	return TenantUtil.runAsSystemTenant(new TenantRunAsWork<Folder>()
+    	return TenantUtil.runAsSystemTenant(new TenantRunAsWork<FavouriteFolder>()
 		{
 			@Override
-			public Folder doWork() throws Exception
+			public FavouriteFolder doWork() throws Exception
 			{
-				Folder folder = null;
+				FavouriteFolder folder = null;
 
 		    	QName type = nodeService.getType(nodeRef);
 		    	if(dictionaryService.isSubClass(type, ContentModel.TYPE_FOLDER))
 		    	{
 		    		Properties properties = getProperties(nodeRef);
-		    		folder = Folder.getFolder(nodeRef.getId(), nodeRef.getId(), properties);
+		    		folder = FavouriteFolder.getFolder(nodeRef.getId(), nodeRef.getId(), properties);
 		    	}
 		    	else
 		    	{

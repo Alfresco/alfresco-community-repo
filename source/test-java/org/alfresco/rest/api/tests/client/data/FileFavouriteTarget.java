@@ -31,15 +31,15 @@ import org.json.simple.JSONObject;
 
 public class FileFavouriteTarget implements FavouritesTarget
 {
-	private Document document;
+	private FavouriteDocument document;
 
-	public FileFavouriteTarget(Document document)
+	public FileFavouriteTarget(FavouriteDocument document)
 	{
 		super();
 		this.document = document;
 	}
 
-	public Document getDocument()
+	public FavouriteDocument getDocument()
 	{
 		return document;
 	}

@@ -31,12 +31,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.rest.framework.resource.UniqueId;
+import org.alfresco.rest.framework.resource.content.*;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
@@ -50,7 +50,6 @@ import org.apache.chemistry.opencmis.commons.data.PropertyData;
  * @author Gethin James
  * @author janv
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Node implements Comparable<Node>
 {
     protected NodeRef nodeRef;
@@ -144,34 +143,15 @@ public class Node implements Comparable<Node>
         return userInfo;
     }
 
-    private String getNodeRefAsString(NodeRef nRef) {
-        return (nRef != null ? nRef.getId() : null);
-    }
-
-    private NodeRef getStringAsNodeRef(String nRefString) {
-        if (nRefString == null)
-        {
-            return null;
-        }
-
-        if( ! NodeRef.isNodeRef(nRefString))
-        {
-            return new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nRefString);
-        }
-        else
-        {
-            return new NodeRef(nRefString);
-        }
-    }
-
-    public String getId()
+    @UniqueId
+    public NodeRef getNodeRef()
     {
-        return getNodeRefAsString(this.nodeRef);
+        return nodeRef;
     }
 
-    public void setId(String id)
+    public void setNodeRef(NodeRef nodeRef)
     {
-       this.nodeRef = getStringAsNodeRef(id);
+        this.nodeRef = nodeRef;
     }
 
     public Date getCreatedAt()
@@ -243,14 +223,14 @@ public class Node implements Comparable<Node>
         this.aspectNames = aspectNames;
     }
 
-    public String getParentId()
+    public NodeRef getParentId()
     {
-        return getNodeRefAsString(parentNodeRef);
+        return parentNodeRef;
     }
 
-    public void setParentId(String parentId)
+    public void setParentId(NodeRef parentNodeRef)
     {
-        this.parentNodeRef = getStringAsNodeRef(parentId);
+        this.parentNodeRef = parentNodeRef;
     }
 
     public Boolean getIsFolder()
@@ -286,13 +266,13 @@ public class Node implements Comparable<Node>
         }
 
         Node node = (Node)other;
-        return EqualsHelper.nullSafeEquals(getId(), node.getId());
+        return EqualsHelper.nullSafeEquals(getNodeRef(), node.getNodeRef());
     }
 
     @Override
     public int compareTo(Node node)
     {
-        return getId().toString().compareTo(node.getId().toString());
+        return getNodeRef().toString().compareTo(node.getNodeRef().toString());
     }
 
     @Override
@@ -304,18 +284,18 @@ public class Node implements Comparable<Node>
                 + modifiedByUser + ", pathInfo =" + pathInfo +"]";
     }
 
+    // here to allow POST /nodes/{id}/children when creating empty file with specified content.mimeType
     protected ContentInfo contentInfo;
-
-    public ContentInfo getContent()
-    {
-        return contentInfo;
-    }
 
     public void setContent(ContentInfo contentInfo)
     {
         this.contentInfo = contentInfo;
     }
 
+    public ContentInfo getContent()
+    {
+        return this.contentInfo;
+    }
 
     // TODO for backwards compat' - set explicitly when needed (ie. favourites) (note: we could choose to have separate old Node/NodeImpl etc)
 
@@ -333,12 +313,11 @@ public class Node implements Comparable<Node>
     }
 
     /**
-     * @deprecated note: used when creating (via POST) favourite target
+     * @deprecated
      */
     public void setGuid(NodeRef guid)
     {
         this.guid = guid;
-        setId(guid.toString());
     }
 
     /**

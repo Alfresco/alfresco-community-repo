@@ -165,14 +165,14 @@ public class Favourite implements Serializable, ExpectedComparison, Comparable<F
 		else if(jsonObject.containsKey("file"))
 		{
 			JSONObject documentJSON = (JSONObject)jsonObject.get("file");
-			Document document = Document.parseDocument(documentJSON);
+			FavouriteDocument document = FavouriteDocument.parseDocument(documentJSON);
 			ret = new FileFavouriteTarget(document);
 			
 		}
 		else if(jsonObject.containsKey("folder"))
 		{
 			JSONObject folderJSON = (JSONObject)jsonObject.get("folder");
-			Folder folder = Folder.parseFolder(folderJSON);
+			FavouriteFolder folder = FavouriteFolder.parseFolder(folderJSON);
 			ret = new FolderFavouriteTarget(folder);
 		}
 

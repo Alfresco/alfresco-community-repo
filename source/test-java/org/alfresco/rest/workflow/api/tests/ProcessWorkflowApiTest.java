@@ -56,6 +56,7 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Document;
+import org.alfresco.rest.api.tests.client.data.FavouriteDocument;
 import org.alfresco.rest.api.tests.client.data.MemberOfSite;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
@@ -385,7 +386,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         final ActivitiScriptNode packageScriptNode = (ActivitiScriptNode) variables.get("bpm_package");
         assertNotNull(packageScriptNode);
         
-        final Map<String, Document> documentMap = new HashMap<String, Document>();
+        final Map<String, FavouriteDocument> documentMap = new HashMap<>();
         
         TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
         {
@@ -395,7 +396,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
                 List<ChildAssociationRef> documentList = nodeService.getChildAssocs(packageScriptNode.getNodeRef());
                 for (ChildAssociationRef childAssociationRef : documentList)
                 {
-                    Document doc = getTestFixture().getRepoService().getDocument(requestContext.getNetworkId(), childAssociationRef.getChildRef());
+                    FavouriteDocument doc = getTestFixture().getRepoService().getDocument(requestContext.getNetworkId(), childAssociationRef.getChildRef());
                     documentMap.put(doc.getName(), doc);
                 }
                 
@@ -415,7 +416,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
         
         assertEquals(2, documentMap.size());
         assertTrue(documentMap.containsKey("Test Doc1"));
-        Document doc = documentMap.get("Test Doc1");
+        FavouriteDocument doc = documentMap.get("Test Doc1");
         assertEquals("Test Doc1", doc.getName());
         assertEquals("Test Doc1 Title", doc.getTitle());
         

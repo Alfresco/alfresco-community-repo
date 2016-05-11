@@ -43,7 +43,6 @@ import org.alfresco.service.namespace.QName;
  * @author janv
  *
  */
-@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Document extends Node
 {
     public Document() {
@@ -64,6 +63,18 @@ public class Document extends Node
         }
 
         this.isFolder = false;
+    }
+
+    @Override
+    public ContentInfo getContent()
+    {
+        return contentInfo;
+    }
+
+    @Override
+    public void setContent(ContentInfo contentInfoIn)
+    {
+        contentInfo = contentInfoIn;
     }
 
     @Override

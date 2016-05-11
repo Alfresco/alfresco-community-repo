@@ -101,6 +101,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.activities.ActivityInfo;
 import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -128,6 +129,8 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.cmr.version.VersionService;
@@ -185,7 +188,13 @@ public class NodesImpl implements Nodes
     private OwnableService ownableService;
     private AuthorityService authorityService;
     private ThumbnailService thumbnailService;
+    private SiteService siteService;
     private ActivityPoster poster;
+
+    private enum Activity_Type
+    {
+        ADDED, UPDATED, DELETED, DOWNLOADED
+    }
 
     private BehaviourFilter behaviourFilter;
 
@@ -223,6 +232,7 @@ public class NodesImpl implements Nodes
         this.ownableService = sr.getOwnableService();
         this.authorityService = sr.getAuthorityService();
         this.thumbnailService = sr.getThumbnailService();
+        this.siteService =  sr.getSiteService();
 
         if (defaultIgnoreTypesAndAspects != null)
         {
@@ -1359,7 +1369,11 @@ public class NodesImpl implements Nodes
             nodeService.addAspect(nodeRef, ContentModel.ASPECT_TEMPORARY, null);
         }
 
+        final ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
+
         fileFolderService.delete(nodeRef);
+
+        postActivity(Activity_Type.DELETED, activityInfo);
     }
 
     @Override
@@ -1512,16 +1526,68 @@ public class NodesImpl implements Nodes
             throw new ConstraintViolatedException(dcne.getMessage());
         }
 
-        boolean isFolder = isSubClass(nodeTypeQName, ContentModel.TYPE_FOLDER);
-        boolean isContent = isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT);
-
-        if (isFolder || isContent)
-        {
-            FileInfo fileInfo = fileFolderService.getFileInfo(newNode);
-            poster.postSiteAwareFileFolderActivity(isFolder?ActivityType.FOLDER_ADDED:ActivityType.FILE_ADDED, null, TenantUtil.getCurrentDomain(),
-                    null, parentNodeRef, newNode, nodeName, APP_TOOL, Client.asType(Client.ClientType.script), fileInfo);
-        }
+        ActivityInfo activityInfo =  getActivityInfo(parentNodeRef, newNode);
+        postActivity(Activity_Type.ADDED, activityInfo);
         return newNode;
+    }
+
+    protected void postActivity(Activity_Type activity_type, ActivityInfo activityInfo)
+    {
+        if (activityInfo == null) return; //Nothing to do.
+
+        String activityType = determineActivityType(activity_type, activityInfo.getFileInfo().isFolder());
+        if (activityType != null)
+        {
+            poster.postFileFolderActivity(activityType, null, TenantUtil.getCurrentDomain(),
+                    activityInfo.getSiteId(), activityInfo.getParentNodeRef(), activityInfo.getNodeRef(),
+                    activityInfo.getFileName(), APP_TOOL, Client.asType(Client.ClientType.script),
+                    activityInfo.getFileInfo());
+        }
+    }
+
+    protected ActivityInfo getActivityInfo(NodeRef parentNodeRef, NodeRef nodeRef)
+    {
+        SiteInfo siteInfo = siteService.getSite(nodeRef);
+        String siteId = (siteInfo != null ? siteInfo.getShortName() : null);
+        if(siteId != null && !siteId.equals(""))
+        {
+            FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
+            if (fileInfo != null)
+            {
+                boolean isContent = isSubClass(fileInfo.getType(), ContentModel.TYPE_CONTENT);
+
+                if (fileInfo.isFolder() || isContent)
+                {
+                    return new ActivityInfo(null, parentNodeRef, siteId, fileInfo);
+                }
+            }
+        }
+        else
+        {
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("Non-site activity, so ignored " + nodeRef);
+            }
+        }
+        return null;
+    }
+
+    protected String determineActivityType(Activity_Type activity_type, boolean isFolder)
+    {
+        switch (activity_type)
+        {
+            case DELETED:
+                return isFolder ? ActivityType.FOLDER_DELETED:ActivityType.FILE_DELETED;
+            case ADDED:
+                return isFolder ? ActivityType.FOLDER_ADDED:ActivityType.FILE_ADDED;
+            case UPDATED:
+                if (!isFolder) return ActivityType.FILE_UPDATED;
+                break;
+            case DOWNLOADED:
+                if (!isFolder) return ActivityPoster.DOWNLOADED;
+                break;
+        }
+        return null;
     }
 
     // check cm:cmobject (but *not* cm:systemfolder)
@@ -1737,16 +1803,10 @@ public class NodesImpl implements Nodes
             }
         }
 
-        Node updatedNode = getFolderOrDocument(nodeRef.getId(), parameters);
-        boolean isContent = isSubClass(nodeTypeQName, ContentModel.TYPE_CONTENT);
+        ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
+        postActivity(Activity_Type.UPDATED, activityInfo);
 
-        if (isContent)
-        {
-            FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
-            poster.postSiteAwareFileFolderActivity(ActivityType.FILE_UPDATED, null, TenantUtil.getCurrentDomain(),
-                    null, updatedNode.getParentId(), updatedNode.getNodeRef(), updatedNode.getName(), APP_TOOL, Client.asType(Client.ClientType.script), fileInfo);
-        }
-        return updatedNode;
+        return getFolderOrDocument(nodeRef.getId(), parameters);
     }
 
     @Override
@@ -1910,8 +1970,8 @@ public class NodesImpl implements Nodes
                 createVersion(nodeRef, isVersioned, versionType, versionComment);
             }
 
-            poster.postSiteAwareFileFolderActivity(ActivityType.FILE_UPDATED, null, TenantUtil.getCurrentDomain(),
-                    null, parentNodeRef, nodeRef, fileName, APP_TOOL, Client.asType(Client.ClientType.script), fileInfo);
+            ActivityInfo activityInfo =  getActivityInfo(parentNodeRef, nodeRef);
+            postActivity(Activity_Type.UPDATED, activityInfo);
 
             extractMetadata(nodeRef);
         }

@@ -223,7 +223,8 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                     if (result instanceof BinaryResource)
                     {
                         ContentInfo ci = null;
-                        if (result instanceof NodeBinaryResource) {
+                        if (result instanceof NodeBinaryResource)
+                        {
                             ci = ((NodeBinaryResource)result).getContentInfo();
                         }
                         executionCallback.onSuccess(result, ci);

@@ -61,11 +61,13 @@ public class NodeBinaryResource implements BinaryResource
         return this.propertyQName;
     }
 
-    public ContentInfo getContentInfo() {
+    public ContentInfo getContentInfo()
+    {
         return this.contentInfo;
     }
 
-    public String getAttachFileName() {
+    public String getAttachFileName()
+    {
         return this.attachFileName;
     }
 }

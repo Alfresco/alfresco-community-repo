@@ -153,7 +153,8 @@ public class NodesImpl implements Nodes
 
     private Set<String> nonAttachContentTypes = Collections.EMPTY_SET; // pre-configured whitelist, eg. images & pdf
 
-    public void setNonAttachContentTypes(Set<String> nonAttachWhiteList) {
+    public void setNonAttachContentTypes(Set<String> nonAttachWhiteList)
+    {
         this.nonAttachContentTypes = nonAttachWhiteList;
     }
 
@@ -179,7 +180,8 @@ public class NodesImpl implements Nodes
         }
     }
 
-    public void setServiceRegistry(ServiceRegistry sr) {
+    public void setServiceRegistry(ServiceRegistry sr)
+    {
         this.sr = sr;
     }
 
@@ -235,7 +237,8 @@ public class NodesImpl implements Nodes
     private final static String PARAM_NODETYPE = "nodeType";
 
     private final static Map<String,QName> MAP_PARAM_QNAME;
-    static {
+    static
+    {
         Map<String,QName> aMap = new HashMap<>(9);
 
         aMap.put(PARAM_ISFOLDER, GetChildrenCannedQuery.SORT_QNAME_NODE_IS_FOLDER);
@@ -518,23 +521,28 @@ public class NodesImpl implements Nodes
     {
         final List<String> pathElements = new ArrayList<>(0);
 
-        if ((path != null) && (! path.isEmpty())) {
+        if ((path != null) && (! path.isEmpty()))
+        {
 
-            if (path.startsWith("/")) {
+            if (path.startsWith("/"))
+            {
                 path = path.substring(1);
             }
 
-            if (! path.isEmpty()) {
+            if (! path.isEmpty())
+            {
                 pathElements.addAll(Arrays.asList(path.split("/")));
 
                 if (checkForCompanyHome)
                 {
                 /*
-                if (nodeService.getRootNode(parentNodeRef.getStoreRef()).equals(parentNodeRef)) {
+                if (nodeService.getRootNode(parentNodeRef.getStoreRef()).equals(parentNodeRef))
+                {
                     // special case
                     NodeRef chNodeRef = repositoryHelper.getCompanyHome();
                     String chName = (String)nodeService.getProperty(chNodeRef, ContentModel.PROP_NAME);
-                    if (chName.equals(pathElements.get(0))) {
+                    if (chName.equals(pathElements.get(0)))
+                    {
                         pathElements = pathElements.subList(1, pathElements.size());
                         parentNodeRef = chNodeRef;
                     }
@@ -545,8 +553,10 @@ public class NodesImpl implements Nodes
         }
 
         FileInfo fileInfo = null;
-        try {
-            if (pathElements.size() != 0) {
+        try
+        {
+            if (pathElements.size() != 0)
+            {
                 fileInfo = fileFolderService.resolveNamePath(parentNodeRef, pathElements);
             }
             else
@@ -558,7 +568,8 @@ public class NodesImpl implements Nodes
                 }
             }
         }
-        catch (FileNotFoundException fnfe) {
+        catch (FileNotFoundException fnfe)
+        {
             // convert checked exception
             throw new InvalidNodeRefException(fnfe.getMessage()+" ["+path+"]", parentNodeRef);
         }
@@ -590,7 +601,8 @@ public class NodesImpl implements Nodes
 
     private Node getFolderOrDocument(final NodeRef nodeRef, NodeRef parentNodeRef, QName nodeTypeQName, List<String> selectParam, Map<String,UserInfo> mapUserInfo)
     {
-        if (mapUserInfo == null) {
+        if (mapUserInfo == null)
+        {
             mapUserInfo = new HashMap<>(2);
         }
 
@@ -816,7 +828,8 @@ public class NodesImpl implements Nodes
                 Serializable value = nodeProps.get(qName);
                 if (value != null)
                 {
-                    if (PROPS_USERLOOKUP.contains(qName)) {
+                    if (PROPS_USERLOOKUP.contains(qName))
+                    {
                         value = Node.lookupUserInfo((String)value, mapUserInfo, sr.getPersonService());
                     }
                     props.put(qName.toPrefixString(namespaceService), value);
@@ -1031,7 +1044,7 @@ public class NodesImpl implements Nodes
 
     private NodeRef createNodeImpl(NodeRef parentNodeRef, String nodeName, QName nodeTypeQName, Map<QName, Serializable> props)
     {
-        if(props == null)
+        if (props == null)
         {
             props = new HashMap<>(1);
         }
@@ -1176,7 +1189,8 @@ public class NodesImpl implements Nodes
         String name = (String)nodeProps.get(ContentModel.PROP_NAME);
 
         org.alfresco.rest.framework.resource.content.ContentInfo ci = null;
-        if (cd != null) {
+        if (cd != null)
+        {
             ci = new org.alfresco.rest.framework.resource.content.ContentInfoImpl(cd.getMimetype(), cd.getEncoding(), cd.getSize(), cd.getLocale());
         }
 

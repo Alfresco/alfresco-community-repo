@@ -20,6 +20,7 @@ package org.alfresco.rest.api;
 
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.QuickShareLinkEmailRequest;
+import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -56,6 +57,16 @@ public interface QuickShareLinks
      * @throws EntityNotFoundException
      */
     BinaryResource readProperty(String sharedId, String renditionId, Parameters parameters) throws EntityNotFoundException;
+
+    /**
+     * List renditions info - note: only returns available (=> created) renditions.
+     *
+     * Note: does *not* require authenticated access for (public) shared link.
+     *
+     * @param sharedId
+     * @return
+     */
+    CollectionWithPagingInfo<Rendition> getRenditions(String sharedId);
 
     /**
      * Delete the shared link.

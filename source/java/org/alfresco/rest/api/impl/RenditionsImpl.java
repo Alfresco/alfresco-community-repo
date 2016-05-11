@@ -84,7 +84,6 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
 {
     private static final Log LOGGER = LogFactory.getLog(RenditionsImpl.class);
 
-    private static final String PARAM_STATUS = "status";
     private static final Set<String> RENDITION_STATUS_COLLECTION_EQUALS_QUERY_PROPERTIES = Collections.singleton(PARAM_STATUS);
 
     private Nodes nodes;

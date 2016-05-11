@@ -27,6 +27,7 @@ package org.alfresco.service.cmr.quickshare;
 
 import java.util.Map;
 
+import org.alfresco.repo.quickshare.QuickShareServiceImpl.QuickShareEmailRequest;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
@@ -84,4 +85,11 @@ public interface QuickShareService
      * Determine if the current user has permission to read the shared content.
      */
     public boolean canRead(String sharedId);
+
+    /**
+     * Notifies users by email that a content has been shared with them, and the details of it.
+     *
+     * @param emailRequest The email details including its template details
+     */
+    public void sendEmailNotification(QuickShareEmailRequest emailRequest);
 }

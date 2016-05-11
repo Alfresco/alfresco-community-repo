@@ -197,6 +197,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         Date docModifiedAt = nodeResp.getModifiedAt();
         String docModifiedBy = nodeResp.getModifiedByUser().getId();
+        assertEquals(user1, docModifiedBy);
 
         // create shared link
         Map<String, String> body = new HashMap<>();
@@ -210,10 +211,11 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         assertEquals(d1Id, resp.getNodeId());
         assertEquals(docName1, resp.getName());
-        assertEquals(docModifiedAt.getTime(), resp.getModifiedAt().getTime()); // ie. not changed
 
-        assertEquals(user1+" "+user1, resp.getModifiedByUser().getDisplayName()); // ie. not user2
-        assertEquals(user2+" "+user2, resp.getSharedByUser().getDisplayName());
+        assertEquals(docModifiedAt.getTime(), resp.getModifiedAt().getTime()); // not changed
+        assertEquals(docModifiedBy, resp.getModifiedByUser().getId()); // not changed (ie. not user2)
+
+        assertEquals(user2, resp.getSharedByUser().getId());
 
         // try to create again (same user) - should return previous shared id
         response = post(URL_SHARED_LINKS, user2, toJsonAsStringNonNull(body), 201);
@@ -229,6 +231,11 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(sharedId, resp.getSharedId());
         assertEquals(d1Id, resp.getNodeId());
         assertEquals(docName1, resp.getName());
+
+        assertNull(resp.getModifiedByUser().getId());
+        assertEquals(user1+" "+user1, resp.getModifiedByUser().getDisplayName());
+        assertNull(resp.getSharedByUser().getId());
+        assertEquals(user2+" "+user2, resp.getSharedByUser().getDisplayName());
 
 
         // unauth access to get shared link file content
@@ -248,7 +255,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
 
         assertEquals(sharedId, resp.getSharedId());
-        assertEquals(user2+" "+user2, resp.getSharedByUser().getDisplayName());
+
+        assertEquals(user1, resp.getModifiedByUser().getId());
+        assertEquals(user2, resp.getSharedByUser().getId());
 
 
         // As user 1 ...
@@ -261,16 +270,27 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // delete shared link
         delete(URL_SHARED_LINKS, user2, sharedId, 204);
 
+        response = getSingle(NodesEntityResource.class, user2, d1Id, null, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+
+        //assertEquals(docModifiedAt.getTime(), nodeResp.getModifiedAt().getTime()); // not changed
+        //assertEquals(docModifiedBy, nodeResp.getModifiedByUser().getId()); // not changed (ie. not user2)
 
 
         // -ve create tests
         {
+            // -ve - create - missing nodeId
+            body = new HashMap<>();
+            post(URL_SHARED_LINKS, user1, toJsonAsStringNonNull(body), 400);
+
             // -ve - create - unknown nodeId
+            body = new HashMap<>();
             body.put("nodeId", "dummy");
             post(URL_SHARED_LINKS, user1, toJsonAsStringNonNull(body), 404);
 
             // -ve - create - try to link to folder (ie. not a file)
             String f1Id = createFolder(user1, myFolderNodeId, "f1 " + RUNID).getId();
+            body = new HashMap<>();
             body.put("nodeId", f1Id);
             post(URL_SHARED_LINKS, user1, toJsonAsStringNonNull(body), 404);
 

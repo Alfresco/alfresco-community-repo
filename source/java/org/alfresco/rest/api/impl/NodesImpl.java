@@ -1087,13 +1087,25 @@ public class NodesImpl implements Nodes
                  includeFiles = isFile;
             }
 
+            if (Boolean.TRUE.equals(includeFiles) && Boolean.TRUE.equals(includeFolders))
+            {
+                throw new InvalidArgumentException("Invalid filter (isFile=true and isFolder = true) - a node cannot be both a file and a folder");
+            }
+
             String nodeTypeStr = propertyWalker.getProperty(PARAM_NODETYPE, WhereClauseParser.EQUALS, String.class);
             if ((nodeTypeStr != null) && (! nodeTypeStr.isEmpty()))
             {
+                if ((isFile != null) || (isFolder != null))
+                {
+                    throw new InvalidArgumentException("Invalid filter - nodeType and isFile/isFolder are mutually exclusive");
+                }
+
                 Pair<QName, Boolean> pair = parseNodeTypeFilter(nodeTypeStr);
                 filterNodeTypeQName = pair.getFirst();
                 filterIncludeSubTypes = pair.getSecond();
             }
+
+
         }
 
         List<SortColumn> sortCols = parameters.getSorting();
@@ -1129,8 +1141,11 @@ public class NodesImpl implements Nodes
         PagingRequest pagingRequest = Util.getPagingRequest(paging);
 
         final PagingResults<FileInfo> pagingResults;
-        if ((filterNodeTypeQName != null) || (Boolean.FALSE.equals(includeFiles) && Boolean.FALSE.equals(includeFolders)))
+        if (((includeFiles == null) && (includeFolders == null)) ||
+            (filterNodeTypeQName != null) ||
+            (Boolean.FALSE.equals(includeFiles) && Boolean.FALSE.equals(includeFolders)))
         {
+            // either no filtering or some filtering (but not just files or folders)
             if (filterNodeTypeQName == null)
             {
                 filterNodeTypeQName = ContentModel.TYPE_CMOBJECT;
@@ -1144,19 +1159,9 @@ public class NodesImpl implements Nodes
         }
         else
         {
-            // files and/or folders only
-            if ((includeFiles == null) && (includeFolders == null))
-            {
-                // no filtering
-                includeFiles = true;
-                includeFolders = true;
-            }
-            else
-            {
-                // some filtering
-                includeFiles = (includeFiles != null ? includeFiles : false);
-                includeFolders = (includeFolders != null ? includeFolders : false);
-            }
+            // files or folders only
+            includeFiles = (includeFiles != null ? includeFiles : false);
+            includeFolders = (includeFolders != null ? includeFolders : false);
 
             pagingResults = fileFolderService.list(parentNodeRef, includeFiles, includeFolders, ignoreQNames, sortProps, pagingRequest);
         }

@@ -40,6 +40,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
@@ -55,6 +56,9 @@ import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.site.SiteServiceInternal;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
@@ -166,6 +170,7 @@ public class NodesImpl implements Nodes
     private PersonService personService;
     private OwnableService ownableService;
     private AuthorityService authorityService;
+    private SiteServiceInternal siteServiceInternal;
 
     private BehaviourFilter behaviourFilter;
 
@@ -178,6 +183,8 @@ public class NodesImpl implements Nodes
 
     // ignore types/aspects
     private Set<QName> ignoreQNames;
+
+    private ConcurrentHashMap<String,NodeRef> ddCache = new ConcurrentHashMap<String, NodeRef>();
 
     private Set<String> nonAttachContentTypes = Collections.emptySet(); // pre-configured whitelist, eg. images & pdf
 
@@ -807,13 +814,19 @@ public class NodesImpl implements Nodes
                 String perm = kv.getKey();
                 String op = kv.getValue();
 
-                // special case: do not return "create" for file
-                if (! (perm.equals(PermissionService.ADD_CHILDREN) && type.equals(Type.DOCUMENT)))
+                if (perm.equals(PermissionService.ADD_CHILDREN) && type.equals(Type.DOCUMENT))
                 {
-                    if (permissionService.hasPermission(nodeRef, perm) == AccessStatus.ALLOWED)
-                    {
-                        allowableOperations.add(op);
-                    }
+                    // special case: do not return "create" (as an allowable op) for file/content types
+                    continue;
+                }
+                else if (perm.equals(PermissionService.DELETE) && (isSpecialNodeDoNotDelete(nodeRef, nodeTypeQName)))
+                {
+                    // special case: do not return "delete" (as an allowable op) for specific system nodes
+                    continue;
+                }
+                else if (permissionService.hasPermission(nodeRef, perm) == AccessStatus.ALLOWED)
+                {
+                    allowableOperations.add(op);
                 }
             }
 
@@ -1226,7 +1239,12 @@ public class NodesImpl implements Nodes
     @Override
     public void deleteNode(String nodeId, Parameters parameters)
     {
-        NodeRef nodeRef = validateNode(nodeId);
+        NodeRef nodeRef = validateOrLookupNode(nodeId, null);
+
+        if (isSpecialNodeDoNotDelete(nodeRef, getNodeType(nodeRef)))
+        {
+            throw new PermissionDeniedException("Cannot delete: " + nodeId);
+        }
 
         // default false (if not provided)
         boolean permanentDelete = Boolean.valueOf(parameters.getParameter(PARAM_PERMANENT));
@@ -1388,6 +1406,47 @@ public class NodesImpl implements Nodes
                 throw new InvalidArgumentException("Unknown owner: "+newOwner);
             }
         }
+    }
+
+    // special case: additional delete validation (pending common lower-level service support)
+    // for blacklist of system nodes that should not be deleted, eg. Company Home, Sites, Data Dictionary
+    private boolean isSpecialNodeDoNotDelete(NodeRef nodeRef, QName type)
+    {
+        // Check for Company Home, Sites and Data Dictionary (note: must be tenant-aware)
+
+        if (nodeRef.equals(repositoryHelper.getCompanyHome()))
+        {
+            return true;
+        }
+        else if (type.equals(SiteModel.TYPE_SITES))
+        {
+            // note: alternatively, we could inject SiteServiceInternal and use getSitesRoot (or indirectly via node locator)
+            return true;
+        }
+        else
+        {
+            String tenantDomain = TenantUtil.getCurrentDomain();
+            NodeRef ddNodeRef = ddCache.get(tenantDomain);
+            if (ddNodeRef == null)
+            {
+                List<ChildAssociationRef> ddAssocs = nodeService.getChildAssocs(
+                        repositoryHelper.getCompanyHome(),
+                        ContentModel.ASSOC_CONTAINS,
+                        QName.createQName(NamespaceService.APP_MODEL_1_0_URI, "dictionary"));
+                if (ddAssocs.size() == 1)
+                {
+                    ddNodeRef = ddAssocs.get(0).getChildRef();
+                    ddCache.put(tenantDomain, ddNodeRef);
+                }
+            }
+
+            if (nodeRef.equals(ddNodeRef))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     @Override
@@ -1565,10 +1624,17 @@ public class NodesImpl implements Nodes
         {
             if (isCopy)
             {
+                // copy
                 return fileFolderService.copy(nodeRef, parentNodeRef, name);
             }
             else
             {
+                // move
+                if ((! nodeRef.equals(parentNodeRef)) && isSpecialNodeDoNotDelete(nodeRef, getNodeType(nodeRef)))
+                {
+                    throw new PermissionDeniedException("Cannot move: "+nodeRef.getId());
+                }
+
                 // updating "parentId" means moving primary parent !
                 // note: in the future (as and when we support secondary parent/child assocs) we may also
                 // wish to select which parent to "move from" (in case where the node resides in multiple locations)

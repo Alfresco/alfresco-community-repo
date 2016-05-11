@@ -249,7 +249,8 @@ public class NodesImpl implements Nodes
 
     private final static String PARAM_ISFOLDER = "isFolder";
     private final static String PARAM_ISCONTENT = "isContent";
-    private final static String PARAM_SUBTYPES = "subTypes";
+
+    private final static String PARAM_INCLUDE_SUBTYPES = "INCLUDESUBTYPES";
 
     private final static String PARAM_NAME = "name";
     private final static String PARAM_CREATEDAT = "createdAt";
@@ -280,7 +281,7 @@ public class NodesImpl implements Nodes
 
     // list children filtering (via where clause)
     private final static Set<String> LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES =
-            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_ISCONTENT, PARAM_NODETYPE, PARAM_SUBTYPES}));
+            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_ISCONTENT, PARAM_NODETYPE}));
 
     /*
      * Validates that node exists.
@@ -955,24 +956,9 @@ public class NodesImpl implements Nodes
             String nodeTypeStr = propertyWalker.getProperty(PARAM_NODETYPE, WhereClauseParser.EQUALS, String.class);
             if ((nodeTypeStr != null) && (! nodeTypeStr.isEmpty()))
             {
-                filterIncludeSubTypes = false; // default nodeType filtering is without subTypes (unless subTypes = true)
-
-                filterNodeTypeQName = createQName(nodeTypeStr);
-                if (dictionaryService.getType(filterNodeTypeQName) == null)
-                {
-                    throw new InvalidArgumentException("Unknown filter nodeType: "+nodeTypeStr);
-                }
-            }
-
-            // optionally used with nodeType filter (default is *not* to include sub-types)
-            Boolean subTypes = propertyWalker.getProperty(PARAM_SUBTYPES, WhereClauseParser.EQUALS, Boolean.class);
-            if (subTypes != null)
-            {
-                if (nodeTypeStr == null)
-                {
-                    throw new InvalidArgumentException("Expected nodeType and subTypes (not just subTypes) filter: "+parentNodeRef.getId());
-                }
-                filterIncludeSubTypes = subTypes;
+                Pair<QName, Boolean> pair = parseNodeTypeFilter(nodeTypeStr);
+                filterNodeTypeQName = pair.getFirst();
+                filterIncludeSubTypes = pair.getSecond();
             }
         }
 
@@ -1050,6 +1036,30 @@ public class NodesImpl implements Nodes
         };
 
         return CollectionWithPagingInfo.asPaged(paging, nodes, pagingResults.hasMoreItems(), pagingResults.getTotalResultCount().getFirst());
+    }
+
+    private Pair<QName,Boolean> parseNodeTypeFilter(String nodeTypeStr)
+    {
+        boolean filterIncludeSubTypes = false; // default nodeType filtering is without subTypes (unless nodeType value is suffixed with ' INCLUDESUBTYPES')
+
+        int idx = nodeTypeStr.lastIndexOf(' ');
+        if (idx > 0)
+        {
+            String suffix = nodeTypeStr.substring(idx);
+            if (suffix.equalsIgnoreCase(" "+PARAM_INCLUDE_SUBTYPES))
+            {
+                filterIncludeSubTypes = true;
+                nodeTypeStr = nodeTypeStr.substring(0, idx);
+            }
+        }
+
+        QName filterNodeTypeQName = createQName(nodeTypeStr);
+        if (dictionaryService.getType(filterNodeTypeQName) == null)
+        {
+            throw new InvalidArgumentException("Unknown filter nodeType: "+nodeTypeStr);
+        }
+
+        return new Pair<>(filterNodeTypeQName, filterIncludeSubTypes);
     }
 
     protected Pair<Set<QName>, Set<QName>> buildSearchTypesAndIgnoreAspects(QName filterNodeTypeQName, boolean filterIncludeSubTypes, Set<QName> ignoreQNameTypes)

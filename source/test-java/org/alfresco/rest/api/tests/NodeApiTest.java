@@ -1484,7 +1484,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         n1.expected(nodeResp);
 
 
-        // filtering, via where clause (nodeType + subTypes)
+        // filtering, via where clause (nodeType + optionally including sub-types)
 
         // note: subtle issue - in order to filter by "cm:link" the qname must have been created in the DB (in a write txn)
         // otherwise query will not match a missing qname (hmm). Workaround here by forcing the create of an explicit "cm:link".
@@ -1505,11 +1505,23 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         response = getAll(getChildrenUrl(f2Id), user1, paging, params, 200);
         List<Node> nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
-
         assertEquals(1, nodes.size());
 
+        // filter by including sub-types - note: includesubtypes is case-insensitive
+
         params = new HashMap<>();
-        params.put("where", "(nodeType='cm:link' and subTypes=true)");
+        params.put("where", "(nodeType='cm:link INCLUDESUBTYPES')");
+
+        paging = getPaging(0, Integer.MAX_VALUE);
+
+        response = getAll(getChildrenUrl(f2Id), user1, paging, params, 200);
+        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
+        assertEquals(3, nodes.size());
+        assertTrue(linkIds.contains(nodes.get(0).getId()));
+        assertTrue(linkIds.contains(nodes.get(1).getId()));
+
+        params = new HashMap<>();
+        params.put("where", "(nodeType='cm:link includeSubTypes')");
 
         paging = getPaging(0, Integer.MAX_VALUE);
 
@@ -1548,6 +1560,15 @@ public class NodeApiTest extends AbstractBaseApiTest
         // -ve test - unknown nodeType when filtering
         params = new HashMap<>();
         params.put("where", "(nodeType='my:unknown'");
+        getAll(getChildrenUrl(f2Id), user1, paging, params, 400);
+
+        // -ver test - invalid node type localname format and suffix is not ' includesubtypes'
+        params = new HashMap<>();
+        params.put("where", "(nodeType='cm:link ')");
+        getAll(getChildrenUrl(f2Id), user1, paging, params, 400);
+
+        params = new HashMap<>();
+        params.put("where", "(nodeType='cm:link blah')");
         getAll(getChildrenUrl(f2Id), user1, paging, params, 400);
     }
 

@@ -27,7 +27,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -97,7 +96,7 @@ import java.util.UUID;
  * TODO
  * - improve test 'fwk' to enable api tests to be run against remote repo (rather than embedded jetty)
  * - requires replacement of non-remote calls with remote (preferably public) apis
- *   - eg. createUser (or any other usage of repoService), siteService, permissionService, node/archiveService
+ *   - eg. createUser (or any other usage of repoService), siteService (including getContainer), permissionService, node/archiveService
  *
  * @author Jamal Kaabi-Mofrad
  * @author janv
@@ -145,6 +144,10 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         user1 = createUser("user1" + System.currentTimeMillis());
         user2 = createUser("user2" + System.currentTimeMillis());
+
+        // to enable admin access via test calls
+        getOrCreateUser("admin", "admin");
+
         // We just need to clean the on-premise-users,
         // so the tests for the specific network would work.
         users.add(user1);
@@ -212,7 +215,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         Paging paging = getPaging(0, 100);
         HttpResponse response = getAll(getNodeChildrenUrl(docLibNodeId), userOneN1.getId(), paging, 200);
-        List<Node> nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
+        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(4, nodes.size()); // forum is part of the default ignored types
         // Paging
         ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
@@ -224,7 +227,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         // Order by folders and modified date first
         Map<String, String> orderBy = Collections.singletonMap("orderBy", "isFolder DESC,modifiedAt DESC");
         response = getAll(getNodeChildrenUrl(docLibNodeId), userOneN1.getId(), paging, orderBy, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(4, nodes.size());
         assertEquals(folder2, nodes.get(0).getName());
         assertTrue(nodes.get(0).getIsFolder());
@@ -242,7 +245,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         // Order by folders last and modified date first
         orderBy = Collections.singletonMap("orderBy", "isFolder ASC,modifiedAt DESC");
         response = getAll(getNodeChildrenUrl(docLibNodeId), userOneN1.getId(), paging, orderBy, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(4, nodes.size());
         assertEquals(content2, nodes.get(0).getName());
         assertEquals(content1, nodes.get(1).getName());
@@ -252,7 +255,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         // Order by folders and modified date last
         orderBy = Collections.singletonMap("orderBy", "isFolder,modifiedAt");
         response = getAll(getNodeChildrenUrl(docLibNodeId), userOneN1.getId(), paging, orderBy, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(4, nodes.size());
         assertEquals(content1, nodes.get(0).getName());
         assertEquals(content2, nodes.get(1).getName());
@@ -264,7 +267,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         // SkipCount=0,MaxItems=2
         paging = getPaging(0, 2);
         response = getAll(getNodeChildrenUrl(docLibNodeId), userOneN1.getId(), paging, orderBy, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(2, nodes.size());
         assertEquals(folder2, nodes.get(0).getName());
         assertEquals(folder1, nodes.get(1).getName());
@@ -277,7 +280,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         // SkipCount=2,MaxItems=4
         paging = getPaging(2, 4);
         response = getAll(getNodeChildrenUrl(docLibNodeId), userOneN1.getId(), paging, orderBy, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(2, nodes.size());
         assertEquals(content2, nodes.get(0).getName());
         assertEquals(content1, nodes.get(1).getName());
@@ -331,7 +334,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         Node nodeUpdate = new Node();
         nodeUpdate.setProperties(props);
-        put("nodes", user1, content1_Id, toJsonAsStringNonNull(nodeUpdate), null, 200);
+        put(URL_NODES, user1, content1_Id, toJsonAsStringNonNull(nodeUpdate), null, 200);
 
         List<String> folderIds = Arrays.asList(folder1_Id, folder2_Id);
         List<String> contentIds = Arrays.asList(content1_Id);
@@ -339,13 +342,13 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         Paging paging = getPaging(0, Integer.MAX_VALUE);
         HttpResponse response = getAll(myChildrenUrl, user1, paging, 200);
-        List<Document> nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        List<Document> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(3, nodes.size());
 
         // Order by folders and modified date first
         Map<String, String> orderBy = Collections.singletonMap("orderBy", "isFolder DESC,modifiedAt DESC");
         response = getAll(myChildrenUrl, user1, paging, orderBy, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(3, nodes.size());
         assertEquals(folder2, nodes.get(0).getName());
         assertEquals(folder1, nodes.get(1).getName());
@@ -367,7 +370,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         // request without "include"
         Map<String, String> params = new HashMap<>();
         response = getAll(myChildrenUrl, user1, paging, params, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         for (Node n : nodes)
         {
             assertNull("There shouldn't be a 'properties' object in the response.", n.getProperties());
@@ -380,7 +383,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         params = new HashMap<>();
         params.put("include", "isLink");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         for (Node n : nodes)
         {
             assertNotNull("There should be a 'isLink' object in the response.", n.getIsLink());
@@ -388,7 +391,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // request with include - example 2
         params = new HashMap<>();
-        params.put("include", "aspectNames,properties, path,isLink");
+        params.put("include", "aspectNames,properties,path,isLink");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
         for (Node n : nodes)
@@ -404,7 +407,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         params.put("include", "cm:lastThumbnailModification");
         params.put("orderBy", "isFolder DESC,modifiedAt DESC");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(3, nodes.size());
         assertNull("There shouldn't be a 'properties' object in the response.", nodes.get(0).getProperties());
         assertNull("There shouldn't be a 'properties' object in the response.", nodes.get(1).getProperties());
@@ -420,7 +423,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         params = new HashMap<>();
         params.put("where", "("+Nodes.PARAM_ISFOLDER+"=true)");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(2, nodes.size());
 
         assertTrue(nodes.get(0).getIsFolder());
@@ -435,7 +438,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         params = new HashMap<>();
         params.put("where", "("+Nodes.PARAM_ISFILE+"=true)");
         response = getAll(myChildrenUrl, user1, paging, params, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
         assertFalse(nodes.get(0).getIsFolder());
         assertTrue(nodes.get(0).getIsFile());
@@ -446,7 +449,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folder1);
         response = getAll(myChildrenUrl, user1, paging, params, 200);
         JSONObject jsonResponse = response.getJsonResponse();
-        nodes = jacksonUtil.parseEntries(jsonResponse, Document.class);
+        nodes = RestApiUtil.parseRestApiEntries(jsonResponse, Document.class);
         assertEquals(1, nodes.size());
         assertEquals(contentF1_Id, nodes.get(0).getId());
 
@@ -458,7 +461,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user1 + "/" + folder2);
         response = getAll(rootChildrenUrl, user1, paging, params, 200);
         jsonResponse = response.getJsonResponse();
-        nodes = jacksonUtil.parseEntries(jsonResponse, Document.class);
+        nodes = RestApiUtil.parseRestApiEntries(jsonResponse, Document.class);
         assertEquals(1, nodes.size());
         assertEquals(contentF2_Id, nodes.get(0).getId());
 
@@ -474,7 +477,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         params.put("includeSource", "true");
         response = getAll(rootChildrenUrl, user1, paging, params, 200);
         jsonResponse = response.getJsonResponse();
-        nodes = jacksonUtil.parseEntries(jsonResponse, Document.class);
+        nodes = RestApiUtil.parseRestApiEntries(jsonResponse, Document.class);
         assertEquals(1, nodes.size());
         assertEquals(contentF2_Id, nodes.get(0).getId());
 
@@ -607,11 +610,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         HttpResponse response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, null, 200);
-        Node node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         NodeRef companyHomeNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, node.getId());
 
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
-        node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+        node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         String myFilesNodeId = node.getId();
         assertNotNull(myFilesNodeId);
         assertEquals(user1, node.getName());
@@ -638,7 +641,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // get node info
         response = getSingle(NodesEntityResource.class, user1, content1Id, null, 200);
-        Document documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String content_Id = documentResp.getId();
 
         // Expected result ...
@@ -693,12 +696,12 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         params = Collections.singletonMap("relativePath", "/"+folderA+"/"+folderB);
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 200);
-        Folder folderResp = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
+        Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
         assertEquals(folderB_Id, folderResp.getId());
 
         params = Collections.singletonMap("relativePath", folderA+"/"+folderB+"/"+contentName);
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 200);
-        documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals(content_Id, documentResp.getId());
 
         // test path with utf-8 encoded param (eg. ¢ => )
@@ -707,7 +710,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         params = Collections.singletonMap("relativePath", "/"+folderA+"/"+folderB+"/"+folderC);
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 200);
-        folderResp = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
         assertEquals(folderC_Id, folderResp.getId());
 
         // -ve test - get info for unknown node should return 404
@@ -743,7 +746,7 @@ public class NodeApiTest extends AbstractBaseApiTest
     public void testGetNodeWithKnownAlias() throws Exception
     {
         HttpResponse response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, null, 200);
-        Node node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertEquals("Company Home", node.getName());
         assertNotNull(node.getId());
         assertNull(node.getPath());
@@ -752,7 +755,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         getSingle(NodesEntityResource.class, user1, "testSomeUndefinedAlias", null, 404);
 
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
-        node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+        node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         String myFilesNodeId = node.getId();
         assertNotNull(myFilesNodeId);
         assertEquals(user1, node.getName());
@@ -761,7 +764,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNull(node.getPath()); // note: path can be optionally "include"'ed - see separate test
 
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_SHARED, null, 200);
-        node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+        node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         String sharedFilesNodeId = node.getId();
         assertNotNull(sharedFilesNodeId);
         assertEquals("Shared", node.getName());
@@ -770,8 +773,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNull(node.getPath());
 
         //Delete user1's home
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        repoService.getNodeService().deleteNode(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myFilesNodeId));
+        delete(URL_NODES, "admin", myFilesNodeId, 204);
 
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
         getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 404); // Not found
@@ -803,7 +805,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // Upload
         response = post(getNodeChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals(fileName, document.getName());
         ContentInfo contentInfo = document.getContent();
@@ -817,7 +819,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // Retrieve the uploaded file
         response = getSingle(NodesEntityResource.class, user1, document.getId(), null, 200);
-        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals(fileName, document.getName());
         contentInfo = document.getContent();
         assertNotNull(contentInfo);
@@ -843,7 +845,7 @@ public class NodeApiTest extends AbstractBaseApiTest
                           .build();
 
         response = post(getNodeChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
-        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals("quick-1.pdf", document.getName());
 
@@ -861,7 +863,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // User2 tries to upload a new file into the user1's home folder.
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
-        Folder user1Home = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
+        Folder user1Home = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
         final String fileName2 = "quick-2.txt";
         final File file2 = getResourceFile(fileName2);
         reqBody = MultiPartBuilder.create()
@@ -894,7 +896,7 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN, "windows-1252"))
                     .build();
         response = post(getNodeChildrenUrl(user1Home.getId()), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
-        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals(fileName2, document.getName());
         contentInfo = document.getContent();
@@ -943,9 +945,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         final File file = getResourceFile(fileName);
 
         AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getId());
+        NodeRef docLibNodeRef = userOneN1Site.getContainerNodeRef(("documentLibrary"));
+        String docLibNodeId = docLibNodeRef.getId();
+
         String folderA = "folder" + System.currentTimeMillis() + "_A";
-        NodeRef folderA_Ref = repoService.addToDocumentLibrary(userOneN1Site, folderA, ContentModel.TYPE_FOLDER);
-        String folderA_id = folderA_Ref.getId();
+        String folderA_id = createFolder(userOneN1.getId(), docLibNodeId, folderA).getId();
 
         Paging paging = getPaging(0, Integer.MAX_VALUE);
         HttpResponse response = getAll(getNodeChildrenUrl(folderA_id), userOneN1.getId(), paging, 200);
@@ -958,7 +962,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         MultiPartRequest reqBody = multiPartBuilder.build();
         // Try to upload
         response = post(getNodeChildrenUrl(folderA_id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals(fileName, document.getName());
         ContentInfo contentInfo = document.getContent();
@@ -968,7 +972,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // Retrieve the uploaded file
         response = getSingle(NodesEntityResource.class, userOneN1.getId(), document.getId(), null, 200);
-        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals(fileName, document.getName());
         contentInfo = document.getContent();
         assertNotNull(contentInfo);
@@ -998,7 +1002,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // Test upload with properties
         response = post(getNodeChildrenUrl(folderA_id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         assertEquals(fileName2, document.getName());
         contentInfo = document.getContent();
@@ -1019,7 +1023,7 @@ public class NodeApiTest extends AbstractBaseApiTest
                     .build();
 
         response = post(getNodeChildrenUrl(folderA_id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
-        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         // Check the upload response
         // "quick-2-1.txt" => fileName2 + autoRename
         assertEquals("quick-2-1.txt", document.getName());
@@ -1057,12 +1061,12 @@ public class NodeApiTest extends AbstractBaseApiTest
         String content1Id = createTextFile(user1, myNodeId, "content" + runId + "_1", "The quick brown fox jumps over the lazy dog.").getId();
 
         // delete file
-        delete("nodes", user1, content1Id, 204);
+        delete(URL_NODES, user1, content1Id, 204);
 
         assertTrue(existsArchiveNode(user1, content1Id));
 
         // -ve test
-        delete("nodes", user1, content1Id, 404);
+        delete(URL_NODES, user1, content1Id, 404);
 
         String folder1Id = createFolder(user1, myNodeId, "folder " + runId + "_1").getId();
         String folder2Id = createFolder(user1, folder1Id, "folder " + runId + "_2").getId();
@@ -1070,19 +1074,19 @@ public class NodeApiTest extends AbstractBaseApiTest
         String content2Id = createTextFile(user1, folder2Id, "content" + runId + "_2", "The quick brown fox jumps over the lazy dog.").getId();
 
         // cascade delete folder
-        delete("nodes", user1, folder1Id, 204);
+        delete(URL_NODES, user1, folder1Id, 204);
 
         assertTrue(existsArchiveNode(user1, folder1Id));
         assertTrue(existsArchiveNode(user1, folder2Id));
         assertTrue(existsArchiveNode(user1, content2Id));
 
         // -ve test
-        delete("nodes", user1, folder2Id, 404);
-        delete("nodes", user1, content2Id, 404);
+        delete(URL_NODES, user1, folder2Id, 404);
+        delete(URL_NODES, user1, content2Id, 404);
 
         // -ve test
         String rootNodeId = getRootNodeId(user1);
-        delete("nodes", user1, rootNodeId, 403);
+        delete(URL_NODES, user1, rootNodeId, 403);
 
         //
         // permanently delete - ie. bypass trashcan (archive store)
@@ -1092,7 +1096,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         String folder4Id = createFolder(user1, folder3Id, "folder " + runId + "_4").getId();
 
         Map<String, String> params = Collections.singletonMap("permanent", "true");
-        delete("nodes", user1, folder3Id, params, 204);
+        delete(URL_NODES, user1, folder3Id, params, 204);
 
         assertFalse(existsArchiveNode(user1, folder3Id));
         assertFalse(existsArchiveNode(user1, folder4Id));
@@ -1102,7 +1106,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
 
         // -ve test - another user cannot delete
-        delete("nodes", user2, folder5Id, 403);
+        delete(URL_NODES, user2, folder5Id, 403);
 
 
         Map<String, Object> props = new HashMap<>();
@@ -1110,22 +1114,22 @@ public class NodeApiTest extends AbstractBaseApiTest
         Node nUpdate = new Node();
         nUpdate.setProperties(props);
 
-        HttpResponse response = put("nodes", user1, folder5Id, toJsonAsStringNonNull(nUpdate), null, 200);
-        Node nodeResp = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+        HttpResponse response = put(URL_NODES, user1, folder5Id, toJsonAsStringNonNull(nUpdate), null, 200);
+        Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertEquals(user2, ((Map)nodeResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // -ve test - user1 can no longer delete
-        delete("nodes", user1, folder5Id, 403);
+        delete(URL_NODES, user1, folder5Id, 403);
 
         // TODO refactor with remote permission api calls (use v0 until we have v1 ?)
         permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder5Id), user1, PermissionService.DELETE, true);
 
         // -ve test - non-owner cannot bypass trashcan
         params = Collections.singletonMap("permanent", "true");
-        delete("nodes", user1, folder5Id, params, 403);
+        delete(URL_NODES, user1, folder5Id, params, 403);
 
         // user1 has permission to delete (via trashcan)
-        delete("nodes", user1, folder5Id, 204);
+        delete(URL_NODES, user1, folder5Id, 204);
 
         // admin can permanently delete
         String folder6Id = createFolder(user1, sharedNodeId, "folder " + runId + "_6").getId();
@@ -1133,7 +1137,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // TODO improve - admin-related tests
         publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
-        response = publicApiClient.delete(getScope(), 1, "nodes", folder6Id, null, null, params);
+        response = publicApiClient.delete(getScope(), 1, URL_NODES, folder6Id, null, null, params);
         checkStatus(204, response.getStatusCode());
     }
 
@@ -1283,7 +1287,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         Map<String, String> body = new HashMap<>();
         body.put("targetParentId", targetId);
 
-        HttpResponse response = post(user1, "nodes", d1Id, "copy", toJsonAsStringNonNull(body).getBytes(), null, null, 201);
+        HttpResponse response = post(user1, URL_NODES, d1Id, "copy", toJsonAsStringNonNull(body).getBytes(), null, null, 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1Name, documentResp.getName());
@@ -1296,7 +1300,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         body.put("targetParentId", targetId);
         body.put("name", newD2Name);
 
-        response = post(user1, "nodes", d2Id, "copy", toJsonAsStringNonNull(body).getBytes(), null, null, 201);
+        response = post(user1, URL_NODES, d2Id, "copy", toJsonAsStringNonNull(body).getBytes(), null, null, 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(newD2Name, documentResp.getName());
@@ -1503,7 +1507,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // get node info
         response = getSingle(NodesEntityResource.class, user1, n1Id, null, 200);
-        nodeResp = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
 
         n1.expected(nodeResp);
 
@@ -1531,7 +1535,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // get node info
         response = getSingle(NodesEntityResource.class, user1, n2Id, null, 200);
-        nodeResp = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
 
         n2.expected(nodeResp);
 
@@ -1543,7 +1547,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         Node nUpdate = new Node();
         nUpdate.setName(updatedName);
 
-        response = put("nodes", user1, n1Id, toJsonAsStringNonNull(nUpdate), null, 200);
+        response = put(URL_NODES, user1, n1Id, toJsonAsStringNonNull(nUpdate), null, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         n1.setName(updatedName);
@@ -1560,7 +1564,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         Paging paging = getPaging(0, Integer.MAX_VALUE);
 
         response = getAll(getNodeChildrenUrl(f2Id), user1, paging, params, 200);
-        List<Node> nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
+        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(0, nodes.size());
 
         // filter by including sub-types - note: includesubtypes is case-insensitive
@@ -1571,7 +1575,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         paging = getPaging(0, Integer.MAX_VALUE);
 
         response = getAll(getNodeChildrenUrl(f2Id), user1, paging, params, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(linkIds.size(), nodes.size());
         assertTrue(linkIds.contains(nodes.get(0).getId()));
         assertTrue(linkIds.contains(nodes.get(1).getId()));
@@ -1582,17 +1586,17 @@ public class NodeApiTest extends AbstractBaseApiTest
         paging = getPaging(0, Integer.MAX_VALUE);
 
         response = getAll(getNodeChildrenUrl(f2Id), user1, paging, params, 200);
-        nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Node.class);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(linkIds.size(), nodes.size());
         assertTrue(linkIds.contains(nodes.get(0).getId()));
         assertTrue(linkIds.contains(nodes.get(1).getId()));
 
 
         // delete link
-        delete("nodes", user1, n1Id, 204);
+        delete(URL_NODES, user1, n1Id, 204);
 
         // -ve test - delete - cannot delete nonexistent link
-        delete("nodes", user1, n1Id, 404);
+        delete(URL_NODES, user1, n1Id, 404);
 
         // -ve test - create - name is mandatory
         Node invalid = new Node();
@@ -1810,7 +1814,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document dUpdate = new Document();
         dUpdate.setName("d1b.txt");
 
-        response = put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+        response = put(URL_NODES, user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         d1.setName("d1b.txt");
@@ -1825,7 +1829,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         dUpdate = new Document();
         dUpdate.setProperties(props);
 
-        response = put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+        response = put(URL_NODES, user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         d1.setProperties(props);
@@ -1837,14 +1841,14 @@ public class NodeApiTest extends AbstractBaseApiTest
         dUpdate = new Document();
         dUpdate.setAspectNames(Arrays.asList("cm:auditable","cm:titled","cm:versionable"));
 
-        response = put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+        response = put(URL_NODES, user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         //d1.getProperties().put("cm:versionLabel","1.0"); // TODO ... fix api ?!
         d1.setAspectNames(Arrays.asList("cm:auditable","cm:titled","cm:versionable"));
         d1.expected(documentResp);
 
-        response = getSingle("nodes", user1, dId, 200);
+        response = getSingle(URL_NODES, user1, dId, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         d1.getProperties().put("cm:versionLabel","1.0");
@@ -1855,7 +1859,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         dUpdate = new Document();
         dUpdate.setAspectNames(Arrays.asList("cm:auditable","cm:versionable"));
 
-        response = put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+        response = put(URL_NODES, user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         d1.getProperties().remove("cm:title");
@@ -1874,7 +1878,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         fUpdate.setProperties(props);
         fUpdate.setName(folderName);
 
-        response = put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
+        response = put(URL_NODES, user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
 
         f1.setName(folderName);
@@ -1890,7 +1894,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         fUpdate = new Folder();
         fUpdate.setProperties(props);
 
-        response = put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
+        response = put(URL_NODES, user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
 
         f1.getProperties().remove("cm:title");
@@ -1901,7 +1905,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         fUpdate = new Folder();
         fUpdate.setNodeType("app:glossary");
 
-        response = put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
+        response = put(URL_NODES, user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
         folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
 
         f1.setNodeType("app:glossary");
@@ -1912,29 +1916,29 @@ public class NodeApiTest extends AbstractBaseApiTest
         props.put("cm:xyz","my unknown property");
         dUpdate = new Document();
         dUpdate.setProperties(props);
-        put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 400);
+        put(URL_NODES, user1, dId, toJsonAsStringNonNull(dUpdate), null, 400);
 
         // -ve test - fail on unknown aspect
         List<String> aspects = new ArrayList<>(d1.getAspectNames());
         aspects.add("cm:unknownAspect");
         dUpdate = new Document();
         dUpdate.setAspectNames(aspects);
-        put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 400);
+        put(URL_NODES, user1, dId, toJsonAsStringNonNull(dUpdate), null, 400);
 
         // -ve test - duplicate name
         dUpdate = new Document();
         dUpdate.setName(folderName);
-        put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 409);
+        put(URL_NODES, user1, dId, toJsonAsStringNonNull(dUpdate), null, 409);
 
         // -ve test - unknown node id
         dUpdate = new Document();
         dUpdate.setName("some.txt");
-        put("nodes", user1, UUID.randomUUID().toString(), toJsonAsStringNonNull(dUpdate), null, 404);
+        put(URL_NODES, user1, UUID.randomUUID().toString(), toJsonAsStringNonNull(dUpdate), null, 404);
 
         // -ve test - generalise node type
         fUpdate = new Folder();
         fUpdate.setNodeType("cm:folder");
-        put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 400);
+        put(URL_NODES, user1, fId, toJsonAsStringNonNull(fUpdate), null, 400);
 
         // -ve test - try to move to a different parent using PUT (note: should use new POST /nodes/{nodeId}/move operation instead)
 
@@ -1943,12 +1947,12 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         fUpdate = new Folder();
         fUpdate.setParentId(f2Id);
-        put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 400);
+        put(URL_NODES, user1, fId, toJsonAsStringNonNull(fUpdate), null, 400);
 
         // ok - if parent does not change
         fUpdate = new Folder();
         fUpdate.setParentId(myNodeId);
-        put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
+        put(URL_NODES, user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
     }
 
     /**
@@ -1972,8 +1976,8 @@ public class NodeApiTest extends AbstractBaseApiTest
         Folder fUpdate = new Folder();
         fUpdate.setProperties(props);
 
-        HttpResponse response = put("nodes", user1, f1Id, toJsonAsStringNonNull(fUpdate), null, 200);
-        folderResp = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
+        HttpResponse response = put(URL_NODES, user1, f1Id, toJsonAsStringNonNull(fUpdate), null, 200);
+        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
 
         assertEquals(user1, ((Map)folderResp.getProperties().get(PROP_OWNER)).get("id"));
 
@@ -1983,7 +1987,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // get node info
         response = getSingle(NodesEntityResource.class, user1, d1Id, null, 200);
-        Document documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         // note: owner is implied
         assertEquals(1, documentResp.getProperties().size());
@@ -1994,8 +1998,8 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document dUpdate = new Document();
         dUpdate.setProperties(props);
 
-        response = put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
-        documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        response = put(URL_NODES, user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(user1, ((Map)documentResp.getProperties().get(PROP_OWNER)).get("id"));
 
@@ -2006,11 +2010,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         dUpdate = new Document();
         dUpdate.setProperties(props);
 
-        put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 400);
+        put(URL_NODES, user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 400);
 
         AuthenticationUtil.setFullyAuthenticatedUser(user2);
 
-        response = getSingle("nodes", user1, d1Id, 200);
+        response = getSingle(URL_NODES, user1, d1Id, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(user1, ((Map)documentResp.getProperties().get(PROP_OWNER)).get("id"));
@@ -2022,14 +2026,14 @@ public class NodeApiTest extends AbstractBaseApiTest
         dUpdate = new Document();
         dUpdate.setProperties(props);
 
-        put("nodes", user2, d1Id, toJsonAsStringNonNull(dUpdate), null, 403);
+        put(URL_NODES, user2, d1Id, toJsonAsStringNonNull(dUpdate), null, 403);
 
         props = new HashMap<>();
         props.put(PROP_OWNER, user1);
         dUpdate = new Document();
         dUpdate.setProperties(props);
 
-        put("nodes", user2, d1Id, toJsonAsStringNonNull(dUpdate), null, 403);
+        put(URL_NODES, user2, d1Id, toJsonAsStringNonNull(dUpdate), null, 403);
 
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
@@ -2038,24 +2042,24 @@ public class NodeApiTest extends AbstractBaseApiTest
         dUpdate = new Document();
         dUpdate.setProperties(props);
 
-        response = put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
-        documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        response = put(URL_NODES, user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(user2, ((Map)documentResp.getProperties().get(PROP_OWNER)).get("id"));
 
         AuthenticationUtil.setFullyAuthenticatedUser(user2);
 
-        response = getSingle("nodes", user2, d1Id, 200);
+        response = getSingle(URL_NODES, user2, d1Id, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(user2, ((Map)documentResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // -ve test - user2 cannot delete the test folder/file - TODO is that expected ?
-        delete("nodes", user2, f1Id, 403);
+        delete(URL_NODES, user2, f1Id, 403);
 
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
-        delete("nodes", user1, f1Id, 204);
+        delete(URL_NODES, user1, f1Id, 204);
     }
 
 
@@ -2167,7 +2171,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         // update the original content with different encoding
         payload = new BinaryPayload(txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN, "ISO-8859-15");
         response = putBinary(url, user1, payload, null, null, 200);
-        docResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        docResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals(docName, docResp.getName());
         assertNotNull(docResp.getContent());
         assertEquals("ISO-8859-15", docResp.getContent().getEncoding());
@@ -2200,7 +2204,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // Upload text content
         HttpResponse response = post(getNodeChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
-        Document document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         String contentNodeId = document.getId();
 
@@ -2233,7 +2237,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // Upload binary content
         response = post(getNodeChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
-        document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         contentNodeId = document.getId();
 

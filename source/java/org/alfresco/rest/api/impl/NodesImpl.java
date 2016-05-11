@@ -611,7 +611,7 @@ public class NodesImpl implements Nodes
             node = new Document(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
             node.setIsFolder(null);
         }
-        if (type.equals(Type.DOCUMENT))
+        else if (type.equals(Type.DOCUMENT))
         {
             node = new Document(nodeRef, parentNodeRef, properties, mapUserInfo, sr);
         }

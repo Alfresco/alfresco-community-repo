@@ -135,6 +135,18 @@ public class RestApiUtil
     }
 
     /**
+     * Parses the alfresco REST API error response.
+     *
+     * @param jsonObject the {@code JSONObject} derived from the response
+     * @return ExpectedErrorResponse the error object
+     * @throws Exception
+     */
+    public static PublicApiClient.ExpectedErrorResponse parseErrorResponse(JSONObject jsonObject) throws Exception
+    {
+        return parsePojo("error", jsonObject, PublicApiClient.ExpectedErrorResponse.class);
+    }
+
+    /**
      * Converts the POJO which represents the JSON payload into a JSON string
      */
     public static String toJsonAsString(Object object) throws Exception

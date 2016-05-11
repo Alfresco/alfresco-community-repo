@@ -56,6 +56,7 @@ public class ApiException extends PlatformRuntimeException
     public ApiException(String msgId, Object[] msgParams)
     {
         super(msgId, msgParams);
+        this.msgId = msgId;
     }
     
     public ApiException(String msgId, Throwable cause)

@@ -33,6 +33,7 @@ import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedErrorResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
@@ -68,7 +69,7 @@ import java.util.UUID;
 public class RenditionsTest extends AbstractBaseApiTest
 {
     private static final long PAUSE_TIME = 5000; //millisecond
-    private static final int MAX_RETRY = 8;
+    private static final int MAX_RETRY = 10;
 
     /**
      * User one from network one
@@ -221,6 +222,19 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // nodeId in the path parameter does not exist
         getAll(getRenditionsUrl(UUID.randomUUID().toString()), userOneN1.getId(), paging, params, 404);
+
+        // Create a node without any content
+        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", ContentModel.TYPE_CONTENT, userOneN1.getId());
+        // The source node has no content
+        getAll(getRenditionsUrl(emptyContentNodeId), userOneN1.getId(), paging, params, 400);
+
+        // Invalid status value
+        params.put("where", "(status='WRONG')");
+        getAll(getRenditionsUrl(contentNodeId), userOneN1.getId(), paging, params, 400);
+
+        // Invalid filter (only 'status' is supported)
+        params.put("where", "(id='doclib')");
+        getAll(getRenditionsUrl(contentNodeId), userOneN1.getId(), paging, params, 400);
     }
 
     /**
@@ -277,6 +291,33 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // renditionId in the path parameter is not registered/available
         getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), ("renditionId" + System.currentTimeMillis()), 404);
+
+        // Create a node without any content
+        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", ContentModel.TYPE_CONTENT, userOneN1.getId());
+        // The source node has no content
+        getSingle(getRenditionsUrl(emptyContentNodeId), userOneN1.getId(), "doclib", 400);
+
+        // Create multipart request
+        String jpgFileName = "quick.jpg";
+        File jpgFile = getResourceFile(fileName);
+        reqBody = MultiPartBuilder.create()
+                    .setFileData(new FileData(jpgFileName, jpgFile, MimetypeMap.MIMETYPE_IMAGE_JPEG))
+                    .build();
+
+        // Upload quick.jpg file into 'folder'
+        response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document jpgImage = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String jpgImageNodeId = jpgImage.getId();
+
+        // List all available renditions (includes those that have been created and those that are yet to be created)
+        response = getAll(getRenditionsUrl(jpgImageNodeId), userOneN1.getId(), getPaging(0, 50), 200);
+        List<Rendition> renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+        // Check there is no pdf rendition is available for the jpg file
+        Rendition pdf = getRendition(renditions, "pdf");
+        assertNull(pdf);
+
+        // The renditionId (pdf) is registered but it is not applicable for the node's mimeType
+        getSingle(getRenditionsUrl(jpgImageNodeId), userOneN1.getId(), "pdf", 404);
     }
 
     /**
@@ -321,7 +362,14 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // -ve Tests
         // The rendition requested already exists
-        post(getRenditionsUrl(folder_Id), userOneN1.getId(), toJsonAsString(new Rendition().setId("imgpreview")), 400);
+        response = post(getRenditionsUrl(contentNodeId), userOneN1.getId(), toJsonAsString(new Rendition().setId("imgpreview")), 400);
+        ExpectedErrorResponse errorResponse = RestApiUtil.parseErrorResponse(response.getJsonResponse());
+        assertNotNull(errorResponse);
+        assertNotNull(errorResponse.getErrorKey());
+        assertNotNull(errorResponse.getBriefSummary());
+        assertNotNull(errorResponse.getStackTrace());
+        assertNotNull(errorResponse.getDescriptionURL());
+        assertEquals(400, errorResponse.getStatusCode());
 
         // Create 'doclib' rendition request
         Rendition renditionRequest = new Rendition().setId("doclib");
@@ -329,11 +377,25 @@ public class RenditionsTest extends AbstractBaseApiTest
         post(getRenditionsUrl(folder_Id), userOneN1.getId(), toJsonAsString(renditionRequest), 400);
 
         // nodeId in the path parameter does not exist
-        post(getRenditionsUrl(UUID.randomUUID().toString()), userOneN1.getId(), toJsonAsString(renditionRequest), 404);
+        response = post(getRenditionsUrl(UUID.randomUUID().toString()), userOneN1.getId(), toJsonAsString(renditionRequest), 404);
+        // EntityNotFoundException
+        errorResponse = RestApiUtil.parseErrorResponse(response.getJsonResponse());
+        assertNotNull(errorResponse);
+        assertNotNull(errorResponse.getErrorKey());
+        assertNotNull(errorResponse.getBriefSummary());
+        assertNotNull(errorResponse.getStackTrace());
+        assertNotNull(errorResponse.getDescriptionURL());
+        assertEquals(404, errorResponse.getStatusCode());
 
         // renditionId is not registered
         final String randomRenditionId = "renditionId" + System.currentTimeMillis();
         post(getRenditionsUrl(contentNodeId), userOneN1.getId(), toJsonAsString(new Rendition().setId(randomRenditionId)), 404);
+
+        // renditionId is null
+        post(getRenditionsUrl(contentNodeId), userOneN1.getId(), toJsonAsString(new Rendition().setId(null)), 400);
+
+        // renditionId is empty
+        post(getRenditionsUrl(contentNodeId), userOneN1.getId(), toJsonAsString(new Rendition().setId("")), 400);
 
         // Create a node without any content
         String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", ContentModel.TYPE_CONTENT, userOneN1.getId());
@@ -364,7 +426,14 @@ public class RenditionsTest extends AbstractBaseApiTest
             response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
             Document txtDocument = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
             // Thumbnail generation has been disabled
-            post(getRenditionsUrl(txtDocument.getId()), userOneN1.getId(), toJsonAsString(renditionRequest), 501);
+            response = post(getRenditionsUrl(txtDocument.getId()), userOneN1.getId(), toJsonAsString(renditionRequest), 501);
+            errorResponse = RestApiUtil.parseErrorResponse(response.getJsonResponse());
+            assertNotNull(errorResponse);
+            assertNotNull(errorResponse.getErrorKey());
+            assertNotNull(errorResponse.getBriefSummary());
+            assertNotNull(errorResponse.getStackTrace());
+            assertNotNull(errorResponse.getDescriptionURL());
+            assertEquals(501, errorResponse.getStatusCode());
         }
         finally
         {
@@ -481,7 +550,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         InputStream inputStream = new ByteArrayInputStream("The quick brown fox jumps over the lazy dog".getBytes());
         file = TempFileProvider.createTempFile(inputStream, "RenditionsTest-", ".abcdef");
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(file.getName(), file, "application/unknown"))
+                    .setFileData(new FileData(file.getName(), file, MimetypeMap.MIMETYPE_TEXT_PLAIN))
                     .build();
         // Upload temp file into 'folder'
         response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
@@ -503,6 +572,11 @@ public class RenditionsTest extends AbstractBaseApiTest
         // The rendition does not exist, a placeholder is not available and the placeholder parameter has a value of "true"
         params = Collections.singletonMap("placeholder", "true");
         getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), ("renditionId" + System.currentTimeMillis() + "/content"), params, 404);
+
+        // Create a node without any content
+        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", ContentModel.TYPE_CONTENT, userOneN1.getId());
+        // The source node has no content
+        getSingle(getRenditionsUrl(emptyContentNodeId), userOneN1.getId(), "doclib/content", params, 400);
 
         //TODO add tests for 304 response
     }
@@ -529,7 +603,8 @@ public class RenditionsTest extends AbstractBaseApiTest
         {
             try
             {
-                post(getRenditionsUrl(sourceNodeId), userOneN1.getId(), toJsonAsString(renditionRequest), 202);
+                HttpResponse res = post(getRenditionsUrl(sourceNodeId), userOneN1.getId(), toJsonAsString(renditionRequest), 202);
+                assertNull(res.getJsonResponse());
                 break;
             }
             catch (AssertionError ex)

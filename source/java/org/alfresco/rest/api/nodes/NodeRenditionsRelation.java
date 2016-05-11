@@ -21,12 +21,14 @@ package org.alfresco.rest.api.nodes;
 
 import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.Rendition;
+import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.extensions.webscripts.Status;
 
 import java.util.Collections;
 import java.util.List;
@@ -68,6 +70,7 @@ public class NodeRenditionsRelation implements RelationshipResourceAction.Read<R
         return renditions.getRendition(nodeId, renditionId, parameters);
     }
 
+    @WebApiDescription(title = "Create rendition", successStatus = Status.STATUS_ACCEPTED)
     @Override
     public List<Rendition> create(String nodeId, List<Rendition> entity, Parameters parameters)
     {

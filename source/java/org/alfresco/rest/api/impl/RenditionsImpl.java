@@ -30,6 +30,7 @@ import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.api.model.Rendition.RenditionStatus;
+import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -198,36 +199,43 @@ public class RenditionsImpl implements Renditions
     @Override
     public void createRendition(String nodeId, Rendition rendition, Parameters parameters)
     {
-        NodeRef sourceNodeRef = nodes.validateNode(nodeId);
-
-        // If thumbnail generation has been configured off, then don't bother with any of this.
-        if (thumbnailService.getThumbnailsEnabled())
+        // If thumbnail generation has been configured off, then don't bother.
+        if (!thumbnailService.getThumbnailsEnabled())
         {
-            // Use the thumbnail registry to get the details of the thumbnail
-            ThumbnailRegistry registry = thumbnailService.getThumbnailRegistry();
-            ThumbnailDefinition details = registry.getThumbnailDefinition(rendition.getId());
-            if (details == null)
-            {
-                // Throw exception
-                throw new InvalidArgumentException("The thumbnail name '" + rendition.getId() + "' is not registered");
-            }
-
-            // Check if anything is currently registered to generate thumbnails for the specified mimeType
-            ContentData contentData = (ContentData) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_CONTENT);
-            if (!ContentData.hasContent(contentData))
-            {
-                throw new InvalidArgumentException("Unable to create thumbnail '" + details.getName() + "' as there is no content");
-            }
-            if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), contentData.getMimetype(), contentData.getSize(), sourceNodeRef, details))
-            {
-                throw new InvalidArgumentException("Unable to create thumbnail '" + details.getName() + "' for " +
-                            contentData.getMimetype() + " as no transformer is currently available.");
-            }
-
-            Action action = ThumbnailHelper.createCreateThumbnailAction(details, serviceRegistry);
-            // Queue async creation of thumbnail
-            actionService.executeAction(action, sourceNodeRef, true, true);
+            throw new DisabledServiceException("Thumbnail generation has been disabled.");
         }
+
+        final NodeRef sourceNodeRef = validateSourceNode(nodeId);
+        final NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, rendition.getId(), parameters);
+        if (renditionNodeRef != null)
+        {
+            throw new InvalidArgumentException(rendition.getId() + " rendition already exists.");
+        }
+
+        // Use the thumbnail registry to get the details of the thumbnail
+        ThumbnailRegistry registry = thumbnailService.getThumbnailRegistry();
+        ThumbnailDefinition thumbnailDefinition = registry.getThumbnailDefinition(rendition.getId());
+        if (thumbnailDefinition == null)
+        {
+            throw new EntityNotFoundException(rendition.getId() + "' is not registered.");
+        }
+
+        ContentData contentData = (ContentData) nodeService.getProperty(sourceNodeRef, ContentModel.PROP_CONTENT);
+        if (!ContentData.hasContent(contentData))
+        {
+            throw new InvalidArgumentException("Unable to create thumbnail '" + thumbnailDefinition.getName() + "' as there is no content.");
+        }
+        // Check if anything is currently available to generate thumbnails for the specified mimeType
+        if (!registry.isThumbnailDefinitionAvailable(contentData.getContentUrl(), contentData.getMimetype(), contentData.getSize(), sourceNodeRef,
+                    thumbnailDefinition))
+        {
+            throw new InvalidArgumentException("Unable to create thumbnail '" + thumbnailDefinition.getName() + "' for " +
+                        contentData.getMimetype() + " as no transformer is currently available.");
+        }
+
+        Action action = ThumbnailHelper.createCreateThumbnailAction(thumbnailDefinition, serviceRegistry);
+        // Queue async creation of thumbnail
+        actionService.executeAction(action, sourceNodeRef, true, true);
     }
 
     protected NodeRef getRenditionByName(NodeRef nodeRef, String renditionId, Parameters parameters)

@@ -1546,8 +1546,6 @@ public class NodesImpl implements Nodes
                 str = str.substring(PREFIX.length());
             }
 
-            str = str.replaceFirst("_", ":"); // FIXME remove this when we have fixed the framework.
-
             QName name = createQName(str);
             if (!EXCLUDED_PROPS.contains(name))
             {

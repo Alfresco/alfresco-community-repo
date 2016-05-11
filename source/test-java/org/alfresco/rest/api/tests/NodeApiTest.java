@@ -339,7 +339,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
         // request property via select
         Map<String, String> params = new LinkedHashMap<>();
-        params.put("select", "cm_lastThumbnailModification");// TODO replace the underscore with colon when the framework is fixed.
+        params.put("select", "cm:lastThumbnailModification");
         params.put("orderBy", "isFolder DESC,modifiedAt DESC");
         response = getAll(getChildrenUrl(myFilesNodeRef), user1, paging, params, 200);
         nodes = jacksonUtil.parseEntries(response.getJsonResponse(), Document.class);

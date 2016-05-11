@@ -32,7 +32,7 @@ import org.alfresco.rest.framework.resource.parameters.where.InvalidQueryExcepti
 }
 
 @parser::members {
-   
+
   // These methods are here to force the parser to error instead of suppressing problems.
 //	  @Override
 //	  public void reportError(RecognitionException e) {
@@ -45,15 +45,15 @@ import org.alfresco.rest.framework.resource.parameters.where.InvalidQueryExcepti
     {
         throw new MismatchedTokenException(ttype, input);
     }
-        
+
     @Override
     public Object recoverFromMismatchedSet(IntStream input, RecognitionException e, BitSet follow) throws RecognitionException
     {
         throw e;
     }
-//    
+//
 //    @Override
-//    public String getErrorMessage(RecognitionException e, String[] tokenNames) 
+//    public String getErrorMessage(RecognitionException e, String[] tokenNames)
 //    {
 //      System.out.println("THROW ME...\n" + e);
 //      throw new InvalidQueryException(e.getMessage());
@@ -84,10 +84,12 @@ GREATERTHANOREQUALS: WS?'>='WS?;
 LEFTPAREN: '(';
 RIGHTPAREN: ')';
 COMMA: ',';
+COLON: ':';
 SINGLEQUOTE: '\'';
 PROPERTYVALUE: (SINGLEQUOTE (~SINGLEQUOTE|'\\'SINGLEQUOTE)* SINGLEQUOTE) |IDENTIFIERDIGIT+;
 PROPERTYNAME: '/'? IDENTIFIER ('/'IDENTIFIER)*;
-fragment IDENTIFIER : (IDENTIFIERLETTER (IDENTIFIERLETTER | IDENTIFIERDIGIT)*);
+fragment IDENTIFIERLETTERORDIGIT: (IDENTIFIERLETTER | IDENTIFIERDIGIT);
+fragment IDENTIFIER : (IDENTIFIERLETTER (IDENTIFIERLETTERORDIGIT* | (IDENTIFIERLETTERORDIGIT* COLON IDENTIFIERLETTERORDIGIT*)));
 WS : ( ' ' | '\t' | '\r' | '\n' )+ { $channel = HIDDEN; };
 fragment IDENTIFIERLETTER  // any Unicode character that is a Java letter (see below)
     :    '\u0041'..'\u005a' // A-Z
@@ -139,7 +141,7 @@ propertyvaluepair: value COMMA value -> value+;
 propertyvaluelist: value (COMMA value)* -> value+;
 value: a=PROPERTYVALUE -> ^(PROPERTYVALUE[$a] )
       | b=PROPERTYNAME -> ^(PROPERTYVALUE[$b] ); //rewrite this a propertyvalue
-selectClause:  PROPERTYNAME (COMMA PROPERTYNAME)* -> PROPERTYNAME+;     
+selectClause:  PROPERTYNAME (COMMA PROPERTYNAME)* -> PROPERTYNAME+;
 // ****
 // SOME NOTES
 // () - Parentheses. Used to group several elements, so they are treated as one single token

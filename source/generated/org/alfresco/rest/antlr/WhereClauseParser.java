@@ -40,32 +40,34 @@ import org.antlr.runtime.tree.*;
 @SuppressWarnings({"all", "warnings", "unchecked"})
 public class WhereClauseParser extends Parser {
     public static final String[] tokenNames = new String[] {
-        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "AND", "BETWEEN", "COMMA", "EQUALS", "EXISTS", "GREATERTHAN", "GREATERTHANOREQUALS", "IDENTIFIER", "IDENTIFIERDIGIT", "IDENTIFIERLETTER", "IN", "LEFTPAREN", "LESSTHAN", "LESSTHANOREQUALS", "MATCHES", "NEGATION", "OR", "PROPERTYNAME", "PROPERTYVALUE", "RIGHTPAREN", "SINGLEQUOTE", "WS"
+        "<invalid>", "<EOR>", "<DOWN>", "<UP>", "AND", "BETWEEN", "COLON", "COMMA", "EQUALS", "EXISTS", "GREATERTHAN", "GREATERTHANOREQUALS", "IDENTIFIER", "IDENTIFIERDIGIT", "IDENTIFIERLETTER", "IDENTIFIERLETTERORDIGIT", "IN", "LEFTPAREN", "LESSTHAN", "LESSTHANOREQUALS", "MATCHES", "NEGATION", "OR", "PROPERTYNAME", "PROPERTYVALUE", "RIGHTPAREN", "SINGLEQUOTE", "WS"
     };
 
     public static final int EOF=-1;
     public static final int AND=4;
     public static final int BETWEEN=5;
-    public static final int COMMA=6;
-    public static final int EQUALS=7;
-    public static final int EXISTS=8;
-    public static final int GREATERTHAN=9;
-    public static final int GREATERTHANOREQUALS=10;
-    public static final int IDENTIFIER=11;
-    public static final int IDENTIFIERDIGIT=12;
-    public static final int IDENTIFIERLETTER=13;
-    public static final int IN=14;
-    public static final int LEFTPAREN=15;
-    public static final int LESSTHAN=16;
-    public static final int LESSTHANOREQUALS=17;
-    public static final int MATCHES=18;
-    public static final int NEGATION=19;
-    public static final int OR=20;
-    public static final int PROPERTYNAME=21;
-    public static final int PROPERTYVALUE=22;
-    public static final int RIGHTPAREN=23;
-    public static final int SINGLEQUOTE=24;
-    public static final int WS=25;
+    public static final int COLON=6;
+    public static final int COMMA=7;
+    public static final int EQUALS=8;
+    public static final int EXISTS=9;
+    public static final int GREATERTHAN=10;
+    public static final int GREATERTHANOREQUALS=11;
+    public static final int IDENTIFIER=12;
+    public static final int IDENTIFIERDIGIT=13;
+    public static final int IDENTIFIERLETTER=14;
+    public static final int IDENTIFIERLETTERORDIGIT=15;
+    public static final int IN=16;
+    public static final int LEFTPAREN=17;
+    public static final int LESSTHAN=18;
+    public static final int LESSTHANOREQUALS=19;
+    public static final int MATCHES=20;
+    public static final int NEGATION=21;
+    public static final int OR=22;
+    public static final int PROPERTYNAME=23;
+    public static final int PROPERTYVALUE=24;
+    public static final int RIGHTPAREN=25;
+    public static final int SINGLEQUOTE=26;
+    public static final int WS=27;
 
     // delegates
     public Parser[] getDelegates() {
@@ -130,7 +132,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "whereclause"
-    // org/alfresco/rest/antlr/WhereClause.g:125:1: whereclause : ( WS )? LEFTPAREN ! ( WS )? predicate RIGHTPAREN ! ( WS )? ;
+    // org/alfresco/rest/antlr/WhereClause.g:128:1: whereclause : ( WS )? LEFTPAREN ! ( WS )? predicate RIGHTPAREN ! ( WS )? ;
     public final WhereClauseParser.whereclause_return whereclause() throws RecognitionException {
         WhereClauseParser.whereclause_return retval = new WhereClauseParser.whereclause_return();
         retval.start = input.LT(1);
@@ -153,27 +155,24 @@ public TreeAdaptor getTreeAdaptor() {
         Object WS6_tree=null;
 
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:125:13: ( ( WS )? LEFTPAREN ! ( WS )? predicate RIGHTPAREN ! ( WS )? )
-            // org/alfresco/rest/antlr/WhereClause.g:125:15: ( WS )? LEFTPAREN ! ( WS )? predicate RIGHTPAREN ! ( WS )?
+            // org/alfresco/rest/antlr/WhereClause.g:128:13: ( ( WS )? LEFTPAREN ! ( WS )? predicate RIGHTPAREN ! ( WS )? )
+            // org/alfresco/rest/antlr/WhereClause.g:128:15: ( WS )? LEFTPAREN ! ( WS )? predicate RIGHTPAREN ! ( WS )?
             {
             root_0 = (Object)adaptor.nil();
 
 
-            // org/alfresco/rest/antlr/WhereClause.g:125:15: ( WS )?
+            // org/alfresco/rest/antlr/WhereClause.g:128:15: ( WS )?
             int alt1=2;
-            switch ( input.LA(1) ) {
-                case WS:
-                    {
-                    alt1=1;
-                    }
-                    break;
-            }
+            int LA1_0 = input.LA(1);
 
+            if ( (LA1_0==WS) ) {
+                alt1=1;
+            }
             switch (alt1) {
                 case 1 :
-                    // org/alfresco/rest/antlr/WhereClause.g:125:15: WS
+                    // org/alfresco/rest/antlr/WhereClause.g:128:15: WS
                     {
-                    WS1=(Token)match(input,WS,FOLLOW_WS_in_whereclause750); 
+                    WS1=(Token)match(input,WS,FOLLOW_WS_in_whereclause779); 
                     WS1_tree = 
                     (Object)adaptor.create(WS1)
                     ;
@@ -186,23 +185,20 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            LEFTPAREN2=(Token)match(input,LEFTPAREN,FOLLOW_LEFTPAREN_in_whereclause753); 
+            LEFTPAREN2=(Token)match(input,LEFTPAREN,FOLLOW_LEFTPAREN_in_whereclause782); 
 
-            // org/alfresco/rest/antlr/WhereClause.g:125:30: ( WS )?
+            // org/alfresco/rest/antlr/WhereClause.g:128:30: ( WS )?
             int alt2=2;
-            switch ( input.LA(1) ) {
-                case WS:
-                    {
-                    alt2=1;
-                    }
-                    break;
-            }
+            int LA2_0 = input.LA(1);
 
+            if ( (LA2_0==WS) ) {
+                alt2=1;
+            }
             switch (alt2) {
                 case 1 :
-                    // org/alfresco/rest/antlr/WhereClause.g:125:30: WS
+                    // org/alfresco/rest/antlr/WhereClause.g:128:30: WS
                     {
-                    WS3=(Token)match(input,WS,FOLLOW_WS_in_whereclause756); 
+                    WS3=(Token)match(input,WS,FOLLOW_WS_in_whereclause785); 
                     WS3_tree = 
                     (Object)adaptor.create(WS3)
                     ;
@@ -215,30 +211,27 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            pushFollow(FOLLOW_predicate_in_whereclause759);
+            pushFollow(FOLLOW_predicate_in_whereclause788);
             predicate4=predicate();
 
             state._fsp--;
 
             adaptor.addChild(root_0, predicate4.getTree());
 
-            RIGHTPAREN5=(Token)match(input,RIGHTPAREN,FOLLOW_RIGHTPAREN_in_whereclause761); 
+            RIGHTPAREN5=(Token)match(input,RIGHTPAREN,FOLLOW_RIGHTPAREN_in_whereclause790); 
 
-            // org/alfresco/rest/antlr/WhereClause.g:125:56: ( WS )?
+            // org/alfresco/rest/antlr/WhereClause.g:128:56: ( WS )?
             int alt3=2;
-            switch ( input.LA(1) ) {
-                case WS:
-                    {
-                    alt3=1;
-                    }
-                    break;
-            }
+            int LA3_0 = input.LA(1);
 
+            if ( (LA3_0==WS) ) {
+                alt3=1;
+            }
             switch (alt3) {
                 case 1 :
-                    // org/alfresco/rest/antlr/WhereClause.g:125:56: WS
+                    // org/alfresco/rest/antlr/WhereClause.g:128:56: WS
                     {
-                    WS6=(Token)match(input,WS,FOLLOW_WS_in_whereclause764); 
+                    WS6=(Token)match(input,WS,FOLLOW_WS_in_whereclause793); 
                     WS6_tree = 
                     (Object)adaptor.create(WS6)
                     ;
@@ -281,7 +274,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "predicate"
-    // org/alfresco/rest/antlr/WhereClause.g:126:1: predicate : ( simplepredicate | simplepredicate ( AND simplepredicate )+ -> ^( AND ( simplepredicate )+ ) | simplepredicate ( OR simplepredicate )+ -> ^( OR ( simplepredicate )+ ) );
+    // org/alfresco/rest/antlr/WhereClause.g:129:1: predicate : ( simplepredicate | simplepredicate ( AND simplepredicate )+ -> ^( AND ( simplepredicate )+ ) | simplepredicate ( OR simplepredicate )+ -> ^( OR ( simplepredicate )+ ) );
     public final WhereClauseParser.predicate_return predicate() throws RecognitionException {
         WhereClauseParser.predicate_return retval = new WhereClauseParser.predicate_return();
         retval.start = input.LT(1);
@@ -304,21 +297,21 @@ public TreeAdaptor getTreeAdaptor() {
 
         Object AND9_tree=null;
         Object OR12_tree=null;
-        RewriteRuleTokenStream stream_AND=new RewriteRuleTokenStream(adaptor,"token AND");
         RewriteRuleTokenStream stream_OR=new RewriteRuleTokenStream(adaptor,"token OR");
+        RewriteRuleTokenStream stream_AND=new RewriteRuleTokenStream(adaptor,"token AND");
         RewriteRuleSubtreeStream stream_simplepredicate=new RewriteRuleSubtreeStream(adaptor,"rule simplepredicate");
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:126:11: ( simplepredicate | simplepredicate ( AND simplepredicate )+ -> ^( AND ( simplepredicate )+ ) | simplepredicate ( OR simplepredicate )+ -> ^( OR ( simplepredicate )+ ) )
+            // org/alfresco/rest/antlr/WhereClause.g:129:11: ( simplepredicate | simplepredicate ( AND simplepredicate )+ -> ^( AND ( simplepredicate )+ ) | simplepredicate ( OR simplepredicate )+ -> ^( OR ( simplepredicate )+ ) )
             int alt6=3;
             alt6 = dfa6.predict(input);
             switch (alt6) {
                 case 1 :
-                    // org/alfresco/rest/antlr/WhereClause.g:126:13: simplepredicate
+                    // org/alfresco/rest/antlr/WhereClause.g:129:13: simplepredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
 
-                    pushFollow(FOLLOW_simplepredicate_in_predicate772);
+                    pushFollow(FOLLOW_simplepredicate_in_predicate801);
                     simplepredicate7=simplepredicate();
 
                     state._fsp--;
@@ -328,38 +321,36 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // org/alfresco/rest/antlr/WhereClause.g:127:13: simplepredicate ( AND simplepredicate )+
+                    // org/alfresco/rest/antlr/WhereClause.g:130:13: simplepredicate ( AND simplepredicate )+
                     {
-                    pushFollow(FOLLOW_simplepredicate_in_predicate786);
+                    pushFollow(FOLLOW_simplepredicate_in_predicate815);
                     simplepredicate8=simplepredicate();
 
                     state._fsp--;
 
                     stream_simplepredicate.add(simplepredicate8.getTree());
 
-                    // org/alfresco/rest/antlr/WhereClause.g:127:29: ( AND simplepredicate )+
+                    // org/alfresco/rest/antlr/WhereClause.g:130:29: ( AND simplepredicate )+
                     int cnt4=0;
                     loop4:
                     do {
                         int alt4=2;
-                        switch ( input.LA(1) ) {
-                        case AND:
-                            {
-                            alt4=1;
-                            }
-                            break;
+                        int LA4_0 = input.LA(1);
 
+                        if ( (LA4_0==AND) ) {
+                            alt4=1;
                         }
+
 
                         switch (alt4) {
                     	case 1 :
-                    	    // org/alfresco/rest/antlr/WhereClause.g:127:30: AND simplepredicate
+                    	    // org/alfresco/rest/antlr/WhereClause.g:130:30: AND simplepredicate
                     	    {
-                    	    AND9=(Token)match(input,AND,FOLLOW_AND_in_predicate789);  
+                    	    AND9=(Token)match(input,AND,FOLLOW_AND_in_predicate818);  
                     	    stream_AND.add(AND9);
 
 
-                    	    pushFollow(FOLLOW_simplepredicate_in_predicate791);
+                    	    pushFollow(FOLLOW_simplepredicate_in_predicate820);
                     	    simplepredicate10=simplepredicate();
 
                     	    state._fsp--;
@@ -380,7 +371,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: simplepredicate, AND
+                    // elements: AND, simplepredicate
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -390,9 +381,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 127:52: -> ^( AND ( simplepredicate )+ )
+                    // 130:52: -> ^( AND ( simplepredicate )+ )
                     {
-                        // org/alfresco/rest/antlr/WhereClause.g:127:55: ^( AND ( simplepredicate )+ )
+                        // org/alfresco/rest/antlr/WhereClause.g:130:55: ^( AND ( simplepredicate )+ )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot(
@@ -419,38 +410,36 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 3 :
-                    // org/alfresco/rest/antlr/WhereClause.g:128:13: simplepredicate ( OR simplepredicate )+
+                    // org/alfresco/rest/antlr/WhereClause.g:131:13: simplepredicate ( OR simplepredicate )+
                     {
-                    pushFollow(FOLLOW_simplepredicate_in_predicate816);
+                    pushFollow(FOLLOW_simplepredicate_in_predicate845);
                     simplepredicate11=simplepredicate();
 
                     state._fsp--;
 
                     stream_simplepredicate.add(simplepredicate11.getTree());
 
-                    // org/alfresco/rest/antlr/WhereClause.g:128:29: ( OR simplepredicate )+
+                    // org/alfresco/rest/antlr/WhereClause.g:131:29: ( OR simplepredicate )+
                     int cnt5=0;
                     loop5:
                     do {
                         int alt5=2;
-                        switch ( input.LA(1) ) {
-                        case OR:
-                            {
-                            alt5=1;
-                            }
-                            break;
+                        int LA5_0 = input.LA(1);
 
+                        if ( (LA5_0==OR) ) {
+                            alt5=1;
                         }
+
 
                         switch (alt5) {
                     	case 1 :
-                    	    // org/alfresco/rest/antlr/WhereClause.g:128:30: OR simplepredicate
+                    	    // org/alfresco/rest/antlr/WhereClause.g:131:30: OR simplepredicate
                     	    {
-                    	    OR12=(Token)match(input,OR,FOLLOW_OR_in_predicate819);  
+                    	    OR12=(Token)match(input,OR,FOLLOW_OR_in_predicate848);  
                     	    stream_OR.add(OR12);
 
 
-                    	    pushFollow(FOLLOW_simplepredicate_in_predicate821);
+                    	    pushFollow(FOLLOW_simplepredicate_in_predicate850);
                     	    simplepredicate13=simplepredicate();
 
                     	    state._fsp--;
@@ -471,7 +460,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
                     // AST REWRITE
-                    // elements: OR, simplepredicate
+                    // elements: simplepredicate, OR
                     // token labels: 
                     // rule labels: retval
                     // token list labels: 
@@ -481,9 +470,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 128:51: -> ^( OR ( simplepredicate )+ )
+                    // 131:51: -> ^( OR ( simplepredicate )+ )
                     {
-                        // org/alfresco/rest/antlr/WhereClause.g:128:54: ^( OR ( simplepredicate )+ )
+                        // org/alfresco/rest/antlr/WhereClause.g:131:54: ^( OR ( simplepredicate )+ )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot(
@@ -539,7 +528,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "simplepredicate"
-    // org/alfresco/rest/antlr/WhereClause.g:129:1: simplepredicate : ( allowedpredicates -> allowedpredicates | NEGATION allowedpredicates -> ^( NEGATION allowedpredicates ) );
+    // org/alfresco/rest/antlr/WhereClause.g:132:1: simplepredicate : ( allowedpredicates -> allowedpredicates | NEGATION allowedpredicates -> ^( NEGATION allowedpredicates ) );
     public final WhereClauseParser.simplepredicate_return simplepredicate() throws RecognitionException {
         WhereClauseParser.simplepredicate_return retval = new WhereClauseParser.simplepredicate_return();
         retval.start = input.LT(1);
@@ -557,33 +546,28 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_NEGATION=new RewriteRuleTokenStream(adaptor,"token NEGATION");
         RewriteRuleSubtreeStream stream_allowedpredicates=new RewriteRuleSubtreeStream(adaptor,"rule allowedpredicates");
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:129:17: ( allowedpredicates -> allowedpredicates | NEGATION allowedpredicates -> ^( NEGATION allowedpredicates ) )
+            // org/alfresco/rest/antlr/WhereClause.g:132:17: ( allowedpredicates -> allowedpredicates | NEGATION allowedpredicates -> ^( NEGATION allowedpredicates ) )
             int alt7=2;
-            switch ( input.LA(1) ) {
-            case EXISTS:
-            case PROPERTYNAME:
-                {
+            int LA7_0 = input.LA(1);
+
+            if ( (LA7_0==EXISTS||LA7_0==PROPERTYNAME) ) {
                 alt7=1;
-                }
-                break;
-            case NEGATION:
-                {
+            }
+            else if ( (LA7_0==NEGATION) ) {
                 alt7=2;
-                }
-                break;
-            default:
+            }
+            else {
                 NoViableAltException nvae =
                     new NoViableAltException("", 7, 0, input);
 
                 throw nvae;
 
             }
-
             switch (alt7) {
                 case 1 :
-                    // org/alfresco/rest/antlr/WhereClause.g:129:19: allowedpredicates
+                    // org/alfresco/rest/antlr/WhereClause.g:132:19: allowedpredicates
                     {
-                    pushFollow(FOLLOW_allowedpredicates_in_simplepredicate839);
+                    pushFollow(FOLLOW_allowedpredicates_in_simplepredicate868);
                     allowedpredicates14=allowedpredicates();
 
                     state._fsp--;
@@ -601,7 +585,7 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 129:37: -> allowedpredicates
+                    // 132:37: -> allowedpredicates
                     {
                         adaptor.addChild(root_0, stream_allowedpredicates.nextTree());
 
@@ -613,13 +597,13 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // org/alfresco/rest/antlr/WhereClause.g:130:19: NEGATION allowedpredicates
+                    // org/alfresco/rest/antlr/WhereClause.g:133:19: NEGATION allowedpredicates
                     {
-                    NEGATION15=(Token)match(input,NEGATION,FOLLOW_NEGATION_in_simplepredicate863);  
+                    NEGATION15=(Token)match(input,NEGATION,FOLLOW_NEGATION_in_simplepredicate892);  
                     stream_NEGATION.add(NEGATION15);
 
 
-                    pushFollow(FOLLOW_allowedpredicates_in_simplepredicate865);
+                    pushFollow(FOLLOW_allowedpredicates_in_simplepredicate894);
                     allowedpredicates16=allowedpredicates();
 
                     state._fsp--;
@@ -637,9 +621,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 130:46: -> ^( NEGATION allowedpredicates )
+                    // 133:46: -> ^( NEGATION allowedpredicates )
                     {
-                        // org/alfresco/rest/antlr/WhereClause.g:130:49: ^( NEGATION allowedpredicates )
+                        // org/alfresco/rest/antlr/WhereClause.g:133:49: ^( NEGATION allowedpredicates )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot(
@@ -688,7 +672,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "allowedpredicates"
-    // org/alfresco/rest/antlr/WhereClause.g:131:1: allowedpredicates : ( comparisonpredicate | existspredicate | betweenpredicate | inpredicate | matchespredicate );
+    // org/alfresco/rest/antlr/WhereClause.g:134:1: allowedpredicates : ( comparisonpredicate | existspredicate | betweenpredicate | inpredicate | matchespredicate );
     public final WhereClauseParser.allowedpredicates_return allowedpredicates() throws RecognitionException {
         WhereClauseParser.allowedpredicates_return retval = new WhereClauseParser.allowedpredicates_return();
         retval.start = input.LT(1);
@@ -709,11 +693,11 @@ public TreeAdaptor getTreeAdaptor() {
 
 
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:131:19: ( comparisonpredicate | existspredicate | betweenpredicate | inpredicate | matchespredicate )
+            // org/alfresco/rest/antlr/WhereClause.g:134:19: ( comparisonpredicate | existspredicate | betweenpredicate | inpredicate | matchespredicate )
             int alt8=5;
-            switch ( input.LA(1) ) {
-            case PROPERTYNAME:
-                {
+            int LA8_0 = input.LA(1);
+
+            if ( (LA8_0==PROPERTYNAME) ) {
                 switch ( input.LA(2) ) {
                 case BETWEEN:
                     {
@@ -747,29 +731,25 @@ public TreeAdaptor getTreeAdaptor() {
 
                 }
 
-                }
-                break;
-            case EXISTS:
-                {
+            }
+            else if ( (LA8_0==EXISTS) ) {
                 alt8=2;
-                }
-                break;
-            default:
+            }
+            else {
                 NoViableAltException nvae =
                     new NoViableAltException("", 8, 0, input);
 
                 throw nvae;
 
             }
-
             switch (alt8) {
                 case 1 :
-                    // org/alfresco/rest/antlr/WhereClause.g:131:21: comparisonpredicate
+                    // org/alfresco/rest/antlr/WhereClause.g:134:21: comparisonpredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
 
-                    pushFollow(FOLLOW_comparisonpredicate_in_allowedpredicates880);
+                    pushFollow(FOLLOW_comparisonpredicate_in_allowedpredicates909);
                     comparisonpredicate17=comparisonpredicate();
 
                     state._fsp--;
@@ -779,12 +759,12 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // org/alfresco/rest/antlr/WhereClause.g:131:43: existspredicate
+                    // org/alfresco/rest/antlr/WhereClause.g:134:43: existspredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
 
-                    pushFollow(FOLLOW_existspredicate_in_allowedpredicates884);
+                    pushFollow(FOLLOW_existspredicate_in_allowedpredicates913);
                     existspredicate18=existspredicate();
 
                     state._fsp--;
@@ -794,12 +774,12 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 3 :
-                    // org/alfresco/rest/antlr/WhereClause.g:131:61: betweenpredicate
+                    // org/alfresco/rest/antlr/WhereClause.g:134:61: betweenpredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
 
-                    pushFollow(FOLLOW_betweenpredicate_in_allowedpredicates888);
+                    pushFollow(FOLLOW_betweenpredicate_in_allowedpredicates917);
                     betweenpredicate19=betweenpredicate();
 
                     state._fsp--;
@@ -809,12 +789,12 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 4 :
-                    // org/alfresco/rest/antlr/WhereClause.g:131:80: inpredicate
+                    // org/alfresco/rest/antlr/WhereClause.g:134:80: inpredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
 
-                    pushFollow(FOLLOW_inpredicate_in_allowedpredicates892);
+                    pushFollow(FOLLOW_inpredicate_in_allowedpredicates921);
                     inpredicate20=inpredicate();
 
                     state._fsp--;
@@ -824,12 +804,12 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 5 :
-                    // org/alfresco/rest/antlr/WhereClause.g:131:94: matchespredicate
+                    // org/alfresco/rest/antlr/WhereClause.g:134:94: matchespredicate
                     {
                     root_0 = (Object)adaptor.nil();
 
 
-                    pushFollow(FOLLOW_matchespredicate_in_allowedpredicates896);
+                    pushFollow(FOLLOW_matchespredicate_in_allowedpredicates925);
                     matchespredicate21=matchespredicate();
 
                     state._fsp--;
@@ -868,7 +848,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "comparisonpredicate"
-    // org/alfresco/rest/antlr/WhereClause.g:132:1: comparisonpredicate : PROPERTYNAME comparisonoperator value -> ^( comparisonoperator PROPERTYNAME value ) ;
+    // org/alfresco/rest/antlr/WhereClause.g:135:1: comparisonpredicate : PROPERTYNAME comparisonoperator value -> ^( comparisonoperator PROPERTYNAME value ) ;
     public final WhereClauseParser.comparisonpredicate_return comparisonpredicate() throws RecognitionException {
         WhereClauseParser.comparisonpredicate_return retval = new WhereClauseParser.comparisonpredicate_return();
         retval.start = input.LT(1);
@@ -887,21 +867,21 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleSubtreeStream stream_comparisonoperator=new RewriteRuleSubtreeStream(adaptor,"rule comparisonoperator");
         RewriteRuleSubtreeStream stream_value=new RewriteRuleSubtreeStream(adaptor,"rule value");
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:132:20: ( PROPERTYNAME comparisonoperator value -> ^( comparisonoperator PROPERTYNAME value ) )
-            // org/alfresco/rest/antlr/WhereClause.g:132:22: PROPERTYNAME comparisonoperator value
+            // org/alfresco/rest/antlr/WhereClause.g:135:20: ( PROPERTYNAME comparisonoperator value -> ^( comparisonoperator PROPERTYNAME value ) )
+            // org/alfresco/rest/antlr/WhereClause.g:135:22: PROPERTYNAME comparisonoperator value
             {
-            PROPERTYNAME22=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_comparisonpredicate902);  
+            PROPERTYNAME22=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_comparisonpredicate931);  
             stream_PROPERTYNAME.add(PROPERTYNAME22);
 
 
-            pushFollow(FOLLOW_comparisonoperator_in_comparisonpredicate904);
+            pushFollow(FOLLOW_comparisonoperator_in_comparisonpredicate933);
             comparisonoperator23=comparisonoperator();
 
             state._fsp--;
 
             stream_comparisonoperator.add(comparisonoperator23.getTree());
 
-            pushFollow(FOLLOW_value_in_comparisonpredicate906);
+            pushFollow(FOLLOW_value_in_comparisonpredicate935);
             value24=value();
 
             state._fsp--;
@@ -909,7 +889,7 @@ public TreeAdaptor getTreeAdaptor() {
             stream_value.add(value24.getTree());
 
             // AST REWRITE
-            // elements: value, PROPERTYNAME, comparisonoperator
+            // elements: value, comparisonoperator, PROPERTYNAME
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -919,9 +899,9 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 132:60: -> ^( comparisonoperator PROPERTYNAME value )
+            // 135:60: -> ^( comparisonoperator PROPERTYNAME value )
             {
-                // org/alfresco/rest/antlr/WhereClause.g:132:63: ^( comparisonoperator PROPERTYNAME value )
+                // org/alfresco/rest/antlr/WhereClause.g:135:63: ^( comparisonoperator PROPERTYNAME value )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot(stream_comparisonoperator.nextNode(), root_1);
@@ -970,7 +950,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "comparisonoperator"
-    // org/alfresco/rest/antlr/WhereClause.g:133:1: comparisonoperator : ( EQUALS | LESSTHAN | GREATERTHAN | LESSTHANOREQUALS | GREATERTHANOREQUALS );
+    // org/alfresco/rest/antlr/WhereClause.g:136:1: comparisonoperator : ( EQUALS | LESSTHAN | GREATERTHAN | LESSTHANOREQUALS | GREATERTHANOREQUALS );
     public final WhereClauseParser.comparisonoperator_return comparisonoperator() throws RecognitionException {
         WhereClauseParser.comparisonoperator_return retval = new WhereClauseParser.comparisonoperator_return();
         retval.start = input.LT(1);
@@ -983,7 +963,7 @@ public TreeAdaptor getTreeAdaptor() {
         Object set25_tree=null;
 
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:133:19: ( EQUALS | LESSTHAN | GREATERTHAN | LESSTHANOREQUALS | GREATERTHANOREQUALS )
+            // org/alfresco/rest/antlr/WhereClause.g:136:19: ( EQUALS | LESSTHAN | GREATERTHAN | LESSTHANOREQUALS | GREATERTHANOREQUALS )
             // org/alfresco/rest/antlr/WhereClause.g:
             {
             root_0 = (Object)adaptor.nil();
@@ -1034,7 +1014,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "existspredicate"
-    // org/alfresco/rest/antlr/WhereClause.g:134:1: existspredicate : EXISTS LEFTPAREN ( WS )? PROPERTYNAME RIGHTPAREN -> ^( EXISTS PROPERTYNAME ) ;
+    // org/alfresco/rest/antlr/WhereClause.g:137:1: existspredicate : EXISTS LEFTPAREN ( WS )? PROPERTYNAME RIGHTPAREN -> ^( EXISTS PROPERTYNAME ) ;
     public final WhereClauseParser.existspredicate_return existspredicate() throws RecognitionException {
         WhereClauseParser.existspredicate_return retval = new WhereClauseParser.existspredicate_return();
         retval.start = input.LT(1);
@@ -1053,39 +1033,36 @@ public TreeAdaptor getTreeAdaptor() {
         Object WS28_tree=null;
         Object PROPERTYNAME29_tree=null;
         Object RIGHTPAREN30_tree=null;
-        RewriteRuleTokenStream stream_PROPERTYNAME=new RewriteRuleTokenStream(adaptor,"token PROPERTYNAME");
         RewriteRuleTokenStream stream_LEFTPAREN=new RewriteRuleTokenStream(adaptor,"token LEFTPAREN");
-        RewriteRuleTokenStream stream_WS=new RewriteRuleTokenStream(adaptor,"token WS");
+        RewriteRuleTokenStream stream_PROPERTYNAME=new RewriteRuleTokenStream(adaptor,"token PROPERTYNAME");
         RewriteRuleTokenStream stream_EXISTS=new RewriteRuleTokenStream(adaptor,"token EXISTS");
         RewriteRuleTokenStream stream_RIGHTPAREN=new RewriteRuleTokenStream(adaptor,"token RIGHTPAREN");
+        RewriteRuleTokenStream stream_WS=new RewriteRuleTokenStream(adaptor,"token WS");
 
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:134:16: ( EXISTS LEFTPAREN ( WS )? PROPERTYNAME RIGHTPAREN -> ^( EXISTS PROPERTYNAME ) )
-            // org/alfresco/rest/antlr/WhereClause.g:134:18: EXISTS LEFTPAREN ( WS )? PROPERTYNAME RIGHTPAREN
+            // org/alfresco/rest/antlr/WhereClause.g:137:16: ( EXISTS LEFTPAREN ( WS )? PROPERTYNAME RIGHTPAREN -> ^( EXISTS PROPERTYNAME ) )
+            // org/alfresco/rest/antlr/WhereClause.g:137:18: EXISTS LEFTPAREN ( WS )? PROPERTYNAME RIGHTPAREN
             {
-            EXISTS26=(Token)match(input,EXISTS,FOLLOW_EXISTS_in_existspredicate936);  
+            EXISTS26=(Token)match(input,EXISTS,FOLLOW_EXISTS_in_existspredicate965);  
             stream_EXISTS.add(EXISTS26);
 
 
-            LEFTPAREN27=(Token)match(input,LEFTPAREN,FOLLOW_LEFTPAREN_in_existspredicate938);  
+            LEFTPAREN27=(Token)match(input,LEFTPAREN,FOLLOW_LEFTPAREN_in_existspredicate967);  
             stream_LEFTPAREN.add(LEFTPAREN27);
 
 
-            // org/alfresco/rest/antlr/WhereClause.g:134:35: ( WS )?
+            // org/alfresco/rest/antlr/WhereClause.g:137:35: ( WS )?
             int alt9=2;
-            switch ( input.LA(1) ) {
-                case WS:
-                    {
-                    alt9=1;
-                    }
-                    break;
-            }
+            int LA9_0 = input.LA(1);
 
+            if ( (LA9_0==WS) ) {
+                alt9=1;
+            }
             switch (alt9) {
                 case 1 :
-                    // org/alfresco/rest/antlr/WhereClause.g:134:35: WS
+                    // org/alfresco/rest/antlr/WhereClause.g:137:35: WS
                     {
-                    WS28=(Token)match(input,WS,FOLLOW_WS_in_existspredicate940);  
+                    WS28=(Token)match(input,WS,FOLLOW_WS_in_existspredicate969);  
                     stream_WS.add(WS28);
 
 
@@ -1095,11 +1072,11 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            PROPERTYNAME29=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_existspredicate943);  
+            PROPERTYNAME29=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_existspredicate972);  
             stream_PROPERTYNAME.add(PROPERTYNAME29);
 
 
-            RIGHTPAREN30=(Token)match(input,RIGHTPAREN,FOLLOW_RIGHTPAREN_in_existspredicate945);  
+            RIGHTPAREN30=(Token)match(input,RIGHTPAREN,FOLLOW_RIGHTPAREN_in_existspredicate974);  
             stream_RIGHTPAREN.add(RIGHTPAREN30);
 
 
@@ -1114,9 +1091,9 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 134:63: -> ^( EXISTS PROPERTYNAME )
+            // 137:63: -> ^( EXISTS PROPERTYNAME )
             {
-                // org/alfresco/rest/antlr/WhereClause.g:134:66: ^( EXISTS PROPERTYNAME )
+                // org/alfresco/rest/antlr/WhereClause.g:137:66: ^( EXISTS PROPERTYNAME )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot(
@@ -1165,7 +1142,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "betweenpredicate"
-    // org/alfresco/rest/antlr/WhereClause.g:135:1: betweenpredicate : PROPERTYNAME BETWEEN LEFTPAREN ( WS )? propertyvaluepair RIGHTPAREN -> ^( BETWEEN PROPERTYNAME propertyvaluepair ) ;
+    // org/alfresco/rest/antlr/WhereClause.g:138:1: betweenpredicate : PROPERTYNAME BETWEEN LEFTPAREN ( WS )? propertyvaluepair RIGHTPAREN -> ^( BETWEEN PROPERTYNAME propertyvaluepair ) ;
     public final WhereClauseParser.betweenpredicate_return betweenpredicate() throws RecognitionException {
         WhereClauseParser.betweenpredicate_return retval = new WhereClauseParser.betweenpredicate_return();
         retval.start = input.LT(1);
@@ -1186,43 +1163,40 @@ public TreeAdaptor getTreeAdaptor() {
         Object LEFTPAREN33_tree=null;
         Object WS34_tree=null;
         Object RIGHTPAREN36_tree=null;
-        RewriteRuleTokenStream stream_PROPERTYNAME=new RewriteRuleTokenStream(adaptor,"token PROPERTYNAME");
         RewriteRuleTokenStream stream_LEFTPAREN=new RewriteRuleTokenStream(adaptor,"token LEFTPAREN");
-        RewriteRuleTokenStream stream_WS=new RewriteRuleTokenStream(adaptor,"token WS");
+        RewriteRuleTokenStream stream_PROPERTYNAME=new RewriteRuleTokenStream(adaptor,"token PROPERTYNAME");
         RewriteRuleTokenStream stream_RIGHTPAREN=new RewriteRuleTokenStream(adaptor,"token RIGHTPAREN");
         RewriteRuleTokenStream stream_BETWEEN=new RewriteRuleTokenStream(adaptor,"token BETWEEN");
+        RewriteRuleTokenStream stream_WS=new RewriteRuleTokenStream(adaptor,"token WS");
         RewriteRuleSubtreeStream stream_propertyvaluepair=new RewriteRuleSubtreeStream(adaptor,"rule propertyvaluepair");
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:135:17: ( PROPERTYNAME BETWEEN LEFTPAREN ( WS )? propertyvaluepair RIGHTPAREN -> ^( BETWEEN PROPERTYNAME propertyvaluepair ) )
-            // org/alfresco/rest/antlr/WhereClause.g:135:19: PROPERTYNAME BETWEEN LEFTPAREN ( WS )? propertyvaluepair RIGHTPAREN
+            // org/alfresco/rest/antlr/WhereClause.g:138:17: ( PROPERTYNAME BETWEEN LEFTPAREN ( WS )? propertyvaluepair RIGHTPAREN -> ^( BETWEEN PROPERTYNAME propertyvaluepair ) )
+            // org/alfresco/rest/antlr/WhereClause.g:138:19: PROPERTYNAME BETWEEN LEFTPAREN ( WS )? propertyvaluepair RIGHTPAREN
             {
-            PROPERTYNAME31=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_betweenpredicate959);  
+            PROPERTYNAME31=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_betweenpredicate988);  
             stream_PROPERTYNAME.add(PROPERTYNAME31);
 
 
-            BETWEEN32=(Token)match(input,BETWEEN,FOLLOW_BETWEEN_in_betweenpredicate961);  
+            BETWEEN32=(Token)match(input,BETWEEN,FOLLOW_BETWEEN_in_betweenpredicate990);  
             stream_BETWEEN.add(BETWEEN32);
 
 
-            LEFTPAREN33=(Token)match(input,LEFTPAREN,FOLLOW_LEFTPAREN_in_betweenpredicate963);  
+            LEFTPAREN33=(Token)match(input,LEFTPAREN,FOLLOW_LEFTPAREN_in_betweenpredicate992);  
             stream_LEFTPAREN.add(LEFTPAREN33);
 
 
-            // org/alfresco/rest/antlr/WhereClause.g:135:50: ( WS )?
+            // org/alfresco/rest/antlr/WhereClause.g:138:50: ( WS )?
             int alt10=2;
-            switch ( input.LA(1) ) {
-                case WS:
-                    {
-                    alt10=1;
-                    }
-                    break;
-            }
+            int LA10_0 = input.LA(1);
 
+            if ( (LA10_0==WS) ) {
+                alt10=1;
+            }
             switch (alt10) {
                 case 1 :
-                    // org/alfresco/rest/antlr/WhereClause.g:135:50: WS
+                    // org/alfresco/rest/antlr/WhereClause.g:138:50: WS
                     {
-                    WS34=(Token)match(input,WS,FOLLOW_WS_in_betweenpredicate965);  
+                    WS34=(Token)match(input,WS,FOLLOW_WS_in_betweenpredicate994);  
                     stream_WS.add(WS34);
 
 
@@ -1232,19 +1206,19 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            pushFollow(FOLLOW_propertyvaluepair_in_betweenpredicate968);
+            pushFollow(FOLLOW_propertyvaluepair_in_betweenpredicate997);
             propertyvaluepair35=propertyvaluepair();
 
             state._fsp--;
 
             stream_propertyvaluepair.add(propertyvaluepair35.getTree());
 
-            RIGHTPAREN36=(Token)match(input,RIGHTPAREN,FOLLOW_RIGHTPAREN_in_betweenpredicate970);  
+            RIGHTPAREN36=(Token)match(input,RIGHTPAREN,FOLLOW_RIGHTPAREN_in_betweenpredicate999);  
             stream_RIGHTPAREN.add(RIGHTPAREN36);
 
 
             // AST REWRITE
-            // elements: propertyvaluepair, PROPERTYNAME, BETWEEN
+            // elements: propertyvaluepair, BETWEEN, PROPERTYNAME
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -1254,9 +1228,9 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 135:83: -> ^( BETWEEN PROPERTYNAME propertyvaluepair )
+            // 138:83: -> ^( BETWEEN PROPERTYNAME propertyvaluepair )
             {
-                // org/alfresco/rest/antlr/WhereClause.g:135:86: ^( BETWEEN PROPERTYNAME propertyvaluepair )
+                // org/alfresco/rest/antlr/WhereClause.g:138:86: ^( BETWEEN PROPERTYNAME propertyvaluepair )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot(
@@ -1307,7 +1281,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "inpredicate"
-    // org/alfresco/rest/antlr/WhereClause.g:136:1: inpredicate : PROPERTYNAME IN LEFTPAREN ( WS )? propertyvaluelist RIGHTPAREN -> ^( IN PROPERTYNAME propertyvaluelist ) ;
+    // org/alfresco/rest/antlr/WhereClause.g:139:1: inpredicate : PROPERTYNAME IN LEFTPAREN ( WS )? propertyvaluelist RIGHTPAREN -> ^( IN PROPERTYNAME propertyvaluelist ) ;
     public final WhereClauseParser.inpredicate_return inpredicate() throws RecognitionException {
         WhereClauseParser.inpredicate_return retval = new WhereClauseParser.inpredicate_return();
         retval.start = input.LT(1);
@@ -1328,43 +1302,40 @@ public TreeAdaptor getTreeAdaptor() {
         Object LEFTPAREN39_tree=null;
         Object WS40_tree=null;
         Object RIGHTPAREN42_tree=null;
-        RewriteRuleTokenStream stream_PROPERTYNAME=new RewriteRuleTokenStream(adaptor,"token PROPERTYNAME");
         RewriteRuleTokenStream stream_LEFTPAREN=new RewriteRuleTokenStream(adaptor,"token LEFTPAREN");
-        RewriteRuleTokenStream stream_WS=new RewriteRuleTokenStream(adaptor,"token WS");
+        RewriteRuleTokenStream stream_PROPERTYNAME=new RewriteRuleTokenStream(adaptor,"token PROPERTYNAME");
         RewriteRuleTokenStream stream_IN=new RewriteRuleTokenStream(adaptor,"token IN");
         RewriteRuleTokenStream stream_RIGHTPAREN=new RewriteRuleTokenStream(adaptor,"token RIGHTPAREN");
+        RewriteRuleTokenStream stream_WS=new RewriteRuleTokenStream(adaptor,"token WS");
         RewriteRuleSubtreeStream stream_propertyvaluelist=new RewriteRuleSubtreeStream(adaptor,"rule propertyvaluelist");
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:136:12: ( PROPERTYNAME IN LEFTPAREN ( WS )? propertyvaluelist RIGHTPAREN -> ^( IN PROPERTYNAME propertyvaluelist ) )
-            // org/alfresco/rest/antlr/WhereClause.g:136:14: PROPERTYNAME IN LEFTPAREN ( WS )? propertyvaluelist RIGHTPAREN
+            // org/alfresco/rest/antlr/WhereClause.g:139:12: ( PROPERTYNAME IN LEFTPAREN ( WS )? propertyvaluelist RIGHTPAREN -> ^( IN PROPERTYNAME propertyvaluelist ) )
+            // org/alfresco/rest/antlr/WhereClause.g:139:14: PROPERTYNAME IN LEFTPAREN ( WS )? propertyvaluelist RIGHTPAREN
             {
-            PROPERTYNAME37=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_inpredicate986);  
+            PROPERTYNAME37=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_inpredicate1015);  
             stream_PROPERTYNAME.add(PROPERTYNAME37);
 
 
-            IN38=(Token)match(input,IN,FOLLOW_IN_in_inpredicate988);  
+            IN38=(Token)match(input,IN,FOLLOW_IN_in_inpredicate1017);  
             stream_IN.add(IN38);
 
 
-            LEFTPAREN39=(Token)match(input,LEFTPAREN,FOLLOW_LEFTPAREN_in_inpredicate990);  
+            LEFTPAREN39=(Token)match(input,LEFTPAREN,FOLLOW_LEFTPAREN_in_inpredicate1019);  
             stream_LEFTPAREN.add(LEFTPAREN39);
 
 
-            // org/alfresco/rest/antlr/WhereClause.g:136:40: ( WS )?
+            // org/alfresco/rest/antlr/WhereClause.g:139:40: ( WS )?
             int alt11=2;
-            switch ( input.LA(1) ) {
-                case WS:
-                    {
-                    alt11=1;
-                    }
-                    break;
-            }
+            int LA11_0 = input.LA(1);
 
+            if ( (LA11_0==WS) ) {
+                alt11=1;
+            }
             switch (alt11) {
                 case 1 :
-                    // org/alfresco/rest/antlr/WhereClause.g:136:40: WS
+                    // org/alfresco/rest/antlr/WhereClause.g:139:40: WS
                     {
-                    WS40=(Token)match(input,WS,FOLLOW_WS_in_inpredicate992);  
+                    WS40=(Token)match(input,WS,FOLLOW_WS_in_inpredicate1021);  
                     stream_WS.add(WS40);
 
 
@@ -1374,19 +1345,19 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            pushFollow(FOLLOW_propertyvaluelist_in_inpredicate995);
+            pushFollow(FOLLOW_propertyvaluelist_in_inpredicate1024);
             propertyvaluelist41=propertyvaluelist();
 
             state._fsp--;
 
             stream_propertyvaluelist.add(propertyvaluelist41.getTree());
 
-            RIGHTPAREN42=(Token)match(input,RIGHTPAREN,FOLLOW_RIGHTPAREN_in_inpredicate997);  
+            RIGHTPAREN42=(Token)match(input,RIGHTPAREN,FOLLOW_RIGHTPAREN_in_inpredicate1026);  
             stream_RIGHTPAREN.add(RIGHTPAREN42);
 
 
             // AST REWRITE
-            // elements: propertyvaluelist, IN, PROPERTYNAME
+            // elements: PROPERTYNAME, IN, propertyvaluelist
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -1396,9 +1367,9 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 136:73: -> ^( IN PROPERTYNAME propertyvaluelist )
+            // 139:73: -> ^( IN PROPERTYNAME propertyvaluelist )
             {
-                // org/alfresco/rest/antlr/WhereClause.g:136:76: ^( IN PROPERTYNAME propertyvaluelist )
+                // org/alfresco/rest/antlr/WhereClause.g:139:76: ^( IN PROPERTYNAME propertyvaluelist )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot(
@@ -1449,7 +1420,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "matchespredicate"
-    // org/alfresco/rest/antlr/WhereClause.g:137:1: matchespredicate : PROPERTYNAME MATCHES LEFTPAREN ( WS )? value RIGHTPAREN -> ^( MATCHES PROPERTYNAME value ) ;
+    // org/alfresco/rest/antlr/WhereClause.g:140:1: matchespredicate : PROPERTYNAME MATCHES LEFTPAREN ( WS )? value RIGHTPAREN -> ^( MATCHES PROPERTYNAME value ) ;
     public final WhereClauseParser.matchespredicate_return matchespredicate() throws RecognitionException {
         WhereClauseParser.matchespredicate_return retval = new WhereClauseParser.matchespredicate_return();
         retval.start = input.LT(1);
@@ -1470,43 +1441,40 @@ public TreeAdaptor getTreeAdaptor() {
         Object LEFTPAREN45_tree=null;
         Object WS46_tree=null;
         Object RIGHTPAREN48_tree=null;
-        RewriteRuleTokenStream stream_PROPERTYNAME=new RewriteRuleTokenStream(adaptor,"token PROPERTYNAME");
         RewriteRuleTokenStream stream_LEFTPAREN=new RewriteRuleTokenStream(adaptor,"token LEFTPAREN");
-        RewriteRuleTokenStream stream_WS=new RewriteRuleTokenStream(adaptor,"token WS");
-        RewriteRuleTokenStream stream_MATCHES=new RewriteRuleTokenStream(adaptor,"token MATCHES");
+        RewriteRuleTokenStream stream_PROPERTYNAME=new RewriteRuleTokenStream(adaptor,"token PROPERTYNAME");
         RewriteRuleTokenStream stream_RIGHTPAREN=new RewriteRuleTokenStream(adaptor,"token RIGHTPAREN");
+        RewriteRuleTokenStream stream_MATCHES=new RewriteRuleTokenStream(adaptor,"token MATCHES");
+        RewriteRuleTokenStream stream_WS=new RewriteRuleTokenStream(adaptor,"token WS");
         RewriteRuleSubtreeStream stream_value=new RewriteRuleSubtreeStream(adaptor,"rule value");
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:137:17: ( PROPERTYNAME MATCHES LEFTPAREN ( WS )? value RIGHTPAREN -> ^( MATCHES PROPERTYNAME value ) )
-            // org/alfresco/rest/antlr/WhereClause.g:137:19: PROPERTYNAME MATCHES LEFTPAREN ( WS )? value RIGHTPAREN
+            // org/alfresco/rest/antlr/WhereClause.g:140:17: ( PROPERTYNAME MATCHES LEFTPAREN ( WS )? value RIGHTPAREN -> ^( MATCHES PROPERTYNAME value ) )
+            // org/alfresco/rest/antlr/WhereClause.g:140:19: PROPERTYNAME MATCHES LEFTPAREN ( WS )? value RIGHTPAREN
             {
-            PROPERTYNAME43=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_matchespredicate1013);  
+            PROPERTYNAME43=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_matchespredicate1042);  
             stream_PROPERTYNAME.add(PROPERTYNAME43);
 
 
-            MATCHES44=(Token)match(input,MATCHES,FOLLOW_MATCHES_in_matchespredicate1015);  
+            MATCHES44=(Token)match(input,MATCHES,FOLLOW_MATCHES_in_matchespredicate1044);  
             stream_MATCHES.add(MATCHES44);
 
 
-            LEFTPAREN45=(Token)match(input,LEFTPAREN,FOLLOW_LEFTPAREN_in_matchespredicate1017);  
+            LEFTPAREN45=(Token)match(input,LEFTPAREN,FOLLOW_LEFTPAREN_in_matchespredicate1046);  
             stream_LEFTPAREN.add(LEFTPAREN45);
 
 
-            // org/alfresco/rest/antlr/WhereClause.g:137:50: ( WS )?
+            // org/alfresco/rest/antlr/WhereClause.g:140:50: ( WS )?
             int alt12=2;
-            switch ( input.LA(1) ) {
-                case WS:
-                    {
-                    alt12=1;
-                    }
-                    break;
-            }
+            int LA12_0 = input.LA(1);
 
+            if ( (LA12_0==WS) ) {
+                alt12=1;
+            }
             switch (alt12) {
                 case 1 :
-                    // org/alfresco/rest/antlr/WhereClause.g:137:50: WS
+                    // org/alfresco/rest/antlr/WhereClause.g:140:50: WS
                     {
-                    WS46=(Token)match(input,WS,FOLLOW_WS_in_matchespredicate1019);  
+                    WS46=(Token)match(input,WS,FOLLOW_WS_in_matchespredicate1048);  
                     stream_WS.add(WS46);
 
 
@@ -1516,19 +1484,19 @@ public TreeAdaptor getTreeAdaptor() {
             }
 
 
-            pushFollow(FOLLOW_value_in_matchespredicate1022);
+            pushFollow(FOLLOW_value_in_matchespredicate1051);
             value47=value();
 
             state._fsp--;
 
             stream_value.add(value47.getTree());
 
-            RIGHTPAREN48=(Token)match(input,RIGHTPAREN,FOLLOW_RIGHTPAREN_in_matchespredicate1024);  
+            RIGHTPAREN48=(Token)match(input,RIGHTPAREN,FOLLOW_RIGHTPAREN_in_matchespredicate1053);  
             stream_RIGHTPAREN.add(RIGHTPAREN48);
 
 
             // AST REWRITE
-            // elements: PROPERTYNAME, MATCHES, value
+            // elements: PROPERTYNAME, value, MATCHES
             // token labels: 
             // rule labels: retval
             // token list labels: 
@@ -1538,9 +1506,9 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 137:71: -> ^( MATCHES PROPERTYNAME value )
+            // 140:71: -> ^( MATCHES PROPERTYNAME value )
             {
-                // org/alfresco/rest/antlr/WhereClause.g:137:74: ^( MATCHES PROPERTYNAME value )
+                // org/alfresco/rest/antlr/WhereClause.g:140:74: ^( MATCHES PROPERTYNAME value )
                 {
                 Object root_1 = (Object)adaptor.nil();
                 root_1 = (Object)adaptor.becomeRoot(
@@ -1591,7 +1559,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "propertyvaluepair"
-    // org/alfresco/rest/antlr/WhereClause.g:138:1: propertyvaluepair : value COMMA value -> ( value )+ ;
+    // org/alfresco/rest/antlr/WhereClause.g:141:1: propertyvaluepair : value COMMA value -> ( value )+ ;
     public final WhereClauseParser.propertyvaluepair_return propertyvaluepair() throws RecognitionException {
         WhereClauseParser.propertyvaluepair_return retval = new WhereClauseParser.propertyvaluepair_return();
         retval.start = input.LT(1);
@@ -1609,21 +1577,21 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
         RewriteRuleSubtreeStream stream_value=new RewriteRuleSubtreeStream(adaptor,"rule value");
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:138:18: ( value COMMA value -> ( value )+ )
-            // org/alfresco/rest/antlr/WhereClause.g:138:20: value COMMA value
+            // org/alfresco/rest/antlr/WhereClause.g:141:18: ( value COMMA value -> ( value )+ )
+            // org/alfresco/rest/antlr/WhereClause.g:141:20: value COMMA value
             {
-            pushFollow(FOLLOW_value_in_propertyvaluepair1040);
+            pushFollow(FOLLOW_value_in_propertyvaluepair1069);
             value49=value();
 
             state._fsp--;
 
             stream_value.add(value49.getTree());
 
-            COMMA50=(Token)match(input,COMMA,FOLLOW_COMMA_in_propertyvaluepair1042);  
+            COMMA50=(Token)match(input,COMMA,FOLLOW_COMMA_in_propertyvaluepair1071);  
             stream_COMMA.add(COMMA50);
 
 
-            pushFollow(FOLLOW_value_in_propertyvaluepair1044);
+            pushFollow(FOLLOW_value_in_propertyvaluepair1073);
             value51=value();
 
             state._fsp--;
@@ -1641,7 +1609,7 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 138:38: -> ( value )+
+            // 141:38: -> ( value )+
             {
                 if ( !(stream_value.hasNext()) ) {
                     throw new RewriteEarlyExitException();
@@ -1687,7 +1655,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "propertyvaluelist"
-    // org/alfresco/rest/antlr/WhereClause.g:139:1: propertyvaluelist : value ( COMMA value )* -> ( value )+ ;
+    // org/alfresco/rest/antlr/WhereClause.g:142:1: propertyvaluelist : value ( COMMA value )* -> ( value )+ ;
     public final WhereClauseParser.propertyvaluelist_return propertyvaluelist() throws RecognitionException {
         WhereClauseParser.propertyvaluelist_return retval = new WhereClauseParser.propertyvaluelist_return();
         retval.start = input.LT(1);
@@ -1705,38 +1673,36 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
         RewriteRuleSubtreeStream stream_value=new RewriteRuleSubtreeStream(adaptor,"rule value");
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:139:18: ( value ( COMMA value )* -> ( value )+ )
-            // org/alfresco/rest/antlr/WhereClause.g:139:20: value ( COMMA value )*
+            // org/alfresco/rest/antlr/WhereClause.g:142:18: ( value ( COMMA value )* -> ( value )+ )
+            // org/alfresco/rest/antlr/WhereClause.g:142:20: value ( COMMA value )*
             {
-            pushFollow(FOLLOW_value_in_propertyvaluelist1055);
+            pushFollow(FOLLOW_value_in_propertyvaluelist1084);
             value52=value();
 
             state._fsp--;
 
             stream_value.add(value52.getTree());
 
-            // org/alfresco/rest/antlr/WhereClause.g:139:26: ( COMMA value )*
+            // org/alfresco/rest/antlr/WhereClause.g:142:26: ( COMMA value )*
             loop13:
             do {
                 int alt13=2;
-                switch ( input.LA(1) ) {
-                case COMMA:
-                    {
-                    alt13=1;
-                    }
-                    break;
+                int LA13_0 = input.LA(1);
 
+                if ( (LA13_0==COMMA) ) {
+                    alt13=1;
                 }
+
 
                 switch (alt13) {
             	case 1 :
-            	    // org/alfresco/rest/antlr/WhereClause.g:139:27: COMMA value
+            	    // org/alfresco/rest/antlr/WhereClause.g:142:27: COMMA value
             	    {
-            	    COMMA53=(Token)match(input,COMMA,FOLLOW_COMMA_in_propertyvaluelist1058);  
+            	    COMMA53=(Token)match(input,COMMA,FOLLOW_COMMA_in_propertyvaluelist1087);  
             	    stream_COMMA.add(COMMA53);
 
 
-            	    pushFollow(FOLLOW_value_in_propertyvaluelist1060);
+            	    pushFollow(FOLLOW_value_in_propertyvaluelist1089);
             	    value54=value();
 
             	    state._fsp--;
@@ -1763,7 +1729,7 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 139:41: -> ( value )+
+            // 142:41: -> ( value )+
             {
                 if ( !(stream_value.hasNext()) ) {
                     throw new RewriteEarlyExitException();
@@ -1809,7 +1775,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "value"
-    // org/alfresco/rest/antlr/WhereClause.g:140:1: value : (a= PROPERTYVALUE -> ^( PROPERTYVALUE[$a] ) |b= PROPERTYNAME -> ^( PROPERTYVALUE[$b] ) );
+    // org/alfresco/rest/antlr/WhereClause.g:143:1: value : (a= PROPERTYVALUE -> ^( PROPERTYVALUE[$a] ) |b= PROPERTYNAME -> ^( PROPERTYVALUE[$b] ) );
     public final WhereClauseParser.value_return value() throws RecognitionException {
         WhereClauseParser.value_return retval = new WhereClauseParser.value_return();
         retval.start = input.LT(1);
@@ -1826,32 +1792,28 @@ public TreeAdaptor getTreeAdaptor() {
         RewriteRuleTokenStream stream_PROPERTYVALUE=new RewriteRuleTokenStream(adaptor,"token PROPERTYVALUE");
 
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:140:6: (a= PROPERTYVALUE -> ^( PROPERTYVALUE[$a] ) |b= PROPERTYNAME -> ^( PROPERTYVALUE[$b] ) )
+            // org/alfresco/rest/antlr/WhereClause.g:143:6: (a= PROPERTYVALUE -> ^( PROPERTYVALUE[$a] ) |b= PROPERTYNAME -> ^( PROPERTYVALUE[$b] ) )
             int alt14=2;
-            switch ( input.LA(1) ) {
-            case PROPERTYVALUE:
-                {
+            int LA14_0 = input.LA(1);
+
+            if ( (LA14_0==PROPERTYVALUE) ) {
                 alt14=1;
-                }
-                break;
-            case PROPERTYNAME:
-                {
+            }
+            else if ( (LA14_0==PROPERTYNAME) ) {
                 alt14=2;
-                }
-                break;
-            default:
+            }
+            else {
                 NoViableAltException nvae =
                     new NoViableAltException("", 14, 0, input);
 
                 throw nvae;
 
             }
-
             switch (alt14) {
                 case 1 :
-                    // org/alfresco/rest/antlr/WhereClause.g:140:8: a= PROPERTYVALUE
+                    // org/alfresco/rest/antlr/WhereClause.g:143:8: a= PROPERTYVALUE
                     {
-                    a=(Token)match(input,PROPERTYVALUE,FOLLOW_PROPERTYVALUE_in_value1075);  
+                    a=(Token)match(input,PROPERTYVALUE,FOLLOW_PROPERTYVALUE_in_value1104);  
                     stream_PROPERTYVALUE.add(a);
 
 
@@ -1866,9 +1828,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 140:24: -> ^( PROPERTYVALUE[$a] )
+                    // 143:24: -> ^( PROPERTYVALUE[$a] )
                     {
-                        // org/alfresco/rest/antlr/WhereClause.g:140:27: ^( PROPERTYVALUE[$a] )
+                        // org/alfresco/rest/antlr/WhereClause.g:143:27: ^( PROPERTYVALUE[$a] )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot(
@@ -1886,9 +1848,9 @@ public TreeAdaptor getTreeAdaptor() {
                     }
                     break;
                 case 2 :
-                    // org/alfresco/rest/antlr/WhereClause.g:141:9: b= PROPERTYNAME
+                    // org/alfresco/rest/antlr/WhereClause.g:144:9: b= PROPERTYNAME
                     {
-                    b=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_value1095);  
+                    b=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_value1124);  
                     stream_PROPERTYNAME.add(b);
 
 
@@ -1903,9 +1865,9 @@ public TreeAdaptor getTreeAdaptor() {
                     RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
                     root_0 = (Object)adaptor.nil();
-                    // 141:24: -> ^( PROPERTYVALUE[$b] )
+                    // 144:24: -> ^( PROPERTYVALUE[$b] )
                     {
-                        // org/alfresco/rest/antlr/WhereClause.g:141:27: ^( PROPERTYVALUE[$b] )
+                        // org/alfresco/rest/antlr/WhereClause.g:144:27: ^( PROPERTYVALUE[$b] )
                         {
                         Object root_1 = (Object)adaptor.nil();
                         root_1 = (Object)adaptor.becomeRoot(
@@ -1952,7 +1914,7 @@ public TreeAdaptor getTreeAdaptor() {
 
 
     // $ANTLR start "selectClause"
-    // org/alfresco/rest/antlr/WhereClause.g:142:1: selectClause : PROPERTYNAME ( COMMA PROPERTYNAME )* -> ( PROPERTYNAME )+ ;
+    // org/alfresco/rest/antlr/WhereClause.g:145:1: selectClause : PROPERTYNAME ( COMMA PROPERTYNAME )* -> ( PROPERTYNAME )+ ;
     public final WhereClauseParser.selectClause_return selectClause() throws RecognitionException {
         WhereClauseParser.selectClause_return retval = new WhereClauseParser.selectClause_return();
         retval.start = input.LT(1);
@@ -1967,39 +1929,37 @@ public TreeAdaptor getTreeAdaptor() {
         Object PROPERTYNAME55_tree=null;
         Object COMMA56_tree=null;
         Object PROPERTYNAME57_tree=null;
-        RewriteRuleTokenStream stream_PROPERTYNAME=new RewriteRuleTokenStream(adaptor,"token PROPERTYNAME");
         RewriteRuleTokenStream stream_COMMA=new RewriteRuleTokenStream(adaptor,"token COMMA");
+        RewriteRuleTokenStream stream_PROPERTYNAME=new RewriteRuleTokenStream(adaptor,"token PROPERTYNAME");
 
         try {
-            // org/alfresco/rest/antlr/WhereClause.g:142:13: ( PROPERTYNAME ( COMMA PROPERTYNAME )* -> ( PROPERTYNAME )+ )
-            // org/alfresco/rest/antlr/WhereClause.g:142:16: PROPERTYNAME ( COMMA PROPERTYNAME )*
+            // org/alfresco/rest/antlr/WhereClause.g:145:13: ( PROPERTYNAME ( COMMA PROPERTYNAME )* -> ( PROPERTYNAME )+ )
+            // org/alfresco/rest/antlr/WhereClause.g:145:16: PROPERTYNAME ( COMMA PROPERTYNAME )*
             {
-            PROPERTYNAME55=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_selectClause1111);  
+            PROPERTYNAME55=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_selectClause1140);  
             stream_PROPERTYNAME.add(PROPERTYNAME55);
 
 
-            // org/alfresco/rest/antlr/WhereClause.g:142:29: ( COMMA PROPERTYNAME )*
+            // org/alfresco/rest/antlr/WhereClause.g:145:29: ( COMMA PROPERTYNAME )*
             loop15:
             do {
                 int alt15=2;
-                switch ( input.LA(1) ) {
-                case COMMA:
-                    {
-                    alt15=1;
-                    }
-                    break;
+                int LA15_0 = input.LA(1);
 
+                if ( (LA15_0==COMMA) ) {
+                    alt15=1;
                 }
+
 
                 switch (alt15) {
             	case 1 :
-            	    // org/alfresco/rest/antlr/WhereClause.g:142:30: COMMA PROPERTYNAME
+            	    // org/alfresco/rest/antlr/WhereClause.g:145:30: COMMA PROPERTYNAME
             	    {
-            	    COMMA56=(Token)match(input,COMMA,FOLLOW_COMMA_in_selectClause1114);  
+            	    COMMA56=(Token)match(input,COMMA,FOLLOW_COMMA_in_selectClause1143);  
             	    stream_COMMA.add(COMMA56);
 
 
-            	    PROPERTYNAME57=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_selectClause1116);  
+            	    PROPERTYNAME57=(Token)match(input,PROPERTYNAME,FOLLOW_PROPERTYNAME_in_selectClause1145);  
             	    stream_PROPERTYNAME.add(PROPERTYNAME57);
 
 
@@ -2023,7 +1983,7 @@ public TreeAdaptor getTreeAdaptor() {
             RewriteRuleSubtreeStream stream_retval=new RewriteRuleSubtreeStream(adaptor,"rule retval",retval!=null?retval.tree:null);
 
             root_0 = (Object)adaptor.nil();
-            // 142:51: -> ( PROPERTYNAME )+
+            // 145:51: -> ( PROPERTYNAME )+
             {
                 if ( !(stream_PROPERTYNAME.hasNext()) ) {
                     throw new RewriteEarlyExitException();
@@ -2072,36 +2032,36 @@ public TreeAdaptor getTreeAdaptor() {
     static final String DFA6_eofS =
         "\107\uffff";
     static final String DFA6_minS =
-        "\1\10\1\5\1\17\1\10\3\17\2\25\1\5\1\17\3\25\2\4\1\25\1\27\3\17\3"+
-        "\25\2\6\1\25\2\6\1\25\2\27\3\uffff\1\4\3\25\2\4\1\25\1\27\2\25\2"+
-        "\4\1\25\2\6\1\25\2\6\1\25\2\27\1\4\2\27\2\6\2\25\3\4\2\27\2\6\1"+
+        "\1\11\1\5\1\21\1\11\3\21\2\27\1\5\1\21\3\27\2\4\1\27\1\31\3\21\3"+
+        "\27\2\7\1\27\2\7\1\27\2\31\3\uffff\1\4\3\27\2\4\1\27\1\31\2\27\2"+
+        "\4\1\27\2\7\1\27\2\7\1\27\2\31\1\4\2\31\2\7\2\27\3\4\2\31\2\7\1"+
         "\4";
     static final String DFA6_maxS =
-        "\1\25\1\22\1\17\1\25\3\17\1\26\1\31\1\22\1\17\3\31\2\27\1\25\1\27"+
-        "\3\17\1\26\1\31\1\26\2\6\1\26\2\27\1\26\2\27\3\uffff\1\27\3\31\2"+
-        "\27\1\25\1\27\2\26\2\27\1\26\2\6\1\26\2\27\1\26\7\27\2\26\10\27";
+        "\1\27\1\24\1\21\1\27\3\21\1\30\1\33\1\24\1\21\3\33\2\31\1\27\1\31"+
+        "\3\21\1\30\1\33\1\30\2\7\1\30\2\31\1\30\2\31\3\uffff\1\31\3\33\2"+
+        "\31\1\27\1\31\2\30\2\31\1\30\2\7\1\30\2\31\1\30\7\31\2\30\10\31";
     static final String DFA6_acceptS =
         "\40\uffff\1\1\1\2\1\3\44\uffff";
     static final String DFA6_specialS =
         "\107\uffff}>";
     static final String[] DFA6_transitionS = {
-            "\1\2\12\uffff\1\3\1\uffff\1\1",
-            "\1\4\1\uffff\1\7\1\uffff\2\7\3\uffff\1\5\1\uffff\2\7\1\6",
+            "\1\2\13\uffff\1\3\1\uffff\1\1",
+            "\1\4\2\uffff\1\7\1\uffff\2\7\4\uffff\1\5\1\uffff\2\7\1\6",
             "\1\10",
-            "\1\12\14\uffff\1\11",
+            "\1\12\15\uffff\1\11",
             "\1\13",
             "\1\14",
             "\1\15",
             "\1\17\1\16",
             "\1\21\3\uffff\1\20",
-            "\1\22\1\uffff\1\25\1\uffff\2\25\3\uffff\1\23\1\uffff\2\25\1"+
+            "\1\22\2\uffff\1\25\1\uffff\2\25\4\uffff\1\23\1\uffff\2\25\1"+
             "\24",
             "\1\26",
             "\1\31\1\30\2\uffff\1\27",
             "\1\34\1\33\2\uffff\1\32",
             "\1\37\1\36\2\uffff\1\35",
-            "\1\41\17\uffff\1\42\2\uffff\1\40",
-            "\1\41\17\uffff\1\42\2\uffff\1\40",
+            "\1\41\21\uffff\1\42\2\uffff\1\40",
+            "\1\41\21\uffff\1\42\2\uffff\1\40",
             "\1\21",
             "\1\43",
             "\1\44",
@@ -2113,50 +2073,50 @@ public TreeAdaptor getTreeAdaptor() {
             "\1\53",
             "\1\53",
             "\1\34\1\33",
-            "\1\54\20\uffff\1\55",
-            "\1\54\20\uffff\1\55",
+            "\1\54\21\uffff\1\55",
+            "\1\54\21\uffff\1\55",
             "\1\37\1\36",
             "\1\56",
             "\1\56",
             "",
             "",
             "",
-            "\1\41\17\uffff\1\42\2\uffff\1\40",
+            "\1\41\21\uffff\1\42\2\uffff\1\40",
             "\1\61\1\60\2\uffff\1\57",
             "\1\64\1\63\2\uffff\1\62",
             "\1\67\1\66\2\uffff\1\65",
-            "\1\41\17\uffff\1\42\2\uffff\1\40",
-            "\1\41\17\uffff\1\42\2\uffff\1\40",
+            "\1\41\21\uffff\1\42\2\uffff\1\40",
+            "\1\41\21\uffff\1\42\2\uffff\1\40",
             "\1\52",
             "\1\70",
             "\1\72\1\71",
             "\1\74\1\73",
-            "\1\41\17\uffff\1\42\2\uffff\1\40",
-            "\1\41\17\uffff\1\42\2\uffff\1\40",
+            "\1\41\21\uffff\1\42\2\uffff\1\40",
+            "\1\41\21\uffff\1\42\2\uffff\1\40",
             "\1\61\1\60",
             "\1\75",
             "\1\75",
             "\1\64\1\63",
-            "\1\76\20\uffff\1\77",
-            "\1\76\20\uffff\1\77",
+            "\1\76\21\uffff\1\77",
+            "\1\76\21\uffff\1\77",
             "\1\67\1\66",
             "\1\100",
             "\1\100",
-            "\1\41\17\uffff\1\42\2\uffff\1\40",
+            "\1\41\21\uffff\1\42\2\uffff\1\40",
             "\1\101",
             "\1\101",
-            "\1\54\20\uffff\1\55",
-            "\1\54\20\uffff\1\55",
+            "\1\54\21\uffff\1\55",
+            "\1\54\21\uffff\1\55",
             "\1\103\1\102",
             "\1\105\1\104",
-            "\1\41\17\uffff\1\42\2\uffff\1\40",
-            "\1\41\17\uffff\1\42\2\uffff\1\40",
-            "\1\41\17\uffff\1\42\2\uffff\1\40",
+            "\1\41\21\uffff\1\42\2\uffff\1\40",
+            "\1\41\21\uffff\1\42\2\uffff\1\40",
+            "\1\41\21\uffff\1\42\2\uffff\1\40",
             "\1\106",
             "\1\106",
-            "\1\76\20\uffff\1\77",
-            "\1\76\20\uffff\1\77",
-            "\1\41\17\uffff\1\42\2\uffff\1\40"
+            "\1\76\21\uffff\1\77",
+            "\1\76\21\uffff\1\77",
+            "\1\41\21\uffff\1\42\2\uffff\1\40"
     };
 
     static final short[] DFA6_eot = DFA.unpackEncodedString(DFA6_eotS);
@@ -2189,68 +2149,68 @@ public TreeAdaptor getTreeAdaptor() {
             this.transition = DFA6_transition;
         }
         public String getDescription() {
-            return "126:1: predicate : ( simplepredicate | simplepredicate ( AND simplepredicate )+ -> ^( AND ( simplepredicate )+ ) | simplepredicate ( OR simplepredicate )+ -> ^( OR ( simplepredicate )+ ) );";
+            return "129:1: predicate : ( simplepredicate | simplepredicate ( AND simplepredicate )+ -> ^( AND ( simplepredicate )+ ) | simplepredicate ( OR simplepredicate )+ -> ^( OR ( simplepredicate )+ ) );";
         }
     }
  
 
-    public static final BitSet FOLLOW_WS_in_whereclause750 = new BitSet(new long[]{0x0000000000008000L});
-    public static final BitSet FOLLOW_LEFTPAREN_in_whereclause753 = new BitSet(new long[]{0x0000000002280100L});
-    public static final BitSet FOLLOW_WS_in_whereclause756 = new BitSet(new long[]{0x0000000000280100L});
-    public static final BitSet FOLLOW_predicate_in_whereclause759 = new BitSet(new long[]{0x0000000000800000L});
-    public static final BitSet FOLLOW_RIGHTPAREN_in_whereclause761 = new BitSet(new long[]{0x0000000002000002L});
-    public static final BitSet FOLLOW_WS_in_whereclause764 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_simplepredicate_in_predicate772 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_simplepredicate_in_predicate786 = new BitSet(new long[]{0x0000000000000010L});
-    public static final BitSet FOLLOW_AND_in_predicate789 = new BitSet(new long[]{0x0000000000280100L});
-    public static final BitSet FOLLOW_simplepredicate_in_predicate791 = new BitSet(new long[]{0x0000000000000012L});
-    public static final BitSet FOLLOW_simplepredicate_in_predicate816 = new BitSet(new long[]{0x0000000000100000L});
-    public static final BitSet FOLLOW_OR_in_predicate819 = new BitSet(new long[]{0x0000000000280100L});
-    public static final BitSet FOLLOW_simplepredicate_in_predicate821 = new BitSet(new long[]{0x0000000000100002L});
-    public static final BitSet FOLLOW_allowedpredicates_in_simplepredicate839 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_NEGATION_in_simplepredicate863 = new BitSet(new long[]{0x0000000000200100L});
-    public static final BitSet FOLLOW_allowedpredicates_in_simplepredicate865 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_comparisonpredicate_in_allowedpredicates880 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_existspredicate_in_allowedpredicates884 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_betweenpredicate_in_allowedpredicates888 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_inpredicate_in_allowedpredicates892 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_matchespredicate_in_allowedpredicates896 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PROPERTYNAME_in_comparisonpredicate902 = new BitSet(new long[]{0x0000000000030680L});
-    public static final BitSet FOLLOW_comparisonoperator_in_comparisonpredicate904 = new BitSet(new long[]{0x0000000000600000L});
-    public static final BitSet FOLLOW_value_in_comparisonpredicate906 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_EXISTS_in_existspredicate936 = new BitSet(new long[]{0x0000000000008000L});
-    public static final BitSet FOLLOW_LEFTPAREN_in_existspredicate938 = new BitSet(new long[]{0x0000000002200000L});
-    public static final BitSet FOLLOW_WS_in_existspredicate940 = new BitSet(new long[]{0x0000000000200000L});
-    public static final BitSet FOLLOW_PROPERTYNAME_in_existspredicate943 = new BitSet(new long[]{0x0000000000800000L});
-    public static final BitSet FOLLOW_RIGHTPAREN_in_existspredicate945 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PROPERTYNAME_in_betweenpredicate959 = new BitSet(new long[]{0x0000000000000020L});
-    public static final BitSet FOLLOW_BETWEEN_in_betweenpredicate961 = new BitSet(new long[]{0x0000000000008000L});
-    public static final BitSet FOLLOW_LEFTPAREN_in_betweenpredicate963 = new BitSet(new long[]{0x0000000002600000L});
-    public static final BitSet FOLLOW_WS_in_betweenpredicate965 = new BitSet(new long[]{0x0000000000600000L});
-    public static final BitSet FOLLOW_propertyvaluepair_in_betweenpredicate968 = new BitSet(new long[]{0x0000000000800000L});
-    public static final BitSet FOLLOW_RIGHTPAREN_in_betweenpredicate970 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PROPERTYNAME_in_inpredicate986 = new BitSet(new long[]{0x0000000000004000L});
-    public static final BitSet FOLLOW_IN_in_inpredicate988 = new BitSet(new long[]{0x0000000000008000L});
-    public static final BitSet FOLLOW_LEFTPAREN_in_inpredicate990 = new BitSet(new long[]{0x0000000002600000L});
-    public static final BitSet FOLLOW_WS_in_inpredicate992 = new BitSet(new long[]{0x0000000000600000L});
-    public static final BitSet FOLLOW_propertyvaluelist_in_inpredicate995 = new BitSet(new long[]{0x0000000000800000L});
-    public static final BitSet FOLLOW_RIGHTPAREN_in_inpredicate997 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PROPERTYNAME_in_matchespredicate1013 = new BitSet(new long[]{0x0000000000040000L});
-    public static final BitSet FOLLOW_MATCHES_in_matchespredicate1015 = new BitSet(new long[]{0x0000000000008000L});
-    public static final BitSet FOLLOW_LEFTPAREN_in_matchespredicate1017 = new BitSet(new long[]{0x0000000002600000L});
-    public static final BitSet FOLLOW_WS_in_matchespredicate1019 = new BitSet(new long[]{0x0000000000600000L});
-    public static final BitSet FOLLOW_value_in_matchespredicate1022 = new BitSet(new long[]{0x0000000000800000L});
-    public static final BitSet FOLLOW_RIGHTPAREN_in_matchespredicate1024 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_value_in_propertyvaluepair1040 = new BitSet(new long[]{0x0000000000000040L});
-    public static final BitSet FOLLOW_COMMA_in_propertyvaluepair1042 = new BitSet(new long[]{0x0000000000600000L});
-    public static final BitSet FOLLOW_value_in_propertyvaluepair1044 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_value_in_propertyvaluelist1055 = new BitSet(new long[]{0x0000000000000042L});
-    public static final BitSet FOLLOW_COMMA_in_propertyvaluelist1058 = new BitSet(new long[]{0x0000000000600000L});
-    public static final BitSet FOLLOW_value_in_propertyvaluelist1060 = new BitSet(new long[]{0x0000000000000042L});
-    public static final BitSet FOLLOW_PROPERTYVALUE_in_value1075 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PROPERTYNAME_in_value1095 = new BitSet(new long[]{0x0000000000000002L});
-    public static final BitSet FOLLOW_PROPERTYNAME_in_selectClause1111 = new BitSet(new long[]{0x0000000000000042L});
-    public static final BitSet FOLLOW_COMMA_in_selectClause1114 = new BitSet(new long[]{0x0000000000200000L});
-    public static final BitSet FOLLOW_PROPERTYNAME_in_selectClause1116 = new BitSet(new long[]{0x0000000000000042L});
+    public static final BitSet FOLLOW_WS_in_whereclause779 = new BitSet(new long[]{0x0000000000020000L});
+    public static final BitSet FOLLOW_LEFTPAREN_in_whereclause782 = new BitSet(new long[]{0x0000000008A00200L});
+    public static final BitSet FOLLOW_WS_in_whereclause785 = new BitSet(new long[]{0x0000000000A00200L});
+    public static final BitSet FOLLOW_predicate_in_whereclause788 = new BitSet(new long[]{0x0000000002000000L});
+    public static final BitSet FOLLOW_RIGHTPAREN_in_whereclause790 = new BitSet(new long[]{0x0000000008000002L});
+    public static final BitSet FOLLOW_WS_in_whereclause793 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_simplepredicate_in_predicate801 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_simplepredicate_in_predicate815 = new BitSet(new long[]{0x0000000000000010L});
+    public static final BitSet FOLLOW_AND_in_predicate818 = new BitSet(new long[]{0x0000000000A00200L});
+    public static final BitSet FOLLOW_simplepredicate_in_predicate820 = new BitSet(new long[]{0x0000000000000012L});
+    public static final BitSet FOLLOW_simplepredicate_in_predicate845 = new BitSet(new long[]{0x0000000000400000L});
+    public static final BitSet FOLLOW_OR_in_predicate848 = new BitSet(new long[]{0x0000000000A00200L});
+    public static final BitSet FOLLOW_simplepredicate_in_predicate850 = new BitSet(new long[]{0x0000000000400002L});
+    public static final BitSet FOLLOW_allowedpredicates_in_simplepredicate868 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_NEGATION_in_simplepredicate892 = new BitSet(new long[]{0x0000000000800200L});
+    public static final BitSet FOLLOW_allowedpredicates_in_simplepredicate894 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_comparisonpredicate_in_allowedpredicates909 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_existspredicate_in_allowedpredicates913 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_betweenpredicate_in_allowedpredicates917 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_inpredicate_in_allowedpredicates921 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_matchespredicate_in_allowedpredicates925 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PROPERTYNAME_in_comparisonpredicate931 = new BitSet(new long[]{0x00000000000C0D00L});
+    public static final BitSet FOLLOW_comparisonoperator_in_comparisonpredicate933 = new BitSet(new long[]{0x0000000001800000L});
+    public static final BitSet FOLLOW_value_in_comparisonpredicate935 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_EXISTS_in_existspredicate965 = new BitSet(new long[]{0x0000000000020000L});
+    public static final BitSet FOLLOW_LEFTPAREN_in_existspredicate967 = new BitSet(new long[]{0x0000000008800000L});
+    public static final BitSet FOLLOW_WS_in_existspredicate969 = new BitSet(new long[]{0x0000000000800000L});
+    public static final BitSet FOLLOW_PROPERTYNAME_in_existspredicate972 = new BitSet(new long[]{0x0000000002000000L});
+    public static final BitSet FOLLOW_RIGHTPAREN_in_existspredicate974 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PROPERTYNAME_in_betweenpredicate988 = new BitSet(new long[]{0x0000000000000020L});
+    public static final BitSet FOLLOW_BETWEEN_in_betweenpredicate990 = new BitSet(new long[]{0x0000000000020000L});
+    public static final BitSet FOLLOW_LEFTPAREN_in_betweenpredicate992 = new BitSet(new long[]{0x0000000009800000L});
+    public static final BitSet FOLLOW_WS_in_betweenpredicate994 = new BitSet(new long[]{0x0000000001800000L});
+    public static final BitSet FOLLOW_propertyvaluepair_in_betweenpredicate997 = new BitSet(new long[]{0x0000000002000000L});
+    public static final BitSet FOLLOW_RIGHTPAREN_in_betweenpredicate999 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PROPERTYNAME_in_inpredicate1015 = new BitSet(new long[]{0x0000000000010000L});
+    public static final BitSet FOLLOW_IN_in_inpredicate1017 = new BitSet(new long[]{0x0000000000020000L});
+    public static final BitSet FOLLOW_LEFTPAREN_in_inpredicate1019 = new BitSet(new long[]{0x0000000009800000L});
+    public static final BitSet FOLLOW_WS_in_inpredicate1021 = new BitSet(new long[]{0x0000000001800000L});
+    public static final BitSet FOLLOW_propertyvaluelist_in_inpredicate1024 = new BitSet(new long[]{0x0000000002000000L});
+    public static final BitSet FOLLOW_RIGHTPAREN_in_inpredicate1026 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PROPERTYNAME_in_matchespredicate1042 = new BitSet(new long[]{0x0000000000100000L});
+    public static final BitSet FOLLOW_MATCHES_in_matchespredicate1044 = new BitSet(new long[]{0x0000000000020000L});
+    public static final BitSet FOLLOW_LEFTPAREN_in_matchespredicate1046 = new BitSet(new long[]{0x0000000009800000L});
+    public static final BitSet FOLLOW_WS_in_matchespredicate1048 = new BitSet(new long[]{0x0000000001800000L});
+    public static final BitSet FOLLOW_value_in_matchespredicate1051 = new BitSet(new long[]{0x0000000002000000L});
+    public static final BitSet FOLLOW_RIGHTPAREN_in_matchespredicate1053 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_value_in_propertyvaluepair1069 = new BitSet(new long[]{0x0000000000000080L});
+    public static final BitSet FOLLOW_COMMA_in_propertyvaluepair1071 = new BitSet(new long[]{0x0000000001800000L});
+    public static final BitSet FOLLOW_value_in_propertyvaluepair1073 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_value_in_propertyvaluelist1084 = new BitSet(new long[]{0x0000000000000082L});
+    public static final BitSet FOLLOW_COMMA_in_propertyvaluelist1087 = new BitSet(new long[]{0x0000000001800000L});
+    public static final BitSet FOLLOW_value_in_propertyvaluelist1089 = new BitSet(new long[]{0x0000000000000082L});
+    public static final BitSet FOLLOW_PROPERTYVALUE_in_value1104 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PROPERTYNAME_in_value1124 = new BitSet(new long[]{0x0000000000000002L});
+    public static final BitSet FOLLOW_PROPERTYNAME_in_selectClause1140 = new BitSet(new long[]{0x0000000000000082L});
+    public static final BitSet FOLLOW_COMMA_in_selectClause1143 = new BitSet(new long[]{0x0000000000800000L});
+    public static final BitSet FOLLOW_PROPERTYNAME_in_selectClause1145 = new BitSet(new long[]{0x0000000000000082L});
 
 }

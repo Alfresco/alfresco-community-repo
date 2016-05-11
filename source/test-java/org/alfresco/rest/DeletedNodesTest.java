@@ -174,7 +174,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         delete(URL_NODES, u1.getId(), documentSameName.getId(), 204);
 
         //Now we can restore it.
-        post(URL_DELETED_NODES+"/"+document.getId()+"/restore", u1.getId(), null, null, 201);
+        post(URL_DELETED_NODES+"/"+document.getId()+"/restore", u1.getId(), null, null, 200);
 
         delete(URL_NODES, u1.getId(), createdFolder.getId(), 204);
 
@@ -186,7 +186,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
         //User 2 can't restore it but user 1 can.
         post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", u2.getId(), null, null, Status.STATUS_FORBIDDEN);
-        post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", u1.getId(), null, null, 201);
+        post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", u1.getId(), null, null, 200);
     }
 
     /**

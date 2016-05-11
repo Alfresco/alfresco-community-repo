@@ -52,12 +52,14 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.PathInfo.ElementInfo;
+import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
@@ -85,10 +87,8 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
-import org.alfresco.service.cmr.model.FileFolderServiceType;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
-import org.alfresco.service.cmr.quickshare.QuickShareService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -157,7 +157,10 @@ public class NodesImpl implements Nodes
     private ContentService contentService;
     private ActionService actionService;
     private VersionService versionService;
-    private QuickShareService quickShareService;
+
+    // note: circular - Nodes/QuickShareLinks currently use each other (albeit for different methods)
+    private QuickShareLinks quickShareLinks;
+
     private Repository repositoryHelper;
     private ServiceRegistry sr;
     private Set<String> defaultIgnoreTypesAndAspects;
@@ -204,9 +207,9 @@ public class NodesImpl implements Nodes
         this.repositoryHelper = repositoryHelper;
     }
 
-    public void setQuickShareService(QuickShareService quickShareService)
+    public void setQuickShareLinks(QuickShareLinks quickShareLinks)
     {
-        this.quickShareService = quickShareService;
+        this.quickShareLinks = quickShareLinks;
     }
 
     public void setIgnoreTypes(Set<String> ignoreTypesAndAspects)
@@ -1287,13 +1290,14 @@ public class NodesImpl implements Nodes
             // TODO: optional PATCH mechanism to add one new new aspect (with some related aspect properties) without affecting existing aspects/properties
             for (QName aQName : aspectsToRemove)
             {
-                // in future, this could/should be part of QuickShareService aspect "behaviour"
                 if (aQName.equals(QuickShareModel.ASPECT_QSHARE))
                 {
-                    String qShareId = (String)nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
-                    if (qShareId != null)
+                    String qSharedId = (String)nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDID);
+                    if (qSharedId != null)
                     {
-                        quickShareService.unshareContent(qShareId);
+                        // note: for now, go via QuickShareLinks (rather than QuickShareService) to ensure consistent permission checks
+                        // alternatively we could disallow (or ignore) "qshare:shared" aspect removal
+                        quickShareLinks.delete(qSharedId, null);
                     }
                 }
 
@@ -1302,10 +1306,13 @@ public class NodesImpl implements Nodes
 
             for (QName aQName : aspectsToAdd)
             {
-                // in future, this could/should be part of QuickShareService aspect "behaviour"
                 if (aQName.equals(QuickShareModel.ASPECT_QSHARE))
                 {
-                    quickShareService.shareContent(nodeRef);
+                    // note: for now, go via QuickShareLinks (rather than QuickShareService) to ensure consistent permission checks
+                    // alternatively we could disallow (or ignore) "qshare:shared" aspect addition
+                    QuickShareLink qs = new QuickShareLink();
+                    qs.setNodeId(nodeRef.getId());
+                    quickShareLinks.create(Collections.singletonList(qs), null);
                 }
 
                 nodeService.addAspect(nodeRef, aQName, null);

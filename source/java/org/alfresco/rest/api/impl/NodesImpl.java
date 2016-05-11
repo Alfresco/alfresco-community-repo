@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -45,12 +46,15 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.action.executer.ContentMetadataExtracter;
 import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.version.VersionModel;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
@@ -71,6 +75,7 @@ import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
+import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -111,6 +116,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.cmr.version.VersionService;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -127,7 +133,9 @@ import org.springframework.http.MediaType;
  *
  * Note:
  * This class was originally used for returning some basic node info when listing Favourites.
- * It has now been re-purposed and extended to implement the new File Folder (RESTful) API.
+ *
+ * It has now been re-purposed and extended to implement the new Nodes (RESTful) API for
+ * managing files & folders, as well as custom node types.
  * 
  * @author steveglover
  * @author janv
@@ -157,6 +165,8 @@ public class NodesImpl implements Nodes
     private PersonService personService;
     private OwnableService ownableService;
     private AuthorityService authorityService;
+
+    private BehaviourFilter behaviourFilter;
 
     // note: circular - Nodes/QuickShareLinks currently use each other (albeit for different methods)
     private QuickShareLinks quickShareLinks;
@@ -203,6 +213,11 @@ public class NodesImpl implements Nodes
     public void setServiceRegistry(ServiceRegistry sr)
     {
         this.sr = sr;
+    }
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
 
     public void setRepositoryHelper(Repository repositoryHelper)
@@ -1564,11 +1579,69 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef.getId());
         }
 
+        Boolean versionMajor = null;
+        String str = parameters.getParameter(PARAM_VERSION_MAJOR);
+        if (str != null)
+        {
+            versionMajor = new Boolean(str);
+        }
+        String versionComment = parameters.getParameter(PARAM_VERSION_COMMENT);
+
+        return updateExistingFile(nodeRef, contentInfo, stream, parameters, versionMajor, versionComment);
+    }
+
+    private Node updateExistingFile(NodeRef nodeRef, BasicContentInfo contentInfo, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)
+    {
+        boolean isVersioned = versionService.isVersioned(nodeRef);
+
+        behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        try
+        {
+            writeContent(nodeRef, contentInfo, stream);
+
+            if ((isVersioned) || (versionMajor != null) || (versionComment != null) )
+            {
+                VersionType versionType = VersionType.MINOR;
+                if ((versionMajor != null) && (versionMajor == true))
+                {
+                    versionType = VersionType.MAJOR;
+                }
+                createVersion(nodeRef, isVersioned, versionType, versionComment);
+            }
+
+            extractMetadata(nodeRef);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        }
+
+        return getFolderOrDocumentFullInfo(nodeRef, null, null, parameters);
+    }
+
+    private void writeContent(NodeRef nodeRef, BasicContentInfo contentInfo, InputStream stream)
+    {
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
         setWriterContentType(writer, new ContentInfoWrapper(contentInfo), nodeRef, true);
         writer.putContent(stream);
+    }
 
-        return getFolderOrDocumentFullInfo(nodeRef, null, null, parameters);
+    protected void createVersion(NodeRef nodeRef, boolean isVersioned, VersionType versionType, String reason)
+    {
+        if (! isVersioned)
+        {
+            // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)
+            ensureVersioningEnabled(nodeRef, true, false);
+        }
+
+        Map<String, Serializable> versionProperties = new HashMap<>(2);
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, versionType);
+        if (reason != null)
+        {
+            versionProperties.put(VersionModel.PROP_DESCRIPTION, reason);
+        }
+
+        versionService.createVersion(nodeRef, versionProperties);
     }
 
     private void setWriterContentType(ContentWriter writer, ContentInfoWrapper contentInfo, NodeRef nodeRef, boolean guessEncodingIfNull)
@@ -1598,6 +1671,7 @@ public class NodesImpl implements Nodes
         }
     }
 
+
     @Override
     public Node upload(String parentFolderNodeId, FormData formData, Parameters parameters)
     {
@@ -1618,6 +1692,8 @@ public class NodesImpl implements Nodes
         boolean autoRename = false;
         QName nodeTypeQName = null;
         boolean overwrite = false; // If a fileName clashes for a versionable file
+        Boolean majorVersion = null;
+        String versionComment = null;
         Map<String, Object> qnameStrProps = new HashMap<>();
         Map<QName, Serializable> properties = null;
 
@@ -1649,9 +1725,17 @@ public class NodesImpl implements Nodes
                     }
                     break;
 
-                // case "overwrite":
-                // overwrite = Boolean.valueOf(field.getValue());
-                // break;
+                case "overwrite":
+                    overwrite = Boolean.valueOf(field.getValue());
+                    break;
+
+                case "majorversion":
+                    majorVersion = Boolean.valueOf(field.getValue());
+                    break;
+
+                case "comment":
+                    versionComment = getStringOrNull(field.getValue());
+                    break;
 
                 default:
                 {
@@ -1691,28 +1775,23 @@ public class NodesImpl implements Nodes
             NodeRef existingFile = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, fileName);
             if (existingFile != null)
             {
+                // TODO throw 400 error if both autoRename and overwrite are true ?
+
                 // File already exists, decide what to do
                 if (autoRename)
                 {
+                    // attempt to find a unique name
                     fileName = findUniqueName(parentNodeRef, fileName);
                 }
-                // TODO uncomment when we decide on uploading a new version vs overwriting
-                // else if (overwrite && nodeService.hasAspect(existingFile, ContentModel.ASPECT_VERSIONABLE))
-                // {
-                //     // Upload component was configured to overwrite files if name clashes
-                //     write(existingFile, content);
-                //
-                //     // Extract the metadata (The overwrite policy controls
-                //     // which if any parts of the document's properties are updated from this)
-                //     extractMetadata(existingFile);
-                //
-                //     // Do not clean formData temp files to
-                //     // allow for retries. Temp files will be deleted later
-                //     // when GC call DiskFileItem#finalize() method or by temp file cleaner.
-                //     return createUploadResponse(parentNodeRef, existingFile);
-                // }
+                else if (overwrite && nodeService.hasAspect(existingFile, ContentModel.ASPECT_VERSIONABLE))
+                {
+                    // overwrite existing (versionable) file
+                    BasicContentInfo contentInfo = new ContentInfoImpl(content.getMimetype(), content.getEncoding(), -1, null);
+                    return updateExistingFile(existingFile, contentInfo, content.getInputStream(), parameters, majorVersion, versionComment);
+                }
                 else
                 {
+                    // name clash (and no autoRename or overwrite)
                     throw new ConstraintViolatedException(fileName + " already exists.");
                 }
             }
@@ -1821,10 +1900,12 @@ public class NodesImpl implements Nodes
 
     /**
      * Extracts the given node metadata asynchronously.
+     *
+     *  The overwrite policy controls which if any parts of the document's properties are updated from this.
      */
     private void extractMetadata(NodeRef nodeRef)
     {
-        final String actionName = "extract-metadata";
+        final String actionName = ContentMetadataExtracter.EXECUTOR_NAME;
         ActionDefinition actionDef = actionService.getActionDefinition(actionName);
         if (actionDef != null)
         {

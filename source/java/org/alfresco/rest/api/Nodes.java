@@ -215,4 +215,7 @@ public interface Nodes
     String PARAM_MIMETYPE = "mimeType";
     String PARAM_SIZEINBYTES = "sizeInBytes";
     String PARAM_NODETYPE = "nodeType";
+
+    String PARAM_VERSION_MAJOR = "majorVersion"; // true if major, false if minor
+    String PARAM_VERSION_COMMENT = "comment";
 }

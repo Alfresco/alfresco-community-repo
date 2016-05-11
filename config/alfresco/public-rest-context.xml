@@ -466,6 +466,7 @@
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="repositoryHelper" ref="repositoryHelper"/>
         <property name="quickShareLinks" ref="QuickShareLinks"/>
+        <property name="behaviourFilter" ref="policyBehaviourFilter"/>
         <property name="ignoreTypes" ref="nodes.ignoreTypes"/>
         <property name="nonAttachContentTypes" ref="nodes.nonAttachContentTypes"/>
     </bean>

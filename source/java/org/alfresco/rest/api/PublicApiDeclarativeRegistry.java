@@ -129,7 +129,6 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
             }
             else
             {
-                // TODO - review (experimental)
                 match = super.findWebScript(method, uri);
 
                 Map<String, String> templateVars = match.getTemplateVars();
@@ -139,29 +138,42 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
                     // NOTE: noAuth currently only exposed for GET
                     Api api = determineApi(templateVars);
 
-                    // TODO can we avoid locating resource more than once ?
+                    // TODO can we avoid locating resource more than once (or at least provide a common code to determine the GET resourceAction) ?
                     ResourceWithMetadata rwm = locator.locateResource(api, templateVars, HttpMethod.valueOf(method));
 
                     Class resAction = null;
 
+                    String entityId = templateVars.get(ResourceLocator.ENTITY_ID);
+
                     switch (rwm.getMetaData().getType())
                     {
                         case ENTITY:
-                            // TODO check params for entity id (for now - assume there is)
-                            if (EntityResourceAction.ReadById.class.isAssignableFrom(rwm.getResource().getClass()))
+                            if (StringUtils.isNotBlank(entityId))
                             {
-                                resAction = EntityResourceAction.ReadById.class;
+                                if (EntityResourceAction.ReadById.class.isAssignableFrom(rwm.getResource().getClass()))
+                                {
+                                    resAction = EntityResourceAction.ReadById.class;
+                                }
+                            }
+                            else
+                            {
+                                if (EntityResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
+                                {
+                                    resAction = EntityResourceAction.Read.class;
+                                }
                             }
                             break;
                         case PROPERTY:
-                            // TODO check params for entity id (for now - assume there is)
-                            if (BinaryResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
+                            if (StringUtils.isNotBlank(entityId))
                             {
-                                resAction = BinaryResourceAction.Read.class;
-                            }
-                            else if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
-                            {
-                                resAction = RelationshipResourceBinaryAction.Read.class;
+                                if (BinaryResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
+                                {
+                                    resAction = BinaryResourceAction.Read.class;
+                                }
+                                else if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
+                                {
+                                    resAction = RelationshipResourceBinaryAction.Read.class;
+                                }
                             }
                             break;
                         default:

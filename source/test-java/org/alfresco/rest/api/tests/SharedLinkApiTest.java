@@ -268,8 +268,6 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals("attachment; filename=\"" + fileName1 + "\"; filename*=UTF-8''" + fileName1 + "", response.getHeaders().get("Content-Disposition"));
 
 
-        response = getSingle(QuickShareLinkEntityResource.class, null, shared1Id + "/content", null, 30);
-
         // -ve test - unauth access to get shared link file content - without Content-Disposition header (attachment=false) - header ignored (plain text is not in white list)
         params = new HashMap<>();
         params.put("attachment", "false");
@@ -336,6 +334,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             // -ve test - user1 cannot delete shared link
             delete(URL_SHARED_LINKS, user1, shared1Id, 403);
 
+            // -ve test - unauthenticated
+            delete(URL_SHARED_LINKS, null, shared1Id, 401);
+
             // -ve test - delete - cannot delete non-existent link
             delete(URL_SHARED_LINKS, user1, "dummy", 404);
         }
@@ -346,6 +347,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             // As user 1 ...
 
             // -ve test - try to create again (different user, that has read permission) - already exists
+            body = new HashMap<>();
+            body.put("nodeId", d1Id);
             post(URL_SHARED_LINKS, user1, toJsonAsStringNonNull(body), 409);
 
             // -ve - create - missing nodeId
@@ -367,6 +370,11 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             body = new HashMap<>();
             body.put("nodeId", d2Id);
             post(URL_SHARED_LINKS, user2, toJsonAsStringNonNull(body), 403);
+
+            // -ve test - unauthenticated
+            body = new HashMap<>();
+            body.put("nodeId", d1Id);
+            post(URL_SHARED_LINKS, null, toJsonAsStringNonNull(body), 401);
         }
 
 
@@ -508,6 +516,10 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(1, sharedLinks.size());
         assertEquals(shared2Id, sharedLinks.get(0).getId());
         assertEquals(d2Id, sharedLinks.get(0).getNodeId());
+
+
+        // -ve test - unauthenticated
+        getAll(URL_SHARED_LINKS, null, paging, params, 401);
 
 
         // delete the shared links

@@ -100,7 +100,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
             executor.execute(resource, params, new ExecutionCallback()
             {
                 @Override
-                public void onSuccess(Object result, ContentInfo contentInfo)
+                public void onSuccess(Object result, ContentInfo contentInfo, int statusCode)
                 {
                     respons.put("toSerialize", result); 
                     respons.put("contentInfo", contentInfo);
@@ -115,14 +115,9 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                         }
                     }
 
-                    if (params.getStatus().getRedirect())
-                    {
-                        res.setStatus(params.getStatus().getCode());
-                    }
-                    else
-                    {
-                        setSuccessResponseStatus(res);
-                    }
+                    // The response status must be set before the response is written by Jackson (which will by default close and commit the response).
+                    // In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important.
+                    res.setStatus(statusCode);
                 }
             });
             
@@ -217,17 +212,6 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         });
     }
 
-    /**
-     * The response status must be set before the response is written by Jackson (which will by default close and commit the response).
-     * In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important.
-     * @param res WebScriptResponse
-     */
-    protected void setSuccessResponseStatus(final WebScriptResponse res)
-    {
-        // default for GET, HEAD, OPTIONS, PUT, TRACE
-        res.setStatus(Status.STATUS_OK);
-    }
-    
     /**
      * Finds the action executor to execute actions on.
      * @param httpMethod - the http method

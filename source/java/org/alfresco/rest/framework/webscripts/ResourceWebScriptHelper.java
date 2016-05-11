@@ -635,7 +635,7 @@ public class ResourceWebScriptHelper
             executor.execute(resource, executionParams, new ExecutionCallback()
             {
                 @Override
-                public void onSuccess(Object result, ContentInfo contentInfo)
+                public void onSuccess(Object result, ContentInfo contentInfo, int statusCode)
                 {
                     resultOfExecution[0] = result;
                 }

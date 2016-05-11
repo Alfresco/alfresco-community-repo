@@ -25,12 +25,14 @@
  */
 package org.alfresco.rest.framework.tests.core;
 
+import static org.hamcrest.CoreMatchers.any;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -48,6 +50,7 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
+import org.alfresco.rest.framework.core.ResourceOperation;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
@@ -280,9 +283,6 @@ public class ParamsExtractorTests
         FormData formData = (FormData) passed;
         assertTrue(formData.getIsMultiPart());
 
-        assertNotNull(params.getStatus());
-        assertFalse(params.getStatus().getRedirect());
-
         // No entity id for POST
         templateVars.put(ResourceLocator.ENTITY_ID, "1234");
         try
@@ -471,9 +471,10 @@ public class ParamsExtractorTests
     private static ResourceMetadata mockEntity()
     {
         ResourceMetadata resourceMock = mock(ResourceMetadata.class);
+        ResourceOperation resourceOperation = mock(ResourceOperation.class);
         when(resourceMock.getType()).thenReturn(ResourceMetadata.RESOURCE_TYPE.ENTITY);
-        when(resourceMock.getObjectType(HttpMethod.PUT)).thenReturn(Farmer.class);
-        when(resourceMock.getObjectType(HttpMethod.POST)).thenReturn(Farmer.class);
+        when(resourceMock.getOperation(notNull(HttpMethod.class))).thenReturn(resourceOperation);
+        when(resourceMock.getObjectType(notNull(ResourceOperation.class))).thenReturn(Farmer.class);
         return resourceMock;
     }
  
@@ -508,9 +509,10 @@ public class ParamsExtractorTests
     private static ResourceMetadata mockRelationship()
     {
         ResourceMetadata resourceMock = mock(ResourceMetadata.class);
+        ResourceOperation resourceOperation = mock(ResourceOperation.class);
+        when(resourceMock.getOperation(notNull(HttpMethod.class))).thenReturn(resourceOperation);
         when(resourceMock.getType()).thenReturn(ResourceMetadata.RESOURCE_TYPE.RELATIONSHIP);
-        when(resourceMock.getObjectType(HttpMethod.PUT)).thenReturn(Farmer.class);
-        when(resourceMock.getObjectType(HttpMethod.POST)).thenReturn(Farmer.class);
+        when(resourceMock.getObjectType(notNull(ResourceOperation.class))).thenReturn(Farmer.class);
         return resourceMock;
     }
     

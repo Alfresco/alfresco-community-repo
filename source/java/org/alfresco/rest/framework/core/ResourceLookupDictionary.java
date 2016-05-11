@@ -72,7 +72,8 @@ public class ResourceLookupDictionary implements ResourceLocator
         ResourceWithMetadata resource = apiResources.get(propertyResourceKey);
         if (resource != null)
         {
-            if (!resource.getMetaData().supports(httpMethod)) { throw new UnsupportedResourceOperationException(); }
+            ResourceOperation op = resource.getMetaData().getOperation(httpMethod);
+            if (op == null) { throw new UnsupportedResourceOperationException(); }
             return resource;
         }
 
@@ -104,7 +105,8 @@ public class ResourceLookupDictionary implements ResourceLocator
               resource = apiResources.get(resourceKey);
               if (resource != null)
               {
-                  if (!resource.getMetaData().supports(httpMethod)) { throw new UnsupportedResourceOperationException(); }
+                  ResourceOperation op = resource.getMetaData().getOperation(httpMethod);
+                  if (op == null) { throw new UnsupportedResourceOperationException(); }
                   return resource;
               }
           }
@@ -113,7 +115,8 @@ public class ResourceLookupDictionary implements ResourceLocator
         } 
         else
         {
-            if (!resource.getMetaData().supports(httpMethod)) { throw new UnsupportedResourceOperationException(); }
+            ResourceOperation op = resource.getMetaData().getOperation(httpMethod);
+            if (op == null) { throw new UnsupportedResourceOperationException(); }
             return resource;
         }
     }

@@ -36,24 +36,28 @@ import org.springframework.http.HttpMethod;
  */
 public class ResourceOperation
 {
+    public static final int UNSET_STATUS = -1;
     private final HttpMethod httpMethod;
     private final String title;
     private final String description;
     private final List<ResourceParameter> parameters;
+    private final int successStatus;
     
     /**
      * @param httpMethod HttpMethod
      * @param title String
      * @param description String
      * @param parameters List<ResourceParameter>
+     * @param successStatus HTTP status
      */
-    public ResourceOperation(HttpMethod httpMethod, String title, String description, List<ResourceParameter> parameters)
+    public ResourceOperation(HttpMethod httpMethod, String title, String description, List<ResourceParameter> parameters, int successStatus)
     {
         super();
         this.httpMethod = httpMethod;
         this.title = title;
         this.description = description;
         this.parameters = parameters;
+        this.successStatus = successStatus;
     }
 
     public HttpMethod getHttpMethod()
@@ -76,6 +80,11 @@ public class ResourceOperation
         return this.parameters;
     }
 
+    public int getSuccessStatus()
+    {
+        return successStatus;
+    }
+
     @Override
     public String toString()
     {
@@ -84,6 +93,8 @@ public class ResourceOperation
         builder.append(this.httpMethod);
         builder.append(", title=");
         builder.append(this.title);
+        builder.append(", status=");
+        builder.append(this.successStatus);
         builder.append(", description=");
         builder.append(this.description);
         builder.append(", parameters=");

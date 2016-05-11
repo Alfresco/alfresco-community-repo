@@ -34,6 +34,7 @@ import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceInspectorUtil;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
+import org.alfresco.rest.framework.core.ResourceOperation;
 import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
 import org.alfresco.rest.framework.core.exceptions.DeletedResourceException;
@@ -75,6 +76,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
         final RecognizedParams params = ResourceWebScriptHelper.getRecognizedParams(req);
         final String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
         final String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
+        final ResourceOperation operation = resourceMeta.getOperation(HttpMethod.POST);
 
         switch (resourceMeta.getType())
         {
@@ -86,7 +88,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                 }
                 else
                 {
-                    Object postedObj = processRequest(resourceMeta, req);
+                    Object postedObj = processRequest(resourceMeta, operation, req);
                     return Params.valueOf(null, params, postedObj);
                 }
             case RELATIONSHIP:
@@ -96,7 +98,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                 }
                 else
                 {
-                    Object postedRel = processRequest(resourceMeta, req);
+                    Object postedRel = processRequest(resourceMeta, operation, req);
                     return Params.valueOf(entityId, params, postedRel);
                 }
             case OPERATION:
@@ -105,7 +107,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
 
                 if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(operationName))
                 {
-                    Class objectType = resourceMeta.getObjectType(HttpMethod.POST);
+                    Class objectType = resourceMeta.getObjectType(operation);
                     Object postedObj =  null;
                     if (objectType!= null)
                     {
@@ -133,14 +135,14 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
      * returns the {@link FormData}, otherwise it tries to extract the required
      * object from the JSON payload.
      */
-    private Object processRequest(ResourceMetadata resourceMeta, WebScriptRequest req)
+    private Object processRequest(ResourceMetadata resourceMeta, ResourceOperation operation, WebScriptRequest req)
     {
         if (WebScriptRequestImpl.MULTIPART_FORM_DATA.equals(req.getContentType()))
         {
             return (FormData) req.parseContent();
         }
 
-        return extractObjFromJson(resourceMeta, req);
+        return extractObjFromJson(resourceMeta, operation, req);
     }
 
     /**
@@ -150,10 +152,10 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
      * @param req WebScriptRequest
      * @return Either an object 
      */
-    private Object extractObjFromJson(ResourceMetadata resourceMeta, WebScriptRequest req)
+    private Object extractObjFromJson(ResourceMetadata resourceMeta, ResourceOperation operation, WebScriptRequest req)
     {
-        List<ResourceParameter> params = resourceMeta.getParameters(HttpMethod.POST);
-        Class<?> objType = resourceMeta.getObjectType(HttpMethod.POST);
+        List<ResourceParameter> params = operation.getParameters();
+        Class<?> objType = resourceMeta.getObjectType(operation);
 
         if (!params.isEmpty())
         {
@@ -218,6 +220,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
     private Object executeInternal(ResourceWithMetadata resource, Params params) throws Throwable
     {
         final Object resObj = resource.getResource();
+
         switch (resource.getMetaData().getType())
         {
             case ENTITY:
@@ -302,17 +305,13 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                 @Override
                 public Void execute() throws Throwable
                 {
+                    final ResourceOperation operation = resource.getMetaData().getOperation(HttpMethod.POST);
                     Object result = executeInternal(resource, params);
-                    executionCallback.onSuccess(helper.processAdditionsToTheResponse(resource.getMetaData().getApi(), entityCollectionName, params, result), DEFAULT_JSON_CONTENT);
+                    executionCallback.onSuccess(helper.processAdditionsToTheResponse(resource.getMetaData().getApi(), entityCollectionName, params, result),
+                            DEFAULT_JSON_CONTENT, operation.getSuccessStatus());
                     return null;
                 }
             }, false, true);
-    }
-
-    @Override
-    protected void setSuccessResponseStatus(WebScriptResponse res)
-    {
-        res.setStatus(Status.STATUS_CREATED);
     }
 
 }

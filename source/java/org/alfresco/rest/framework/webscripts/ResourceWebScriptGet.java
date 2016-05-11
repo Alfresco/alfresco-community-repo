@@ -29,6 +29,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
+import org.alfresco.rest.framework.core.ResourceOperation;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
 import org.alfresco.rest.framework.core.exceptions.DeletedResourceException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
@@ -47,6 +48,7 @@ import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.http.HttpMethod;
 
@@ -234,6 +236,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                 @Override
                 public Void execute() throws Throwable
                 {
+                    final ResourceOperation operation = resource.getMetaData().getOperation(HttpMethod.GET);
                     Object result = executeInternal(resource, params);
                     if (result instanceof BinaryResource)
                     {
@@ -242,11 +245,11 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         {
                             ci = ((NodeBinaryResource)result).getContentInfo();
                         }
-                        executionCallback.onSuccess(result, ci);
+                        executionCallback.onSuccess(result, ci, operation.getSuccessStatus());
                     }
                     else
                     {
-                      executionCallback.onSuccess(helper.processAdditionsToTheResponse(resource.getMetaData().getApi(), entityCollectionName, params, result), DEFAULT_JSON_CONTENT);
+                      executionCallback.onSuccess(helper.processAdditionsToTheResponse(resource.getMetaData().getApi(), entityCollectionName, params, result), DEFAULT_JSON_CONTENT, operation.getSuccessStatus());
                     }
                     return null;
                 }

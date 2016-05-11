@@ -58,12 +58,14 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.authentication.HashPasswordTransactionListener;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.rest.antlr.WhereClauseParser;
@@ -102,6 +104,7 @@ import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.action.Action;
 import org.alfresco.service.cmr.action.ActionDefinition;
 import org.alfresco.service.cmr.action.ActionService;
+import org.alfresco.service.cmr.activities.ActivitiesTransactionListener;
 import org.alfresco.service.cmr.activities.ActivityInfo;
 import org.alfresco.service.cmr.activities.ActivityPoster;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -1398,10 +1401,9 @@ public class NodesImpl implements Nodes
         }
 
         final ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
+        postActivity(Activity_Type.DELETED, activityInfo, true);
 
         fileFolderService.delete(nodeRef);
-
-        postActivity(Activity_Type.DELETED, activityInfo);
     }
 
     @Override
@@ -1555,21 +1557,39 @@ public class NodesImpl implements Nodes
         }
 
         ActivityInfo activityInfo =  getActivityInfo(parentNodeRef, newNode);
-        postActivity(Activity_Type.ADDED, activityInfo);
+        postActivity(Activity_Type.ADDED, activityInfo, false);
         return newNode;
     }
 
-    protected void postActivity(Activity_Type activity_type, ActivityInfo activityInfo)
+    /**
+     * Posts activites based on the activity_type.
+     * If the method is called with aSync=true then a TransactionListener is used post the activity
+     * afterCommit.  Otherwise the activity posting is done synchronously.
+     * @param activity_type
+     * @param activityInfo
+     * @param aSync
+     */
+    protected void postActivity(Activity_Type activity_type, ActivityInfo activityInfo, boolean aSync)
     {
         if (activityInfo == null) return; //Nothing to do.
 
         String activityType = determineActivityType(activity_type, activityInfo.getFileInfo().isFolder());
         if (activityType != null)
         {
-            poster.postFileFolderActivity(activityType, null, TenantUtil.getCurrentDomain(),
-                    activityInfo.getSiteId(), activityInfo.getParentNodeRef(), activityInfo.getNodeRef(),
-                    activityInfo.getFileName(), APP_TOOL, Client.asType(Client.ClientType.script),
-                    activityInfo.getFileInfo());
+            if (aSync)
+            {
+                ActivitiesTransactionListener txListener = new ActivitiesTransactionListener(activityType, activityInfo,
+                        TenantUtil.getCurrentDomain(), APP_TOOL, Client.asType(Client.ClientType.script),
+                        poster, retryingTransactionHelper);
+                AlfrescoTransactionSupport.bindListener(txListener);
+            }
+            else
+            {
+                poster.postFileFolderActivity(activityType, null, TenantUtil.getCurrentDomain(),
+                        activityInfo.getSiteId(), activityInfo.getParentNodeRef(), activityInfo.getNodeRef(),
+                        activityInfo.getFileName(), APP_TOOL, Client.asType(Client.ClientType.script),
+                        activityInfo.getFileInfo());
+            }
         }
     }
 
@@ -1600,7 +1620,7 @@ public class NodesImpl implements Nodes
         return null;
     }
 
-    protected String determineActivityType(Activity_Type activity_type, boolean isFolder)
+    protected static String determineActivityType(Activity_Type activity_type, boolean isFolder)
     {
         switch (activity_type)
         {
@@ -1832,7 +1852,7 @@ public class NodesImpl implements Nodes
         }
 
         ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
-        postActivity(Activity_Type.UPDATED, activityInfo);
+        postActivity(Activity_Type.UPDATED, activityInfo, false);
 
         return getFolderOrDocument(nodeRef.getId(), parameters);
     }
@@ -1949,17 +1969,7 @@ public class NodesImpl implements Nodes
         String attachFileName = (attach ? name : null);
 
         final ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
-
-        //Activity posting needs a transaction
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
-            @Override
-            public Void execute() throws Throwable
-            {
-                postActivity(Activity_Type.DOWNLOADED, activityInfo);
-                return null;
-            }
-        }, false, true);
+        postActivity(Activity_Type.DOWNLOADED, activityInfo, true);
 
         return new NodeBinaryResource(nodeRef, ContentModel.PROP_CONTENT, ci, attachFileName);
     }
@@ -2011,7 +2021,7 @@ public class NodesImpl implements Nodes
             }
 
             ActivityInfo activityInfo =  getActivityInfo(parentNodeRef, nodeRef);
-            postActivity(Activity_Type.UPDATED, activityInfo);
+            postActivity(Activity_Type.UPDATED, activityInfo, false);
 
             extractMetadata(nodeRef);
         }

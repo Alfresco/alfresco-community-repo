@@ -24,6 +24,7 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Queries;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -31,6 +32,8 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -61,6 +64,8 @@ public class QueriesImpl implements Queries, InitializingBean
     private SearchService searchService;
     private NodeService nodeService;
     private NamespaceService namespaceService;
+    private DictionaryService dictionaryService;
+
 
     private final static String QT_FIELD = "keywords";
 
@@ -103,6 +108,7 @@ public class QueriesImpl implements Queries, InitializingBean
         this.searchService = sr.getSearchService();
         this.nodeService = sr.getNodeService();
         this.namespaceService = sr.getNamespaceService();
+        this.dictionaryService = sr.getDictionaryService();
     }
 
     @Override
@@ -157,19 +163,24 @@ public class QueriesImpl implements Queries, InitializingBean
             sb.append(")");
         }
 
-        String nodeType = parameters.getParameter(PARAM_NODE_TYPE);
-        if (nodeType != null)
+        String nodeTypeStr = parameters.getParameter(PARAM_NODE_TYPE);
+        if (nodeTypeStr != null)
         {
-            // TODO could/should check that this is a valid type ?
-            sb.append(" AND (+TYPE:\"").append(nodeType).append(("\""));
+            QName filterNodeTypeQName = nodes.createQName(nodeTypeStr);
+            if (dictionaryService.getType(filterNodeTypeQName) == null)
+            {
+                throw new InvalidArgumentException("Unknown filter nodeType: "+nodeTypeStr);
+            }
+
+            sb.append(" AND (+TYPE:\"").append(nodeTypeStr).append(("\")"));
+            sb.append(" AND -ASPECT:\"sys:hidden\" AND -cm:creator:system AND -QNAME:comment\\-* ");
         }
         else
         {
             sb.append(" AND (+TYPE:\"cm:content\" OR +TYPE:\"cm:folder\")");
-
             sb.append(" AND -TYPE:\"cm:thumbnail\" AND -TYPE:\"cm:failedThumbnail\" AND -TYPE:\"cm:rating\" AND -TYPE:\"fm:post\"")
-                    .append(" AND -ASPECT:\"sys:hidden\" AND -cm:creator:system AND -TYPE:\"st:site\"")
-                    .append(" AND -ASPECT:\"st:siteContainer\" AND -QNAME:comment\\-* ");
+              .append(" AND -TYPE:\"st:site\" AND -ASPECT:\"st:siteContainer\"")
+              .append(" AND -ASPECT:\"sys:hidden\" AND -cm:creator:system AND -QNAME:comment\\-* ");
         }
 
         SearchParameters sp = new SearchParameters();
@@ -227,12 +238,21 @@ public class QueriesImpl implements Queries, InitializingBean
 
         Map<String, String> cache = new HashMap<>();
         StringBuilder buf = new StringBuilder(128);
-        Path path = nodeService.getPath(nodeRef);
+        Path path = null;
+        try
+        {
+           path = nodeService.getPath(nodeRef);
+        }
+        catch (InvalidNodeRefException inre)
+        {
+            throw new EntityNotFoundException(nodeId);
+        }
+
         for (Path.Element e : path)
         {
             if (e instanceof Path.ChildAssocElement)
             {
-                QName qname = ((Path.ChildAssocElement)e).getRef().getQName();
+                QName qname = ((Path.ChildAssocElement) e).getRef().getQName();
                 if (qname != null)
                 {
                     String prefix = cache.get(qname.getNamespaceURI());

@@ -133,13 +133,17 @@ public class QueriesApiTest extends AbstractBaseApiTest
     @Test
     public void testLiveSearchNodes() throws Exception
     {
-        int myDocCount = 5;
-        List<String> myDocIds = new ArrayList<>(myDocCount);
+        int f1Count = 5;
+        List<String> f1NodeIds = new ArrayList<>(f1Count);
 
-        int sharedDocCount = 3;
-        List<String> sharedDocIds = new ArrayList<>(sharedDocCount);
+        int f2Count = 3;
+        List<String> f2NodeIds = new ArrayList<>(f2Count);
 
-        int totalCount = myDocCount + sharedDocCount;
+        int f3Count = 4;
+        List<String> f3NodeIds = new ArrayList<>(f3Count);
+
+        int totalCount = f1Count + f2Count + f3Count;
+        List<String> allIds = new ArrayList<>(totalCount);
 
         String testTerm = "abc123";
 
@@ -158,19 +162,24 @@ public class QueriesApiTest extends AbstractBaseApiTest
             assertEquals(0, nodes.size());
 
             String myFolderNodeId = getMyNodeId(user1);
-            String sharedFolderNodeId = getSharedNodeId(user1);
+
+            String f1Id = createFolder(user1, myFolderNodeId, "folder 1").getId();
+            String f2Id = createFolder(user1, myFolderNodeId, "folder 2").getId();
+            String f3Id = createFolder(user1, myFolderNodeId, "folder 3").getId();
 
             String name = "name";
             String title = "title";
             String descrip = "descrip";
 
+            String folderNameSuffix = " "+testTerm+" folder";
+
             Map<String,String> idNameMap = new HashMap<>();
 
-            int nameIdx = myDocCount;
-            for (int i = 1; i <= myDocCount; i++)
+            int nameIdx = f1Count;
+            for (int i = 1; i <= f1Count; i++)
             {
-                // create doc - in "My" folder
-                String contentText = "My " + testTerm + " test document " + user1 + " document " + i;
+                // create doc - in folder 1
+                String contentText = "f1 " + testTerm + " test document " + user1 + " document " + i;
 
                 String num = String.format("%05d", nameIdx);
                 String docName = name+num+name;
@@ -179,19 +188,19 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 docProps.put("cm:title", title+num+title);
                 docProps.put("cm:description", descrip+num+descrip);
 
-                Document doc = createTextFile(user1, myFolderNodeId, docName, contentText, "UTF-8", docProps);
+                Document doc = createTextFile(user1, f1Id, docName, contentText, "UTF-8", docProps);
 
-                myDocIds.add(doc.getId());
+                f1NodeIds.add(doc.getId());
                 idNameMap.put(doc.getId(), docName);
 
                 nameIdx--;
             }
 
-            nameIdx = sharedDocCount;
-            for (int i = 1; i <= sharedDocCount; i++)
+            nameIdx = f2Count;
+            for (int i = 1; i <= f2Count; i++)
             {
-                // create doc - in "Shared" folder
-                String contentText = "Shared " + testTerm + " test document";
+                // create doc - in folder 2
+                String contentText = "f2 " + testTerm + " test document";
 
                 String num = String.format("%05d", nameIdx);
                 String docName = name+num+name;
@@ -200,10 +209,25 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 docProps.put("cm:title", title+num+title);
                 docProps.put("cm:description", descrip+num+descrip);
 
-                Document doc = createTextFile(user1, sharedFolderNodeId, docName, contentText, "UTF-8", docProps);
+                Document doc = createTextFile(user1, f2Id, docName, contentText, "UTF-8", docProps);
 
-                sharedDocIds.add(doc.getId());
+                f2NodeIds.add(doc.getId());
                 idNameMap.put(doc.getId(), docName);
+
+                nameIdx--;
+            }
+
+            nameIdx = f3Count;
+            for (int i = 1; i <= f3Count; i++)
+            {
+                // create folders - in folder 3
+                String num = String.format("%05d", nameIdx);
+                String folderName = name+num+name+folderNameSuffix;
+
+                Node node = createFolder(user1, myFolderNodeId, folderName);
+
+                f3NodeIds.add(node.getId());
+                idNameMap.put(node.getId(), folderName);
 
                 nameIdx--;
             }
@@ -213,46 +237,56 @@ public class QueriesApiTest extends AbstractBaseApiTest
             List<String> idsSortedByNameDescCreatedAtAsc = new ArrayList<>(totalCount);
             for (int i = 0; i < totalCount; i++)
             {
-                if (i < myDocCount)
+                if (i < f1Count)
                 {
-                    idsSortedByNameDescCreatedAtAsc.add(myDocIds.get(i));
+                    idsSortedByNameDescCreatedAtAsc.add(f1NodeIds.get(i));
                 }
-                if (i < sharedDocCount)
+                if (i < f2Count)
                 {
-                    idsSortedByNameDescCreatedAtAsc.add(sharedDocIds.get(i));
+                    idsSortedByNameDescCreatedAtAsc.add(f2NodeIds.get(i));
+                }
+                if (i < f3Count)
+                {
+                    idsSortedByNameDescCreatedAtAsc.add(f3NodeIds.get(i));
                 }
             }
 
-            List<String> allIds = new ArrayList<>(totalCount);
-            allIds.addAll(myDocIds);
-            allIds.addAll(sharedDocIds);
+            allIds.addAll(idNameMap.keySet());
 
             //
             // find nodes
             //
 
-            // Search hits based on FTS (content)
+            // Search hits based on FTS (content) and also name (in case of folder nodes)
             params = new HashMap<>(1);
             params.put(Queries.PARAM_TERM, testTerm);
             response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, allIds, null);
 
-            // Search hits based on FTS (content) - with a root node (for path-based / in-tree search) - here "Shared" folder
+            // Search hits restricted by node type
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);
-            params.put(Queries.PARAM_ROOT_NODE_ID, sharedFolderNodeId);
+            params.put(Queries.PARAM_NODE_TYPE, "cm:folder");
             response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            checkNodeIds(nodes, sharedDocIds, null);
+            checkNodeIds(nodes, f3NodeIds, null);
 
-            // Search hits based on FTS (content) - with root node (for path-based / in-tree search) - here user's home folder ("My")
+            // Search hits based on FTS (content) - with folder 2 as the root node (for path-based / in-tree search)
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);
-            params.put(Queries.PARAM_ROOT_NODE_ID, myFolderNodeId);
+            params.put(Queries.PARAM_ROOT_NODE_ID, f2Id);
             response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            checkNodeIds(nodes, myDocIds, null);
+            checkNodeIds(nodes, f2NodeIds, null);
+
+            // Search hits based on FTS (content) - with folder 1 as root node (for path-based / in-tree search)
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, testTerm);
+            params.put(Queries.PARAM_ROOT_NODE_ID, f1Id);
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, f1NodeIds, null);
 
             // Search hits based on cm:name
             String term = name+String.format("%05d", 1)+name;
@@ -260,9 +294,18 @@ public class QueriesApiTest extends AbstractBaseApiTest
             params.put(Queries.PARAM_TERM, "\""+term+"\"");
             response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            assertEquals(2, nodes.size());
-            assertEquals(term, nodes.get(0).getName());
-            assertEquals(term, nodes.get(1).getName());
+            assertEquals(3, nodes.size());
+            for (Node node : nodes)
+            {
+                if (node.getIsFolder())
+                {
+                    assertEquals(term+folderNameSuffix, node.getName());
+                }
+                else
+                {
+                    assertEquals(term, node.getName());
+                }
+            }
 
             // Search hits based on cm:title
             term = title+String.format("%05d", 2)+title;
@@ -367,30 +410,49 @@ public class QueriesApiTest extends AbstractBaseApiTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, allIds, false);
 
-            paging = getPaging(0, myDocCount);
+            paging = getPaging(0, f1Count);
             params = new HashMap<>(1);
             params.put(Queries.PARAM_TERM, testTerm);
             response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            checkNodeIds(nodes, myDocIds, false);
+            checkNodeIds(nodes, f1NodeIds, false);
 
-            paging = getPaging(myDocCount, sharedDocCount);
+            paging = getPaging(f1Count, f2Count);
             params = new HashMap<>(1);
             params.put(Queries.PARAM_TERM, testTerm);
             response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            checkNodeIds(nodes, sharedDocIds, false);
+            checkNodeIds(nodes, f2NodeIds, false);
+
+            paging = getPaging(f2Count, f3Count);
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, testTerm);
+            response = getAll(URL_QUERIES_LSN, user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            checkNodeIds(nodes, f3NodeIds, false);
 
             // TODO sanity check modifiedAt (for now modifiedAt=createdAt)
             // TODO sanity check tag search
-            // TODO sanity check nodeType query param
+            // TODO sanity check optional "include" ... eg. path
 
             // -ve test - no params (ie. no term)
             getAll(URL_QUERIES_LSN, user1, paging, null, 400);
 
             // -ve test - no term
             params = new HashMap<>(1);
-            params.put(Queries.PARAM_ROOT_NODE_ID, myFolderNodeId);
+            params.put(Queries.PARAM_ROOT_NODE_ID, f1Id);
+            getAll(URL_QUERIES_LSN, user1, paging, params, 400);
+
+            // -ve test - unknown root node id
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, "abc");
+            params.put(Queries.PARAM_ROOT_NODE_ID, "dummy");
+            getAll(URL_QUERIES_LSN, user1, paging, params, 404);
+
+            // -ve test - unknown node type
+            params = new HashMap<>(2);
+            params.put(Queries.PARAM_TERM, "abc");
+            params.put(Queries.PARAM_NODE_TYPE, "cm:dummy");
             getAll(URL_QUERIES_LSN, user1, paging, params, 400);
 
             // -ve test - term too short
@@ -415,12 +477,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
         finally
         {
             // some cleanup
-            for (String docId : myDocIds)
-            {
-                delete(URL_NODES, user1, docId, 204);
-            }
-
-            for (String docId : sharedDocIds)
+            for (String docId : allIds)
             {
                 delete(URL_NODES, user1, docId, 204);
             }

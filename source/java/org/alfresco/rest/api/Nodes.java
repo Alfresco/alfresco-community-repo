@@ -203,6 +203,14 @@ public interface Nodes
     boolean isSubClass(NodeRef nodeRef, QName ofClassQName, boolean validateNodeRef);
 
     /**
+     * Helper to create a QName from either a fully qualified or short-name QName string
+     *
+     * @param qnameStr Fully qualified or short-name QName string
+     * @return QName
+     */
+    QName createQName(String qnameStr);
+
+    /**
      * API Constants - query parameters, etc
      */
 

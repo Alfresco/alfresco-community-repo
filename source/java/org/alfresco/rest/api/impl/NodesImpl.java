@@ -2462,7 +2462,7 @@ public class NodesImpl implements Nodes
      * @param qnameStr Fully qualified or short-name QName string
      * @return QName
      */
-    protected QName createQName(String qnameStr)
+    public QName createQName(String qnameStr)
     {
         try
         {

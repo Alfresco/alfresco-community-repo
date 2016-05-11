@@ -46,7 +46,7 @@ import java.io.File;
  * @author Gethin James
  */
 @RelationshipResource(name = "herd",entityResource=GoatEntityResourceForV3.class, title = "Goat Herd")
-public class GoatRelationshipResource implements RelationshipResourceAction.Read<Herd>,  RelationshipResourceBinaryAction.Read
+public class GoatRelationshipResource implements RelationshipResourceAction.Read<Herd>,  RelationshipResourceBinaryAction.Read, RelationshipResourceBinaryAction.Delete
 {
     @Override
     public CollectionWithPagingInfo<Herd> readAll(String entityResourceId, Parameters params)
@@ -60,5 +60,12 @@ public class GoatRelationshipResource implements RelationshipResourceAction.Read
     {
         File file = TempFileProvider.createTempFile("Its a goat", ".txt");
         return new FileBinaryResource(file);
+    }
+
+    @Override
+    @BinaryProperties({"content"})
+    public void deleteProperty(String entityId, String entityResourceId, Parameters parameters)
+    {
+        //Its deleted
     }
 }

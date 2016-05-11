@@ -55,7 +55,19 @@
     <bean id="executorOfGets" class="org.alfresco.rest.framework.webscripts.ResourceWebScriptGet">
          <property name="helper" ref="webscriptHelper" />
     </bean>
-    
+
+    <bean id="executorOfPost" class="org.alfresco.rest.framework.webscripts.ResourceWebScriptPost">
+        <property name="helper" ref="webscriptHelper" />
+    </bean>
+
+    <bean id="executorOfPut" class="org.alfresco.rest.framework.webscripts.ResourceWebScriptPut">
+        <property name="helper" ref="webscriptHelper" />
+    </bean>
+
+    <bean id="executorOfDelete" class="org.alfresco.rest.framework.webscripts.ResourceWebScriptDelete">
+        <property name="helper" ref="webscriptHelper" />
+    </bean>
+
     <bean id="defaultMetaWriter" class="org.alfresco.rest.framework.webscripts.metadata.WebScriptOptionsMetaData">
         <property name="lookupDictionary" ref="apiLookup" />
         <property name="resolver" ref="simpleMappingExceptionResolver" />

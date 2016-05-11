@@ -33,8 +33,10 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 
+import java.util.List;
+
 @EntityResource(name = "grass", title="Grass")
-public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>{
+public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>, EntityResourceAction.Create<Grass>, EntityResourceAction.Delete {
 
     @Override
     @WebApiDescription(title = "Gets grass by id")
@@ -56,4 +58,16 @@ public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>
         return "Growing well";
     }
 
+    @Override
+    @WebApiDescription(title = "Create some grass")
+    public List<Grass> create(List<Grass> entity, Parameters parameters)
+    {
+        return entity;
+    }
+
+    @Override
+    public void delete(String id, Parameters parameters)
+    {
+        //I did a delete
+    }
 }

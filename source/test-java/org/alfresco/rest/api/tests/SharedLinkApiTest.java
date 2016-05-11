@@ -18,72 +18,30 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.model.ContentModel;
-import org.alfresco.model.ForumModel;
-import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.impl.QuickShareLinksImpl;
-import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.quicksharelinks.QuickShareLinkEntityResource;
-import org.alfresco.rest.api.tests.RepoService.TestNetwork;
-import org.alfresco.rest.api.tests.RepoService.TestPerson;
-import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
-import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
-import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
-import org.alfresco.rest.api.tests.client.RequestContext;
-import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
-import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
-import org.alfresco.rest.api.tests.client.data.PathInfo;
-import org.alfresco.rest.api.tests.client.data.PathInfo.ElementInfo;
-import org.alfresco.rest.api.tests.client.data.SiteRole;
-import org.alfresco.rest.api.tests.client.data.UserInfo;
-import org.alfresco.rest.api.tests.util.JacksonUtil;
-import org.alfresco.rest.api.tests.util.MultiPartBuilder;
-import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
-import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteVisibility;
-import org.alfresco.util.TempFileProvider;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.Serializable;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.UUID;
 
-import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.*;
 
@@ -109,13 +67,13 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
     private final String RUNID = System.currentTimeMillis()+"";
 
-
     @Before
     public void setup() throws Exception
     {
         authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
         personService = applicationContext.getBean("personService", PersonService.class);
 
+        // note: createUser currently relies on repoService
         user1 = createUser("user1-" + RUNID);
         user2 = createUser("user2-" + RUNID);
 
@@ -167,29 +125,19 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
     {
         // As user 1 ...
 
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
         // create doc d1
-
         String sharedFolderNodeId = getSharedNodeId(user1);
-
-        String contentText = "The quick brown fox jumps over the lazy dog.";
-
+        String content1Text = "The quick brown fox jumps over the lazy dog 1.";
         String docName1 = "content" + RUNID + "_1.txt";
-        NodeRef d1Ref = repoService.createDocument(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sharedFolderNodeId),
-                docName1, contentText);
-        String d1Id = d1Ref.getId();
+        Document doc1 = createTextFile(user1, sharedFolderNodeId, docName1, content1Text);
+        String d1Id = doc1.getId();
 
         // create doc d2
-
         String myFolderNodeId = getMyNodeId(user1);
-
+        String content2Text = "The quick brown fox jumps over the lazy dog 1.";
         String docName2 = "content" + RUNID + "_2.txt";
-        NodeRef d2Ref = repoService.createDocument(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myFolderNodeId),
-                docName2, contentText);
-        String d2Id = d2Ref.getId();
-
-        AuthenticationUtil.clearCurrentSecurityContext();
+        Document doc2 = createTextFile(user1, myFolderNodeId, docName2, content2Text);
+        String d2Id = doc2.getId();
 
         // As user 2 ...
 
@@ -212,11 +160,11 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(d1Id, resp.getNodeId());
         assertEquals(docName1, resp.getName());
 
-        // hmm
-        assertEquals(MimetypeMap.MIMETYPE_BINARY, resp.getContent().getMimeType());
-        assertEquals("Binary File (Octet Stream)", resp.getContent().getMimeTypeName());
+        String expectedMimeType = MimetypeMap.MIMETYPE_TEXT_PLAIN;
+        assertEquals(expectedMimeType, resp.getContent().getMimeType());
+        assertEquals("Plain Text", resp.getContent().getMimeTypeName());
 
-        assertEquals(new Long(contentText.length()), resp.getContent().getSizeInBytes());
+        assertEquals(new Long(content1Text.length()), resp.getContent().getSizeInBytes());
         assertEquals("UTF-8", resp.getContent().getEncoding());
 
         assertEquals(docModifiedAt.getTime(), resp.getModifiedAt().getTime()); // not changed
@@ -259,7 +207,8 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         // unauth access to get shared link file content
         response = getSingle(QuickShareLinkEntityResource.class, null, sharedId + "/content", null, 200);
 
-        assertEquals(contentText, response.getResponse());
+        assertEquals(content1Text, response.getResponse());
+        assertEquals(expectedMimeType+";charset=UTF-8", response.getHeaders().get("Content-Type"));
         assertEquals("attachment; filename=\"" + docName1 + "\"; filename*=UTF-8''" + docName1 + "", response.getHeaders().get("Content-Disposition"));
 
 
@@ -366,29 +315,19 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         // As user 1 ...
 
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
         // create doc d1
-
         String sharedFolderNodeId = getSharedNodeId(user1);
-
-        String contentText = "The quick brown fox jumps over the lazy dog.";
-
+        String content1Text = "The quick brown fox jumps over the lazy dog 1.";
         String docName1 = "content" + RUNID + "_1.txt";
-        NodeRef d1Ref = repoService.createDocument(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sharedFolderNodeId),
-                docName1, contentText);
-        String d1Id = d1Ref.getId();
+        Document doc1 = createTextFile(sharedFolderNodeId, user1, docName1, content1Text);
+        String d1Id = doc1.getId();
 
         // create doc d2
-
         String myFolderNodeId = getMyNodeId(user1);
-
+        String content2Text = "The quick brown fox jumps over the lazy dog 1.";
         String docName2 = "content" + RUNID + "_2.txt";
-        NodeRef d2Ref = repoService.createDocument(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myFolderNodeId),
-                docName2, contentText);
-        String d2Id = d2Ref.getId();
-
-        AuthenticationUtil.clearCurrentSecurityContext();
+        Document doc2 = createTextFile(myFolderNodeId, user1, docName2, content2Text);
+        String d2Id = doc2.getId();
 
         // As user 2 ...
 

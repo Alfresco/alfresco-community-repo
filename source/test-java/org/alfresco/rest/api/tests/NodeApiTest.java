@@ -28,7 +28,6 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.archive.NodeArchiveService;
@@ -74,7 +73,6 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -97,7 +95,8 @@ import java.util.UUID;
  *
  * TODO
  * - improve test 'fwk' to enable api tests to be run against remote repo (rather than embedded jetty)
- * - requires replacement of non-remote calls (eg. repoService, siteService, permissionService) with calls to remote (preferably public) apis
+ * - requires replacement of non-remote calls with remote (preferably public) apis
+ *   - eg. createUser (or any other usage of repoService), siteService, permissionService, node/archiveService
  *
  * @author Jamal Kaabi-Mofrad
  * @author janv
@@ -191,24 +190,26 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testListDocLibChildren() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getId());
+        String userId = userOneN1.getId();
 
+        AuthenticationUtil.setFullyAuthenticatedUser(userId);
         NodeRef docLibNodeRef = userOneN1Site.getContainerNodeRef(("documentLibrary"));
+        String docLibNodeId = docLibNodeRef.getId();
 
         String folder1 = "folder" + System.currentTimeMillis() + "_1";
-        repoService.addToDocumentLibrary(userOneN1Site, folder1, ContentModel.TYPE_FOLDER);
+        createFolder(userId, docLibNodeId, folder1, null).getId();
 
         String folder2 = "folder" + System.currentTimeMillis() + "_2";
-        repoService.addToDocumentLibrary(userOneN1Site, folder2, ContentModel.TYPE_FOLDER);
+        createFolder(userId, docLibNodeId, folder2, null).getId();
 
         String content1 = "content" + System.currentTimeMillis() + "_1";
-        repoService.addToDocumentLibrary(userOneN1Site, content1, ContentModel.TYPE_CONTENT);
+        createTextFile(userId, docLibNodeId, content1, "The quick brown fox jumps over the lazy dog 1.").getId();
 
         String content2 = "content" + System.currentTimeMillis() + "_2";
-        repoService.addToDocumentLibrary(userOneN1Site, content2, ContentModel.TYPE_CONTENT);
+        createTextFile(userId, docLibNodeId, content2, "The quick brown fox jumps over the lazy dog 2.").getId();
 
         String forum1 = "forum" + System.currentTimeMillis() + "_1";
-        repoService.createObjectOfCustomType(docLibNodeRef, forum1, ForumModel.TYPE_TOPIC.toString());
+        createNode(userId, docLibNodeId, forum1, "fm:topic", null);
 
         Paging paging = getPaging(0, 100);
         HttpResponse response = getAll(getChildrenUrl(docLibNodeRef), userOneN1.getId(), paging, 200);
@@ -301,10 +302,7 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testListMyFilesChildren() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
         String myNodeId = getMyNodeId(user1);
-        NodeRef myFilesNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myNodeId);
 
         String myChildrenUrl = getChildrenUrl(Nodes.PATH_MY);
         String rootChildrenUrl = getChildrenUrl(Nodes.PATH_ROOT);
@@ -315,7 +313,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         String folder1_Id = createFolder(user1, myNodeId, folder1, props).getId();
 
         String contentF1 = "content" + System.currentTimeMillis() + " in folder 1";
-        String contentF1_Id = repoService.createDocument(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder1_Id), contentF1, "The quick brown fox jumps over the lazy dog 1.").getId();
+        String contentF1_Id = createTextFile(user1, folder1_Id, contentF1, "The quick brown fox jumps over the lazy dog 1.").getId();
 
         props = new HashMap<>(1);
         props.put("cm:title", "This is folder 2");
@@ -323,16 +321,21 @@ public class NodeApiTest extends AbstractBaseApiTest
         String folder2_Id = createFolder(user1, myNodeId, folder2, props).getId();
 
         String contentF2 = "content" + System.currentTimeMillis() + " in folder 2";
-        String contentF2_Id = repoService.createDocument(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder2_Id), contentF2, "The quick brown fox jumps over the lazy dog 2.").getId();
+        String contentF2_Id = createTextFile(user1, folder2_Id, contentF2, "The quick brown fox jumps over the lazy dog 2.").getId();
 
         String content1 = "content" + System.currentTimeMillis() + " 1";
-        NodeRef contentNodeRef = repoService.createDocument(myFilesNodeRef, content1, "The quick brown fox jumps over the lazy dog.");
-        repoService.getNodeService().setProperty(contentNodeRef, ContentModel.PROP_OWNER, user1);
-        repoService.getNodeService().setProperty(contentNodeRef, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA,
-                (Serializable) Collections.singletonList("doclib:1444660852296"));
+        String content1_Id = createTextFile(user1, myNodeId, content1, "The quick brown fox jumps over the lazy dog.").getId();
+
+        props = new HashMap<>();
+        props.put(PROP_OWNER, user1);
+        props.put("cm:lastThumbnailModification", Collections.singletonList("doclib:1444660852296"));
+
+        Node nodeUpdate = new Node();
+        nodeUpdate.setProperties(props);
+        put("nodes", user1, content1_Id, toJsonAsStringNonNull(nodeUpdate), null, 200);
 
         List<String> folderIds = Arrays.asList(folder1_Id, folder2_Id);
-        List<String> contentIds = Arrays.asList(contentNodeRef.getId());
+        List<String> contentIds = Arrays.asList(content1_Id);
 
 
         Paging paging = getPaging(0, Integer.MAX_VALUE);
@@ -350,14 +353,14 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document node = nodes.get(2);
         assertEquals(content1, node.getName());
         assertEquals("cm:content", node.getNodeType());
-        assertEquals(contentNodeRef.getId(), node.getId());
+        assertEquals(content1_Id, node.getId());
         UserInfo createdByUser = node.getCreatedByUser();
         assertEquals(user1, createdByUser.getId());
         assertEquals(user1 + " " + user1, createdByUser.getDisplayName());
         UserInfo modifiedByUser = node.getModifiedByUser();
         assertEquals(user1, modifiedByUser.getId());
         assertEquals(user1 + " " + user1, modifiedByUser.getDisplayName());
-        assertEquals(MimetypeMap.MIMETYPE_BINARY, node.getContent().getMimeType());
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, node.getContent().getMimeType());
         assertNotNull(node.getContent().getMimeTypeName());
         assertNotNull(node.getContent().getEncoding());
         assertTrue(node.getContent().getSizeInBytes() > 0);
@@ -460,14 +463,14 @@ public class NodeApiTest extends AbstractBaseApiTest
         paging = getPaging(0, 10);
 
         // -ve test - list folder children for non-folder node should return 400
-        getAll(getChildrenUrl(contentNodeRef), user1, paging, 400);
+        getAll(getChildrenUrl(content1_Id), user1, paging, 400);
 
         // -ve test - list folder children for unknown node should return 404
         getAll(getChildrenUrl(UUID.randomUUID().toString()), user1, paging, 404);
 
         // -ve test - user2 tries to access user1's home folder
         AuthenticationUtil.setFullyAuthenticatedUser(user2);
-        getAll(getChildrenUrl(myFilesNodeRef), user2, paging, 403);
+        getAll(getChildrenUrl(myNodeId), user2, paging, 403);
 
         // -ve test - try to list children using relative path to unknown node
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user1 + "/unknown");
@@ -483,7 +486,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // -ve test - list folder children for non-folder node with relative path should return 400
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/unknown");
-        getAll(getChildrenUrl(contentNodeRef), user1, paging, params, 400);
+        getAll(getChildrenUrl(content1_Id), user1, paging, params, 400);
     }
 
     /**
@@ -517,8 +520,10 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A/folder<timestamp>_B/folder<timestamp>_C/content<timestamp>
         String content = "content" + System.currentTimeMillis();
-        NodeRef contentNodeRef = repoService.createDocument(folderC_Ref, content, "The quick brown fox jumps over the lazy dog.");
+        String content1_Id = createTextFile(userId, folderC_Id, content, "The quick brown fox jumps over the lazy dog.").getId();
 
+
+        // TODO refactor with remote permission api calls (use v0 until we have v1 ?)
         // Revoke folderB inherited permissions
         permissionService.setInheritParentPermissions(folderB_Ref, false);
         // Grant userTwoN1 permission for folderC
@@ -526,7 +531,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         //...nodes/nodeId?select=path
         Map<String, String> params = Collections.singletonMap("select", "path");
-        HttpResponse response = getSingle(NodesEntityResource.class, userOneN1.getId(), contentNodeRef.getId(), params, 200);
+        HttpResponse response = getSingle(NodesEntityResource.class, userOneN1.getId(), content1_Id, params, 200);
         Document node = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         PathInfo path = node.getPath();
         assertNotNull(path);
@@ -547,7 +552,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // Try the above tests with userTwoN1 (site consumer)
         AuthenticationUtil.setFullyAuthenticatedUser(userTwoN1.getId());
-        response = getSingle(NodesEntityResource.class, userTwoN1.getId(), contentNodeRef.getId(), params, 200);
+        response = getSingle(NodesEntityResource.class, userTwoN1.getId(), content1_Id, params, 200);
         node = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         path = node.getPath();
         assertNotNull(path);
@@ -585,29 +590,26 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(node.getIsFolder());
         assertFalse(node.getIsFile());
 
-        NodeRef myHomeNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myFilesNodeId);
-        NodeRef userHomesNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, node.getParentId());
+        String userHomesId = node.getParentId();
 
         // /Company Home/User Homes/user<timestamp>/folder<timestamp>_A
         String folderA = "folder" + System.currentTimeMillis() + "_A";
         String folderA_Id = createFolder(user1, myFilesNodeId, folderA).getId();
-        NodeRef folderA_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderA_Id);
 
         // /Company Home/User Homes/user<timestamp>/folder<timestamp>_A/folder<timestamp>_B
         String folderB = "folder" + System.currentTimeMillis() + "_B";
         String folderB_Id = createFolder(user1, folderA_Id, folderB).getId();
-        NodeRef folderB_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderB_Id);
 
         // /Company Home/User Homes/user<timestamp>/folder<timestamp>_A/folder<timestamp>_B/content<timestamp>
-        String contentName = "content " + System.currentTimeMillis();
-        NodeRef contentNodeRef = repoService.createDocument(folderB_Ref, contentName, "The quick brown fox jumps over the lazy dog.");
-
-        // Add property
         String title = "test title";
-        repoService.getNodeService().setProperty(contentNodeRef, ContentModel.PROP_TITLE, title);
+        Map<String,String> docProps = new HashMap<>();
+        docProps.put("cm:title", title);
+        String contentName = "content " + System.currentTimeMillis();
+        String content1Id = createTextFile(user1, folderB_Id, contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps).getId();
+
 
         // get node info
-        response = getSingle(NodesEntityResource.class, user1, contentNodeRef.getId(), null, 200);
+        response = getSingle(NodesEntityResource.class, user1, content1Id, null, 200);
         Document documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         String content_Id = documentResp.getId();
 
@@ -619,25 +621,23 @@ public class NodeApiTest extends AbstractBaseApiTest
         d1.setParentId(folderB_Id);
         d1.setName(contentName);
         d1.setNodeType("cm:content");
+
         ContentInfo ci = new ContentInfo();
-
-        // TODO fix me !! (is this an issue with repoService.createDocument ?)
-        //ci.setMimeType("text/plain");
-        //ci.setMimeTypeName("Plain Text");
-        ci.setMimeType("application/octet-stream");
-        ci.setMimeTypeName("Binary File (Octet Stream)");
-
+        ci.setMimeType("text/plain");
+        ci.setMimeTypeName("Plain Text");
         ci.setSizeInBytes(44L);
         ci.setEncoding("UTF-8");
+
         d1.setContent(ci);
         d1.setCreatedByUser(expectedUser);
         d1.setModifiedByUser(expectedUser);
 
         Map<String,Object> props = new HashMap<>();
         props.put("cm:title",title);
+        props.put("cm:versionLabel","1.0");
 
         d1.setProperties(props);
-        d1.setAspectNames(Arrays.asList("cm:auditable","cm:titled"));
+        d1.setAspectNames(Arrays.asList("cm:auditable","cm:titled","cm:versionable","cm:author"));
 
         // Note: Path is not part of the default info
         d1.expected(documentResp);
@@ -645,17 +645,17 @@ public class NodeApiTest extends AbstractBaseApiTest
         // get node info + path
         //...nodes/nodeId?select=path
         Map<String, String> params = Collections.singletonMap("select", "path");
-        response = getSingle(NodesEntityResource.class, user1, contentNodeRef.getId(), params, 200);
+        response = getSingle(NodesEntityResource.class, user1, content1Id, params, 200);
         documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
 
         // Expected path ...
         // note: the pathInfo should only include the parents (not the requested node)
         List<ElementInfo> elements = new ArrayList<>(5);
         elements.add(new ElementInfo(companyHomeNodeRef, "Company Home"));
-        elements.add(new ElementInfo(userHomesNodeRef, "User Homes"));
-        elements.add(new ElementInfo(myHomeNodeRef, user1));
-        elements.add(new ElementInfo(folderA_Ref, folderA));
-        elements.add(new ElementInfo(folderB_Ref, folderB));
+        elements.add(new ElementInfo(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, userHomesId), "User Homes"));
+        elements.add(new ElementInfo(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myFilesNodeId), user1));
+        elements.add(new ElementInfo(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderA_Id), folderA));
+        elements.add(new ElementInfo(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderB_Id), folderB));
         PathInfo expectedPath = new PathInfo("/Company Home/User Homes/"+user1+"/"+folderA+"/"+folderB, true, elements);
         d1.setPath(expectedPath);
 
@@ -1023,40 +1023,33 @@ public class NodeApiTest extends AbstractBaseApiTest
     {
         long runId = System.currentTimeMillis();
 
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
         String myNodeId = getMyNodeId(user1);
-        NodeRef myFilesNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myNodeId);
 
-        NodeRef content1Ref = repoService.createDocument(myFilesNodeRef,
-                "content" + runId + "_1", "The quick brown fox jumps over the lazy dog.");
-        String content1Id = content1Ref.getId();
+        String content1Id = createTextFile(user1, myNodeId, "content" + runId + "_1", "The quick brown fox jumps over the lazy dog.").getId();
 
         // delete file
-        delete("nodes", user1, content1Ref.getId(), 204);
+        delete("nodes", user1, content1Id, 204);
 
-        assertTrue(existsArchiveNode(content1Id));
+        assertTrue(existsArchiveNode(user1, content1Id));
 
         // -ve test
-        delete("nodes", user1, content1Ref.getId(), 404);
+        delete("nodes", user1, content1Id, 404);
 
         String folder1Id = createFolder(user1, myNodeId, "folder " + runId + "_1").getId();
         String folder2Id = createFolder(user1, folder1Id, "folder " + runId + "_2").getId();
 
-        NodeRef content2Ref = repoService.createDocument(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder2Id),
-                "content " + runId + "_2", "The quick brown fox jumps over the lazy dog.");
-        String content2Id = content2Ref.getId();
+        String content2Id = createTextFile(user1, folder2Id, "content" + runId + "_2", "The quick brown fox jumps over the lazy dog.").getId();
 
         // cascade delete folder
         delete("nodes", user1, folder1Id, 204);
 
-        assertTrue(existsArchiveNode(folder1Id));
-        assertTrue(existsArchiveNode(folder2Id));
-        assertTrue(existsArchiveNode(content2Id));
+        assertTrue(existsArchiveNode(user1, folder1Id));
+        assertTrue(existsArchiveNode(user1, folder2Id));
+        assertTrue(existsArchiveNode(user1, content2Id));
 
         // -ve test
         delete("nodes", user1, folder2Id, 404);
-        delete("nodes", user1, content2Ref.getId(), 404);
+        delete("nodes", user1, content2Id, 404);
 
         // -ve test
         String rootNodeId = getRootNodeId(user1);
@@ -1072,18 +1065,16 @@ public class NodeApiTest extends AbstractBaseApiTest
         Map<String, String> params = Collections.singletonMap("permanent", "true");
         delete("nodes", user1, folder3Id, params, 204);
 
-        assertFalse(existsArchiveNode(folder3Id));
-        assertFalse(existsArchiveNode(folder4Id));
+        assertFalse(existsArchiveNode(user1, folder3Id));
+        assertFalse(existsArchiveNode(user1, folder4Id));
 
         String sharedNodeId = getSharedNodeId(user1);
         String folder5Id = createFolder(user1, sharedNodeId, "folder " + runId + "_5").getId();
 
-        AuthenticationUtil.setFullyAuthenticatedUser(user2);
 
         // -ve test - another user cannot delete
         delete("nodes", user2, folder5Id, 403);
 
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
         Map<String, Object> props = new HashMap<>();
         props.put(PROP_OWNER, user2);
@@ -1097,6 +1088,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         // -ve test - user1 can no longer delete
         delete("nodes", user1, folder5Id, 403);
 
+        // TODO refactor with remote permission api calls (use v0 until we have v1 ?)
         permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder5Id), user1, PermissionService.DELETE, true);
 
         // -ve test - non-owner cannot bypass trashcan
@@ -1116,12 +1108,20 @@ public class NodeApiTest extends AbstractBaseApiTest
         checkStatus(204, response.getStatusCode());
     }
 
-    private boolean existsArchiveNode(String nodeId)
+    private boolean existsArchiveNode(String userId, String nodeId)
     {
         // TODO replace with calls to future V1 REST API for Trashcan
-        NodeRef originalNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
-        NodeRef archiveNodeRef = nodeArchiveService.getArchivedNode(originalNodeRef);
-        return nodeService.exists(archiveNodeRef);
+        try
+        {
+            AuthenticationUtil.setFullyAuthenticatedUser(userId);
+            NodeRef originalNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
+            NodeRef archiveNodeRef = nodeArchiveService.getArchivedNode(originalNodeRef);
+            return nodeService.exists(archiveNodeRef);
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
     }
 
     /**
@@ -1132,8 +1132,6 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testMove() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
         // create folder f1
         Folder folderResp = createFolder(user1, Nodes.PATH_MY, "f1");
         String f1Id = folderResp.getId();
@@ -1143,16 +1141,12 @@ public class NodeApiTest extends AbstractBaseApiTest
         String f2Id = folderResp.getId();
 
         // create doc d1
-        NodeRef f1Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, f1Id);
         String d1Name = "content" + System.currentTimeMillis() + "_1";
-        NodeRef d1Ref = repoService.createDocument(f1Ref, d1Name, "The quick brown fox jumps over the lazy dog.");
-        String d1Id = d1Ref.getId();
+        String d1Id = createTextFile(user1, f1Id, d1Name, "The quick brown fox jumps over the lazy dog 1.").getId();
 
         // create doc d2
-        NodeRef f2Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, f2Id);
         String d2Name = "content" + System.currentTimeMillis() + "_2";
-        NodeRef d2Ref = repoService.createDocument(f2Ref, d2Name, "The quick brown fox jumps over the lazy dog 2.");
-        String d2Id = d2Ref.getId();
+        String d2Id = createTextFile(user1, f2Id, d2Name, "The quick brown fox jumps over the lazy dog 2.").getId();
 
         // move file (without rename)
 
@@ -1241,49 +1235,43 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testCopy() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
         // create folder
         Folder folderResp = createFolder(user1, Nodes.PATH_MY, "fsource");
-        String source = folderResp.getId();
-        NodeRef sourceRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, source);
+        String sourceId = folderResp.getId();
 
         // create folder
         folderResp = createFolder(user1, Nodes.PATH_MY, "ftarget");
-        String target = folderResp.getId();
-        NodeRef targetRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, target);
+        String targetId = folderResp.getId();
 
         // create doc d1
         String d1Name = "content" + System.currentTimeMillis() + "_1";
-        NodeRef d1Ref = repoService.createDocument(sourceRef, d1Name, "The quick brown fox jumps over the lazy dog.");
-        String d1Id = d1Ref.getId();
+        String d1Id = createTextFile(user1, sourceId, d1Name, "The quick brown fox jumps over the lazy dog 1.").getId();
 
         // create doc d2
         String d2Name = "content" + System.currentTimeMillis() + "_2";
-        NodeRef d2Ref = repoService.createDocument(sourceRef, d2Name, "The quick brown fox jumps over the lazy dog 2.");
-        String d2Id = d2Ref.getId();
+        String d2Id = createTextFile(user1, sourceId, d2Name, "The quick brown fox jumps over the lazy dog 2.").getId();
 
         Map<String, String> body = new HashMap<>();
-        body.put("targetParentId", target);
+        body.put("targetParentId", targetId);
 
         HttpResponse response = post(user1, "nodes", d1Id, "copy", toJsonAsStringNonNull(body).getBytes(), null, null, 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1Name, documentResp.getName());
-        assertEquals(target, documentResp.getParentId());
+        assertEquals(targetId, documentResp.getParentId());
 
         // copy file (with rename)
         String newD2Name = d2Name + " updated !!";
 
         body = new HashMap<>();
-        body.put("targetParentId", target);
+        body.put("targetParentId", targetId);
         body.put("name", newD2Name);
 
         response = post(user1, "nodes", d2Id, "copy", toJsonAsStringNonNull(body).getBytes(), null, null, 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(newD2Name, documentResp.getName());
-        assertEquals(target, documentResp.getParentId());
+        assertEquals(targetId, documentResp.getParentId());
 
         // -ve tests
 
@@ -1295,12 +1283,12 @@ public class NodeApiTest extends AbstractBaseApiTest
         // name already exists
         tgt = new NodeTarget();
         tgt.setName(newD2Name);
-        tgt.setTargetParentId(target);
+        tgt.setTargetParentId(targetId);
         post("nodes/"+d1Id+"/copy", user1, toJsonAsStringNonNull(tgt), null, 409);
 
         // unknown source nodeId
         tgt = new NodeTarget();
-        tgt.setTargetParentId(target);
+        tgt.setTargetParentId(targetId);
         post("nodes/"+UUID.randomUUID().toString()+"/copy", user1, toJsonAsStringNonNull(tgt), null, 404);
 
         // unknown target nodeId
@@ -1942,8 +1930,6 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testUpdateOwner() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(user1);
-
         // create folder f1
         String folderName = "f1 "+System.currentTimeMillis();
         Folder folderResp = createFolder(user1, Nodes.PATH_SHARED, folderName);
@@ -1963,16 +1949,16 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(user1, ((Map)folderResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // create doc d1
-        NodeRef f1Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, f1Id);
         String d1Name = "content1 " + System.currentTimeMillis();
-        NodeRef d1Ref = repoService.createDocument(f1Ref, d1Name, "The quick brown fox jumps over the lazy dog.");
-        String d1Id = d1Ref.getId();
+        String d1Id = createTextFile(user1, f1Id, d1Name, "The quick brown fox jumps over the lazy dog.").getId();
 
         // get node info
         response = getSingle(NodesEntityResource.class, user1, d1Id, null, 200);
         Document documentResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
 
-        assertNull(user1, documentResp.getProperties()); // owner is implied
+        // note: owner is implied
+        assertEquals(1, documentResp.getProperties().size());
+        assertEquals("1.0", documentResp.getProperties().get("cm:versionLabel"));
 
         props = new HashMap<>();
         props.put(PROP_OWNER, user1);

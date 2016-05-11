@@ -1285,7 +1285,7 @@ public class NodesImpl implements Nodes
         }
 
         // check that requested parent node exists and it's type is a (sub-)type of folder
-        final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
+        NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
 
         if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
         {
@@ -1323,7 +1323,7 @@ public class NodesImpl implements Nodes
         }
 
         // Existing file/folder name handling
-        final boolean autoRename = Boolean.valueOf(parameters.getParameter(PARAM_AUTO_RENAME));
+        boolean autoRename = Boolean.valueOf(parameters.getParameter(PARAM_AUTO_RENAME));
         if (autoRename && (isContent || isSubClass(nodeTypeQName, ContentModel.TYPE_FOLDER)))
         {
             NodeRef existingNode = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, nodeName);
@@ -1333,6 +1333,9 @@ public class NodesImpl implements Nodes
                 nodeName = findUniqueName(parentNodeRef, nodeName);
             }
         }
+
+        String relativePath = nodeInfo.getRelativePath();
+        parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
 
         // Create the node
         NodeRef nodeRef = createNodeImpl(parentNodeRef, nodeName, nodeTypeQName, props);
@@ -1362,6 +1365,23 @@ public class NodesImpl implements Nodes
         }
 
         return getFolderOrDocument(nodeRef.getId(), parameters);
+    }
+
+    private NodeRef getOrCreatePath(NodeRef parentNodeRef, String relativePath)
+    {
+        if (relativePath != null)
+        {
+            List<String> pathElements = getPathElements(relativePath);
+
+            // Checks for the presence of, and creates as necessary,
+            // the folder structure in the provided path elements list.
+            if (pathElements != null && !pathElements.isEmpty())
+            {
+                parentNodeRef = makeFolders(parentNodeRef, pathElements);
+            }
+        }
+
+        return parentNodeRef;
     }
 
     private NodeRef createNodeImpl(NodeRef parentNodeRef, String nodeName, QName nodeTypeQName, Map<QName, Serializable> props)
@@ -1842,7 +1862,7 @@ public class NodesImpl implements Nodes
         boolean overwrite = false; // If a fileName clashes for a versionable file
         Boolean majorVersion = null;
         String versionComment = null;
-        List<String> pathElements = null;
+        String relativePath = null;
         Map<String, Object> qnameStrProps = new HashMap<>();
         Map<QName, Serializable> properties = null;
 
@@ -1887,7 +1907,7 @@ public class NodesImpl implements Nodes
                     break;
 
                 case "relativepath":
-                    pathElements = getPathElements(getStringOrNull(field.getValue()));
+                    relativePath = getStringOrNull(field.getValue());
                     break;
 
                 default:
@@ -1919,12 +1939,8 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("Both 'overwrite' and 'autoRename' should not be true when uploading a file");
         }
 
-        // Checks for the presence of, and creates as necessary,
-        // the folder structure in the provided path elements list.
-        if (pathElements != null && !pathElements.isEmpty())
-        {
-            parentNodeRef = makeFolders(parentNodeRef, pathElements);
-        }
+        // if requested, make (get or create) path
+        parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
 
         try
         {
@@ -1945,6 +1961,8 @@ public class NodesImpl implements Nodes
                 {
                     // attempt to find a unique name
                     fileName = findUniqueName(parentNodeRef, fileName);
+
+                    // drop-through !
                 }
                 else if (overwrite && nodeService.hasAspect(existingFile, ContentModel.ASPECT_VERSIONABLE))
                 {
@@ -1994,9 +2012,6 @@ public class NodesImpl implements Nodes
         }
     }
 
-    /**
-     * Helper to create a new node and writes its content to the repository.
-     */
     private Node createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, Parameters params)
     {
         if (nodeType == null)

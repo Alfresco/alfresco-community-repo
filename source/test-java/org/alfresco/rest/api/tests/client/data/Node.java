@@ -37,6 +37,8 @@ import static org.junit.Assert.assertTrue;
 /**
  * Representation of a node - initially for client tests for Nodes (aka File Folder) API
  *
+ * TODO push null check down into AssertUtil (making sure that no other existing tests break)
+ *
  * @author janv
  */
 public class Node
@@ -64,6 +66,8 @@ public class Node
     protected ContentInfo contentInfo;
 
     protected List<String> allowableOperations;
+
+    protected String relativePath; // optionally used in create node request
 
     public Node()
     {
@@ -219,6 +223,16 @@ public class Node
         this.allowableOperations = allowableOperations;
     }
 
+    public String getRelativePath()
+    {
+        return relativePath;
+    }
+
+    public void setRelativePath(String relativePath)
+    {
+        this.relativePath = relativePath;
+    }
+
     public void expected(Object o)
     {
         Node other = (Node) o;
@@ -335,6 +349,15 @@ public class Node
         else
         {
             assertNull(other.getAllowableOperations());
+        }
+
+        if (relativePath != null)
+        {
+            assertEquals(relativePath, other.getRelativePath());
+        }
+        else
+        {
+            assertNull(other.getRelativePath());
         }
     }
 }

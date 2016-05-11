@@ -71,6 +71,9 @@ public class Node implements Comparable<Node>
     protected PathInfo pathInfo;
     protected String prefixTypeQName;
 
+    // note: currently only used for create request
+    protected String relativePath;
+
     protected List<String> aspectNames;
     protected Map<String, Object> properties;
 
@@ -297,6 +300,16 @@ public class Node implements Comparable<Node>
         this.allowableOperations = allowableOperations;
     }
 
+    public String getRelativePath()
+    {
+        return relativePath;
+    }
+
+    public void setRelativePath(String relativePath)
+    {
+        this.relativePath = relativePath;
+    }
+
     public boolean equals(Object other)
     {
         if(this == other)
@@ -329,16 +342,38 @@ public class Node implements Comparable<Node>
         sb.append(", name=").append(getName());
         sb.append(", isFolder=").append(getIsFolder());
         sb.append(", isFile=").append(getIsFile());
-        sb.append(", isLink=").append(getIsLink()); // note: symbolic link (not shared link)
         sb.append(", modifiedAt=").append(getModifiedAt());
         sb.append(", modifiedByUser=").append(getModifiedByUser());
         sb.append(", createdAt=").append(getCreatedAt());
         sb.append(", createdByUser=").append(getCreatedByUser());
-        sb.append(", path=").append(getPath());
-        sb.append(", content=").append(getContent());
-        sb.append(", aspectNames=").append(getAspectNames());
-        //sb.append(", properties=").append(getProperties());
-        sb.append(", allowableOperations=").append(getAllowableOperations());
+        if (getIsLink() != null)
+        {
+            sb.append(", isLink=").append(getIsLink()); // note: symbolic link (not shared link)
+        }
+        if (getPath() != null)
+        {
+            sb.append(", path=").append(getPath());
+        }
+        if (getContent() != null)
+        {
+            sb.append(", content=").append(getContent());
+        }
+        if (getAspectNames() != null)
+        {
+            sb.append(", aspectNames=").append(getAspectNames());
+        }
+        if (getProperties() != null)
+        {
+            //sb.append(", properties=").append(getProperties());
+        }
+        if (getRelativePath() != null)
+        {
+            sb.append(", relativePath=").append(getRelativePath());
+        }
+        if (getAllowableOperations() != null)
+        {
+            sb.append(", allowableOperations=").append(getAllowableOperations());
+        }
         sb.append("]");
         return sb.toString();
     }

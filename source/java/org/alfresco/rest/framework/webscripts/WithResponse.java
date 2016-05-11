@@ -3,7 +3,10 @@ package org.alfresco.rest.framework.webscripts;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.springframework.extensions.webscripts.Cache;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -17,7 +20,7 @@ public class WithResponse
 {
     private ContentInfo contentInfo;
     private int status;
-    private Map<String, String> headers;
+    private Map<String, List<String>> headers;
     private Cache cache;
 
     public WithResponse(int status, ContentInfo contentInfo, Cache cache)
@@ -57,7 +60,27 @@ public class WithResponse
      */
     public void setHeader(String name, String value)
     {
-        headers.put(name, value);
+        headers.put(name, new ArrayList<String>(Arrays.asList(value)));
+    }
+
+    /**
+     * Adds a response header with the given name and value.  This method
+     * allows a response header to have multiple values.
+     *
+     * @param name  header name
+     * @param value  header value
+     */
+    public void addHeader(String name, String value)
+    {
+        List<String> existing = headers.get(name);
+        if (existing != null)
+        {
+            existing.add(value);
+        }
+        else
+        {
+            setHeader(name, value);
+        }
     }
 
     /**
@@ -85,10 +108,9 @@ public class WithResponse
         return cache;
     }
 
-    public Map<String, String> getHeaders()
+    public Map<String, List<String>> getHeaders()
     {
         return headers;
     }
-
 
 }

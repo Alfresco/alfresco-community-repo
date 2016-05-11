@@ -27,8 +27,12 @@ package org.alfresco.rest.framework.webscripts;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.web.scripts.content.ContentStreamer;
@@ -134,6 +138,10 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
             }
 
         }
+        catch (IntegrityException intException)
+        {
+            renderErrorResponse(resolveException(intException), res);
+        }
         catch (ApiException apiException)
         {
             renderErrorResponse(resolveException(apiException), res);
@@ -204,17 +212,39 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     /**
      * The response status must be set before the response is written by Jackson (which will by default close and commit the response).
      * In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important.
+     *
+     * If you set content information via the contentInfo object and ALSO the headers then "headers" will win because they are
+     * set last.
+     *
      * @param res
      * @param status
      * @param cache
      * @param contentInfo
      * @param headers
      */
-    protected void setResponse(final WebScriptResponse res, int status, Cache cache, ContentInfo contentInfo, Map<String, String> headers)
+    public void setResponse(final WebScriptResponse res, int status, Cache cache, ContentInfo contentInfo,  Map<String, List<String>> headers)
     {
         res.setStatus(status);
-        res.setCache(cache);
+        if (cache != null) res.setCache(cache);
         setContentInfoOnResponse(res,contentInfo);
+        if (headers != null && !headers.isEmpty())
+        {
+            for (Map.Entry<String, List<String>> header:headers.entrySet())
+            {
+                for (int i=0; i < header.getValue().size(); i++) {
+                    if (i==0)
+                    {
+                        //If its the first one then set the header overwriting.
+                        res.setHeader(header.getKey(), header.getValue().get(i));
+                    }
+                    else
+                    {
+                        //If its not the first one than update the header
+                        res.addHeader(header.getKey(), header.getValue().get(i));
+                    }
+                }
+            }
+        }
     }
 
     protected void setResponse(final WebScriptResponse res, WithResponse withResponse)

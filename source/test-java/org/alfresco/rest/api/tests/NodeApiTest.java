@@ -196,7 +196,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         repoService.addToDocumentLibrary(userOneN1Site, folder2, ContentModel.TYPE_FOLDER);
 
         String content1 = "content" + System.currentTimeMillis() + "_1";
-        NodeRef contentNodeRef = repoService.addToDocumentLibrary(userOneN1Site, content1, ContentModel.TYPE_CONTENT);
+        repoService.addToDocumentLibrary(userOneN1Site, content1, ContentModel.TYPE_CONTENT);
 
         String content2 = "content" + System.currentTimeMillis() + "_2";
         repoService.addToDocumentLibrary(userOneN1Site, content2, ContentModel.TYPE_CONTENT);
@@ -1256,14 +1256,19 @@ public class NodeApiTest extends AbstractBaseApiTest
         f1.setNodeType("app:glossary");
         f1.expected(folderResp);
 
-        // -ve test - ignore unknown property
+        // -ve test - fail on unknown property
         props = new HashMap<>();
         props.put("cm:xyz","my unknown property");
         dUpdate = new Document();
         dUpdate.setProperties(props);
-        response = put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
-        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-        d1.expected(documentResp);
+        put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 400);
+        
+        // -ve test - fail on unknown aspect
+        List<String> aspects = new ArrayList<>(d1.getAspectNames());
+        aspects.add("cm:unknownAspect");
+        dUpdate = new Document();
+        dUpdate.setAspectNames(aspects);
+        put("nodes", user1, dId, toJsonAsStringNonNull(dUpdate), null, 400);
 
         // -ve test - duplicate name
         dUpdate = new Document();

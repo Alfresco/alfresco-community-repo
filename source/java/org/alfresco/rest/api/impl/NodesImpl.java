@@ -104,6 +104,7 @@ import org.alfresco.service.cmr.repository.Path.Element;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.usage.ContentQuotaException;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.namespace.NamespaceService;
@@ -157,6 +158,7 @@ public class NodesImpl implements Nodes
     private ContentService contentService;
     private ActionService actionService;
     private VersionService versionService;
+    private PersonService personService;
 
     // note: circular - Nodes/QuickShareLinks currently use each other (albeit for different methods)
     private QuickShareLinks quickShareLinks;
@@ -186,6 +188,7 @@ public class NodesImpl implements Nodes
         this.contentService = sr.getContentService();
         this.actionService = sr.getActionService();
         this.versionService = sr.getVersionService();
+        this.personService = sr.getPersonService();
 
         if (defaultIgnoreTypesAndAspects != null)
         {
@@ -1178,6 +1181,8 @@ public class NodesImpl implements Nodes
         }
         props.put(ContentModel.PROP_NAME, nodeName);
 
+        validatePropValues(props);
+
         QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
         try
         {
@@ -1201,6 +1206,20 @@ public class NodesImpl implements Nodes
         if (isSubClass(nodeTypeQName, ContentModel.TYPE_SYSTEM_FOLDER))
         {
             throw new InvalidArgumentException("Invalid type: " + nodeTypeQName + " - cannot be (sub-)type of cm:systemfolder");
+        }
+    }
+
+    // special cases: additional validation of property values (if not done by underlying foundation services)
+    private void validatePropValues(Map<QName, Serializable> props)
+    {
+        String newOwner = (String)props.get(ContentModel.PROP_OWNER);
+        if (newOwner != null)
+        {
+            // validate that user exists
+            if (! personService.personExists(newOwner))
+            {
+                throw new InvalidArgumentException("Unknown owner: "+newOwner);
+            }
         }
     }
 
@@ -1334,6 +1353,8 @@ public class NodesImpl implements Nodes
 
         if (props.size() > 0)
         {
+            validatePropValues(props);
+
             try
             {
                 // update node properties - note: null will unset the specified property

@@ -41,6 +41,8 @@ import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.apache.chemistry.opencmis.commons.data.PropertyData;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * Concrete class carrying general information for <b>alf_node</b> data
@@ -51,6 +53,8 @@ import org.apache.chemistry.opencmis.commons.data.PropertyData;
  */
 public class Node implements Comparable<Node>
 {
+    private static final Log logger = LogFactory.getLog(Node.class);
+
     protected NodeRef nodeRef;
     protected String name;
 
@@ -123,14 +127,27 @@ public class Node implements Comparable<Node>
             }
             else
             {
+                PersonService.PersonInfo pInfo = null;
                 try
                 {
-                    PersonService.PersonInfo pInfo = personService.getPerson(personService.getPerson(userName));
-                    userInfo = new UserInfo(userName, pInfo.getFirstName(), pInfo.getLastName());
+                    NodeRef pNodeRef = personService.getPerson(userName, false);
+                    if (pNodeRef != null)
+                    {
+                        pInfo = personService.getPerson(pNodeRef);
+                    }
                 }
                 catch (NoSuchPersonException nspe)
                 {
-                    // belts-and-braces (seen in dev/test env, eg. userName = Bobd58ba329-b702-41ee-a9ae-2b3c7029b5bc
+                    // drop-through
+                }
+
+                if (pInfo != null)
+                {
+                    userInfo = new UserInfo(userName, pInfo.getFirstName(), pInfo.getLastName());
+                }
+                else
+                {
+                    logger.warn("Unknown person: "+userName);
                     userInfo = new UserInfo(userName, userName, "");
                 }
 

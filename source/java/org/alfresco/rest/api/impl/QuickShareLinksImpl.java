@@ -125,11 +125,20 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
      * <p>
      * Note: does *not* require authenticated access for (public) shared link.
      */
-    public QuickShareLink readById(String sharedId, Parameters parameters)
+    public QuickShareLink readById(final String sharedId, Parameters parameters)
     {
         checkEnabled();
 
-        return getQuickShareInfo(sharedId);
+        Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
+        String networkTenantDomain = pair.getFirst();
+
+        return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<QuickShareLink>()
+        {
+            public QuickShareLink doWork() throws Exception
+            {
+                return getQuickShareInfo(sharedId);
+            }
+        }, networkTenantDomain);
     }
 
     /**
@@ -254,6 +263,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             {
                 // Note: this throws AccessDeniedException (=> 403) via QuickShareService (when NodeService tries to getAspects)
                 QuickShareDTO qsDto = quickShareService.shareContent(nodeRef);
+
                 result.add(getQuickShareInfo(qsDto.getId()));
             }
             catch (AccessDeniedException ade)

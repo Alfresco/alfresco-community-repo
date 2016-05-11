@@ -70,6 +70,7 @@ import org.springframework.util.ReflectionUtils;
  * Looks at resources to see what they can do
  * 
  * @author Gethin James
+ * @author janv
  */
 public class ResourceInspector
 {
@@ -125,7 +126,12 @@ public class ResourceInspector
         findOperation(MultiPartResourceAction.Create.class,   HttpMethod.POST, helper);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
-        Set<Class<? extends ResourceAction>> apiNoAuth = (noAuth ? ALL_ENTITY_RESOURCE_INTERFACES : helper.apiNoAuth);
+        if (noAuth)
+        {
+            throw new IllegalArgumentException("@WebApiNoAuth should not be on all (entity resource class) - only on individual methods: "+urlPath);
+        }
+
+        Set<Class<? extends ResourceAction>> apiNoAuth = helper.apiNoAuth;
 
         if (resource.isAnnotationPresent(WebApiDeleted.class))
         {
@@ -164,7 +170,12 @@ public class ResourceInspector
         findOperation(BinaryResourceAction.Update.class, HttpMethod.PUT, helperForAddressProps);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
-        Set<Class<? extends ResourceAction>> apiNoAuth = (noAuth ? ALL_PROPERTY_RESOURCE_INTERFACES : helperForAddressProps.apiNoAuth);
+        if (noAuth)
+        {
+            throw new IllegalArgumentException("@WebApiNoAuth should not be on all (address properties) - only on individual methods: "+entityPath);
+        }
+
+        Set<Class<? extends ResourceAction>> apiNoAuth = helperForAddressProps.apiNoAuth;
 
         if (resource.isAnnotationPresent(WebApiDeleted.class))
         {
@@ -202,7 +213,12 @@ public class ResourceInspector
         findOperation(MultiPartRelationshipResourceAction.Create.class, HttpMethod.POST, helper);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
-        Set<Class<? extends ResourceAction>> apiNoAuth = (noAuth ? ALL_RELATIONSHIP_RESOURCE_INTERFACES : helper.apiNoAuth);
+        if (noAuth)
+        {
+            throw new IllegalArgumentException("@WebApiNoAuth should not be on all (relationship resource class) - only on methods: "+urlPath);
+        }
+
+        Set<Class<? extends ResourceAction>> apiNoAuth = helper.apiNoAuth;
 
         if (resource.isAnnotationPresent(WebApiDeleted.class))
         {
@@ -239,6 +255,10 @@ public class ResourceInspector
 
             if (isNoAuth(aMethod))
             {
+                if (! httpMethod.equals(HttpMethod.GET))
+                {
+                    throw new IllegalArgumentException("@WebApiNoAuth should only be on GET methods: "+operation.getTitle());
+                }
                 helper.whenOperationNoAuth(resourceInterfaceWithOneMethod, aMethod);
             }
         }

@@ -335,6 +335,16 @@ public class NodesImpl implements Nodes
         return nodeMatches(nodeRef, expectedTypes, excludedTypes, true);
     }
 
+    @Override
+    public boolean isSubClass(NodeRef nodeRef, QName ofClassQName, boolean validateNodeRef)
+    {
+        if (validateNodeRef)
+        {
+            nodeRef = validateNode(nodeRef);
+        }
+        return isSubClass(getNodeType(nodeRef), ofClassQName);
+    }
+
     private boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes, boolean existsCheck)
     {
         if (existsCheck && (! nodeService.exists(nodeRef)))

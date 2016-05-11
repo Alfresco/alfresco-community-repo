@@ -22,11 +22,18 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.node.archive.ArchivedNodesCannedQueryBuilder;
+import org.alfresco.repo.node.archive.RestoreNodeReport;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.framework.core.exceptions.ApiException;
+import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.ServiceRegistry;
@@ -127,5 +134,30 @@ public class DeletedNodesImpl implements DeletedNodes
         Node foundNode = nodes.getFolderOrDocumentFullInfo(archivedNodeRef, null, null, parameters, null);
         if (foundNode != null) mapArchiveInfo(foundNode,null);
         return foundNode;
+    }
+
+    @Override
+    public Node restoreArchivedNode(String archivedId)
+    {
+        //First check the node is valid and has been archived.
+        NodeRef validatedNodeRef = nodes.validateNode(StoreRef.STORE_REF_ARCHIVE_SPACESSTORE, archivedId);
+        RestoreNodeReport restored = nodeArchiveService.restoreArchivedNode(validatedNodeRef);
+        switch (restored.getStatus())
+        {
+            case SUCCESS:
+                return nodes.getFolderOrDocumentFullInfo(restored.getRestoredNodeRef(), null, null, null, null);
+            case FAILURE_PERMISSION:
+                throw new PermissionDeniedException();
+            case FAILURE_INTEGRITY:
+                throw new IntegrityException("Restore failed due to an integrity error", null);
+            case FAILURE_DUPLICATE_CHILD_NODE_NAME:
+                throw new ConstraintViolatedException("Name already exists in target");
+            case FAILURE_INVALID_ARCHIVE_NODE:
+                throw new EntityNotFoundException(archivedId);
+            case FAILURE_INVALID_PARENT:
+                throw new NotFoundException("Invalid parent id "+restored.getTargetParentNodeRef());
+            default:
+                throw new ApiException("Unable to restore node "+archivedId);
+        }
     }
 }

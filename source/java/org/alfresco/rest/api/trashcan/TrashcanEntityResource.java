@@ -27,11 +27,15 @@ import org.alfresco.rest.api.DeletedNodes;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.impl.Util;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.NodeTarget;
+import org.alfresco.rest.framework.Operation;
+import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -65,5 +69,12 @@ public class TrashcanEntityResource implements
     public Node readById(String id, Parameters parameters) throws EntityNotFoundException
     {
         return deletedNodes.getDeletedNode(id, parameters);
+    }
+
+    @Operation("restore")
+    @WebApiDescription(title = "Restore deleted Node", description="Restores an archived node")
+    public Node restoreDeletedNode(String nodeId, Void ignored, Parameters parameters, WithResponse withResponse)
+    {
+        return deletedNodes.restoreArchivedNode(nodeId);
     }
 }

@@ -23,6 +23,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import com.google.common.collect.Ordering;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -165,11 +166,8 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertEquals(3, expectedPaging.getMaxItems().intValue());
         assertTrue(expectedPaging.getTotalItems() >= 5);
 
-        // Create rendition
-        Rendition renditionRequest = new Rendition();
-        renditionRequest.setId(docLib.getId());
-        // FIXME the response status code should be changed to 202 when we fix the fwk
-        post(getRenditionsUrl(contentNodeId), userOneN1.getId(), RestApiUtil.toJsonAsString(renditionRequest), 201);
+        // Create 'doclib' rendition
+        createRendition(contentNodeId, docLib.getId());
 
         // This should be long enough for compensating the action to run.
         Thread.sleep(3000);
@@ -201,11 +199,83 @@ public class RenditionsTest extends AbstractBaseApiTest
         docLib = getRendition(renditions, "doclib");
         assertNull("'doclib' rendition has already been created.", docLib);
 
+        // Test returned renditions are ordered (natural sort order)
+        // List all renditions
+        response = getAll(getRenditionsUrl(contentNodeId), userOneN1.getId(), paging, params, 200);
+        renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+        assertTrue(Ordering.natural().isOrdered(renditions));
+        // Try again to make sure the ordering wasn't coincidental
+        response = getAll(getRenditionsUrl(contentNodeId), userOneN1.getId(), paging, params, 200);
+        renditions = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Rendition.class);
+        assertTrue(Ordering.natural().isOrdered(renditions));
+
         // nodeId in the path parameter does not represent a file
         getAll(getRenditionsUrl(folder_Id), userOneN1.getId(), paging, params, 400);
 
         // nodeId in the path parameter does not exist
         getAll(getRenditionsUrl(UUID.randomUUID().toString()), userOneN1.getId(), paging, params, 404);
+    }
+
+    /**
+     * Tests get node rendition.
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/renditions/<renditionId>}
+     */
+    @Test
+    public void testGetNodeRendition() throws Exception
+    {
+        // Create a folder within the site document's library
+        String folderName = "folder" + System.currentTimeMillis();
+        String folder_Id = addNode(userOneN1Site, folderName, ContentModel.TYPE_FOLDER, userOneN1.getId());
+
+        // Create multipart request
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF));
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        // Upload quick.pdf file into 'folder'
+        HttpResponse response = post("nodes/" + folder_Id + "/children", userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String contentNodeId = document.getId();
+
+        // Get rendition (not created yet) information for node
+        response = getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib", 200);
+        Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
+        assertNotNull(rendition);
+        assertEquals(RenditionStatus.NOT_CREATED, rendition.getStatus());
+        ContentInfo contentInfo = rendition.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, contentInfo.getMimeType());
+        assertEquals("PNG Image", contentInfo.getMimeTypeName());
+        assertNull("Shouldn't have returned the encoding, as the rendition hasn't been created yet.", contentInfo.getEncoding());
+        assertNull("Shouldn't have returned the size, as the rendition hasn't been created yet.", contentInfo.getSizeInBytes());
+
+        // Create 'doclib' rendition
+        createRendition(contentNodeId, "doclib");
+
+        // This should be long enough for compensating the action to run.
+        Thread.sleep(3000);
+        // Get rendition information for node
+        response = getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib", 200);
+        rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
+        assertNotNull(rendition);
+        assertEquals(RenditionStatus.CREATED, rendition.getStatus());
+        contentInfo = rendition.getContent();
+        assertNotNull(contentInfo);
+        assertEquals(MimetypeMap.MIMETYPE_IMAGE_PNG, contentInfo.getMimeType());
+        assertEquals("PNG Image", contentInfo.getMimeTypeName());
+        assertNotNull(contentInfo.getEncoding());
+        assertTrue(contentInfo.getSizeInBytes() > 0);
+
+        // nodeId in the path parameter does not represent a file
+        getSingle(getRenditionsUrl(folder_Id), userOneN1.getId(), "doclib", 400);
+
+        // nodeId in the path parameter does not exist
+        getSingle(getRenditionsUrl(UUID.randomUUID().toString()), userOneN1.getId(), "doclib", 404);
+
+        // renditionId in the path parameter is not registered/available
+        getSingle(getRenditionsUrl(contentNodeId), userOneN1.getId(), ("renditionId" + System.currentTimeMillis()), 404);
     }
 
     private String addNode(final TestSite testSite, final String name, final QName type, String user)
@@ -218,6 +288,14 @@ public class RenditionsTest extends AbstractBaseApiTest
                 return repoService.addToDocumentLibrary(testSite, name, type).getId();
             }
         }, user, testSite.getNetworkId());
+    }
+
+    private void createRendition(String sourceNodeId, String renditionId) throws Exception
+    {
+        Rendition renditionRequest = new Rendition();
+        renditionRequest.setId(renditionId);
+        // FIXME the response status code should be changed to 202 when we fix the fwk
+        post(getRenditionsUrl(sourceNodeId), userOneN1.getId(), RestApiUtil.toJsonAsString(renditionRequest), 201);
     }
 
     private Rendition getRendition(List<Rendition> renditions, String renditionName)

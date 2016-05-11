@@ -288,11 +288,13 @@ public class NodesImpl implements Nodes
      *
      * Note: assumes workspace://SpacesStore
      */
+    @Override
     public NodeRef validateNode(String nodeId)
     {
         return validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
     }
 
+    @Override
     public NodeRef validateNode(StoreRef storeRef, String nodeId)
     {
         String versionLabel = null;
@@ -313,6 +315,7 @@ public class NodesImpl implements Nodes
         return validateNode(nodeRef);
     }
 
+    @Override
     public NodeRef validateNode(NodeRef nodeRef)
     {
         if (!nodeService.exists(nodeRef))
@@ -326,6 +329,7 @@ public class NodesImpl implements Nodes
     /*
      * Check that nodes exists and matches given expected/excluded type(s).
      */
+    @Override
     public boolean nodeMatches(NodeRef nodeRef, Set<QName> expectedTypes, Set<QName> excludedTypes)
     {
         return nodeMatches(nodeRef, expectedTypes, excludedTypes, true);
@@ -386,6 +390,7 @@ public class NodesImpl implements Nodes
     /**
      * @deprecated review usage (backward compat')
      */
+    @Override
     public Node getNode(String nodeId)
     {
         NodeRef nodeRef = validateNode(nodeId);
@@ -466,6 +471,7 @@ public class NodesImpl implements Nodes
     /**
      * @deprecated note: currently required for backwards compat' (Favourites API)
      */
+    @Override
     public Document getDocument(NodeRef nodeRef)
     {
         Type type = getType(nodeRef);
@@ -504,6 +510,7 @@ public class NodesImpl implements Nodes
     /**
      * @deprecated note: currently required for backwards compat' (Favourites API)
      */
+    @Override
     public Folder getFolder(NodeRef nodeRef)
     {
         Type type = getType(nodeRef);
@@ -641,6 +648,7 @@ public class NodesImpl implements Nodes
         return fileInfo.getNodeRef();
     }
 
+    @Override
     public Node getFolderOrDocument(String nodeId, Parameters parameters)
     {
         String path = parameters.getParameter(PARAM_RELATIVE_PATH);
@@ -904,6 +912,7 @@ public class NodesImpl implements Nodes
         return aspectNames;
     }
 
+    @Override
     public CollectionWithPagingInfo<Node> listChildren(String parentFolderNodeId, Parameters parameters)
     {
         String path = parameters.getParameter(PARAM_RELATIVE_PATH);
@@ -1113,6 +1122,7 @@ public class NodesImpl implements Nodes
         return ignoreQNameAspects;
     }
 
+    @Override
     public void deleteNode(String nodeId)
     {
         NodeRef nodeRef = validateNode(nodeId);
@@ -1120,6 +1130,7 @@ public class NodesImpl implements Nodes
     }
 
     // TODO should we able to specify content properties (eg. mimeType ... or use extension for now, or encoding)
+    @Override
     public Node createNode(String parentFolderNodeId, Node nodeInfo, Parameters parameters)
     {
         if (nodeInfo.getNodeRef() != null)
@@ -1257,6 +1268,7 @@ public class NodesImpl implements Nodes
         }
     }
 
+    @Override
     public Node updateNode(String nodeId, Node nodeInfo, Parameters parameters)
     {
         final NodeRef nodeRef = validateNode(nodeId);
@@ -1403,6 +1415,7 @@ public class NodesImpl implements Nodes
         return getFolderOrDocument(nodeRef.getId(), parameters);
     }
 
+    @Override
     public Node moveOrCopyNode(String sourceNodeId, String targetParentId, String name, Parameters parameters, boolean isCopy)
     {
         if ((sourceNodeId == null) || (sourceNodeId.isEmpty()))

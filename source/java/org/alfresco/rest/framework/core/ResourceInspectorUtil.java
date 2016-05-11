@@ -31,8 +31,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.alfresco.rest.framework.Action;
-import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.Operation;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.BridgeMethodResolver;
@@ -61,13 +60,14 @@ public class ResourceInspectorUtil
 
         /*
         * The api is consistent that the object passed in must match the object passed out
-        * however, actions are different, they don't even need a param, and if its supplied
-        * then it doesn't have to match.  So we need special logic for actions
+        * however, operations are different, if the param is supplied  it doesn't have to match
+        * the return type.
+        * So we need special logic for operations
          */
-        Annotation annot = AnnotationUtils.findAnnotation(resolvedMethod, Action.class);
+        Annotation annot = AnnotationUtils.findAnnotation(resolvedMethod, Operation.class);
         if (annot != null)
         {
-            return determinActionType(resource, method);
+            return determineOperationType(resource, method);
         }
         else
         {
@@ -80,16 +80,16 @@ public class ResourceInspectorUtil
         }
     }
 
-    protected static Class determinActionType(Class resource, Method method)
+    protected static Class determineOperationType(Class resource, Method method)
     {
-        //Its an Action annotated method and its a bit special
+        //Its an operation annotated method and its a bit special
         Class<?>[] paramTypes = method.getParameterTypes();
         if (paramTypes!= null)
         {
             switch (paramTypes.length)
             {
                 case 3:
-                    //EntityResource action by id, same logic as RelationshipEntityResource action by id
+                    //EntityResource operation by id, same logic as RelationshipEntityResource operation by id
                 case 4:
                 int position = paramTypes.length-2;
                 if (Void.class.equals(paramTypes[position]))
@@ -103,7 +103,7 @@ public class ResourceInspectorUtil
             }
         }
 
-        throw new IllegalArgumentException("An action method signature should have 3 parameters (uniqueId, typePassedin, Parameters)," +
+        throw new IllegalArgumentException("An operation method signature should have 3 parameters (uniqueId, typePassedin, Parameters)," +
                 " use Void if you are not interested in the second argument.");
     }
 

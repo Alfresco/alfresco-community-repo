@@ -25,7 +25,7 @@
  */
 package org.alfresco.rest.framework.tests.api.mocks;
 
-import org.alfresco.rest.framework.Action;
+import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.ResourceParameter;
@@ -44,12 +44,12 @@ public class GrassEntityResource implements EntityResourceAction.ReadById<Grass>
         return new Grass(id);
     }
 
-    @Action("cut")
+    @Operation("cut")
     public String cutLawn(String id, Void notused, Parameters parameters) {
         return "All done";
     }
 
-    @Action("grow")
+    @Operation("grow")
     @WebApiDescription(title = "Grow the grass")
     @WebApiParam(name = "Grass", title = "The grass.",required=true, kind = ResourceParameter.KIND.HTTP_BODY_OBJECT)
     public String growTheLawn(String id, Grass grass, Parameters parameters) {

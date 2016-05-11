@@ -32,11 +32,9 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -172,7 +170,7 @@ public class ResourceLocatorTests
 
         collResource = locator.locateResource(api, templateVars, HttpMethod.POST);
         assertEquals(GrassEntityResource.class, collResource.getResource().getClass());
-        assertEquals(ResourceMetadata.RESOURCE_TYPE.ACTION, collResource.getMetaData().getType());
+        assertEquals(ResourceMetadata.RESOURCE_TYPE.OPERATION, collResource.getMetaData().getType());
     }
 
     @Test

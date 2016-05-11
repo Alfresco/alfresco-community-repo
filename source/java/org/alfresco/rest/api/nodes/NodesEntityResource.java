@@ -28,7 +28,7 @@ package org.alfresco.rest.api.nodes;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodeTarget;
-import org.alfresco.rest.framework.Action;
+import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
@@ -130,14 +130,14 @@ public class NodesEntityResource implements
         nodes.deleteNode(nodeId);
     }
 
-    @Action("copy")
+    @Operation("copy")
     @WebApiDescription(title = "Copy Node", description="Copy one or more nodes (files or folders) to a new target folder, with option to rename.")
     public Node copyById(String nodeId, NodeTarget target, Parameters parameters)
     {
        return nodes.copyNode(nodeId, target.getTargetParentId(), target.getName(), parameters);
     }
 
-    @Action("move")
+    @Operation("move")
     @WebApiDescription(title = "Move Node", description="Moves one or more nodes (files or folders) to a new target folder, with option to rename.")
     public Node moveById(String nodeId, NodeTarget target, Parameters parameters)
     {

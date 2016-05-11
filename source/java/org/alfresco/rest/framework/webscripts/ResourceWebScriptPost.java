@@ -29,7 +29,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.rest.framework.core.ActionResourceMetaData;
+import org.alfresco.rest.framework.core.OperationResourceMetaData;
 import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceInspectorUtil;
 import org.alfresco.rest.framework.core.ResourceLocator;
@@ -99,15 +99,15 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                     Object postedRel = processRequest(resourceMeta, req);
                     return Params.valueOf(entityId, params, postedRel);
                 }
-            case ACTION:
-                final String actionName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
-                if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(actionName))
+            case OPERATION:
+                final String operationName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
+                if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(operationName))
                 {
                     Class objectType = resourceMeta.getObjectType(HttpMethod.POST);
                     Object postedObj =  null;
                     if (objectType!= null)
                     {
-                        //Actions don't support a List as json body
+                        //Operations don't support a List as json body
                         postedObj = ResourceWebScriptHelper.extractJsonContent(req, jsonHelper, objectType);
                     }
                     return Params.valueOf(entityId, params, postedObj);
@@ -176,26 +176,26 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
 
 
     /**
-     * Execute a generic action method
+     * Execute a generic operation method
      * @param resource
      * @param params
      * @return the result of the execution.
      */
-    private Object executeAction(ResourceWithMetadata resource, Params params)  throws Throwable
+    private Object executeOperation(ResourceWithMetadata resource, Params params)  throws Throwable
     {
-        ActionResourceMetaData actionResourceMetaData = (ActionResourceMetaData) resource.getMetaData();
+        OperationResourceMetaData operationResourceMetaData = (OperationResourceMetaData) resource.getMetaData();
 
-        switch (actionResourceMetaData.getActionMethod().getParameterTypes().length)
+        switch (operationResourceMetaData.getOperationMethod().getParameterTypes().length)
         {
             case 3:
-                //EntityResource action by id
-                return ResourceInspectorUtil.invokeMethod(actionResourceMetaData.getActionMethod(),resource.getResource(), params.getEntityId(), params.getPassedIn(), params);
+                //EntityResource operation by id
+                return ResourceInspectorUtil.invokeMethod(operationResourceMetaData.getOperationMethod(),resource.getResource(), params.getEntityId(), params.getPassedIn(), params);
             case 4:
-                //RelationshipEntityResource action by id
-                return ResourceInspectorUtil.invokeMethod(actionResourceMetaData.getActionMethod(),resource.getResource(), params.getEntityId(), params.getRelationshipId(), params.getPassedIn(), params);
+                //RelationshipEntityResource operation by id
+                return ResourceInspectorUtil.invokeMethod(operationResourceMetaData.getOperationMethod(),resource.getResource(), params.getEntityId(), params.getRelationshipId(), params.getPassedIn(), params);
         }
 
-        throw new UnsupportedResourceOperationException("The action method has an invalid signature");
+        throw new UnsupportedResourceOperationException("The operation method has an invalid signature");
     }
 
     /**
@@ -262,8 +262,8 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                         return wrapWithCollectionWithPaging(createdRel);
                     }
                 }
-            case ACTION:
-                return executeAction(resource, params);
+            case OPERATION:
+                return executeOperation(resource, params);
             default:
                 throw new UnsupportedResourceOperationException("POST not supported for Actions");
         }

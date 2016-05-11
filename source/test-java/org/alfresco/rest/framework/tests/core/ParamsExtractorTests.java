@@ -457,13 +457,13 @@ public class ParamsExtractorTests
     }
 
     /**
-     * Mocks an action
+     * Mocks an operation
      * @return ResourceMetadata a Entity
      */
-    private static ResourceMetadata mockAction()
+    private static ResourceMetadata mockOperation()
     {
         ResourceMetadata resourceMock = mock(ResourceMetadata.class);
-        when(resourceMock.getType()).thenReturn(ResourceMetadata.RESOURCE_TYPE.ACTION);
+        when(resourceMock.getType()).thenReturn(ResourceMetadata.RESOURCE_TYPE.OPERATION);
         return resourceMock;
     }
 

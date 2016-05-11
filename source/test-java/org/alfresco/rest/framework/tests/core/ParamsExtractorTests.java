@@ -111,7 +111,12 @@ public class ParamsExtractorTests
         assertNotNull(params);
         assertNotNull(params.getRelationsFilter());
         assertFalse(params.includeSource());
-        
+
+        templateVars.put(ResourceLocator.RELATIONSHIP_RESOURCE, "codfish");
+        params = extractor.extractParams(mockRelationship(), request);
+        assertNotNull(params);
+        assertNull("For getting a Collection there should be no relationshipId params.",params.getRelationshipId());
+
         templateVars.put(ResourceLocator.RELATIONSHIP_ID, "45678");
         params = extractor.extractParams(mockRelationship(), request);
         assertNotNull(params);
@@ -132,6 +137,14 @@ public class ParamsExtractorTests
         assertTrue(params.hasBinaryProperty("codfish"));
         assertFalse(params.hasBinaryProperty("something"));
         assertEquals("codfish", params.getBinaryProperty());
+
+        templateVars.put(ResourceLocator.RELATIONSHIP_ID, "9865");
+        templateVars.put(ResourceLocator.PROPERTY, "monkFish");
+        params = extractor.extractParams(mockProperty(), request);
+        assertNotNull(params);
+        assertEquals("1234", params.getEntityId());
+        assertEquals("9865", params.getRelationshipId());
+        assertTrue(params.hasBinaryProperty("monkFish"));
         return params;
     }
     
@@ -197,7 +210,7 @@ public class ParamsExtractorTests
         { 
             assertNotNull("POSTING to a relationship collection by id is not correct.",iae);  //Must throw this exception
         }
- 
+
         templateVars.clear();
         when(content.getReader()).thenReturn(new StringReader(JsonJacksonTests.FARMER_JSON));  //reset the reader
         templateVars.put(ResourceLocator.ENTITY_ID, "1234");
@@ -212,6 +225,25 @@ public class ParamsExtractorTests
         {
             assertNotNull(uoe);  //Must throw this exception
         }
+        testExtractOperationParams(templateVars, request, extractor);
+    }
+
+    private Params testExtractOperationParams(Map<String, String> templateVars, WebScriptRequest request, ParamsExtractor extractor)
+    {
+        templateVars.clear();
+        templateVars.put(ResourceLocator.ENTITY_ID, "1234");
+        templateVars.put(ResourceLocator.RELATIONSHIP_RESOURCE, "codfish");
+        Params params = extractor.extractParams(mockOperation(), request);
+        assertNotNull(params);
+        assertNull("For a Collection there should be no relationshipId params.",params.getRelationshipId());
+
+        templateVars.put(ResourceLocator.RELATIONSHIP_ID, "9865");
+        templateVars.put(ResourceLocator.PROPERTY, "monkFish");
+        params = extractor.extractParams(mockOperation(), request);
+        assertNotNull(params);
+        assertEquals("1234", params.getEntityId());
+        assertEquals("9865", params.getRelationshipId());
+        return params;
     }
 
     @Test

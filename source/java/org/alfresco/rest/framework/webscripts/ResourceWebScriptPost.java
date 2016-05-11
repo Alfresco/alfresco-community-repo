@@ -74,6 +74,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
     {
         final RecognizedParams params = ResourceWebScriptHelper.getRecognizedParams(req);
         final String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
+        final String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
 
         switch (resourceMeta.getType())
         {
@@ -89,7 +90,6 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                     return Params.valueOf(null, params, postedObj);
                 }
             case RELATIONSHIP:
-                String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
                 if (StringUtils.isNotBlank(relationshipId))
                 {
                     throw new UnsupportedResourceOperationException("POST is executed against the collection URL");
@@ -101,6 +101,8 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                 }
             case OPERATION:
                 final String operationName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
+                final String propertyName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.PROPERTY);
+
                 if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(operationName))
                 {
                     Class objectType = resourceMeta.getObjectType(HttpMethod.POST);
@@ -110,7 +112,15 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                         //Operations don't support a List as json body
                         postedObj = ResourceWebScriptHelper.extractJsonContent(req, jsonHelper, objectType);
                     }
-                    return Params.valueOf(entityId, params, postedObj);
+
+                    if (StringUtils.isNotBlank(propertyName))
+                    {
+                        return Params.valueOf(entityId, relationshipId, params, postedObj);
+                    }
+                    else
+                    {
+                        return Params.valueOf(entityId, params, postedObj);
+                    }
                 }
                 //Fall through to unsupported.
             default:

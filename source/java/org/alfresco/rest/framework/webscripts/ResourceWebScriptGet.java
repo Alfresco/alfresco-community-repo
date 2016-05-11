@@ -37,6 +37,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.Read;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction.ReadById;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
@@ -94,9 +95,18 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                 }
             case PROPERTY:
                 final String resourceName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
+                final String propertyName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.PROPERTY);
+
                 if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(resourceName))
                 {
-                    return Params.valueOf(entityId, null, null, null, resourceName, params, null);
+                    if (StringUtils.isNotBlank(propertyName))
+                    {
+                        return Params.valueOf(entityId, relationshipId, null, null, propertyName, params, null);
+                    }
+                    else
+                    {
+                        return Params.valueOf(entityId, null, null, null, resourceName, params, null);
+                    }
                 }
                 //Fall through to unsupported.
             default:
@@ -194,11 +204,16 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
                         BinaryResource prop = getter.readProperty(params.getEntityId(), params);
                         return prop;
                     }
-                    else
+                    if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(resource.getResource().getClass()))
                     {
-                        throw new UnsupportedResourceOperationException();
+                        if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.Read.class))
+                        {
+                            throw new DeletedResourceException("(GET) "+resource.getMetaData().getUniqueId());
+                        }
+                        RelationshipResourceBinaryAction.Read getter = (RelationshipResourceBinaryAction.Read) resource.getResource();
+                        BinaryResource prop = getter.readProperty(params.getEntityId(), params.getRelationshipId(), params);
+                        return prop;
                     }
-
                 }
                 else
                 {

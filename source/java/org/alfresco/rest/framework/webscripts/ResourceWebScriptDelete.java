@@ -34,6 +34,7 @@ import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationE
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.Status;
@@ -86,9 +87,18 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 }   
             case PROPERTY:
                 final String resourceName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
+                final String propertyName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.PROPERTY);
+
                 if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(resourceName))
                 {
-                    return Params.valueOf(entityId, null, null, null, resourceName, null, null);
+                    if (StringUtils.isNotBlank(propertyName))
+                    {
+                        return Params.valueOf(entityId, relationshipId, null, null, propertyName, null, null);
+                    }
+                    else
+                    {
+                        return Params.valueOf(entityId, null, null, null, resourceName, null, null);
+                    }
                 }
                 //Fall through to unsupported.
             default:
@@ -125,14 +135,28 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 //Don't pass anything to the callback - its just successful
                 return null;
             case PROPERTY:
-                if (resource.getMetaData().isDeleted(BinaryResourceAction.Delete.class))
+                if (BinaryResourceAction.Delete.class.isAssignableFrom(resource.getResource().getClass()))
                 {
-                    throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                    if (resource.getMetaData().isDeleted(BinaryResourceAction.Delete.class))
+                    {
+                        throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                    }
+                    BinaryResourceAction.Delete binDeleter = (BinaryResourceAction.Delete) resource.getResource();
+                    binDeleter.deleteProperty(params.getEntityId(), params);
+                    //Don't pass anything to the callback - its just successful
+                    return null;
                 }
-                BinaryResourceAction.Delete binDeleter = (BinaryResourceAction.Delete) resource.getResource();
-                binDeleter.deleteProperty(params.getEntityId(), params);
-                //Don't pass anything to the callback - its just successful
-                return null;
+                if (RelationshipResourceBinaryAction.Delete.class.isAssignableFrom(resource.getResource().getClass()))
+                {
+                    if (resource.getMetaData().isDeleted(RelationshipResourceBinaryAction.Delete.class))
+                    {
+                        throw new DeletedResourceException("(DELETE) "+resource.getMetaData().getUniqueId());
+                    }
+                    RelationshipResourceBinaryAction.Delete binDeleter = (RelationshipResourceBinaryAction.Delete) resource.getResource();
+                    binDeleter.deleteProperty(params.getEntityId(), params.getRelationshipId(), params);
+                    //Don't pass anything to the callback - its just successful
+                    return null;
+                }
             default:
                 throw new UnsupportedResourceOperationException("DELETE not supported for Actions");
         }

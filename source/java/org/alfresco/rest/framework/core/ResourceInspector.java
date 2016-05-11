@@ -57,6 +57,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAct
 import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
+import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Pair;
@@ -168,6 +169,10 @@ public class ResourceInspector
         findOperation(BinaryResourceAction.Read.class,   HttpMethod.GET, helperForAddressProps);
         findOperation(BinaryResourceAction.Delete.class, HttpMethod.DELETE, helperForAddressProps);
         findOperation(BinaryResourceAction.Update.class, HttpMethod.PUT, helperForAddressProps);
+
+        findOperation(RelationshipResourceBinaryAction.Read.class,   HttpMethod.GET, helperForAddressProps);
+        findOperation(RelationshipResourceBinaryAction.Delete.class, HttpMethod.DELETE, helperForAddressProps);
+        findOperation(RelationshipResourceBinaryAction.Update.class, HttpMethod.PUT, helperForAddressProps);
 
         boolean noAuth = resource.isAnnotationPresent(WebApiNoAuth.class);
         if (noAuth)

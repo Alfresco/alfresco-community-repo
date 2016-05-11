@@ -93,7 +93,12 @@ public class Params implements Parameters
     {
         return new Params(entityId, null, passedIn, null, null, recognizedParams, null);
     }
-    
+
+    public static Params valueOf(String entityId, String relationshipId, RecognizedParams recognizedParams, Object passedIn)
+    {
+        return new Params(entityId, relationshipId, passedIn, null, null, recognizedParams, null);
+    }
+
     public static Params valueOf(String entityId, String relationshipId, Object passedIn, InputStream stream, String addressedProperty, RecognizedParams recognizedParams, BasicContentInfo contentInfo)
     {
         return new Params(entityId, relationshipId, passedIn, stream, addressedProperty, recognizedParams, contentInfo);

@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
@@ -41,6 +42,8 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder.FileData;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.namespace.QName;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -70,9 +73,18 @@ public class RenditionsTest extends AbstractBaseApiTest
     @Before
     public void setup() throws Exception
     {
-        TestNetwork networkOne = getTestFixture().getRandomNetwork();
+        TestNetwork networkOne = repoService.createNetworkWithAlias("ping", true);
+        networkOne.create();
+
         userOneN1 = networkOne.createUser();
+        AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getId());
         userOneN1Site = createSite(networkOne, userOneN1, SiteVisibility.PRIVATE);
+    }
+
+    @After
+    public void tearDown() throws Exception
+    {
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
 
     /**
@@ -83,11 +95,9 @@ public class RenditionsTest extends AbstractBaseApiTest
     @Test
     public void testListNodeRenditions() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getId());
-
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
-        String folder_Id = repoService.addToDocumentLibrary(userOneN1Site, folderName, ContentModel.TYPE_FOLDER).getId();
+        String folder_Id = addNode(userOneN1Site, folderName, ContentModel.TYPE_FOLDER, userOneN1.getId());
 
         // Create multipart request
         String fileName = "quick.pdf";
@@ -196,6 +206,18 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // nodeId in the path parameter does not exist
         getAll(getRenditionsUrl(UUID.randomUUID().toString()), userOneN1.getId(), paging, params, 404);
+    }
+
+    private String addNode(final TestSite testSite, final String name, final QName type, String user)
+    {
+        return TenantUtil.runAsUserTenant(new TenantUtil.TenantRunAsWork<String>()
+        {
+            @Override
+            public String doWork() throws Exception
+            {
+                return repoService.addToDocumentLibrary(testSite, name, type).getId();
+            }
+        }, user, testSite.getNetworkId());
     }
 
     private Rendition getRendition(List<Rendition> renditions, String renditionName)

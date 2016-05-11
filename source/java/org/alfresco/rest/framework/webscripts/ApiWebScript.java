@@ -53,6 +53,7 @@ import org.springframework.extensions.webscripts.Description.RequiredCache;
 import org.springframework.extensions.webscripts.Format;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
+import org.springframework.extensions.webscripts.WrappingWebScriptResponse;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
 
 /**
@@ -244,15 +245,22 @@ public abstract class ApiWebScript extends AbstractWebScript
             //Set content info on the response
             res.setContentType(contentInfo.getMimeType());
             res.setContentEncoding(contentInfo.getEncoding());
+
+            if (res instanceof WrappingWebScriptResponse)
+            {
+                WrappingWebScriptResponse wrappedRes = ((WrappingWebScriptResponse) res);
+                res = wrappedRes.getNext();
+            }
+
             if (res instanceof WebScriptServletResponse)
             {
                 WebScriptServletResponse servletResponse = (WebScriptServletResponse) res;
                 if (contentInfo.getLength() > 0)
                 {
-                	if (contentInfo.getLength()>0 && contentInfo.getLength() < Integer.MAX_VALUE)
-                	{
-                      servletResponse.getHttpServletResponse().setContentLength((int)contentInfo.getLength());
-                	}
+                    if (contentInfo.getLength() > 0 && contentInfo.getLength() < Integer.MAX_VALUE)
+                    {
+                        servletResponse.getHttpServletResponse().setContentLength((int) contentInfo.getLength());
+                    }
                 }
                 if (contentInfo.getLocale() != null)
                 {
@@ -260,7 +268,6 @@ public abstract class ApiWebScript extends AbstractWebScript
                 }
             }
         }
-
     }
     
     public void setResolver(ExceptionResolver<Exception> resolver)

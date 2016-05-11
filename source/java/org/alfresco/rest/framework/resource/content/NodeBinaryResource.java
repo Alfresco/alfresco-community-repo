@@ -38,12 +38,14 @@ public class NodeBinaryResource implements BinaryResource
 
     final NodeRef nodeRef;
     final QName propertyQName;
+    final ContentInfo contentInfo;
     
-    public NodeBinaryResource(NodeRef nodeRef, QName propertyQName)
+    public NodeBinaryResource(NodeRef nodeRef, QName propertyQName, ContentInfo contentInfo)
     {
         super();
         this.nodeRef = nodeRef;
         this.propertyQName = propertyQName;
+        this.contentInfo = contentInfo;
     }
 
     public NodeRef getNodeRef()
@@ -54,5 +56,9 @@ public class NodeBinaryResource implements BinaryResource
     public QName getPropertyQName()
     {
         return this.propertyQName;
+    }
+
+    public ContentInfo getContentInfo() {
+        return this.contentInfo;
     }
 }

@@ -1161,8 +1161,14 @@ public class NodesImpl implements Nodes
             throw new InvalidArgumentException("NodeId of content is expected: "+nodeRef);
         }
 
+        ContentData cd = (ContentData)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+        org.alfresco.rest.framework.resource.content.ContentInfo ci = null;
+        if (cd != null) {
+            ci = new org.alfresco.rest.framework.resource.content.ContentInfoImpl(cd.getMimetype(), cd.getEncoding(), cd.getSize(), cd.getLocale());
+        }
+
         // TODO attachment header - update (or extend ?) REST fwk
-        return new NodeBinaryResource(nodeRef, ContentModel.PROP_CONTENT);
+        return new NodeBinaryResource(nodeRef, ContentModel.PROP_CONTENT, ci);
     }
 
     @Override

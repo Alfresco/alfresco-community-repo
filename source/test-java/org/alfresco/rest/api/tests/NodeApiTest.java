@@ -1166,6 +1166,58 @@ public class NodeApiTest extends AbstractBaseApiTest
     }
 
     /**
+     * Tests copy (file or folder)
+     * <p>PUT:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/copy}
+     */
+    @Test
+    public void testCopy() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        // create folder
+        Folder folderResp = createFolder(user1, Nodes.PATH_MY, "fsource");
+        String source = folderResp.getId();
+        NodeRef sourceRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, source);
+
+        // create folder
+        folderResp = createFolder(user1, Nodes.PATH_MY, "ftarget");
+        String target = folderResp.getId();
+        NodeRef targetRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, target);
+
+        // create doc d1
+        String d1Name = "content" + System.currentTimeMillis() + "_1";
+        NodeRef d1Ref = repoService.createDocument(sourceRef, d1Name, "The quick brown fox jumps over the lazy dog.");
+        String d1Id = d1Ref.getId();
+
+        // create doc d2
+        String d2Name = "content" + System.currentTimeMillis() + "_2";
+        NodeRef d2Ref = repoService.createDocument(sourceRef, d2Name, "The quick brown fox jumps over the lazy dog 2.");
+        String d2Id = d2Ref.getId();
+
+        Map<String, String> body = new HashMap<>();
+        body.put("targetParentId", target);
+
+        HttpResponse response = post(user1, "nodes", d1Id, "copy", toJsonAsStringNonNull(body).getBytes(), null, null, 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(d1Name, documentResp.getName());
+        assertEquals(target, documentResp.getParentId());
+
+        // copy file (with rename)
+        String newD2Name = d2Name + " updated !!";
+
+        body = new HashMap<>();
+        body.put("targetParentId", target);
+        body.put("name", newD2Name);
+
+        response = post(user1, "nodes", d2Id, "copy", toJsonAsStringNonNull(body).getBytes(), null, null, 201);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        assertEquals(newD2Name, documentResp.getName());
+        assertEquals(target, documentResp.getParentId());
+    }
+    /**
      * Tests create folder.
      * <p>POST:</p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}

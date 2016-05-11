@@ -21,6 +21,7 @@ package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -489,6 +490,9 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertNotNull(response.getResponseAsBytes());
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
+        String cacheControl = responseHeaders.get("Cache-Control");
+        assertNotNull(cacheControl);
+        assertTrue(cacheControl.contains("must-revalidate"));
         assertNull(responseHeaders.get("Content-Disposition"));
         contentType = responseHeaders.get("Content-Type");
         assertNotNull(contentType);
@@ -536,6 +540,11 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertNotNull(response.getResponseAsBytes());
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
+        // Check the cache settings which have been set in the RenditionsImpl#getContent()
+        cacheControl = responseHeaders.get("Cache-Control");
+        assertNotNull(cacheControl);
+        assertFalse(cacheControl.contains("must-revalidate"));
+        assertTrue(cacheControl.contains("max-age=31536000"));
         contentDisposition = responseHeaders.get("Content-Disposition");
         assertNotNull(contentDisposition);
         assertTrue(contentDisposition.contains("filename=\"doclib\""));

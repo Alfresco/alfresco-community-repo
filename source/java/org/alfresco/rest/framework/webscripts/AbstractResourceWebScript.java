@@ -26,14 +26,12 @@
 package org.alfresco.rest.framework.webscripts;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.web.scripts.content.ContentStreamer;
@@ -49,6 +47,7 @@ import org.alfresco.rest.framework.resource.actions.ActionExecutor;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
+import org.alfresco.rest.framework.resource.content.CacheDirective;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
@@ -60,7 +59,6 @@ import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
-import org.springframework.extensions.surf.util.URLEncoder;
 import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
@@ -90,8 +88,6 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     private ParamsExtractor paramsExtractor;
     private ContentStreamer streamer;
     protected ResourceWebScriptHelper helper;
-
-    public final static String HDR_NAME_CONTENT_DISPOSITION = "Content-Disposition";
 
     @SuppressWarnings("rawtypes")
     @Override
@@ -194,27 +190,30 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         {
             FileBinaryResource fileResource = (FileBinaryResource) resource;
             // if requested, set attachment
-            setAttachment(res, fileResource.getAttachFileName());
-            streamer.streamContent(req, res, fileResource.getFile(), null, false, null, null);
+            boolean attach = StringUtils.isNotEmpty(fileResource.getAttachFileName());
+            Map<String, Object> model = getModelForCacheDirective(fileResource.getCacheDirective());
+            streamer.streamContent(req, res, fileResource.getFile(), null, attach, fileResource.getAttachFileName(), model);
         }
         else if (resource instanceof NodeBinaryResource)
         {
             NodeBinaryResource nodeResource = (NodeBinaryResource) resource;
             ContentInfo contentInfo = nodeResource.getContentInfo();
-            setContentInfoOnResponse(res,contentInfo);
+            setContentInfoOnResponse(res, contentInfo);
             // if requested, set attachment
-            setAttachment(res, nodeResource.getAttachFileName());
-            streamer.streamContent(req, res, nodeResource.getNodeRef(), nodeResource.getPropertyQName(), false, null, null);        
+            boolean attach = StringUtils.isNotEmpty(nodeResource.getAttachFileName());
+            Map<String, Object> model = getModelForCacheDirective(nodeResource.getCacheDirective());
+            streamer.streamContent(req, res, nodeResource.getNodeRef(), nodeResource.getPropertyQName(), attach, nodeResource.getAttachFileName(), model);
         }
+
     }
 
-    private void setAttachment(final WebScriptResponse res, final String attachFileName)
+    private static Map<String, Object> getModelForCacheDirective(CacheDirective cacheDirective)
     {
-        if (StringUtils.isNotEmpty(attachFileName))
+        if (cacheDirective != null)
         {
-            String headerValue = "attachment; filename=\"" + attachFileName + "\"; filename*=UTF-8''" + URLEncoder.encode(attachFileName);
-            res.setHeader(HDR_NAME_CONTENT_DISPOSITION, headerValue);
+            return Collections.singletonMap(ContentStreamer.KEY_CACHE_DIRECTIVE, (Object) cacheDirective);
         }
+        return null;
     }
 
     /**

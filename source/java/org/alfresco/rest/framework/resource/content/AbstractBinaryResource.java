@@ -27,14 +27,21 @@ package org.alfresco.rest.framework.resource.content;
 public class AbstractBinaryResource implements BinaryResource
 {
     final String attachFileName;
+    final CacheDirective cacheDirective;
 
-    public AbstractBinaryResource(String attachFileName)
+    public AbstractBinaryResource(String attachFileName, CacheDirective cacheDirective)
     {
         this.attachFileName = attachFileName;
+        this.cacheDirective = cacheDirective;
     }
 
     public String getAttachFileName()
     {
         return attachFileName;
+    }
+
+    public CacheDirective getCacheDirective()
+    {
+        return cacheDirective;
     }
 }

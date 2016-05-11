@@ -44,7 +44,7 @@ public class FileBinaryResource extends AbstractBinaryResource
 
     public FileBinaryResource(File file, String attachFileName)
     {
-        super(attachFileName);
+        super(attachFileName, null);
         this.file = file;
     }
 

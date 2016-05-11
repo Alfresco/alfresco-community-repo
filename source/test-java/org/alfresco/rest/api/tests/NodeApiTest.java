@@ -16,7 +16,6 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  */
-
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.parsePaging;
@@ -50,7 +49,6 @@ import java.util.UUID;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
@@ -98,7 +96,7 @@ import org.springframework.util.ResourceUtils;
  * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/children} </li>
  * </ul>
  *
- * TODO replace most (all ?) usages of repoService/repositoryHelper test data setup code with actual REST v1 API calls
+ * TODO replace most (all ?) usages of repoService test data setup code with actual FileFolder API calls (where appropriate)
  *
  * @author Jamal Kaabi-Mofrad
  * @author janv
@@ -127,7 +125,6 @@ public class NodeApiTest extends AbstractBaseApiTest
 
     protected MutableAuthenticationService authenticationService;
     protected PersonService personService;
-    protected Repository repositoryHelper;
     protected JacksonUtil jacksonUtil;
     protected PermissionService permissionService;
 
@@ -137,7 +134,6 @@ public class NodeApiTest extends AbstractBaseApiTest
     {
         authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
         personService = applicationContext.getBean("personService", PersonService.class);
-        repositoryHelper = applicationContext.getBean("repositoryHelper", Repository.class);
         jacksonUtil = new JacksonUtil(applicationContext.getBean("jsonHelper", JacksonHelper.class));
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
 
@@ -177,6 +173,40 @@ public class NodeApiTest extends AbstractBaseApiTest
         }
         users.clear();
         AuthenticationUtil.clearCurrentSecurityContext();
+    }
+
+    // root (eg. Company Home for on-prem)
+    private String getRootNodeId(String runAsUserId) throws Exception
+    {
+        HttpResponse response = getSingle(NodesEntityResource.class, runAsUserId, Nodes.PATH_ROOT, null, 200);
+        Node node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+        return node.getId();
+    }
+
+    // my (eg. User's Home for on-prem)
+    private String getMyNodeId(String runAsUserId) throws Exception
+    {
+        HttpResponse response = getSingle(NodesEntityResource.class, runAsUserId, Nodes.PATH_MY, null, 200);
+        Node node = jacksonUtil.parseEntry(response.getJsonResponse(), Node.class);
+        return node.getId();
+    }
+
+    private Folder createFolder(String runAsUserId, String parentId, String folderName) throws Exception
+    {
+        return createFolder(runAsUserId, parentId, folderName, null);
+    }
+
+    private Folder createFolder(String runAsUserId, String parentId, String folderName, Map<String, Object> props) throws Exception
+    {
+        Folder f = new Folder();
+        f.setName(folderName);
+        f.setNodeType("cm:folder");
+        f.setProperties(props);
+
+        // create folder
+        HttpResponse response = post(getChildrenUrl(parentId), runAsUserId, toJsonAsStringNonNull(f), 201);
+
+        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
     }
 
     /**
@@ -294,15 +324,19 @@ public class NodeApiTest extends AbstractBaseApiTest
     public void testListMyFilesChildren() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
-        NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personService.getPerson(user1));
 
+        String myNodeId = getMyNodeId(user1);
+        NodeRef myFilesNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myNodeId);
+
+        Map<String,Object> props = new HashMap<>(1);
+        props.put("cm:title", "This is folder 1");
         String folder1 = "folder" + System.currentTimeMillis() + "_1";
-        NodeRef folder1NodeRef = repoService.createFolder(myFilesNodeRef, folder1);
-        repoService.getNodeService().setProperty(folder1NodeRef, ContentModel.PROP_TITLE, "This is folder 1");
+        String folder1_Id = createFolder(user1, myNodeId, folder1, props).getId();
 
+        props = new HashMap<>(1);
+        props.put("cm:title", "This is folder 2");
         String folder2 = "folder" + System.currentTimeMillis() + "_2";
-        NodeRef folder2NodeRef = repoService.createFolder(myFilesNodeRef, folder2);
-        repoService.getNodeService().setProperty(folder2NodeRef, ContentModel.PROP_TITLE, "This is folder 2");
+        String folder2_Id = createFolder(user1, myNodeId, folder2, props).getId();
 
         String content1 = "content" + System.currentTimeMillis() + "_1";
         NodeRef contentNodeRef = repoService.createDocument(myFilesNodeRef, content1, "The quick brown fox jumps over the lazy dog.");
@@ -310,7 +344,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         repoService.getNodeService().setProperty(contentNodeRef, ContentModel.PROP_LAST_THUMBNAIL_MODIFICATION_DATA,
                     (Serializable) Collections.singletonList("doclib:1444660852296"));
         
-        List<String> folderIds = Arrays.asList(folder1NodeRef.getId(), folder2NodeRef.getId());
+        List<String> folderIds = Arrays.asList(folder1_Id, folder2_Id);
         List<String> contentIds = Arrays.asList(contentNodeRef.getId());
         
 
@@ -386,9 +420,9 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNull("There shouldn't be a 'properties' object in the response.", nodes.get(0).getProperties());
         assertNull("There shouldn't be a 'properties' object in the response.", nodes.get(1).getProperties());
         assertNotNull("There should be a 'properties' object in the response.", nodes.get(2).getProperties());
-        Set<Entry<String, Object>> props = nodes.get(2).getProperties().entrySet();
-        assertEquals(1, props.size());
-        Entry<String, Object> entry = props.iterator().next();
+        Set<Entry<String, Object>> propsSet = nodes.get(2).getProperties().entrySet();
+        assertEquals(1, propsSet.size());
+        Entry<String, Object> entry = propsSet.iterator().next();
         assertEquals("cm:lastThumbnailModification", entry.getKey());
         assertEquals("doclib:1444660852296", ((List<?>) entry.getValue()).get(0));
         
@@ -439,22 +473,26 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testGetPathElements_DocLib() throws Exception
     {
-        AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getId());
+        String userId = userOneN1.getId();
+
+        AuthenticationUtil.setFullyAuthenticatedUser(userId);
         userOneN1Site.inviteToSite(userTwoN1.getEmail(), SiteRole.SiteConsumer);
 
         NodeRef docLibNodeRef = userOneN1Site.getContainerNodeRef(("documentLibrary"));
 
         // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A
         String folderA = "folder" + System.currentTimeMillis() + "_A";
-        NodeRef folderA_Ref = repoService.createFolder(docLibNodeRef, folderA);
+        String folderA_Id = createFolder(userId, docLibNodeRef.getId(), folderA).getId();
 
         // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A/folder<timestamp>_B
         String folderB = "folder" + System.currentTimeMillis() + "_B";
-        NodeRef folderB_Ref = repoService.createFolder(folderA_Ref, folderB);
+        String folderB_Id = createFolder(userId, folderA_Id, folderB).getId();
+        NodeRef folderB_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderB_Id);
 
         // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A/folder<timestamp>_B/folder<timestamp>_C
         String folderC = "folder" + System.currentTimeMillis() + "_C";
-        NodeRef folderC_Ref = repoService.createFolder(folderB_Ref, folderC);
+        String folderC_Id = createFolder(userId, folderB_Id, folderC).getId();
+        NodeRef folderC_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderC_Id);
 
         // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A/folder<timestamp>_B/folder<timestamp>_C/content<timestamp>
         String content = "content" + System.currentTimeMillis();
@@ -530,11 +568,13 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // /Company Home/User Homes/user<timestamp>/folder<timestamp>_A
         String folderA = "folder" + System.currentTimeMillis() + "_A";
-        NodeRef folderA_Ref = repoService.createFolder(myHomeNodeRef, folderA);
+        String folderA_Id = createFolder(user1, myFilesNodeId, folderA).getId();
+        NodeRef folderA_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderA_Id);
 
         // /Company Home/User Homes/user<timestamp>/folder<timestamp>_A/folder<timestamp>_B
         String folderB = "folder" + System.currentTimeMillis() + "_B";
-        NodeRef folderB_Ref = repoService.createFolder(folderA_Ref, folderB);
+        String folderB_Id = createFolder(user1, folderA_Id, folderB).getId();
+        NodeRef folderB_Ref = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folderB_Id);
 
         // /Company Home/User Homes/user<timestamp>/folder<timestamp>_A/folder<timestamp>_B/content<timestamp>
         String contentName = "content" + System.currentTimeMillis();
@@ -542,7 +582,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // Add property
         String title = "test title";
-        repoService.nodeService.setProperty(contentNodeRef, ContentModel.PROP_TITLE, title);
+        repoService.getNodeService().setProperty(contentNodeRef, ContentModel.PROP_TITLE, title);
 
         // get node info
         response = getSingle(NodesEntityResource.class, user1, contentNodeRef.getId(), null, 200);
@@ -553,7 +593,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         Document d1 = new Document();
         d1.setId(documentResp.getId());
-        d1.setParentId(folderB_Ref.getId());
+        d1.setParentId(folderB_Id);
         d1.setName(contentName);
         d1.setNodeType("cm:content");
         ContentInfo ci = new ContentInfo();
@@ -875,7 +915,9 @@ public class NodeApiTest extends AbstractBaseApiTest
     public void testDelete() throws Exception
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
-        NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personService.getPerson(user1));
+
+        String myNodeId = getMyNodeId(user1);
+        NodeRef myFilesNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myNodeId);
 
         String content1 = "content" + System.currentTimeMillis() + "_1";
         NodeRef content1Ref = repoService.createDocument(myFilesNodeRef, content1, "The quick brown fox jumps over the lazy dog.");
@@ -887,24 +929,24 @@ public class NodeApiTest extends AbstractBaseApiTest
         delete("nodes", user1, content1Ref.getId(), 404);
 
         String folder1 = "folder" + System.currentTimeMillis() + "_1";
-        NodeRef folder1Ref = repoService.createFolder(myFilesNodeRef, folder1);
+        String folder1Ref = createFolder(user1, myNodeId, folder1).getId();
 
         String folder2 = "folder" + System.currentTimeMillis() + "_2";
-        NodeRef folder2Ref = repoService.createFolder(folder1Ref, folder2);
+        String folder2Ref = createFolder(user1, folder1Ref, folder2).getId();
 
         String content2 = "content" + System.currentTimeMillis() + "_2";
-        NodeRef content2Ref = repoService.createDocument(folder2Ref, content2, "The quick brown fox jumps over the lazy dog.");
+        NodeRef content2Ref = repoService.createDocument(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, folder2Ref), content2, "The quick brown fox jumps over the lazy dog.");
 
         // cascade delete folder
-        delete("nodes", user1, folder1Ref.getId(), 204);
+        delete("nodes", user1, folder1Ref, 204);
 
         // -ve test
-        delete("nodes", user1, folder2Ref.getId(), 404);
+        delete("nodes", user1, folder2Ref, 404);
         delete("nodes", user1, content2Ref.getId(), 404);
 
         // -ve test
-        NodeRef chNodeRef = repositoryHelper.getCompanyHome();
-        delete("nodes", user1, chNodeRef.getId(), 403);
+        String rootNodeId = getRootNodeId(user1);
+        delete("nodes", user1, rootNodeId, 403);
     }
 
     /**
@@ -917,24 +959,12 @@ public class NodeApiTest extends AbstractBaseApiTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
-        String postUrl = getChildrenUrl(Nodes.PATH_MY);
-
-        Folder f = new Folder();
-        f.setName("f1");
-        f.setNodeType("cm:folder");
-
         // create folder f1
-        HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(f), 201);
-        Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        Folder folderResp = createFolder(user1, Nodes.PATH_MY, "f1");
         String f1Id = folderResp.getId();
 
-        f = new Folder();
-        f.setName("f2");
-        f.setNodeType("cm:folder");
-
         // create folder f2
-        response = post(postUrl, user1, toJsonAsStringNonNull(f), 201);
-        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        folderResp = createFolder(user1, Nodes.PATH_MY, "f2");
         String f2Id = folderResp.getId();
 
         // create doc d1
@@ -954,7 +984,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document dUpdate = new Document();
         dUpdate.setParentId(f2Id);
 
-        response = put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
+        HttpResponse response = put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 200);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(d1Name, documentResp.getName());
@@ -996,6 +1026,31 @@ public class NodeApiTest extends AbstractBaseApiTest
         dUpdate = new Document();
         dUpdate.setParentId(d2Id);
         put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 400);
+
+        String rootNodeId = getRootNodeId(user1);
+
+        // create folder f3 (sub-folder of f2)
+        folderResp = createFolder(user1, f2Id, "f3");
+        String f3Id = folderResp.getId();
+
+        // can't create cycle (move into own subtree)
+        dUpdate = new Document();
+        dUpdate.setParentId(f3Id);
+        put("nodes", user1, f2Id, toJsonAsStringNonNull(dUpdate), null, 400);
+
+        // no (write/create) permissions to move to target
+        dUpdate = new Document();
+        dUpdate.setParentId(rootNodeId);
+        put("nodes", user1, d1Id, toJsonAsStringNonNull(dUpdate), null, 403);
+
+        AuthenticationUtil.setFullyAuthenticatedUser(user2);
+
+        String my2NodeId = getMyNodeId(user2);
+
+        // no (write/delete) permissions to move source
+        dUpdate = new Document();
+        dUpdate.setParentId(my2NodeId);
+        put("nodes", user2, f1Id, toJsonAsStringNonNull(dUpdate), null, 403);
     }
 
     /**
@@ -1008,24 +1063,21 @@ public class NodeApiTest extends AbstractBaseApiTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
-        NodeRef personNodeRef = personService.getPerson(user1);
-        NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personNodeRef);
+        String myNodeId = getMyNodeId(user1);
 
         UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
 
-        String postUrl = getChildrenUrl(myFilesNodeRef);
+        String postUrl = getChildrenUrl(myNodeId);
+
+        // create folder
+        Folder folderResp = createFolder(user1, myNodeId, "f1");
 
         Folder f1 = new Folder();
         f1.setName("f1");
         f1.setNodeType("cm:folder");
 
-        // create folder
-        HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(f1), 201);
-
-        Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-
         f1.setIsFolder(true);
-        f1.setParentId(myFilesNodeRef.getId());
+        f1.setParentId(myNodeId);
         f1.setAspectNames(Collections.singletonList("cm:auditable"));
 
         f1.setCreatedByUser(expectedUser);
@@ -1038,16 +1090,15 @@ public class NodeApiTest extends AbstractBaseApiTest
         props.put("cm:title","my folder title");
         props.put("cm:description","my folder description");
 
+        folderResp = createFolder(user1, myNodeId, "f2", props);
+
         Folder f2 = new Folder();
         f2.setName("f2");
         f2.setNodeType("cm:folder");
         f2.setProperties(props);
 
-        response = post(postUrl, user1, toJsonAsStringNonNull(f2), 201);
-        folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-
         f2.setIsFolder(true);
-        f2.setParentId(myFilesNodeRef.getId());
+        f2.setParentId(myNodeId);
         f2.setAspectNames(Arrays.asList("cm:auditable","cm:titled"));
 
         f2.setCreatedByUser(expectedUser);
@@ -1065,11 +1116,23 @@ public class NodeApiTest extends AbstractBaseApiTest
         invalid.setName("my folder");
         post(postUrl, user1, toJsonAsStringNonNull(invalid), 400);
 
+        // create empty file
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType("cm:content");
+        ContentInfo ci = new ContentInfo();
+        ci.setMimeType("text/plain");
+        d1.setContent(ci);
+
+        HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String d1Id = documentResp.getId();
+
         // -ve test - invalid (eg. not a folder) parent id
         Folder f3 = new Folder();
         f3.setName("f3");
         f3.setNodeType("cm:folder");
-        post(getChildrenUrl(personNodeRef), user1, toJsonAsStringNonNull(f3), 400);
+        post(getChildrenUrl(d1Id), user1, toJsonAsStringNonNull(f3), 400);
 
         // -ve test - unknown parent folder node id
         post(getChildrenUrl(UUID.randomUUID().toString()), user1, toJsonAsStringNonNull(f3), 404);
@@ -1088,12 +1151,11 @@ public class NodeApiTest extends AbstractBaseApiTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
-        NodeRef personNodeRef = personService.getPerson(user1);
-        NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personNodeRef);
+        String myNodeId = getMyNodeId(user1);
 
         UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
 
-        String postUrl = getChildrenUrl(myFilesNodeRef);
+        String postUrl = getChildrenUrl(myNodeId);
 
         Document d1 = new Document();
         d1.setName("d1.txt");
@@ -1104,11 +1166,11 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // create empty file
         HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(d1), 201);
-
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String d1Id = documentResp.getId();
 
         d1.setIsFolder(false);
-        d1.setParentId(myFilesNodeRef.getId());
+        d1.setParentId(myNodeId);
         d1.setAspectNames(Collections.singletonList("cm:auditable"));
 
         d1.setCreatedByUser(expectedUser);
@@ -1135,7 +1197,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         d2.setIsFolder(false);
-        d2.setParentId(myFilesNodeRef.getId());
+        d2.setParentId(myNodeId);
         d2.setAspectNames(Arrays.asList("cm:auditable","cm:titled"));
 
         d2.setCreatedByUser(expectedUser);
@@ -1164,7 +1226,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document d3 = new Document();
         d3.setName("d3.txt");
         d3.setNodeType("cm:content");
-        post(getChildrenUrl(personNodeRef), user1, toJsonAsStringNonNull(d3), 400);
+        post(getChildrenUrl(d1Id), user1, toJsonAsStringNonNull(d3), 400);
 
         // -ve test - unknown parent folder node id
         post(getChildrenUrl(UUID.randomUUID().toString()), user1, toJsonAsStringNonNull(d3), 404);
@@ -1183,28 +1245,25 @@ public class NodeApiTest extends AbstractBaseApiTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
-        NodeRef personNodeRef = personService.getPerson(user1);
-        NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personNodeRef);
+        String myNodeId = getMyNodeId(user1);
 
         UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
 
-        String postUrl = getChildrenUrl(myFilesNodeRef);
+        String postUrl = getChildrenUrl(myNodeId);
 
         String folderName = "My Folder";
 
         // create folder
+        Folder folderResp = createFolder(user1, myNodeId, folderName);
+
+        String fId = folderResp.getId();
 
         Folder f1 = new Folder();
         f1.setName(folderName);
         f1.setNodeType("cm:folder");
 
-        HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(f1), 201);
-        Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-
-        String fId = folderResp.getId();
-
         f1.setIsFolder(true);
-        f1.setParentId(myFilesNodeRef.getId());
+        f1.setParentId(myNodeId);
         f1.setAspectNames(Collections.singletonList("cm:auditable"));
 
         f1.setCreatedByUser(expectedUser);
@@ -1221,13 +1280,13 @@ public class NodeApiTest extends AbstractBaseApiTest
         ci.setMimeType("text/plain");
         d1.setContent(ci);
 
-        response = post(postUrl, user1, toJsonAsStringNonNull(d1), 201);
+        HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(d1), 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         String dId = documentResp.getId();
 
         d1.setIsFolder(false);
-        d1.setParentId(myFilesNodeRef.getId());
+        d1.setParentId(myNodeId);
         d1.setAspectNames(Collections.singletonList("cm:auditable"));
 
         d1.setCreatedByUser(expectedUser);
@@ -1381,7 +1440,8 @@ public class NodeApiTest extends AbstractBaseApiTest
     {
         AuthenticationUtil.setFullyAuthenticatedUser(user1);
 
-        NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personService.getPerson(user1));
+        String myNodeId = getMyNodeId(user1);
+        NodeRef myFilesNodeRef = new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, myNodeId);
 
         Folder f1 = new Folder();
         f1.setName("F1");

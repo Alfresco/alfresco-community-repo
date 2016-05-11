@@ -91,6 +91,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.CyclicChildRelationshipException;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MimetypeService;
@@ -1179,6 +1180,12 @@ public class NodesImpl implements Nodes
     private void move(NodeRef nodeRef, NodeRef parentNodeRef, String name)
     {
         NodeRef currentParentNodeRef = getParentNodeRef(nodeRef);
+        if (currentParentNodeRef == null)
+        {
+            // implies root (Company Home) hence return 403 here
+            throw new PermissionDeniedException();
+        }
+
         if (! currentParentNodeRef.equals(parentNodeRef))
         {
             try
@@ -1200,11 +1207,15 @@ public class NodesImpl implements Nodes
             catch (FileExistsException fee)
             {
                 // duplicate - name clash
-                throw new ConstraintViolatedException(fee.getMessage());
+                throw new ConstraintViolatedException(fee.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
             }
             catch (FileFolderServiceImpl.InvalidTypeException ite)
             {
-                throw new InvalidArgumentException("Expect target parentId to be a folder: "+parentNodeRef);
+                throw new InvalidArgumentException(ite.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
+            }
+            catch (CyclicChildRelationshipException ccre)
+            {
+                throw new InvalidArgumentException(ccre.getMessage()+" ["+nodeRef+","+parentNodeRef+"]");
             }
         }
     }
@@ -1416,15 +1427,15 @@ public class NodesImpl implements Nodes
         }
         catch (AccessDeniedException ade)
         {
-            throw new PermissionDeniedException();
+            throw new PermissionDeniedException(ade.getMessage());
         }
         catch (ContentQuotaException cqe)
         {
-            throw new RequestEntityTooLargeException();
+            throw new RequestEntityTooLargeException(cqe.getMessage());
         }
         catch (ContentLimitViolationException clv)
         {
-            throw new ConstraintViolatedException();
+            throw new ConstraintViolatedException(clv.getMessage());
         }
         catch (Exception ex)
         {

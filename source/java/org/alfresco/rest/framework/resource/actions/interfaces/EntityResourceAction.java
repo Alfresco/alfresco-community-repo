@@ -30,6 +30,8 @@ import java.util.List;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.Status;
 
 /**
  * Permissible actions for an Entity Resource
@@ -70,7 +72,9 @@ public interface EntityResourceAction
      */
     public static interface ReadById<E> extends ResourceAction
     {
-        public E readById (String id,  Parameters parameters) throws EntityNotFoundException;
+        public E readById (String id, Parameters parameters) throws EntityNotFoundException;
+ //       public E readById (String id, Parameters parameters, Status status, Cache cache) throws EntityNotFoundException;
+
     }
     
     /**

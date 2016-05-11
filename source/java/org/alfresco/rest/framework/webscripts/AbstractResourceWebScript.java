@@ -30,10 +30,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.web.scripts.content.ContentStreamer;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.HttpMethodSupport;
+import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceLocator;
+import org.alfresco.rest.framework.core.ResourceOperation;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
@@ -51,6 +54,7 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.extensions.surf.util.URLEncoder;
+import org.springframework.extensions.webscripts.Cache;
 import org.springframework.extensions.webscripts.Description;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -95,42 +99,12 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
 	        final ResourceWithMetadata resource = locator.locateResource(api,templateVars, httpMethod);
             final Params params = paramsExtractor.extractParams(resource.getMetaData(),req);
             final ActionExecutor executor = findExecutor(httpMethod, params, resource, req.getContentType());
+            final boolean isReadOnly = HttpMethod.GET==httpMethod;
 
             //This execution usually takes place in a Retrying Transaction (see subclasses)
-            executor.execute(resource, params, new ExecutionCallback()
-            {
-                @Override
-                public void onSuccess(Object result, ContentInfo contentInfo, int statusCode)
-                {
-                    respons.put("toSerialize", result); 
-                    respons.put("contentInfo", contentInfo);
-
-                    if (result instanceof NodeBinaryResource)
-                    {
-                        String attachFileName = ((NodeBinaryResource)result).getAttachFileName();
-                        if ((attachFileName != null) && (attachFileName.length() > 0))
-                        {
-                            String headerValue = "attachment; filename=\"" + attachFileName + "\"; filename*=UTF-8''" + URLEncoder.encode(attachFileName);
-                            res.setHeader(HDR_NAME_CONTENT_DISPOSITION, headerValue);
-                        }
-                    }
-
-                    // The response status must be set before the response is written by Jackson (which will by default close and commit the response).
-                    // In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important.
-                    res.setStatus(statusCode);
-                }
-            });
+            final Object toSerialize = executor.execute(resource, params, res, isReadOnly);
             
             //Outside the transaction.
-            final Object toSerialize = respons.get("toSerialize");
-            ContentInfo contentInfo = (ContentInfo) respons.get("contentInfo");
-            
-            // set caching (MNT-13938)
-            res.setCache(ApiWebScript.CACHE_NEVER);
-            
-            // set content info
-            setContentInfoOnResponse(res, contentInfo);
-            
             if (toSerialize != null)
             {
                 if (toSerialize instanceof BinaryResource)
@@ -176,6 +150,26 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
 		}
     }
 
+    @Override
+    public Object execute(final ResourceWithMetadata resource, final Params params, final WebScriptResponse res, boolean isReadOnly)
+    {
+        final String entityCollectionName = ResourceInspector.findEntityCollectionNameName(resource.getMetaData());
+        return transactionService.getRetryingTransactionHelper().doInTransaction(
+                new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
+                {
+                    @Override
+                    public Object execute() throws Throwable
+                    {
+                        final ResourceOperation operation = resource.getMetaData().getOperation(getHttpMethod());
+                        Object result = executeAction(resource, params);
+                        setResponse(res,operation.getSuccessStatus(),ApiWebScript.CACHE_NEVER, DEFAULT_JSON_CONTENT);
+                        return helper.processAdditionsToTheResponse(res, resource.getMetaData().getApi(), entityCollectionName, params, result);
+                    }
+                }, isReadOnly, true);
+    }
+
+    protected abstract Object executeAction(ResourceWithMetadata resource, Params params) throws Throwable;
+
     protected void streamResponse(final WebScriptRequest req, final WebScriptResponse res, BinaryResource resource) throws IOException
     {
         if (resource instanceof FileBinaryResource)
@@ -186,9 +180,31 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         else if (resource instanceof NodeBinaryResource)
         {
             NodeBinaryResource nodeResource = (NodeBinaryResource) resource;
+            ContentInfo contentInfo = nodeResource.getContentInfo();
+            setContentInfoOnResponse(res,contentInfo);
+            String attachFileName = nodeResource.getAttachFileName();
+            if ((attachFileName != null) && (attachFileName.length() > 0))
+            {
+                String headerValue = "attachment; filename=\"" + attachFileName + "\"; filename*=UTF-8''" + URLEncoder.encode(attachFileName);
+                res.setHeader(HDR_NAME_CONTENT_DISPOSITION, headerValue);
+            }
             streamer.streamContent(req, res, nodeResource.getNodeRef(), nodeResource.getPropertyQName(), false, null, null);        
         }
+    }
 
+    /**
+     * The response status must be set before the response is written by Jackson (which will by default close and commit the response).
+     * In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important.
+     * @param res
+     * @param status
+     * @param cache
+     * @param contentInfo
+     */
+    protected void setResponse(final WebScriptResponse res, int status, Cache cache, ContentInfo contentInfo)
+    {
+        res.setStatus(status);
+        res.setCache(cache);
+        setContentInfoOnResponse(res,contentInfo);
     }
     
     /**

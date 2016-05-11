@@ -50,6 +50,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.http.HttpMethod;
 
 /**
@@ -122,7 +123,8 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
      * @param params parameters to use
      * @return anObject the result of the execute
      */
-    private Object executeInternal(ResourceWithMetadata resource, Params params)
+    @Override
+    public Object executeAction(ResourceWithMetadata resource, Params params) throws Throwable
     {
         
         switch (resource.getMetaData().getType())
@@ -226,34 +228,5 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
         }
     }
 
-    @Override
-    public void execute(final ResourceWithMetadata resource, final Params params, final ExecutionCallback executionCallback)
-    {
-        final String entityCollectionName = ResourceInspector.findEntityCollectionNameName(resource.getMetaData());
-        transactionService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    final ResourceOperation operation = resource.getMetaData().getOperation(HttpMethod.GET);
-                    Object result = executeInternal(resource, params);
-                    if (result instanceof BinaryResource)
-                    {
-                        ContentInfo ci = null;
-                        if (result instanceof NodeBinaryResource)
-                        {
-                            ci = ((NodeBinaryResource)result).getContentInfo();
-                        }
-                        executionCallback.onSuccess(result, ci, operation.getSuccessStatus());
-                    }
-                    else
-                    {
-                      executionCallback.onSuccess(helper.processAdditionsToTheResponse(resource.getMetaData().getApi(), entityCollectionName, params, result), DEFAULT_JSON_CONTENT, operation.getSuccessStatus());
-                    }
-                    return null;
-                }
-            }, true, true); //Read only
-    }
 
 }

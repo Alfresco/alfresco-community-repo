@@ -73,8 +73,7 @@ public abstract class AbstractContextTest
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
                 RetryingTransactionHelper.RetryingTransactionCallback cb = (RetryingTransactionHelper.RetryingTransactionCallback) args[0];
-                cb.execute();
-                return null;
+                return cb.execute();
             }
         });
         executor.setTransactionService(transerv);

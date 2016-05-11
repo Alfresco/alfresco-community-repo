@@ -57,7 +57,6 @@ import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.rest.framework.resource.SerializablePagedCollection;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor;
-import org.alfresco.rest.framework.resource.actions.ActionExecutor.ExecutionCallback;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.InvalidSelectException;
@@ -81,6 +80,7 @@ import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.springframework.beans.BeanUtils;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.http.HttpMethod;
 
 /**
@@ -479,20 +479,20 @@ public class ResourceWebScriptHelper
      * @param objectToWrap Object
      * @return Object - Either ExecutionResult or CollectionWithPagingInfo<ExecutionResult>
      */
-    public Object processAdditionsToTheResponse(Api api, String entityCollectionName, Params params, Object objectToWrap)
+    public Object processAdditionsToTheResponse(WebScriptResponse res, Api api, String entityCollectionName, Params params, Object objectToWrap)
     {
         PropertyCheck.mandatory(this, null, params);
         if (objectToWrap == null ) return null;
         if (objectToWrap instanceof SerializablePagedCollection<?>)
         {
             SerializablePagedCollection<?> collectionToWrap = (SerializablePagedCollection<?>) objectToWrap;
-            Object sourceEntity = executeIncludedSource(api, params, entityCollectionName);
+            Object sourceEntity = executeIncludedSource(res, api, params, entityCollectionName);
             Collection<Object> resultCollection = new ArrayList(collectionToWrap.getCollection().size());
             if (!collectionToWrap.getCollection().isEmpty())
             {
                 for (Object obj : collectionToWrap.getCollection())
                 {
-                    resultCollection.add(processAdditionsToTheResponse(api,entityCollectionName,params,obj));
+                    resultCollection.add(processAdditionsToTheResponse(res, api,entityCollectionName,params,obj));
                 }
             }
             return CollectionWithPagingInfo.asPaged(collectionToWrap.getPaging(), resultCollection, collectionToWrap.hasMoreItems(), collectionToWrap.getTotalItems(), sourceEntity);
@@ -510,7 +510,7 @@ public class ResourceWebScriptHelper
             Map<String,Pair<String,Method>> embeddded = ResourceInspector.findEmbeddedResources(objectToWrap.getClass());
             if (embeddded != null && !embeddded.isEmpty())
             {
-                Map<String, Object> results = executeEmbeddedResources(api, params,objectToWrap, embeddded);
+                Map<String, Object> results = executeEmbeddedResources(res, api, params,objectToWrap, embeddded);
                 execRes.addEmbedded(results);
             }
             
@@ -518,7 +518,7 @@ public class ResourceWebScriptHelper
             {
                 Map<String, ResourceWithMetadata> relationshipResources = locator.locateRelationResource(api,entityCollectionName, params.getRelationsFilter().keySet(), HttpMethod.GET);
                 String uniqueEntityId = ResourceInspector.findUniqueId(objectToWrap);
-                Map<String,Object> relatedResources = executeRelatedResources(api, params, relationshipResources, uniqueEntityId);
+                Map<String,Object> relatedResources = executeRelatedResources(res, api, params, relationshipResources, uniqueEntityId);
                 execRes.addRelated(relatedResources);
             }
 
@@ -527,14 +527,14 @@ public class ResourceWebScriptHelper
         }
     }
 
-    private Object executeIncludedSource(Api api, Params params, String entityCollectionName)
+    private Object executeIncludedSource(WebScriptResponse response, Api api, Params params, String entityCollectionName)
     {
         if (params.includeSource())
         {
             ResourceWithMetadata res = locator.locateEntityResource(api, entityCollectionName, HttpMethod.GET);
             if (res != null)
             {
-                Object result = executeRelatedResource(api, params, params.getEntityId(), null, res);
+                Object result = executeRelatedResource(response, api, params, params.getEntityId(), null, res);
                 if (result!=null && result instanceof ExecutionResult) return ((ExecutionResult) result).getRoot();
             }
         }
@@ -551,7 +551,7 @@ public class ResourceWebScriptHelper
      * @param embeddded Map<String, Pair<String, Method>>
      * @return Map
      */
-    private Map<String, Object> executeEmbeddedResources(Api api, Params params, Object objectToWrap, Map<String, Pair<String, Method>> embeddded)
+    private Map<String, Object> executeEmbeddedResources(WebScriptResponse response, Api api, Params params, Object objectToWrap, Map<String, Pair<String, Method>> embeddded)
     {
         final Map<String,Object> results = new HashMap<String,Object>(embeddded.size());
         for (Entry<String, Pair<String,Method>> embeddedEntry : embeddded.entrySet())
@@ -562,7 +562,7 @@ public class ResourceWebScriptHelper
                 Object id = ResourceInspectorUtil.invokeMethod(embeddedEntry.getValue().getSecond(), objectToWrap);
                 if (id != null)
                 {
-                    Object execEmbeddedResult = executeRelatedResource(api, params, String.valueOf(id), embeddedEntry.getKey(), res);
+                    Object execEmbeddedResult = executeRelatedResource(response, api, params, String.valueOf(id), embeddedEntry.getKey(), res);
                     if (execEmbeddedResult != null)
                     {
                         if (execEmbeddedResult instanceof ExecutionResult)
@@ -592,14 +592,14 @@ public class ResourceWebScriptHelper
      * @param uniqueEntityId String
      * @return Map
      */
-    private Map<String,Object> executeRelatedResources(final Api api, Params params,
+    private Map<String,Object> executeRelatedResources(final WebScriptResponse res, final Api api, Params params,
                                                        Map<String, ResourceWithMetadata> relatedResources,
                                                        String uniqueEntityId)
     {
         final Map<String,Object> results = new HashMap<String,Object>(relatedResources.size());
         for (final Entry<String, ResourceWithMetadata> relation : relatedResources.entrySet())
         {
-            Object execResult = executeRelatedResource(api, params, uniqueEntityId, relation.getKey(), relation.getValue());
+            Object execResult = executeRelatedResource(res, api, params, uniqueEntityId, relation.getKey(), relation.getValue());
             if (execResult != null)
             {
               results.put(relation.getKey(), execResult);
@@ -619,7 +619,7 @@ public class ResourceWebScriptHelper
      * @param resource ResourceWithMetadata
      * @return Object
      */
-    private Object executeRelatedResource(final Api api, Params params,
+    private Object executeRelatedResource(final WebScriptResponse res, final Api api, Params params,
                 final String uniqueEntityId, final String resourceKey, final ResourceWithMetadata resource)
     {
         try
@@ -632,17 +632,8 @@ public class ResourceWebScriptHelper
                 paramFilter = filters.get(resourceKey);
             }
             final Params executionParams = Params.valueOf(paramFilter, uniqueEntityId, params.getRequest());
-            executor.execute(resource, executionParams, new ExecutionCallback()
-            {
-                @Override
-                public void onSuccess(Object result, ContentInfo contentInfo, int statusCode)
-                {
-                    resultOfExecution[0] = result;
-                }
-
-            });
-            
-            return resultOfExecution[0];
+            //Read only because this only occurs for GET requests
+            return executor.execute(resource, executionParams,res, true);
         }
         catch(NotFoundException e)
         {

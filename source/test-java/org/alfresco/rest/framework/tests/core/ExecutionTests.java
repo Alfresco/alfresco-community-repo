@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.http.HttpMethod;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
@@ -41,37 +42,19 @@ public class ExecutionTests extends AbstractContextTest
     {
         ResourceWithMetadata entityResource = locator.locateEntityResource(api,"sheep", HttpMethod.GET);
         AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
-        executor.execute(entityResource, Params.valueOf((String)null, null, mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<CollectionWithPagingInfo>(){
-            @Override
-            public void onSuccess(CollectionWithPagingInfo result, ContentInfo contentInfo, int statusCode)
-            {
-                assertNotNull(result);
-            }});
+        Object result = executor.execute(entityResource, Params.valueOf((String)null, null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
+        assertNotNull(result);
 
         ResourceWithMetadata baa = locator.locateRelationResource(api,"sheep", "baaahh", HttpMethod.GET);
-        executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
-        executor.execute(baa, Params.valueOf("4", null, mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<CollectionWithPagingInfo>(){
-            @Override
-            public void onSuccess(CollectionWithPagingInfo result, ContentInfo contentInfo, int statusCode )
-            {
-                assertNotNull(result);
-            }});
+        result = executor.execute(baa, Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
+        assertNotNull(result);
 
-        executor.execute(baa, Params.valueOf("4", "45", mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<ExecutionResult>(){
-            @Override
-            public void onSuccess(ExecutionResult result, ContentInfo contentInfo, int statusCode )
-            {
-                assertNotNull(result);
-            }});
+        executor.execute(baa, Params.valueOf("4", "45", mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
+        assertNotNull(result);
 
         ResourceWithMetadata baaPhoto = locator.locateRelationResource(api,"sheep/{entityId}/baaahh", "photo", HttpMethod.GET);
-        executor.execute(baaPhoto, Params.valueOf("4", "45", mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<CollectionWithPagingInfo>(){
-            @Override
-            public void onSuccess(CollectionWithPagingInfo result, ContentInfo contentInfo, int statusCode )
-            {
-                assertNull(result);
-            }});
-
+        executor.execute(baaPhoto, Params.valueOf("4", "45", mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
+        assertNotNull(result);
     }
 
     @Test
@@ -81,31 +64,19 @@ public class ExecutionTests extends AbstractContextTest
 
         ResourceWithMetadata resource = locator.locateRelationResource(api, "sheep", "blacksheep", HttpMethod.POST);
         final Sheep aSheep = new Sheep("xyz");
-        executor.execute(resource, Params.valueOf("654", null, NULL_PARAMS, Arrays.asList(aSheep), mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<ExecutionResult>(){
-            @Override
-            public void onSuccess(ExecutionResult result, ContentInfo contentInfo, int statusCode )
-            {
-                assertNotNull(result);
-                assertEquals(aSheep,result.getRoot());
-            }});
+
+        Object result = executor.execute(resource, Params.valueOf("654", null, NULL_PARAMS, Arrays.asList(aSheep), mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNotNull(result);
+        assertEquals(aSheep,((ExecutionResult)result).getRoot());
 
         ResourceWithMetadata grassResource = locator.locateEntityResource(api,"grass", HttpMethod.POST);
         final Grass grr = new Grass("grr");
-        executor.execute(grassResource, Params.valueOf("654", null, NULL_PARAMS, Arrays.asList(grr), mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<ExecutionResult>(){
-            @Override
-            public void onSuccess(ExecutionResult result, ContentInfo contentInfo, int statusCode )
-            {
-                assertEquals(grr,result.getRoot());
-            }});
+        result = executor.execute(grassResource, Params.valueOf("654", null, NULL_PARAMS, Arrays.asList(grr), mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertEquals(grr,((ExecutionResult)result).getRoot());
 
         ResourceWithMetadata entityResource = locator.locateRelationResource(api,"grass", "grow", HttpMethod.POST);
-        executor.execute(entityResource, Params.valueOf("654", null, NULL_PARAMS, grr, mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<String>(){
-            @Override
-            public void onSuccess(String result, ContentInfo contentInfo, int statusCode )
-            {
-                assertEquals("Growing well",result);
-            }});
-
+        result = executor.execute(entityResource,  Params.valueOf("654", null, NULL_PARAMS, grr, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertEquals("Growing well",result);
     }
 
     @Test
@@ -113,27 +84,16 @@ public class ExecutionTests extends AbstractContextTest
     {
         ResourceWithMetadata grassResource = locator.locateEntityResource(api,"grass", HttpMethod.DELETE);
         AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfDelete");
-        executor.execute(grassResource, Params.valueOf("4", null, mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<Object>(){
-            @Override
-            public void onSuccess(Object result, ContentInfo contentInfo, int statusCode )
-            {
-                assertNull(result);
-            }});
+        Object result = executor.execute(grassResource,  Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNull(result);
+
         ResourceWithMetadata resource = locator.locateRelationResource(api, "sheep", "blacksheep", HttpMethod.DELETE);
-        executor.execute(resource, Params.valueOf("4", null, mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<Object>(){
-            @Override
-            public void onSuccess(Object result, ContentInfo contentInfo, int statusCode )
-            {
-                assertNull(result);
-            }});
+        result = executor.execute(resource,  Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNull(result);
 
         ResourceWithMetadata goatDelete = locator.locateRelationResource(api3,"goat/{entityId}/herd", "content", HttpMethod.DELETE);
-        executor.execute(goatDelete, Params.valueOf("4", "56", mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<Object>(){
-            @Override
-            public void onSuccess(Object result, ContentInfo contentInfo, int statusCode )
-            {
-                assertNull(result);
-            }});
+        result = executor.execute(goatDelete,  Params.valueOf("4", "56", mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNull(result);
     }
 
 
@@ -143,28 +103,18 @@ public class ExecutionTests extends AbstractContextTest
         ResourceWithMetadata entityResource = locator.locateEntityResource(api,"sheep", HttpMethod.PUT);
         AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfPut");
         final Sheep aSheep = new Sheep("xyz");
-        executor.execute(entityResource, Params.valueOf("654", null, NULL_PARAMS, aSheep, mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<ExecutionResult>(){
-            @Override
-            public void onSuccess(ExecutionResult result, ContentInfo contentInfo, int statusCode )
-            {
-                assertNotNull(result);
-                assertEquals(aSheep,result.getRoot());
-            }});
+
+        Object result = executor.execute(entityResource, Params.valueOf("654", null, NULL_PARAMS, aSheep, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNotNull(result);
+        assertEquals(aSheep,((ExecutionResult)result).getRoot());
 
         ResourceWithMetadata resource = locator.locateRelationResource(api, "sheep", "blacksheep", HttpMethod.PUT);
-        executor.execute(resource, Params.valueOf("654", null, NULL_PARAMS, aSheep, mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<ExecutionResult>(){
-            @Override
-            public void onSuccess(ExecutionResult result, ContentInfo contentInfo, int statusCode )
-            {
-                assertNotNull(result);
-                assertEquals(aSheep,result.getRoot());
-            }});
+        result = executor.execute(resource, Params.valueOf("654", null, NULL_PARAMS, aSheep, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNotNull(result);
+        assertEquals(aSheep,((ExecutionResult)result).getRoot());
+
         ResourceWithMetadata baaPhoto = locator.locateRelationResource(api,"sheep/{entityId}/baaahh", "photo", HttpMethod.PUT);
-        executor.execute(baaPhoto, Params.valueOf("4", "56", mock(WebScriptRequest.class)), new ActionExecutor.ExecutionCallback<Object>(){
-            @Override
-            public void onSuccess(Object result, ContentInfo contentInfo, int statusCode )
-            {
-                assertNull(result);
-            }});
+        result = executor.execute(baaPhoto,  Params.valueOf("4", "56", mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
+        assertNull(result);
     }
 }

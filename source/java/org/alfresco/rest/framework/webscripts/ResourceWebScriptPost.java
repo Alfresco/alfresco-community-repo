@@ -216,8 +216,8 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
      * @param params parameters to use
      * @return anObject the result of the execute
      */
-    @SuppressWarnings("unchecked")
-    private Object executeInternal(ResourceWithMetadata resource, Params params) throws Throwable
+    @Override
+    public Object executeAction(ResourceWithMetadata resource, Params params) throws Throwable
     {
         final Object resObj = resource.getResource();
 
@@ -292,26 +292,6 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
         {
             return created;
         }
-    }
-
-    @Override
-    public void execute(final ResourceWithMetadata resource, final Params params, final ExecutionCallback executionCallback)
-    {
-        final String entityCollectionName = ResourceInspector.findEntityCollectionNameName(resource.getMetaData());
-        transactionService.getRetryingTransactionHelper().doInTransaction(
-            new RetryingTransactionCallback<Void>()
-            {
-                @SuppressWarnings("unchecked")
-                @Override
-                public Void execute() throws Throwable
-                {
-                    final ResourceOperation operation = resource.getMetaData().getOperation(HttpMethod.POST);
-                    Object result = executeInternal(resource, params);
-                    executionCallback.onSuccess(helper.processAdditionsToTheResponse(resource.getMetaData().getApi(), entityCollectionName, params, result),
-                            DEFAULT_JSON_CONTENT, operation.getSuccessStatus());
-                    return null;
-                }
-            }, false, true);
     }
 
 }

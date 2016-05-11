@@ -30,6 +30,7 @@ import org.alfresco.rest.framework.core.ResourceWithMetadata;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.springframework.extensions.webscripts.Status;
+import org.springframework.extensions.webscripts.WebScriptResponse;
 
 /**
  * Executes an action in the system
@@ -40,22 +41,12 @@ public interface ActionExecutor extends HttpMethodSupport
 {
 
     /**
-     * Invokes the resource with the Params calling the callback onSuccess
+     * Invokes the resource with the Params
      * @param resource ResourceWithMetadata
      * @param params Params
-     * @param executionCallback ExecutionCallback
+     * @param boolean should we use a readonly transaction.
      */
     @SuppressWarnings("rawtypes")
-    public void execute(ResourceWithMetadata resource, Params params, ExecutionCallback executionCallback);
-    
-    /**
-     * The result of an Action execution.
-     *
-     * @author Gethin James
-     */
-    public interface ExecutionCallback<R>
-    {
-        public void onSuccess(R result, ContentInfo contentInfo, int statusCode);
-    }
-    
+    public Object execute(ResourceWithMetadata resource, Params params, WebScriptResponse res, boolean isReadOnly);
+
 }

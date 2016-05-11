@@ -2093,7 +2093,7 @@ public class NodesImpl implements Nodes
         {
             switch (field.getName().toLowerCase())
             {
-                case "filename":
+                case "name":
                     String str = getStringOrNull(field.getValue());
                     if ((str != null) && (! str.isEmpty()))
                     {

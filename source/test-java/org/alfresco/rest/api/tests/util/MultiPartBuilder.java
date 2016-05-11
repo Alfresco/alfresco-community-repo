@@ -264,7 +264,7 @@ public class MultiPartBuilder
             fp.setCharSet(fileData.getEncoding());
             fp.setContentType(fileData.getMimetype());
             parts.add(fp);
-            addPartIfNotNull(parts, "filename", fileData.getFileName());
+            addPartIfNotNull(parts, "name", fileData.getFileName());
         }
         addPartIfNotNull(parts, "relativepath", relativePath);
         addPartIfNotNull(parts, "updatenoderef", updateNodeRef);

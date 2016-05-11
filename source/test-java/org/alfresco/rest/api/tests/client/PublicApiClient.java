@@ -577,7 +577,12 @@ public class PublicApiClient
 
 	public HttpResponse delete(String scope, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId) throws IOException
 	{
-		HttpResponse response = client.delete(getRequestContext(), scope, entityCollectionName, entityId, relationCollectionName, relationshipEntityId);
+		return delete(scope, 1, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, null);
+	}
+
+	public HttpResponse delete(String scope, int version, String entityCollectionName, Object entityId, String relationCollectionName, Object relationshipEntityId, Map<String, String> params) throws IOException
+	{
+		HttpResponse response = client.delete(getRequestContext(), scope, version, entityCollectionName, entityId, relationCollectionName, relationshipEntityId, params);
 		
 		logger.debug(response.toString());
 

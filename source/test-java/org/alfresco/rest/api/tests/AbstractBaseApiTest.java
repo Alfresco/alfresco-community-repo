@@ -202,9 +202,14 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected HttpResponse delete(String url, String runAsUser, String entityId, int expectedStatus) throws Exception
     {
+        return delete(url, runAsUser, entityId,  null, expectedStatus);
+    }
+
+    protected HttpResponse delete(String url, String runAsUser, String entityId,  Map<String, String> params, int expectedStatus) throws Exception
+    {
         publicApiClient.setRequestContext(new RequestContext(runAsUser));
 
-        HttpResponse response = publicApiClient.delete(getScope(), url, entityId, null, null);
+        HttpResponse response = publicApiClient.delete(getScope(), 1, url, entityId, null, null, params);
         checkStatus(expectedStatus, response.getStatusCode());
 
         return response;

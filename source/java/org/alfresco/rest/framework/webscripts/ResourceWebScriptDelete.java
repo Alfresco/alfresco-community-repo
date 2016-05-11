@@ -62,6 +62,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
     {
         String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
         String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
+        final Params.RecognizedParams params = ResourceWebScriptHelper.getRecognizedParams(req);
         
         switch (resourceMeta.getType())
         {
@@ -72,7 +73,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                  } 
                  else
                  {
-                   return Params.valueOf(entityId, relationshipId, req);
+                   return Params.valueOf(params, entityId, relationshipId, req);
 
                  }
             case RELATIONSHIP:
@@ -83,7 +84,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 } 
                 else
                 {
-                  return Params.valueOf(entityId, relationshipId, req);
+                  return Params.valueOf(params, entityId, relationshipId, req);
                 }   
             case PROPERTY:
                 final String resourceName = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_RESOURCE);
@@ -93,11 +94,11 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
                 {
                     if (StringUtils.isNotBlank(propertyName))
                     {
-                        return Params.valueOf(entityId, relationshipId, null, null, propertyName, null, null, req);
+                        return Params.valueOf(entityId, relationshipId, null, null, propertyName, params, null, req);
                     }
                     else
                     {
-                        return Params.valueOf(entityId, null, null, null, resourceName, null, null, req);
+                        return Params.valueOf(entityId, null, null, null, resourceName, params, null, req);
                     }
                 }
                 //Fall through to unsupported.

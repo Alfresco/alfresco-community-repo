@@ -51,9 +51,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthenticationService;
-import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.OwnableService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.PropertyCheck;
@@ -78,7 +76,6 @@ public class OwnableServiceImpl implements
     private TenantService tenantService;
     private Set<String> storesToIgnorePolicies = Collections.emptySet();
     private RenditionService renditionService;
-    private PersonService personService;
 
     public OwnableServiceImpl()
     {
@@ -130,11 +127,6 @@ public class OwnableServiceImpl implements
         this.renditionService = renditionService;
     }
 
-    public void setPersonService(PersonService personService)
-    {
-        this.personService = personService;
-    }
-
     public void afterPropertiesSet() throws Exception
     {
         PropertyCheck.mandatory(this, "nodeService", nodeService);
@@ -142,7 +134,6 @@ public class OwnableServiceImpl implements
         PropertyCheck.mandatory(this, "nodeOwnerCache", nodeOwnerCache);
         PropertyCheck.mandatory(this, "policyComponent", policyComponent);
         PropertyCheck.mandatory(this, "renditionService", renditionService);
-        PropertyCheck.mandatory(this, "personService", personService);
     }
     
     public void init()
@@ -287,25 +278,6 @@ public class OwnableServiceImpl implements
 
         if (!EqualsHelper.nullSafeEquals(pb, pa))
         {
-            if (pa != null)
-            {
-                String username = (String) pa;
-                NodeRef personNodeRef = null;
-
-                // validate that user authentication exists
-                if (authenticationService.authenticationExists(username))
-                {
-                    // validate that person exists
-                    // note: will attempt to create missing person, if allowed - may throw NoSuchPersonException
-                    personNodeRef = personService.getPerson(username, true);
-                }
-
-                if (personNodeRef == null)
-                {
-                    throw new NoSuchPersonException(username);
-                }
-            }
-
             nodeOwnerCache.remove(nodeRef);
             return;
         }

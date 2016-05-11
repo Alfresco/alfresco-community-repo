@@ -283,6 +283,8 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
     @Override
     public void emailSharedLink(String nodeId, QuickShareLinkEmailRequest emailRequest, Parameters parameters)
     {
+        checkEnabled();
+
         try
         {   NodeRef nodeRef = nodes.validateNode(nodeId);
             final String nodeName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);

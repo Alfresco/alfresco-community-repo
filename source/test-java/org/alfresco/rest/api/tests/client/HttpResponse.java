@@ -33,6 +33,7 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -81,16 +82,21 @@ public class HttpResponse
 		{
 			requestType = "GET";
 		}
-		else if(method instanceof PutMethod)
-		{
-			requestType = "PUT";
-			StringRequestEntity requestEntity = (StringRequestEntity)((PutMethod)method).getRequestEntity();
-			if(requestEntity != null)
-			{
-				requestBody = requestEntity.getContent();
-			}
-		}
-		else if(method instanceof PostMethod)
+        else if (method instanceof PutMethod)
+        {
+            requestType = "PUT";
+            RequestEntity requestEntity = ((PutMethod) method).getRequestEntity();
+            if (requestEntity instanceof StringRequestEntity)
+            {
+                StringRequestEntity stringRequestEntity = (StringRequestEntity) requestEntity;
+                requestBody = stringRequestEntity.getContent();
+            }
+            else if (requestEntity != null)
+            {
+                requestBody = requestEntity.toString();
+            }
+        }
+        else if(method instanceof PostMethod)
 		{
 			requestType = "POST";
 			StringRequestEntity requestEntity = (StringRequestEntity)((PostMethod)method).getRequestEntity();

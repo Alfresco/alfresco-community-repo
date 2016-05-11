@@ -34,6 +34,7 @@ import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
@@ -62,6 +63,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.TempFileProvider;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.junit.After;
@@ -69,6 +71,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.springframework.util.ResourceUtils;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -130,7 +133,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         repositoryHelper = applicationContext.getBean("repositoryHelper", Repository.class);
         jacksonUtil = new JacksonUtil(applicationContext.getBean("jsonHelper", JacksonHelper.class));
         permissionService = applicationContext.getBean("permissionService", PermissionService.class);
-        
+
         user1 = createUser("user1" + System.currentTimeMillis());
         user2 = createUser("user2" + System.currentTimeMillis());
         // We just need to clean the on-premise-users,
@@ -1151,6 +1154,96 @@ public class NodeApiTest extends AbstractBaseApiTest
         fUpdate = new Folder();
         fUpdate.setNodeType("cm:folder");
         put("nodes", user1, fId, toJsonAsStringNonNull(fUpdate), null, 400);
+    }
+
+    /**
+     * Tests update file content
+     * <p>PUT:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
+     */
+    @Test
+    public void testUpdateFileWithBinaryUpload() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(user1);
+
+        NodeRef myFilesNodeRef = repositoryHelper.getUserHome(personService.getPerson(user1));
+
+        Folder f1 = new Folder();
+        f1.setName("F1");
+        f1.setNodeType("cm:folder");
+
+        HttpResponse response = post(getChildrenUrl(myFilesNodeRef), user1, toJsonAsStringNonNull(f1), 201);
+        Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
+        assertEquals(f1.getName(), folderResp.getName());
+        final String f1_nodeId = folderResp.getId();
+        assertNotNull(f1_nodeId);
+
+        Document doc = new Document();
+        final String docName = "testdoc";
+        doc.setName(docName);
+        doc.setNodeType("cm:content");
+        ContentInfo contentInfo = new ContentInfo();
+        contentInfo.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        doc.setContent(contentInfo);
+
+        // create an empty file within F1 folder
+        response = post(getChildrenUrl(f1_nodeId), user1, toJsonAsStringNonNull(doc), 201);
+        Document docResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(docName, docResp.getName());
+        assertNotNull(docResp.getContent());
+        assertEquals(0, docResp.getContent().getSizeInBytes().intValue());
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, docResp.getContent().getMimeType());
+
+        // Update content & Download URL
+        final String url = "nodes/" + docResp.getId() + "/content";
+
+        // Update the empty node's content
+        String content = "The quick brown fox jumps over the lazy dog.";
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes());
+        File file = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+        BinaryPayload payload = new BinaryPayload(file, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+
+        // Try to update a folder!
+        putBinary("nodes/" + f1_nodeId + "/content", user1, payload, null, null, 400);
+
+        // Try to update a non-existent file
+        putBinary("nodes/" + UUID.randomUUID().toString() + "/content", user1, payload, null, null, 404);
+
+        // Update the empty file
+        response = putBinary(url, user1, payload, null, null, 200);
+        docResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(docName, docResp.getName());
+        assertNull(docResp.getPath());
+        assertNotNull(docResp.getContent());
+        assertTrue(docResp.getContent().getSizeInBytes().intValue() > 0);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, docResp.getContent().getMimeType());
+
+        // Download the file
+        response = getSingle(url, user1, null, 200);
+        assertEquals(content, response.getResponse());
+
+        // Update the node's content again. Also, change the mimeType and make the response to return path!
+        file = getResourceFile("quick.pdf");
+        payload = new BinaryPayload(file, MimetypeMap.MIMETYPE_PDF);
+
+        response = putBinary(url + "?select=path", user1, payload, null, null, 200);
+        docResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        assertEquals(docName, docResp.getName());
+        assertNotNull(docResp.getContent());
+        assertTrue(docResp.getContent().getSizeInBytes().intValue() > 0);
+        assertEquals(MimetypeMap.MIMETYPE_PDF, docResp.getContent().getMimeType());
+        PathInfo pathInfo = docResp.getPath();
+        assertNotNull(pathInfo);
+        assertTrue(pathInfo.getIsComplete());
+        List<ElementInfo> pathElements = pathInfo.getElements();
+        assertNotNull(pathElements);
+        assertTrue(pathElements.size() > 0);
+        // check the last element is F1
+        assertEquals(f1.getName(), pathElements.get(pathElements.size() - 1).getName());
+
+        // Download the file
+        response = getSingle(url, user1, null, 200);
+        assertNotNull(content, response.getResponse());
     }
 
     // TODO add test to create multiple folders & empty files (within same parent folder)

@@ -35,6 +35,7 @@ import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.Node;
@@ -45,7 +46,6 @@ import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
@@ -93,12 +93,9 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.servlet.FormData;
 
-import java.io.BufferedInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
-import java.nio.charset.Charset;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1001,10 +998,20 @@ public class NodesImpl implements Nodes
             }
         }
 
-        if (isContent) {
+        if (isContent)
+        {
             // add empty file
-            ContentWriter writer = sr.getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-            String mimeType = sr.getMimetypeService().guessMimetype(nodeName);
+            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+            String mimeType;
+            ContentInfo contentInfo = nodeInfo.getContent();
+            if (contentInfo != null && contentInfo.getMimeType() != null)
+            {
+                mimeType = contentInfo.getMimeType();
+            }
+            else
+            {
+                mimeType = mimetypeService.guessMimetype(nodeName);
+            }
             writer.setMimetype(mimeType);
             writer.putContent("");
         }
@@ -1159,34 +1166,34 @@ public class NodesImpl implements Nodes
     }
 
     @Override
-    public void updateContent(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
+    public Node updateContent(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
     {
         final NodeRef nodeRef = validateNode(fileNodeId);
 
-        if (! nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null))
+        if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null))
         {
-            throw new InvalidArgumentException("NodeId of content is expected: "+nodeRef);
+            throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef);
         }
 
-        ContentWriter writer = sr.getContentService().getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
 
         String mimeType = contentInfo.getMimeType();
         if (mimeType == null)
         {
-            String fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
+            String fileName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_CONTENT);
             writer.guessMimetype(fileName);
         }
         else
         {
             writer.setMimetype(mimeType);
         }
-
         writer.guessEncoding();
-
         writer.putContent(stream);
 
-        // TODO - hmm - we may wish to return json info !!
-        return;
+        return getFolderOrDocumentFullInfo(nodeRef,
+                    getParentNodeRef(nodeRef),
+                    nodeService.getType(nodeRef),
+                    parameters);
     }
 
     @Override
@@ -1389,9 +1396,8 @@ public class NodesImpl implements Nodes
     protected void write(NodeRef nodeRef, Content content, String fileName, boolean applyMimeType, boolean guessEncoding)
     {
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-        InputStream is;
         String mimeType = content.getMimetype();
-        // Per RA-637 requirement the mimeType provided by the client takes precedent, however,
+        // Per RA-637 requirement the mimeType provided by the client takes precedence, however,
         // if the mimeType is null, then it will be retrieved or guessed.
         if (mimeType == null || !applyMimeType)
         {
@@ -1405,28 +1411,17 @@ public class NodesImpl implements Nodes
                 mimeType = mimetypeService.guessMimetype(fileName);
             }
         }
+        writer.setMimetype(mimeType);
+
         if (guessEncoding)
         {
-            is = new BufferedInputStream(content.getInputStream());
-            is.mark(1024);
-
-            writer.setEncoding(guessEncoding(is, mimeType));
-            try
-            {
-                is.reset();
-            }
-            catch (IOException e)
-            {
-                logger.error("Failed to reset input stream", e);
-            }
+            writer.guessEncoding();
         }
         else
         {
             writer.setEncoding(content.getEncoding());
-            is = content.getInputStream();
         }
-        writer.setMimetype(mimeType);
-        writer.putContent(is);
+        writer.putContent(content.getInputStream());
     }
 
     /**
@@ -1446,22 +1441,6 @@ public class NodesImpl implements Nodes
         props.put(ContentModel.PROP_AUTO_VERSION_PROPS, autoVersionProps);
 
         versionService.ensureVersioningEnabled(nodeRef, props);
-    }
-
-    /**
-     * Guesses the character encoding of the given inputStream.
-     */
-    protected String guessEncoding(InputStream in, String mimeType)
-    {
-        String encoding = "UTF-8";
-
-        if (in != null)
-        {
-            Charset charset = mimetypeService.getContentCharsetFinder().getCharset(in, mimeType);
-            encoding = charset.name();
-        }
-
-        return encoding;
     }
 
     /**

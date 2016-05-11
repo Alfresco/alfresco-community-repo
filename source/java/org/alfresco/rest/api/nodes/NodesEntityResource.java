@@ -52,7 +52,7 @@ import java.io.InputStream;
 @EntityResource(name="nodes", title = "Nodes")
 public class NodesEntityResource implements
         EntityResourceAction.ReadById<Node>, EntityResourceAction.Delete, EntityResourceAction.Update<Node>,
-        BinaryResourceAction.Read, BinaryResourceAction.Update, InitializingBean
+        BinaryResourceAction.Read, BinaryResourceAction.Update<Node>, InitializingBean
 {
     private Nodes nodes;
 
@@ -93,9 +93,9 @@ public class NodesEntityResource implements
     @Override
     @WebApiDescription(title = "Upload content", description = "Upload content")
     @BinaryProperties({"content"})
-    public void updateProperty(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
+    public Node updateProperty(String fileNodeId, BasicContentInfo contentInfo, InputStream stream, Parameters parameters)
     {
-        nodes.updateContent(fileNodeId, contentInfo, stream, parameters);
+        return nodes.updateContent(fileNodeId, contentInfo, stream, parameters);
     }
 
     /**

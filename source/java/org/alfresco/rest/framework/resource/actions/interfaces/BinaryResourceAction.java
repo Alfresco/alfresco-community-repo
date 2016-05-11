@@ -79,7 +79,7 @@ public interface BinaryResourceAction
     /**
      * HTTP PUT - Updates a binary resource if it exists, error if not
      */
-    public static interface Update extends ResourceAction
+    public static interface Update<E> extends ResourceAction
     {
 
         /**
@@ -90,7 +90,7 @@ public interface BinaryResourceAction
          * @param contentInfo Basic information about the content stream
          * @param params {@link Parameters}
          */
-        public void updateProperty (String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params);
+        public E updateProperty (String entityId, BasicContentInfo contentInfo, InputStream stream, Parameters params);
     }
 
 }

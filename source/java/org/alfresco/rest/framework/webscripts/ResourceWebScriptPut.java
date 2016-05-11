@@ -31,7 +31,6 @@ import java.util.Locale;
 
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
-import org.alfresco.repo.web.scripts.BufferedRequest;
 import org.alfresco.rest.framework.core.ResourceInspector;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceMetadata;
@@ -196,10 +195,8 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 {
                     throw new DeletedResourceException("(UPDATE) "+resource.getMetaData().getUniqueId());
                 }
-                BinaryResourceAction.Update binUpdater = (BinaryResourceAction.Update) resource.getResource();
-                binUpdater.updateProperty(params.getEntityId(),params.getContentInfo(), params.getStream(), params);
-                //Don't pass anything to the callback - its just successful
-                return null;
+                BinaryResourceAction.Update<Object> binUpdater = (BinaryResourceAction.Update<Object>) resource.getResource();
+                return binUpdater.updateProperty(params.getEntityId(), params.getContentInfo(), params.getStream(), params);
             default:
                 throw new UnsupportedResourceOperationException("PUT not supported for Actions");
         }

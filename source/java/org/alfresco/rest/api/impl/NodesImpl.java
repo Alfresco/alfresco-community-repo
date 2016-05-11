@@ -1995,7 +1995,6 @@ public class NodesImpl implements Nodes
     private Node updateExistingFile(NodeRef parentNodeRef, NodeRef nodeRef, String fileName, BasicContentInfo contentInfo, InputStream stream, Parameters parameters, Boolean versionMajor, String versionComment)
     {
         boolean isVersioned = versionService.isVersioned(nodeRef);
-        FileInfo fileInfo = fileFolderService.getFileInfo(nodeRef);
 
         behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         try

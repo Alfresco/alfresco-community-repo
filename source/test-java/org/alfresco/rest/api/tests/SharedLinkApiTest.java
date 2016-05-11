@@ -208,7 +208,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         String shared2Id = resp.getId();
 
 
-        // auth access to get shared link info - as user1
+        // currently passing auth should make no difference (irrespective of MT vs non-MY enb)
+
+        // access to get shared link info - pass user1 (but ignore in non-MT)
         Map<String, String> params = Collections.singletonMap("include", "allowableOperations");
         response = getSingle(QuickShareLinkEntityResource.class, user1, shared1Id, params, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
@@ -216,13 +218,14 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(shared1Id, resp.getId());
         assertEquals(fileName1, resp.getName());
         assertEquals(d1Id, resp.getNodeId());
+        assertNull(resp.getAllowableOperations()); // include is ignored
 
-        assertEquals(user1, resp.getModifiedByUser().getId()); // returned if authenticated
-        assertEquals(user2, resp.getSharedByUser().getId()); // returned if authenticated
+        assertNull(resp.getModifiedByUser().getId()); // userId not returned
+        assertEquals(user1+" "+user1, resp.getModifiedByUser().getDisplayName());
+        assertNull(resp.getSharedByUser().getId()); // userId not returned
+        assertEquals(user2+" "+user2, resp.getSharedByUser().getDisplayName());
 
-        assertNull(resp.getAllowableOperations());
-
-        // auth access to get shared link info - as user2
+        // access to get shared link info - pass user2 (but ignore in non-MT)
         params = Collections.singletonMap("include", "allowableOperations");
         response = getSingle(QuickShareLinkEntityResource.class, user2, shared1Id, params, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
@@ -230,14 +233,15 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(shared1Id, resp.getId());
         assertEquals(fileName1, resp.getName());
         assertEquals(d1Id, resp.getNodeId());
+        assertNull(resp.getAllowableOperations()); // include is ignored
 
-        assertEquals(user1, resp.getModifiedByUser().getId()); // returned if authenticated
-        assertEquals(user2, resp.getSharedByUser().getId()); // returned if authenticated
+        assertNull(resp.getModifiedByUser().getId()); // userId not returned
+        assertEquals(user1+" "+user1, resp.getModifiedByUser().getDisplayName());
+        assertNull(resp.getSharedByUser().getId()); // userId not returned
+        assertEquals(user2+" "+user2, resp.getSharedByUser().getDisplayName());
 
-        assertEquals(1, resp.getAllowableOperations().size());
-        assertEquals("delete", resp.getAllowableOperations().get(0));
 
-        // allowable operations not included
+        // allowable operations not included - no params
         response = getSingle(QuickShareLinkEntityResource.class, user2, shared1Id, null, 200);
         resp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), QuickShareLink.class);
         assertNull(resp.getAllowableOperations());
@@ -250,7 +254,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         assertEquals(shared1Id, resp.getId());
         assertEquals(fileName1, resp.getName());
-        assertNull(resp.getNodeId()); // nodeId not returned
+        assertEquals(d1Id, resp.getNodeId());
         assertNull(resp.getAllowableOperations()); // include is ignored
 
         assertNull(resp.getModifiedByUser().getId()); // userId not returned

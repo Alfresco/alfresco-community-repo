@@ -176,13 +176,12 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             Pair<String, NodeRef> pair = quickShareService.getTenantNodeRefFromSharedId(sharedId);
             String networkTenantDomain = pair.getFirst();
 
-            final boolean noAuth = (AuthenticationUtil.getRunAsUser() == null);
-
             return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<QuickShareLink>()
             {
                 public QuickShareLink doWork() throws Exception
                 {
-                    return getQuickShareInfo(sharedId, noAuth, parameters.getInclude());
+                    // note: assume noAuth here (rather than rely on getRunAsUser which will be null in non-MT)
+                    return getQuickShareInfo(sharedId, true, parameters.getInclude());
                 }
             }, networkTenantDomain);
         }
@@ -305,8 +304,6 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
         List<QuickShareLink> result = new ArrayList<>(nodeIds.size());
 
-        boolean noAuth = (AuthenticationUtil.getRunAsUser() == null);
-
         List<String> includeParam = parameters.getInclude();
 
         for (QuickShareLink qs : nodeIds)
@@ -334,7 +331,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
                 try
                 {
                     QuickShareDTO qsDto = quickShareService.shareContent(nodeRef);
-                    result.add(getQuickShareInfo(qsDto.getId(), noAuth, includeParam));
+                    result.add(getQuickShareInfo(qsDto.getId(), false, includeParam));
                 }
                 catch (InvalidNodeRefException inre)
                 {
@@ -486,7 +483,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
             Map<String, UserInfo> mapUserInfo = new HashMap<>(2);
 
-            // note: if not authenticated then we do not currently return userids (to be consistent with v0 internal - limited disclosure)
+            // note: if noAuth mode then don't return userids (to limit disclosure and be consistent with v0 internal)
             boolean displayNameOnly = noAuth;
 
             UserInfo modifiedByUser = Node.lookupUserInfo((String)nodeProps.get(ContentModel.PROP_MODIFIER), mapUserInfo, personService, displayNameOnly);
@@ -495,13 +492,14 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             String sharedByUserId = (String)nodeProps.get(QuickShareModel.PROP_QSHARE_SHAREDBY);
             UserInfo sharedByUser = Node.lookupUserInfo(sharedByUserId, mapUserInfo, personService, displayNameOnly);
 
-            QuickShareLink qs = new QuickShareLink(sharedId, (noAuth ? null : nodeRef.getId()));
+            QuickShareLink qs = new QuickShareLink(sharedId, nodeRef.getId());
             qs.setName((String) map.get("name"));
             qs.setContent(contentInfo);
             qs.setModifiedAt((Date) map.get("modified"));
             qs.setModifiedByUser(modifiedByUser);
             qs.setSharedByUser(sharedByUser);
 
+            // note: if noAuth mode then do not return allowable operations (eg. but can be optionally returned when finding shared links)
             if ((! noAuth) && includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
             {
                 if (canDeleteSharedLink(nodeRef, sharedByUserId))

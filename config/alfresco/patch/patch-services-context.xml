@@ -1454,5 +1454,13 @@
             </list>
         </property>
     </bean>
-    
+
+    <bean id="patch.updateAdminUserWhenDefault" class="org.alfresco.repo.admin.patch.impl.AdminUserPatch" parent="basePatch" >
+        <property name="id"><value>patch.updateAdminUserWhenDefault</value></property>
+        <property name="description"><value>patch.updateAdminUserWhenDefault.description</value></property>
+        <property name="fixesFromSchema"><value>0</value></property>
+        <property name="fixesToSchema"><value>9030</value></property>
+        <property name="targetSchema"><value>9031</value></property>
+        <property name="authenticationContextManager" ref="Authentication" />
+    </bean>
 </beans>

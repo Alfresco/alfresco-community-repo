@@ -703,6 +703,19 @@ public interface NodeDAO extends NodeBulkLoader
             ChildAssocRefQueryCallback resultsCallback);
 
     /**
+     * @param parentNodeId              the parent node id
+     * @param minNodeId                 the minimum node ID (inclusive), <tt>null</tt> for no limitation on the minimum value of the node id
+     * @param maxNodeId                 the maximum node ID (exclusive), <tt>null</tt> for no limitation on the maximum value of the node id
+     * @param assocToExcludeTypeQNames  the node associations to exclude, <tt>null</tt> for no filtering of the associations types
+     * @return list of child nodes
+     */
+    public List<Node> selectChildAssocsWithoutNodeAssocsOfTypes(
+            final Long parentNodeId,
+            final Long minNodeId,
+            final Long maxNodeId,
+            final Set<QName> assocToExcludeTypeQNames);
+
+    /**
      * Finds the association between the node's primary parent and the node itself
      * 
      * @return                      Returns the primary (defining) association or <tt>null</tt>
@@ -873,6 +886,16 @@ public interface NodeDAO extends NodeBulkLoader
      */
     public Long getMaxNodeId();
     
+    /**
+     * Returns the [minId, maxId] interval for nodes of a type, with the transaction time in the given window time.
+     * 
+     * @param type           the node type
+     * @param startTxnTime   the starting transaction time, <tt>null</tt> is allowed, case in which no minimum transaction time is considered
+     * @param endTxnTime     the end transaction time, <tt>null</tt> is allowed, case in which no maximum transaction time is considered
+     * @return the interval, as a pair
+     */
+    public Pair<Long, Long> getNodeIdsIntervalForType(QName type, Long startTxnTime, Long endTxnTime);
+
     /**
      * Select children by property values
      */

@@ -114,6 +114,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String DELETE_NODE_PROPERTIES = "alfresco.node.delete_NodeProperties";
     private static final String SELECT_NODE_MIN_ID = "alfresco.node.select_NodeMinId";
     private static final String SELECT_NODE_MAX_ID = "alfresco.node.select_NodeMaxId";
+    private static final String SELECT_NODE_INTERVAL_BY_TYPE = "alfresco.node.select_MinMaxNodeIdForNodeType";
     private static final String SELECT_NODES_WITH_ASPECT_IDS = "alfresco.node.select_NodesWithAspectIds";
     private static final String INSERT_NODE_ASSOC = "alfresco.node.insert.insert_NodeAssoc";
     private static final String UPDATE_NODE_ASSOC = "alfresco.node.update_NodeAssoc";
@@ -138,6 +139,8 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     private static final String SELECT_CHILD_ASSOC_OF_PARENT_BY_NAME = "alfresco.node.select_ChildAssocOfParentByName";
     private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_PARENT_ASSOCS_OF_TYPE =
             "alfresco.node.select_ChildAssocsOfParentWithoutParentAssocsOfType";
+    private static final String SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_NODE_ASSOCS_OF_TYPE =
+            "alfresco.node.select_ChildAssocsOfParentWithoutNodeAssocsOfType";
     private static final String SELECT_PARENT_ASSOCS_OF_CHILD = "alfresco.node.select_ParentAssocsOfChild";
     private static final String UPDATE_PARENT_ASSOCS_OF_CHILD = "alfresco.node.update_ParentAssocsOfChild";
     private static final String DELETE_SUBSCRIPTIONS = "alfresco.node.delete_NodeSubscriptions";
@@ -371,6 +374,38 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
     public Long getMaxNodeId()
     {
         return (Long) template.selectOne(SELECT_NODE_MAX_ID);
+    }
+
+    @Override
+    public Pair<Long, Long> getNodeIdsIntervalForType(QName type, Long startTxnTime, Long endTxnTime)
+    {
+        final Pair<Long, Long> intervalPair = new Pair<Long, Long>(LONG_ZERO, LONG_ZERO);
+        Pair<Long, QName> typePair = qnameDAO.getQName(type);
+        if (typePair == null)
+        {
+            // Return default
+            return intervalPair;
+        }
+        TransactionQueryEntity txnQuery = new TransactionQueryEntity();
+        txnQuery.setTypeQNameId(typePair.getFirst());
+        txnQuery.setMinCommitTime(startTxnTime);
+        txnQuery.setMaxCommitTime(endTxnTime);
+        
+        ResultHandler resultHandler = new ResultHandler()
+        {
+            @SuppressWarnings("unchecked")
+            public void handleResult(ResultContext context)
+            {
+                Map<Long, Long> result = (Map<Long, Long>) context.getResultObject();
+                if (result != null)
+                {
+                    intervalPair.setFirst(result.get("minId"));
+                    intervalPair.setSecond(result.get("maxId"));
+                }
+            }
+        };
+        template.select(SELECT_NODE_INTERVAL_BY_TYPE, txnQuery, resultHandler);
+        return intervalPair;
     }
 
     @Override
@@ -1385,7 +1420,30 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         resultsCallback.done();
     }
 
-    @SuppressWarnings("unchecked")
+    @Override
+    public List<Node> selectChildAssocsWithoutNodeAssocsOfTypes(Long parentNodeId, Long minNodeId, Long maxNodeId, Set<QName> assocTypeQNames)
+    {
+        IdsEntity idsEntity = new IdsEntity();
+        
+        // Parent node id
+        Assert.notNull(parentNodeId, "The parent node id must not be null.");
+        idsEntity.setIdOne(parentNodeId);
+        // Node ids selection interval
+        idsEntity.setIdTwo(minNodeId);
+        idsEntity.setIdThree(maxNodeId);
+        // Associations types to exclude
+        if (assocTypeQNames != null)
+        {
+            Set<Long> childNodeTypeQNameIds = qnameDAO.convertQNamesToIds(assocTypeQNames, false);
+            if (childNodeTypeQNameIds.size() > 0)
+            {
+                idsEntity.setIds(new ArrayList<Long>(childNodeTypeQNameIds)); 
+            }
+        }
+        
+        return template.selectList(SELECT_CHILD_ASSOCS_OF_PARENT_WITHOUT_NODE_ASSOCS_OF_TYPE, idsEntity);
+    }
+
     @Override
     protected List<ChildAssocEntity> selectPrimaryParentAssocs(Long childNodeId)
     {
@@ -1665,7 +1723,7 @@ public class NodeDAOImpl extends AbstractNodeDAOImpl
         if (deletedTypePair == null)
         {
             // Nothing to do
-            return 0L;
+            return LONG_ZERO;
         }
         TransactionQueryEntity txnQuery = new TransactionQueryEntity();
         txnQuery.setTypeQNameId(deletedTypePair.getFirst());

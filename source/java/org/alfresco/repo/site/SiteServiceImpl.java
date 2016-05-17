@@ -2262,10 +2262,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         List<String> groups = getPermissionGroups(shortName, authorityName);
         for (String group : groups)
         {
-            int index = group.indexOf(shortName) + shortName.length();
+            String shortNamePattern = '_' + shortName + '_';
+            int index = group.lastIndexOf(shortNamePattern) + (shortNamePattern).length();
             if (index != -1)
             {
-                result.add(group.substring(index + 1));
+                result.add(group.substring(index));
             }
         }
         return result;

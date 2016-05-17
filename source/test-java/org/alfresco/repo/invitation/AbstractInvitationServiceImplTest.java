@@ -40,6 +40,7 @@ import javax.mail.internet.MimeMessage;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
+import org.alfresco.repo.processor.TemplateServiceImpl;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
@@ -51,9 +52,7 @@ import org.alfresco.service.cmr.invitation.InvitationService;
 import org.alfresco.service.cmr.invitation.ModeratedInvitation;
 import org.alfresco.service.cmr.invitation.NominatedInvitation;
 import org.alfresco.service.cmr.repository.TemplateService;
-import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.security.PersonService.PersonInfo;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -62,7 +61,6 @@ import org.alfresco.util.PropertyMap;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.util.ReflectionUtils;
-import org.alfresco.repo.processor.TemplateServiceImpl;
 
 /**
  * Unit tests of Invitation Service
@@ -658,6 +656,39 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
             ex.printStackTrace();
             System.out.println(ex.toString());
             fail("Process email message template exception");
+        }
+    }
+    
+    /**
+     * MNT-15614 Site with name "IT" cannot be managed properly
+     * 
+     * @throws Exception
+     */
+    public void test_MNT15614() throws Exception
+    {
+        String[] siteNames = {"it", "site", "GROUP"};
+        String inviteeUserName = USER_ONE;
+        Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE;
+
+        String inviteeRole = SiteModel.SITE_COLLABORATOR;
+        String acceptUrl = "froob";
+        String rejectUrl = "marshmallow";
+        
+        this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+        
+        for (String siteName : siteNames)
+        {
+            SiteInfo siteInfoRed = siteService.getSite(siteName);
+            if (siteInfoRed == null)
+            {
+                siteService.createSite("InviteSitePreset", siteName, "InviteSiteTitle",
+                        "InviteSiteDescription", SiteVisibility.MODERATED);
+            }
+
+            // Invite user
+            NominatedInvitation nominatedInvitation = invitationService.inviteNominated(
+                    inviteeUserName, resourceType, siteName, inviteeRole, acceptUrl, rejectUrl);
+            assertNotNull("nominated invitation is null", nominatedInvitation);
         }
     }
     

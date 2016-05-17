@@ -869,6 +869,33 @@ public class SiteServiceImplTest extends BaseAlfrescoSpringTest
         startNewTransaction();
     }
     
+    public void testMNT_15614() throws Exception
+    {
+        RetryingTransactionCallback<Object> work = new RetryingTransactionCallback<Object>()
+        {
+
+            @Override
+            public Object execute() throws Throwable
+            {
+                String[] siteNames = { "it", "site", "GROUP" };
+
+                authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+                for (String siteName : siteNames)
+                {
+                    siteService.createSite(siteName, siteName, siteName, siteName, SiteVisibility.PUBLIC);
+                    assertEquals( SiteModel.SITE_MANAGER, siteService.getMembersRole(siteName, AuthenticationUtil.getAdminUserName()));
+                    siteService.deleteSite(siteName);
+                }
+
+                return null;
+            }
+        };
+        endTransaction();
+        transactionService.getRetryingTransactionHelper().doInTransaction(work);
+        startNewTransaction();
+    }
+    
     /**
      * Test listSite case sensitivity
      */

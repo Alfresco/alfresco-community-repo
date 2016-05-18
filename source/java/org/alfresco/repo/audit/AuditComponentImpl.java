@@ -263,6 +263,10 @@ public class AuditComponentImpl implements AuditComponent
 
     /**
      * {@inheritDoc}
+     * <p/>
+     * Note that if DEBUG is on for the the {@link #INBOUND_LOGGER}, then <tt>true</tt>
+     * will always be returned.
+     * 
      * @since 3.4
      */
     @Override
@@ -270,7 +274,7 @@ public class AuditComponentImpl implements AuditComponent
     {
         PathMapper pathMapper = auditModelRegistry.getAuditPathMapper();
         Set<String> mappedPaths = pathMapper.getMappedPathsWithPartialMatch(path);
-        return mappedPaths.size() > 0;
+        return loggerInbound.isDebugEnabled() || mappedPaths.size() > 0;
     }
 
     /**

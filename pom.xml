@@ -32,6 +32,7 @@
         <installer.libreoffice.version>4.4.5-20151016</installer.libreoffice.version>
         <installer.ghostscript.version>8.64</installer.ghostscript.version>
         <installer.imagemagick.version>6.9.1</installer.imagemagick.version>
+        <installer.manager.version>1.0</installer.manager.version>
 
         <!-- Build timestamp for installer file name -->
         <installer.build.timestamp>${maven.build.timestamp}</installer.build.timestamp>

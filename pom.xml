@@ -245,6 +245,36 @@
             <classifier>win</classifier>
             <type>tgz</type>
         </dependency>
+        
+        <!-- Manager -->
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>manager</artifactId>
+            <version>${installer.manager.version}</version>
+            <classifier>linux</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>manager</artifactId>
+            <version>${installer.manager.version}</version>
+            <classifier>osx</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>manager</artifactId>
+            <version>${installer.manager.version}</version>
+            <classifier>win32</classifier>
+            <type>tgz</type>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>manager</artifactId>
+            <version>${installer.manager.version}</version>
+            <classifier>win64</classifier>
+            <type>tgz</type>
+        </dependency>
     </dependencies>
 
     <build>

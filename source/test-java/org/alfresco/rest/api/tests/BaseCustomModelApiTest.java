@@ -33,7 +33,6 @@ import org.alfresco.rest.api.model.CustomModelConstraint;
 import org.alfresco.rest.api.model.CustomModelNamedValue;
 import org.alfresco.rest.api.model.CustomModelProperty;
 import org.alfresco.rest.api.model.CustomType;
-import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.dictionary.CustomModelDefinition;
@@ -230,6 +229,15 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
 
     protected void compareCustomModelConstraints(CustomModelConstraint expectedConstraint, CustomModelConstraint actualConstraint, String... excludeFields)
     {
+        if (expectedConstraint.getParameters() != null)
+        {
+            Collections.sort(expectedConstraint.getParameters());
+        }
+        if (actualConstraint.getParameters() != null)
+        {
+            Collections.sort(actualConstraint.getParameters());
+        }
+
         boolean result = EqualsBuilder.reflectionEquals(expectedConstraint, actualConstraint, excludeFields);
         assertTrue("Two constraints are not equal. Expected:<" + expectedConstraint.toString() + "> but was:<" + actualConstraint.toString() + ">", result);
     }

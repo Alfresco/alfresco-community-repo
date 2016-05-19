@@ -93,9 +93,9 @@ public interface AuditComponent
     public boolean areAuditValuesRequired();
     
     /**
-     * Determine whether there are any audit applications registered to record data for the given
-     * path.  This helper method gives data producers a shortcut in the event that nothing would
-     * be recorded in any event.
+     * Determines if audit values are required based on whether there are any audit applications
+     * registered to record data for the given path. This helper method gives data producers a 
+     * shortcut in the event that nothing would be recorded in any event.
      * 
      * @param path              the audit path
      * @return                  Returns <tt>true</tt> if there is at least one audit application

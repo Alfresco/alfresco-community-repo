@@ -3,6 +3,7 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>alfresco-rm-community-repo</artifactId>
    <name>Alfresco Records Management Community Repo</name>
+   <description>Alfresco Record Management Core Repository Extension</description>
    <packaging>amp</packaging>
 
    <parent>

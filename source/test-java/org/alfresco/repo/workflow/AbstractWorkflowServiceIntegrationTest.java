@@ -35,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.activiti.engine.HistoryService;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
@@ -97,6 +98,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
     protected ServiceRegistry serviceRegistry;
     protected WorkflowTestHelper wfTestHelper;
     protected TransactionServiceImpl transactionService;
+    protected HistoryService historyService;
     
     public void testDeployWorkflowDefinition()
     {
@@ -1341,6 +1343,7 @@ public abstract class AbstractWorkflowServiceIntegrationTest extends BaseSpringT
         this.workflowService = serviceRegistry.getWorkflowService();
         this.authenticationComponent = (AuthenticationComponent) applicationContext.getBean("authenticationComponent");
         this.nodeService = serviceRegistry.getNodeService();
+        this.historyService = (HistoryService) applicationContext.getBean("activitiHistoryService");
         Repository repositoryHelper = (Repository) applicationContext.getBean("repositoryHelper");
         this.companyHome = repositoryHelper.getCompanyHome();
         try

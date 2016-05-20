@@ -35,11 +35,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.activiti.engine.history.HistoricProcessInstance;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.workflow.AbstractWorkflowServiceIntegrationTest;
+import org.alfresco.repo.workflow.WorkflowBuilder;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.dictionary.TypeDefinition;
@@ -638,6 +640,26 @@ public class ActivitiWorkflowServiceIntegrationTest extends AbstractWorkflowServ
         assertNotNull(completed);
     }
 
+    public void testBuildWorkflowWithNoUserTasks() throws Exception 
+    {
+        // Deploy a definition containing only a service task
+        WorkflowDefinition testDefinition = deployDefinition("activiti/testWorkflowNoUserTasks.bpmn20.xml");
+        WorkflowBuilder builder = new WorkflowBuilder(testDefinition, workflowService, nodeService, null);
+        // Build a workflow
+        WorkflowInstance builtInstance = builder.build();
+        assertNotNull(builtInstance);
+        
+        // Check that there is no active workflow for the deployed definition(it should have finished already due to absence of user tasks)
+        List<WorkflowInstance> activeInstances = workflowService.getActiveWorkflows(testDefinition.getId());
+        assertNotNull(activeInstances);
+        assertEquals(0, activeInstances.size());
+        
+        // Check that there's a historic record of our 'only service task' workflow being run.
+        HistoricProcessInstance historicProcessInstance = historyService.createHistoricProcessInstanceQuery()
+                .finishedAfter(builtInstance.getStartDate())
+                .singleResult();
+        assertNotNull(historicProcessInstance);
+    }
 
     @Override
     protected String getEngine()

@@ -100,7 +100,9 @@ public class WorkflowBuilder
         NodeRef packageRef = packageMgr.create(packageNode);
         params.put(WorkflowModel.ASSOC_PACKAGE, packageRef);
         WorkflowPath path = workflowService.startWorkflow(definition.getId(), params);
-        signalStartTask(path);
+        if (path.isActive()){
+            signalStartTask(path);
+        }
         return path.getInstance();
     }
 

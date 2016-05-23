@@ -12,13 +12,11 @@
    </parent>
 
    <properties>
-   
       <selenium.version>2.45.0</selenium.version>
       <spring.version>4.0.5.RELEASE</spring.version>
       <maven.build.sourceVersion>1.8</maven.build.sourceVersion>
       <suiteXmlFile>testng.xml</suiteXmlFile>
       <skip.automationtests>true</skip.automationtests>
-      
    </properties>
 
    <build>
@@ -28,15 +26,15 @@
             <artifactId>build-helper-maven-plugin</artifactId>
             <executions>
                <execution>
-                   <id>add-test-source</id>
-                   <goals>
-                      <goal>add-test-source</goal>
-                   </goals>
-                   <configuration>
-                      <sources>
-                         <source>src/unit-test/java</source>
-                      </sources>
-                   </configuration>
+                  <id>add-test-source</id>
+                  <goals>
+                     <goal>add-test-source</goal>
+                  </goals>
+                  <configuration>
+                     <sources>
+                        <source>src/unit-test/java</source>
+                     </sources>
+                  </configuration>
                </execution>
             </executions>
          </plugin>
@@ -66,55 +64,43 @@
                </execution>
             </executions>
          </plugin>
-         
-         <!-- License header generation -->
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
-            <artifactId>license-maven-plugin</artifactId>          
-            <configuration>                        
+            <artifactId>license-maven-plugin</artifactId>
+            <configuration>
                <licenseName>alfresco_enterprise</licenseName>
                <licenseResolver>file:${project.parent.basedir}/license</licenseResolver>
                <descriptionTemplate>${project.parent.basedir}/license/description.ftl</descriptionTemplate>
             </configuration>
-         </plugin> 
-	      
+         </plugin>
       </plugins>
       <pluginManagement>
-      	<plugins>
-      		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
-      		<plugin>
-      			<groupId>org.eclipse.m2e</groupId>
-      			<artifactId>lifecycle-mapping</artifactId>
-      			<version>1.0.0</version>
-      			<configuration>
-      				<lifecycleMappingMetadata>
-      					<pluginExecutions>
-      						<pluginExecution>
-      							<pluginExecutionFilter>
-      								<groupId>
-      									org.codehaus.mojo
-      								</groupId>
-      								<artifactId>
-      									license-maven-plugin
-      								</artifactId>
-      								<versionRange>
-      									[1.8,)
-      								</versionRange>
-      								<goals>
-      									<goal>
-      										update-file-header
-      									</goal>
-      								</goals>
-      							</pluginExecutionFilter>
-      							<action>
-      								<ignore />
-      							</action>
-      						</pluginExecution>      						
-      					</pluginExecutions>
-      				</lifecycleMappingMetadata>
-      			</configuration>
-      		</plugin>
-      	</plugins>
+         <plugins>
+            <plugin>
+               <groupId>org.eclipse.m2e</groupId>
+               <artifactId>lifecycle-mapping</artifactId>
+               <version>1.0.0</version>
+               <configuration>
+                  <lifecycleMappingMetadata>
+                     <pluginExecutions>
+                        <pluginExecution>
+                           <pluginExecutionFilter>
+                              <groupId>org.codehaus.mojo</groupId>
+                              <artifactId>license-maven-plugin</artifactId>
+                              <versionRange>[1.8,)</versionRange>
+                              <goals>
+                                 <goal>update-file-header</goal>
+                              </goals>
+                           </pluginExecutionFilter>
+                           <action>
+                              <ignore />
+                           </action>
+                        </pluginExecution>
+                     </pluginExecutions>
+                  </lifecycleMappingMetadata>
+               </configuration>
+            </plugin>
+         </plugins>
       </pluginManagement>
    </build>
 
@@ -245,19 +231,7 @@
                            <artifactItems>
                               <artifactItem>
                                  <groupId>org.alfresco</groupId>
-                                 <artifactId>alfresco-rm-community-share</artifactId>
-                                 <version>${project.version}</version>
-                                 <type>amp</type>
-                              </artifactItem>
-                              <artifactItem>
-                                 <groupId>org.alfresco</groupId>
                                  <artifactId>alfresco-rm-enterprise-share</artifactId>
-                                 <version>${project.version}</version>
-                                 <type>amp</type>
-                              </artifactItem>
-                              <artifactItem>
-                                 <groupId>org.alfresco</groupId>
-                                 <artifactId>alfresco-rm-community-repo</artifactId>
                                  <version>${project.version}</version>
                                  <type>amp</type>
                               </artifactItem>
@@ -280,18 +254,6 @@
                   <extensions>true</extensions>
                   <executions>
                      <execution>
-                        <id>install-community-repo-amp</id>
-                        <goals>
-                           <goal>install</goal>
-                        </goals>
-                        <phase>process-test-resources</phase>
-                        <configuration>
-                           <backup>true</backup>
-                           <ampLocation>${project.build.directory}/amps/alfresco-rm-community-repo-${project.version}.amp</ampLocation>
-                           <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/alfresco.war</warLocation>
-                        </configuration>
-                     </execution>
-                     <execution>
                         <id>install-enterprise-repo-amp</id>
                         <goals>
                            <goal>install</goal>
@@ -301,18 +263,6 @@
                            <backup>true</backup>
                            <ampLocation>${project.build.directory}/amps/alfresco-rm-enterprise-repo-${project.version}.amp</ampLocation>
                            <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/alfresco.war</warLocation>
-                        </configuration>
-                     </execution>
-                     <execution>
-                        <id>install-community-share-amp</id>
-                        <goals>
-                           <goal>install</goal>
-                        </goals>
-                        <phase>process-test-resources</phase>
-                        <configuration>
-                           <backup>true</backup>
-                           <ampLocation>${project.build.directory}/amps/alfresco-rm-community-share-${project.version}.amp</ampLocation>
-                           <warLocation>${project.build.directory}/alf-installation/tomcat/webapps/share.war</warLocation>
                         </configuration>
                      </execution>
                      <execution>

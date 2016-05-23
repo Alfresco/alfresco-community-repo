@@ -158,6 +158,16 @@ public interface Nodes
     BinaryResource getContent(String fileNodeId, Parameters parameters, boolean recordActivity);
 
     /**
+     * Download file content.
+     *
+     * @param nodeRef        the content nodeRef
+     * @param parameters
+     * @param recordActivity true, if an activity post is required.
+     * @return
+     */
+    BinaryResource getContent(NodeRef nodeRef, Parameters parameters, boolean recordActivity);
+
+    /**
      * Uploads file content (updates existing node with new content).
      *
      * Note: may create a new version, depending on versioning behaviour.
@@ -215,7 +225,7 @@ public interface Nodes
     String PATH_SHARED = "-shared-";
 
     String OP_CREATE = "create";
-    String OP_DELETE= "delete";
+    String OP_DELETE = "delete";
     String OP_UPDATE = "update";
 
     String PARAM_RELATIVE_PATH = "relativePath";
@@ -244,6 +254,4 @@ public interface Nodes
 
     String PARAM_VERSION_MAJOR = "majorVersion"; // true if major, false if minor
     String PARAM_VERSION_COMMENT = "comment";
-
-    String PARAM_RENDITIONS = "renditions";
 }

@@ -46,6 +46,7 @@ import org.alfresco.repo.audit.AuditComponent;
 import org.alfresco.repo.audit.AuditServiceImpl;
 import org.alfresco.repo.audit.UserAuditFilter;
 import org.alfresco.repo.jscript.ClasspathScriptLocation;
+import org.alfresco.repo.node.NodeRefPropertyMethodInterceptor;
 import org.alfresco.repo.policy.Behaviour.NotificationFrequency;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
@@ -122,6 +123,8 @@ public class TaggingServiceImplTest extends TestCase
     private MutableAuthenticationService authenticationService;
     private AsyncOccurs asyncOccurs;
     
+    private NodeRefPropertyMethodInterceptor nodeRefPropInterceptor;
+    
     private static StoreRef storeRef;
     private static NodeRef rootNode;
     private NodeRef folder;
@@ -181,6 +184,7 @@ public class TaggingServiceImplTest extends TestCase
         this.personService = (PersonService)ctx.getBean("PersonService");
         this.permissionService = (PermissionService)ctx.getBean("PermissionService");
         this.authenticationService = (MutableAuthenticationService)ctx.getBean("authenticationService");
+        this.nodeRefPropInterceptor = (NodeRefPropertyMethodInterceptor)ctx.getBean("nodeRefPropertyInterceptor");
 
         if (init == false)
         {
@@ -2347,4 +2351,43 @@ public class TaggingServiceImplTest extends TestCase
             }
         });    	
     }
+    
+    /**
+     * Tests that when the deleteTag() method runs, it will remove invalid references to the deleted tag. 
+     */
+    public void testDeleteTag() throws Exception{
+        
+        try{
+            // We instruct the 'nodeRefPropInterceptor' to skip processing on the 'get' methods.
+            // This is needed because this interceptor removes any properties which are invalid. e.g. have been deleted.
+            // We need to make sure that the 'taggable' property stays put. 
+            nodeRefPropInterceptor.setFilterOnGet(false);
+            
+            this.transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>(){
+
+                @SuppressWarnings("unchecked")
+                @Override
+                public Void execute() throws Throwable
+                {
+                    taggingService.clearTags(folder);
+                    taggingService.addTag(folder, TAG_1);
+                    
+                    // The deleteTag() should remove any reference to the deleted tag
+                    List<NodeRef> taggableProperty = (List<NodeRef>) nodeService.getProperty(folder, ContentModel.PROP_TAGS);
+                    assertTrue("Our folder should have a reference on one tag.", taggableProperty.size() == 1);
+                    
+                    taggingService.deleteTag(TaggingServiceImplTest.storeRef, TAG_1);
+                    
+                    // The deleteTag() should remove any reference to the deleted tag
+                    taggableProperty = (List<NodeRef>) nodeService.getProperty(folder, ContentModel.PROP_TAGS);
+                    assertTrue("Our folder shouldn't have any references left to deleted tags.", taggableProperty.size() == 0);
+                    
+                    return null;
+                }
+            });
+        } finally{
+            nodeRefPropInterceptor.setFilterOnGet(true);
+        }
+    }
+
 }

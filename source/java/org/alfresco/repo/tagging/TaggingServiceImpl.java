@@ -415,8 +415,12 @@ public class TaggingServiceImpl implements TaggingService,
             // Queue all the before's for removal to the tag scope
             for (NodeRef beforeNodeRef : beforeNodeRefs)
             {
-                String tagName = getTagName(beforeNodeRef);
-                queueTagUpdate(nodeRef, tagName, false);
+                // Protect against InvalidNodeRefException(MNT-14453)
+                if (this.nodeService.exists(beforeNodeRef))
+                {
+                    String tagName = getTagName(beforeNodeRef);
+                    queueTagUpdate(nodeRef, tagName, false);
+                }
             }
         }
         else if (afterNodeRefs != null && beforeNodeRefs != null)
@@ -430,7 +434,8 @@ public class TaggingServiceImpl implements TaggingService,
                     // remove the node ref from the after list
                     afterNodeRefs.remove(beforeNodeRef);
                 }
-                else
+                // Protect against InvalidNodeRefException(MNT-14453)
+                else if (this.nodeService.exists(beforeNodeRef))
                 {
                     String tagName = getTagName(beforeNodeRef);
                     queueTagUpdate(nodeRef, tagName, false);
@@ -476,6 +481,15 @@ public class TaggingServiceImpl implements TaggingService,
     {
         // Lower the case of the tag
         tag = tag.toLowerCase();
+        
+        // Find nodes which are tagged with the 'soon to be deleted' tag.
+        List<NodeRef> taggedNodes = this.findTaggedNodes(storeRef, tag);
+        
+        // Clear the tag from the found nodes
+        for (NodeRef taggedNode : taggedNodes)
+        {
+            this.removeTag(taggedNode, tag);
+        }
         
         NodeRef tagNodeRef = getTagNodeRef(storeRef, tag);
         if (tagNodeRef != null)

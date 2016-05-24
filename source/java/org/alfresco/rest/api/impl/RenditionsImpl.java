@@ -28,6 +28,7 @@ package org.alfresco.rest.api.impl;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.thumbnail.ThumbnailDefinition;
 import org.alfresco.repo.thumbnail.ThumbnailHelper;
 import org.alfresco.repo.thumbnail.ThumbnailRegistry;
@@ -103,6 +104,7 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     private NamespaceService namespaceService;
     private ServiceRegistry serviceRegistry;
     private ResourceLoader resourceLoader;
+    private TenantService tenantService;
 
     public void setNodes(Nodes nodes)
     {
@@ -130,12 +132,18 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         this.resourceLoader = resourceLoader;
     }
 
+    public void setTenantService(TenantService tenantService)
+    {
+        this.tenantService = tenantService;
+    }
+
     public void init()
     {
         PropertyCheck.mandatory(this, "nodes", nodes);
         PropertyCheck.mandatory(this, "thumbnailService", thumbnailService);
         PropertyCheck.mandatory(this, "scriptThumbnailService", scriptThumbnailService);
         PropertyCheck.mandatory(this, "serviceRegistry", serviceRegistry);
+        PropertyCheck.mandatory(this, "tenantService", tenantService);
 
         this.nodeService = serviceRegistry.getNodeService();
         this.actionService = serviceRegistry.getActionService();
@@ -295,7 +303,13 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
     public BinaryResource getContent(String nodeId, String renditionId, Parameters parameters)
     {
         final NodeRef sourceNodeRef = validateSourceNode(nodeId);
-        final NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, renditionId, parameters);
+        return getContent(sourceNodeRef, renditionId, parameters);
+    }
+
+    @Override
+    public BinaryResource getContent(NodeRef sourceNodeRef, String renditionId, Parameters parameters)
+    {
+        NodeRef renditionNodeRef = getRenditionByName(sourceNodeRef, renditionId, parameters);
 
         // By default set attachment header (with rendition Id) unless attachment=false
         boolean attach = true;
@@ -389,7 +403,8 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         {
             return null;
         }
-        return nodeRefRendition.getChildRef();
+
+        return tenantService.getName(nodeRef, nodeRefRendition.getChildRef());
     }
 
     protected Rendition toApiRendition(NodeRef renditionNodeRef)

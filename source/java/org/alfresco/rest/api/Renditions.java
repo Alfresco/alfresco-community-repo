@@ -30,6 +30,7 @@ import org.alfresco.rest.api.model.Rendition;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
  * Renditions API
@@ -38,6 +39,8 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
  */
 public interface Renditions
 {
+    String PARAM_STATUS = "status";
+
     /**
      * Lists all available renditions includes those that have been created and those that are yet to be created.
      *
@@ -77,5 +80,13 @@ public interface Renditions
      */
     BinaryResource getContent(String nodeId, String renditionId, Parameters parameters);
 
-    String PARAM_STATUS = "status";
+    /**
+     * Downloads rendition.
+     *
+     * @param sourceNodeRef the source nodeRef
+     * @param renditionId   the rendition id
+     * @param parameters    the {@link Parameters} object to get the parameters passed into the request
+     * @return the rendition stream
+     */
+    BinaryResource getContent(NodeRef sourceNodeRef, String renditionId, Parameters parameters);
 }

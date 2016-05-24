@@ -237,15 +237,13 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
                         throw new InvalidNodeRefException(nodeRef);
                     }
 
-                    String nodeId = nodeRef.getId();
-
                     if (renditionId != null)
                     {
-                        return renditions.getContent(nodeId, renditionId, parameters);
+                        return renditions.getContent(nodeRef, renditionId, parameters);
                     }
                     else
                     {
-                        return nodes.getContent(nodeId, parameters, false);
+                        return nodes.getContent(nodeRef, parameters, false);
                     }
                 }
             }, networkTenantDomain);

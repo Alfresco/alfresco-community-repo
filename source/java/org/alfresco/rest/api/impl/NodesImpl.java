@@ -1957,15 +1957,20 @@ public class NodesImpl implements Nodes
     public BinaryResource getContent(String fileNodeId, Parameters parameters, boolean recordActivity)
     {
         final NodeRef nodeRef = validateNode(fileNodeId);
+        return getContent(nodeRef, parameters, recordActivity);
+    }
 
-        if (! nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
+    @Override
+    public BinaryResource getContent(NodeRef nodeRef, Parameters parameters, boolean recordActivity)
+    {
+        if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
         {
-            throw new InvalidArgumentException("NodeId of content is expected: "+nodeRef.getId());
+            throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef.getId());
         }
 
         Map<QName, Serializable> nodeProps = nodeService.getProperties(nodeRef);
-        ContentData cd = (ContentData)nodeProps.get(ContentModel.PROP_CONTENT);
-        String name = (String)nodeProps.get(ContentModel.PROP_NAME);
+        ContentData cd = (ContentData) nodeProps.get(ContentModel.PROP_CONTENT);
+        String name = (String) nodeProps.get(ContentModel.PROP_NAME);
 
         org.alfresco.rest.framework.resource.content.ContentInfo ci = null;
         String mimeType = null;
@@ -1989,7 +1994,7 @@ public class NodesImpl implements Nodes
                 }
                 else
                 {
-                    logger.warn("Ignored attachment=false for "+fileNodeId+" since "+mimeType+" is not in the whitelist for non-attach content types");
+                    logger.warn("Ignored attachment=false for "+nodeRef.getId()+" since "+mimeType+" is not in the whitelist for non-attach content types");
                 }
             }
         }
@@ -1997,7 +2002,7 @@ public class NodesImpl implements Nodes
 
         if (recordActivity)
         {
-            final ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
+            final ActivityInfo activityInfo = getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
             postActivity(Activity_Type.DOWNLOADED, activityInfo, true);
         }
 

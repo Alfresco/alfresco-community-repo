@@ -591,6 +591,7 @@
 
     <bean id="modelValidator" class="org.alfresco.repo.dictionary.ModelValidatorImpl">
         <property name="dictionaryDAO" ref="dictionaryDAO"/>
+        <property name="dictionaryService" ref="dictionaryService"/>
         <property name="namespaceService" ref="namespaceService"/>
         <property name="workflowService" ref="WorkflowService"/>
         <property name="tenantService" ref="tenantService"/>

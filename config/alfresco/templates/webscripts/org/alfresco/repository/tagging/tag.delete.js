@@ -29,13 +29,6 @@ function main()
       {
          try
          {
-            // Get list of tagged node
-            var taggedNodes = search.tagSearch(store,tagName); 
-            for (var i=0; i < taggedNodes.length; i++)
-            {
-               // Remove tag from the node
-               taggedNodes[i].removeTag(tagName);
-            }
             // Remove the tag node
             taggingService.deleteTag(store,tagName);
             // Successfully removing tag

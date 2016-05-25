@@ -1095,4 +1095,124 @@ public class DictionaryModelTypeTest extends BaseSpringTest
             }
         });
     }
+
+    /* MNT-15345 test */
+    public void testImportingSameNamespaceFails() throws Exception
+    {
+        // Create model
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        final NodeRef modelNode = createActiveModel("dictionary/testModel.xml");
+        txn.commit();
+
+        //  add second model to introduce self referencing dependency
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        PropertyMap properties = new PropertyMap(1);
+        properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
+        final NodeRef modelNode2 = this.nodeService.createNode(
+                 this.rootNodeRef,
+                 ContentModel.ASSOC_CHILDREN,
+                 QName.createQName(NamespaceService.ALFRESCO_URI, "dictionaryModels"),
+                 ContentModel.TYPE_DICTIONARY_MODEL,
+                 properties).getChildRef(); 
+        txn.commit();
+
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+                    public Void execute() throws Exception {
+                        ContentWriter contentWriter = DictionaryModelTypeTest.this.contentService.getWriter(modelNode2, ContentModel.PROP_CONTENT, true);
+                        contentWriter.putContent(Thread.currentThread().getContextClassLoader().getResourceAsStream("dictionary/testModel2.xml"));
+                        return null;
+                    }
+            });
+            fail("Validation should fail as a circular dependency was introduced");
+        } catch(AlfrescoRuntimeException e)
+        {
+            assertTrue(e.getCause().getMessage().contains("URI mage.model cannot be imported as it is already contained in the model's namespaces"));
+        }
+
+        //delete model
+        finally
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<Object>() {
+                        public Object execute() throws Exception {
+                            // Delete the model
+                            DictionaryModelTypeTest.this.nodeService.deleteNode(modelNode);
+                            return null;
+                        }
+                    });
+        }
+    }
+
+    /* MNT-15345 test */
+    public void testImportingSameNamespaceFailsWithinSingleModel() throws Exception
+    {
+        // Create model
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        PropertyMap properties = new PropertyMap(1);
+        properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
+        final NodeRef modelNode = this.nodeService.createNode(
+                 this.rootNodeRef,
+                 ContentModel.ASSOC_CHILDREN,
+                 QName.createQName(NamespaceService.ALFRESCO_URI, "dictionaryModels"),
+                 ContentModel.TYPE_DICTIONARY_MODEL,
+                 properties).getChildRef(); 
+         assertNotNull(modelNode);
+         txn.commit();
+
+        // update model to introduce self referencing dependency
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+                    public Void execute() throws Exception {
+
+                        ContentWriter contentWriter = contentService.getWriter(modelNode, ContentModel.PROP_CONTENT, true);
+                        contentWriter.setEncoding("UTF-8");
+                        contentWriter.setMimetype(MimetypeMap.MIMETYPE_XML);
+                        contentWriter.putContent(Thread.currentThread().getContextClassLoader().getResourceAsStream("dictionary/modelWithCurrentNamespaceImported.xml"));
+                        return null;
+                    }
+            });
+            fail("Validation should fail as a circular dependency was introduced");
+        } catch(AlfrescoRuntimeException e)
+        {
+            assertTrue(e.getCause().getMessage().contains("URI http://www.alfresco.org/model/dictionary/1.0 cannot be imported as it is already contained in the model's namespaces"));
+        }
+
+        //delete model
+        finally
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<Object>() {
+                        public Object execute() throws Exception {
+                            // Delete the model
+                            DictionaryModelTypeTest.this.nodeService.deleteNode(modelNode);
+                            return null;
+                        }
+                    });
+        }
+    }
+
+    private NodeRef createActiveModel(String contentFile)
+    {
+        PropertyMap properties = new PropertyMap(1);
+        properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
+        NodeRef modelNode = this.nodeService.createNode(
+                 this.rootNodeRef,
+                 ContentModel.ASSOC_CHILDREN,
+                 QName.createQName(NamespaceService.ALFRESCO_URI, "dictionaryModels"),
+                 ContentModel.TYPE_DICTIONARY_MODEL,
+                 properties).getChildRef();
+         assertNotNull(modelNode);
+
+         ContentWriter contentWriter = this.contentService.getWriter(modelNode, ContentModel.PROP_CONTENT, true);
+         contentWriter.setEncoding("UTF-8");
+         contentWriter.setMimetype(MimetypeMap.MIMETYPE_XML);
+         contentWriter.putContent(Thread.currentThread().getContextClassLoader().getResourceAsStream(contentFile));
+         return modelNode;
+    }
 }

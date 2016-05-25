@@ -1142,10 +1142,89 @@ public class DictionaryModelTypeTest extends BaseSpringTest
                             // Delete the model
                             DictionaryModelTypeTest.this.nodeService.deleteNode(modelNode);
                             return null;
+            }
+        });
+    }
+
+    public void testCircularDependencyDetected() throws Exception
+    {
+        // Create modelA
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        final NodeRef modelANode = createActiveModel("dictionary/modelA.xml");
+        txn.commit();
+
+        //Create modelB 
+        txn = transactionService.getUserTransaction();
+        txn.begin();
+        final NodeRef modelBNode = createActiveModel("dictionary/modelB.xml");
+        txn.commit();
+
+        // update model A to introduce circular dependency
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+                    public Void execute() throws Exception {
+                        ContentWriter contentWriter = DictionaryModelTypeTest.this.contentService.getWriter(modelANode, ContentModel.PROP_CONTENT, true);
+                        contentWriter.putContent(Thread.currentThread().getContextClassLoader().getResourceAsStream("dictionary/modelAupdated.xml"));
+                        return null;
+                    }
+            });
+            fail("Validation should fail as a circular dependency was introduced");
+        } catch(AlfrescoRuntimeException e)
+        {
+            assertTrue(e.getMessage().contains("Failed to validate model update - found circular dependency. You can't set parent model-B as it's model already depends on prefixA:model-A"));
+        }
+        
+        // update model A to introduce circular dependency - also add a second namespace
+        try
+        {
+            transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>() {
+                    public Void execute() throws Exception {
+                        ContentWriter contentWriter = DictionaryModelTypeTest.this.contentService.getWriter(modelANode, ContentModel.PROP_CONTENT, true);
+                        contentWriter.putContent(Thread.currentThread().getContextClassLoader().getResourceAsStream("dictionary/modelAupdatedWithSecondNamespace.xml"));
+                        return null;
+                    }
+            });
+            fail("Validation should fail as a circular dependency was introduced");
+        } catch(AlfrescoRuntimeException e)
+        {
+            assertTrue(e.getMessage().contains("Failed to validate model update - found circular dependency. You can't set parent model-B as it's model already depends on prefixA:model-A"));
+        }
+
+        //delete both created models
+        finally {
+            transactionService.getRetryingTransactionHelper().doInTransaction(
+                    new RetryingTransactionCallback<Object>() {
+                        public Object execute() throws Exception {
+                            // Delete the model
+                            DictionaryModelTypeTest.this.nodeService.deleteNode(modelANode);
+                            DictionaryModelTypeTest.this.nodeService.deleteNode(modelBNode);
+                            return null;
                         }
                     });
         }
     }
+
+    private NodeRef createActiveModel(String contentFile)
+    {
+        PropertyMap properties = new PropertyMap(1);
+        properties.put(ContentModel.PROP_MODEL_ACTIVE, true);
+        NodeRef modelNode = this.nodeService.createNode(
+                 this.rootNodeRef,
+                 ContentModel.ASSOC_CHILDREN,
+                 QName.createQName(NamespaceService.ALFRESCO_URI, "dictionaryModels"),
+                 ContentModel.TYPE_DICTIONARY_MODEL,
+                 properties).getChildRef();
+         assertNotNull(modelNode);
+
+         ContentWriter contentWriter = this.contentService.getWriter(modelNode, ContentModel.PROP_CONTENT, true);
+         contentWriter.setEncoding("UTF-8");
+         contentWriter.setMimetype(MimetypeMap.MIMETYPE_XML);
+         contentWriter.putContent(Thread.currentThread().getContextClassLoader().getResourceAsStream(contentFile));
+         return modelNode;
+    }
+}
 
     /* MNT-15345 test */
     public void testImportingSameNamespaceFailsWithinSingleModel() throws Exception

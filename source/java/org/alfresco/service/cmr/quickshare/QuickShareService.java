@@ -84,4 +84,9 @@ public interface QuickShareService
      * Determine if the current user has permission to read the shared content.
      */
     public boolean canRead(String sharedId);
+
+    /**
+     * Determine if the current user has permission to delete the shared link.
+     */
+    public boolean canDeleteSharedLink(NodeRef nodeRef, String sharedByUserId);
 }

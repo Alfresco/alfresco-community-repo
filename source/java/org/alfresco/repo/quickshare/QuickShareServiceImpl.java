@@ -50,6 +50,7 @@ import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
@@ -60,14 +61,21 @@ import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
 import org.alfresco.service.cmr.quickshare.QuickShareDTO;
 import org.alfresco.service.cmr.quickshare.QuickShareDisabledException;
 import org.alfresco.service.cmr.quickshare.QuickShareService;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.search.ResultSet;
+import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.NoSuchPersonException;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -87,7 +95,10 @@ import org.safehaus.uuid.UUIDGenerator;
  *
  * @author Alex Miller, janv
  */
-public class QuickShareServiceImpl implements QuickShareService, NodeServicePolicies.BeforeDeleteNodePolicy, CopyServicePolicies.OnCopyNodePolicy
+public class QuickShareServiceImpl implements QuickShareService,
+            NodeServicePolicies.BeforeDeleteNodePolicy,
+            CopyServicePolicies.OnCopyNodePolicy,
+            NodeServicePolicies.OnRestoreNodePolicy
 {
     private static final Log logger = LogFactory.getLog(QuickShareServiceImpl.class);
 
@@ -108,7 +119,10 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
     
     /** Component to determine which behaviours are active and which not */
     private BehaviourFilter behaviourFilter;
-    
+    private SearchService searchService;
+    private SiteService siteService;
+    private AuthorityService authorityService;
+
     /**
      * Spring configuration
      * 
@@ -118,11 +132,41 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
     {
         this.behaviourFilter = behaviourFilter;
     }
-    
+
+    /**
+     * Spring configuration
+     *
+     * @param searchService the searchService to set
+     */
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
+    /**
+     * Spring configuration
+     *
+     * @param siteService the siteService to set
+     */
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
+
+    /**
+     * Spring configuration
+     *
+     * @param authorityService the authorityService to set
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
     /**
      * Enable or disable this service.
      */
-    public void setEnabled(boolean enabled) 
+    public void setEnabled(boolean enabled)
     {
         this.enabled = enabled;
     }
@@ -215,6 +259,11 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
                     CopyServicePolicies.OnCopyNodePolicy.QNAME, 
                     QuickShareModel.ASPECT_QSHARE, 
                     new JavaBehaviour(this, "getCopyCallback"));
+
+        this.policyComponent.bindClassBehaviour(
+                    NodeServicePolicies.OnRestoreNodePolicy.QNAME,
+                    QuickShareModel.ASPECT_QSHARE,
+                    new JavaBehaviour(this, "onRestoreNode"));
     }
 
 
@@ -417,23 +466,56 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
     @Override
     public Pair<String, NodeRef> getTenantNodeRefFromSharedId(final String sharedId)
     {
-        final NodeRef nodeRef = TenantUtil.runAsDefaultTenant(new TenantRunAsWork<NodeRef>()
+        NodeRef nodeRef = TenantUtil.runAsDefaultTenant(new TenantRunAsWork<NodeRef>()
         {
             public NodeRef doWork() throws Exception
             {
-                return (NodeRef)attributeService.getAttribute(ATTR_KEY_SHAREDIDS_ROOT, sharedId);
+                return (NodeRef) attributeService.getAttribute(ATTR_KEY_SHAREDIDS_ROOT, sharedId);
             }
         });
-        
+
         if (nodeRef == null)
         {
-            throw new InvalidSharedIdException(sharedId);
+            /* TODO
+             * Temporary fix for RA-1093 and MNT-16224. The extra lookup should be
+             * removed (the same as before, just throw the 'InvalidSharedIdException' exception) when we
+             * have a system wide patch to remove the 'shared' aspect of the nodes that have been archived while shared.
+             */
+            // TMDQ
+            final String query = "+TYPE:\"cm:content\" AND +ASPECT:\"qshare:shared\" AND =qshare:sharedId:\"" + sharedId + "\"";
+            SearchParameters sp = new SearchParameters();
+            sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
+            sp.setQuery(query);
+            sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+
+            List<NodeRef> nodeRefs = null;
+            ResultSet results = null;
+            try
+            {
+                results = searchService.query(sp);
+                nodeRefs = results.getNodeRefs();
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidSharedIdException(sharedId);
+            }
+            finally
+            {
+                if (results != null)
+                {
+                    results.close();
+                }
+            }
+            if (nodeRefs.size() != 1)
+            {
+                throw new InvalidSharedIdException(sharedId);
+            }
+            nodeRef = tenantService.getName(nodeRefs.get(0));
         }
-        
+
         // note: relies on tenant-specific (ie. mangled) nodeRef
         String tenantDomain = tenantService.getDomain(nodeRef.getStoreRef().getIdentifier());
-        
-        return new Pair<String, NodeRef>(tenantDomain, tenantService.getBaseName(nodeRef));
+        return new Pair<>(tenantDomain, tenantService.getBaseName(nodeRef));
     }
 
     @Override
@@ -491,12 +573,22 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
 	                    final String tenantDomain = pair.getFirst();
 	                    final NodeRef nodeRef = pair.getSecond();
 	                    
-	                    // note: deleted nodeRef might not match, eg. for upload new version -> checkin -> delete working copy
-	                    if (nodeRef.equals(beforeDeleteNodeRef))
-	                    {
-	                        removeSharedId(sharedId);
-	                    }
-                	}
+                        // note: deleted nodeRef might not match, eg. for upload new version -> checkin -> delete working copy
+                        if (nodeRef.equals(beforeDeleteNodeRef))
+                        {
+                            // Disable audit to preserve modifier and modified date
+                            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                            try
+                            {
+                                nodeService.removeAspect(nodeRef, QuickShareModel.ASPECT_QSHARE);
+                            }
+                            finally
+                            {
+                                behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                            }
+                            removeSharedId(sharedId);
+                        }
+                    }
                 	catch (InvalidSharedIdException ex)
                 	{
                 		logger.warn("Couldn't find shareId, " + sharedId + ", attributes for node " + beforeDeleteNodeRef);
@@ -506,7 +598,37 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
             }
         });
     }
-    
+
+    /* TODO
+     * Temporary fix for MNT-16224. This method should be removed when we
+     * have a system wide patch to remove the 'shared' aspect of the nodes that have been archived while shared.
+     */
+    @Override
+    public void onRestoreNode(ChildAssociationRef childAssocRef)
+    {
+        final NodeRef childNodeRef = childAssocRef.getChildRef();
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            public Void doWork() throws Exception
+            {
+                if (nodeService.hasAspect(childNodeRef, QuickShareModel.ASPECT_QSHARE))
+                {
+                    // Disable audit to preserve modifier and modified date
+                    behaviourFilter.disableBehaviour(childNodeRef, ContentModel.ASPECT_AUDITABLE);
+                    try
+                    {
+                        nodeService.removeAspect(childNodeRef, QuickShareModel.ASPECT_QSHARE);
+                    }
+                    finally
+                    {
+                        behaviourFilter.enableBehaviour(childNodeRef, ContentModel.ASPECT_AUDITABLE);
+                    }
+                }
+                return null;
+            }
+        });
+    }
+
     private void removeSharedId(final String sharedId)
     {
         TenantUtil.runAsDefaultTenant(new TenantRunAsWork<Void>()
@@ -602,5 +724,52 @@ public class QuickShareServiceImpl implements QuickShareService, NodeServicePoli
         }, tenantDomain);
         
     }
+    @Override
+    public boolean canDeleteSharedLink(NodeRef nodeRef, String sharedByUserId)
+    {
+        boolean canDeleteSharedLink = false;
 
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        String siteName = getSiteName(nodeRef);
+        boolean isSharedByCurrentUser = currentUser.equals(sharedByUserId);
+
+        if (siteName != null)
+        {
+            // node belongs to a site - current user must be a manager or collaborator or someone who shared the link
+            String role = siteService.getMembersRole(siteName, currentUser);
+            if (isSharedByCurrentUser || (role != null && (role.equals(SiteModel.SITE_MANAGER) || role.equals(SiteModel.SITE_COLLABORATOR))))
+            {
+                canDeleteSharedLink = true;
+            }
+        }
+        else if (isSharedByCurrentUser || (authorityService.isAdminAuthority(currentUser)))
+        {
+            // node does not belongs to a site - current user must be the person who shared the link or an admin
+            canDeleteSharedLink = true;
+        }
+
+        return canDeleteSharedLink;
+    }
+
+    private String getSiteName(NodeRef nodeRef)
+    {
+        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
+        {
+            // check that we can read parent name
+            String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
+
+            if (nodeService.getPrimaryParent(nodeRef) != null)
+            {
+                parent = nodeService.getPrimaryParent(parent).getParentRef();
+            }
+        }
+
+        if (parent == null)
+        {
+            return null;
+        }
+
+        return nodeService.getProperty(parent, ContentModel.PROP_NAME).toString();
+    }
 }

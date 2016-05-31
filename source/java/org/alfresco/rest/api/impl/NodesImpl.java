@@ -2229,8 +2229,6 @@ public class NodesImpl implements Nodes
 
         try
         {
-            List<ThumbnailDefinition> thumbnailDefs = getThumbnailDefs(renditionNames);
-
             // Map the given properties, if any.
             if (qnameStrProps.size() > 0)
             {
@@ -2265,9 +2263,23 @@ public class NodesImpl implements Nodes
             }
 
             // Create a new file.
-            Node fileNode = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, parameters);
+            final Node fileNode = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, parameters);
 
-            requestRenditions(thumbnailDefs, fileNode);
+            // RA-1052
+            try
+            {
+                List<ThumbnailDefinition> thumbnailDefs = getThumbnailDefs(renditionNames);
+                requestRenditions(thumbnailDefs, fileNode);
+            }
+            catch (Exception ex)
+            {
+                // Note: The log level is not 'error' as it could easily fill out the log file, especially in the Cloud.
+                if (logger.isDebugEnabled())
+                {
+                    // Don't throw the exception as we don't want the the upload to fail, just log it.
+                    logger.debug("Asynchronous request to create a rendition upon upload failed: " + ex.getMessage());
+                }
+            }
 
             return fileNode;
 

@@ -30,6 +30,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.ByteArrayInputStream;
 import java.io.Serializable;
@@ -38,9 +39,14 @@ import java.util.Map;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.QuickShareModel;
 import org.alfresco.repo.model.Repository;
+import org.alfresco.repo.node.archive.NodeArchiveService;
+import org.alfresco.repo.node.archive.RestoreNodeReport;
+import org.alfresco.repo.node.archive.RestoreNodeReport.RestoreStatus;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.quickshare.InvalidSharedIdException;
@@ -116,6 +122,7 @@ public class QuickShareServiceIntegrationTest
     private static Repository repository;
     private static AttributeService attributeService;
     private static PermissionService permissionService;
+    private static NodeArchiveService nodeArchiveService;
     
     private static AlfrescoPerson user1 = new AlfrescoPerson(testContext, "UserOne");
     private static AlfrescoPerson user2 = new AlfrescoPerson(testContext, "UserTwo");
@@ -150,6 +157,7 @@ public class QuickShareServiceIntegrationTest
         repository = ctx.getBean("repositoryHelper", Repository.class);
         attributeService = ctx.getBean("AttributeService", AttributeService.class);
         permissionService = ctx.getBean("PermissionService", PermissionService.class);
+        nodeArchiveService = ctx.getBean("nodeArchiveService", NodeArchiveService.class);
     }
     
     @Before public void createTestData()
@@ -227,8 +235,117 @@ public class QuickShareServiceIntegrationTest
         });
     }
 
+    // MNT-16224, RA-1093
+    @Test public void testDeleteAndRestoreSharedNode()
+    {
+        // Share the test node
+        share(testNode, user1.getUsername());
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                assertTrue(nodeService.hasAspect(testNode, QuickShareModel.ASPECT_QSHARE));
+                return null;
+            }
+        });
 
-	private void unshare(final String sharedId, final String userName) {
+        // Delete and restore the shared node.
+        testNode = AuthenticationUtil.runAs(new RunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                // Delete the shared node
+                nodeService.deleteNode(testNode);
+
+                // Check if the node has been archived
+                final NodeRef archivedNode = nodeArchiveService.getArchivedNode(testNode);
+                assertNotNull(archivedNode);
+
+                // Restore the deleted shared node from trashcan
+                RestoreNodeReport restoreNodeReport = nodeArchiveService.restoreArchivedNode(archivedNode);
+                assertNotNull(restoreNodeReport);
+                assertTrue(restoreNodeReport.getStatus() == RestoreStatus.SUCCESS);
+                NodeRef restoredNodeRef = restoreNodeReport.getRestoredNodeRef();
+                assertNotNull(restoredNodeRef);
+                return restoredNodeRef;
+            }
+
+        }, user1.getUsername());
+
+        // Check the restored node doesn't have the 'shared' aspect.
+        AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                assertFalse(nodeService.hasAspect(testNode, QuickShareModel.ASPECT_QSHARE));
+                assertNull(nodeService.getProperty(testNode, QuickShareModel.PROP_QSHARE_SHAREDID));
+                assertNull(nodeService.getProperty(testNode, QuickShareModel.PROP_QSHARE_SHAREDBY));
+                return null;
+            }
+        });
+
+
+        /**
+         * Tests the scenario where the shared node has been deleted and restored before the fix (MNT-16224).
+         * In this scenario the user should be able to un-share the restored node.
+         */
+        {
+            // Share the test node again
+            final QuickShareDTO dto = share(testNode, user1.getUsername());
+
+            // Delete only the sharedId without removing the 'shared' aspect!(The cause of MNT-16224 and RA-1093)
+            TenantUtil.runAsDefaultTenant(new TenantRunAsWork<Void>()
+            {
+                public Void doWork() throws Exception
+                {
+                    attributeService.removeAttribute(".sharedIds", dto.getId());
+                    return null;
+                }
+            });
+
+            // Check the 'shared' aspect does exist
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    assertTrue(nodeService.hasAspect(testNode, QuickShareModel.ASPECT_QSHARE));
+                    return null;
+                }
+            });
+
+            try
+            {
+                // Try to un-share the node even though the sharedId was deleted.
+                unshare(dto.getId(), user2.getUsername());
+                fail("user2 shouldn't be able to un-share the node.");
+            }
+            catch (InvalidSharedIdException ex)
+            {
+                // Expected
+            }
+
+            // Un-share the node even though the sharedId was deleted.
+            // This should succeed as the lookup will use TMDQ.
+            unshare(dto.getId(), user1.getUsername());
+
+            // Check the 'shared' aspect does not exist
+            AuthenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    assertFalse(nodeService.hasAspect(testNode, QuickShareModel.ASPECT_QSHARE));
+                    return null;
+                }
+            });
+        }
+    }
+
+    private void unshare(final String sharedId, final String userName) {
         
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
@@ -240,7 +357,7 @@ public class QuickShareServiceIntegrationTest
                 return null;
             }
         }, userName);
-	}
+    }
 
     private QuickShareDTO share(final NodeRef nodeRef, String username)
     {

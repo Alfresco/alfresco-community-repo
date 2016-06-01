@@ -150,16 +150,6 @@ public class QuickShareServiceImpl implements QuickShareService,
 
     /**
      * Spring configuration
-     * 
-     * @param behaviourFilter the behaviourFilter to set
-     */
-    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
-    {
-        this.behaviourFilter = behaviourFilter;
-    }
-
-    /**
-     * Spring configuration
      *
      * @param searchService the searchService to set
      */
@@ -186,14 +176,6 @@ public class QuickShareServiceImpl implements QuickShareService,
     public void setAuthorityService(AuthorityService authorityService)
     {
         this.authorityService = authorityService;
-    }
-
-    /**
-     * Enable or disable this service.
-     */
-    public void setEnabled(boolean enabled)
-    {
-        this.enabled = enabled;
     }
     
     /**

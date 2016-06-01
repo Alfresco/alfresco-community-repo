@@ -536,23 +536,31 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
         */
 
-        // -ve - currently we do not support multiple rendition requests on create
+
+        /*
+         * Per RA-1052, the failure of the async request to create a rendition
+         * should NOT fail the upload.
+         */
+
+        // Currently we do not support multiple rendition requests on create
         reqBody = MultiPartBuilder.create()
                 .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
+                .setAutoRename(true)
                 .setRenditions(Arrays.asList(new String[]{"doclib,imgpreview"}))
                 .build();
 
-        post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 400);
+        post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 201);
 
-        // -ve
+        // Unknown rendition
         reqBody = MultiPartBuilder.create()
                 .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
+                .setAutoRename(true)
                 .setRenditions(Arrays.asList(new String[]{"unknown"}))
                 .build();
 
-        post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 404);
+        post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 201);
 
-        // -ve
+        // ThumbnailService is disabled
         ThumbnailService thumbnailService = applicationContext.getBean("thumbnailService", ThumbnailService.class);
         thumbnailService.setThumbnailsEnabled(false);
         try
@@ -565,7 +573,7 @@ public class RenditionsTest extends AbstractBaseApiTest
                     .setRenditions(Arrays.asList(new String[]{"doclib"}))
                     .build();
 
-            post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 501);
+            post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 201);
         }
         finally
         {

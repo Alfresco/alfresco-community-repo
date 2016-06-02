@@ -806,7 +806,7 @@ public class TestFavourites extends EnterpriseTestApi
 			}
 			catch(PublicApiException e)
 			{
-				assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
+				assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
 			}
 
 			try
@@ -823,7 +823,7 @@ public class TestFavourites extends EnterpriseTestApi
 			}
 			catch(PublicApiException e)
 			{
-				assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
+				assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
 			}
 
 			FavouriteDocument document = new FavouriteDocument(person1PublicDocs.get(0).getId());

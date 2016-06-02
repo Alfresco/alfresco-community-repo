@@ -520,9 +520,6 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         paging = getPaging(0, 10);
 
-        // -ve test - list folder children for non-folder node should return 400
-        getAll(getNodeChildrenUrl(content1_Id), user1, paging, 400);
-
         // -ve test - list folder children for unknown node should return 404
         getAll(getNodeChildrenUrl(UUID.randomUUID().toString()), user1, paging, 404);
 
@@ -538,11 +535,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user2);
         getAll(rootChildrenUrl, user1, paging, params, 404);
 
-        // -ve test - try to list children using relative path to node that is of wrong type (ie. not a folder/container)
-        params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folder1 + "/" + contentF1);
-        getAll(myChildrenUrl, user1, paging, params, 400);
-
-        // -ve test - list folder children for non-folder node with relative path should return 400
+        // -ve test - list folder children with relative path to unknown node should return 400
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/unknown");
         getAll(getNodeChildrenUrl(content1_Id), user1, paging, params, 400);
     }

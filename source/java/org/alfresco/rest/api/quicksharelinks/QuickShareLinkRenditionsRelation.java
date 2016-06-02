@@ -19,7 +19,9 @@
 package org.alfresco.rest.api.quicksharelinks;
 
 import org.alfresco.rest.api.QuickShareLinks;
+import org.alfresco.rest.api.Renditions;
 import org.alfresco.rest.api.model.Rendition;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiNoAuth;

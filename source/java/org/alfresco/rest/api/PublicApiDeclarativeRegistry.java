@@ -118,8 +118,6 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
                     Class<? extends ResourceAction> resAction = null;
 
                     String entityId = templateVars.get(ResourceLocator.ENTITY_ID);
-                    String relationshipId = templateVars.get(ResourceLocator.RELATIONSHIP_ID);
-
                     switch (rwm.getMetaData().getType())
                     {
                         case ENTITY:
@@ -148,22 +146,6 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
                                 else if (RelationshipResourceBinaryAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
                                 {
                                     resAction = RelationshipResourceBinaryAction.Read.class;
-                                }
-                            }
-                            break;
-                        case RELATIONSHIP:
-                            if (StringUtils.isNotBlank(relationshipId))
-                            {
-                                if (RelationshipResourceAction.ReadById.class.isAssignableFrom(rwm.getResource().getClass()))
-                                {
-                                    resAction = RelationshipResourceAction.ReadById.class;
-                                }
-                            }
-                            else
-                            {
-                                if (RelationshipResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
-                                {
-                                    resAction = RelationshipResourceAction.Read.class;
                                 }
                             }
                             break;

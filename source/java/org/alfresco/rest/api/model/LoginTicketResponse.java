@@ -46,9 +46,9 @@ public class LoginTicketResponse extends LoginTicket
     public String toString()
     {
         final StringBuilder sb = new StringBuilder(150);
-        sb.append("LoginTicketResponse [username=").append(username)
+        sb.append("LoginTicketResponse [userId=").append(userId)
                     .append(", password=").append(password)
-                    .append(", ticket=").append(ticket)
+                    .append(", id=").append(id)
                     .append(']');
         return sb.toString();
     }

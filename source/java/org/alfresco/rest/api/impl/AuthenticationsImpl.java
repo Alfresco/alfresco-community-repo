@@ -21,8 +21,10 @@ package org.alfresco.rest.api.impl;
 
 import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.Authorization;
 import org.alfresco.repo.security.authentication.TicketComponent;
 import org.alfresco.rest.api.Authentications;
+import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.LoginTicket;
 import org.alfresco.rest.api.model.LoginTicketResponse;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -32,6 +34,7 @@ import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.cmr.security.AuthenticationService;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.extensions.surf.util.Base64;
 import org.springframework.extensions.webscripts.Status;
 
 /**
@@ -39,6 +42,9 @@ import org.springframework.extensions.webscripts.Status;
  */
 public class AuthenticationsImpl implements Authentications
 {
+    private static final String AUTHORIZATION_HEADER = "Authorization";
+    private static final String PARAM_ALF_TICKET = "alf_ticket";
+
     private AuthenticationService authenticationService;
     private TicketComponent ticketComponent;
 
@@ -65,11 +71,11 @@ public class AuthenticationsImpl implements Authentications
         try
         {
             // get ticket
-            authenticationService.authenticate(loginRequest.getUsername(), loginRequest.getPassword().toCharArray());
+            authenticationService.authenticate(loginRequest.getUserId(), loginRequest.getPassword().toCharArray());
 
             LoginTicketResponse response = new LoginTicketResponse();
-            response.setUsername(loginRequest.getUsername());
-            response.setTicket(authenticationService.getCurrentTicket());
+            response.setUserId(loginRequest.getUserId());
+            response.setId(authenticationService.getCurrentTicket());
 
             return response;
         }
@@ -84,18 +90,19 @@ public class AuthenticationsImpl implements Authentications
     }
 
     @Override
-    public LoginTicketResponse validateTicket(String ticket, Parameters parameters, WithResponse withResponse)
+    public LoginTicketResponse validateTicket(String me, Parameters parameters, WithResponse withResponse)
     {
-        if (StringUtils.isEmpty(ticket))
+        if (!People.DEFAULT_USER.equals(me))
         {
-            throw new InvalidArgumentException("ticket can't be null or empty.");
+            throw new InvalidArgumentException("Invalid parameter: " + me);
         }
 
+        final String ticket = getTicket(parameters);
         try
         {
-            String ticketUser = ticketComponent.validateTicket(ticket);
+            final String ticketUser = ticketComponent.validateTicket(ticket);
 
-            String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
             // do not go any further if tickets are different
             // or the user is not fully authenticated
             if (currentUser == null || !currentUser.equals(ticketUser))
@@ -108,23 +115,24 @@ public class AuthenticationsImpl implements Authentications
             withResponse.setStatus(Status.STATUS_NOT_FOUND);
         }
         LoginTicketResponse response = new LoginTicketResponse();
-        response.setTicket(ticket);
+        response.setId(ticket);
         return response;
     }
 
     @Override
-    public void deleteTicket(String ticket, Parameters parameters, WithResponse withResponse)
+    public void deleteTicket(String me, Parameters parameters, WithResponse withResponse)
     {
-        if (StringUtils.isEmpty(ticket))
+        if (!People.DEFAULT_USER.equals(me))
         {
-            throw new InvalidArgumentException("ticket can't be null or empty.");
+            throw new InvalidArgumentException("Invalid parameter: " + me);
         }
 
+        final String ticket = getTicket(parameters);
         try
         {
-            String ticketUser = ticketComponent.validateTicket(ticket);
+            final String ticketUser = ticketComponent.validateTicket(ticket);
 
-            String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+            final String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
             // do not go any further if tickets are different
             // or the user is not fully authenticated
             if (currentUser == null || !currentUser.equals(ticketUser))
@@ -145,9 +153,40 @@ public class AuthenticationsImpl implements Authentications
 
     protected void validateLoginRequest(LoginTicket loginTicket)
     {
-        if (loginTicket == null || loginTicket.getUsername() == null || loginTicket.getPassword() == null)
+        if (loginTicket == null || loginTicket.getUserId() == null || loginTicket.getPassword() == null)
         {
             throw new InvalidArgumentException("Invalid login details.");
         }
+    }
+
+    protected String getTicket(Parameters parameters)
+    {
+        // First check the alf_ticket in the URL
+        final String alfTicket = parameters.getParameter(PARAM_ALF_TICKET);
+        if (StringUtils.isNotEmpty(alfTicket))
+        {
+            return alfTicket;
+        }
+
+        // Check the Authorization header
+        final String authorization = parameters.getRequest().getHeader(AUTHORIZATION_HEADER);
+        if (StringUtils.isEmpty(authorization))
+        {
+            throw new InvalidArgumentException("Authorization header is required.");
+        }
+
+        final String[] authorizationParts = authorization.split(" ");
+        if (!authorizationParts[0].equalsIgnoreCase("basic"))
+        {
+            throw new InvalidArgumentException("Authorization '" + authorizationParts[0] + "' not supported.");
+        }
+
+        final String decodedAuthorisation = new String(Base64.decode(authorizationParts[1]));
+        Authorization authObj = new Authorization(decodedAuthorisation);
+        if (!authObj.isTicket())
+        {
+            throw new InvalidArgumentException("Ticket base authentication required.");
+        }
+        return authObj.getTicket();
     }
 }

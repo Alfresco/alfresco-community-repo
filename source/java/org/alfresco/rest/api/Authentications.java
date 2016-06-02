@@ -32,7 +32,7 @@ public interface Authentications
 
     LoginTicketResponse createTicket(LoginTicket loginRequest, Parameters parameters);
 
-    LoginTicketResponse validateTicket(String ticket, Parameters parameters, WithResponse withResponse);
+    LoginTicketResponse validateTicket(String me, Parameters parameters, WithResponse withResponse);
 
-    void deleteTicket(String ticket, Parameters parameters, WithResponse withResponse);
+    void deleteTicket(String me, Parameters parameters, WithResponse withResponse);
 }

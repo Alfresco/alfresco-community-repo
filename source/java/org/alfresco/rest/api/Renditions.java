@@ -83,3 +83,4 @@ public interface Renditions
      */
     BinaryResource getContent(NodeRef sourceNodeRef, String renditionId, Parameters parameters);
 }
+

@@ -465,3 +465,4 @@ public class RenditionsImpl implements Renditions, ResourceLoaderAware
         return contentData.getMimetype();
     }
 }
+

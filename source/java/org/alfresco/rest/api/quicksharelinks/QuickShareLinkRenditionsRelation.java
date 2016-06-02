@@ -73,3 +73,4 @@ public class QuickShareLinkRenditionsRelation implements
         return quickShareLinks.getRenditions(sharedId);
     }
 }
+

@@ -282,3 +282,4 @@ public interface Nodes
     String PARAM_ISPRIMARY = "isPrimary";
     String PARAM_ASSOC_TYPE = "assocType";
 }
+

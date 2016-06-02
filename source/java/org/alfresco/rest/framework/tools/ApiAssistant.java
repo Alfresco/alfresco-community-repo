@@ -73,6 +73,7 @@ public class ApiAssistant {
     });
 
     private ExceptionResolver<Exception> defaultResolver = new DefaultExceptionResolver();
+    private ExceptionResolver<WebScriptException> webScriptExceptionResolver;
     private ExceptionResolver<Exception> resolver;
     private JacksonHelper jsonHelper;
 
@@ -86,7 +87,15 @@ public class ApiAssistant {
 
     public ErrorResponse resolveException(Exception ex)
     {
-        ErrorResponse error = resolver.resolveException(ex);
+        ErrorResponse error = null;
+        if (ex instanceof WebScriptException)
+        {
+            error = webScriptExceptionResolver.resolveException((WebScriptException) ex);
+        }
+        else
+        {
+            error = resolver.resolveException(ex);
+        }
         if (error == null)
         {
             error = defaultResolver.resolveException(ex);
@@ -193,6 +202,10 @@ public class ApiAssistant {
 
     public void setDefaultResolver(ExceptionResolver<Exception> defaultResolver) {
         this.defaultResolver = defaultResolver;
+    }
+
+    public void setWebScriptExceptionResolver(ExceptionResolver<WebScriptException> webScriptExceptionResolver) {
+        this.webScriptExceptionResolver = webScriptExceptionResolver;
     }
 
     public void setResolver(ExceptionResolver<Exception> resolver) {

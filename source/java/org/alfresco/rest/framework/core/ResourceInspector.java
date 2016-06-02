@@ -302,7 +302,7 @@ public class ResourceInspector
             {
                 if (! (httpMethod.equals(HttpMethod.GET) || httpMethod.equals(HttpMethod.POST)))
                 {
-                    throw new IllegalArgumentException("@WebApiNoAuth should only be on GET methods: "+operation.getTitle());
+                    throw new IllegalArgumentException("@WebApiNoAuth should only be on GET methods: "+operation.getTitle()+" Or POST method for creating a ticket.");
                 }
                 helper.whenOperationNoAuth(resourceInterfaceWithOneMethod, aMethod);
             }

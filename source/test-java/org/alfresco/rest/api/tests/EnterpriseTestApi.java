@@ -7,4 +7,10 @@ public class EnterpriseTestApi extends AbstractTestApi
 	{
 		return EnterprisePublicApiTestFixture.getInstance();
 	}
+
+	@Override
+	protected TestFixture getTestFixture(boolean createTestData) throws Exception
+	{
+		return EnterprisePublicApiTestFixture.getInstance(createTestData);
+	}
 }

@@ -20,15 +20,20 @@ public class EnterprisePublicApiTestFixture extends EnterpriseTestFixture
 	/*
 	 * Note: synchronized for multi-threaded test access
 	 */
-    public synchronized static EnterprisePublicApiTestFixture getInstance() throws Exception
+    public synchronized static EnterprisePublicApiTestFixture getInstance(boolean createTestData) throws Exception
     {
     	if(instance == null)
     	{
     		instance = new EnterprisePublicApiTestFixture();
-    		instance.setup();
+    		instance.setup(createTestData);
     	}
     	return instance;
     }
+
+	public synchronized static EnterprisePublicApiTestFixture getInstance() throws Exception
+	{
+		return getInstance(true);
+	}
 
     private EnterprisePublicApiTestFixture()
 	{

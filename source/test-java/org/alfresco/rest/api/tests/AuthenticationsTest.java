@@ -101,10 +101,10 @@ public class AuthenticationsTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/tickets}
      *
      * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/tickets/<ticket>}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/tickets/-me-}
      *
      * <p>DELETE:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/tickets/<ticket>}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/tickets/-me-}
      */
     @Test
     public void testCreateValidateDeleteTicket() throws Exception

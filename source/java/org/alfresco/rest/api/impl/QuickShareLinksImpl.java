@@ -26,7 +26,6 @@ import org.alfresco.repo.quickshare.QuickShareServiceImpl.QuickShareEmailRequest
 import org.alfresco.repo.search.QueryParameterDefImpl;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
-import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
@@ -70,9 +69,7 @@ import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.ResultSetRow;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
@@ -100,7 +97,7 @@ import java.util.Set;
  *
  * @author janv
  * @author Jamal Kaabi-Mofrad
- * 
+ *
  * @since publicapi1.0
  */
 public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
@@ -117,12 +114,10 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
     private NodeService nodeService;
     private PersonService personService;
-    private AuthorityService authorityService;
     private MimetypeService mimeTypeService;
     private SearchService searchService;
     private DictionaryService dictionaryService;
     private NamespaceService namespaceService;
-    private SiteService siteService;
 
     public void setServiceRegistry(ServiceRegistry sr)
     {
@@ -159,12 +154,10 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
         this.nodeService = sr.getNodeService();
         this.personService = sr.getPersonService();
-        this.authorityService = sr.getAuthorityService();
         this.mimeTypeService = sr.getMimetypeService();
         this.searchService = sr.getSearchService();
         this.dictionaryService = sr.getDictionaryService();
         this.namespaceService = sr.getNamespaceService();
-        this.siteService = sr.getSiteService();
     }
 
     /**
@@ -273,7 +266,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             NodeRef nodeRef = quickShareService.getTenantNodeRefFromSharedId(sharedId).getSecond();
 
             String sharedByUserId = (String)nodeService.getProperty(nodeRef, QuickShareModel.PROP_QSHARE_SHAREDBY);
-            if (! canDeleteSharedLink(nodeRef, sharedByUserId))
+            if (!quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId))
             {
                 throw new PermissionDeniedException("Can't perform unshare action: " + sharedId);
             }
@@ -551,7 +544,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             // note: if noAuth mode then do not return allowable operations (eg. but can be optionally returned when finding shared links)
             if ((! noAuth) && includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
             {
-                if (canDeleteSharedLink(nodeRef, sharedByUserId))
+                if (quickShareService.canDeleteSharedLink(nodeRef, sharedByUserId))
                 {
                     qs.setAllowableOperations(Collections.singletonList(Nodes.OP_DELETE));
                 }
@@ -569,54 +562,6 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             logger.warn("Unable to find: " + sharedId + " [" + inre.getNodeRef() + "]");
             throw new EntityNotFoundException(sharedId);
         }
-    }
-
-    // TODO push down to QuickShareService and also update v0 webscript (UnshareContentDelete)
-    private boolean canDeleteSharedLink(NodeRef nodeRef, String sharedByUserId)
-    {
-        boolean canDeleteSharedLink = false;
-
-        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-        String siteName = getSiteName(nodeRef);
-
-        if (siteName != null)
-        {
-            // node belongs to a site - current user must be a manager or collaborator (irrespective of whether they shared the link or not)
-            String role = siteService.getMembersRole(siteName, currentUser);
-            if (role.equals(SiteModel.SITE_MANAGER) || role.equals(SiteModel.SITE_COLLABORATOR))
-            {
-                canDeleteSharedLink = true;
-            }
-        }
-        else if ((currentUser.equals(sharedByUserId)) || (authorityService.isAdminAuthority(currentUser)))
-        {
-            // node does not belongs to a site - current user must be the person who shared the link or an admin
-            canDeleteSharedLink = true;
-        }
-
-        return canDeleteSharedLink;
-    }
-
-    private String getSiteName(NodeRef nodeRef)
-    {
-        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-        while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
-        {
-            // check that we can read parent name
-            String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
-
-            if (nodeService.getPrimaryParent(nodeRef) != null)
-            {
-                parent = nodeService.getPrimaryParent(parent).getParentRef();
-            }
-        }
-
-        if (parent == null)
-        {
-            return null;
-        }
-
-        return nodeService.getProperty(parent, ContentModel.PROP_NAME).toString();
     }
 
     private void checkEnabled()

@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
+ *
+ * This file is part of Alfresco
+ *
+ * Alfresco is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Alfresco is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
+ */
 package org.alfresco.rest.api.tests.client.data;
 
 import static org.junit.Assert.assertNotNull;
@@ -34,14 +52,30 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
     public SiteImpl()
     {
     }
-    
-    public SiteImpl(String networkId, String siteId, String guid)
-    {
-		if(siteId == null)
+
+	public SiteImpl(String title, String visibility)
+	{
+		if (title == null)
 		{
 			throw new java.lang.IllegalArgumentException();
 		}
-		if(guid == null)
+
+		if (visibility == null)
+		{
+			throw new java.lang.IllegalArgumentException();
+		}
+		this.title = title;
+		this.visibility = visibility;
+	}
+    
+    public SiteImpl(String networkId, String siteId, String guid)
+    {
+		if (siteId == null)
+		{
+			throw new java.lang.IllegalArgumentException();
+		}
+
+		if (guid == null)
 		{
 			throw new java.lang.IllegalArgumentException();
 		}
@@ -224,7 +258,7 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
 	@Override
 	public String toString()
 	{
-		return "SiteImpl [created=" + created + ", networkId=" + networkId
+		return "Site [created=" + created + ", networkId=" + networkId
 				+ ", siteId=" + siteId + ", guid=" + guid + ", title=" + title
 				+ ", description=" + description + ", role=" + role
 				+ ", visibility=" + visibility + ", type=" + type + "]";
@@ -234,8 +268,22 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
 	public JSONObject toJSON()
 	{
 		JSONObject siteJson = new JSONObject();
-		siteJson.put("id", getSiteId());
-		siteJson.put("guid", getGuid());
+		if (getSiteId() != null)
+        {
+            siteJson.put("id", getSiteId());
+        }
+		if (getGuid() != null)
+        {
+            siteJson.put("guid", getGuid());
+        }
+        if (getTitle() != null)
+        {
+            siteJson.put("title", getTitle());
+        }
+        if (getVisibility() != null)
+        {
+            siteJson.put("visibility", getVisibility());
+        }
 		return siteJson;
 	}
 

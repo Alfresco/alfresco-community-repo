@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -36,6 +36,8 @@ public interface Sites
 	SiteInfo validateSite(NodeRef nodeRef);
     CollectionWithPagingInfo<SiteMember> getSiteMembers(String siteShortName, Parameters parameters);
     Site getSite(String siteId);
+	void deleteSite(String siteId, Parameters parameters);
+    Site createSite(Site site);
     
 	/**
 	 * people/<personId>/sites/<siteId>
@@ -60,4 +62,6 @@ public interface Sites
     
     String getSiteRole(String siteId);
     String getSiteRole(String siteId, String personId);
+
+    String PARAM_PERMANENT = "permanent";
 }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2015 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -50,7 +50,6 @@ import org.alfresco.rest.api.model.FavouriteSite;
 import org.alfresco.rest.api.model.MemberOfSite;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.model.SiteContainer;
-import org.alfresco.rest.api.model.SiteImpl;
 import org.alfresco.rest.api.model.SiteMember;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -69,9 +68,18 @@ import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
+import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.cmr.view.ImportPackageHandler;
+import org.alfresco.service.cmr.view.ImporterBinding;
+import org.alfresco.service.cmr.view.ImporterContentCache;
+import org.alfresco.service.cmr.view.ImporterProgress;
+import org.alfresco.service.cmr.view.ImporterService;
+import org.alfresco.service.cmr.view.Location;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.ISO9075;
 import org.alfresco.util.Pair;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -80,6 +88,7 @@ import org.apache.commons.logging.LogFactory;
  * Centralises access to site services and maps between representations.
  * 
  * @author steveglover
+ * @author janv
  * @since publicapi1.0
  */
 public class SitesImpl implements Sites
@@ -95,6 +104,8 @@ public class SitesImpl implements Sites
     protected SiteService siteService;
     protected FavouritesService favouritesService;
     protected PreferenceService preferenceService;
+    protected ImporterService importerService;
+    protected SiteSurfConfig siteSurfConfig;
 
     public void setPreferenceService(PreferenceService preferenceService)
     {
@@ -129,6 +140,16 @@ public class SitesImpl implements Sites
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
+    }
+
+    public void setImporterService(ImporterService importerService)
+    {
+        this.importerService = importerService;
+    }
+
+    public void setSiteSurfConfig(SiteSurfConfig siteSurfConfig)
+    {
+        this.siteSurfConfig = siteSurfConfig;
     }
 
     public SiteInfo validateSite(NodeRef guid)
@@ -234,7 +255,7 @@ public class SitesImpl implements Sites
         {
             role = getSiteRole(siteId);
         }
-        return new SiteImpl(siteInfo, role);
+        return new Site(siteInfo, role);
     }
     
     /**
@@ -261,7 +282,7 @@ public class SitesImpl implements Sites
         String roleStr = siteService.getMembersRole(siteInfo.getShortName(), personId);
         if(roleStr != null)
         {
-            SiteImpl site = new SiteImpl(siteInfo, roleStr);
+            Site site = new Site(siteInfo, roleStr);
             siteMember = new MemberOfSite(site.getId(), siteInfo.getNodeRef(), roleStr);
         }
         else
@@ -597,7 +618,7 @@ public class SitesImpl implements Sites
         List<Site> page = new AbstractList<Site>()
         {
             @Override
-            public SiteImpl get(int index)
+            public Site get(int index)
             {
                 SiteInfo siteInfo = sites.get(index);
 
@@ -606,7 +627,7 @@ public class SitesImpl implements Sites
                 {
                     role = siteService.getMembersRole(siteInfo.getShortName(), personId);
                 }
-                return new SiteImpl(siteInfo, role);
+                return new Site(siteInfo, role);
             }
 
             @Override
@@ -803,5 +824,147 @@ public class SitesImpl implements Sites
         }
 
         return CollectionWithPagingInfo.asPaged(paging, favourites, favouriteSites.hasMoreItems(), favouriteSites.getTotalResultCount().getFirst());
+    }
+
+    public void deleteSite(String siteId, Parameters parameters)
+    {
+        SiteInfo siteInfo = validateSite(siteId);
+        if(siteInfo == null)
+        {
+            // site does not exist
+            throw new EntityNotFoundException(siteId);
+        }
+        siteId = siteInfo.getShortName();
+
+        // default false (if not provided)
+        boolean permanentDelete = Boolean.valueOf(parameters.getParameter(PARAM_PERMANENT));
+
+        if (permanentDelete == true)
+        {
+            // Set as temporary to delete node instead of archiving.
+            nodeService.addAspect(siteInfo.getNodeRef(), ContentModel.ASPECT_TEMPORARY, null);
+        }
+
+        siteService.deleteSite(siteId);
+    }
+
+    // based on Share create site
+    private static final int SITE_MAXLEN_ID = 72;
+    private static final int SITE_MAXLEN_TITLE = 256;
+    private static final int SITE_MAXLEN_DESCRIPTION = 512;
+
+
+    /**
+     * Create default/preset (Share) site - with DocLib container/component
+     *
+     * @param site
+     * @return
+     */
+    public Site createSite(Site site)
+    {
+        site = validateSite(site);
+        String siteId = site.getId();
+
+        siteService.createSite("sitePreset", siteId, site.getTitle(), site.getDescription(), site.getVisibility());
+        importSite(siteId);
+
+        // pre-create doclib
+        siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
+
+        return getSite(siteId);
+    }
+
+    private Site validateSite(Site site)
+    {
+        // site title - mandatory
+        String siteTitle = site.getTitle();
+        if ((siteTitle == null) || siteTitle.isEmpty())
+        {
+            throw new InvalidArgumentException("Site title is expected: "+siteTitle);
+        }
+        else if (siteTitle.length() > SITE_MAXLEN_TITLE)
+        {
+            throw new InvalidArgumentException("Site title exceeds max length of "+SITE_MAXLEN_TITLE+" characters");
+        }
+
+        SiteVisibility siteVisibility = site.getVisibility();
+        if (siteVisibility == null)
+        {
+            throw new InvalidArgumentException("Site visibility is expected: "+siteTitle+" (eg. PUBLIC, PRIVATE, MODERATED)");
+        }
+
+        String siteId = site.getId();
+        if (siteId == null)
+        {
+            siteId = siteTitle.trim();
+            siteId = siteId.replace(" ","-");
+            siteId = siteId.replaceAll("[^A-Za-z0-9\\-]","");
+        }
+        else
+        {
+            if (! siteId.matches("[^A-Za-z0-9\\-]"))
+            {
+                throw new InvalidArgumentException("Invalid site id - should consist of alphanumeric/dash characters");
+            }
+        }
+
+        if (siteId.length() > SITE_MAXLEN_ID)
+        {
+            throw new InvalidArgumentException("Site id exceeds max length of "+SITE_MAXLEN_ID+ "characters");
+        }
+
+        site.setId(siteId);
+
+        String siteDescription = site.getDescription();
+        if ((siteDescription != null) && (siteDescription.length() > SITE_MAXLEN_DESCRIPTION))
+        {
+            throw new InvalidArgumentException("Site description exceeds max length of "+SITE_MAXLEN_DESCRIPTION+" characters");
+        }
+
+        return site;
+    }
+
+    private void importSite(final String siteId)
+    {
+        ImportPackageHandler acpHandler = new SiteImportPackageHandler(siteSurfConfig, siteId);
+        Location location = new Location(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
+        location.setPath("/app:company_home/st:sites/cm:" + ISO9075.encode(siteId));
+        ImporterBinding binding = new ImporterBinding()
+        {
+            @Override
+            public String getValue(String key)
+            {
+                if (key.equals("siteId"))
+                {
+                    return siteId;
+                }
+                return null;
+            }
+
+            @Override
+            public UUID_BINDING getUUIDBinding()
+            {
+                return UUID_BINDING.CREATE_NEW;
+            }
+
+            @Override
+            public QName[] getExcludedClasses()
+            {
+                return null;
+            }
+
+            @Override
+            public boolean allowReferenceWithinTransaction()
+            {
+                return false;
+            }
+
+            @Override
+            public ImporterContentCache getImportConentCache()
+            {
+                return null;
+            }
+        };
+        importerService.importView(acpHandler, location, binding, (ImporterProgress)null);
     }
 }

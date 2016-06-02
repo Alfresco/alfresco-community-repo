@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2012 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -28,7 +28,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
  * @author steveglover
  *
  */
-public class FavouriteSite extends SiteImpl
+public class FavouriteSite extends Site
 {
 	public FavouriteSite()
 	{

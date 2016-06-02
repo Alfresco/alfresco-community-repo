@@ -19,14 +19,20 @@
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
+import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
+
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.site.SiteInfoImpl;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
+import org.alfresco.rest.api.sites.SiteEntityResource;
 import org.alfresco.rest.api.tests.RepoService.SiteInformation;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
@@ -40,10 +46,9 @@ import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.Rendition;
-import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.TempFileProvider;
 import org.springframework.util.ResourceUtils;
@@ -71,6 +76,10 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     private static final String URL_RENDITIONS = "renditions";
     private static final String URL_CHILDREN = "children";
     private static final String URL_CONTENT = "content";
+
+    protected static final String TYPE_CM_FOLDER = "cm:folder";
+    protected static final String TYPE_CM_CONTENT = "cm:content";
+    protected static final String TYPE_CM_OBJECT = "cm:cmobject";
 
 
     /**
@@ -286,9 +295,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return person.getId();
     }
 
+    // @deprecated
     protected TestSite createSite(final TestNetwork testNetwork, TestPerson user, final SiteVisibility siteVisibility)
     {
         final String siteName = "RandomSite" + System.currentTimeMillis();
+
         final TestSite site = TenantUtil.runAsUserTenant(new TenantUtil.TenantRunAsWork<TestSite>()
         {
             @Override
@@ -298,34 +309,59 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
                 return repoService.createSite(testNetwork, siteInfo);
             }
         }, user.getId(), testNetwork.getId());
-        assertNotNull(site);
 
         return site;
     }
 
-    protected void inviteToSite(final TestSite testSite, final TestPerson invitee, final SiteRole siteRole)
+    protected Site createSite(String networkId, String userId, SiteVisibility siteVisibility) throws Exception
     {
-        TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                testSite.inviteToSite(invitee.getId(), siteRole);
-                return null;
-            }
-        }, testSite.getNetworkId());
+        String siteTitle = "RandomSite" + System.currentTimeMillis();
+        return createSite(networkId, userId, null, siteTitle, siteVisibility);
     }
 
-    protected NodeRef getSiteDocLib(final TestSite testSite)
+    protected Site createSite(String networkId, String userId, String siteId, String siteTitle, SiteVisibility siteVisibility) throws Exception
     {
-        return TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork() throws Exception
-            {
-                return testSite.getContainerNodeRef(("documentLibrary"));
-            }
-        }, testSite.getNetworkId());
+        publicApiClient.setRequestContext(new RequestContext(networkId, userId));
+
+        Site site = new Site();
+        site.setId(siteId);
+        site.setTitle(siteTitle);
+        site.setVisibility(siteVisibility);
+
+        HttpResponse response = publicApiClient.post(getScope(), "sites", null, null, null, toJsonAsStringNonNull(site));
+        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Site.class);
+    }
+
+    protected HttpResponse deleteSite(String networkId, String userId, String siteId, int expectedStatus) throws Exception
+    {
+        publicApiClient.setRequestContext(new RequestContext(networkId, userId));
+
+        HttpResponse response = publicApiClient.delete(getScope(), "sites", siteId, null, null);
+        checkStatus(expectedStatus, response.getStatusCode());
+
+        return response;
+    }
+
+    /**
+     * Helper: to get site container id (see also RepoService.getContainerNodeRef -> SiteService.getContainer)
+     *
+     *    GET /nodes/-root?relativePath=/Sites/siteId/documentLibrary
+     *
+     * alternatively:
+     *
+     *    GET /nodes/siteNodeId?relativePath=documentLibrary
+     */
+    protected String getSiteContainerNodeId(String networkId, String runAsUserId, String siteId, String containerNameId) throws Exception
+    {
+        Map<String, String> params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/Sites/"+siteId+"/"+containerNameId);
+
+        publicApiClient.setRequestContext(new RequestContext(networkId, runAsUserId));
+
+        HttpResponse response = publicApiClient.get(NodesEntityResource.class, Nodes.PATH_ROOT, null, params);
+        checkStatus(200, response.getStatusCode());
+
+        Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        return node.getId();
     }
 
     protected void checkStatus(int expectedStatus, int actualStatus)
@@ -367,7 +403,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected Folder createFolder(String runAsUserId, String parentId, String folderName, Map<String, Object> props) throws Exception
     {
-        return createNode(runAsUserId, parentId, folderName, "cm:folder", props, Folder.class);
+        return createNode(runAsUserId, parentId, folderName, TYPE_CM_FOLDER, props, Folder.class);
     }
 
     protected Node createNode(String runAsUserId, String parentId, String nodeName, String nodeType, Map<String, Object> props) throws Exception

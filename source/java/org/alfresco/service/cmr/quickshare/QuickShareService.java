@@ -85,4 +85,9 @@ public interface QuickShareService
      * @param emailRequest The email details including its template details
      */
     public void sendEmailNotification(QuickShareEmailRequest emailRequest);
+
+    /**
+     * Determine if the current user has permission to delete the shared link.
+     */
+    public boolean canDeleteSharedLink(NodeRef nodeRef, String sharedByUserId);
 }

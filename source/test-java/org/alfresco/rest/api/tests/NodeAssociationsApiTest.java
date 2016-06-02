@@ -526,7 +526,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
             response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            assertEquals(2, nodes.size());
             int i = 0;
             for (Node node : nodes)
             {
@@ -546,7 +545,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
             response = getAll(getNodeParentsUrl(o2Id), user1, paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            assertEquals(3, nodes.size());
             i = 0;
             for (Node node : nodes)
             {
@@ -573,7 +571,8 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             }
             assertEquals(3, i);
 
-            // test basic list filter
+            // test list filter - assocType (/secondary-children & /parents)
+
             Map<String, String> params = new HashMap<>();
             params.put("where", "(assocType='"+ASSOC_TYPE_CM_CONTAINS+"')");
 
@@ -585,7 +584,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
             response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            assertEquals(2, nodes.size());
             i = 0;
             for (Node node : nodes)
             {
@@ -624,10 +622,95 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertFalse(nodes.get(0).getAssociation().getIsPrimary());
 
 
+            // test list filter - isPrimary (/children)
+
+            // note: see NodeApiTest for other filters related to /nodes/{parentId}/children filters
+
+            // note: currently collapses same nodeIds (o2Id x 2) into one - makes sense in terms of File/Folder to avoid duplicate names
+            response = getAll(getNodeChildrenUrl(f1Id), user1, paging, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+            List<String> nodeIds = Arrays.asList(new String[] { nodes.get(0).getId(), nodes.get(1).getId()} );
+            assertTrue(nodeIds.contains(o1Id));
+            assertTrue(nodeIds.contains(o2Id));
+
+            params = new HashMap<>();
+            params.put("where", "(isPrimary=true)");
+
+            response = getAll(getNodeChildrenUrl(f1Id), user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(o1Id, nodes.get(0).getId());
+
+            params = new HashMap<>();
+            params.put("where", "(isPrimary=false)");
+
+            // note: currently collapses same nodeIds (o2Id x 2) into one - makes sense in terms of File/Folder to avoid duplicate names
+            response = getAll(getNodeChildrenUrl(f1Id), user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(o2Id, nodes.get(0).getId());
+
+
+            // test list filter - isPrimary (/parents)
+
+            response = getAll(getNodeParentsUrl(o2Id), user1, paging, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(3, nodes.size());
+
+            params = new HashMap<>();
+            params.put("where", "(isPrimary=true)");
+
+            response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(f2Id, nodes.get(0).getId());
+
+            params = new HashMap<>();
+            params.put("where", "(isPrimary=false)");
+
+            response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            i = 0;
+            for (Node node : nodes)
+            {
+                String nodeId = node.getId();
+                Association nodeAssoc = node.getAssociation();
+                if (nodeId.equals(f1Id))
+                {
+                    if (nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_CONTAINS))
+                    {
+                        i++;
+                    }
+                    else if ( nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_PREFERENCE_IMAGE))
+                    {
+                        i++;
+                    }
+                    assertFalse(nodeAssoc.getIsPrimary());
+                }
+            }
+            assertEquals(2, i);
+
+            // combined filter
+            params = new HashMap<>();
+            params.put("where", "(isPrimary=false and assocType='"+ASSOC_TYPE_CM_PREFERENCE_IMAGE+"')");
+
+            response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(f1Id, nodes.get(0).getId());
+            assertFalse(nodes.get(0).getAssociation().getIsPrimary());
+            assertEquals(ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
+
+
+            //
+
+
+            // remove one secondary child assoc
+
             params = new HashMap<>(2);
             params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_CONTAINS);
 
-            // remove one secondary child assoc
             delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, params, 204);
 
             response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);

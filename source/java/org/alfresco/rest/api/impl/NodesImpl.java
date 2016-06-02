@@ -29,6 +29,8 @@ import org.alfresco.repo.content.ContentLimitViolationException;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.model.filefolder.FileFolderServiceImpl;
+import org.alfresco.repo.node.getchildren.FilterProp;
+import org.alfresco.repo.node.getchildren.FilterPropBoolean;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -327,7 +329,7 @@ public class NodesImpl implements Nodes
 
     // list children filtering (via where clause)
     private final static Set<String> LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES =
-            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_ISFILE, PARAM_NODETYPE}));
+            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_ISFILE, PARAM_NODETYPE, PARAM_ISPRIMARY}));
 
     /*
      * Validates that node exists.
@@ -1151,9 +1153,10 @@ public class NodesImpl implements Nodes
 
         final List<String> includeParam = parameters.getInclude();
 
+        // filters
         Boolean includeFolders = null;
         Boolean includeFiles = null;
-
+        Boolean isPrimary = null;
         QName filterNodeTypeQName = null;
 
         // note: for files/folders, include subtypes by default (unless filtering by a specific nodeType - see below)
@@ -1166,6 +1169,8 @@ public class NodesImpl implements Nodes
             // filtering via "where" clause
             MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES, null);
             QueryHelper.walk(q, propertyWalker);
+
+            isPrimary = propertyWalker.getProperty(PARAM_ISPRIMARY, WhereClauseParser.EQUALS, Boolean.class);
 
             Boolean isFolder = propertyWalker.getProperty(PARAM_ISFOLDER, WhereClauseParser.EQUALS, Boolean.class);
             Boolean isFile = propertyWalker.getProperty(PARAM_ISFILE, WhereClauseParser.EQUALS, Boolean.class);
@@ -1227,6 +1232,13 @@ public class NodesImpl implements Nodes
                     new Pair<>(ContentModel.PROP_NAME, true)));
         }
 
+        List<FilterProp> filterProps = null;
+        if (isPrimary != null)
+        {
+            filterProps = new ArrayList<>(1);
+            filterProps.add(new FilterPropBoolean(GetChildrenCannedQuery.FILTER_QNAME_NODE_IS_PRIMARY, isPrimary));
+        }
+
         Paging paging = parameters.getPaging();
 
         PagingRequest pagingRequest = Util.getPagingRequest(paging);
@@ -1272,7 +1284,7 @@ public class NodesImpl implements Nodes
         Set<QName> searchTypeQNames = pair.getFirst();
         Set<QName> ignoreAspectQNames = pair.getSecond();
 
-        pagingResults = fileFolderService.list(parentNodeRef, searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
+        pagingResults = fileFolderService.list(parentNodeRef, searchTypeQNames, ignoreAspectQNames, sortProps, filterProps, pagingRequest);
 
 
         final Map<String, UserInfo> mapUserInfo = new HashMap<>(10);

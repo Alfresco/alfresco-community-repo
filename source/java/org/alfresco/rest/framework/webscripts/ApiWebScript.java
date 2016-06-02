@@ -43,6 +43,7 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.simple.JSONObject;
+import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.webscripts.*;
 import org.springframework.extensions.webscripts.Description.RequiredCache;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
@@ -202,18 +203,21 @@ public abstract class ApiWebScript extends AbstractWebScript
      */
     public void renderErrorResponse(ErrorResponse errorResponse, final WebScriptResponse res) throws IOException {
 
-        String logKey = " ";
+        String logId = "";
 
         if (Status.STATUS_INTERNAL_SERVER_ERROR == errorResponse.getStatusCode() || logger.isDebugEnabled())
         {
-            logKey = GUID.generate();
-            logger.error(logKey+" : "+errorResponse.getStackTrace());
+            logId = GUID.generate();
+            logger.error(logId+" : "+errorResponse.getStackTrace());
         }
+
+        String stackMessage = I18NUtil.getMessage(DefaultExceptionResolver.STACK_MESSAGE_ID);
 
         final ErrorResponse errorToWrite = new ErrorResponse(errorResponse.getErrorKey(),
                                                     errorResponse.getStatusCode(),
                                                     errorResponse.getBriefSummary(),
-                                                    logKey,
+                                                    stackMessage,
+                                                    logId,
                                                     errorResponse.getAdditionalState(),
                                                     DefaultExceptionResolver.ERROR_URL);
 

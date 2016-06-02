@@ -287,20 +287,22 @@ public class ExecutionTests extends AbstractContextTest
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         executor.renderErrorResponse(defaultError, mockResponse(out));
         String errorMessage = out.toString();
-        //System.out.println(errorMessage);
+//        System.out.println(errorMessage);
         assertTrue(errorMessage.contains("\"errorKey\":\"framework.exception.ApiDefault\""));
         assertTrue(errorMessage.contains("\"statusCode\":500"));
-        assertTrue(errorMessage.contains("\"stackTrace\":\""));
+        assertTrue(errorMessage.contains("\"logId\":\""));
+        assertTrue(errorMessage.contains("\"stackTrace\":\"For security reasons the stack trace is no longer displayed"));
         assertTrue(errorMessage.contains("\"descriptionURL\":\""+DefaultExceptionResolver.ERROR_URL+"\""));
 
         ErrorResponse anError = simpleMappingExceptionResolver.resolveException(new ApiException("nothing"));
         out = new ByteArrayOutputStream();
         executor.renderErrorResponse(anError, mockResponse(out));
         errorMessage = out.toString();
-        System.out.println(errorMessage);
+ //       System.out.println(errorMessage);
         assertTrue(errorMessage.contains("\"errorKey\":\"nothing\""));
         assertTrue(errorMessage.contains("\"statusCode\":500"));
-        assertTrue(errorMessage.contains("\"stackTrace\":\""));
+        assertTrue(errorMessage.contains("\"stackTrace\":\"For security reasons the stack trace is no longer displayed"));
+        assertTrue(errorMessage.contains("\"logId\":\""));
 
         anError = simpleMappingExceptionResolver.resolveException(new EntityNotFoundException("2"));
         out = new ByteArrayOutputStream();
@@ -309,7 +311,7 @@ public class ExecutionTests extends AbstractContextTest
         System.out.println(errorMessage);
         assertTrue(errorMessage.contains("\"errorKey\":\"framework.exception.EntityNotFound\""));
         assertTrue(errorMessage.contains("\"statusCode\":404"));
-        assertTrue("Only 500 errors should have a stracktrace", errorMessage.contains("\"stackTrace\":\" \""));
+        assertFalse("Only 500 errors should have a logId", errorMessage.contains("\"logId\":\" \""));
     }
 
     private WebScriptResponse mockResponse() throws IOException

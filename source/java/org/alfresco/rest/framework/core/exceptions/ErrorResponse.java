@@ -11,13 +11,14 @@ import java.util.Map;
  */
 public class ErrorResponse
 {
-    final private String errorKey;
-    final private int statusCode;
-    final private String briefSummary;
-    final private String stackTrace;
-    final private Map<String,Object> additionalState;
-    final private String descriptionURL;
-    
+    private final String errorKey;
+    private final int statusCode;
+    private final String briefSummary;
+    private final String stackTrace;
+    private final Map<String,Object> additionalState;
+    private final String descriptionURL;
+    private final String logId;
+
     public ErrorResponse(String errorKey, int statusCode, String briefSummary,
                 StackTraceElement[] stackTrace, Map<String,Object> additionalState)
     {
@@ -28,16 +29,18 @@ public class ErrorResponse
         this.stackTrace = Arrays.toString(stackTrace);
         this.additionalState = additionalState==null?null:Collections.unmodifiableMap(additionalState);
         this.descriptionURL = null;
+        this.logId = null;
     }
 
     public ErrorResponse(String errorKey, int statusCode, String briefSummary,
-                         String stackTrace, Map<String,Object> additionalState, String descriptionURL)
+                         String stackMessage, String logId, Map<String,Object> additionalState, String descriptionURL)
     {
         super();
         this.errorKey = errorKey;
         this.statusCode = statusCode;
         this.briefSummary = briefSummary;
-        this.stackTrace = stackTrace;
+        this.stackTrace = stackMessage;
+        this.logId = logId;
         this.additionalState = additionalState==null?null:Collections.unmodifiableMap(additionalState);
         this.descriptionURL = descriptionURL;
     }
@@ -72,6 +75,10 @@ public class ErrorResponse
         return this.additionalState;
     }
 
+    public String getLogId() {
+        return logId;
+    }
+
     @Override
     public String toString()
     {
@@ -79,6 +86,7 @@ public class ErrorResponse
         builder.append("ErrorResponse [errorKey=").append(this.errorKey).append(", statusCode=")
                .append(this.statusCode).append(", briefSummary=").append(this.briefSummary)
                .append(", descriptionURL=").append(this.descriptionURL)
+                .append(", logId=").append(this.logId)
                .append(", stackTrace=").append(this.stackTrace).append(", additionalState=")
                .append(this.additionalState).append("]");
         return builder.toString();

@@ -82,13 +82,19 @@ public class AbstractNodeRelation implements InitializingBean
         this.sr = sr;
     }
 
+    // Introduces permissions for Node Assoc (see public-rest-context.xml)
+    public void setNodeService(NodeService nodeService)
+    {
+        this.nodeService = nodeService;
+    }
+
     @Override
     public void afterPropertiesSet()
     {
         PropertyCheck.mandatory(this, "serviceRegistry", sr);
         ParameterCheck.mandatory("nodes", this.nodes);
 
-        this.nodeService = sr.getNodeService();
+        //this.nodeService = sr.getNodeService();
         this.namespaceService = sr.getNamespaceService();
         this.dictionaryService = sr.getDictionaryService();
     }

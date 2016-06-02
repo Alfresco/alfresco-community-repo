@@ -18,27 +18,29 @@
  */
 package org.alfresco.rest.api;
 
+import java.io.IOException;
 import java.util.regex.Pattern;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.web.scripts.TenantWebScriptServletRuntime;
+import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.springframework.extensions.config.ServerProperties;
 import org.springframework.extensions.surf.util.URLDecoder;
-import org.springframework.extensions.webscripts.Match;
-import org.springframework.extensions.webscripts.RuntimeContainer;
-import org.springframework.extensions.webscripts.WebScriptRequest;
+import org.springframework.extensions.webscripts.*;
 import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFactory;
 
 public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServletRuntime
 {
     private static final Pattern CMIS_URI_PATTERN = Pattern.compile(".*/cmis/versions/[0-9]+\\.[0-9]+/.*");
-    
+    private ApiAssistant apiAssistant;
+
 	public PublicApiTenantWebScriptServletRuntime(RuntimeContainer container, ServletAuthenticatorFactory authFactory, HttpServletRequest req,
-			HttpServletResponse res, ServerProperties serverProperties)
+			HttpServletResponse res, ServerProperties serverProperties, ApiAssistant apiAssistant)
 	{
 		super(container, authFactory, req, res, serverProperties);
+        this.apiAssistant = apiAssistant;
 	}
 
     /* (non-Javadoc)
@@ -120,5 +122,25 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
     public String getName()
     {
         return "PublicApiTenantServletRuntime";
+    }
+
+    @Override
+    protected void renderErrorResponse(Match match, Throwable exception, WebScriptRequest request, WebScriptResponse response) {
+
+        //If its cmis or not an exception then use the default behaviour
+        if (CMIS_URI_PATTERN.matcher(req.getRequestURI()).matches() || !(exception instanceof Exception))
+        {
+            super.renderErrorResponse(match, exception, request, response);
+        }
+        else
+        {
+            try {
+                apiAssistant.renderException((Exception)exception, response);
+            } catch (IOException e) {
+                logger.error("Internal error", e);
+                throw new WebScriptException("Internal error", e);
+            }
+        }
+
     }
 }

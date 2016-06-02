@@ -32,6 +32,10 @@
     <bean id="jsonHelper" class="org.alfresco.rest.framework.jacksonextensions.JacksonHelper">
          <property name="module" ref="restJsonModule" />
     </bean>
+    <bean id="apiAssistant" class="org.alfresco.rest.framework.tools.ApiAssistant">
+        <property name="jsonHelper" ref="jsonHelper" />
+        <property name="resolver" ref="simpleMappingExceptionResolver" />
+    </bean>
     <bean id="simpleMappingExceptionResolver" class="org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver">
        <property name="exceptionMappings">
            <map>
@@ -77,7 +81,6 @@
 
     <bean id="defaultMetaWriter" class="org.alfresco.rest.framework.webscripts.metadata.WebScriptOptionsMetaData">
         <property name="lookupDictionary" ref="apiLookup" />
-        <property name="resolver" ref="simpleMappingExceptionResolver" />
-        <property name="jsonHelper" ref="jsonHelper" />
+        <property name="assistant" ref="apiAssistant" />
    </bean>  
 </beans>

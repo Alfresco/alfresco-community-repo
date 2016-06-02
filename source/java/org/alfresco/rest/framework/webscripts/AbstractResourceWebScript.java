@@ -45,6 +45,7 @@ import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -145,11 +146,11 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         }
         catch (AlfrescoRuntimeException | ApiException | WebScriptException xception )
         {
-            renderErrorResponse(resolveException(xception), res);
+            assistant.renderException(xception, res);
         }
         catch (RuntimeException runtimeException)
         {
-            renderErrorResponse(resolveException(runtimeException), res);
+            assistant.renderException(runtimeException, res);
         }
     }
 
@@ -157,7 +158,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     {
         final String entityCollectionName = ResourceInspector.findEntityCollectionNameName(resource.getMetaData());
         final ResourceOperation operation = resource.getMetaData().getOperation(getHttpMethod());
-        final WithResponse callBack = new WithResponse(operation.getSuccessStatus(),DEFAULT_JSON_CONTENT,ApiWebScript.CACHE_NEVER);
+        final WithResponse callBack = new WithResponse(operation.getSuccessStatus(), ApiAssistant.DEFAULT_JSON_CONTENT,ApiAssistant.CACHE_NEVER);
         Object toReturn = transactionService.getRetryingTransactionHelper().doInTransaction(
                 new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
                 {
@@ -191,7 +192,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         {
             NodeBinaryResource nodeResource = (NodeBinaryResource) resource;
             ContentInfo contentInfo = nodeResource.getContentInfo();
-            setContentInfoOnResponse(res, contentInfo);
+            assistant.setContentInfoOnResponse(res, contentInfo);
             // if requested, set attachment
             boolean attach = StringUtils.isNotEmpty(nodeResource.getAttachFileName());
             Map<String, Object> model = getModelForCacheDirective(nodeResource.getCacheDirective());
@@ -226,7 +227,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     {
         res.setStatus(status);
         if (cache != null) res.setCache(cache);
-        setContentInfoOnResponse(res,contentInfo);
+        assistant.setContentInfoOnResponse(res,contentInfo);
         if (headers != null && !headers.isEmpty())
         {
             for (Map.Entry<String, List<String>> header:headers.entrySet())
@@ -262,7 +263,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     protected void renderJsonResponse(final WebScriptResponse res, final Object toSerialize)
                 throws IOException
     {
-        jsonHelper.withWriter(res.getOutputStream(), new JacksonHelper.Writer()
+        assistant.getJsonHelper().withWriter(res.getOutputStream(), new JacksonHelper.Writer()
         {
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)

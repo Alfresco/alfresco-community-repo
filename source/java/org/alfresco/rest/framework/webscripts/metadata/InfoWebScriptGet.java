@@ -52,8 +52,8 @@ public class InfoWebScriptGet extends ApiWebScript
         {
           throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_INVALID_API);         
         }
-        
-        jsonHelper.withWriter(res.getOutputStream(), new Writer()
+
+        assistant.getJsonHelper().withWriter(res.getOutputStream(), new Writer()
         {
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)

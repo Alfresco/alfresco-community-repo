@@ -34,6 +34,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAct
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
+import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.ArgumentTypeDescription;
 import org.springframework.extensions.webscripts.Container;
@@ -209,7 +210,7 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
         if (templateVars.get("apiName") != null)
         {
             // NOTE: noAuth currently only exposed for GET or Create Ticket (login)
-            Api api = determineApi(templateVars);
+            Api api = ApiAssistant.determineApi(templateVars);
 
             // TODO can we avoid locating resource more than once (or at least provide a common code to determine the GET resourceAction) ?
             return locator.locateResource(api, templateVars, method);
@@ -419,15 +420,6 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
 
         // override match with noAuth
         return new Match(match.getTemplate(), match.getTemplateVars(), match.getPath(), noAuthWebScriptWrapper);
-    }
-
-    // note: same as ApiWebscript (apiName must not be null)
-    private Api determineApi(Map<String, String> templateVars)
-    {
-        String apiScope = templateVars.get("apiScope");
-        String apiVersion = templateVars.get("apiVersion");
-        String apiName = templateVars.get("apiName");
-        return Api.valueOf(apiName,apiScope,apiVersion);
     }
 
     private void initWebScript(WebScript webScript, String name)

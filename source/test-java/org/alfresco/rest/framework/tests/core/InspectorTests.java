@@ -51,6 +51,7 @@ import org.alfresco.rest.framework.tests.api.mocks3.GrassEntityResourceNowDelete
 import org.alfresco.rest.framework.tests.api.mocks3.SheepBlackSheepResourceIsNoMore;
 import org.alfresco.rest.framework.tests.api.mocks3.SheepEntityResourceWithDeletedMethods;
 import org.alfresco.rest.framework.tests.api.mocks3.SlimGoat;
+import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.Pair;
@@ -440,7 +441,7 @@ public class InspectorTests
             OperationResourceMetaData operationResourceMetaData = (OperationResourceMetaData) resourceMetadata;
             Method actionMethod = operationResourceMetaData.getOperationMethod();
             String result = null;
-            final WithResponse wr = new WithResponse(Status.STATUS_OK, ApiWebScript.DEFAULT_JSON_CONTENT, ApiWebScript.CACHE_NEVER);
+            final WithResponse wr = new WithResponse(Status.STATUS_OK, ApiAssistant.DEFAULT_JSON_CONTENT, ApiAssistant.CACHE_NEVER);
 
             switch (resourceMetadata.getUniqueId())
             {

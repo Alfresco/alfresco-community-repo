@@ -25,6 +25,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.web.scripts.TenantWebScriptServlet;
+import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.RuntimeContainer;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletRuntime;
@@ -33,7 +34,7 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 public class PublicApiWebScriptServlet extends TenantWebScriptServlet
 {
 	private static final long serialVersionUID = 726730674397482039L;
-	
+	private ApiAssistant apiAssistant;
     @Override
     public void init() throws ServletException
     {
@@ -41,6 +42,7 @@ public class PublicApiWebScriptServlet extends TenantWebScriptServlet
     	
         ApplicationContext context = WebApplicationContextUtils.getRequiredWebApplicationContext(getServletContext());
         container = (RuntimeContainer)context.getBean("publicapi.container");
+        apiAssistant = (ApiAssistant) context.getBean("apiAssistant");
     }
     
     /* (non-Javadoc) 
@@ -55,7 +57,7 @@ public class PublicApiWebScriptServlet extends TenantWebScriptServlet
     
     protected WebScriptServletRuntime getRuntime(HttpServletRequest req, HttpServletResponse res)
     {
-        WebScriptServletRuntime runtime = new PublicApiTenantWebScriptServletRuntime(container, authenticatorFactory, req, res, serverProperties);
+        WebScriptServletRuntime runtime = new PublicApiTenantWebScriptServletRuntime(container, authenticatorFactory, req, res, serverProperties, apiAssistant);
         return runtime;
     }
 }

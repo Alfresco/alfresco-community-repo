@@ -58,6 +58,7 @@ import org.alfresco.rest.framework.resource.parameters.where.InvalidQueryExcepti
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryImpl;
 import org.alfresco.rest.framework.resource.parameters.where.WhereCompiler;
+import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.antlr.runtime.RecognitionException;
@@ -668,7 +669,7 @@ public class ResourceWebScriptHelper
                 paramFilter = filters.get(resourceKey);
             }
             final Params executionParams = Params.valueOf(paramFilter, uniqueEntityId, params.getRequest());
-            final WithResponse callBack = new WithResponse(Status.STATUS_OK,ApiWebScript.DEFAULT_JSON_CONTENT,ApiWebScript.CACHE_NEVER);
+            final WithResponse callBack = new WithResponse(Status.STATUS_OK, ApiAssistant.DEFAULT_JSON_CONTENT,ApiAssistant.CACHE_NEVER);
             //Read only because this only occurs for GET requests
             Object result = executor.executeAction(resource, executionParams, callBack);
             return processAdditionsToTheResponse(null, api, null, executionParams, result);

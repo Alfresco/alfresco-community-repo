@@ -32,6 +32,7 @@ import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper.Writer;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
+import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
@@ -57,10 +58,7 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRespons
 public abstract class ApiWebScript extends AbstractWebScript
 {
     private static Log logger = LogFactory.getLog(ApiWebScript.class);
-    protected JacksonHelper jsonHelper;
-    ExceptionResolver<Exception> defaultResolver = new DefaultExceptionResolver();
-    ExceptionResolver<Exception> resolver;
-
+    protected ApiAssistant assistant;
     protected boolean encryptTempFiles = false;
     protected String tempDirectoryName = null;
     protected int memoryThreshold = 4 * 1024 * 1024; // 4mb
@@ -73,9 +71,8 @@ public abstract class ApiWebScript extends AbstractWebScript
         this.transactionService = transactionService;
     }
 
-    public void setDefaultResolver(ExceptionResolver<Exception> defaultResolver)
-    {
-        this.defaultResolver = defaultResolver;
+    public void setAssistant(ApiAssistant assistant) {
+        this.assistant = assistant;
     }
 
     public void setTempDirectoryName(String tempDirectoryName)
@@ -102,41 +99,18 @@ public abstract class ApiWebScript extends AbstractWebScript
     {
         this.streamFactory = streamFactory;
     }
-    
+
     public void init()
     {
         File tempDirectory = TempFileProvider.getTempDir(tempDirectoryName);
         this.streamFactory = ThresholdOutputStreamFactory.newInstance(tempDirectory, memoryThreshold, maxContentSize, encryptTempFiles);
     }
 
-    public final static String UTF8 = "UTF-8";
-    public final static Cache CACHE_NEVER = new Cache(new RequiredCache()
-    {
-        @Override
-        public boolean getNeverCache()
-        {
-            return true;
-        }
-
-        @Override
-        public boolean getIsPublic()
-        {
-            return false;
-        }
-
-        @Override
-        public boolean getMustRevalidate()
-        {
-            return true;
-        }
-    });
-    public final static ContentInfo DEFAULT_JSON_CONTENT = new ContentInfoImpl(Format.JSON.mimetype(),UTF8, 0, null);
-    
     @Override
     public void execute(final WebScriptRequest req, final WebScriptResponse res) throws IOException
     {
 		Map<String, String> templateVars = req.getServiceMatch().getTemplateVars();
-		Api api = determineApi(templateVars);
+		Api api = assistant.determineApi(templateVars);
 		
 		final BufferedRequest bufferedReq = getRequest(req);
 		final BufferedResponse bufferedRes = getResponse(res);
@@ -161,24 +135,6 @@ public abstract class ApiWebScript extends AbstractWebScript
         }
     }
 
-    public Api determineApi(Map<String, String> templateVars)
-    {
-        String apiScope = templateVars.get("apiScope");
-        String apiVersion = templateVars.get("apiVersion");
-        String apiName = templateVars.get("apiName");
-        return Api.valueOf(apiName,apiScope,apiVersion);
-    }
-
-    protected ErrorResponse resolveException(Exception ex)
-    {
-        ErrorResponse error = resolver.resolveException(ex);
-        if (error == null)
-        {
-            error = defaultResolver.resolveException(ex);
-        }
-        return error;
-    }
-
     protected BufferedRequest getRequest(final WebScriptRequest req)
     {
         // create buffered request and response that allow transaction retrying
@@ -195,97 +151,4 @@ public abstract class ApiWebScript extends AbstractWebScript
 
     public abstract void execute(final Api api, WebScriptRequest req, WebScriptResponse res) throws IOException;
 
-    /**
-     * Renders a JSON error response
-     * @param errorResponse The error
-     * @param res web script response
-     * @throws IOException
-     */
-    public void renderErrorResponse(ErrorResponse errorResponse, final WebScriptResponse res) throws IOException {
-
-        String logId = "";
-
-        if (Status.STATUS_INTERNAL_SERVER_ERROR == errorResponse.getStatusCode() || logger.isDebugEnabled())
-        {
-            logId = GUID.generate();
-            logger.error(logId+" : "+errorResponse.getStackTrace());
-        }
-
-        String stackMessage = I18NUtil.getMessage(DefaultExceptionResolver.STACK_MESSAGE_ID);
-
-        final ErrorResponse errorToWrite = new ErrorResponse(errorResponse.getErrorKey(),
-                                                    errorResponse.getStatusCode(),
-                                                    errorResponse.getBriefSummary(),
-                                                    stackMessage,
-                                                    logId,
-                                                    errorResponse.getAdditionalState(),
-                                                    DefaultExceptionResolver.ERROR_URL);
-
-        setContentInfoOnResponse(res, DEFAULT_JSON_CONTENT);
-        
-        // Status must be set before the response is written by Jackson (which will by default close and commit the response).
-        // In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important.
-        res.setStatus(errorToWrite.getStatusCode());
-
-        jsonHelper.withWriter(res.getOutputStream(), new Writer()
-        {
-            @SuppressWarnings("unchecked")
-            @Override
-            public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
-                        throws JsonGenerationException, JsonMappingException, IOException
-            {
-                JSONObject obj = new JSONObject();
-                obj.put("error", errorToWrite);
-                objectMapper.writeValue(generator, obj);
-            }
-        });
-    }
-
-
-    /**
-     * Sets the response headers with any information we know about the content
-     * @param res WebScriptResponse
-     * @param contentInfo Content Information
-     */
-    protected void setContentInfoOnResponse(WebScriptResponse res, ContentInfo contentInfo)
-    {
-        if (contentInfo != null)
-        {
-            //Set content info on the response
-            res.setContentType(contentInfo.getMimeType());
-            res.setContentEncoding(contentInfo.getEncoding());
-
-            if (res instanceof WrappingWebScriptResponse)
-            {
-                WrappingWebScriptResponse wrappedRes = ((WrappingWebScriptResponse) res);
-                res = wrappedRes.getNext();
-            }
-
-            if (res instanceof WebScriptServletResponse)
-            {
-                WebScriptServletResponse servletResponse = (WebScriptServletResponse) res;
-                if (contentInfo.getLength() > 0)
-                {
-                    if (contentInfo.getLength() > 0 && contentInfo.getLength() < Integer.MAX_VALUE)
-                    {
-                        servletResponse.getHttpServletResponse().setContentLength((int) contentInfo.getLength());
-                    }
-                }
-                if (contentInfo.getLocale() != null)
-                {
-                    servletResponse.getHttpServletResponse().setLocale(contentInfo.getLocale());
-                }
-            }
-        }
-    }
-    
-    public void setResolver(ExceptionResolver<Exception> resolver)
-    {
-        this.resolver = resolver;
-    }
-
-    public void setJsonHelper(JacksonHelper jsonHelper)
-    {
-        this.jsonHelper = jsonHelper;
-    }
 }

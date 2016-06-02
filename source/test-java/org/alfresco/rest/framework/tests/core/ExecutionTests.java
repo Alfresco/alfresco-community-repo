@@ -24,6 +24,7 @@ import org.alfresco.rest.framework.tests.api.mocks.Goat;
 import org.alfresco.rest.framework.tests.api.mocks.Grass;
 import org.alfresco.rest.framework.tests.api.mocks.Sheep;
 import org.alfresco.rest.framework.tests.api.mocks3.FlockEntityResource;
+import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
 import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.junit.Test;
@@ -64,7 +65,7 @@ public class ExecutionTests extends AbstractContextTest
     public void testInvokeGet() throws IOException
     {
         ResourceWithMetadata entityResource = locator.locateEntityResource(api,"sheep", HttpMethod.GET);
-        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
+        AbstractResourceWebScript executor = getExecutor();
         Object result = executor.execute(entityResource, Params.valueOf((String)null, null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), true);
         assertNotNull(result);
 
@@ -72,7 +73,7 @@ public class ExecutionTests extends AbstractContextTest
         entityResource = locator.locateEntityResource(api,"cow", HttpMethod.GET);
         result = executor.execute(entityResource, Params.valueOf((String)null, null, mock(WebScriptRequest.class)), response, true);
         assertNotNull(result);
-        verify(response, times(1)).setCache((Cache) ApiWebScript.CACHE_NEVER);
+        verify(response, times(1)).setCache((Cache) ApiAssistant.CACHE_NEVER);
 
         response = mock(WebScriptResponse.class);
         result = executor.execute(entityResource, Params.valueOf("543", null, mock(WebScriptRequest.class)),  response, true);
@@ -109,7 +110,7 @@ public class ExecutionTests extends AbstractContextTest
     @Test
     public void testInvokePost() throws IOException
     {
-        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfPost");
+        AbstractResourceWebScript executor = getExecutor("executorOfPost");
 
         ResourceWithMetadata resource = locator.locateRelationResource(api, "sheep", "blacksheep", HttpMethod.POST);
         final Sheep aSheep = new Sheep("xyz");
@@ -152,7 +153,7 @@ public class ExecutionTests extends AbstractContextTest
     public void testInvokeDelete() throws IOException
     {
         ResourceWithMetadata grassResource = locator.locateEntityResource(api,"grass", HttpMethod.DELETE);
-        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfDelete");
+        AbstractResourceWebScript executor = getExecutor("executorOfDelete");
         Object result = executor.execute(grassResource,  Params.valueOf("4", null, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
         assertNull(result);
 
@@ -190,7 +191,7 @@ public class ExecutionTests extends AbstractContextTest
     public void testInvokePut() throws IOException
     {
         ResourceWithMetadata entityResource = locator.locateEntityResource(api,"sheep", HttpMethod.PUT);
-        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfPut");
+        AbstractResourceWebScript executor = getExecutor("executorOfPut");
         final Sheep aSheep = new Sheep("xyz");
         Object result = executor.execute(entityResource, Params.valueOf("654", null, NULL_PARAMS, aSheep, mock(WebScriptRequest.class)),  mock(WebScriptResponse.class), false);
         assertNotNull(result);
@@ -232,16 +233,13 @@ public class ExecutionTests extends AbstractContextTest
     @Test
     public void testInvokeAbstract() throws IOException
     {
-        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
-        executor.setLocator(locator);
-        executor.setResolver(simpleMappingExceptionResolver);
-        executor.setJsonHelper(jsonHelper);
+        AbstractResourceWebScript executor = getExecutor();
         Map<String, String> templateVars = new HashMap();
         templateVars.put("apiScope", "private");
         templateVars.put("apiVersion", "1");
         templateVars.put("apiName", "alfrescomock");
         templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "sheep");
-        executor.execute(executor.determineApi(templateVars), mockRequest(templateVars,new HashMap<String, List<String>>(1)), mock(WebScriptResponse.class));
+        executor.execute(ApiAssistant.determineApi(templateVars), mockRequest(templateVars,new HashMap<String, List<String>>(1)), mock(WebScriptResponse.class));
 
         WebScriptResponse response = mockResponse();
         templateVars.put(ResourceLocator.COLLECTION_RESOURCE, "bad");
@@ -260,10 +258,8 @@ public class ExecutionTests extends AbstractContextTest
     @Test
     public void testInvalidUrls() throws IOException
     {
-        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
-        executor.setLocator(locator);
-        executor.setResolver(simpleMappingExceptionResolver);
-        executor.setJsonHelper(jsonHelper);
+        AbstractResourceWebScript executor = getExecutor();
+
         Map<String, String> templateVars = new HashMap();
         templateVars.put("apiScope", "private");
         templateVars.put("apiVersion", "1");
@@ -279,13 +275,11 @@ public class ExecutionTests extends AbstractContextTest
     @Test
     public void testRenderError() throws IOException
     {
-        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
-        executor.setResolver(simpleMappingExceptionResolver);
-        executor.setJsonHelper(jsonHelper);
+        AbstractResourceWebScript executor = getExecutor();
 
         ErrorResponse defaultError = new DefaultExceptionResolver().resolveException(new NullPointerException());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        executor.renderErrorResponse(defaultError, mockResponse(out));
+        apiAssistant.renderErrorResponse(defaultError, mockResponse(out));
         String errorMessage = out.toString();
 //        System.out.println(errorMessage);
         assertTrue(errorMessage.contains("\"errorKey\":\"framework.exception.ApiDefault\""));
@@ -296,7 +290,7 @@ public class ExecutionTests extends AbstractContextTest
 
         ErrorResponse anError = simpleMappingExceptionResolver.resolveException(new ApiException("nothing"));
         out = new ByteArrayOutputStream();
-        executor.renderErrorResponse(anError, mockResponse(out));
+        apiAssistant.renderErrorResponse(anError, mockResponse(out));
         errorMessage = out.toString();
  //       System.out.println(errorMessage);
         assertTrue(errorMessage.contains("\"errorKey\":\"nothing\""));
@@ -306,7 +300,7 @@ public class ExecutionTests extends AbstractContextTest
 
         anError = simpleMappingExceptionResolver.resolveException(new EntityNotFoundException("2"));
         out = new ByteArrayOutputStream();
-        executor.renderErrorResponse(anError, mockResponse(out));
+        apiAssistant.renderErrorResponse(anError, mockResponse(out));
         errorMessage = out.toString();
         System.out.println(errorMessage);
         assertTrue(errorMessage.contains("\"errorKey\":\"framework.exception.EntityNotFound\""));

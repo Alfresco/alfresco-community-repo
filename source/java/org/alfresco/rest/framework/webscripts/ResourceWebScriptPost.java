@@ -102,7 +102,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                     if (objectType!= null)
                     {
                         //Operations don't support a List as json body
-                        postedObj = ResourceWebScriptHelper.extractJsonContent(req, jsonHelper, objectType);
+                        postedObj = ResourceWebScriptHelper.extractJsonContent(req, assistant.getJsonHelper(), objectType);
                     }
 
                     if (StringUtils.isNotBlank(propertyName))
@@ -156,7 +156,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                     // Only allow 1 value.
                     try
                     {
-                        Object content = ResourceWebScriptHelper.extractJsonContent(req,jsonHelper, objType);
+                        Object content = ResourceWebScriptHelper.extractJsonContent(req,assistant.getJsonHelper(), objType);
                         return Arrays.asList(content);
                     }
                     catch (InvalidArgumentException iae)
@@ -173,7 +173,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                }
             }
         }
-        return ResourceWebScriptHelper.extractJsonContentAsList(req, jsonHelper, objType);
+        return ResourceWebScriptHelper.extractJsonContentAsList(req, assistant.getJsonHelper(), objType);
     }
 
 

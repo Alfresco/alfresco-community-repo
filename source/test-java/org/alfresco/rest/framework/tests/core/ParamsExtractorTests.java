@@ -33,6 +33,7 @@ import org.alfresco.rest.framework.jacksonextensions.RestJsonModule;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tests.api.mocks.Farmer;
+import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.rest.framework.webscripts.ParamsExtractor;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptDelete;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptGet;
@@ -57,7 +58,8 @@ import org.springframework.mock.web.MockHttpServletRequest;
 public class ParamsExtractorTests
 {
     static JacksonHelper jsonHelper = null;
-    
+    static ApiAssistant assistant = null;
+
     @BeforeClass
     public static void setupTests() throws Exception
     {
@@ -65,6 +67,9 @@ public class ParamsExtractorTests
         RestJsonModule module = new RestJsonModule();
         jsonHelper.setModule(module);
         jsonHelper.afterPropertiesSet();
+
+        assistant = new ApiAssistant();
+        assistant.setJsonHelper(jsonHelper);
     }
 
     @Test
@@ -132,7 +137,7 @@ public class ParamsExtractorTests
     {
         //Put together the stubs
         ResourceWebScriptPost extractor = new ResourceWebScriptPost();
-        extractor.setJsonHelper(jsonHelper);
+        extractor.setAssistant(assistant);
         Map<String, String> templateVars = new HashMap<String, String>();
 
         Content content = mock(Content.class);
@@ -228,7 +233,7 @@ public class ParamsExtractorTests
     public void testMultiPartPostExtractor() throws Exception
     {
         ResourceWebScriptPost extractor = new ResourceWebScriptPost();
-        extractor.setJsonHelper(jsonHelper);
+        extractor.setAssistant(assistant);
         Map<String, String> templateVars = new HashMap<String, String>();
 
         WebScriptRequest request = mock(WebScriptRequest.class);
@@ -285,7 +290,7 @@ public class ParamsExtractorTests
     {
         //Put together the stubs
         ResourceWebScriptPut extractor = new ResourceWebScriptPut();
-        extractor.setJsonHelper(jsonHelper);
+        extractor.setAssistant(assistant);
         Map<String, String> templateVars = new HashMap<String, String>();
 
         Content content = mock(Content.class);
@@ -405,7 +410,7 @@ public class ParamsExtractorTests
     {
        String specialChars = new String(new char[] { (char) '香' }) + " 香蕉";
        ResourceWebScriptPost extractor = new ResourceWebScriptPost();
-       extractor.setJsonHelper(jsonHelper);
+        extractor.setAssistant(assistant);
        Map<String, String> templateVars = new HashMap<String, String>();
        String mockMe = "{\"name\":\""+specialChars+"\",\"created\":\"2012-03-23T15:56:18.552+0000\",\"age\":54,\"id\":\"1234A3\",\"farm\":\"LARGE\"}";
        Content content = mock(Content.class);
@@ -427,7 +432,7 @@ public class ParamsExtractorTests
        
        //Test passing in special characters as a param.
        ResourceWebScriptGet getExtractor = new ResourceWebScriptGet();
-       getExtractor.setJsonHelper(jsonHelper);
+       getExtractor.setAssistant(assistant);
        Map<String, String> getTemplateVars = new HashMap<String, String>();
        WebScriptRequest getRequest = mock(WebScriptRequest.class);
        when(getRequest.getServiceMatch()).thenReturn(new Match(null, getTemplateVars, null));

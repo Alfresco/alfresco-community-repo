@@ -40,10 +40,12 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteMembership;
 import org.alfresco.repo.site.SiteMembershipComparator;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.site.SiteServiceException;
+import org.alfresco.repo.site.SiteServiceImpl;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Sites;
@@ -70,6 +72,8 @@ import org.alfresco.service.cmr.preference.PreferenceService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -115,6 +119,8 @@ public class SitesImpl implements Sites
     protected PreferenceService preferenceService;
     protected ImporterService importerService;
     protected SiteSurfConfig siteSurfConfig;
+    protected PermissionService permissionService;
+    protected SiteServiceImpl siteServiceImpl;
 
     public void setPreferenceService(PreferenceService preferenceService)
     {
@@ -160,6 +166,17 @@ public class SitesImpl implements Sites
     {
         this.siteSurfConfig = siteSurfConfig;
     }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
+    public void setSiteServiceImpl(SiteServiceImpl siteServiceImpl)
+    {
+        this.siteServiceImpl = siteServiceImpl;
+    }
+
 
     public SiteInfo validateSite(NodeRef guid)
     {
@@ -850,13 +867,24 @@ public class SitesImpl implements Sites
         }
         siteId = siteInfo.getShortName();
 
+        NodeRef siteNodeRef = siteInfo.getNodeRef();
+
+        // belt-and-braces - double-check before purge/delete (rather than rollback)
+        if (permissionService.hasPermission(siteNodeRef, PermissionService.DELETE) != AccessStatus.ALLOWED)
+        {
+            throw new AccessDeniedException("Cannot delete site: "+siteId);
+        }
+
         // default false (if not provided)
         boolean permanentDelete = Boolean.valueOf(parameters.getParameter(PARAM_PERMANENT));
 
         if (permanentDelete == true)
         {
             // Set as temporary to delete node instead of archiving.
-            nodeService.addAspect(siteInfo.getNodeRef(), ContentModel.ASPECT_TEMPORARY, null);
+            nodeService.addAspect(siteNodeRef, ContentModel.ASPECT_TEMPORARY, null);
+
+            // bypassing trashcan means that purge behaviour will not fire, so explicitly force cleanup here
+            siteServiceImpl.beforePurgeNode(siteNodeRef);
         }
 
         siteService.deleteSite(siteId);

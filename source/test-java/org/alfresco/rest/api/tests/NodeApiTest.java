@@ -1737,11 +1737,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         String d1Id = documentResp.getId();
 
-        // -ve test - invalid (eg. not a folder) parent id
+        // -ve test - invalid (model integrity exception)
         Folder f3 = new Folder();
         f3.setName("f3");
         f3.setNodeType(TYPE_CM_FOLDER);
-        post(getNodeChildrenUrl(d1Id), user1, toJsonAsStringNonNull(f3), 400);
+        post(getNodeChildrenUrl(d1Id), user1, toJsonAsStringNonNull(f3), 422);
 
         // -ve test - it should not be possible to create a "system folder"
         invalid = new Folder();
@@ -2372,11 +2372,11 @@ public class NodeApiTest extends AbstractBaseApiTest
         invalid.setName("my file.txt");
         post(postUrl, user1, toJsonAsStringNonNull(invalid), 400);
 
-        // -ve test - invalid (eg. not a folder) parent id
+        // -ve test - invalid (model integrity exception)
         Document d3 = new Document();
         d3.setName("d3.txt");
         d3.setNodeType(TYPE_CM_CONTENT);
-        post(getNodeChildrenUrl(d1Id), user1, toJsonAsStringNonNull(d3), 400);
+        post(getNodeChildrenUrl(d1Id), user1, toJsonAsStringNonNull(d3), 422);
 
         // -ve test - unknown parent folder node id
         post(getNodeChildrenUrl(UUID.randomUUID().toString()), user1, toJsonAsStringNonNull(d3), 404);

@@ -42,8 +42,10 @@ import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.Rendition;
+import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.TempFileProvider;
 import org.springframework.util.ResourceUtils;
@@ -435,6 +437,31 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return node.getId();
     }
 
+    protected void inviteToSite(final TestSite testSite, final TestPerson invitee, final SiteRole siteRole)
+    {
+        TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                testSite.inviteToSite(invitee.getId(), siteRole);
+                return null;
+            }
+        }, testSite.getNetworkId());
+    }
+
+    protected NodeRef getSiteDocLib(final TestSite testSite)
+    {
+        return TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<NodeRef>()
+        {
+            @Override
+            public NodeRef doWork() throws Exception
+            {
+                return testSite.getContainerNodeRef(("documentLibrary"));
+            }
+        }, testSite.getNetworkId());
+    }
+
     protected void checkStatus(int expectedStatus, int actualStatus)
     {
         if (expectedStatus > 0 && expectedStatus != actualStatus)
@@ -625,3 +652,4 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return URL_NODES + "/" + nodeId + "/" + URL_CONTENT;
     }
 }
+

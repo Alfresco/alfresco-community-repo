@@ -1,9 +1,5 @@
 package org.alfresco.rest.api.tests;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -14,6 +10,7 @@ import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.People;
@@ -21,10 +18,14 @@ import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Person;
 import org.alfresco.rest.api.tests.client.data.PersonNetwork;
+import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 public class TestNetworks extends EnterpriseTestApi
 {
@@ -125,14 +126,29 @@ public class TestNetworks extends EnterpriseTestApi
 	    	publicApiClient.setRequestContext(rc);
 
 			HttpResponse response = publicApiClient.delete(null, null, null, null, null);
+			//url /null/alfresco/versions/1 does not map to a Web Script
 			assertEquals(404, response.getStatusCode());
-			
+			PublicApiClient.ExpectedErrorResponse errorResponse = RestApiUtil.parseErrorResponse(response.getJsonResponse());
+			assertNotNull(errorResponse);
+			assertNotNull(errorResponse.getErrorKey());
+			assertNotNull(errorResponse.getBriefSummary());
+
+
 			response = publicApiClient.put(null, null, null, null, null, null, null);
 			assertEquals(404, response.getStatusCode());
+			errorResponse = RestApiUtil.parseErrorResponse(response.getJsonResponse());
+			assertNotNull(errorResponse);
+			assertNotNull(errorResponse.getErrorKey());
+			assertNotNull(errorResponse.getBriefSummary());
+
 
 			response = publicApiClient.post(null, null, null, null, null, null);
 			assertEquals(404, response.getStatusCode());
-
+			errorResponse = RestApiUtil.parseErrorResponse(response.getJsonResponse());
+			assertNotNull(errorResponse);
+			assertNotNull(errorResponse.getErrorKey());
+			assertNotNull(errorResponse.getBriefSummary());
+			
 			List<PersonNetwork> expectedNetworkMembers = person.getNetworkMemberships();
 
 			int expectedTotal = expectedNetworkMembers.size();

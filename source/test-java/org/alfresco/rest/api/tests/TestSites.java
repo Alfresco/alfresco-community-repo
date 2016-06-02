@@ -139,13 +139,16 @@ public class TestSites extends EnterpriseTestApi
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
 
             String siteTitle = "my site !*#$ 123";
+            String siteDescription = "my site description";
 
-			Site site = new SiteImpl(siteTitle, SiteVisibility.PRIVATE.toString());
+			SiteImpl site = new SiteImpl(siteTitle, SiteVisibility.PRIVATE.toString());
+            site.setDescription(siteDescription);
+
 			Site ret = sitesProxy.createSite(site);
 			String siteId = ret.getSiteId();
 
 			String expectedSiteId = "my-site-123";
-			Site siteExp = new SiteImpl(null, expectedSiteId, ret.getGuid(), siteTitle, null,  SiteVisibility.PRIVATE.toString(), null, SiteRole.SiteManager);
+			Site siteExp = new SiteImpl(null, expectedSiteId, ret.getGuid(), siteTitle, siteDescription,  SiteVisibility.PRIVATE.toString(), null, SiteRole.SiteManager);
 			siteExp.expected(ret);
 
             ret = sitesProxy.getSite(siteId);
@@ -175,7 +178,7 @@ public class TestSites extends EnterpriseTestApi
             // -ve - try to get unknown site
             sitesProxy.getSite(GUID.generate(), 404);
 
-            Site site = new SiteImpl("my site 123", "invalidsitevisibility");
+            SiteImpl site = new SiteImpl("my site 123", "invalidsitevisibility");
 			sitesProxy.createSite(site, 400);
 
 			site = new SiteImpl(null, "invalid site id", null, "my site 123", null, SiteVisibility.PRIVATE.toString(), null, null);
@@ -183,6 +186,37 @@ public class TestSites extends EnterpriseTestApi
 
 			site = new SiteImpl(null, "invalidsiteid*", null, "my site 123", null, SiteVisibility.PRIVATE.toString(), null, null);
 			sitesProxy.createSite(site, 400);
+
+            site = new SiteImpl();
+            site.setSiteId(new String(new char[72]).replace('\0', 'a'));
+            site.setTitle(new String(new char[256]).replace('\0', 'a'));
+            site.setDescription(new String(new char[512]).replace('\0', 'a'));
+            site.setVisibility(SiteVisibility.PUBLIC.toString());
+            sitesProxy.createSite(site, 201);
+
+            // -ve - site id too long
+            site = new SiteImpl();
+            site.setSiteId(new String(new char[73]).replace('\0', 'a'));
+            site.setTitle("ok");
+            site.setDescription("ok");
+            site.setVisibility(SiteVisibility.PUBLIC.toString());
+            sitesProxy.createSite(site, 400);
+
+            // -ve - site title too long
+            site = new SiteImpl();
+            site.setSiteId("ok");
+            site.setTitle(new String(new char[257]).replace('\0', 'a'));
+            site.setDescription("ok");
+            site.setVisibility(SiteVisibility.PUBLIC.toString());
+            sitesProxy.createSite(site, 400);
+
+            // -ve - site description too long
+            site = new SiteImpl();
+            site.setSiteId("ok");
+            site.setTitle("ok");
+            site.setDescription(new String(new char[513]).replace('\0', 'a'));
+            site.setVisibility(SiteVisibility.PUBLIC.toString());
+            sitesProxy.createSite(site, 400);
 
             // site already exists (409)
             String siteTitle = "my site 456";

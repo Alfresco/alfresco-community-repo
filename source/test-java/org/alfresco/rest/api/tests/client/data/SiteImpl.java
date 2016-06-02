@@ -285,6 +285,10 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
         {
             siteJson.put("title", getTitle());
         }
+        if (getDescription() != null)
+        {
+            siteJson.put("description", getDescription());
+        }
         if (getVisibility() != null)
         {
             siteJson.put("visibility", getVisibility());

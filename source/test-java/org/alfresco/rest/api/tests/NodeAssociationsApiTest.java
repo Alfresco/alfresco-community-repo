@@ -22,11 +22,13 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Queries;
+import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.api.tests.client.data.Association;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
@@ -61,7 +63,7 @@ import static org.junit.Assert.*;
  * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/{targetId}/sources</li>
  * </ul>
  *
- * TODO - Child Associations (parent -> child)  - primary vs secondary
+ * Child Associations (parent -> child) - secondary (*)
  *
  * <ul>
  * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/{parentId}/children</li>
@@ -69,12 +71,16 @@ import static org.junit.Assert.*;
  * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/{childId}/parents</li>
  * </ul>
  *
- * Note: please also refer to NodeApiTests for specific tests for "managing" primary parent/child association.
-
+ * (*) for primary child assocs, please refer to NodeApiTest - eg. create/delete node (primary child), list children, move, copy etc
+ *
  * @author janv
  */
 public class NodeAssociationsApiTest extends AbstractBaseApiTest
 {
+    private static final String PARAM_ASSOC_TYPE = "assocType";
+
+    // peer assocs
+
     private static final String URL_TARGETS = "targets";
     private static final String URL_SOURCES = "sources";
 
@@ -84,7 +90,19 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
     private static final String ASPECT_CM_PARTABLE = "cm:partable";
     private static final String ASSOC_TYPE_CM_PARTS = "cm:parts";
 
-    private static final String PARAM_ASSOC_TYPE = "assocType";
+    // child assocs
+
+    private static final String URL_SECONDARY_CHILDREN = "secondary-children";
+    private static final String URL_PARENTS = "parents";
+
+    private static final String ASSOC_TYPE_CM_CONTAINS = "cm:contains";
+
+    private static final String ASPECT_CM_PREFERENCES = "cm:preferences";
+    private static final String ASSOC_TYPE_CM_PREFERENCE_IMAGE = "cm:preferenceImage";
+
+    private static final String PARAM_CHILD_NAME = "childQName";
+
+
 
     private String user1;
     private String user2;
@@ -145,14 +163,31 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         return URL_NODES + "/" + nodeId + "/" + URL_SOURCES;
     }
 
+    protected String getNodeSecondaryChildrenUrl(String nodeId)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_SECONDARY_CHILDREN;
+    }
+
+    protected String getNodeParentsUrl(String nodeId)
+    {
+        return URL_NODES + "/" + nodeId + "/" + URL_PARENTS;
+    }
+
     /**
-     * Tests basic api to manage (add, list, remove) peer node associations
+     * Tests basic api to manage (add, list, remove) node peer associations (ie. source node -> target node)
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets}
+     *
+     * <p>DELETE:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets/<targetNodeId>}
      *
      * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/live-search-nodes}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<targetNodeId>/sources}
      */
     @Test
-    public void testPeerNodeAssocs() throws Exception
+    public void testNodePeerAssocs() throws Exception
     {
         String myFolderNodeId = getMyNodeId(user1);
 
@@ -366,6 +401,262 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             tgt = new AssocTarget(o1Id, ASSOC_TYPE_CM_REFERENCES);
             post(getNodeTargetsUrl(o2Id), user1, toJsonAsStringNonNull(tgt), 201);
             post(getNodeTargetsUrl(o2Id), user1, toJsonAsStringNonNull(tgt), 409);
+
+            // TODO some more negative tests
+            // 400s - eg. invalid qname
+            // 404s - eg. unknown src, tgt, assoc of given type
+        }
+        finally
+        {
+            // some cleanup
+            Map<String, String> params = Collections.singletonMap("permanent", "true");
+            delete(URL_NODES, user1, f1Id, params, 204);
+            delete(URL_NODES, user1, f2Id, params, 204);
+        }
+    }
+
+    /**
+     * Tests basic api to manage (add, list, remove) node secondary child associations (ie. parent node -> child node)
+     *
+     * Note: refer to NodeApiTest for tests for primary child association
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<parentNodeId>/secondary-children}
+     *
+     * <p>DELETE:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<parentNodeId>/secondary-children/<childNodeId>}
+     *
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<parentNodeId>/secondary-children}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<childNodeId>/parents}
+     */
+    @Test
+    public void testNodeSecondaryChildAssocs() throws Exception
+    {
+        String myFolderNodeId = getMyNodeId(user1);
+
+        // create folder
+        Node n = new Node();
+        n.setName("f1");
+        n.setNodeType(TYPE_CM_FOLDER);
+        n.setAspectNames(Arrays.asList(ASPECT_CM_PREFERENCES));
+        HttpResponse response = post(getNodeChildrenUrl(myFolderNodeId), user1, toJsonAsStringNonNull(n), 201);
+        String f1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+
+        // create content node
+        String o1Name = "o1";
+        n = new Node();
+        n.setName(o1Name);
+        n.setNodeType(TYPE_CM_CONTENT);
+        response = post(getNodeChildrenUrl(f1Id), user1, toJsonAsStringNonNull(n), 201);
+        String o1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+
+        // create ano' folder
+        String f2Id = createFolder(user1, myFolderNodeId, "f2").getId();
+
+        // create ano' content node
+        String o2Name = "o2";
+        n = new Node();
+        n.setName(o2Name);
+        n.setNodeType(TYPE_CM_CONTENT);
+        response = post(getNodeChildrenUrl(f2Id), user1, toJsonAsStringNonNull(n), 201);
+        String o2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+
+
+        try
+        {
+            // As user 1 ...
+
+            Paging paging = getPaging(0, 100);
+
+            // -ve test - unauthenticated - belts-and-braces ;-)
+            getAll(getNodeSecondaryChildrenUrl(f1Id), null, paging, null, 401);
+            getAll(getNodeParentsUrl(o2Id), null, paging, null, 401);
+
+            // lists - before
+
+            response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            // primary parent only
+            response = getAll(getNodeParentsUrl(o2Id), user1, paging, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(f2Id, nodes.get(0).getId());
+            assertEquals(ASSOC_TYPE_CM_CONTAINS, nodes.get(0).getAssociation().getAssocType());
+            assertEquals("cm:"+o2Name, nodes.get(0).getAssociation().getChildQName());
+            assertTrue(nodes.get(0).getAssociation().getIsPrimaryParent());
+
+            String o2SecChildName = "cm:o2SecChildName";
+
+            // -ve test - unauthenticated - belts-and-braces ;-)
+            AssocChild secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS, o2SecChildName);
+            post(getNodeSecondaryChildrenUrl(f1Id), null, toJsonAsStringNonNull(secChild), 401);
+
+
+            // create secondary child assoc
+            secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS, o2SecChildName);
+            post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
+
+            // create ano' secondary child assoc (different type) between the same two nodes
+            secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_PREFERENCE_IMAGE, o2SecChildName);
+            post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
+
+
+            response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+            int i = 0;
+            for (Node node : nodes)
+            {
+                Association nodeAssoc = node.getAssociation();
+                if (nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_CONTAINS))
+                {
+                    i++;
+                }
+                else if ( nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_PREFERENCE_IMAGE))
+                {
+                    i++;
+                }
+                assertEquals(o2Id, node.getId());
+                assertEquals(o2SecChildName, nodeAssoc.getChildQName());
+                assertFalse(nodeAssoc.getIsPrimaryParent());
+            }
+            assertEquals(2, i);
+
+            response = getAll(getNodeParentsUrl(o2Id), user1, paging, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(3, nodes.size());
+            i = 0;
+            for (Node node : nodes)
+            {
+                String nodeId = node.getId();
+                Association nodeAssoc = node.getAssociation();
+                if (nodeId.equals(f2Id))
+                {
+                    assertEquals(ASSOC_TYPE_CM_CONTAINS, nodeAssoc.getAssocType());
+                    assertEquals("cm:"+o2Name, nodeAssoc.getChildQName());
+                    assertTrue(nodeAssoc.getIsPrimaryParent());
+                    i++;
+                }
+                else if (nodeId.equals(f1Id))
+                {
+                    if (nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_CONTAINS))
+                    {
+                        i++;
+                    }
+                    else if ( nodeAssoc.getAssocType().equals(ASSOC_TYPE_CM_PREFERENCE_IMAGE))
+                    {
+                        i++;
+                    }
+                    assertEquals(o2SecChildName, nodeAssoc.getChildQName());
+                    assertFalse(nodeAssoc.getIsPrimaryParent());
+                }
+            }
+            assertEquals(3, i);
+
+            // test basic list filter
+            Map<String, String> params = new HashMap<>();
+            params.put("where", "(assocType='"+ASSOC_TYPE_CM_CONTAINS+"')");
+
+            response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(o2Id, nodes.get(0).getId());
+            assertEquals(ASSOC_TYPE_CM_CONTAINS, nodes.get(0).getAssociation().getAssocType());
+
+            response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+            i = 0;
+            for (Node node : nodes)
+            {
+                String nodeId = node.getId();
+                Association nodeAssoc = node.getAssociation();
+                if (nodeId.equals(f2Id))
+                {
+                    assertEquals(ASSOC_TYPE_CM_CONTAINS, nodeAssoc.getAssocType());
+                    assertEquals("cm:"+o2Name, nodeAssoc.getChildQName());
+                    assertTrue(nodeAssoc.getIsPrimaryParent());
+                    i++;
+                }
+                else if (nodeId.equals(f1Id))
+                {
+                    assertEquals(ASSOC_TYPE_CM_CONTAINS, nodeAssoc.getAssocType());
+                    assertEquals(o2SecChildName, nodeAssoc.getChildQName());
+                    assertFalse(nodeAssoc.getIsPrimaryParent());
+                    i++;
+                }
+            }
+            assertEquals(2, i);
+
+            params = new HashMap<>();
+            params.put("where", "(assocType='"+ASSOC_TYPE_CM_PREFERENCE_IMAGE+"')");
+
+            response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(o2Id, nodes.get(0).getId());
+            assertEquals(ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
+            assertFalse(nodes.get(0).getAssociation().getIsPrimaryParent());
+
+            response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(f1Id, nodes.get(0).getId());
+            assertEquals(ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
+            assertFalse(nodes.get(0).getAssociation().getIsPrimaryParent());
+
+
+            params = new HashMap<>(2);
+            params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_CONTAINS);
+            params.put(PARAM_CHILD_NAME, o2SecChildName);
+
+            // -ve test - unauthenticated - belts-and-braces ;-)
+            delete(getNodeSecondaryChildrenUrl(f1Id), null, o2Id, params, 401);
+
+            // remove one secondary child assoc
+            delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, params, 204);
+
+            response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+
+            response = getAll(getNodeParentsUrl(o2Id), user1, paging, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+
+            params = new HashMap<>(2);
+            params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_PREFERENCE_IMAGE);
+            params.put(PARAM_CHILD_NAME, o2SecChildName);
+
+            // remove other secondary child assoc
+            delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, params, 204);
+
+            response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            response = getAll(getNodeParentsUrl(o2Id), user1, paging, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+
+            // TODO test delete of multiple secondary child assocs (if assoc type is not specified)
+
+
+            // -ve test - model integrity
+            secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS, o2SecChildName);
+            post(getNodeSecondaryChildrenUrl(o1Id), user1, toJsonAsStringNonNull(secChild), 422);
+
+            // -ve test - duplicate assoc
+            secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS, o2SecChildName);
+            post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
+            post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 409);
+
+            // TODO some more negative tests
+            // 400s - eg. invalid qname
+            // 404s - eg. unknown src, tgt, assoc of given type
         }
         finally
         {

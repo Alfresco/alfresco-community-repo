@@ -18,8 +18,6 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
-import org.alfresco.rest.api.model.Assoc;
-
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -251,14 +249,15 @@ public class Node
         this.relativePath = relativePath;
     }
 
-    protected Assoc association;
+    // note: can be child or peer (latter has assocType only)
+    protected Association association;
 
-    public Assoc getAssociation()
+    public Association getAssociation()
     {
         return association;
     }
 
-    public void setAssociation(Assoc association)
+    public void setAssociation(Association association)
     {
         this.association = association;
     }

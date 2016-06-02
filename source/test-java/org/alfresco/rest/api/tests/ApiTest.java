@@ -9,11 +9,15 @@ import org.junit.runners.Suite;
  * Public API tests.
  * 
  * @author steveglover
+ * @author janv
+ * @author Jamal Kaabi-Mofrad
+ * @author Gethin James
  *
  */
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     NodeApiTest.class,
+    NodeAssociationsApiTest.class,
     QueriesApiTest.class,
     RenditionsTest.class,
     SharedLinkApiTest.class,

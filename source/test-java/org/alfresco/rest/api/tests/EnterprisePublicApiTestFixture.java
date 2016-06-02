@@ -30,7 +30,7 @@ public class EnterprisePublicApiTestFixture extends EnterpriseTestFixture
     	return instance;
     }
 
-	public synchronized static EnterprisePublicApiTestFixture getInstance() throws Exception
+	public static EnterprisePublicApiTestFixture getInstance() throws Exception
 	{
 		return getInstance(true);
 	}

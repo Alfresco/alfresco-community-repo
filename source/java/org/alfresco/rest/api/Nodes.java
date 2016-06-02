@@ -238,6 +238,8 @@ public interface Nodes
     String PARAM_INCLUDE_ISLINK = "isLink";
     String PARAM_INCLUDE_ALLOWABLEOPERATIONS = "allowableOperations";
 
+    String PARAM_INCLUDE_ASSOCIATION = "association";
+
     String PARAM_ISFOLDER = "isFolder";
     String PARAM_ISFILE = "isFile";
 

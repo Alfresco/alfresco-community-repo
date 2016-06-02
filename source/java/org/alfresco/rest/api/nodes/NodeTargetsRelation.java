@@ -18,53 +18,29 @@
  */
 package org.alfresco.rest.api.nodes;
 
-import org.activiti.engine.history.HistoricActivityInstance;
-import org.alfresco.repo.web.scripts.admin.NodeBrowserPost;
-import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Assoc;
 import org.alfresco.rest.api.model.AssocTarget;
-import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.WebApiParam;
-import org.alfresco.rest.framework.WebApiParameters;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
-import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.alfresco.rest.workflow.api.model.Activity;
-import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
-import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.ParameterCheck;
-import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.dao.ConcurrencyFailureException;
-import org.springframework.extensions.webscripts.servlet.FormData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-
-import static org.alfresco.repo.publishing.PublishingModel.ASSOC_LAST_PUBLISHING_EVENT;
-import static org.alfresco.util.collections.CollectionUtils.isEmpty;
 
 /**
  * Node Targets
@@ -74,36 +50,11 @@ import static org.alfresco.util.collections.CollectionUtils.isEmpty;
  * @author janv
  */
 @RelationshipResource(name = "targets",  entityResource = NodesEntityResource.class, title = "Node Targets")
-public class NodeTargetsRelation implements
+public class NodeTargetsRelation extends AbstractNodeRelation implements
         RelationshipResourceAction.Read<Node>,
         RelationshipResourceAction.Create<AssocTarget>,
-        RelationshipResourceAction.Delete, InitializingBean
+        RelationshipResourceAction.Delete
 {
-    private ServiceRegistry sr;
-    private NodeService nodeService;
-    private NamespaceService namespaceService;
-    private Nodes nodes;
-
-    public void setNodes(Nodes nodes)
-    {
-        this.nodes = nodes;
-    }
-
-    public void setServiceRegistry(ServiceRegistry sr)
-    {
-        this.sr = sr;
-    }
-
-    @Override
-    public void afterPropertiesSet()
-    {
-        PropertyCheck.mandatory(this, "serviceRegistry", sr);
-        ParameterCheck.mandatory("nodes", this.nodes);
-
-        this.nodeService = sr.getNodeService();
-        this.namespaceService = sr.getNamespaceService();
-    }
-
     /**
      * List targets
      *
@@ -115,8 +66,9 @@ public class NodeTargetsRelation implements
     {
         NodeRef sourceNodeRef = nodes.validateOrLookupNode(sourceNodeId, null);
 
-        // TODO option to filter by assocType ... ?
-        List<AssociationRef> assocRefs = nodeService.getTargetAssocs(sourceNodeRef, RegexQNamePattern.MATCH_ALL);
+        QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
+
+        List<AssociationRef> assocRefs = nodeService.getTargetAssocs(sourceNodeRef, assocTypeQNameParam);
 
         Map<QName, String> qnameMap = new HashMap<>(3);
 
@@ -124,7 +76,7 @@ public class NodeTargetsRelation implements
 
         List<String> includeParam = parameters.getInclude();
 
-        List<Node> collection = new ArrayList<Node>(assocRefs.size());
+        List<Node> collection = new ArrayList<>(assocRefs.size());
         for (AssociationRef assocRef : assocRefs)
         {
             // minimal info by default (unless "include"d otherwise)
@@ -156,17 +108,10 @@ public class NodeTargetsRelation implements
 
         for (AssocTarget assoc : entity)
         {
-            String assocTypeStr = assoc.getAssocType();
-            if ((assocTypeStr == null) || assocTypeStr.isEmpty())
-            {
-                throw new InvalidArgumentException("Missing assocType");
-            }
-
-            QName assocTypeQName = QName.createQName(assocTypeStr, namespaceService);
+            QName assocTypeQName = getAssocType(assoc.getAssocType(), true);
 
             try
             {
-                // TODO consider x-store refs ?
                 NodeRef tgtNodeRef = nodes.validateNode(assoc.getTargetId());
                 nodeService.createAssociation(srcNodeRef, tgtNodeRef, assocTypeQName);
             }
@@ -184,11 +129,10 @@ public class NodeTargetsRelation implements
     @WebApiDescription(title = "Remove node assoc(s)")
     public void delete(String sourceNodeId, String targetNodeId, Parameters parameters)
     {
-        // TODO consider x-store refs ?
         NodeRef srcNodeRef = nodes.validateNode(sourceNodeId);
         NodeRef tgtNodeRef = nodes.validateNode(targetNodeId);
 
-        String assocTypeStr = parameters.getParameter("assocType");
+        String assocTypeStr = parameters.getParameter(PARAM_ASSOC_TYPE);
         if ((assocTypeStr != null) && (! assocTypeStr.isEmpty()))
         {
             QName assocTypeQName = QName.createQName(assocTypeStr, namespaceService);

@@ -46,6 +46,7 @@ import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Activities;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
+import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
@@ -892,6 +893,31 @@ public class NodesImpl implements Nodes
             }
 
             node.setAllowableOperations((allowableOperations.size() > 0 )? allowableOperations : null);
+        }
+
+        if (includeParam.contains(PARAM_INCLUDE_ASSOCIATION))
+        {
+            // Ugh ... can we optimise this and return the actual assoc directly (via FileFolderService/GetChildrenCQ) ?
+            ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
+            if (! parentAssocRef.getParentRef().equals(parentNodeRef))
+            {
+                List<ChildAssociationRef> parentAssocRefs = nodeService.getParentAssocs(nodeRef);
+                for (ChildAssociationRef pAssocRef : parentAssocRefs)
+                {
+                    if (pAssocRef.getParentRef().equals(parentNodeRef))
+                    {
+                        // for now, assume same parent/child cannot appear more than once (due to unique name)
+                        parentAssocRef = pAssocRef;
+                        break;
+                    }
+                }
+            }
+
+            AssocChild childAssoc = new AssocChild(
+                    parentAssocRef.getTypeQName().toPrefixString(namespaceService),
+                    parentAssocRef.isPrimary(),
+                    parentAssocRef.getQName().toPrefixString(namespaceService));
+            node.setAssociation(childAssoc);
         }
 
         node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));

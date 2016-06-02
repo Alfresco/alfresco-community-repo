@@ -18,72 +18,58 @@
  */
 package org.alfresco.rest.api.nodes;
 
-import org.activiti.engine.history.HistoricActivityInstance;
-import org.alfresco.repo.web.scripts.admin.NodeBrowserPost;
-import org.alfresco.rest.antlr.WhereClauseParser;
-import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.model.Assoc;
-import org.alfresco.rest.api.model.Comment;
+import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.WebApiParam;
-import org.alfresco.rest.framework.WebApiParameters;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.MultiPartRelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.rest.framework.resource.parameters.where.Query;
-import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
-import org.alfresco.rest.framework.webscripts.WithResponse;
-import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
-import org.alfresco.rest.workflow.api.model.Activity;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.search.ResultSetRow;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
-import org.alfresco.util.ParameterCheck;
-import org.alfresco.util.PropertyCheck;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.extensions.webscripts.servlet.FormData;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
 /**
- * Node Sources - list node (peer) associations from target to sources
+ * Node Parents
+ *
+ * List node's parent(s) - primary & also secondary, if any - based on (parent ->) child associations
  * 
  * @author janv
  */
-@RelationshipResource(name = "sources",  entityResource = NodesEntityResource.class, title = "Node Sources")
-public class NodeSourcesRelation extends AbstractNodeRelation implements RelationshipResourceAction.Read<Node>
+@RelationshipResource(name = "parents",  entityResource = NodesEntityResource.class, title = "Node Parents")
+public class NodeParentsRelation extends AbstractNodeRelation implements RelationshipResourceAction.Read<Node>
 {
     /**
-     * List sources
+     * List parents
      *
-     * @param targetNodeId String id of target node
+     * @param childNodeId String id of child node
      */
     @Override
-    @WebApiDescription(title = "Return a paged list of sources nodes based on (peer) assocs")
-    public CollectionWithPagingInfo<Node> readAll(String targetNodeId, Parameters parameters)
+    @WebApiDescription(title = "Return a paged list of parent nodes based on child assocs")
+    public CollectionWithPagingInfo<Node> readAll(String childNodeId, Parameters parameters)
     {
-        NodeRef targetNodeRef = nodes.validateOrLookupNode(targetNodeId, null);
+        NodeRef childNodeRef = nodes.validateOrLookupNode(childNodeId, null);
 
         QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
 
-        List<AssociationRef> assocRefs = nodeService.getSourceAssocs(targetNodeRef, assocTypeQNameParam);
+        List<ChildAssociationRef> assocRefs = null;
+        if (assocTypeQNameParam.equals(RegexQNamePattern.MATCH_ALL))
+        {
+            assocRefs = nodeService.getParentAssocs(childNodeRef);
+        }
+        else
+        {
+            assocRefs = nodeService.getParentAssocs(childNodeRef, assocTypeQNameParam, RegexQNamePattern.MATCH_ALL);
+        }
 
         Map<QName, String> qnameMap = new HashMap<>(3);
 
@@ -91,20 +77,30 @@ public class NodeSourcesRelation extends AbstractNodeRelation implements Relatio
 
         List<String> includeParam = parameters.getInclude();
 
-        List<Node> collection = new ArrayList<Node>(assocRefs.size());
-        for (AssociationRef assocRef : assocRefs)
+        List<Node> collection = new ArrayList<>(assocRefs.size());
+        for (ChildAssociationRef assocRef : assocRefs)
         {
             // minimal info by default (unless "include"d otherwise)
-            Node node = nodes.getFolderOrDocument(assocRef.getSourceRef(), null, null, includeParam, mapUserInfo);
+            Node node = nodes.getFolderOrDocument(assocRef.getParentRef(), null, null, includeParam, mapUserInfo);
 
             QName assocTypeQName = assocRef.getTypeQName();
+            QName assocChildQName = assocRef.getQName();
+
             String assocType = qnameMap.get(assocTypeQName);
             if (assocType == null)
             {
                 assocType = assocTypeQName.toPrefixString(namespaceService);
                 qnameMap.put(assocTypeQName, assocType);
             }
-            node.setAssociation(new Assoc(assocType));
+
+            String childQNameStr = qnameMap.get(assocChildQName);
+            if (childQNameStr == null)
+            {
+                childQNameStr = assocChildQName.toPrefixString(namespaceService);
+                qnameMap.put(assocChildQName, childQNameStr);
+            }
+
+            node.setAssociation(new AssocChild(assocType, assocRef.isPrimary(), childQNameStr));
 
             collection.add(node);
         }

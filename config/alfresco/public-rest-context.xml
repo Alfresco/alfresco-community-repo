@@ -774,7 +774,17 @@
     <bean class="org.alfresco.rest.api.nodes.NodeChildrenRelation">
         <property name="nodes" ref="Nodes" />
     </bean>
+    
+    <bean class="org.alfresco.rest.api.nodes.NodeSecondaryChildrenRelation">
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="nodes" ref="Nodes" />
+    </bean>
 
+    <bean class="org.alfresco.rest.api.nodes.NodeParentsRelation">
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="nodes" ref="Nodes" />
+    </bean>
+    
     <bean class="org.alfresco.rest.api.nodes.NodeTargetsRelation">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="nodes" ref="Nodes" />

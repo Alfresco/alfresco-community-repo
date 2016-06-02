@@ -18,6 +18,7 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.WebApiDescription;
@@ -79,7 +80,7 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
         NodeRef srcNodeRef = nodes.validateNode(sourceNodeId);
         NodeRef tgtNodeRef = nodes.validateNode(targetNodeId);
 
-        String assocTypeStr = parameters.getParameter(PARAM_ASSOC_TYPE);
+        String assocTypeStr = parameters.getParameter(Nodes.PARAM_ASSOC_TYPE);
         QNamePattern assocTypeQName = nodes.getAssocType(assocTypeStr, false);
 
         if (assocTypeQName == null)

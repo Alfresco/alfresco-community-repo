@@ -24,6 +24,7 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Association;
@@ -416,7 +417,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                 getAll(getNodeTargetsUrl(o1Id), user1, paging, params, 400);
                 getAll(getNodeSourcesUrl(o1Id), user1, paging, params, 400);
 
-                // TODO paging - in-built sort order ?
+                // TODO paging - in-built sort order ? (RA-926, RA-927)
             }
 
 
@@ -685,6 +686,11 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         String o2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
 
+        String f3Id = createFolder(user1, myFolderNodeId, "f3").getId();
+
+        String f4Id = createFolder(user1, myFolderNodeId, "f4").getId();
+
+
         try
         {
             // As user 1 ...
@@ -951,6 +957,164 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                 assertEquals(0, nodes.size());
             }
 
+            {
+                // sanity check paging of list of secondary children
+
+                paging = getPaging(0, 100);
+                response = getAll(getNodeSecondaryChildrenUrl(f3Id), user1, paging, null, 200);
+                nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+                assertEquals(0, nodes.size());
+
+                int childCnt = 6;
+                String[] childIds = new String[childCnt];
+
+                for (int j = 0; j < childCnt; j++)
+                {
+                    String childName = "child " + j;
+                    n = new Node();
+                    n.setName(childName);
+                    n.setNodeType(TYPE_CM_CONTENT);
+                    response = post(getNodeChildrenUrl(f2Id), user1, toJsonAsStringNonNull(n), 201);
+
+                    childIds[j] = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+
+                    secChild = new AssocChild(childIds[j], ASSOC_TYPE_CM_CONTAINS);
+                    post(getNodeSecondaryChildrenUrl(f3Id), user1, toJsonAsStringNonNull(secChild), 201);
+                }
+
+                int skipCount = 0;
+                int maxItems = 100;
+                paging = getPaging(skipCount, maxItems);
+                response = getAll(getNodeSecondaryChildrenUrl(f3Id), user1, paging, null, 200);
+                nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+                assertEquals(childCnt, nodes.size());
+
+                PublicApiClient.ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+                assertEquals(childCnt, expectedPaging.getCount().intValue());
+                assertEquals(skipCount, expectedPaging.getSkipCount().intValue());
+                assertEquals(maxItems, expectedPaging.getMaxItems().intValue());
+                assertFalse(expectedPaging.getHasMoreItems().booleanValue());
+
+                skipCount = 1;
+                maxItems = 3;
+                paging = getPaging(skipCount, maxItems);
+                response = getAll(getNodeSecondaryChildrenUrl(f3Id), user1, paging, null, 200);
+                nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+                assertEquals(maxItems, nodes.size());
+                assertEquals(childIds[1], nodes.get(0).getId());
+                assertEquals(childIds[2], nodes.get(1).getId());
+                assertEquals(childIds[3], nodes.get(2).getId());
+                expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+                assertEquals(maxItems, expectedPaging.getCount().intValue());
+                assertEquals(skipCount, expectedPaging.getSkipCount().intValue());
+                assertEquals(maxItems, expectedPaging.getMaxItems().intValue());
+                assertTrue(expectedPaging.getHasMoreItems().booleanValue());
+            }
+
+            {
+                // sanity check paging of list of parents
+
+                String childName = "child with many parents";
+                n = new Node();
+                n.setName(childName);
+                n.setNodeType(TYPE_CM_CONTENT);
+                response = post(getNodeChildrenUrl(f4Id), user1, toJsonAsStringNonNull(n), 201);
+
+                String childId = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+
+                paging = getPaging(0, 100);
+                response = getAll(getNodeParentsUrl(childId), user1, paging, null, 200);
+                nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+                assertEquals(1, nodes.size());
+                assertEquals(f4Id, nodes.get(0).getId());
+
+                int parentCnt = 5;
+                String[] parentIds = new String[parentCnt];
+
+                for (int j = 0; j < parentCnt; j++)
+                {
+                    String parentName = "parent "+j;
+                    parentIds[j] = createFolder(user1, f4Id, parentName).getId();
+
+                    secChild = new AssocChild(childId, ASSOC_TYPE_CM_CONTAINS);
+                    post(getNodeSecondaryChildrenUrl(parentIds[j]), user1, toJsonAsStringNonNull(secChild), 201);
+                }
+
+                int skipCount = 0;
+                int maxItems = 100;
+                int expectedCnt = parentCnt+1;
+
+                paging = getPaging(skipCount, maxItems);
+                response = getAll(getNodeParentsUrl(childId), user1, paging, null, 200);
+                nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+                assertEquals(expectedCnt, nodes.size());
+
+                PublicApiClient.ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+                assertEquals(expectedCnt, expectedPaging.getCount().intValue());
+                assertEquals(skipCount, expectedPaging.getSkipCount().intValue());
+                assertEquals(maxItems, expectedPaging.getMaxItems().intValue());
+                assertFalse(expectedPaging.getHasMoreItems().booleanValue());
+
+                params = new HashMap<>(1);
+                params.put("where", "(isPrimary=false)");
+
+                // TBC - order is currently undefined
+
+                List<String> expectedIds = new ArrayList<>(5);
+                expectedIds.addAll(Arrays.asList(parentIds));
+
+                skipCount=0;
+                maxItems=2;
+                paging = getPaging(skipCount, maxItems);
+                response = getAll(getNodeParentsUrl(childId), user1, paging, params, 200);
+                nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+                assertEquals(maxItems, nodes.size());
+                for (Node node : nodes)
+                {
+                    expectedIds.remove(node.getId());
+                }
+                assertEquals(3, expectedIds.size());
+                expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+                assertEquals(maxItems, expectedPaging.getCount().intValue());
+                assertEquals(skipCount, expectedPaging.getSkipCount().intValue());
+                assertEquals(maxItems, expectedPaging.getMaxItems().intValue());
+                assertTrue(expectedPaging.getHasMoreItems().booleanValue());
+
+                skipCount=2;
+                maxItems=2;
+                paging = getPaging(skipCount, maxItems);
+                response = getAll(getNodeParentsUrl(childId), user1, paging, params, 200);
+                nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+                assertEquals(maxItems, nodes.size());
+                for (Node node : nodes)
+                {
+                    expectedIds.remove(node.getId());
+                }
+                assertEquals(1, expectedIds.size());
+                expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+                assertEquals(maxItems, expectedPaging.getCount().intValue());
+                assertEquals(skipCount, expectedPaging.getSkipCount().intValue());
+                assertEquals(maxItems, expectedPaging.getMaxItems().intValue());
+                assertTrue(expectedPaging.getHasMoreItems().booleanValue());
+
+                skipCount=4;
+                maxItems=2;
+                paging = getPaging(skipCount, maxItems);
+                response = getAll(getNodeParentsUrl(childId), user1, paging, params, 200);
+                nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+                assertEquals(1, nodes.size());
+                for (Node node : nodes)
+                {
+                    expectedIds.remove(node.getId());
+                }
+                assertEquals(0, expectedIds.size());
+                expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+                assertEquals(1, expectedPaging.getCount().intValue());
+                assertEquals(skipCount, expectedPaging.getSkipCount().intValue());
+                assertEquals(maxItems, expectedPaging.getMaxItems().intValue());
+                assertFalse(expectedPaging.getHasMoreItems().booleanValue());
+            }
+
             //
             // -ve tests - add assoc
             //
@@ -991,8 +1155,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
                 getAll(getNodeSecondaryChildrenUrl(o1Id), user1, paging, params, 400);
                 getAll(getNodeParentsUrl(o1Id), user1, paging, params, 400);
-
-                // TODO paging - in-built sort order ?
             }
 
             //
@@ -1031,6 +1193,8 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             Map<String, String> params = Collections.singletonMap(Nodes.PARAM_PERMANENT, "true");
             delete(URL_NODES, user1, f1Id, params, 204);
             delete(URL_NODES, user1, f2Id, params, 204);
+            delete(URL_NODES, user1, f3Id, params, 204);
+            delete(URL_NODES, user1, f4Id, params, 204);
         }
     }
 

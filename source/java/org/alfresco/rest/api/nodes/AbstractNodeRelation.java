@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -195,7 +196,7 @@ public class AbstractNodeRelation implements InitializingBean
 
         List<String> includeParam = parameters.getInclude();
 
-        List<Node> collection = new ArrayList<Node>(childAssocRefs.size());
+        List<Node> result = new ArrayList<Node>(childAssocRefs.size());
         for (ChildAssociationRef childAssocRef : childAssocRefs)
         {
             if (isPrimary == null || (isPrimary == childAssocRef.isPrimary()))
@@ -219,12 +220,37 @@ public class AbstractNodeRelation implements InitializingBean
                     node.setAssociation(new AssocChild(assocType, childAssocRef.isPrimary()));
 
 
-                    collection.add(node);
+                    result.add(node);
                 }
             }
         }
 
         Paging paging = parameters.getPaging();
-        return CollectionWithPagingInfo.asPaged(paging, collection, false, collection.size());
+
+        // return 'page' of results (note: depends on in-built/natural sort order of results)
+        int skipCount = paging.getSkipCount();
+        int pageSize = paging.getMaxItems();
+        int pageEnd = skipCount + pageSize;
+
+        final List<Node> page = new ArrayList<>(pageSize);
+        Iterator<Node> it = result.iterator();
+        for (int counter = 0; counter < pageEnd && it.hasNext(); counter++)
+        {
+            Node element = it.next();
+            if (counter < skipCount)
+            {
+                continue;
+            }
+            if (counter > pageEnd - 1)
+            {
+                break;
+            }
+            page.add(element);
+        }
+
+        int totalCount = result.size();
+        boolean hasMoreItems = ((skipCount + page.size()) < totalCount);
+
+        return CollectionWithPagingInfo.asPaged(paging, page, hasMoreItems, totalCount);
     }
 }

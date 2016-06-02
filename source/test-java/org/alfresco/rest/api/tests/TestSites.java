@@ -178,6 +178,18 @@ public class TestSites extends EnterpriseTestApi
             sitesProxy.createSite(site);
         }
 
+        // test create using site id = "true" (RA-1101)
+        {
+
+            String siteId = "true";
+            String siteTitle = "string";
+            String siteDescription = "string";
+
+            Site site = new SiteImpl(null, siteId, null, siteTitle, siteDescription, SiteVisibility.PUBLIC.toString(), null, null);
+
+            sitesProxy.createSite(site);
+        }
+
         // -ve tests
         {
             // invalid auth

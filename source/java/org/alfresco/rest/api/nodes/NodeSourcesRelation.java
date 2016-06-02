@@ -51,7 +51,7 @@ public class NodeSourcesRelation extends AbstractNodeRelation implements Relatio
 
         QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
 
-        List<AssociationRef> assocRefs = nodeService.getSourceAssocs(targetNodeRef, assocTypeQNameParam);
+        List<AssociationRef> assocRefs = nodeAssocService.getSourceAssocs(targetNodeRef, assocTypeQNameParam);
 
         return listNodePeerAssocs(assocRefs, parameters, false);
     }

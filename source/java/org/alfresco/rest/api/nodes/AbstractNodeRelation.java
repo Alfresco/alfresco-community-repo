@@ -69,6 +69,7 @@ public class AbstractNodeRelation implements InitializingBean
 
     protected ServiceRegistry sr;
     protected NodeService nodeService;
+    protected NodeAssocService nodeAssocService; // wraps initial Peer Assoc permissions
     protected NamespaceService namespaceService;
     protected DictionaryService dictionaryService;
     protected Nodes nodes;
@@ -84,9 +85,9 @@ public class AbstractNodeRelation implements InitializingBean
     }
 
     // Introduces permissions for Node Assoc (see public-rest-context.xml)
-    public void setNodeService(NodeService nodeService)
+    public void setNodeAssocService(NodeAssocService nodeAssocService)
     {
-        this.nodeService = nodeService;
+        this.nodeAssocService = nodeAssocService;
     }
 
     @Override
@@ -95,7 +96,7 @@ public class AbstractNodeRelation implements InitializingBean
         PropertyCheck.mandatory(this, "serviceRegistry", sr);
         ParameterCheck.mandatory("nodes", this.nodes);
 
-        //this.nodeService = sr.getNodeService();
+        this.nodeService = sr.getNodeService();
         this.namespaceService = sr.getNamespaceService();
         this.dictionaryService = sr.getDictionaryService();
     }

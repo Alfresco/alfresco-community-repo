@@ -65,7 +65,7 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
 
         QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
 
-        List<AssociationRef> assocRefs = nodeService.getTargetAssocs(sourceNodeRef, assocTypeQNameParam);
+        List<AssociationRef> assocRefs = nodeAssocService.getTargetAssocs(sourceNodeRef, assocTypeQNameParam);
 
         return listNodePeerAssocs(assocRefs, parameters, true);
     }
@@ -88,7 +88,7 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
             try
             {
                 NodeRef tgtNodeRef = nodes.validateNode(targetNodeId);
-                nodeService.createAssociation(srcNodeRef, tgtNodeRef, assocTypeQName);
+                nodeAssocService.createAssociation(srcNodeRef, tgtNodeRef, assocTypeQName);
             }
             catch (AssociationExistsException aee)
             {
@@ -125,12 +125,12 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
 
         boolean found = false;
 
-        List<AssociationRef> assocRefs = nodeService.getTargetAssocs(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sourceNodeId), assocTypeQName);
+        List<AssociationRef> assocRefs = nodeAssocService.getTargetAssocs(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sourceNodeId), assocTypeQName);
         for (AssociationRef assocRef : assocRefs)
         {
             if (assocRef.getTargetRef().equals(tgtNodeRef))
             {
-                nodeService.removeAssociation(srcNodeRef, tgtNodeRef, assocRef.getTypeQName());
+                nodeAssocService.removeAssociation(srcNodeRef, tgtNodeRef, assocRef.getTypeQName());
                 found = true;
             }
         }

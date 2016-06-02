@@ -447,7 +447,7 @@ public interface FileFolderService
      * Lists page of immediate child objects of the given context node
      * with specification of which types to list and optional filtering (exclusion of certain child file/folder subtypes) and sorting
      * @param rootNodeRef NodeRef
-     * @param searchTypeQNames QNames of assoc types to list
+     * @param assocTypeQNames QNames of assoc types to list
      * @param searchTypeQNames QNames of node types to list
      * @param ignoreAspectQNames Set<QName>
      * @param sortProps List<Pair<QName, Boolean>>

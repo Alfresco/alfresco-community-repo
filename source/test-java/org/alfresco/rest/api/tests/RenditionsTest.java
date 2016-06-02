@@ -539,7 +539,7 @@ public class RenditionsTest extends AbstractBaseApiTest
                 .setRenditions(Arrays.asList(new String[]{"doclib,imgpreview"}))
                 .build();
 
-        post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        post(getNodeChildrenUrl(folder_Id), userId, reqBody.getBody(), null, reqBody.getContentType(), 400);
 
         // Unknown rendition
         reqBody = MultiPartBuilder.create()

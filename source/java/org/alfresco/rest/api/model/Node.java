@@ -418,6 +418,21 @@ public class Node implements Comparable<Node>
         return this.contentInfo;
     }
 
+    // when appropriate, can be used to show association (in the context of a listing), for example
+    // GET /nodes/parentId/children, /nodes/parentId/secondary-children, /nodes/childId/parents
+    // GET /nodes/sourceId/targets, /nodes/targetId/sources
+    protected Assoc association;
+
+    public Assoc getAssociation()
+    {
+        return association;
+    }
+
+    public void setAssociation(Assoc association)
+    {
+        this.association = association;
+    }
+
 
     // TODO for backwards compat' - set explicitly when needed (ie. favourites) (note: we could choose to have separate old Node/NodeImpl etc)
 

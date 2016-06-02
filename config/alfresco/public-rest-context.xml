@@ -775,6 +775,16 @@
         <property name="nodes" ref="Nodes" />
     </bean>
 
+    <bean class="org.alfresco.rest.api.nodes.NodeTargetsRelation">
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="nodes" ref="Nodes" />
+    </bean>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeSourcesRelation">
+        <property name="serviceRegistry" ref="ServiceRegistry"/>
+        <property name="nodes" ref="Nodes" />
+    </bean>
+
     <bean class="org.alfresco.rest.api.nodes.NodeTagsRelation">
         <property name="tags" ref="Tags" />
     </bean>

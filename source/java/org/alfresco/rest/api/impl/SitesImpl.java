@@ -43,6 +43,7 @@ import org.alfresco.repo.security.authority.UnknownAuthorityException;
 import org.alfresco.repo.site.SiteMembership;
 import org.alfresco.repo.site.SiteMembershipComparator;
 import org.alfresco.repo.site.SiteModel;
+import org.alfresco.repo.site.SiteServiceException;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Sites;
@@ -93,9 +94,17 @@ import org.apache.commons.logging.LogFactory;
  */
 public class SitesImpl implements Sites
 {
+    private static final Log logger = LogFactory.getLog(SitesImpl.class);
+
     private static final String FAVOURITE_SITES_PREFIX = "org.alfresco.share.sites.favourites.";
     private static final int FAVOURITE_SITES_PREFIX_LENGTH = FAVOURITE_SITES_PREFIX.length();
-    private static final Log logger = LogFactory.getLog(SitesImpl.class);
+
+    // based on Share create site
+    private static final int SITE_MAXLEN_ID = 72;
+    private static final int SITE_MAXLEN_TITLE = 256;
+    private static final int SITE_MAXLEN_DESCRIPTION = 512;
+
+    private static final String SITE_ID_VALID_CHARS_PARTIAL_REGEX = "A-Za-z0-9\\-";
 
     protected Nodes nodes;
     protected People people;
@@ -248,8 +257,13 @@ public class SitesImpl implements Sites
             // site does not exist
             throw new EntityNotFoundException(siteId);
         }
+        return getSite(siteInfo, includeRole);
+    }
+
+    private Site getSite(SiteInfo siteInfo, boolean includeRole)
+    {
         // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
-        siteId = siteInfo.getShortName();
+        String siteId = siteInfo.getShortName();
         String role = null;
         if(includeRole)
         {
@@ -848,11 +862,6 @@ public class SitesImpl implements Sites
         siteService.deleteSite(siteId);
     }
 
-    // based on Share create site
-    private static final int SITE_MAXLEN_ID = 72;
-    private static final int SITE_MAXLEN_TITLE = 256;
-    private static final int SITE_MAXLEN_DESCRIPTION = 512;
-
 
     /**
      * Create default/preset (Share) site - with DocLib container/component
@@ -860,18 +869,46 @@ public class SitesImpl implements Sites
      * @param site
      * @return
      */
-    public Site createSite(Site site)
+    public Site createSite(Site site, Parameters parameters)
     {
+        // note: if site id is null then will be generated from the site title
         site = validateSite(site);
-        String siteId = site.getId();
 
-        siteService.createSite("sitePreset", siteId, site.getTitle(), site.getDescription(), site.getVisibility());
+        SiteInfo siteInfo = null;
+        try
+        {
+            siteInfo = siteService.createSite("sitePreset", site.getId(), site.getTitle(), site.getDescription(), site.getVisibility());
+        }
+        catch (SiteServiceException sse)
+        {
+            if (sse.getMsgId().equals("site_service.unable_to_create"))
+            {
+                throw new ConstraintViolatedException(sse.getMessage());
+            }
+            else
+            {
+                throw sse;
+            }
+        }
+
+        String siteId = siteInfo.getShortName();
+
+        // import default surf config
         importSite(siteId);
 
         // pre-create doclib
         siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);
 
-        return getSite(siteId);
+        // default false (if not provided)
+        boolean skipAddToFavorites = Boolean.valueOf(parameters.getParameter(PARAM_SKIP_ADDTOFAVORITES));
+        if (skipAddToFavorites == false)
+        {
+            NodeRef siteNodeRef = siteInfo.getNodeRef();
+            String personId = AuthenticationUtil.getFullyAuthenticatedUser();
+            favouritesService.addFavourite(personId, siteNodeRef); // ignore result
+        }
+
+        return getSite(siteInfo, true);
     }
 
     private Site validateSite(Site site)
@@ -896,13 +933,17 @@ public class SitesImpl implements Sites
         String siteId = site.getId();
         if (siteId == null)
         {
-            siteId = siteTitle.trim();
-            siteId = siteId.replace(" ","-");
-            siteId = siteId.replaceAll("[^A-Za-z0-9\\-]","");
+            // generate a site id from title (similar to Share create site dialog)
+            siteId = siteTitle.
+                    trim(). // trim leading & trailing whitespace
+                    replaceAll("[^"+SITE_ID_VALID_CHARS_PARTIAL_REGEX+" ]",""). // remove special characters (except spaces)
+                    replaceAll(" +", " "). // collapse multiple spaces to single space
+                    replace(" ","-"). // replaces spaces with dashs
+                    toLowerCase(); // lowercase :-)
         }
         else
         {
-            if (! siteId.matches("[^A-Za-z0-9\\-]"))
+            if (! siteId.matches("[^"+SITE_ID_VALID_CHARS_PARTIAL_REGEX+"]"))
             {
                 throw new InvalidArgumentException("Invalid site id - should consist of alphanumeric/dash characters");
             }
@@ -916,6 +957,13 @@ public class SitesImpl implements Sites
         site.setId(siteId);
 
         String siteDescription = site.getDescription();
+
+        if (siteDescription == null)
+        {
+            // workaround: to avoid Share error (eg. in My Sites dashlet / freemarker template)
+            site.setDescription("");
+        }
+
         if ((siteDescription != null) && (siteDescription.length() > SITE_MAXLEN_DESCRIPTION))
         {
             throw new InvalidArgumentException("Site description exceeds max length of "+SITE_MAXLEN_DESCRIPTION+" characters");

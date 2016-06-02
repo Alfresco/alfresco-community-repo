@@ -211,6 +211,11 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
 
 	public static Site parseSite(JSONObject jsonObject)
 	{
+		if (jsonObject == null)
+		{
+			return null;
+		}
+
 		String id = (String)jsonObject.get("id");
 		String guid = (String)jsonObject.get("guid");
 		String title = (String)jsonObject.get("title");

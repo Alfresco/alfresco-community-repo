@@ -56,7 +56,6 @@ import org.alfresco.rest.api.tests.client.data.SiteImpl;
 import org.alfresco.rest.api.tests.client.data.SiteMember;
 import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
 import org.alfresco.rest.api.tests.client.data.Tag;
-import org.alfresco.service.cmr.site.SiteVisibility;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.FileableCmisObject;
@@ -669,23 +668,19 @@ public class PublicApiClient
 		        throw new PublicApiException(e);
 			}
 		}
-		
-		public HttpResponse getSingle(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String errorMessage) throws PublicApiException
+
+        public HttpResponse getSingle(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String errorMessage) throws PublicApiException
+        {
+            return getSingle(entityCollectionName, entityId, relationCollectionName, relationId, errorMessage, HttpServletResponse.SC_OK);
+        }
+
+        public HttpResponse getSingle(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String errorMessage, int expectedStatus) throws PublicApiException
 		{
 	        try
 	        {
 		        HttpResponse response = get("public", entityCollectionName, entityId, relationCollectionName, relationId, null);
-		        
-		        if (HttpServletResponse.SC_OK != response.getStatusCode())
-		        {
-		            String msg = errorMessage + ": \n" +
-		                    "   Response: " + response;
-		            throw new PublicApiException(msg, response);
-		        }
-		        else
-		        {
-		        	return response;
-		        }
+                checkStatus(errorMessage, expectedStatus, response);
+                return response;
 			}
 			catch(IOException e)
 			{
@@ -720,46 +715,38 @@ public class PublicApiClient
 		        throw new PublicApiException(e);
 			}
 		}
+
+        public HttpResponse create(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String body, String errorMessage) throws PublicApiException
+        {
+            return create(entityCollectionName, entityId, relationCollectionName, relationId, body, errorMessage, HttpServletResponse.SC_CREATED);
+        }
 		
-		public HttpResponse create(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String body, String errorMessage) throws PublicApiException
+		public HttpResponse create(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String body, String errorMessage, int expectedStatus) throws PublicApiException
 		{
 	        try
 	        {
 		        HttpResponse response = post("public", entityCollectionName, entityId, relationCollectionName, relationId, body);
-
-		        if (HttpServletResponse.SC_CREATED != response.getStatusCode())
-		        {
-		            String msg = errorMessage + ": \n" +
-		                    "   Response: " + response;
-		            throw new PublicApiException(msg, response);
-		        }
-		        else
-		        {
-		        	return response;
-		        }
+                checkStatus(errorMessage, expectedStatus, response);
+                return response;
 			}
-			catch(IOException e)
+			catch (IOException e)
 			{
 		        throw new PublicApiException(e);
 			}
 		}
+
+        public HttpResponse remove(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String errorMessage) throws PublicApiException
+        {
+            return remove(entityCollectionName, entityId, relationCollectionName, relationId, errorMessage, HttpServletResponse.SC_GONE);
+        }
 		
-		public HttpResponse remove(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String errorMessage) throws PublicApiException
+		public HttpResponse remove(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String errorMessage, int expectedStatus) throws PublicApiException
 		{
 	        try
 	        {
 		        HttpResponse response = delete("public", entityCollectionName, entityId, relationCollectionName, relationId);
-
-		        if (HttpServletResponse.SC_NO_CONTENT != response.getStatusCode())
-		        {
-		            String msg = errorMessage + ": \n" +
-		                    "   Response: " + response;
-		            throw new PublicApiException(msg, response);
-		        }
-		        else
-		        {
-		        	return response;
-		        }
+                checkStatus(errorMessage, expectedStatus, response);
+                return response;
 			}
 			catch(IOException e)
 			{
@@ -775,6 +762,17 @@ public class PublicApiClient
 			JSONObject source = (JSONObject)jsonList.get("source");
 			assertNotNull(source);
 			return source;
+		}
+
+		public void checkStatus(String errorMessage, int expectedStatus, HttpResponse response) throws PublicApiException
+		{
+            int actualStatus = response.getStatusCode();
+			if ((expectedStatus > 0) && (expectedStatus != actualStatus))
+			{
+                String msg = "Status code " + actualStatus + " returned, but expected " + expectedStatus + ": \n"+
+                        errorMessage + ": \n" + "   Response: " + response;
+				throw new PublicApiException(msg, response);
+			}
 		}
 	}
 
@@ -808,22 +806,44 @@ public class PublicApiClient
 			HttpResponse response = getAll("sites", null, null, null, params, "Failed to get sites");
 			return SiteImpl.parseSites(response.getJsonResponse());
 		}
+
+        public Site getSite(String siteId) throws PublicApiException
+        {
+            return getSite(siteId, 200);
+        }
 		
-		public Site getSite(String siteId) throws PublicApiException
+		public Site getSite(String siteId, int expectedStatus) throws PublicApiException
 		{
-			HttpResponse response = getSingle("sites", siteId, null, null, "Failed to get site " + siteId);
-			return SiteImpl.parseSite((JSONObject)response.getJsonResponse().get("entry"));
+			HttpResponse response = getSingle("sites", siteId, null, null, "Failed to get site " + siteId, expectedStatus);
+            if ((response != null) && (response.getJsonResponse() != null))
+            {
+                return SiteImpl.parseSite((JSONObject)response.getJsonResponse().get("entry"));
+            }
+            else
+            {
+                return null;
+            }
 		}
 
-		public Site createSite(Site site) throws PublicApiException
+        public Site createSite(Site site) throws PublicApiException
+        {
+            return createSite(site, 201);
+        }
+
+		public Site createSite(Site site, int expectedStatus) throws PublicApiException
 		{
-			HttpResponse response = create("sites", null, null, null, site.toJSON().toString(), "Failed to create site");
-			return SiteImpl.parseSite((JSONObject)response.getJsonResponse().get("entry"));
+			HttpResponse response = create("sites", null, null, null, site.toJSON().toString(), "Failed to create site "+site.getTitle(), expectedStatus);
+            return SiteImpl.parseSite((JSONObject)response.getJsonResponse().get("entry"));
 		}
 
         public void removeSite(String siteId) throws PublicApiException
         {
-            remove("sites", siteId, null, null, "Failed to remove site");
+            removeSite(siteId, 204);
+        }
+
+        public void removeSite(String siteId, int expectedStatus) throws PublicApiException
+        {
+            remove("sites", siteId, null, null, "Failed to remove site", expectedStatus);
         }
 
 		public ListResponse<SiteContainer> getSiteContainers(String siteId, Map<String, String> params) throws PublicApiException

@@ -46,8 +46,10 @@ import org.springframework.extensions.webscripts.servlet.FormData;
  * @author Jamal Kaabi-Mofrad
  */
 @RelationshipResource(name = "children",  entityResource = NodesEntityResource.class, title = "Folder children")
-public class NodeChildrenRelation implements RelationshipResourceAction.Read<Node>, RelationshipResourceAction.Create<Node>,
-            MultiPartRelationshipResourceAction.Create<Node>, InitializingBean
+public class NodeChildrenRelation implements
+        RelationshipResourceAction.Read<Node>,
+        RelationshipResourceAction.Create<Node>,
+        MultiPartRelationshipResourceAction.Create<Node>, InitializingBean
 {
     private Nodes nodes;
 
@@ -101,7 +103,6 @@ public class NodeChildrenRelation implements RelationshipResourceAction.Read<Nod
     {
         List<Node> result = new ArrayList<>(nodeInfos.size());
 
-        // TODO should we prevent batch create when we introduce new batch/bulk operation API ?
         for (Node nodeInfo : nodeInfos)
         {
             result.add(nodes.createNode(parentFolderNodeId, nodeInfo, parameters));

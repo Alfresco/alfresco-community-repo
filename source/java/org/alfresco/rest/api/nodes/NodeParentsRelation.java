@@ -79,7 +79,7 @@ public class NodeParentsRelation extends AbstractNodeRelation implements Relatio
             String assocTypeQNameStr = propertyWalker.getProperty(PARAM_ASSOC_TYPE, WhereClauseParser.EQUALS, String.class);
             if (assocTypeQNameStr != null)
             {
-                assocTypeQNameParam = getAssocType(assocTypeQNameStr);
+                assocTypeQNameParam = nodes.getAssocType(assocTypeQNameStr);
             }
         }
 

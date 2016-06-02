@@ -18,6 +18,9 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
+import org.alfresco.rest.api.model.AssocChild;
+import org.alfresco.rest.api.model.AssocTarget;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +66,10 @@ public class Node
 
     protected List<String> allowableOperations;
 
-    protected String relativePath; // optionally used in create node request
+    // please note: these are currently only used (optionally) for node create request
+    protected String relativePath;
+    protected List<AssocChild> secondaryChildren;
+    protected List<AssocTarget> targets;
 
     public Node()
     {
@@ -239,6 +245,7 @@ public class Node
         this.allowableOperations = allowableOperations;
     }
 
+
     public String getRelativePath()
     {
         return relativePath;
@@ -248,6 +255,27 @@ public class Node
     {
         this.relativePath = relativePath;
     }
+
+    public List<AssocChild> getSecondaryChildren()
+    {
+        return secondaryChildren;
+    }
+
+    public void setSecondaryChildren(List<AssocChild> secondaryChildren)
+    {
+        this.secondaryChildren = secondaryChildren;
+    }
+
+    public List<AssocTarget> getTargets()
+    {
+        return targets;
+    }
+
+    public void setTargets(List<AssocTarget> targets)
+    {
+        this.targets = targets;
+    }
+
 
     // note: can be child or peer (latter has assocType only)
     protected Association association;

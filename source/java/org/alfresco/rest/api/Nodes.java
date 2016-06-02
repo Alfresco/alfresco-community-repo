@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.rest.api.model.AssocChild;
+import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.Node;
@@ -215,6 +217,26 @@ public interface Nodes
      * @return QName
      */
     QName createQName(String qnameStr);
+
+    QName getAssocType(String assocTypeQNameStr);
+
+    QName getAssocType(String assocTypeQNameStr, boolean mandatory);
+
+    /**
+     *
+     * @param parentNodeId
+     * @param entities
+     * @return
+     */
+    List<AssocChild> addChildren(String parentNodeId, List<AssocChild> entities);
+
+    /**
+     *
+     * @param sourceNodeId
+     * @param entities
+     * @return
+     */
+    List<AssocTarget> addTargets(String sourceNodeId, List<AssocTarget> entities);
 
     /**
      * API Constants - query parameters, etc

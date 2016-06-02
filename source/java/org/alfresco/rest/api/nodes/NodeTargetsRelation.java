@@ -21,22 +21,17 @@ package org.alfresco.rest.api.nodes;
 import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -72,37 +67,9 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
 
     @Override
     @WebApiDescription(title="Add node assoc")
-    public List<AssocTarget> create(String sourceNodeId, List<AssocTarget> entity, Parameters parameters)
+    public List<AssocTarget> create(String sourceNodeId, List<AssocTarget> entities, Parameters parameters)
     {
-        List<AssocTarget> result = new ArrayList<>(entity.size());
-
-        NodeRef srcNodeRef = nodes.validateNode(sourceNodeId);
-
-        for (AssocTarget assoc : entity)
-        {
-            String assocTypeStr = assoc.getAssocType();
-            QName assocTypeQName = getAssocType(assocTypeStr);
-
-            String targetNodeId = assoc.getTargetId();
-
-            try
-            {
-                NodeRef tgtNodeRef = nodes.validateNode(targetNodeId);
-                nodeAssocService.createAssociation(srcNodeRef, tgtNodeRef, assocTypeQName);
-            }
-            catch (AssociationExistsException aee)
-            {
-                throw new ConstraintViolatedException("Node association '"+assocTypeStr+"' already exists from "+sourceNodeId+" to "+targetNodeId);
-            }
-            catch (IllegalArgumentException iae)
-            {
-                // note: for now, we assume it is invalid assocType - alternatively, we could attempt to pre-validate via dictionary.getAssociation
-                throw new InvalidArgumentException(sourceNodeId+","+assocTypeStr+","+targetNodeId);
-            }
-
-            result.add(assoc);
-        }
-        return result;
+        return nodes.addTargets(sourceNodeId, entities);
     }
 
     @Override
@@ -113,7 +80,7 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
         NodeRef tgtNodeRef = nodes.validateNode(targetNodeId);
 
         String assocTypeStr = parameters.getParameter(PARAM_ASSOC_TYPE);
-        QNamePattern assocTypeQName = getAssocType(assocTypeStr, false);
+        QNamePattern assocTypeQName = nodes.getAssocType(assocTypeStr, false);
 
         if (assocTypeQName == null)
         {

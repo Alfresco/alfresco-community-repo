@@ -48,6 +48,7 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.api.tests.client.data.Association;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
@@ -1780,6 +1781,86 @@ public class NodeApiTest extends AbstractBaseApiTest
         n.setNodeType(TYPE_CM_FOLDER);
         n.setRelativePath("d1.txt");
         post(getNodeChildrenUrl(myNodeId), user1, RestApiUtil.toJsonAsStringNonNull(n), 409);
+    }
+
+    /**
+     * Tests creation and listing of children using assoc type other than "cm:contains".
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
+     *
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
+     */
+    @Test
+    public void testChildrenAssocType() throws Exception
+    {
+        String myNodeId = getMyNodeId(user1);
+
+        String fId = null;
+
+        try
+        {
+            fId = createFolder(user1, myNodeId, "testChildrenAssocType folder").getId();
+
+            Node nodeUpdate = new Node();
+            nodeUpdate.setAspectNames(Collections.singletonList(ASPECT_CM_PREFERENCES));
+
+            put(URL_NODES, user1, fId, toJsonAsStringNonNull(nodeUpdate), null, 200);
+
+            HttpResponse response = getAll(getNodeChildrenUrl(fId), user1, null, null, 200);
+            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            Node obj = new Node();
+            obj.setName("c1");
+            obj.setNodeType(TYPE_CM_CONTENT);
+
+            response = post(getNodeChildrenUrl(fId), user1, toJsonAsStringNonNull(obj), 201);
+            Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            String c1Id = nodeResp.getId();
+
+            obj = new Node();
+            obj.setName("c2");
+            obj.setNodeType(TYPE_CM_CONTENT);
+            Association assoc = new Association();
+            assoc.setAssocType(ASSOC_TYPE_CM_PREFERENCE_IMAGE);
+            obj.setAssociation(assoc);
+
+            response = post(getNodeChildrenUrl(fId), user1, toJsonAsStringNonNull(obj), 201);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            String c2Id = nodeResp.getId();
+
+            response = getAll(getNodeChildrenUrl(fId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+
+            Map<String, String> params = new HashMap<>();
+            params.put("where", "(assocType='"+ASSOC_TYPE_CM_CONTAINS+"')");
+            params.put("include", "association");
+            response = getAll(getNodeChildrenUrl(fId), user1, null, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(c1Id, nodes.get(0).getId());
+            assertTrue(nodes.get(0).getAssociation().getIsPrimary());
+
+            params = new HashMap<>();
+            params.put("where", "(assocType='"+ASSOC_TYPE_CM_PREFERENCE_IMAGE+"')");
+            params.put("include", "association");
+            response = getAll(getNodeChildrenUrl(fId), user1, null, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(c2Id, nodes.get(0).getId());
+            assertTrue(nodes.get(0).getAssociation().getIsPrimary());
+        }
+        finally
+        {
+            // some cleanup
+            if (fId != null)
+            {
+                delete(URL_NODES, user1, fId, 204);
+            }
+        }
     }
 
     // TODO test custom types with properties (sub-type of cm:cmobject)

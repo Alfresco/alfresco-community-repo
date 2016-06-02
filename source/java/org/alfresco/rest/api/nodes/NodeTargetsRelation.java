@@ -24,6 +24,8 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -108,16 +110,24 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
 
         for (AssocTarget assoc : entity)
         {
-            QName assocTypeQName = getAssocType(assoc.getAssocType(), true);
+            String assocTypeStr = assoc.getAssocType();
+            QName assocTypeQName = getAssocType(assocTypeStr);
+
+            String targetNodeId = assoc.getTargetId();
 
             try
             {
-                NodeRef tgtNodeRef = nodes.validateNode(assoc.getTargetId());
+                NodeRef tgtNodeRef = nodes.validateNode(targetNodeId);
                 nodeService.createAssociation(srcNodeRef, tgtNodeRef, assocTypeQName);
             }
             catch (AssociationExistsException aee)
             {
                 throw new ConstraintViolatedException(aee.getMessage());
+            }
+            catch (IllegalArgumentException iae)
+            {
+                // note: for now, we assume it is invalid assocType - alternatively, we could attempt to pre-validate via dictionary.getAssociation
+                throw new InvalidArgumentException(sourceNodeId+","+assocTypeStr+","+targetNodeId);
             }
 
             result.add(assoc);
@@ -133,21 +143,31 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
         NodeRef tgtNodeRef = nodes.validateNode(targetNodeId);
 
         String assocTypeStr = parameters.getParameter(PARAM_ASSOC_TYPE);
-        if ((assocTypeStr != null) && (! assocTypeStr.isEmpty()))
+        QNamePattern assocTypeQName = getAssocType(assocTypeStr, false, true);
+
+        if (assocTypeQName == null)
         {
-            QName assocTypeQName = QName.createQName(assocTypeStr, namespaceService);
-            nodeService.removeAssociation(srcNodeRef, tgtNodeRef, assocTypeQName);
+            assocTypeQName = RegexQNamePattern.MATCH_ALL;
         }
-        else
+
+        // note: even if assocType is provided, we currently don't use nodeService.removeAssociation(srcNodeRef, tgtNodeRef, assocTypeQName);
+        // since silent it returns void even if nothing deleted, where as we return 404
+
+        boolean found = false;
+
+        List<AssociationRef> assocRefs = nodeService.getTargetAssocs(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sourceNodeId), assocTypeQName);
+        for (AssociationRef assocRef : assocRefs)
         {
-            List<AssociationRef> assocRefs = nodeService.getTargetAssocs(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sourceNodeId), RegexQNamePattern.MATCH_ALL);
-            for (AssociationRef assocRef : assocRefs)
+            if (assocRef.getTargetRef().equals(tgtNodeRef))
             {
-                if (assocRef.getTargetRef().equals(tgtNodeRef))
-                {
-                    nodeService.removeAssociation(srcNodeRef, tgtNodeRef, assocRef.getTypeQName());
-                }
+                nodeService.removeAssociation(srcNodeRef, tgtNodeRef, assocRef.getTypeQName());
+                found = true;
             }
+        }
+
+        if (! found)
+        {
+            throw new EntityNotFoundException(sourceNodeId+","+assocTypeStr+","+targetNodeId);
         }
     }
 }

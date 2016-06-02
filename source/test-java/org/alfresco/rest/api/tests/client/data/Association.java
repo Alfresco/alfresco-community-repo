@@ -34,18 +34,7 @@ public class Association
     }
 
     // child assoc
-    private String prefixAssocChildQName;
     private Boolean isPrimaryParent;
-
-    public String getChildQName()
-    {
-        return prefixAssocChildQName;
-    }
-
-    public void setChildQName(String prefixAssocChildQName)
-    {
-        this.prefixAssocChildQName = prefixAssocChildQName;
-    }
 
     public Boolean getIsPrimaryParent()
     {

@@ -154,7 +154,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected HttpResponse getAll(String url, String runAsUser, PublicApiClient.Paging paging, Map<String, String> otherParams, int expectedStatus) throws Exception
     {
         publicApiClient.setRequestContext(new RequestContext(runAsUser));
-        Map<String, String> params = (paging == null) ? null : createParams(paging, otherParams);
+        Map<String, String> params = createParams(paging, otherParams);
 
         HttpResponse response = publicApiClient.get(getScope(), url, null, null, null, params);
         checkStatus(expectedStatus, response.getStatusCode());
@@ -167,6 +167,22 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         publicApiClient.setRequestContext(new RequestContext(runAsUser));
 
         HttpResponse response = publicApiClient.get(entityResource, null, null, otherParams);
+        checkStatus(expectedStatus, response.getStatusCode());
+
+        return response;
+    }
+
+    protected HttpResponse getAll(String url, String runAsUser, PublicApiClient.Paging paging, Map<String, String> otherParams, Map<String, String> headers, int expectedStatus) throws Exception
+    {
+        Map<String, String> params = createParams(paging, otherParams);
+        RequestBuilder requestBuilder = httpClient.new GetRequestBuilder()
+                    .setRequestContext(new RequestContext(runAsUser))
+                    .setScope(getScope())
+                    .setEntityCollectionName(url)
+                    .setParams(params)
+                    .setHeaders(headers);
+
+        HttpResponse response = publicApiClient.execute(requestBuilder);
         checkStatus(expectedStatus, response.getStatusCode());
 
         return response;
@@ -281,9 +297,30 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return response;
     }
 
+    protected HttpResponse delete(String url, String runAsUser, String entityId, Map<String, String> params, Map<String, String> headers, int expectedStatus) throws Exception
+    {
+        RequestBuilder requestBuilder = httpClient.new DeleteRequestBuilder()
+                    .setRequestContext(new RequestContext(runAsUser))
+                    .setScope(getScope())
+                    .setEntityCollectionName(url)
+                    .setEntityId(entityId)
+                    .setParams(params)
+                    .setHeaders(headers);
+
+        HttpResponse response = publicApiClient.execute(requestBuilder);
+        checkStatus(expectedStatus, response.getStatusCode());
+
+        return response;
+    }
+
     protected String createUser(String username)
     {
-        PersonInfo personInfo = new PersonInfo(username, username, username, "password", null, null, null, null, null, null, null);
+        return createUser(username, "password");
+    }
+
+    protected String createUser(String username, String password)
+    {
+        PersonInfo personInfo = new PersonInfo(username, username, username, password, null, null, null, null, null, null, null);
         RepoService.TestPerson person = repoService.createUser(personInfo, username, null);
         return person.getId();
     }

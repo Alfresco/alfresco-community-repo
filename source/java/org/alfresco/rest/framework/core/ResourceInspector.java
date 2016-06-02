@@ -300,7 +300,7 @@ public class ResourceInspector
 
             if (isNoAuth(aMethod))
             {
-                if (! httpMethod.equals(HttpMethod.GET))
+                if (! (httpMethod.equals(HttpMethod.GET) || httpMethod.equals(HttpMethod.POST)))
                 {
                     throw new IllegalArgumentException("@WebApiNoAuth should only be on GET methods: "+operation.getTitle());
                 }

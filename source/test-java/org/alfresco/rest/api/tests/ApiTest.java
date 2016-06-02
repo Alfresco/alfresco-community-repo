@@ -19,6 +19,7 @@ import org.junit.runners.Suite;
     SharedLinkApiTest.class,
     ActivitiesPostingTest.class,
     DeletedNodesTest.class,
+    AuthenticationsTest.class,
     TestSites.class,
     TestNodeComments.class,
     TestCMIS.class,

@@ -92,7 +92,7 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
             }
             catch (AssociationExistsException aee)
             {
-                throw new ConstraintViolatedException(aee.getMessage());
+                throw new ConstraintViolatedException("Node association '"+assocTypeStr+"' already exists from "+sourceNodeId+" to "+targetNodeId);
             }
             catch (IllegalArgumentException iae)
             {

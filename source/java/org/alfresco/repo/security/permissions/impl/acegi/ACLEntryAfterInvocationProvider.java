@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2011 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -46,6 +46,7 @@ import org.alfresco.repo.security.permissions.PermissionCheckValue;
 import org.alfresco.repo.security.permissions.PermissionCheckedCollection.PermissionCheckedCollectionMixin;
 import org.alfresco.repo.security.permissions.PermissionCheckedValue;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionReference;
+import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -944,6 +945,10 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     {
                         testNodeRef = ((PermissionCheckValue) nextObject).getNodeRef();
                     }
+                    else if (AssociationRef.class.isAssignableFrom(nextObject.getClass()))
+                    {
+                        testNodeRef = ((AssociationRef) nextObject).getTargetRef();
+                    }
                     else
                     {
                         throw new ACLEntryVoterException("The specified parameter is not recognized: " + nextObject.getClass());
@@ -963,6 +968,10 @@ public class ACLEntryAfterInvocationProvider implements AfterInvocationProvider,
                     else if (ChildAssociationRef.class.isAssignableFrom(nextObject.getClass()))
                     {
                         testNodeRef = ((ChildAssociationRef) nextObject).getParentRef();
+                    }
+                    else if (AssociationRef.class.isAssignableFrom(nextObject.getClass()))
+                    {
+                        testNodeRef = ((AssociationRef) nextObject).getSourceRef();
                     }
                     else if (Pair.class.isAssignableFrom(nextObject.getClass()))
                     {

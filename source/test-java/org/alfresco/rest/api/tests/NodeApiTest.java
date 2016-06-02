@@ -529,9 +529,9 @@ public class NodeApiTest extends AbstractBaseApiTest
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user1 + "/unknown");
         getAll(rootChildrenUrl, user1, paging, params, 404);
 
-        // -ve test - try to list children using relative path to node for which user does not have read permission
+        // -ve test - try to list children using relative path to node for which user does not have read permission (expect 404 instead of 403)
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/" + user2);
-        getAll(rootChildrenUrl, user1, paging, params, 403);
+        getAll(rootChildrenUrl, user1, paging, params, 404);
 
         // -ve test - try to list children using relative path to node that is of wrong type (ie. not a folder/container)
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folder1 + "/" + contentF1);
@@ -749,9 +749,9 @@ public class NodeApiTest extends AbstractBaseApiTest
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, folderA+"/unknown");
         getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, params, 404);
 
-        // -ve test - try to get node info using relative path to node for which user does not have read permission
+        // -ve test - try to get node info using relative path to node for which user does not have read permission (expect 404 instead of 403)
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "User Homes/"+user2);
-        getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, params, 403);
+        getSingle(NodesEntityResource.class, user1, Nodes.PATH_ROOT, params, 404);
 
         // -ve test - attempt to get node info for non-folder node with relative path should return 400
         params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/unknown");

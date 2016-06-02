@@ -90,6 +90,8 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
     public static final QName SORT_QNAME_CONTENT_MIMETYPE = QName.createQName("http://www.alfresco.org/model/content/1.0", "content.mimetype");
     public static final QName SORT_QNAME_NODE_TYPE = QName.createQName("", "TYPE");
     public static final QName SORT_QNAME_NODE_IS_FOLDER = QName.createQName("", "IS_FOLDER"); // ALF-13968
+
+    public static final QName FILTER_QNAME_NODE_IS_PRIMARY = QName.createQName("", "IS_PRIMARY");
     
     
     private NodeDAO nodeDAO;
@@ -175,13 +177,38 @@ public class GetChildrenCannedQuery extends AbstractCannedQueryPermissions<NodeR
         // Get filter details
         Set<QName> childNodeTypeQNames = paramBean.getChildTypeQNames();
         Set<QName> assocTypeQNames = paramBean.getAssocTypeQNames();
-        final List<FilterProp> filterProps = paramBean.getFilterProps();
+
+        final List<FilterProp> filterProps = new ArrayList<>(paramBean.getFilterProps().size());
+        filterProps.addAll(paramBean.getFilterProps()); // clone (to allow special handling for isPrimary)
+
         String pattern = paramBean.getPattern();
         
         // Get sort details
         CannedQuerySortDetails sortDetails = parameters.getSortDetails();
         @SuppressWarnings({ "unchecked", "rawtypes" })
         final List<Pair<QName, SortOrder>> sortPairs = (List)sortDetails.getSortPairs();
+
+        if (filterProps.size() > 0)
+        {
+            // special handling of isPrimary filter (not counted as a filter/sort "property")
+            Boolean isPrimary = null;
+            int idx = 0;
+            for (FilterProp filter : filterProps)
+            {
+                if ((filter instanceof FilterPropBoolean) &&
+                    ((FilterPropBoolean)filter).getPropName().equals(FILTER_QNAME_NODE_IS_PRIMARY))
+                {
+                    isPrimary = ((FilterPropBoolean)filter).getPropVal();
+                    break;
+                }
+                idx++;
+            }
+            if (isPrimary != null)
+            {
+                params.setIsPrimary(isPrimary);
+                filterProps.remove(idx);
+            }
+        }
 
         // Set sort / filter params
         // Note - need to keep the sort properties in their requested order

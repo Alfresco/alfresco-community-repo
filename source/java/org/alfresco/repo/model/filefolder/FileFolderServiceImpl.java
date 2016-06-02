@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -42,6 +42,7 @@ import org.alfresco.repo.copy.AbstractBaseCopyService;
 import org.alfresco.repo.model.filefolder.HiddenAspect.Visibility;
 import org.alfresco.repo.model.filefolder.traitextender.FileFolderServiceExtension;
 import org.alfresco.repo.model.filefolder.traitextender.FileFolderServiceTrait;
+import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.search.QueryParameterDefImpl;
@@ -480,6 +481,13 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         CannedQueryResults<NodeRef> results = listImpl(rootNodeRef, null,  searchTypeQNames, ignoreAspectQNames, sortProps, pagingRequest);
         return getPagingResults(pagingRequest, results);
     }
+
+    @Override
+    public PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, List<FilterProp> filterProps, PagingRequest pagingRequest)
+    {
+        CannedQueryResults<NodeRef> results = listImpl(rootNodeRef, null,  searchTypeQNames, ignoreAspectQNames, sortProps, filterProps, pagingRequest);
+        return getPagingResults(pagingRequest, results);
+    }
     
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, boolean files, boolean folders)
     {
@@ -506,12 +514,18 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
      */
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern,  Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
+        return listImpl(contextNodeRef, pattern, searchTypeQNames, ignoreAspectQNames, sortProps, null, pagingRequest);
+    }
+
+    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern,  Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames,
+                                                 List<Pair<QName, Boolean>> sortProps, List<FilterProp> filterProps, PagingRequest pagingRequest)
+    {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
         
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_FILEFOLDER_LIST);
 
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, Collections.singleton(ContentModel.ASSOC_CONTAINS), searchTypeQNames, ignoreAspectQNames, null, sortProps, pagingRequest);
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, Collections.singleton(ContentModel.ASSOC_CONTAINS), searchTypeQNames, ignoreAspectQNames, filterProps, sortProps, pagingRequest);
 
         // execute canned query
         CannedQueryResults<NodeRef> results = cq.execute();

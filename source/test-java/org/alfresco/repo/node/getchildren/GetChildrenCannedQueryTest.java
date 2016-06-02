@@ -299,7 +299,7 @@ public class GetChildrenCannedQueryTest extends TestCase
         PagingResults<NodeRef> results = list(parentNodeRef, -1, -1, 0);
         assertTrue(results.getPage().size() > 3);
     }
-    
+
     public void testMaxItems() throws Exception
     {
         NodeRef parentNodeRef = getOrCreateParentTestFolder("GetChildrenCannedQueryTest-"+TEST_RUN_ID);
@@ -449,7 +449,68 @@ public class GetChildrenCannedQueryTest extends TestCase
         results = list(parentNodeRef, -1, -1, 0, childTypeQNames, null, null);
         assertEquals(0, results.getPage().size());
     }
-    
+
+    public void testPrimaryVsSecondary() throws Exception
+    {
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        NodeRef userHomeRef = repositoryHelper.getCompanyHome();
+
+        NodeRef parentNodeRef1 = createFolder(userHomeRef, "GetChildrenCannedQueryTest-PrimaryVsSecondary-"+TEST_RUN_ID, ContentModel.TYPE_FOLDER);
+
+        PagingResults<NodeRef> results = list(parentNodeRef1, -1, -1, 0, null, null, null);
+        assertEquals(0, results.getPage().size());
+
+        List<FilterProp> filterPropsPrimary = new ArrayList<>(1);
+        filterPropsPrimary.add(new FilterPropBoolean(GetChildrenCannedQuery.FILTER_QNAME_NODE_IS_PRIMARY, true));
+
+        List<FilterProp> filterPropsSecondary = new ArrayList<>(1);
+        filterPropsSecondary.add(new FilterPropBoolean(GetChildrenCannedQuery.FILTER_QNAME_NODE_IS_PRIMARY, false));
+
+        results = list(parentNodeRef1, -1, -1, 0, null, filterPropsPrimary, null);
+        assertEquals(0, results.getPage().size());
+
+        results = list(parentNodeRef1, -1, -1, 0, null, filterPropsSecondary, null);
+        assertEquals(0, results.getPage().size());
+
+        NodeRef folder1Ref = createFolder(parentNodeRef1, FOLDER_1, ContentModel.TYPE_FOLDER);
+        NodeRef folder2Ref = createFolder(parentNodeRef1, FOLDER_2, ContentModel.TYPE_FOLDER);
+
+        results = list(parentNodeRef1, -1, -1, 0, null, null, null);
+        assertEquals(2, results.getPage().size());
+        assertTrue(results.getPage().contains(folder1Ref));
+        assertTrue(results.getPage().contains(folder2Ref));
+
+        results = list(parentNodeRef1, -1, -1, 0, null, filterPropsPrimary, null);
+        assertEquals(2, results.getPage().size());
+        assertTrue(results.getPage().contains(folder1Ref));
+        assertTrue(results.getPage().contains(folder2Ref));
+
+        results = list(parentNodeRef1, -1, -1, 0, null, filterPropsSecondary, null);
+        assertEquals(0, results.getPage().size());
+
+        NodeRef parentNodeRef2 = getOrCreateParentTestFolder("GetChildrenCannedQueryTest-2-"+TEST_RUN_ID);
+
+        NodeRef folder3Ref = createFolder(parentNodeRef2, FOLDER_3, ContentModel.TYPE_FOLDER);
+
+        nodeService.addChild(parentNodeRef1, folder3Ref, ContentModel.ASSOC_CONTAINS, QName.createQName("cm:2nd"));
+
+        results = list(parentNodeRef1, -1, -1, 0, null, null, null);
+        assertEquals(3, results.getPage().size());
+        assertTrue(results.getPage().contains(folder1Ref));
+        assertTrue(results.getPage().contains(folder2Ref));
+        assertTrue(results.getPage().contains(folder3Ref));
+
+        results = list(parentNodeRef1, -1, -1, 0, null, filterPropsPrimary, null);
+        assertEquals(2, results.getPage().size());
+        assertTrue(results.getPage().contains(folder1Ref));
+        assertTrue(results.getPage().contains(folder2Ref));
+
+        results = list(parentNodeRef1, -1, -1, 0, null, filterPropsSecondary, null);
+        assertEquals(1, results.getPage().size());
+        assertTrue(results.getPage().contains(folder3Ref));
+    }
+
     public void testPropertyStringFiltering() throws Exception
     {
         NodeRef parentNodeRef = getOrCreateParentTestFolder("GetChildrenCannedQueryTest-"+TEST_RUN_ID);

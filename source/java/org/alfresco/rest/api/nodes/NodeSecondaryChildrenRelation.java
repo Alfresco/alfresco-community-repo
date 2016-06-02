@@ -21,7 +21,6 @@ package org.alfresco.rest.api.nodes;
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -29,7 +28,6 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -41,9 +39,7 @@ import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Node Secondary Children
@@ -77,46 +73,17 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
 
         QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
 
-        List<ChildAssociationRef> assocRefs = null;
+        List<ChildAssociationRef> childAssocRefs = null;
         if (assocTypeQNameParam.equals(RegexQNamePattern.MATCH_ALL))
         {
-            assocRefs = nodeService.getChildAssocs(parentNodeRef);
+            childAssocRefs = nodeService.getChildAssocs(parentNodeRef);
         }
         else
         {
-            assocRefs = nodeService.getChildAssocs(parentNodeRef, assocTypeQNameParam, RegexQNamePattern.MATCH_ALL);
+            childAssocRefs = nodeService.getChildAssocs(parentNodeRef, assocTypeQNameParam, RegexQNamePattern.MATCH_ALL);
         }
 
-        Map<QName, String> qnameMap = new HashMap<>(3);
-
-        Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
-
-        List<String> includeParam = parameters.getInclude();
-
-        List<Node> collection = new ArrayList<>(assocRefs.size());
-        for (ChildAssociationRef assocRef : assocRefs)
-        {
-            if (! assocRef.isPrimary())
-            {
-                // minimal info by default (unless "include"d otherwise)
-                Node node = nodes.getFolderOrDocument(assocRef.getChildRef(), null, null, includeParam, mapUserInfo);
-
-                QName assocTypeQName = assocRef.getTypeQName();
-                String assocType = qnameMap.get(assocTypeQName);
-                if (assocType == null)
-                {
-                    assocType = assocTypeQName.toPrefixString(namespaceService);
-                    qnameMap.put(assocTypeQName, assocType);
-                }
-
-                node.setAssociation(new AssocChild(assocType, assocRef.isPrimary()));
-
-                collection.add(node);
-            }
-        }
-
-        Paging paging = parameters.getPaging();
-        return CollectionWithPagingInfo.asPaged(paging, collection, false, collection.size());
+        return listNodeChildAssocs(childAssocRefs, parameters, false, true);
     }
 
     @Override
@@ -162,7 +129,7 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
         NodeRef childNodeRef = nodes.validateNode(childNodeId);
 
         String assocTypeStr = parameters.getParameter(PARAM_ASSOC_TYPE);
-        QName assocTypeQName = getAssocType(assocTypeStr, false, true);
+        QName assocTypeQName = getAssocType(assocTypeStr, false);
 
         List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(parentNodeRef);
 

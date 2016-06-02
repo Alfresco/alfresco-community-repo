@@ -21,14 +21,10 @@ package org.alfresco.rest.api.nodes;
 import org.alfresco.rest.antlr.WhereClauseParser;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Assoc;
-import org.alfresco.rest.api.model.AssocTarget;
+import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
-import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
-import org.alfresco.rest.framework.resource.RelationshipResource;
-import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -37,11 +33,10 @@ import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
-import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
@@ -64,6 +59,9 @@ import java.util.Set;
 public class AbstractNodeRelation implements InitializingBean
 {
     public final static String PARAM_ASSOC_TYPE = "assocType";
+
+    // excluded namespaces (assoc types)
+    protected static final List<String> EXCLUDED_NS = Arrays.asList(NamespaceService.SYSTEM_MODEL_1_0_URI);
 
     private final static Set<String> WHERE_PARAMS =
             new HashSet<>(Arrays.asList(new String[] {PARAM_ASSOC_TYPE}));
@@ -95,29 +93,30 @@ public class AbstractNodeRelation implements InitializingBean
         this.dictionaryService = sr.getDictionaryService();
     }
 
-    protected QName getAssocType(String prefixAssocTypeStr)
+    protected QName getAssocType(String assocTypeQNameStr)
     {
-        return getAssocType(prefixAssocTypeStr, true, true);
+        return getAssocType(assocTypeQNameStr, true);
     }
 
-    protected QName getAssocType(String prefixAssocTypeStr, boolean mandatory, boolean validate)
+    protected QName getAssocType(String assocTypeQNameStr, boolean mandatory)
     {
         QName assocType = null;
 
-        if ((prefixAssocTypeStr != null) && (! prefixAssocTypeStr.isEmpty()))
+        if ((assocTypeQNameStr != null) && (! assocTypeQNameStr.isEmpty()))
         {
-            assocType = QName.createQName(prefixAssocTypeStr, namespaceService);
-
-            if (validate)
+            assocType = nodes.createQName(assocTypeQNameStr);
+            if (dictionaryService.getAssociation(assocType) == null)
             {
-                if (dictionaryService.getAssociation(assocType) == null)
-                {
-                    throw new InvalidArgumentException("Unknown filter assocType: "+prefixAssocTypeStr);
-                }
+                throw new InvalidArgumentException("Unknown assocType: " + assocTypeQNameStr);
+            }
 
+            if (EXCLUDED_NS.contains(assocType.getNamespaceURI()))
+            {
+                throw new InvalidArgumentException("Invalid assocType: " + assocTypeQNameStr);
             }
         }
-        else if (mandatory)
+
+        if (mandatory && (assocType == null))
         {
             throw new InvalidArgumentException("Missing "+PARAM_ASSOC_TYPE);
         }
@@ -143,5 +142,83 @@ public class AbstractNodeRelation implements InitializingBean
         }
 
         return assocTypeQNamePattern;
+    }
+
+    protected CollectionWithPagingInfo<Node> listNodePeerAssocs(List<AssociationRef> assocRefs, Parameters parameters, boolean returnTarget)
+    {
+        Map<QName, String> qnameMap = new HashMap<>(3);
+
+        Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
+
+        List<String> includeParam = parameters.getInclude();
+
+        List<Node> collection = new ArrayList<Node>(assocRefs.size());
+        for (AssociationRef assocRef : assocRefs)
+        {
+            // minimal info by default (unless "include"d otherwise)
+            NodeRef nodeRef = (returnTarget ? assocRef.getTargetRef() : assocRef.getSourceRef());
+
+            Node node = nodes.getFolderOrDocument(nodeRef, null, null, includeParam, mapUserInfo);
+
+            QName assocTypeQName = assocRef.getTypeQName();
+
+            if (! EXCLUDED_NS.contains(assocTypeQName.getNamespaceURI()))
+            {
+                String assocType = qnameMap.get(assocTypeQName);
+                if (assocType == null)
+                {
+                    assocType = assocTypeQName.toPrefixString(namespaceService);
+                    qnameMap.put(assocTypeQName, assocType);
+                }
+
+                node.setAssociation(new Assoc(assocType));
+
+                collection.add(node);
+            }
+        }
+
+        Paging paging = parameters.getPaging();
+        return CollectionWithPagingInfo.asPaged(paging, collection, false, collection.size());
+    }
+
+    protected CollectionWithPagingInfo<Node> listNodeChildAssocs(List<ChildAssociationRef> childAssocRefs, Parameters parameters, Boolean isPrimary, boolean returnChild)
+    {
+        Map<QName, String> qnameMap = new HashMap<>(3);
+
+        Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
+
+        List<String> includeParam = parameters.getInclude();
+
+        List<Node> collection = new ArrayList<Node>(childAssocRefs.size());
+        for (ChildAssociationRef childAssocRef : childAssocRefs)
+        {
+            if (isPrimary == null || (isPrimary == childAssocRef.isPrimary()))
+            {
+                // minimal info by default (unless "include"d otherwise)
+                NodeRef nodeRef = (returnChild ? childAssocRef.getChildRef() : childAssocRef.getParentRef());
+
+                Node node = nodes.getFolderOrDocument(nodeRef, null, null, includeParam, mapUserInfo);
+
+                QName assocTypeQName = childAssocRef.getTypeQName();
+
+                if (!EXCLUDED_NS.contains(assocTypeQName.getNamespaceURI()))
+                {
+                    String assocType = qnameMap.get(assocTypeQName);
+                    if (assocType == null)
+                    {
+                        assocType = assocTypeQName.toPrefixString(namespaceService);
+                        qnameMap.put(assocTypeQName, assocType);
+                    }
+
+                    node.setAssociation(new AssocChild(assocType, childAssocRef.isPrimary()));
+
+
+                    collection.add(node);
+                }
+            }
+        }
+
+        Paging paging = parameters.getPaging();
+        return CollectionWithPagingInfo.asPaged(paging, collection, false, collection.size());
     }
 }

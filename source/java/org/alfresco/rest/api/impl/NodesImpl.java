@@ -280,7 +280,7 @@ public class NodesImpl implements Nodes
         this.poster = poster;
     }
 
-    // excluded namespaces (aspects and properties)
+    // excluded namespaces (aspects, properties, assoc types)
     private static final List<String> EXCLUDED_NS = Arrays.asList(NamespaceService.SYSTEM_MODEL_1_0_URI);
 
     // excluded aspects
@@ -899,7 +899,9 @@ public class NodesImpl implements Nodes
         {
             // Ugh ... can we optimise this and return the actual assoc directly (via FileFolderService/GetChildrenCQ) ?
             ChildAssociationRef parentAssocRef = nodeService.getPrimaryParent(nodeRef);
-            if (! parentAssocRef.getParentRef().equals(parentNodeRef))
+
+            // note: parentAssocRef.parentRef can be null for -root- node !
+            if ((parentAssocRef == null) || (parentAssocRef.getParentRef() == null) || (! parentAssocRef.getParentRef().equals(parentNodeRef)))
             {
                 List<ChildAssociationRef> parentAssocRefs = nodeService.getParentAssocs(nodeRef);
                 for (ChildAssociationRef pAssocRef : parentAssocRefs)
@@ -913,11 +915,18 @@ public class NodesImpl implements Nodes
                 }
             }
 
-            AssocChild childAssoc = new AssocChild(
-                    parentAssocRef.getTypeQName().toPrefixString(namespaceService),
-                    parentAssocRef.isPrimary());
+            if (parentAssocRef != null)
+            {
+                QName assocTypeQName = parentAssocRef.getTypeQName();
+                if ((assocTypeQName != null) && (! EXCLUDED_NS.contains(assocTypeQName.getNamespaceURI())))
+                {
+                    AssocChild childAssoc = new AssocChild(
+                            assocTypeQName.toPrefixString(namespaceService),
+                            parentAssocRef.isPrimary());
 
-            node.setAssociation(childAssoc);
+                    node.setAssociation(childAssoc);
+                }
+            }
         }
 
         node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));

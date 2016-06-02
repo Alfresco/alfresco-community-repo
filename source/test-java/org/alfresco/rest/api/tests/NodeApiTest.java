@@ -1816,9 +1816,11 @@ public class NodeApiTest extends AbstractBaseApiTest
             obj.setName("c1");
             obj.setNodeType(TYPE_CM_CONTENT);
 
+            // assoc type => cm:contains
             response = post(getNodeChildrenUrl(fId), user1, toJsonAsStringNonNull(obj), 201);
             Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             String c1Id = nodeResp.getId();
+            assertEquals(fId, nodeResp.getParentId());
 
             obj = new Node();
             obj.setName("c2");
@@ -1827,9 +1829,11 @@ public class NodeApiTest extends AbstractBaseApiTest
             assoc.setAssocType(ASSOC_TYPE_CM_PREFERENCE_IMAGE);
             obj.setAssociation(assoc);
 
+            // assoc type => cm:preferenceImage
             response = post(getNodeChildrenUrl(fId), user1, toJsonAsStringNonNull(obj), 201);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             String c2Id = nodeResp.getId();
+            assertEquals(fId, nodeResp.getParentId());
 
             response = getAll(getNodeChildrenUrl(fId), user1, null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -1852,6 +1856,43 @@ public class NodeApiTest extends AbstractBaseApiTest
             assertEquals(1, nodes.size());
             assertEquals(c2Id, nodes.get(0).getId());
             assertTrue(nodes.get(0).getAssociation().getIsPrimary());
+
+            //
+            // test that we can also create children below content
+            //
+
+            obj = new Node();
+            obj.setName("c3");
+            obj.setNodeType(TYPE_CM_CONTENT);
+            nodeUpdate.setAspectNames(Collections.singletonList(ASPECT_CM_PREFERENCES));
+
+            // assoc type => cm:contains
+            response = post(getNodeChildrenUrl(fId), user1, toJsonAsStringNonNull(obj), 201);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            String c3Id = nodeResp.getId();
+
+            obj = new Node();
+            obj.setName("c4");
+            obj.setNodeType(TYPE_CM_CONTENT);
+            assoc = new Association();
+            assoc.setAssocType(ASSOC_TYPE_CM_PREFERENCE_IMAGE);
+            obj.setAssociation(assoc);
+
+            // assoc type => cm:preferenceImage
+            response = post(getNodeChildrenUrl(c3Id), user1, toJsonAsStringNonNull(obj), 201);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals(c3Id, nodeResp.getParentId());
+
+            // -ve test
+            obj = new Node();
+            obj.setName("c5");
+            obj.setNodeType(TYPE_CM_CONTENT);
+            assoc = new Association();
+            assoc.setAssocType(ASSOC_TYPE_CM_CONTAINS);
+            obj.setAssociation(assoc);
+
+            // assoc type => cm:contains (requires parent to be a folder !)
+            post(getNodeChildrenUrl(c3Id), user1, toJsonAsStringNonNull(obj), 422);
         }
         finally
         {

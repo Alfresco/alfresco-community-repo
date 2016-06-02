@@ -35,6 +35,7 @@ import org.alfresco.repo.content.transform.magick.ImageTransformationOptions;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
@@ -144,7 +145,8 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         AuthenticationUtil.setFullyAuthenticatedUser(USER_TWO);
         
         assertEquals(AccessStatus.DENIED, permissionService.hasPermission(testNode, PermissionService.READ));
-        
+
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     @Override
@@ -170,20 +172,32 @@ public class QuickShareRestApiTest extends BaseWebScriptTest
         
         deleteUser(USER_ONE);
         deleteUser(USER_TWO);
+
+        AuthenticationUtil.clearCurrentSecurityContext();
     }
     
     private void checkTransformer()
     {
-        ContentTransformer transformer = this.contentService.getImageTransformer();
-        assertNotNull("No transformer returned for 'getImageTransformer'", transformer);
-        
-        // Check that it is working
-        ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
-        if (!transformer.isTransformable(MimetypeMap.MIMETYPE_IMAGE_JPEG, -1, MimetypeMap.MIMETYPE_IMAGE_PNG,
-                    imageTransformationOptions))
+        AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
-            fail("Image transformer is not working.  Please check your image conversion command setup.");
-        }
+            @Override
+            public Void doWork() throws Exception
+            {
+                ContentTransformer transformer = contentService.getImageTransformer();
+
+                assertNotNull("No transformer returned for 'getImageTransformer'", transformer);
+
+                // Check that it is working
+                ImageTransformationOptions imageTransformationOptions = new ImageTransformationOptions();
+                if (!transformer.isTransformable(MimetypeMap.MIMETYPE_IMAGE_JPEG, -1, MimetypeMap.MIMETYPE_IMAGE_PNG, imageTransformationOptions))
+
+                {
+                    fail("Image transformer is not working.  Please check your image conversion command setup.");
+                }
+
+                return null;
+            }
+        }, AuthenticationUtil.getAdminUserName());
     }
     
     private void checkBytes(byte[] content1, byte[] content2)

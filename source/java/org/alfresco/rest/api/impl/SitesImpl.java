@@ -864,7 +864,7 @@ public class SitesImpl implements Sites
 
 
     /**
-     * Create default/preset (Share) site - with DocLib container/component
+     * Create default/fixed preset (Share) site - with DocLib container/component
      *
      * @param site
      * @return
@@ -893,8 +893,13 @@ public class SitesImpl implements Sites
 
         String siteId = siteInfo.getShortName();
 
-        // import default surf config
-        importSite(siteId);
+        // default false (if not provided)
+        boolean skipShareSurfConfig = Boolean.valueOf(parameters.getParameter(PARAM_SKIP_SURF_CONFIGURATION));
+        if (skipShareSurfConfig == false)
+        {
+            // import default/fixed preset Share surf config
+            importSite(siteId);
+        }
 
         // pre-create doclib
         siteService.createContainer(siteId, SiteService.DOCUMENT_LIBRARY, ContentModel.TYPE_FOLDER, null);

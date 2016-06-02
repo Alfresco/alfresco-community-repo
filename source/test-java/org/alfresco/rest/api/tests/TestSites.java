@@ -35,7 +35,6 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Sites;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
-import org.alfresco.rest.api.tests.client.data.Comment;
 import org.alfresco.rest.api.tests.client.data.Site;
 import org.alfresco.rest.api.tests.client.data.SiteImpl;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
@@ -45,34 +44,33 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * @author sglover
+ * @author janv
+ */
 public class TestSites extends EnterpriseTestApi
 {
 	private TestNetwork network1;
-	private String personId;
 	private String person1Id;
-	private TestSite site1;
+	private String person2Id;
+
+    private Site site1;
+    private Site site2;
+    private Site site3;
 	
 	@Before
 	public void setup() throws Exception
 	{
 		// Test: user is member of an account
 		this.network1 = getTestFixture().getRandomNetwork();
+
 		Iterator<String> personIt = network1.getPersonIds().iterator();
-    	this.personId = personIt.next();
-    	assertNotNull(personId);
+
     	this.person1Id = personIt.next();
     	assertNotNull(person1Id);
 
-    	this.site1 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-		{
-			@Override
-			public TestSite doWork() throws Exception
-			{
-				String siteName = "site" + System.currentTimeMillis();
-				SiteInformation site = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
-				return network1.createSite(site);
-			}
-		}, person1Id, network1.getId());
+    	this.person2Id = personIt.next();
+    	assertNotNull(person2Id);
 	}
 
 	@Test
@@ -80,33 +78,55 @@ public class TestSites extends EnterpriseTestApi
 	{
 		Sites sitesProxy = publicApiClient.sites();
 
-		// get a site
+		// create & get sites (as person 2)
 		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
-			Site ret = sitesProxy.getSite(site1.getSiteId());
-			site1.expected(ret);
-		}
+			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person2Id));
+
+            String siteTitle = "site 1 " + System.currentTimeMillis();
+            Site site = new SiteImpl(siteTitle, SiteVisibility.PRIVATE.toString());
+            site1 = sitesProxy.createSite(site);
+
+            Site ret = sitesProxy.getSite(site1.getSiteId());
+            site1.expected(ret);
+
+            siteTitle = "site 2 " + System.currentTimeMillis();
+            site = new SiteImpl(siteTitle, SiteVisibility.PUBLIC.toString());
+            site2 = sitesProxy.createSite(site);
+
+            ret = sitesProxy.getSite(site2.getSiteId());
+            site2.expected(ret);
+
+            siteTitle = "site 3 " + System.currentTimeMillis();
+            site = new SiteImpl(siteTitle, SiteVisibility.MODERATED.toString());
+            site3 = sitesProxy.createSite(site);
+
+            ret = sitesProxy.getSite(site3.getSiteId());
+            site3.expected(ret);
+        }
 
 		List<TestSite> expectedSites = TenantUtil.runAsUserTenant(new TenantRunAsWork<List<TestSite>>()
 		{
 			@Override
 			public List<TestSite> doWork() throws Exception
 			{
-				List<TestSite> sites = network1.getSites(personId);
+				List<TestSite> sites = network1.getSites(person1Id);
 				return sites;
 			}
-		}, personId, network1.getId());
+		}, person1Id, network1.getId());
 
 		{
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+
 			int skipCount = 0;
 			int maxItems = 2;
 			Paging paging = getPaging(skipCount, maxItems, expectedSites.size(), expectedSites.size());
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
 			ListResponse<Site> resp = sitesProxy.getSites(createParams(paging, null));
 			checkList(expectedSites.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
 		}
 
 		{
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+
 			int skipCount = 2;
 			int maxItems = Integer.MAX_VALUE;
 			Paging paging = getPaging(skipCount, maxItems, expectedSites.size(), expectedSites.size());
@@ -116,10 +136,11 @@ public class TestSites extends EnterpriseTestApi
 
 		// test create and delete site
 		{
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
+
             String siteTitle = "my site !*#$ 123";
 
 			Site site = new SiteImpl(siteTitle, SiteVisibility.PRIVATE.toString());
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
 			Site ret = sitesProxy.createSite(site);
 			String siteId = ret.getSiteId();
 
@@ -127,22 +148,12 @@ public class TestSites extends EnterpriseTestApi
 			Site siteExp = new SiteImpl(null, expectedSiteId, ret.getGuid(), siteTitle, null,  SiteVisibility.PRIVATE.toString(), null, SiteRole.SiteManager);
 			siteExp.expected(ret);
 
-            publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
             ret = sitesProxy.getSite(siteId);
             siteExp.expected(ret);
 
             sitesProxy.removeSite(siteId);
 
-            try
-            {
-                publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
-                sitesProxy.getSite(siteId);
-                fail("");
-            }
-            catch(PublicApiException e)
-            {
-                assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
-            }
+            sitesProxy.getSite(siteId, 404);
         }
 
 		// -ve tests
@@ -151,11 +162,15 @@ public class TestSites extends EnterpriseTestApi
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), GUID.generate(), "password"));
             sitesProxy.getSite(site1.getSiteId(), 401);
 
-            publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
 
-            // -ve - permission test
-            // make sure that a user can't see PRIVATE sites of which they are not a member by creating one and checking it's not in the results
+            // -ve - cannot view or delete a private site
             sitesProxy.getSite(site1.getSiteId(), 404);
+            sitesProxy.removeSite(site1.getSiteId(), 404);
+
+            // -ve - test cannot delete a public site (but can view it)
+            sitesProxy.getSite(site2.getSiteId(), 200);
+            sitesProxy.removeSite(site2.getSiteId(), 403);
 
             // -ve - try to get unknown site
             sitesProxy.getSite(GUID.generate(), 404);
@@ -179,32 +194,33 @@ public class TestSites extends EnterpriseTestApi
             sitesProxy.removeSite(GUID.generate(), 404);
         }
 
-        // -ve - cannot call POST method on /sites/siteId
-        try
         {
-            sitesProxy.create("sites", "site", null, null, null, "Unable to POST to a site");
-            fail();
-        }
-        catch(PublicApiException e)
-        {
-            assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
-        }
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
 
-        // -ve - cannot call DELETE method on /sites
-        try
-        {
-            sitesProxy.remove("sites", null, null, null, "Unable to DELETE sites");
-            fail();
-        }
-        catch(PublicApiException e)
-        {
-            assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+            // -ve - cannot call POST method on /sites/siteId
+            try
+            {
+                sitesProxy.create("sites", "site", null, null, null, "Unable to POST to a site");
+                fail();
+            } catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+            }
+
+            // -ve - cannot call DELETE method on /sites
+            try
+            {
+                sitesProxy.remove("sites", null, null, null, "Unable to DELETE sites");
+                fail();
+            } catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+            }
         }
 
         // Test Case cloud-1478
 		// Test Case cloud-1479
 		// user invited to network and user invited to site
 		// user invited to network and user not invited to site
-
 	}
 }

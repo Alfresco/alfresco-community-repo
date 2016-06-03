@@ -83,6 +83,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected static final String TYPE_CM_CONTENT = "cm:content";
     protected static final String TYPE_CM_OBJECT = "cm:cmobject";
 
+    protected static final String ASPECT_CM_PREFERENCES = "cm:preferences";
+    protected static final String ASSOC_TYPE_CM_PREFERENCE_IMAGE = "cm:preferenceImage";
+
+    protected static final String ASSOC_TYPE_CM_CONTAINS = "cm:contains";
+
 
     /**
      * The api scope. either public or private

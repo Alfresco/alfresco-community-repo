@@ -94,10 +94,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
     private static final String URL_SECONDARY_CHILDREN = "secondary-children";
     private static final String URL_PARENTS = "parents";
 
-    private static final String ASSOC_TYPE_CM_CONTAINS = "cm:contains";
-
-    private static final String ASPECT_CM_PREFERENCES = "cm:preferences";
-    private static final String ASSOC_TYPE_CM_PREFERENCE_IMAGE = "cm:preferenceImage";
 
 
     private String user1;

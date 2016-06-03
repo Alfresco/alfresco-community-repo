@@ -33,6 +33,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -380,14 +381,9 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     {
         final String siteName = "RandomSite" + System.currentTimeMillis();
 
-        final TestSite site = TenantUtil.runAsUserTenant(new TenantUtil.TenantRunAsWork<TestSite>()
-        {
-            @Override
-            public TestSite doWork() throws Exception
-            {
-                SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, siteVisibility);
-                return repoService.createSite(testNetwork, siteInfo);
-            }
+        final TestSite site = TenantUtil.runAsUserTenant(() -> {
+            SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, siteVisibility);
+            return repoService.createSite(testNetwork, siteInfo);
         }, user.getId(), testNetwork.getId());
 
         return site;
@@ -446,27 +442,15 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected void inviteToSite(final TestSite testSite, final TestPerson invitee, final SiteRole siteRole)
     {
-        TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                testSite.inviteToSite(invitee.getId(), siteRole);
-                return null;
-            }
+        TenantUtil.runAsTenant((TenantRunAsWork<Void>) () -> {
+            testSite.inviteToSite(invitee.getId(), siteRole);
+            return null;
         }, testSite.getNetworkId());
     }
 
     protected NodeRef getSiteDocLib(final TestSite testSite)
     {
-        return TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<NodeRef>()
-        {
-            @Override
-            public NodeRef doWork() throws Exception
-            {
-                return testSite.getContainerNodeRef(("documentLibrary"));
-            }
-        }, testSite.getNetworkId());
+        return TenantUtil.runAsTenant(() -> testSite.getContainerNodeRef(("documentLibrary")), testSite.getNetworkId());
     }
 
     protected void checkStatus(int expectedStatus, int actualStatus)

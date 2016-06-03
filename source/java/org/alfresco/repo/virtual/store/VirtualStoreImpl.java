@@ -649,8 +649,6 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
             properties.put(ContentModel.PROP_LOCALE,
                            Locale.UK.toString());
 
-            properties.put(ContentModel.PROP_TITLE,
-                           folderDefinition.getName());
 
             properties.put(ContentModel.PROP_MODIFIED,
                            new Date());
@@ -666,6 +664,7 @@ public class VirtualStoreImpl implements VirtualStore, VirtualFolderDefinitionRe
 
             properties.put(ContentModel.PROP_DESCRIPTION,
                            folderDefinition.getDescription());
+            // ACE-5303 : ContentModel.PROP_TITLE remains unset 
 
             // We add virtual folder definition structure properties. They might
             // override the above defaults.

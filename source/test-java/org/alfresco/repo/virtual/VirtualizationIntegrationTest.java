@@ -317,7 +317,6 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
         List<QName> mandatoryProperties = Arrays.asList(ContentModel.PROP_STORE_IDENTIFIER,
                                                         ContentModel.PROP_STORE_PROTOCOL,
                                                         ContentModel.PROP_LOCALE,
-                                                        ContentModel.PROP_TITLE,
                                                         ContentModel.PROP_MODIFIED,
                                                         ContentModel.PROP_MODIFIER,
                                                         ContentModel.PROP_CREATED,
@@ -331,6 +330,8 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
         assertTrue("Mandatory properties are missing" + missingPropreties,
                    missingPropreties.isEmpty());
 
+        assertFalse("ACE-5303 : ContentModel.PROP_TITLE should remain unset",nodeProperties.containsKey(ContentModel.PROP_TITLE));
+        
         Set<Entry<QName, Serializable>> epEntries = expectedProperties.entrySet();
         StringBuilder unexpectedBuilder = new StringBuilder();
         for (Entry<QName, Serializable> entry : epEntries)

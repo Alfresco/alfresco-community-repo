@@ -46,7 +46,7 @@ public abstract class AbstractEnterpriseOpenCMISTCKTest extends EnterpriseTestAp
    @Override
     protected TestFixture getTestFixture() throws Exception
     {
-        return TCKEnterpriseTestFixture.getInstance();
+        return EnterprisePublicApiTestFixture.getInstance();
     }
    
     protected void overrideVersionableAspectProperties(ApplicationContext ctx)

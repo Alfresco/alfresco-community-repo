@@ -142,6 +142,7 @@
                 <entry key="org.alfresco.service.cmr.repository.InvalidNodeRefException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.PermissionDeniedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_FORBIDDEN}" />
+                <entry key="org.alfresco.repo.security.permissions.AccessDeniedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_FORBIDDEN}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_METHOD_NOT_ALLOWED}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.StaleEntityException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
@@ -781,26 +782,20 @@
     <bean class="org.alfresco.rest.api.nodes.NodeChildrenRelation">
         <property name="nodes" ref="Nodes" />
     </bean>
-    
-    <bean class="org.alfresco.rest.api.nodes.NodeSecondaryChildrenRelation">
-        <property name="serviceRegistry" ref="ServiceRegistry"/>
-        <property name="nodes" ref="Nodes" />
-    </bean>
 
-    <bean class="org.alfresco.rest.api.nodes.NodeParentsRelation">
+    <bean id="baseNodeRelation" class="org.alfresco.rest.api.nodes.AbstractNodeRelation" abstract="true">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="nodes" ref="Nodes" />
+        <property name="nodeService" ref="NodeServiceWithAssocPerms"/>
     </bean>
     
-    <bean class="org.alfresco.rest.api.nodes.NodeTargetsRelation">
-        <property name="serviceRegistry" ref="ServiceRegistry"/>
-        <property name="nodes" ref="Nodes" />
-    </bean>
+    <bean class="org.alfresco.rest.api.nodes.NodeSecondaryChildrenRelation" parent="baseNodeRelation"/>
 
-    <bean class="org.alfresco.rest.api.nodes.NodeSourcesRelation">
-        <property name="serviceRegistry" ref="ServiceRegistry"/>
-        <property name="nodes" ref="Nodes" />
-    </bean>
+    <bean class="org.alfresco.rest.api.nodes.NodeParentsRelation" parent="baseNodeRelation"/>
+    
+    <bean class="org.alfresco.rest.api.nodes.NodeTargetsRelation" parent="baseNodeRelation"/>
+
+    <bean class="org.alfresco.rest.api.nodes.NodeSourcesRelation" parent="baseNodeRelation"/>
 
     <bean class="org.alfresco.rest.api.nodes.NodeTagsRelation">
         <property name="tags" ref="Tags" />
@@ -1201,4 +1196,90 @@
     <bean class="org.alfresco.rest.api.authentications.AuthenticationTicketsEntityResource">
         <property name="authentications" ref="Authentications" />
     </bean>
+
+
+    <!-- TODO: introduce Node Assoc Permissions for REST API - eventually we will remove this (once we have pushed down to NodeService permission def) -->
+    <bean id="NodeServiceWithAssocPerms" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <list>
+                <value>org.alfresco.service.cmr.repository.NodeService</value>
+            </list>
+        </property>
+        <property name="target">
+            <ref bean="nodeService"/>
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="NodeService_transaction"/>
+                <idref bean="AuditMethodInterceptor"/>
+                <idref bean="exceptionTranslator"/>
+                <idref bean="NodeServiceWithAssocPerms_security"/>
+                <idref bean="disableAuditablePolicySetPropertyInterceptor"/>
+
+                <!-- Bug prevents use.
+                     Also, the interception of this sort will lead to issues with other clients
+                <idref bean="mlTranslationInterceptor"/>
+                -->
+            </list>
+        </property>
+    </bean>
+
+    <!-- TODO: introduce Node Assoc Permissions for REST API - eventually we will remove this (once we have pushed down to NodeService permission def) -->
+    <bean id="NodeServiceWithAssocPerms_security" class="org.alfresco.repo.security.permissions.impl.acegi.MethodSecurityInterceptor">
+        <property name="authenticationManager"><ref bean="authenticationManager"/></property>
+        <property name="accessDecisionManager"><ref bean="accessDecisionManager"/></property>
+        <property name="afterInvocationManager"><ref bean="afterInvocationManager"/></property>
+        <property name="objectDefinitionSource">
+            <value>
+                org.alfresco.service.cmr.repository.NodeService.getStores=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.createStore=ACL_METHOD.ROLE_ADMINISTRATOR
+                org.alfresco.service.cmr.repository.NodeService.exists=ACL_ALLOW
+                org.alfresco.service.cmr.repository.NodeService.getNodeStatus=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getNodeRef=AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getAllRootNodes=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getRootNode=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.createNode=ACL_NODE.0.sys:base.CreateChildren
+                org.alfresco.service.cmr.repository.NodeService.moveNode=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren
+                org.alfresco.service.cmr.repository.NodeService.setChildAssociationIndex=ACL_PARENT.0.sys:base.WriteProperties
+                org.alfresco.service.cmr.repository.NodeService.getType=ACL_ALLOW
+                org.alfresco.service.cmr.repository.NodeService.setType=ACL_NODE.0.sys:base.WriteProperties
+                org.alfresco.service.cmr.repository.NodeService.addAspect=ACL_NODE.0.sys:base.WriteProperties,ACL_ITEM.0.cm:ownable.TakeOwnership
+                org.alfresco.service.cmr.repository.NodeService.removeAspect=ACL_NODE.0.sys:base.WriteProperties
+                org.alfresco.service.cmr.repository.NodeService.hasAspect=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getAspects=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.deleteNode=ACL_NODE.0.sys:base.DeleteNode
+                org.alfresco.service.cmr.repository.NodeService.addChild=ACL_NODE.0.sys:base.CreateChildren,ACL_NODE.1.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.removeChild=ACL_NODE.0.sys:base.DeleteChildren,ACL_PRI_CHILD_ASSOC_ON_CHILD.0.1.sys:base.DeleteNode
+                org.alfresco.service.cmr.repository.NodeService.removeChildAssociation=ACL_PARENT.0.sys:base.DeleteChildren,ACL_PRI_CHILD_ASSOC_ON_CHILD.0.sys:base.DeleteNode
+                org.alfresco.service.cmr.repository.NodeService.removeSeconaryChildAssociation=ACL_PARENT.0.sys:base.DeleteChildren
+                org.alfresco.service.cmr.repository.NodeService.removeSecondaryChildAssociation=ACL_PARENT.0.sys:base.DeleteChildren
+                org.alfresco.service.cmr.repository.NodeService.getProperties=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getProperty=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.setProperties=ACL_NODE.0.sys:base.WriteProperties,ACL_ITEM.0.cm:ownable.TakeOwnership
+                org.alfresco.service.cmr.repository.NodeService.addProperties=ACL_NODE.0.sys:base.WriteProperties,ACL_ITEM.0.cm:ownable.TakeOwnership
+                org.alfresco.service.cmr.repository.NodeService.setProperty=ACL_NODE.0.sys:base.WriteProperties,ACL_ITEM.0.cm:ownable.TakeOwnership
+                org.alfresco.service.cmr.repository.NodeService.removeProperty=ACL_NODE.0.sys:base.WriteProperties
+                org.alfresco.service.cmr.repository.NodeService.getParentAssocs=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getChildAssocs=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getChildByName=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getChildAssocsByPropertyValue=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getChildrenByName=ACL_NODE.0.sys:base.ReadChildren,AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getPrimaryParent=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.createAssociation=ACL_NODE.0.sys:base.WriteProperties,ACL_NODE.1.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.removeAssociation=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.setAssociations=ACL_NODE.0.sys:base.WriteProperties,ACL_NODE.2.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getTargetAssocs=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getSourceAssocs=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_PARENT.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getAssoc=ACL_ALLOW,AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getPath=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getPaths=ACL_NODE.0.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.getStoreArchiveNode=ACL_NODE.0.sys:base.Read
+                org.alfresco.service.cmr.repository.NodeService.restoreNode=ACL_NODE.0.sys:base.DeleteNode,ACL_NODE.1.sys:base.CreateChildren
+                org.alfresco.service.cmr.repository.NodeService.getChildAssocsWithoutParentAssocsOfType=ACL_NODE.0.sys:base.ReadProperties,AFTER_ACL_NODE.sys:base.ReadProperties
+                org.alfresco.service.cmr.repository.NodeService.countChildAssocs=ACL_NODE.0.sys:base.ReadChildren
+                org.alfresco.service.cmr.repository.NodeService.*=ACL_DENY
+            </value>
+        </property>
+    </bean>
+
 </beans>

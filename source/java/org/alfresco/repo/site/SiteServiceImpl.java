@@ -2569,6 +2569,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         // Check for the component id
         ParameterCheck.mandatoryString("componentId", componentId);
 
+        // use the correct container for doclib
+        // MNT-15743
+        componentId = componentId.toLowerCase().equals(DOCUMENT_LIBRARY.toLowerCase()) ? DOCUMENT_LIBRARY : componentId;
+
         // retrieve site
         NodeRef siteNodeRef = getSiteNodeRef(shortName);
         if (siteNodeRef == null)

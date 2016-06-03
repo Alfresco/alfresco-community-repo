@@ -955,7 +955,7 @@ public class SitesImpl implements Sites
         }
         else
         {
-            if (! siteId.matches("[^"+SITE_ID_VALID_CHARS_PARTIAL_REGEX+"]"))
+            if (! siteId.matches("^["+SITE_ID_VALID_CHARS_PARTIAL_REGEX+"]+"))
             {
                 throw new InvalidArgumentException("Invalid site id - should consist of alphanumeric/dash characters");
             }

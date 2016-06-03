@@ -692,6 +692,11 @@ public class NodesImpl implements Nodes
             // convert checked exception
             throw new NotFoundException("The entity with relativePath: " + path + " was not found.");
         }
+        catch (AccessDeniedException ade)
+        {
+            // return 404 instead of 403 (as per security review - uuid vs path)
+            throw new NotFoundException("The entity with relativePath: " + path + " was not found.");
+        }
 
         return fileInfo.getNodeRef();
     }

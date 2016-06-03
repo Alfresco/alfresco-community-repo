@@ -1540,11 +1540,6 @@ public class NodesImpl implements Nodes
         // check that requested parent node exists and it's type is a (sub-)type of folder
         NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, null);
 
-        if (! nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
-        {
-            throw new InvalidArgumentException("NodeId of folder is expected: "+parentNodeRef.getId());
-        }
-
         // node name - mandatory
         String nodeName = nodeInfo.getName();
         if ((nodeName == null) || nodeName.isEmpty())

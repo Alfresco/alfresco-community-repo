@@ -131,16 +131,19 @@ public class TikaPoweredContainerExtractor
        
        // Get the contents
        ContentReader reader = contentService.getReader(source, ContentModel.PROP_CONTENT);
-       TikaInputStream stream = TikaInputStream.get(reader.getContentInputStream());
-
-       // Build the recursing parser
-       Extractor handler = new Extractor(folder, mimetypes);
-       
-       // Have Tika look for things
-       ParserContainerExtractor extractor = new ParserContainerExtractor(
-             parser, detector
-       );
+       InputStream wrappedInputStream = null;
+       TikaInputStream stream = null;
+       Extractor handler = null;
        try {
+           wrappedInputStream = reader.getContentInputStream();
+           stream = TikaInputStream.get(wrappedInputStream);
+           // Build the recursing parser
+           handler = new Extractor(folder, mimetypes);
+           
+           // Have Tika look for things
+           ParserContainerExtractor extractor = new ParserContainerExtractor(
+                       parser, detector
+                       );
           logger.info("Beginning extraction of " + source.toString());
           extractor.extract(stream, null, handler);
           logger.info("Completed extraction of " + source.toString());
@@ -149,11 +152,32 @@ public class TikaPoweredContainerExtractor
        } catch(IOException ie) {
           throw new AlfrescoRuntimeException("Extraction Failed", ie);
        }
-       
-       // Tidy up
-       try {
-          stream.close();
-       } catch(IOException e) {}
+       finally
+       {
+           // Tidy up
+           if (stream != null)
+           {
+               try
+               {
+                   stream.close();
+               }
+               catch (IOException error)
+               {
+                   logger.debug("Error while closing stream.", error);
+               }
+           }
+           if (wrappedInputStream != null)
+           {
+               try
+               {
+                   wrappedInputStream.close();
+               }
+               catch (IOException error)
+               {
+                   logger.debug("Error while closing stream.", error);
+               }
+           }    
+       } 
        
        // All done
        return handler.extracted;

@@ -32,9 +32,12 @@
     <bean id="jsonHelper" class="org.alfresco.rest.framework.jacksonextensions.JacksonHelper">
          <property name="module" ref="restJsonModule" />
     </bean>
+    <bean id="webScriptExceptionResolver" class="org.alfresco.rest.framework.core.exceptions.WebScriptExceptionResolver">
+    </bean>
     <bean id="apiAssistant" class="org.alfresco.rest.framework.tools.ApiAssistant">
         <property name="jsonHelper" ref="jsonHelper" />
         <property name="resolver" ref="simpleMappingExceptionResolver" />
+        <property name="webScriptExceptionResolver" ref="webScriptExceptionResolver" />
     </bean>
     <bean id="simpleMappingExceptionResolver" class="org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver">
        <property name="exceptionMappings">

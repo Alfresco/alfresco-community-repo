@@ -41,10 +41,10 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException;
-import org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver;
 import org.alfresco.rest.framework.core.exceptions.StaleEntityException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.parameters.where.InvalidQueryException;
+import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,63 +52,73 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import javax.servlet.http.HttpServletResponse;
+
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(locations = { "classpath:test-rest-context.xml" })
 public class ExceptionResolverTests
 {
     @Autowired
-    SimpleMappingExceptionResolver simpleMappingExceptionResolver;
-    
-    
+    ApiAssistant assistant;
+
+    @Test
+    public void testWebscriptException()
+    {
+        ErrorResponse response = assistant.resolveException(new WebScriptException(null));
+        assertNotNull(response);
+        assertEquals(500, response.getStatusCode());  //default to INTERNAL_SERVER_ERROR
+
+        response = assistant.resolveException(new WebScriptException(HttpServletResponse.SC_UNAUTHORIZED, "Authentication failed for Web Script "));
+        assertNotNull(response);
+        assertEquals(HttpServletResponse.SC_UNAUTHORIZED, response.getStatusCode());  //default to INTERNAL_SERVER_ERROR
+    }
+
+    //04180006 Authentication failed for Web Script org/alfresco/api/ResourceWebScript.get
     @Test
     public void testMatchException()
     {
-        ErrorResponse response = simpleMappingExceptionResolver.resolveException(new ApiException(null));
+        ErrorResponse response = assistant.resolveException(new ApiException(null));
         assertNotNull(response);
         assertEquals(500, response.getStatusCode());  //default to INTERNAL_SERVER_ERROR
        
-        response = simpleMappingExceptionResolver.resolveException(new InvalidArgumentException(null));
+        response = assistant.resolveException(new InvalidArgumentException(null));
         assertEquals(400, response.getStatusCode());  //default to STATUS_BAD_REQUEST
 
-        response = simpleMappingExceptionResolver.resolveException(new InvalidQueryException(null));
+        response = assistant.resolveException(new InvalidQueryException(null));
         assertEquals(400, response.getStatusCode());  //default to STATUS_BAD_REQUEST
         
-        response = simpleMappingExceptionResolver.resolveException(new NotFoundException(null));
+        response = assistant.resolveException(new NotFoundException(null));
         assertEquals(404, response.getStatusCode());  //default to STATUS_NOT_FOUND
         
-        response = simpleMappingExceptionResolver.resolveException(new EntityNotFoundException(null));
+        response = assistant.resolveException(new EntityNotFoundException(null));
         assertEquals(404, response.getStatusCode());  //default to STATUS_NOT_FOUND
 
-        response = simpleMappingExceptionResolver.resolveException(new RelationshipResourceNotFoundException(null, null));
+        response = assistant.resolveException(new RelationshipResourceNotFoundException(null, null));
         assertEquals(404, response.getStatusCode());  //default to STATUS_NOT_FOUND
 
-        response = simpleMappingExceptionResolver.resolveException(new PermissionDeniedException(null));
+        response = assistant.resolveException(new PermissionDeniedException(null));
         assertEquals(403, response.getStatusCode());  //default to STATUS_FORBIDDEN
 
-        response = simpleMappingExceptionResolver.resolveException(new UnsupportedResourceOperationException(null));
+        response = assistant.resolveException(new UnsupportedResourceOperationException(null));
         assertEquals(405, response.getStatusCode());  //default to STATUS_METHOD_NOT_ALLOWED
 
-        response = simpleMappingExceptionResolver.resolveException(new DeletedResourceException(null));
+        response = assistant.resolveException(new DeletedResourceException(null));
         assertEquals(405, response.getStatusCode());  //default to STATUS_METHOD_NOT_ALLOWED
         
-        response = simpleMappingExceptionResolver.resolveException(new ConstraintViolatedException(null));
+        response = assistant.resolveException(new ConstraintViolatedException(null));
         assertEquals(409, response.getStatusCode());  //default to STATUS_CONFLICT    
         
-        response = simpleMappingExceptionResolver.resolveException(new StaleEntityException(null));
+        response = assistant.resolveException(new StaleEntityException(null));
         assertEquals(409, response.getStatusCode());  //default to STATUS_CONFLICT    
-        
-        //Try a random exception
-        response = simpleMappingExceptionResolver.resolveException(new WebScriptException(null));
-        assertNull(response);
-        
-        //Try a random exception
-        response = simpleMappingExceptionResolver.resolveException(new FormNotFoundException(null));
-        assertNull(response);
 
-        response = simpleMappingExceptionResolver.resolveException(new InsufficientStorageException(null));
+        //Try a random exception
+        response = assistant.resolveException(new FormNotFoundException(null));
+        assertEquals(500, response.getStatusCode());  //default to INTERNAL_SERVER_ERROR
+
+        response = assistant.resolveException(new InsufficientStorageException(null));
         assertEquals(507, response.getStatusCode());
 
-        response = simpleMappingExceptionResolver.resolveException(new IntegrityException(null));
+        response = assistant.resolveException(new IntegrityException(null));
         assertEquals(422, response.getStatusCode());
         
     }

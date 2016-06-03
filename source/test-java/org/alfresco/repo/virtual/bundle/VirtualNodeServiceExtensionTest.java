@@ -1032,6 +1032,9 @@ public class VirtualNodeServiceExtensionTest extends VirtualizationIntegrationTe
         NodeRef parentRef = primaryParent.getParentRef();
         assertEquals(virtualFolder1NodeRef,
                      parentRef);
+        assertEquals(QName
+                    .createQNameWithValidLocalName(VirtualContentModel.VIRTUAL_CONTENT_MODEL_1_0_URI,
+                                                   "Node2"),primaryParent.getQName());
 
         // check that the primary parent node of level 2 virtual folder is his
         // virtual folder parent

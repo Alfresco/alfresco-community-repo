@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -2066,15 +2066,19 @@ public class TaggingServiceImplTest extends TestCase
           
           // If there are any more actions of the same type,
           //  then wait for them to finish too
-          for(int i=0; i<50; i++)
+          for(int i=0; i<100; i++)
           {
              if( actionTrackingService.getExecutingActions(ACTION_TYPE).size() == 0 )
              {
                 break;
              }
              try {
-                Thread.sleep(10);
+                Thread.sleep(100);
              } catch(InterruptedException e) {}
+          }
+          if (actionTrackingService.getExecutingActions(ACTION_TYPE).size() > 0)
+          {
+              System.err.println("Warning - not all actions finished");
           }
           
           return returnVal;

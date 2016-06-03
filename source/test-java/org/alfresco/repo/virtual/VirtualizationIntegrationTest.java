@@ -308,7 +308,9 @@ public abstract class VirtualizationIntegrationTest extends TestCase implements 
         assertTrue(nodeService.hasAspect(nodeRef,
                                          VirtualContentModel.ASPECT_VIRTUAL));
         Set<QName> aspects = nodeService.getAspects(nodeRef);
-        assertTrue(aspects.contains(VirtualContentModel.ASPECT_VIRTUAL));
+        assertTrue("Smart virtual node missing virtual aspect",aspects.contains(VirtualContentModel.ASPECT_VIRTUAL));
+        //ACE-5303 injected properties title and description  require the titled aspect 
+        assertTrue("Smaft virtual node missing titled aspect",aspects.contains(ContentModel.ASPECT_TITLED));
 
         Map<QName, Serializable> nodeProperties = nodeService.getProperties(nodeRef);
 

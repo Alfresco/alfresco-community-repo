@@ -31,6 +31,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -211,12 +212,18 @@ public class RecordFolderType extends    AbstractDisposableItem
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeService.exists(nodeRef) && instanceOf(nodeRef, TYPE_RECORD_FOLDER))
+
+        if (nodeService.exists(nodeRef))
         {
+            // only records can be added in a record folder
+            if (!instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
+            {
+                throw new AlfrescoRuntimeException("Operation failed, because you can only place content into a record folder.");
+            }
             // ensure nothing is being added to a closed record folder
             NodeRef recordFolder = childAssocRef.getParentRef();
             Boolean isClosed = (Boolean) nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
-            if (isClosed != null && Boolean.TRUE.equals(isClosed))
+            if (isClosed != null && isClosed)
             {
                 throw new AlfrescoRuntimeException("You can't add new items to a closed record folder.");
             }

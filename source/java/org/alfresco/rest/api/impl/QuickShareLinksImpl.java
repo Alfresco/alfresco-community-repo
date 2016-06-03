@@ -213,24 +213,20 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             String networkTenantDomain = pair.getFirst();
             final NodeRef nodeRef = pair.getSecond();
 
-            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<BinaryResource>()
-            {
-                public BinaryResource doWork() throws Exception
+            return TenantUtil.runAsSystemTenant(() -> {
+                // belt-and-braces (similar to QuickShareContentGet)
+                if (!nodeService.hasAspect(nodeRef, QuickShareModel.ASPECT_QSHARE))
                 {
-                    // belt-and-braces (similar to QuickShareContentGet)
-                    if (!nodeService.hasAspect(nodeRef, QuickShareModel.ASPECT_QSHARE))
-                    {
-                        throw new InvalidNodeRefException(nodeRef);
-                    }
+                    throw new InvalidNodeRefException(nodeRef);
+                }
 
-                    if (renditionId != null)
-                    {
-                        return renditions.getContent(nodeRef, renditionId, parameters);
-                    }
-                    else
-                    {
-                        return nodes.getContent(nodeRef, parameters, false);
-                    }
+                if (renditionId != null)
+                {
+                    return renditions.getContent(nodeRef, renditionId, parameters);
+                }
+                else
+                {
+                    return nodes.getContent(nodeRef, parameters, false);
                 }
             }, networkTenantDomain);
         }
@@ -396,21 +392,17 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
             String networkTenantDomain = pair.getFirst();
             final NodeRef nodeRef = pair.getSecond();
 
-            return TenantUtil.runAsSystemTenant(new TenantUtil.TenantRunAsWork<CollectionWithPagingInfo<Rendition>>()
-            {
-                public CollectionWithPagingInfo<Rendition> doWork() throws Exception
-                {
-                    String nodeId = nodeRef.getId();
+            return TenantUtil.runAsSystemTenant(() -> {
+                String nodeId = nodeRef.getId();
 
-                    // hmm ... can we simplify ?
-                    String filterStatusCreated = "("+Renditions.PARAM_STATUS+"='"+Rendition.RenditionStatus.CREATED+"')";
-                    Query whereQuery = ResourceWebScriptHelper.getWhereClause(filterStatusCreated);
-                    Params.RecognizedParams recParams = new Params.RecognizedParams(null, null, null, null, null, null, whereQuery, null, false);
-                    Parameters params = Params.valueOf(recParams, null, null, null);
+                // hmm ... can we simplify ?
+                String filterStatusCreated = "(" + Renditions.PARAM_STATUS + "='" + Rendition.RenditionStatus.CREATED + "')";
+                Query whereQuery = ResourceWebScriptHelper.getWhereClause(filterStatusCreated);
+                Params.RecognizedParams recParams = new Params.RecognizedParams(null, null, null, null, null, null, whereQuery, null, false);
+                Parameters params = Params.valueOf(recParams, null, null, null);
 
-                    return renditions.getRenditions(nodeId, params);
+                return renditions.getRenditions(nodeId, params);
 
-                }
             }, networkTenantDomain);
         }
         catch (InvalidSharedIdException ex)

@@ -29,8 +29,10 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
@@ -163,11 +165,28 @@ public class TestSites extends EnterpriseTestApi
 
             sitesProxy.removeSite(siteId);
 
+            // -ve test - ie. cannot get site after it has been deleted
             sitesProxy.getSite(siteId, 404);
         }
 
-		// -ve tests
-		{
+        // test create + permanent delete + create
+        {
+
+            String siteId = "bbb";
+            String siteTitle = "BBB site";
+
+            Site site = new SiteImpl(null, siteId, null, siteTitle, null, SiteVisibility.PUBLIC.toString(), null, null);
+
+            sitesProxy.createSite(site);
+
+            // permanent site delete (bypass trashcan/archive)
+            sitesProxy.removeSite(siteId, true, 204);
+
+            sitesProxy.createSite(site);
+        }
+
+        // -ve tests
+        {
             // invalid auth
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), GUID.generate(), "password"));
             sitesProxy.getSite(site1.getSiteId(), 401);
@@ -176,23 +195,23 @@ public class TestSites extends EnterpriseTestApi
 
             // -ve - cannot view or delete a private site
             sitesProxy.getSite(site1.getSiteId(), 404);
-            sitesProxy.removeSite(site1.getSiteId(), 404);
+            sitesProxy.removeSite(site1.getSiteId(), false, 404);
 
             // -ve - test cannot delete a public site (but can view it)
             sitesProxy.getSite(site2.getSiteId(), 200);
-            sitesProxy.removeSite(site2.getSiteId(), 403);
+            sitesProxy.removeSite(site2.getSiteId(), false, 403);
 
             // -ve - try to get unknown site
             sitesProxy.getSite(GUID.generate(), 404);
 
             SiteImpl site = new SiteImpl("my site 123", "invalidsitevisibility");
-			sitesProxy.createSite(site, 400);
+            sitesProxy.createSite(site, 400);
 
-			site = new SiteImpl(null, "invalid site id", null, "my site 123", null, SiteVisibility.PRIVATE.toString(), null, null);
-			sitesProxy.createSite(site, 400);
+            site = new SiteImpl(null, "invalid site id", null, "my site 123", null, SiteVisibility.PRIVATE.toString(), null, null);
+            sitesProxy.createSite(site, 400);
 
-			site = new SiteImpl(null, "invalidsiteid*", null, "my site 123", null, SiteVisibility.PRIVATE.toString(), null, null);
-			sitesProxy.createSite(site, 400);
+            site = new SiteImpl(null, "invalidsiteid*", null, "my site 123", null, SiteVisibility.PRIVATE.toString(), null, null);
+            sitesProxy.createSite(site, 400);
 
             site = new SiteImpl();
             site.setSiteId(new String(new char[72]).replace('\0', 'a'));
@@ -230,9 +249,32 @@ public class TestSites extends EnterpriseTestApi
             site = new SiteImpl(siteTitle, SiteVisibility.PRIVATE.toString());
             String siteId = sitesProxy.createSite(site, 201).getSiteId();
             sitesProxy.createSite(site, 409);
-            sitesProxy.removeSite(siteId, 204); // cleanup
+            sitesProxy.removeSite(siteId); // cleanup
 
-            sitesProxy.removeSite(GUID.generate(), 404);
+            sitesProxy.removeSite(GUID.generate(), false, 404);
+        }
+
+        // -ve - cannot create site with same site id as an existing site (even if it is in the trashcan/archive)
+        {
+            String siteId = "aaa";
+            String siteTitle = "AAA site";
+
+            Site site = new SiteImpl(null, siteId, null, siteTitle, null, SiteVisibility.PUBLIC.toString(), null, null);
+
+            String siteNodeId = sitesProxy.createSite(site).getGuid();
+
+            // -ve - duplicate site id
+            sitesProxy.createSite(site, 409);
+
+            sitesProxy.removeSite(siteId);
+
+            // -ve - duplicate site id (even if site is in trashcan)
+            sitesProxy.createSite(site, 409);
+
+            // now purge the site
+            sitesProxy.remove("deleted-nodes", siteNodeId, null, null, "Cannot purge site");
+
+            sitesProxy.createSite(site);
         }
 
         {

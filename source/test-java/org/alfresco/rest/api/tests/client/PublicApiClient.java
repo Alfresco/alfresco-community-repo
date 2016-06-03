@@ -34,6 +34,7 @@ import java.math.BigInteger;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -744,14 +745,14 @@ public class PublicApiClient
 
         public HttpResponse remove(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String errorMessage) throws PublicApiException
         {
-            return remove(entityCollectionName, entityId, relationCollectionName, relationId, errorMessage, HttpServletResponse.SC_NO_CONTENT);
+            return remove(entityCollectionName, entityId, relationCollectionName, relationId, null, errorMessage, HttpServletResponse.SC_NO_CONTENT);
         }
 		
-		public HttpResponse remove(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String errorMessage, int expectedStatus) throws PublicApiException
+		public HttpResponse remove(String entityCollectionName, String entityId, String relationCollectionName, String relationId, Map<String,String> params, String errorMessage, int expectedStatus) throws PublicApiException
 		{
 	        try
 	        {
-		        HttpResponse response = delete("public", entityCollectionName, entityId, relationCollectionName, relationId);
+		        HttpResponse response = delete("public", 1, entityCollectionName, entityId, relationCollectionName, relationId, params);
                 checkStatus(errorMessage, expectedStatus, response);
                 return response;
 			}
@@ -845,12 +846,17 @@ public class PublicApiClient
 
         public void removeSite(String siteId) throws PublicApiException
         {
-            removeSite(siteId, 204);
+            removeSite(siteId, false, 204);
         }
 
-        public void removeSite(String siteId, int expectedStatus) throws PublicApiException
+        public void removeSite(String siteId, boolean permanent, int expectedStatus) throws PublicApiException
         {
-            remove("sites", siteId, null, null, "Failed to remove site", expectedStatus);
+			Map<String, String> params = null;
+			if (permanent)
+			{
+				params = Collections.singletonMap("permanent", "true");
+			}
+            remove("sites", siteId, null, null, params, "Failed to remove site", expectedStatus);
         }
 
 		public ListResponse<SiteContainer> getSiteContainers(String siteId, Map<String, String> params) throws PublicApiException

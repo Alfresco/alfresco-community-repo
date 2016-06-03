@@ -652,6 +652,8 @@
         <property name="preferenceService" ref="PreferenceService" />
         <property name="importerService" ref="importerComponent"/>
         <property name="siteSurfConfig" ref="siteSurfConfig" />
+        <property name="permissionService" ref="PermissionService" />
+        <property name="siteServiceImpl" ref="siteService" />
     </bean>
 
     <bean id="siteSurfConfig" class="org.alfresco.rest.api.impl.SiteSurfConfig">

@@ -3143,6 +3143,28 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
         // Index
         assoc.setAssocIndex(-1);
         
+        Long assocId = newChildAssocImplInsert(assoc, assocTypeQName, childNodeName);
+        
+        // Persist it
+        assoc.setId(assocId);
+        
+        // Primary associations accompany new nodes, so we only have to bring the
+        // node into the current transaction for secondary associations
+        if (!isPrimary)
+        {
+            updateNode(childNodeId, null, null);
+        }
+        
+        // Done
+        if (isDebugEnabled)
+        {
+            logger.debug("Created child association: " + assoc);
+        }
+        return assoc;
+    }
+    
+    protected Long newChildAssocImplInsert(final ChildAssocEntity assoc, final QName assocTypeQName, final String childNodeName)
+    {
         RetryingCallback<Long> callback = new RetryingCallback<Long>()
         {
             public Long execute() throws Throwable
@@ -3175,7 +3197,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
                     
                     // We assume that this is from the child cm:name constraint violation
                     throw new DuplicateChildNodeNameException(
-                            parentNode.getNodeRef(),
+                            assoc.getParentNode().getNodeRef(),
                             assocTypeQName,
                             childNodeName,
                             e);
@@ -3183,22 +3205,7 @@ public abstract class AbstractNodeDAOImpl implements NodeDAO, BatchingDAO
             }
         };
         Long assocId = childAssocRetryingHelper.doWithRetry(callback);
-        // Persist it
-        assoc.setId(assocId);
-        
-        // Primary associations accompany new nodes, so we only have to bring the
-        // node into the current transaction for secondary associations
-        if (!isPrimary)
-        {
-            updateNode(childNodeId, null, null);
-        }
-        
-        // Done
-        if (isDebugEnabled)
-        {
-            logger.debug("Created child association: " + assoc);
-        }
-        return assoc;
+        return assocId;
     }
 
     @Override

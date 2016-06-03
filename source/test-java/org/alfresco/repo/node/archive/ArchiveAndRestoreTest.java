@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -915,6 +915,8 @@ public class ArchiveAndRestoreTest extends TestCase
 
         RestoreNodeReport report = nodeArchiveService.restoreArchivedNode(r_);
         assertEquals("Restore failed", RestoreStatus.SUCCESS, report.getStatus());
+
+        commitAndBeginNewTransaction();
 
         //It is restored, still with no AUDITABLE ASPECT
         verifyNodeExistence(r, true);

@@ -51,11 +51,14 @@ import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
+import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
+import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.rest.framework.resource.parameters.SortColumn;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
@@ -88,8 +91,10 @@ import org.alfresco.util.SearchLanguageConversion;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.I18NUtil;
+import org.springframework.extensions.webscripts.WebScriptRequest;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -237,13 +242,15 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
                         throw new InvalidNodeRefException(nodeRef);
                     }
 
+                    String nodeId = nodeRef.getId();
+
                     if (renditionId != null)
                     {
-                        return renditions.getContent(nodeRef, renditionId, parameters);
+                        return renditions.getContent(nodeId, renditionId, parameters);
                     }
                     else
                     {
-                        return nodes.getContent(nodeRef, parameters, false);
+                        return nodes.getContent(nodeId, parameters, false);
                     }
                 }
             }, networkTenantDomain);

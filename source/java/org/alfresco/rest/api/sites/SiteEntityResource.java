@@ -44,6 +44,7 @@ import java.util.List;
  *
  * @author Gethin James
  * @author steveglover
+ * @author janv
  */
 @EntityResource(name="sites", title = "Sites")
 public class SiteEntityResource implements EntityResourceAction.Read<Site>,
@@ -98,6 +99,7 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>,
     }
 
     /**
+     * Create the given site.
      *
      * @param entity
      * @param parameters
@@ -113,7 +115,7 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>,
         }
 
         List<Site> result = new ArrayList<>(1);
-        result.add(sites.createSite(entity.get(0)));
+        result.add(sites.createSite(entity.get(0), parameters));
         return result;
     }
 }

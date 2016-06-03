@@ -87,73 +87,6 @@ public class TestSites extends EnterpriseTestApi
 	{
 		Sites sitesProxy = publicApiClient.sites();
 
-    	// make sure that a user can't see PRIVATE sites of which they are not a member by creating one and checking it's not in the results
-		try
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
-			sitesProxy.getSite(site1.getSiteId());
-			fail();
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
-		}
-
-		try
-		{
-			sitesProxy.create("sites", "site", null, null, null, "Unable to POST to a site");
-			fail();
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
-		}
-
-		try
-		{
-			sitesProxy.remove("sites", null, null, null, "Unable to DELETE sites");
-			fail();
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
-		}
-
-		// -ve - try to delete unknown site
-		try
-		{
-			sitesProxy.remove("sites", "dummy", null, null, "Unable to DELETE site - not found");
-			fail();
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
-		}
-		
-		// invalid site
-		try
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
-			sitesProxy.getSite(GUID.generate());
-			fail("");
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
-		}
-		
-		// invalid auth
-		try
-		{
-			publicApiClient.setRequestContext(new RequestContext(network1.getId(), GUID.generate(), "password"));
-			sitesProxy.getSite(site1.getSiteId());
-			fail("");
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_UNAUTHORIZED, e.getHttpResponse().getStatusCode());
-		}
-
 		// get a site
 		{
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
@@ -188,15 +121,17 @@ public class TestSites extends EnterpriseTestApi
 			checkList(expectedSites.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
 		}
 
+		// test create and delete site
 		{
-            String siteTitle = "my site 123";
+            String siteTitle = "my site !*#$ 123";
 
-			Site site = new SiteImpl("my site 123", SiteVisibility.PRIVATE.toString());
+			Site site = new SiteImpl(siteTitle, SiteVisibility.PRIVATE.toString());
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
 			Site ret = sitesProxy.createSite(site);
+			String siteId = ret.getSiteId();
 
-            String siteId = siteTitle.replace(' ', '-');
-			Site siteExp = new SiteImpl(null, siteId, ret.getGuid(), siteTitle, null,  SiteVisibility.PRIVATE.toString(), null, SiteRole.SiteManager);
+			String expectedSiteId = "my-site-123";
+			Site siteExp = new SiteImpl(null, expectedSiteId, ret.getGuid(), siteTitle, null,  SiteVisibility.PRIVATE.toString(), null, SiteRole.SiteManager);
 			siteExp.expected(ret);
 
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
@@ -216,8 +151,64 @@ public class TestSites extends EnterpriseTestApi
                 assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
             }
         }
-		
-		// Test Case cloud-1478
+
+		// -ve tests
+		{
+            // invalid auth
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), GUID.generate(), "password"));
+            sitesProxy.getSite(site1.getSiteId(), 401);
+
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
+
+            // -ve - permission test
+            // make sure that a user can't see PRIVATE sites of which they are not a member by creating one and checking it's not in the results
+            sitesProxy.getSite(site1.getSiteId(), 404);
+
+            // -ve - try to get unknown site
+            sitesProxy.getSite(GUID.generate(), 404);
+
+            Site site = new SiteImpl("my site 123", "invalidsitevisibility");
+			sitesProxy.createSite(site, 400);
+
+			site = new SiteImpl(null, "invalid site id", null, "my site 123", null, SiteVisibility.PRIVATE.toString(), null, null);
+			sitesProxy.createSite(site, 400);
+
+			site = new SiteImpl(null, "invalidsiteid*", null, "my site 123", null, SiteVisibility.PRIVATE.toString(), null, null);
+			sitesProxy.createSite(site, 400);
+
+            // site already exists (409)
+            String siteTitle = "my site 456";
+            site = new SiteImpl(siteTitle, SiteVisibility.PRIVATE.toString());
+            String siteId = sitesProxy.createSite(site, 201).getSiteId();
+            sitesProxy.createSite(site, 409);
+            sitesProxy.removeSite(siteId, 204); // cleanup
+
+            sitesProxy.removeSite(GUID.generate(), 404);
+        }
+
+        // -ve - cannot call POST method on /sites/siteId
+        try
+        {
+            sitesProxy.create("sites", "site", null, null, null, "Unable to POST to a site");
+            fail();
+        }
+        catch(PublicApiException e)
+        {
+            assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+        }
+
+        // -ve - cannot call DELETE method on /sites
+        try
+        {
+            sitesProxy.remove("sites", null, null, null, "Unable to DELETE sites");
+            fail();
+        }
+        catch(PublicApiException e)
+        {
+            assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+        }
+
+        // Test Case cloud-1478
 		// Test Case cloud-1479
 		// user invited to network and user invited to site
 		// user invited to network and user not invited to site

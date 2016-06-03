@@ -3,6 +3,7 @@ package org.alfresco.filesys.repo;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.channels.FileChannel;
 import java.util.List;
 
@@ -286,10 +287,11 @@ public class CommandExecutorImpl implements CommandExecutor
                      * find anything awry.
                      * There are reported Windows JVM bugs such as 4715154 ... 
                      */
+                    FileOutputStream fos = new FileOutputStream(file);
                     FileChannel outChan = null;
                     try
                     {
-                        outChan = new FileOutputStream(file).getChannel();
+                        outChan = fos.getChannel();
                         outChan.truncate(0);
                     }
                     catch (IOException e)
@@ -306,6 +308,7 @@ public class CommandExecutorImpl implements CommandExecutor
                             }
                             catch(IOException e){}
                         }
+                        fos.close();
                     }
                 }
                               

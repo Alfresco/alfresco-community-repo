@@ -23,6 +23,7 @@ import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransacti
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
+import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
@@ -73,6 +74,8 @@ import static org.junit.Assert.*;
  */
 public class NodeAssociationsApiTest extends AbstractBaseApiTest
 {
+    private static final String URL_DELETED_NODES = "deleted-nodes";
+
     private static final String PARAM_ASSOC_TYPE = "assocType";
 
     // peer assocs
@@ -455,6 +458,19 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         }
     }
 
+    /**
+     * Tests base permissions for managing (adding, listing and removing) peer associations.
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets}
+     *
+     * <p>DELETE:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets/<targetNodeId>}
+     *
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<sourceNodeId>/targets}
+     * {
+     */
     @Test
     public void testNodePeerAssocsPermissions() throws Exception
     {
@@ -1198,6 +1214,231 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         }
     }
 
+    /**
+     * Test ability to delete a node with associations (to and from the node) and then restore it.
+     * Only the primary parent/child assoc(s) for the deleted node(s) is/are restored.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDeleteAndRestoreNodeWithAssocs() throws Exception
+    {
+        // as user 1 ...
+
+        String f1Id = null;
+        String f2Id = null;
+        String f3Id = null;
+
+        try
+        {
+            String myFolderNodeId = getMyNodeId(user1);
+
+            // create primary parent-child hierarchy
+            f1Id = createFolder(user1, myFolderNodeId, "f1").getId();
+            String f1bId = createFolder(user1, f1Id, "f1b").getId();
+            String f1cId = createFolder(user1, f1bId, "f1c").getId();
+            String f1dId = createFolder(user1, f1cId, "f1d").getId();
+            String c1eId = createTextFile(user1, f1dId, "c1e", "some text content").getId();
+
+            f2Id = createFolder(user1, myFolderNodeId, "f2").getId();
+            f3Id = createFolder(user1, myFolderNodeId, "f3").getId();
+
+            HttpResponse response = getAll(getNodeParentsUrl(f1bId), user1, null, null, 200);
+            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(f1Id, nodes.get(0).getId());
+
+            response = getAll(getNodeParentsUrl(f1dId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(f1cId, nodes.get(0).getId());
+
+            response = getAll(getNodeSourcesUrl(c1eId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            // add some secondary parent/child assocs outside of the hierarchy
+
+            AssocChild secChild = new AssocChild(f1bId, ASSOC_TYPE_CM_CONTAINS);
+            post(getNodeSecondaryChildrenUrl(f2Id), user1, toJsonAsStringNonNull(secChild), 201);
+
+            secChild = new AssocChild(f1bId, ASSOC_TYPE_CM_CONTAINS);
+            post(getNodeSecondaryChildrenUrl(f3Id), user1, toJsonAsStringNonNull(secChild), 201);
+
+            secChild = new AssocChild(f1dId, ASSOC_TYPE_CM_CONTAINS);
+            post(getNodeSecondaryChildrenUrl(f2Id), user1, toJsonAsStringNonNull(secChild), 201);
+
+            secChild = new AssocChild(f1dId, ASSOC_TYPE_CM_CONTAINS);
+            post(getNodeSecondaryChildrenUrl(f3Id), user1, toJsonAsStringNonNull(secChild), 201);
+
+            // also add a secondary parent/child assoc within the hierarchy
+            secChild = new AssocChild(f1dId, ASSOC_TYPE_CM_CONTAINS);
+            post(getNodeSecondaryChildrenUrl(f1bId), user1, toJsonAsStringNonNull(secChild), 201);
+
+            // add some peer assocs outside of the hierarchy
+            AssocTarget tgt = new AssocTarget(c1eId, ASSOC_TYPE_CM_REFERENCES);
+            post(getNodeTargetsUrl(f2Id), user1, toJsonAsStringNonNull(tgt), 201);
+
+            tgt = new AssocTarget(c1eId, ASSOC_TYPE_CM_PARTS);
+            post(getNodeTargetsUrl(f3Id), user1, toJsonAsStringNonNull(tgt), 201);
+
+            // also add a peer assoc within the hierarchy
+            tgt = new AssocTarget(c1eId, ASSOC_TYPE_CM_PARTS);
+            post(getNodeTargetsUrl(f1cId), user1, toJsonAsStringNonNull(tgt), 201);
+
+            // double-check the secondary parent/child assocs
+
+            response = getAll(getNodeParentsUrl(f1bId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(3, nodes.size());
+
+            response = getAll(getNodeParentsUrl(f1dId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(4, nodes.size());
+
+            response = getAll(getNodeSecondaryChildrenUrl(f2Id), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+            List<String> nodeIds = Arrays.asList(new String[]{nodes.get(0).getId(), nodes.get(1).getId()});
+            assertTrue(nodeIds.contains(f1bId));
+            assertTrue(nodeIds.contains(f1dId));
+
+            response = getAll(getNodeSecondaryChildrenUrl(f3Id), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+            nodeIds = Arrays.asList(new String[]{nodes.get(0).getId(), nodes.get(1).getId()});
+            assertTrue(nodeIds.contains(f1bId));
+            assertTrue(nodeIds.contains(f1dId));
+
+            response = getAll(getNodeSecondaryChildrenUrl(f1bId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(f1dId, nodes.get(0).getId());
+
+            // double-check the peer assocs
+            response = getAll(getNodeSourcesUrl(c1eId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(3, nodes.size());
+
+            response = getAll(getNodeTargetsUrl(f2Id), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(c1eId, nodes.get(0).getId());
+
+            response = getAll(getNodeTargetsUrl(f3Id), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(c1eId, nodes.get(0).getId());
+
+            response = getAll(getNodeTargetsUrl(f1cId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(c1eId, nodes.get(0).getId());
+
+
+            // ... delete to trashcan/archive ...
+            delete(URL_NODES, user1, f1bId, null, 204);
+
+            getSingle(NodesEntityResource.class, user1, f1bId, null, 404);
+
+            response = getAll(getNodeTargetsUrl(f2Id), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            response = getAll(getNodeTargetsUrl(f3Id), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+
+            // ... and then restore again ...
+            post(URL_DELETED_NODES+"/"+f1bId+"/restore", user1, null, null, 200);
+
+            // check primary parent-child hierarchy is restored
+            // but not the secondary parents or peer assocs of the deleted nodes (outside or within the hierarchy)
+
+            response = getSingle(NodesEntityResource.class, user1, f1bId, null, 200);
+            Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals(f1Id, nodeResp.getParentId());
+
+            response = getSingle(NodesEntityResource.class, user1, f1cId, null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals(f1bId, nodeResp.getParentId());
+
+            response = getSingle(NodesEntityResource.class, user1, f1dId, null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals(f1cId, nodeResp.getParentId());
+
+            // secondary child assocs have not been restored
+
+            response = getAll(getNodeParentsUrl(f1bId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(f1Id, nodes.get(0).getId());
+
+            response = getAll(getNodeParentsUrl(f1cId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(f1bId, nodes.get(0).getId());
+
+            response = getAll(getNodeParentsUrl(f1dId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(f1cId, nodes.get(0).getId());
+
+            response = getAll(getNodeSecondaryChildrenUrl(f2Id), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            response = getAll(getNodeSecondaryChildrenUrl(f3Id), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            // peer assocs have not been restored
+
+            response = getAll(getNodeSourcesUrl(c1eId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            response = getAll(getNodeTargetsUrl(f1cId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            response = getAll(getNodeTargetsUrl(f2Id), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            response = getAll(getNodeTargetsUrl(f3Id), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+        }
+        finally
+        {
+            // some cleanup
+            Map<String, String> params = Collections.singletonMap(Nodes.PARAM_PERMANENT, "true");
+
+            if (f1Id != null)
+            {
+                delete(URL_NODES, user1, f1Id, params, 204);
+            }
+
+            if (f2Id != null)
+            {
+                delete(URL_NODES, user1, f2Id, params, 204);
+            }
+
+            if (f3Id != null)
+            {
+                delete(URL_NODES, user1, f3Id, params, 204);
+            }
+        }
+
+    }
+
+    /**
+     * Test ability to create a node and optionally specify one or more associations (to other existing nodes) at time of create.
+     *
+     * @throws Exception
+     */
     @Test
     public void testCreateNodeWithAssocs() throws Exception
     {

@@ -72,17 +72,17 @@ public class AuthenticationTicketsEntityResource implements EntityResourceAction
         return Collections.singletonList(result);
     }
 
-    @WebApiDescription(title = "Validate login ticket", description = "Validates the specified ticket is still valid.")
+    @WebApiDescription(title = "Validate login ticket", description = "Validate login ticket.")
     @Override
-    public LoginTicket readById(String ticket, Parameters parameters, WithResponse withResponse)
+    public LoginTicket readById(String me, Parameters parameters, WithResponse withResponse)
     {
-        return authentications.validateTicket(ticket, parameters, withResponse);
+        return authentications.validateTicket(me, parameters, withResponse);
     }
 
     @WebApiDescription(title = "Logout", description = "Logout.")
     @Override
-    public void delete(String ticket, Parameters parameters, WithResponse withResponse)
+    public void delete(String me, Parameters parameters, WithResponse withResponse)
     {
-        authentications.deleteTicket(ticket, parameters, withResponse);
+        authentications.deleteTicket(me, parameters, withResponse);
     }
 }

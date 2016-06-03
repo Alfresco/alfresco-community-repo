@@ -24,18 +24,18 @@ package org.alfresco.rest.api.model;
  */
 public class LoginTicket
 {
-    protected String username;
+    protected String userId;
     protected String password;
-    protected String ticket;
+    protected String id;
 
-    public String getUsername()
+    public String getUserId()
     {
-        return username;
+        return userId;
     }
 
-    public void setUsername(String username)
+    public void setUserId(String userId)
     {
-        this.username = username;
+        this.userId = userId;
     }
 
     public String getPassword()
@@ -48,23 +48,23 @@ public class LoginTicket
         this.password = password;
     }
 
-    public String getTicket()
+    public String getId()
     {
-        return ticket;
+        return id;
     }
 
-    public void setTicket(String ticket)
+    public void setId(String id)
     {
-        this.ticket = ticket;
+        this.id = id;
     }
 
     @Override
     public String toString()
     {
         final StringBuilder sb = new StringBuilder(150);
-        sb.append("LoginTicket [username=").append(username)
+        sb.append("LoginTicket [userId=").append(userId)
                     .append(", password=").append(password)
-                    .append(", ticket=").append(ticket)
+                    .append(", id=").append(id)
                     .append(']');
         return sb.toString();
     }

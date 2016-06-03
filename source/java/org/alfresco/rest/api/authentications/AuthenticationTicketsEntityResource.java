@@ -43,6 +43,9 @@ public class AuthenticationTicketsEntityResource implements EntityResourceAction
             EntityResourceAction.DeleteWithResponse,
             InitializingBean
 {
+    // tickets => @EntityResource(name = "tickets" ...
+    public static final String COLLECTION_RESOURCE_NAME = "tickets";
+
     private Authentications authentications;
 
     public void setAuthentications(Authentications authentications)

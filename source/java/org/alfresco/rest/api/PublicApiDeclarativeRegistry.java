@@ -28,40 +28,27 @@ package org.alfresco.rest.api;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.ResourceBundle;
-import java.util.Set;
+import java.util.*;
 
 import org.alfresco.rest.api.authentications.AuthenticationTicketsEntityResource;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
+import org.alfresco.rest.framework.core.exceptions.NotFoundException;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
 import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.apache.commons.lang.StringUtils;
-import org.springframework.extensions.webscripts.ArgumentTypeDescription;
-import org.springframework.extensions.webscripts.Container;
-import org.springframework.extensions.webscripts.DeclarativeRegistry;
-import org.springframework.extensions.webscripts.Description;
+import org.springframework.extensions.webscripts.*;
 import org.springframework.extensions.webscripts.Description.FormatStyle;
 import org.springframework.extensions.webscripts.Description.RequiredAuthentication;
 import org.springframework.extensions.webscripts.Description.RequiredTransaction;
 import org.springframework.extensions.webscripts.Description.TransactionCapability;
-import org.springframework.extensions.webscripts.DescriptionImpl;
-import org.springframework.extensions.webscripts.Match;
-import org.springframework.extensions.webscripts.NegotiatedFormat;
-import org.springframework.extensions.webscripts.Path;
-import org.springframework.extensions.webscripts.TransactionParameters;
-import org.springframework.extensions.webscripts.TypeDescription;
-import org.springframework.extensions.webscripts.URLModelFactory;
-import org.springframework.extensions.webscripts.WebScript;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
 import org.springframework.http.HttpMethod;
+
+import javax.servlet.http.HttpServletResponse;
 
 /**
  *
@@ -209,6 +196,10 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
             match = super.findWebScript(method, uri);
         }
 
+        if (match == null)
+        {
+            throw new NotFoundException(NotFoundException.DEFAULT_MESSAGE_ID, new String[] {uri});
+        }
         return match;
     }
 

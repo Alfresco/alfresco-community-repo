@@ -2076,13 +2076,14 @@ public class PublicApiClient
         private String stackTrace;
         private Map<String, Object> additionalState;
         private String descriptionURL;
+        private String logId;
 
         public ExpectedErrorResponse()
         {
         }
 
         public ExpectedErrorResponse(String errorKey, int statusCode, String briefSummary, StackTraceElement[] stackTrace,
-                    Map<String, Object> additionalState)
+                    Map<String, Object> additionalState, String logId)
         {
             super();
             this.errorKey = errorKey;
@@ -2090,6 +2091,7 @@ public class PublicApiClient
             this.briefSummary = briefSummary;
             this.stackTrace = Arrays.toString(stackTrace);
             this.additionalState = additionalState;
+            this.logId = logId;
         }
 
         public String getErrorKey()
@@ -2124,6 +2126,14 @@ public class PublicApiClient
             this.briefSummary = briefSummary;
             return this;
         }
+
+        public String getLogId() {
+            return logId;
+        }
+
+        public void setLogId(String logId) {
+			this.logId = logId;
+		}
 
         public String getStackTrace()
         {
@@ -2165,6 +2175,7 @@ public class PublicApiClient
             sb.append("ExpectedErrorResponse [errorKey='").append(errorKey)
                         .append(", statusCode=").append(statusCode)
                         .append(", briefSummary='").append(briefSummary)
+                        .append(", logId='").append(logId)
                         .append(", stackTrace='").append(stackTrace)
                         .append(", additionalState=").append(additionalState)
                         .append(", descriptionURL='").append(descriptionURL)

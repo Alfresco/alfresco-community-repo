@@ -129,6 +129,8 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.service.namespace.QNamePattern;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.lang.StringUtils;
@@ -347,7 +349,7 @@ public class NodesImpl implements Nodes
 
     // list children filtering (via where clause)
     private final static Set<String> LIST_FOLDER_CHILDREN_EQUALS_QUERY_PROPERTIES =
-            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_ISFILE, PARAM_NODETYPE, PARAM_ISPRIMARY}));
+            new HashSet<>(Arrays.asList(new String[] {PARAM_ISFOLDER, PARAM_ISFILE, PARAM_NODETYPE, PARAM_ISPRIMARY, PARAM_ASSOC_TYPE}));
 
     /*
      * Validates that node exists.
@@ -1163,18 +1165,13 @@ public class NodesImpl implements Nodes
 
         final NodeRef parentNodeRef = validateOrLookupNode(parentFolderNodeId, path);
 
-        // check that resolved node is a folder
-        if (!nodeMatches(parentNodeRef, Collections.singleton(ContentModel.TYPE_FOLDER), null, false))
-        {
-            throw new InvalidArgumentException("NodeId of folder is expected: " + parentNodeRef.getId());
-        }
-
         final List<String> includeParam = parameters.getInclude();
 
         // filters
         Boolean includeFolders = null;
         Boolean includeFiles = null;
         Boolean isPrimary = null;
+        QName assocTypeQNameParam = null;
         QName filterNodeTypeQName = null;
 
         // note: for files/folders, include subtypes by default (unless filtering by a specific nodeType - see below)
@@ -1189,6 +1186,12 @@ public class NodesImpl implements Nodes
             QueryHelper.walk(q, propertyWalker);
 
             isPrimary = propertyWalker.getProperty(PARAM_ISPRIMARY, WhereClauseParser.EQUALS, Boolean.class);
+
+            String assocTypeQNameStr = propertyWalker.getProperty(PARAM_ASSOC_TYPE, WhereClauseParser.EQUALS, String.class);
+            if (assocTypeQNameStr != null)
+            {
+                assocTypeQNameParam = getAssocType(assocTypeQNameStr);
+            }
 
             Boolean isFolder = propertyWalker.getProperty(PARAM_ISFOLDER, WhereClauseParser.EQUALS, Boolean.class);
             Boolean isFile = propertyWalker.getProperty(PARAM_ISFILE, WhereClauseParser.EQUALS, Boolean.class);
@@ -1302,7 +1305,10 @@ public class NodesImpl implements Nodes
         Set<QName> searchTypeQNames = pair.getFirst();
         Set<QName> ignoreAspectQNames = pair.getSecond();
 
-        pagingResults = fileFolderService.list(parentNodeRef, searchTypeQNames, ignoreAspectQNames, sortProps, filterProps, pagingRequest);
+        Set<QName> assocTypeQNames = buildAssocTypes(assocTypeQNameParam);
+
+        // call GetChildrenCannedQuery (via FileFolderService)
+        pagingResults = fileFolderService.list(parentNodeRef, assocTypeQNames, searchTypeQNames, ignoreAspectQNames, sortProps, filterProps, pagingRequest);
 
 
         final Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
@@ -1357,6 +1363,34 @@ public class NodesImpl implements Nodes
         }
 
         return new Pair<>(filterNodeTypeQName, filterIncludeSubTypes);
+    }
+
+    protected Set<QName> buildAssocTypes(QName assocTypeQName)
+    {
+        Set<QName> assocTypeQNames = null;
+        if (assocTypeQName != null)
+        {
+            assocTypeQNames = Collections.singleton(assocTypeQName);
+        }
+        /*
+        // TODO review - this works, but reduces from ~100 to ~96 (OOTB)
+        // maybe we could post filter (rather than join) - examples: sys:children, sys:lost_found, sys:archivedLink, sys:archiveUserLink
+        else
+        {
+            Collection<QName> qnames = dictionaryService.getAllAssociations();
+            assocTypeQNames = new HashSet<>(qnames.size());
+
+            // remove system assoc types
+            for (QName qname : qnames)
+            {
+                if ((!EXCLUDED_NS.contains(qname.getNamespaceURI())))
+                {
+                    assocTypeQNames.add(qname);
+                }
+            }
+        }
+        */
+        return assocTypeQNames;
     }
 
     protected Pair<Set<QName>, Set<QName>> buildSearchTypesAndIgnoreAspects(QName nodeTypeQName, boolean includeSubTypes, Set<QName> ignoreQNameTypes, Boolean includeFiles, Boolean includeFolders)
@@ -1570,8 +1604,14 @@ public class NodesImpl implements Nodes
         String relativePath = nodeInfo.getRelativePath();
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
 
+        QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
+        if ((nodeInfo.getAssociation() != null) && (nodeInfo.getAssociation().getAssocType() != null))
+        {
+            assocTypeQName = getAssocType(nodeInfo.getAssociation().getAssocType());
+        }
+
         // Create the node
-        NodeRef nodeRef = createNodeImpl(parentNodeRef, nodeName, nodeTypeQName, props);
+        NodeRef nodeRef = createNodeImpl(parentNodeRef, nodeName, nodeTypeQName, props, assocTypeQName);
 
         List<String> aspectNames = nodeInfo.getAspectNames();
         if (aspectNames != null)
@@ -1734,7 +1774,7 @@ public class NodesImpl implements Nodes
     }
 
 
-    private NodeRef createNodeImpl(NodeRef parentNodeRef, String nodeName, QName nodeTypeQName, Map<QName, Serializable> props)
+    private NodeRef createNodeImpl(NodeRef parentNodeRef, String nodeName, QName nodeTypeQName, Map<QName, Serializable> props, QName assocTypeQName)
     {
         NodeRef newNode = null;
         if (props == null)
@@ -1748,7 +1788,7 @@ public class NodesImpl implements Nodes
         QName assocQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
         try
         {
-            newNode = nodeService.createNode(parentNodeRef, ContentModel.ASSOC_CONTAINS, assocQName, nodeTypeQName, props).getChildRef();
+            newNode = nodeService.createNode(parentNodeRef, assocTypeQName, assocQName, nodeTypeQName, props).getChildRef();
         }
         catch (DuplicateChildNodeNameException dcne)
         {
@@ -2413,6 +2453,8 @@ public class NodesImpl implements Nodes
         // if requested, make (get or create) path
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
 
+        QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
+
         try
         {
             // Map the given properties, if any.
@@ -2424,7 +2466,7 @@ public class NodesImpl implements Nodes
             /*
              * Existing file handling
              */
-            NodeRef existingFile = nodeService.getChildByName(parentNodeRef, ContentModel.ASSOC_CONTAINS, fileName);
+            NodeRef existingFile = nodeService.getChildByName(parentNodeRef, assocTypeQName, fileName);
             if (existingFile != null)
             {
                 // File already exists, decide what to do
@@ -2449,7 +2491,7 @@ public class NodesImpl implements Nodes
             }
 
             // Create a new file.
-            final Node fileNode = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, parameters);
+            Node fileNode = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters);
 
             // RA-1052
             try
@@ -2501,13 +2543,13 @@ public class NodesImpl implements Nodes
         }
     }
 
-    private Node createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, Parameters params)
+    private Node createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, QName assocTypeQName, Parameters params)
     {
         if (nodeType == null)
         {
             nodeType = ContentModel.TYPE_CONTENT;
         }
-        NodeRef newFile = createNodeImpl(parentNodeRef, fileName, nodeType, props);
+        NodeRef newFile = createNodeImpl(parentNodeRef, fileName, nodeType, props, assocTypeQName);
 
         // Write content
         write(newFile, content);

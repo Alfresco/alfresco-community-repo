@@ -47,10 +47,8 @@ import java.util.Set;
 @RelationshipResource(name = "parents",  entityResource = NodesEntityResource.class, title = "Node Parents")
 public class NodeParentsRelation extends AbstractNodeRelation implements RelationshipResourceAction.Read<Node>
 {
-    public final static String PARAM_IS_PRIMARY = Nodes.PARAM_ISPRIMARY;
-
     private final static Set<String> WHERE_PARAMS_PARENTS =
-            new HashSet<>(Arrays.asList(new String[] {PARAM_ASSOC_TYPE, PARAM_IS_PRIMARY}));
+            new HashSet<>(Arrays.asList(new String[] {Nodes.PARAM_ASSOC_TYPE, Nodes.PARAM_ISPRIMARY}));
 
     /**
      * List child node's parent(s) based on (parent ->) child associations.
@@ -74,9 +72,9 @@ public class NodeParentsRelation extends AbstractNodeRelation implements Relatio
             MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(WHERE_PARAMS_PARENTS, null);
             QueryHelper.walk(q, propertyWalker);
 
-            isPrimary = propertyWalker.getProperty(PARAM_IS_PRIMARY, WhereClauseParser.EQUALS, Boolean.class);
+            isPrimary = propertyWalker.getProperty(Nodes.PARAM_ISPRIMARY, WhereClauseParser.EQUALS, Boolean.class);
 
-            String assocTypeQNameStr = propertyWalker.getProperty(PARAM_ASSOC_TYPE, WhereClauseParser.EQUALS, String.class);
+            String assocTypeQNameStr = propertyWalker.getProperty(Nodes.PARAM_ASSOC_TYPE, WhereClauseParser.EQUALS, String.class);
             if (assocTypeQNameStr != null)
             {
                 assocTypeQNameParam = nodes.getAssocType(assocTypeQNameStr);

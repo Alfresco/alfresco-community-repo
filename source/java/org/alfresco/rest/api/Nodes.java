@@ -287,4 +287,5 @@ public interface Nodes
     String PARAM_VERSION_COMMENT = "comment";
 
     String PARAM_ISPRIMARY = "isPrimary";
+    String PARAM_ASSOC_TYPE = "assocType";
 }

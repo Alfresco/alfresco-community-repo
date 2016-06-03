@@ -342,6 +342,8 @@
     <!--      Requires delete children from the parent & delete for the child IF PRIMARY -->
     <!-- removeChildAssociation                                                          -->
     <!--      Requires delete children from the parent & delete for the child IF PRIMARY -->
+    <!-- removeSecondaryChildAssociation                                                 -->
+    <!--      Requires delete children from the parent                                   -->
     <!-- getProperties                                                                   -->
     <!--      Requires read properties for the node                                      -->
     <!-- getProperty                                                                     -->
@@ -399,6 +401,8 @@
                org.alfresco.service.cmr.repository.NodeService.addChild=ACL_NODE.0.sys:base.CreateChildren,ACL_NODE.1.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.removeChild=ACL_NODE.0.sys:base.DeleteChildren,ACL_PRI_CHILD_ASSOC_ON_CHILD.0.1.sys:base.DeleteNode
                org.alfresco.service.cmr.repository.NodeService.removeChildAssociation=ACL_PARENT.0.sys:base.DeleteChildren,ACL_PRI_CHILD_ASSOC_ON_CHILD.0.sys:base.DeleteNode
+               org.alfresco.service.cmr.repository.NodeService.removeSeconaryChildAssociation=ACL_PARENT.0.sys:base.DeleteChildren
+               org.alfresco.service.cmr.repository.NodeService.removeSecondaryChildAssociation=ACL_PARENT.0.sys:base.DeleteChildren
                org.alfresco.service.cmr.repository.NodeService.getProperties=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.getProperty=ACL_NODE.0.sys:base.ReadProperties
                org.alfresco.service.cmr.repository.NodeService.setProperties=ACL_NODE.0.sys:base.WriteProperties,ACL_ITEM.0.cm:ownable.TakeOwnership

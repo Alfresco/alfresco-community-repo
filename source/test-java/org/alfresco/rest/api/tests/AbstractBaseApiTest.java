@@ -31,15 +31,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.site.SiteInfoImpl;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
-import org.alfresco.rest.api.sites.SiteEntityResource;
 import org.alfresco.rest.api.tests.RepoService.SiteInformation;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
@@ -55,7 +51,6 @@ import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.TempFileProvider;
 import org.springframework.util.ResourceUtils;
@@ -100,6 +95,22 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         publicApiClient.setRequestContext(new RequestContext(runAsUser));
 
         HttpResponse response = publicApiClient.post(getScope(), url, null, null, null, body);
+        checkStatus(expectedStatus, response.getStatusCode());
+
+        return response;
+    }
+
+    protected HttpResponse post(String url, String runAsUser, String body, Map<String, String> params, Map<String, String> headers, String apiName, int expectedStatus) throws Exception
+    {
+        RequestBuilder requestBuilder = httpClient.new PostRequestBuilder()
+                    .setBodyAsString(body)
+                    .setRequestContext(new RequestContext(runAsUser))
+                    .setScope(getScope())
+                    .setApiName(apiName)
+                    .setEntityCollectionName(url)
+                    .setHeaders(headers)
+                    .setParams(params);
+        HttpResponse response = publicApiClient.execute(requestBuilder);
         checkStatus(expectedStatus, response.getStatusCode());
 
         return response;
@@ -181,10 +192,16 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected HttpResponse getAll(String url, String runAsUser, PublicApiClient.Paging paging, Map<String, String> otherParams, Map<String, String> headers, int expectedStatus) throws Exception
     {
+        return getAll(url, runAsUser, paging, otherParams, headers, null, expectedStatus);
+    }
+
+    protected HttpResponse getAll(String url, String runAsUser, PublicApiClient.Paging paging, Map<String, String> otherParams, Map<String, String> headers, String apiName, int expectedStatus) throws Exception
+    {
         Map<String, String> params = createParams(paging, otherParams);
         RequestBuilder requestBuilder = httpClient.new GetRequestBuilder()
                     .setRequestContext(new RequestContext(runAsUser))
                     .setScope(getScope())
+                    .setApiName(apiName)
                     .setEntityCollectionName(url)
                     .setParams(params)
                     .setHeaders(headers);
@@ -222,9 +239,15 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected HttpResponse getSingle(String url, String runAsUser, String entityId, Map<String, String> params, Map<String, String> headers, int expectedStatus) throws Exception
     {
+        return getSingle(url, runAsUser, entityId, params, headers, null, expectedStatus);
+    }
+
+    protected HttpResponse getSingle(String url, String runAsUser, String entityId, Map<String, String> params, Map<String, String> headers, String apiName, int expectedStatus) throws Exception
+    {
         RequestBuilder requestBuilder = httpClient.new GetRequestBuilder()
                     .setRequestContext(new RequestContext(runAsUser))
                     .setScope(getScope())
+                    .setApiName(apiName)
                     .setEntityCollectionName(url)
                     .setEntityId(entityId)
                     .setParams(params)
@@ -306,9 +329,15 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected HttpResponse delete(String url, String runAsUser, String entityId, Map<String, String> params, Map<String, String> headers, int expectedStatus) throws Exception
     {
+        return delete(url, runAsUser, entityId, params, headers, null, expectedStatus);
+    }
+
+    protected HttpResponse delete(String url, String runAsUser, String entityId, Map<String, String> params, Map<String, String> headers, String apiName, int expectedStatus) throws Exception
+    {
         RequestBuilder requestBuilder = httpClient.new DeleteRequestBuilder()
                     .setRequestContext(new RequestContext(runAsUser))
                     .setScope(getScope())
+                    .setApiName(apiName)
                     .setEntityCollectionName(url)
                     .setEntityId(entityId)
                     .setParams(params)

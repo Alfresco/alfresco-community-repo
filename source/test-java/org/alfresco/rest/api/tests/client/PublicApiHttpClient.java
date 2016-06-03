@@ -65,6 +65,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.RequestEntity;
 import org.apache.commons.httpclient.methods.StringRequestEntity;
 import org.apache.commons.httpclient.methods.TraceMethod;
+import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -668,10 +669,16 @@ public class PublicApiHttpClient
             Api api = ResourceInspector.inspectApi(resourceClass);
             SCOPE scope = api.getScope();
             int version = api.getVersion();
+            String name = api.getName();
+            if (StringUtils.isEmpty(name))
+            {
+                name = apiName;
+            }
+
             Pair<String, String> relationshipCollectionInfo = getRelationCollectionInfo(resourceClass);
 
             sb.append(MessageFormat.format(BASE_URL, new Object[] { scheme, host, String.valueOf(port), contextPath, servletName,
-                        tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain, scope.toString(), apiName, version }));
+                        tenantDomain == null ? TenantUtil.DEFAULT_TENANT : tenantDomain, scope.toString(), name, version }));
 
             if (relationshipCollectionInfo != null)
             {
@@ -745,12 +752,24 @@ public class PublicApiHttpClient
         RestApiEndpoint(String tenantDomain, String scope, int version, String collectionName, Object collectionEntityId, String relationName,
                     Object relationEntityId, Map<String, String> params) throws IOException
         {
+            this(tenantDomain, scope, apiName, version, collectionName, collectionEntityId, relationName, relationEntityId, params);
+        }
+
+        RestApiEndpoint(String tenantDomain, String scope, String apiName, int version, String collectionName, Object collectionEntityId,
+                    String relationName, Object relationEntityId, Map<String, String> params) throws IOException
+        {
             StringBuilder sb = new StringBuilder();
 
             if (tenantDomain == null || tenantDomain.equals(TenantService.DEFAULT_DOMAIN))
             {
                 tenantDomain = TenantUtil.DEFAULT_TENANT;
             }
+
+            if (StringUtils.isEmpty(apiName))
+            {
+                apiName = PublicApiHttpClient.this.apiName;
+            }
+
             sb.append(MessageFormat.format(BASE_URL,
                         new Object[] { scheme, host, String.valueOf(port), contextPath, servletName, tenantDomain, scope, apiName, version }));
 
@@ -992,6 +1011,7 @@ public class PublicApiHttpClient
     {
         private RequestContext requestContext;
         private String scope;
+        private String apiName = "alfresco"; // default api namespace
         private int version = 1;
         private String entityCollectionName;
         private Object entityId;
@@ -1032,6 +1052,17 @@ public class PublicApiHttpClient
         public RequestBuilder setScope(String scope)
         {
             this.scope = scope;
+            return this;
+        }
+
+        public String getApiName()
+        {
+            return apiName;
+        }
+
+        public RequestBuilder setApiName(String apiName)
+        {
+            this.apiName = apiName;
             return this;
         }
 
@@ -1132,7 +1163,7 @@ public class PublicApiHttpClient
         public GetMethod getHttpMethod() throws IOException
         {
             RestApiEndpoint endpoint = new RestApiEndpoint(getRequestContext().getNetworkId(),
-                        getScope(), getVersion(), getEntityCollectionName(),
+                        getScope(), getApiName(), getVersion(), getEntityCollectionName(),
                         getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
             String url = endpoint.getUrl();
 
@@ -1148,7 +1179,7 @@ public class PublicApiHttpClient
         public DeleteMethod getHttpMethod() throws IOException
         {
             RestApiEndpoint endpoint = new RestApiEndpoint(getRequestContext().getNetworkId(),
-                        getScope(), getVersion(), getEntityCollectionName(),
+                        getScope(), getApiName(), getVersion(), getEntityCollectionName(),
                         getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
             String url = endpoint.getUrl();
 
@@ -1205,7 +1236,7 @@ public class PublicApiHttpClient
         public PostMethod getHttpMethod() throws IOException
         {
             RestApiEndpoint endpoint = new RestApiEndpoint(getRequestContext().getNetworkId(),
-                        getScope(), getVersion(), getEntityCollectionName(),
+                        getScope(), getApiName(), getVersion(), getEntityCollectionName(),
                         getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
             String url = endpoint.getUrl();
 
@@ -1254,7 +1285,7 @@ public class PublicApiHttpClient
         public PutMethod getHttpMethod() throws IOException
         {
             RestApiEndpoint endpoint = new RestApiEndpoint(getRequestContext().getNetworkId(),
-                        getScope(), getVersion(), getEntityCollectionName(),
+                        getScope(), getApiName(), getVersion(), getEntityCollectionName(),
                         getEntityId(), getRelationCollectionName(), getRelationshipEntityId(), getParams());
             String url = endpoint.getUrl();
 

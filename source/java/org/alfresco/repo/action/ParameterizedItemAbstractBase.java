@@ -122,7 +122,8 @@ public abstract class ParameterizedItemAbstractBase extends CommonResourceAbstra
                                 definition.getType(),
                                 definition.isMandatory(),
                                 paramDisplayLabel,
-                                definition.isMultiValued()
+                                definition.isMultiValued(),
+                                definition.getParameterConstraintName()
                         ));
             }
         }

@@ -18,24 +18,6 @@
  */
 package org.alfresco.rest.api.model;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.alfresco.model.ContentModel;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.rest.framework.resource.UniqueId;
-import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.security.NoSuchPersonException;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.namespace.QName;
-import org.alfresco.util.EqualsHelper;
-import org.apache.chemistry.opencmis.commons.data.PropertyData;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 
 /**
  * @author janv

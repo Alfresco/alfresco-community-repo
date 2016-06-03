@@ -84,6 +84,9 @@
         <property name="preferenceService" ref="PreferenceService" />
         <property name="defaultEmailSender" value="${system.quickshare.email.from.default}" />
         <property name="clientAppConfig" ref="quickShareClientsConfig" />
+        <property name="searchService" ref="SearchService" />
+        <property name="siteService" ref="SiteService" />
+        <property name="authorityService" ref="AuthorityService" />
     </bean>
 
     <bean id="quickShareResourceBundles" class="org.alfresco.i18n.ResourceBundleBootstrapComponent">

@@ -140,6 +140,9 @@ public class QuickShareServiceImpl implements QuickShareService,
     private PreferenceService preferenceService;
     /** Component to determine which behaviours are active and which not */
     private BehaviourFilter behaviourFilter;
+    private SearchService searchService;
+    private SiteService siteService;
+    private AuthorityService authorityService;
 
     private SearchService searchService;
     private SiteService siteService;
@@ -277,6 +280,36 @@ public class QuickShareServiceImpl implements QuickShareService,
     }
 
     /**
+     * Spring configuration
+     *
+     * @param searchService the searchService to set
+     */
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
+    /**
+     * Spring configuration
+     *
+     * @param siteService the siteService to set
+     */
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
+
+    /**
+     * Spring configuration
+     *
+     * @param authorityService the authorityService to set
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
+    /**
      * Enable or disable this service.
      */
     public void setEnabled(boolean enabled)
@@ -316,6 +349,9 @@ public class QuickShareServiceImpl implements QuickShareService,
         PropertyCheck.mandatory(this, "behaviourFilter", behaviourFilter);
         PropertyCheck.mandatory(this, "defaultEmailSender", defaultEmailSender);
         PropertyCheck.mandatory(this, "clientAppConfig", clientAppConfig);
+        PropertyCheck.mandatory(this, "searchService", searchService);
+        PropertyCheck.mandatory(this, "siteService", siteService);
+        PropertyCheck.mandatory(this, "authorityService", authorityService);
     }
 
     /**
@@ -903,6 +939,55 @@ public class QuickShareServiceImpl implements QuickShareService,
         }
     }
 
+    @Override
+    public boolean canDeleteSharedLink(NodeRef nodeRef, String sharedByUserId)
+    {
+        boolean canDeleteSharedLink = false;
+
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        String siteName = getSiteName(nodeRef);
+        boolean isSharedByCurrentUser = currentUser.equals(sharedByUserId);
+
+        if (siteName != null)
+        {
+            // node belongs to a site - current user must be a manager or collaborator or someone who shared the link
+            String role = siteService.getMembersRole(siteName, currentUser);
+            if (isSharedByCurrentUser || (role != null && (role.equals(SiteModel.SITE_MANAGER) || role.equals(SiteModel.SITE_COLLABORATOR))))
+            {
+                canDeleteSharedLink = true;
+            }
+        }
+        else if (isSharedByCurrentUser || (authorityService.isAdminAuthority(currentUser)))
+        {
+            // node does not belongs to a site - current user must be the person who shared the link or an admin
+            canDeleteSharedLink = true;
+        }
+
+        return canDeleteSharedLink;
+    }
+
+    private String getSiteName(NodeRef nodeRef)
+    {
+        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
+        {
+            // check that we can read parent name
+            String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
+
+            if (nodeService.getPrimaryParent(nodeRef) != null)
+            {
+                parent = nodeService.getPrimaryParent(parent).getParentRef();
+            }
+        }
+
+        if (parent == null)
+        {
+            return null;
+        }
+
+        return nodeService.getProperty(parent, ContentModel.PROP_NAME).toString();
+    }
+
     private String getUrl(String url)
     {
         if (url.endsWith("/"))
@@ -1090,3 +1175,4 @@ public class QuickShareServiceImpl implements QuickShareService,
         }
     }
 }
+

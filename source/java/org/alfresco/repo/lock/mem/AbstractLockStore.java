@@ -24,6 +24,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.alfresco.repo.transaction.TransactionalResourceHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.util.ParameterCheck;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
@@ -44,6 +45,7 @@ public abstract class AbstractLockStore<T extends ConcurrentMap<NodeRef, LockSta
     @Override
     public LockState get(NodeRef nodeRef)
     {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
         LockState lockState;
         Map<NodeRef, LockState> txMap = getTxMap();
         if (txMap != null && txMap.containsKey(nodeRef))

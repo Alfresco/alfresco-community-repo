@@ -18,10 +18,13 @@
  */
 package org.alfresco.repo.domain.permissions;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.node.NodeDAO;
@@ -32,11 +35,15 @@ import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.repo.security.permissions.AccessControlListProperties;
 import org.alfresco.repo.security.permissions.SimpleAccessControlListProperties;
 import org.alfresco.repo.security.permissions.impl.AclChange;
+import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
 
 /**
@@ -47,6 +54,7 @@ import org.springframework.dao.ConcurrencyFailureException;
  */
 public class ADMAccessControlListDAO implements AccessControlListDAO
 {
+    private static final Log log = LogFactory.getLog(ADMAccessControlListDAO.class);
     /**
      * The DAO for Nodes.
      */
@@ -56,6 +64,9 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
     
     private BehaviourFilter behaviourFilter;
     private boolean preserveAuditableData = true;
+    
+    /**maxim transaction time allowed for {@link #setFixedAcls(Long, Long, Long, Long, List, boolean, AsyncCallParameters, boolean)} */
+    private long fixedAclMaxTransactionTime = 10 * 1000;
 
     public void setNodeDAO(NodeDAO nodeDAO)
     {
@@ -65,6 +76,11 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
     public void setAclDAO(AclDAO aclDaoComponent)
     {
         this.aclDaoComponent = aclDaoComponent;
+    }
+    
+    public void setFixedAclMaxTransactionTime(long fixedAclMaxTransactionTime)
+    {
+        this.fixedAclMaxTransactionTime = fixedAclMaxTransactionTime;
     }
     
     public void setBehaviourFilter(BehaviourFilter behaviourFilter)
@@ -295,16 +311,23 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
         }
         setAccessControlList(nodeRef, aclId);
     }
-
+    
     public void setAccessControlList(StoreRef storeRef, Acl acl)
     {
         throw new UnsupportedOperationException();
     }
-
+    
     public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom, Long sharedAclToReplace)
     {
+        //check transaction resource to determine if async call may be required 
+        boolean asyncCall = AlfrescoTransactionSupport.getResource(FixedAclUpdater.FIXED_ACL_ASYNC_CALL_KEY) == null ? false : true;
+        return setInheritanceForChildren(parent, inheritFrom, sharedAclToReplace,  asyncCall);
+    }
+    
+    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom, Long sharedAclToReplace, boolean asyncCall)
+    {
         List<AclChange> changes = new ArrayList<AclChange>();
-        setFixedAcls(getNodeIdNotNull(parent), inheritFrom, null, sharedAclToReplace, changes, false);
+        setFixedAcls(getNodeIdNotNull(parent), inheritFrom, null, sharedAclToReplace, changes, false, asyncCall, true);
         return changes;
     }
 
@@ -329,29 +352,51 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
      */
     public void setFixedAcls(Long nodeId, Long inheritFrom, Long mergeFrom, Long sharedAclToReplace, List<AclChange> changes, boolean set)
     {
+        setFixedAcls(nodeId, inheritFrom, mergeFrom, sharedAclToReplace, changes, set, false, true);
+    }
+    
+    /**
+     * Support to set a shared ACL on a node and all of its children
+     * 
+     * @param nodeId
+     *            the parent node
+     * @param inheritFrom
+     *            the parent node's ACL
+     * @param mergeFrom
+     *            the shared ACL, if already known. If <code>null</code>, will be retrieved / created lazily
+     * @param changes
+     *            the list in which to record changes
+     * @param set
+     *            set the shared ACL on the parent ?
+     * @param asyncCall
+     *            function may require asynchronous call depending the execution time; if time exceeds configured <code>fixedAclMaxTransactionTime</code> value,
+     *            recursion is stopped using propagateOnChildren parameter(set on false) and those nodes for which the method execution was not finished 
+     *            in the classical way, will have ASPECT_PENDING_FIX_ACL, which will be used in {@link FixedAclUpdater} for later processing
+     */
+    public void setFixedAcls(Long nodeId, Long inheritFrom, Long mergeFrom, Long sharedAclToReplace, List<AclChange> changes, boolean set, boolean asyncCall, boolean propagateOnChildren) 
+    {
+        if (log.isDebugEnabled())
+        {
+            log.debug(" Set fixed acl for nodeId=" + nodeId + " inheritFrom=" + inheritFrom + " sharedAclToReplace=" + sharedAclToReplace
+                    + " mergefrom= " + mergeFrom);
+        }
+        
         if (nodeId == null)
         {
             return;
         }
         else
         {
-            if (set)
-            {
-                // Lazily retrieve/create the shared ACL
-                if (mergeFrom == null)
-                {
-                    mergeFrom = aclDaoComponent.getInheritedAccessControlList(inheritFrom);
-                }
-                nodeDAO.setNodeAclId(nodeId, mergeFrom);
-            }
-
-            // update all shared in one shot - recurse later
-            
+            // Lazily retrieve/create the shared ACL
             if (mergeFrom == null)
             {
                 mergeFrom = aclDaoComponent.getInheritedAccessControlList(inheritFrom);
             }
             
+            if (set)
+            {
+                nodeDAO.setNodeAclId(nodeId, mergeFrom);
+            }
             
             List<NodeIdAndAclId> children = nodeDAO.getPrimaryChildrenAcls(nodeId);
             
@@ -359,20 +404,18 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
             {
                 nodeDAO.setPrimaryChildrenSharedAclId(nodeId, sharedAclToReplace, mergeFrom);
             }
-
+            
+            if (!propagateOnChildren)
+            {
+                return;
+            }
             for (NodeIdAndAclId child : children)
             {
-                // Lazily retrieve/create the shared ACL
-                if (mergeFrom == null)
-                {
-                    mergeFrom = aclDaoComponent.getInheritedAccessControlList(inheritFrom);
-                }
-
                 Long acl = child.getAclId();
-
+                
                 if (acl == null)
                 {
-                    setFixedAcls(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false);
+                    propagateOnChildren = setFixAclPending(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false, asyncCall, propagateOnChildren);
                 }
                 else
                 {
@@ -383,7 +426,7 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
                     // Already replaced
                     if(acl.equals(sharedAclToReplace))
                     {
-                        setFixedAcls(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false);
+                        propagateOnChildren = setFixAclPending(child.getId(), inheritFrom, mergeFrom, sharedAclToReplace, changes, false, asyncCall, propagateOnChildren);
                     }
                     else
                     {
@@ -409,7 +452,67 @@ public class ADMAccessControlListDAO implements AccessControlListDAO
             }
         }
     }
+    
+    /**
+     * If async call required adds ASPECT_PENDING_FIX_ACL aspect to nodes when transactionTime reaches max admitted time
+     */
+    private boolean setFixAclPending(Long nodeId, Long inheritFrom, Long mergeFrom, Long sharedAclToReplace, List<AclChange> changes,
+            boolean set, boolean asyncCall, boolean propagateOnChildren)
+    {
+        // check if async call is required
+        if (!asyncCall)
+        {
+            // make regular method call
+            setFixedAcls(nodeId, inheritFrom, mergeFrom, sharedAclToReplace, changes, set, asyncCall, propagateOnChildren);
+            return true;
+        }
+        else
+        {
+            // check transaction time
+            long transactionStartTime = AlfrescoTransactionSupport.getTransactionStartTime();
+            long transactionTime = System.currentTimeMillis() - transactionStartTime;
 
+            if (transactionTime < fixedAclMaxTransactionTime)
+            {
+                // make regular method call if time is under max transaction configured time
+                setFixedAcls(nodeId, inheritFrom, mergeFrom, sharedAclToReplace, changes, set, asyncCall, propagateOnChildren);
+                return true;
+            }
+            else
+            {
+                // time exceeded;
+                if (nodeDAO.getPrimaryChildrenAcls(nodeId).size() == 0)
+                {
+                    // if node is leaf in tree hierarchy call setFixedAcls now as processing with FixedAclUpdater would be more time consuming
+                    setFixedAcls(nodeId, inheritFrom, mergeFrom, sharedAclToReplace, changes, set, asyncCall, false);
+                }
+                else
+                {
+                    // set ASPECT_PENDING_FIX_ACL aspect on node to be later on processed with FixedAclUpdater
+                    addFixedAclPendingAspect(nodeId, sharedAclToReplace, inheritFrom);
+                    AlfrescoTransactionSupport.bindResource(FixedAclUpdater.FIXED_ACL_ASYNC_REQUIRED_KEY, true);
+                }
+                // stop propagating on children nodes
+                return false;
+            }
+        }
+    }
+    
+    private void addFixedAclPendingAspect(Long nodeId, Long sharedAclToReplace, Long inheritFrom)
+    {
+        Set<QName> aspect = new HashSet<>();
+        aspect.add(ContentModel.ASPECT_PENDING_FIX_ACL);
+        nodeDAO.addNodeAspects(nodeId, aspect);
+        Map<QName, Serializable> pendingAclProperties = new HashMap<>();
+        pendingAclProperties.put(ContentModel.PROP_SHARED_ACL_TO_REPLACE, sharedAclToReplace);
+        pendingAclProperties.put(ContentModel.PROP_INHERIT_FROM_ACL, inheritFrom);
+        nodeDAO.addNodeProperties(nodeId, pendingAclProperties);
+        if (log.isDebugEnabled())
+        {
+            log.debug("Set Fixed Acl Pending : " + nodeId + " " + nodeDAO.getNodePair(nodeId).getSecond());
+        }
+    }
+    
     /**
      * {@inheritDoc}
      */

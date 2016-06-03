@@ -76,6 +76,12 @@ public interface AccessControlListDAO
      * Update inheritance
      */
     public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom, Long sharedAclToReplace);
+    
+    /**
+     * Set the inheritance on a given node and it's children. If the operation takes 
+     * too long and asyncCall parameter set accordingly, fixed ACLs method will be synchronously called.
+     */
+    public List<AclChange> setInheritanceForChildren(NodeRef parent, Long inheritFrom, Long sharedAclToReplace, boolean asyncCall);
 
     public Long getIndirectAcl(NodeRef nodeRef);
 

@@ -396,6 +396,26 @@
             </property>
          </properties>
       </aspect>
+
+      <aspect name="sys:pendingFixAcl">
+         <title>Pending fix ACL</title>
+         <properties>
+            <property name="sys:sharedAclToReplace">
+               <title>Shared Acl To Replace</title>
+               <type>d:long</type>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="false"></index>
+            </property>
+            <property name="sys:inheritFromAcl">
+               <title>Inherit From</title>
+               <type>d:long</type>
+               <mandatory enforced="true">true</mandatory>
+               <multiple>false</multiple>
+               <index enabled="false"></index>
+            </property>
+         </properties>
+      </aspect>
    </aspects>
 
 </model>

@@ -129,8 +129,6 @@ import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.alfresco.service.namespace.QNamePattern;
-import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.apache.commons.lang.StringUtils;
@@ -152,6 +150,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -2447,8 +2446,8 @@ public class NodesImpl implements Nodes
 
         // if requested, make (get or create) path
         parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
-
-        QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
+        final QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
+        final Set<String> renditions = getRequestedRenditions(renditionNames);
 
         try
         {
@@ -2491,7 +2490,7 @@ public class NodesImpl implements Nodes
             // RA-1052
             try
             {
-                List<ThumbnailDefinition> thumbnailDefs = getThumbnailDefs(renditionNames);
+                List<ThumbnailDefinition> thumbnailDefs = getThumbnailDefs(renditions);
                 requestRenditions(thumbnailDefs, fileNode);
             }
             catch (Exception ex)
@@ -2568,11 +2567,11 @@ public class NodesImpl implements Nodes
         return null;
     }
 
-    private List<ThumbnailDefinition> getThumbnailDefs(String renditionsParam)
+    private List<ThumbnailDefinition> getThumbnailDefs(Set<String> renditionNames)
     {
         List<ThumbnailDefinition> thumbnailDefs = null;
 
-        if (renditionsParam != null)
+        if (renditionNames != null)
         {
             // If thumbnail generation has been configured off, then don't bother.
             if (!thumbnailService.getThumbnailsEnabled())
@@ -2580,35 +2579,51 @@ public class NodesImpl implements Nodes
                 throw new DisabledServiceException("Thumbnail generation has been disabled.");
             }
 
-            String[] renditionNames = renditionsParam.split(",");
-
-            // Temporary - pending future improvements to thumbnail service to minimise chance of
-            // missing/failed thumbnails (when requested/generated 'concurrently')
-            if (renditionNames.length > 1)
-            {
-                throw new InvalidArgumentException("Please specify one rendition entity id only");
-            }
-
-            thumbnailDefs = new ArrayList<>(renditionNames.length);
+            thumbnailDefs = new ArrayList<>(renditionNames.size());
             ThumbnailRegistry registry = thumbnailService.getThumbnailRegistry();
             for (String renditionName : renditionNames)
             {
-                renditionName = renditionName.trim();
-                if (!renditionName.isEmpty())
+                // Use the thumbnail registry to get the details of the thumbnail
+                ThumbnailDefinition thumbnailDef = registry.getThumbnailDefinition(renditionName);
+                if (thumbnailDef == null)
                 {
-                    // Use the thumbnail registry to get the details of the thumbnail
-                    ThumbnailDefinition thumbnailDef = registry.getThumbnailDefinition(renditionName);
-                    if (thumbnailDef == null)
-                    {
-                        throw new NotFoundException(renditionName + " is not registered.");
-                    }
-
-                    thumbnailDefs.add(thumbnailDef);
+                    throw new NotFoundException(renditionName + " is not registered.");
                 }
+
+                thumbnailDefs.add(thumbnailDef);
+
             }
         }
 
         return thumbnailDefs;
+    }
+
+    private Set<String> getRequestedRenditions(String renditionsParam)
+    {
+        if (renditionsParam == null)
+        {
+            return null;
+        }
+
+        String[] renditionNames = renditionsParam.split(",");
+
+        // Temporary - pending future improvements to thumbnail service to minimise chance of
+        // missing/failed thumbnails (when requested/generated 'concurrently')
+        if (renditionNames.length > 1)
+        {
+            throw new InvalidArgumentException("Please specify one rendition entity id only");
+        }
+
+        Set<String> renditions = new LinkedHashSet<>(renditionNames.length);
+        for (String name : renditionNames)
+        {
+            name = name.trim();
+            if (!name.isEmpty())
+            {
+                renditions.add(name.trim());
+            }
+        }
+        return renditions;
     }
 
     private void requestRenditions(List<ThumbnailDefinition> thumbnailDefs, Node fileNode)

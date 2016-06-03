@@ -804,6 +804,11 @@ public class NodesImpl implements Nodes
             mapUserInfo = new HashMap<>(2);
         }
 
+        if (includeParam == null)
+        {
+            includeParam = Collections.emptyList();
+        }
+
         Node node;
         Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
 
@@ -895,7 +900,7 @@ public class NodesImpl implements Nodes
 
             node.setAllowableOperations((allowableOperations.size() > 0 )? allowableOperations : null);
         }
-        
+
         node.setNodeType(nodeTypeQName.toPrefixString(namespaceService));
         node.setPath(pathInfo);
 

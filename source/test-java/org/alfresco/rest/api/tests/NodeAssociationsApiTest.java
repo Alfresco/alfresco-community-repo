@@ -18,23 +18,18 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
-import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Association;
 import org.alfresco.rest.api.tests.client.data.Node;
-import org.alfresco.rest.api.tests.util.JacksonUtil;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -288,7 +283,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
             // test basic list filter
 
-            Map<String, String> params = new HashMap<>();
+            Map<String, String> params = new HashMap<>(1);
             params.put("where", "(assocType='"+ASSOC_TYPE_CM_REFERENCES+"')");
 
             response = getAll(getNodeTargetsUrl(o1Id), user1, paging, params, 200);
@@ -319,7 +314,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertEquals(ASSOC_TYPE_CM_PARTS, nodes.get(0).getAssociation().getAssocType());
 
             // remove assocs - specific type - in one direction
-            params = new HashMap<>(2);
+            params = new HashMap<>(1);
             params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_REFERENCES);
             delete(getNodeTargetsUrl(o1Id), user1, o2Id, params, 204);
 
@@ -339,7 +334,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
 
-            params = new HashMap<>(2);
+            params = new HashMap<>(1);
             params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_PARTS);
             delete(getNodeTargetsUrl(o1Id), user1, o2Id, params, 204);
 
@@ -440,12 +435,12 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                 delete(getNodeTargetsUrl(o1Id), user1, o2Id, null, 404);
 
                 // -ve test - nothing to delete - for given assoc type
-                params = new HashMap<>(2);
+                params = new HashMap<>(1);
                 params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_REFERENCES);
                 delete(getNodeTargetsUrl(o1Id), user1, o2Id, params, 404);
 
                 // -ve test - unknown assoc type
-                params = new HashMap<>(2);
+                params = new HashMap<>(1);
                 params.put(PARAM_ASSOC_TYPE, "cm:unknowntype");
                 delete(getNodeTargetsUrl(o1Id), user1, o2Id, params, 400);
             }
@@ -556,11 +551,11 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             // Test listing targets (with permissions applied)
 
             // update permission
-            // TODO refactor with remote permission api calls (use v0 until we have v1 ?)
+            // TODO refactor with remote permission api calls (use v0 until we have v1 ?) (RA-1085)
             AuthenticationUtil.setFullyAuthenticatedUser(user1);
             permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sf1Id), user2, PermissionService.EDITOR, true);
 
-            // TODO improve - admin-related tests
+            // TODO improve - admin-related tests (RA-1082)
             publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
             response = publicApiClient.get(getScope(), "nodes/"+sf1Id+"/targets", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
@@ -575,7 +570,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             tgt = new AssocTarget(u2o1Id, ASSOC_TYPE_CM_REFERENCES);
             post(getNodeTargetsUrl(sf1Id), user2, toJsonAsStringNonNull(tgt), 201);
 
-            // TODO improve - admin-related tests
+            // TODO improve - admin-related tests (RA-1082)
             publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
             response = publicApiClient.get(getScope(), "nodes/"+sf1Id+"/targets", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
@@ -600,7 +595,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             AuthenticationUtil.setFullyAuthenticatedUser(user1);
             permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sf1Id), user2, PermissionService.EDITOR, true);
 
-            // TODO improve - admin-related tests
+            // TODO improve - admin-related tests (RA-1082)
             publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
             response = publicApiClient.get(getScope(), "nodes/"+so1Id+"/sources", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
@@ -615,7 +610,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             tgt = new AssocTarget(so1Id, ASSOC_TYPE_CM_REFERENCES);
             post(getNodeTargetsUrl(u2f1Id), user2, toJsonAsStringNonNull(tgt), 201);
 
-            // TODO improve - admin-related tests
+            // TODO improve - admin-related tests (RA-1082)
             publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
             response = publicApiClient.get(getScope(), "nodes/"+so1Id+"/sources", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
@@ -768,7 +763,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
             // test list filter - assocType (/secondary-children & /parents)
 
-            Map<String, String> params = new HashMap<>();
+            Map<String, String> params = new HashMap<>(1);
             params.put("where", "(assocType='"+ASSOC_TYPE_CM_CONTAINS+"')");
 
             response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, params, 200);
@@ -799,7 +794,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             }
             assertEquals(2, i);
 
-            params = new HashMap<>();
+            params = new HashMap<>(1);
             params.put("where", "(assocType='"+ASSOC_TYPE_CM_PREFERENCE_IMAGE+"')");
 
             response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, params, 200);
@@ -829,7 +824,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertTrue(nodeIds.contains(o1Id));
             assertTrue(nodeIds.contains(o2Id));
 
-            params = new HashMap<>();
+            params = new HashMap<>(1);
             params.put("where", "(isPrimary=true)");
 
             response = getAll(getNodeChildrenUrl(f1Id), user1, paging, params, 200);
@@ -837,7 +832,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertEquals(1, nodes.size());
             assertEquals(o1Id, nodes.get(0).getId());
 
-            params = new HashMap<>();
+            params = new HashMap<>(1);
             params.put("where", "(isPrimary=false)");
 
             // note: currently collapses same nodeIds (o2Id x 2) into one - makes sense in terms of File/Folder to avoid duplicate names
@@ -853,7 +848,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(3, nodes.size());
 
-            params = new HashMap<>();
+            params = new HashMap<>(1);
             params.put("where", "(isPrimary=true)");
 
             response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
@@ -861,7 +856,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertEquals(1, nodes.size());
             assertEquals(f2Id, nodes.get(0).getId());
 
-            params = new HashMap<>();
+            params = new HashMap<>(1);
             params.put("where", "(isPrimary=false)");
 
             response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
@@ -887,7 +882,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertEquals(2, i);
 
             // combined filter
-            params = new HashMap<>();
+            params = new HashMap<>(1);
             params.put("where", "(isPrimary=false and assocType='"+ASSOC_TYPE_CM_PREFERENCE_IMAGE+"')");
 
             response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
@@ -898,12 +893,9 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertEquals(ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
 
 
-            //
-
-
             // remove one secondary child assoc
 
-            params = new HashMap<>(2);
+            params = new HashMap<>(1);
             params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_CONTAINS);
 
             delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, params, 204);
@@ -916,7 +908,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
-            params = new HashMap<>(2);
+            params = new HashMap<>(1);
             params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_PREFERENCE_IMAGE);
 
             // remove other secondary child assoc
@@ -930,7 +922,34 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
 
-            // TODO +ve test delete of multiple secondary child assocs (if assoc type is not specified)
+            {
+                // test removal of multiple secondary child assocs (if assoc type is not specified)
+
+                response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+                nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+                assertEquals(0, nodes.size());
+
+                // re-create secondary child assoc
+                secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS);
+                post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
+
+                // re-create ano' secondary child assoc (different type) between the same two nodes
+                secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_PREFERENCE_IMAGE);
+                post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
+
+                response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+                nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+                assertEquals(2, nodes.size());
+                assertEquals(o2Id, nodes.get(0).getId());
+                assertEquals(o2Id, nodes.get(1).getId());
+
+                // now remove both secondary child assocs
+                delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, null, 204);
+
+                response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+                nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+                assertEquals(0, nodes.size());
+            }
 
             //
             // -ve tests - add assoc
@@ -987,20 +1006,23 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                 delete(getNodeSecondaryChildrenUrl(UUID.randomUUID().toString()), user1, o2Id, null, 404);
                 delete(getNodeSecondaryChildrenUrl(f1Id), user1, UUID.randomUUID().toString(), null, 404);
 
-                // nothing to delete - for any assoc type
+                // nothing to remove - for any assoc type
                 delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, null, 404);
 
-                // nothing to delete - for given assoc type
-                params = new HashMap<>(2);
+                // nothing to remove - for given assoc type
+                params = new HashMap<>(1);
                 params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_PREFERENCE_IMAGE);
                 delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, params, 404);
 
                 // unknown assoc type
-                params = new HashMap<>(2);
+                params = new HashMap<>(1);
                 params.put(PARAM_ASSOC_TYPE, "cm:unknowntype");
                 delete(getNodeSecondaryChildrenUrl(o1Id), user1, o2Id, params, 400);
 
-                // TODO 400 - try to delete primary assoc using /secondary-children
+                // do not allow delete of primary child (via secondary child removal)
+                params = new HashMap<>(1);
+                params.put(PARAM_ASSOC_TYPE, "cm:contains");
+                delete(getNodeSecondaryChildrenUrl(f1Id), user1, o1Id, params, 400);
             }
         }
         finally

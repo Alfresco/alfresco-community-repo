@@ -18,10 +18,8 @@
  */
 package org.alfresco.rest.api.nodes;
 
-import org.alfresco.rest.api.model.Assoc;
 import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -29,7 +27,6 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
@@ -40,9 +37,7 @@ import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Node Targets
@@ -72,32 +67,7 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
 
         List<AssociationRef> assocRefs = nodeService.getTargetAssocs(sourceNodeRef, assocTypeQNameParam);
 
-        Map<QName, String> qnameMap = new HashMap<>(3);
-
-        Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
-
-        List<String> includeParam = parameters.getInclude();
-
-        List<Node> collection = new ArrayList<>(assocRefs.size());
-        for (AssociationRef assocRef : assocRefs)
-        {
-            // minimal info by default (unless "include"d otherwise)
-            Node node = nodes.getFolderOrDocument(assocRef.getTargetRef(), null, null, includeParam, mapUserInfo);
-
-            QName assocTypeQName = assocRef.getTypeQName();
-            String assocType = qnameMap.get(assocTypeQName);
-            if (assocType == null)
-            {
-                assocType = assocTypeQName.toPrefixString(namespaceService);
-                qnameMap.put(assocTypeQName, assocType);
-            }
-            node.setAssociation(new Assoc(assocType));
-
-            collection.add(node);
-        }
-
-        Paging paging = parameters.getPaging();
-        return CollectionWithPagingInfo.asPaged(paging, collection, false, collection.size());
+        return listNodePeerAssocs(assocRefs, parameters, true);
     }
 
     @Override
@@ -143,7 +113,7 @@ public class NodeTargetsRelation extends AbstractNodeRelation implements
         NodeRef tgtNodeRef = nodes.validateNode(targetNodeId);
 
         String assocTypeStr = parameters.getParameter(PARAM_ASSOC_TYPE);
-        QNamePattern assocTypeQName = getAssocType(assocTypeStr, false, true);
+        QNamePattern assocTypeQName = getAssocType(assocTypeStr, false);
 
         if (assocTypeQName == null)
         {

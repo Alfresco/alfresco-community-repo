@@ -18,25 +18,18 @@
  */
 package org.alfresco.rest.api.nodes;
 
-import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.Node;
-import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
-import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Node Parents
@@ -60,43 +53,16 @@ public class NodeParentsRelation extends AbstractNodeRelation implements Relatio
 
         QNamePattern assocTypeQNameParam = getAssocTypeFromWhereElseAll(parameters);
 
-        List<ChildAssociationRef> assocRefs = null;
+        List<ChildAssociationRef> childAssocRefs = null;
         if (assocTypeQNameParam.equals(RegexQNamePattern.MATCH_ALL))
         {
-            assocRefs = nodeService.getParentAssocs(childNodeRef);
+            childAssocRefs = nodeService.getParentAssocs(childNodeRef);
         }
         else
         {
-            assocRefs = nodeService.getParentAssocs(childNodeRef, assocTypeQNameParam, RegexQNamePattern.MATCH_ALL);
+            childAssocRefs = nodeService.getParentAssocs(childNodeRef, assocTypeQNameParam, RegexQNamePattern.MATCH_ALL);
         }
 
-        Map<QName, String> qnameMap = new HashMap<>(3);
-
-        Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
-
-        List<String> includeParam = parameters.getInclude();
-
-        List<Node> collection = new ArrayList<>(assocRefs.size());
-        for (ChildAssociationRef assocRef : assocRefs)
-        {
-            // minimal info by default (unless "include"d otherwise)
-            Node node = nodes.getFolderOrDocument(assocRef.getParentRef(), null, null, includeParam, mapUserInfo);
-
-            QName assocTypeQName = assocRef.getTypeQName();
-
-            String assocType = qnameMap.get(assocTypeQName);
-            if (assocType == null)
-            {
-                assocType = assocTypeQName.toPrefixString(namespaceService);
-                qnameMap.put(assocTypeQName, assocType);
-            }
-
-            node.setAssociation(new AssocChild(assocType, assocRef.isPrimary()));
-
-            collection.add(node);
-        }
-
-        Paging paging = parameters.getPaging();
-        return CollectionWithPagingInfo.asPaged(paging, collection, false, collection.size());
+        return listNodeChildAssocs(childAssocRefs, parameters, null, false);
     }
 }

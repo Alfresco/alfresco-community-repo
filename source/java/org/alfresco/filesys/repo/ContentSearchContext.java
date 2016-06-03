@@ -486,21 +486,22 @@ public class ContentSearchContext extends SearchContext
      * @param resumeId Resume point id.
      * @return true if the search can be restarted, else false.
      */
-    public boolean restartAt(int resumeId)
+    public boolean restartAt(int resumeIdParameter)
     {
         // Resume ids are one based as zero has special meaning for some protocols, adjust the resume id
         
-        resumeId--;
+        resumeIdParameter--;
         
         //  Check if the resume point is in the pseudo file list
 
         if (pseudoList != null)
         {
-            if ( resumeId < pseudoList.numberOfFiles())
+            if ( resumeIdParameter < pseudoList.numberOfFiles())
             {
                 // Resume at a pseudo file
                 
-                index = resumeId;
+                index = resumeIdParameter;
+                resumeId = resumeIdParameter + 1;
                 donePseudoFiles = false;
                 
                 return true;
@@ -509,15 +510,16 @@ public class ContentSearchContext extends SearchContext
             {
                 // Adjust the resume id so that it is an index into the main file list
                 
-                resumeId -= pseudoList.numberOfFiles();
+                resumeIdParameter -= pseudoList.numberOfFiles();
             }
         }
         
         // Check if the resume point is valid
         
-        if ( results != null && resumeId < results.size())
+        if ( results != null && resumeIdParameter < results.size())
         {
-            index = resumeId;
+            index = resumeIdParameter;
+            resumeId = resumeIdParameter + 1;
             donePseudoFiles = true;
             
             return true;

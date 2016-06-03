@@ -42,7 +42,10 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Sites;
 import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.api.tests.client.data.Comment;
 import org.alfresco.rest.api.tests.client.data.Site;
+import org.alfresco.rest.api.tests.client.data.SiteImpl;
+import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
@@ -95,20 +98,7 @@ public class TestSites extends EnterpriseTestApi
 		{
 			assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
 		}
-		
-		
-		// Test Case cloud-1963
-		// invalid methods
-		try
-		{
-			sitesProxy.create("sites", null, null, null, null, "Unable to POST to sites");
-			fail();
-		}
-		catch(PublicApiException e)
-		{
-			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
-		}
-		
+
 		try
 		{
 			sitesProxy.create("sites", "site", null, null, null, "Unable to POST to a site");
@@ -118,26 +108,6 @@ public class TestSites extends EnterpriseTestApi
 		{
 			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
 		}
-		
-//		try
-//		{
-//			sitesProxy.remove("sites", null, null, null, "Unable to DELETE sites");
-//			fail();
-//		}
-//		catch(PublicApiException e)
-//		{
-//			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
-//		}
-//		
-//		try
-//		{
-//			sitesProxy.remove("sites", "site", null, null, "Unable to DELETE sites");
-//			fail();
-//		}
-//		catch(PublicApiException e)
-//		{
-//			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
-//		}
 
 		try
 		{
@@ -148,15 +118,16 @@ public class TestSites extends EnterpriseTestApi
 		{
 			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
 		}
-		
+
+		// -ve - try to delete unknown site
 		try
 		{
-			sitesProxy.remove("sites", "site", null, null, "Unable to DELETE sites");
+			sitesProxy.remove("sites", "dummy", null, null, "Unable to DELETE site - not found");
 			fail();
 		}
 		catch(PublicApiException e)
 		{
-			assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+			assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
 		}
 		
 		// invalid site
@@ -216,10 +187,40 @@ public class TestSites extends EnterpriseTestApi
 			ListResponse<Site> resp = sitesProxy.getSites(createParams(paging, null));
 			checkList(expectedSites.subList(skipCount, skipCount + paging.getExpectedPaging().getCount()), paging.getExpectedPaging(), resp);
 		}
+
+		{
+            String siteTitle = "my site 123";
+
+			Site site = new SiteImpl("my site 123", SiteVisibility.PRIVATE.toString());
+			publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
+			Site ret = sitesProxy.createSite(site);
+
+            String siteId = siteTitle.replace(' ', '-');
+			Site siteExp = new SiteImpl(null, siteId, ret.getGuid(), siteTitle, null,  SiteVisibility.PRIVATE.toString(), null, SiteRole.SiteManager);
+			siteExp.expected(ret);
+
+            publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
+            ret = sitesProxy.getSite(siteId);
+            siteExp.expected(ret);
+
+            sitesProxy.removeSite(siteId);
+
+            try
+            {
+                publicApiClient.setRequestContext(new RequestContext(network1.getId(), personId));
+                sitesProxy.getSite(siteId);
+                fail("");
+            }
+            catch(PublicApiException e)
+            {
+                assertEquals(HttpStatus.SC_NOT_FOUND, e.getHttpResponse().getStatusCode());
+            }
+        }
 		
 		// Test Case cloud-1478
 		// Test Case cloud-1479
 		// user invited to network and user invited to site
 		// user invited to network and user not invited to site
+
 	}
 }

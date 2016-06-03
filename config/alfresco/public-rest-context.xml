@@ -650,6 +650,12 @@
         <property name="siteService" ref="SiteService" />
         <property name="favouritesService" ref="FavouritesService" />
         <property name="preferenceService" ref="PreferenceService" />
+        <property name="importerService" ref="importerComponent"/>
+        <property name="siteSurfConfig" ref="siteSurfConfig" />
+    </bean>
+
+    <bean id="siteSurfConfig" class="org.alfresco.rest.api.impl.SiteSurfConfig">
+        <property name="configPath" value="alfresco/bootstrap/site"/>
     </bean>
     
     <bean id="Sites" class="org.springframework.aop.framework.ProxyFactoryBean">

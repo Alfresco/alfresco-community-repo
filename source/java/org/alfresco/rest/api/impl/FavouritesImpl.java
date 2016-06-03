@@ -47,7 +47,6 @@ import org.alfresco.rest.api.model.Favourite;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.FolderTarget;
 import org.alfresco.rest.api.model.Site;
-import org.alfresco.rest.api.model.SiteImpl;
 import org.alfresco.rest.api.model.SiteTarget;
 import org.alfresco.rest.api.model.Target;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -60,6 +59,7 @@ import org.alfresco.rest.framework.resource.parameters.where.QueryHelper.WalkerC
 import org.alfresco.service.cmr.favourites.FavouritesService;
 import org.alfresco.service.cmr.favourites.FavouritesService.Type;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.util.Pair;
@@ -126,7 +126,7 @@ public class FavouritesImpl implements Favourites
 		{
 			SiteInfo siteInfo = siteService.getSite(nodeRef);
 			String role = sites.getSiteRole(siteInfo.getShortName());
-			Site site = new SiteImpl(siteInfo, role);
+			Site site = new Site(siteInfo, role);
 			target = new SiteTarget(site);
 		}
 		else
@@ -189,8 +189,8 @@ public class FavouritesImpl implements Favourites
     	else if(target instanceof SiteTarget)
     	{
     		SiteTarget siteTarget = (SiteTarget)target;
-    		NodeRef guid = siteTarget.getSite().getGuid();
-    		SiteInfo siteInfo = sites.validateSite(guid);
+    		String guid = siteTarget.getSite().getGuid();
+    		SiteInfo siteInfo = sites.validateSite(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, guid));
     		NodeRef siteNodeRef = siteInfo.getNodeRef();
     		String siteId = siteInfo.getShortName();
 

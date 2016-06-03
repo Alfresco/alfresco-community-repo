@@ -27,7 +27,6 @@
 package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsString;
-import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
@@ -35,13 +34,10 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import com.google.common.collect.Ordering;
-import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.tenant.TenantUtil;
+import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
-import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedErrorResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
@@ -56,7 +52,6 @@ import org.alfresco.rest.api.tests.util.MultiPartBuilder.MultiPartRequest;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.service.cmr.thumbnail.ThumbnailService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.util.TempFileProvider;
 import org.junit.After;
 import org.junit.Before;
@@ -81,6 +76,11 @@ import java.util.UUID;
 public class RenditionsTest extends AbstractBaseApiTest
 {
     /**
+     * Test network one
+     */
+    TestNetwork networkOne;
+
+    /**
      * User one from network one
      */
     private TestPerson userOneN1;
@@ -88,23 +88,22 @@ public class RenditionsTest extends AbstractBaseApiTest
     /**
      * Private site of user one from network one
      */
-    private TestSite userOneN1Site;
+    private Site userOneN1Site;
 
     @Before
     public void setup() throws Exception
     {
-        TestNetwork networkOne = repoService.createNetworkWithAlias("ping", true);
+        networkOne = repoService.createNetworkWithAlias("ping", true);
         networkOne.create();
-
         userOneN1 = networkOne.createUser();
-        AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getId());
-        userOneN1Site = createSite(networkOne, userOneN1, SiteVisibility.PRIVATE);
+
+        userOneN1Site = createSite(networkOne.getId(), userOneN1.getId(), SiteVisibility.PRIVATE);
     }
 
     @After
     public void tearDown() throws Exception
     {
-        AuthenticationUtil.clearCurrentSecurityContext();
+        deleteSite(networkOne.getId(), userOneN1.getId(), userOneN1Site.getId(), 204);
     }
 
     /**
@@ -117,7 +116,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     {
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
-        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, ContentModel.TYPE_FOLDER, userOneN1.getId());
+        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
 
         // Create multipart request
         String fileName = "quick.pdf";
@@ -233,9 +232,8 @@ public class RenditionsTest extends AbstractBaseApiTest
         getAll(getNodeRenditionsUrl(UUID.randomUUID().toString()), userOneN1.getId(), paging, params, 404);
 
         // Create a node without any content
-        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", ContentModel.TYPE_CONTENT, userOneN1.getId());
-        // The source node has no content
-        getAll(getNodeRenditionsUrl(emptyContentNodeId), userOneN1.getId(), paging, params, 400);
+        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
+        getAll(getNodeRenditionsUrl(emptyContentNodeId), userOneN1.getId(), paging, params, 200);
 
         // Invalid status value
         params.put("where", "(status='WRONG')");
@@ -256,7 +254,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     {
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
-        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, ContentModel.TYPE_FOLDER, userOneN1.getId());
+        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
 
         // Create multipart request
         String fileName = "quick.pdf";
@@ -302,9 +300,8 @@ public class RenditionsTest extends AbstractBaseApiTest
         getSingle(getNodeRenditionsUrl(contentNodeId), userOneN1.getId(), ("renditionId" + System.currentTimeMillis()), 404);
 
         // Create a node without any content
-        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", ContentModel.TYPE_CONTENT, userOneN1.getId());
-        // The source node has no content
-        getSingle(getNodeRenditionsUrl(emptyContentNodeId), userOneN1.getId(), "doclib", 400);
+        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
+        getSingle(getNodeRenditionsUrl(emptyContentNodeId), userOneN1.getId(), "doclib", 200);
 
         // Create multipart request
         String jpgFileName = "quick.jpg";
@@ -339,7 +336,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     {
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
-        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, ContentModel.TYPE_FOLDER, userOneN1.getId());
+        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
 
         // Create multipart request
         String fileName = "quick.pdf";
@@ -413,12 +410,12 @@ public class RenditionsTest extends AbstractBaseApiTest
         post(getNodeRenditionsUrl(contentNodeId), userOneN1.getId(), toJsonAsString(request), 400);
 
         // Create a node without any content
-        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", ContentModel.TYPE_CONTENT, userOneN1.getId());
+        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
 
         // The source node has no content
         request = new ArrayList<>(2);
         request.add(new Rendition().setId("doclib"));
-        post(getNodeRenditionsUrl(emptyContentNodeId), userOneN1.getId(), toJsonAsString(renditionRequest), 400);
+        post(getNodeRenditionsUrl(emptyContentNodeId), userOneN1.getId(), toJsonAsString(renditionRequest), 202);
 
         String content = "The quick brown fox jumps over the lazy dog.";
         file = TempFileProvider.createTempFile(new ByteArrayInputStream(content.getBytes()), getClass().getSimpleName(), ".bin");
@@ -472,7 +469,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
-        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, ContentModel.TYPE_FOLDER, userId);
+        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userId);
 
         // Create multipart request - pdf file
         String renditionName = "doclib";
@@ -591,7 +588,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     {
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
-        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, ContentModel.TYPE_FOLDER, userOneN1.getId());
+        String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
 
         // Create multipart request
         String fileName = "quick.pdf";
@@ -753,22 +750,18 @@ public class RenditionsTest extends AbstractBaseApiTest
         getSingle(getNodeRenditionsUrl(contentNodeId), userOneN1.getId(), ("renditionId" + System.currentTimeMillis() + "/content"), params, 404);
 
         // Create a node without any content
-        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", ContentModel.TYPE_CONTENT, userOneN1.getId());
-        // The source node has no content
-        getSingle(getNodeRenditionsUrl(emptyContentNodeId), userOneN1.getId(), "doclib/content", params, 400);
-
+        String emptyContentNodeId = addToDocumentLibrary(userOneN1Site, "emptyDoc.txt", TYPE_CM_CONTENT, userOneN1.getId());
+        getSingle(getNodeRenditionsUrl(emptyContentNodeId), userOneN1.getId(), "doclib/content", params, 200);
     }
 
-    private String addToDocumentLibrary(final TestSite testSite, final String name, final QName type, String user)
+    private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception
     {
-        return TenantUtil.runAsUserTenant(new TenantUtil.TenantRunAsWork<String>()
-        {
-            @Override
-            public String doWork() throws Exception
-            {
-                return repoService.addToDocumentLibrary(testSite, name, type).getId();
-            }
-        }, user, testSite.getNetworkId());
+        // TODO refactor to consistently handle user/network (with option to switch network in cloud test scenarios)
+        // eg. set request context (rather than explicitly passing userId/networkId) ?
+        String networkId = repoService.tenantService.getUserDomain(userId);
+
+        String parentId = getSiteContainerNodeId(networkId, userId, testSite.getId(), "documentLibrary");
+        return createNode(userId, parentId, name, nodeType, null).getId();
     }
 
     private Rendition getRendition(List<Rendition> renditions, String renditionName)

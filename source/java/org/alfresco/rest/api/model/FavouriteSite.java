@@ -35,7 +35,7 @@ import org.alfresco.service.cmr.site.SiteInfo;
  * @author steveglover
  *
  */
-public class FavouriteSite extends SiteImpl
+public class FavouriteSite extends Site
 {
 	public FavouriteSite()
 	{

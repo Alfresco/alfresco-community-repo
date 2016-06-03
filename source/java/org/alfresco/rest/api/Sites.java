@@ -43,6 +43,8 @@ public interface Sites
 	SiteInfo validateSite(NodeRef nodeRef);
     CollectionWithPagingInfo<SiteMember> getSiteMembers(String siteShortName, Parameters parameters);
     Site getSite(String siteId);
+	void deleteSite(String siteId, Parameters parameters);
+    Site createSite(Site site);
     
 	/**
 	 * people/<personId>/sites/<siteId>
@@ -67,4 +69,6 @@ public interface Sites
     
     String getSiteRole(String siteId);
     String getSiteRole(String siteId, String personId);
+
+    String PARAM_PERMANENT = "permanent";
 }

@@ -32,7 +32,6 @@ import org.alfresco.rest.api.model.DocumentTarget;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.FolderTarget;
 import org.alfresco.rest.api.model.Site;
-import org.alfresco.rest.api.model.SiteImpl;
 import org.alfresco.rest.api.model.SiteTarget;
 import org.alfresco.rest.api.model.Target;
 import org.alfresco.service.cmr.favourites.FavouritesService.Type;
@@ -66,7 +65,7 @@ public class TargetDeserializer extends JsonDeserializer<Target>
         			jp.nextToken();
         			try
         			{
-        		        JavaType t = SimpleType.construct(SiteImpl.class);
+        		        JavaType t = SimpleType.construct(Site.class);
         		        BeanProperty p = new Std("", t, null, null);
         		        JsonDeserializer<?> siteDeserializer = ctxt.getDeserializerProvider().findValueDeserializer(ctxt.getConfig(), t, p);
 

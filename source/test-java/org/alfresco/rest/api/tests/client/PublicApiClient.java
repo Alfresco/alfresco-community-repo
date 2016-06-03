@@ -63,6 +63,7 @@ import org.alfresco.rest.api.tests.client.data.SiteImpl;
 import org.alfresco.rest.api.tests.client.data.SiteMember;
 import org.alfresco.rest.api.tests.client.data.SiteMembershipRequest;
 import org.alfresco.rest.api.tests.client.data.Tag;
+import org.alfresco.service.cmr.site.SiteVisibility;
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.Document;
 import org.apache.chemistry.opencmis.client.api.FileableCmisObject;
@@ -820,6 +821,17 @@ public class PublicApiClient
 			HttpResponse response = getSingle("sites", siteId, null, null, "Failed to get site " + siteId);
 			return SiteImpl.parseSite((JSONObject)response.getJsonResponse().get("entry"));
 		}
+
+		public Site createSite(Site site) throws PublicApiException
+		{
+			HttpResponse response = create("sites", null, null, null, site.toJSON().toString(), "Failed to create site");
+			return SiteImpl.parseSite((JSONObject)response.getJsonResponse().get("entry"));
+		}
+
+        public void removeSite(String siteId) throws PublicApiException
+        {
+            remove("sites", siteId, null, null, "Failed to remove site");
+        }
 
 		public ListResponse<SiteContainer> getSiteContainers(String siteId, Map<String, String> params) throws PublicApiException
 		{

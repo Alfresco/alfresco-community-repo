@@ -59,14 +59,30 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
     public SiteImpl()
     {
     }
-    
-    public SiteImpl(String networkId, String siteId, String guid)
-    {
-		if(siteId == null)
+
+	public SiteImpl(String title, String visibility)
+	{
+		if (title == null)
 		{
 			throw new java.lang.IllegalArgumentException();
 		}
-		if(guid == null)
+
+		if (visibility == null)
+		{
+			throw new java.lang.IllegalArgumentException();
+		}
+		this.title = title;
+		this.visibility = visibility;
+	}
+    
+    public SiteImpl(String networkId, String siteId, String guid)
+    {
+		if (siteId == null)
+		{
+			throw new java.lang.IllegalArgumentException();
+		}
+
+		if (guid == null)
 		{
 			throw new java.lang.IllegalArgumentException();
 		}
@@ -249,7 +265,7 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
 	@Override
 	public String toString()
 	{
-		return "SiteImpl [created=" + created + ", networkId=" + networkId
+		return "Site [created=" + created + ", networkId=" + networkId
 				+ ", siteId=" + siteId + ", guid=" + guid + ", title=" + title
 				+ ", description=" + description + ", role=" + role
 				+ ", visibility=" + visibility + ", type=" + type + "]";
@@ -259,8 +275,22 @@ public class SiteImpl implements Serializable, Site, Comparable<SiteImpl>, Expec
 	public JSONObject toJSON()
 	{
 		JSONObject siteJson = new JSONObject();
-		siteJson.put("id", getSiteId());
-		siteJson.put("guid", getGuid());
+		if (getSiteId() != null)
+        {
+            siteJson.put("id", getSiteId());
+        }
+		if (getGuid() != null)
+        {
+            siteJson.put("guid", getGuid());
+        }
+        if (getTitle() != null)
+        {
+            siteJson.put("title", getTitle());
+        }
+        if (getVisibility() != null)
+        {
+            siteJson.put("visibility", getVisibility());
+        }
 		return siteJson;
 	}
 

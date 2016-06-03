@@ -28,12 +28,16 @@ package org.alfresco.rest.api.sites;
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.beans.factory.InitializingBean;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * An implementation of an Entity Resource for a Site
@@ -42,7 +46,9 @@ import org.springframework.beans.factory.InitializingBean;
  * @author steveglover
  */
 @EntityResource(name="sites", title = "Sites")
-public class SiteEntityResource implements EntityResourceAction.Read<Site>, EntityResourceAction.ReadById<Site>, InitializingBean
+public class SiteEntityResource implements EntityResourceAction.Read<Site>,
+        EntityResourceAction.ReadById<Site>, EntityResourceAction.Delete,
+        EntityResourceAction.Create<Site>, InitializingBean
 {
     private Sites sites;
 
@@ -79,4 +85,35 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>, Enti
         return sites.getSite(siteId);
     }
 
+    /**
+     * Delete the given site.
+     *
+     * @param siteId String id of site.
+     */
+    @Override
+    @WebApiDescription(title = "Delete Site", description="Delete the site. This will cascade delete")
+    public void delete(String siteId, Parameters parameters)
+    {
+        sites.deleteSite(siteId, parameters);
+    }
+
+    /**
+     *
+     * @param entity
+     * @param parameters
+     * @return
+     */
+    @Override
+    @WebApiDescription(title="Create site", description="Create the default/functional Share site")
+    public List<Site> create(List<Site> entity, Parameters parameters)
+    {
+        if (entity.size() != 1)
+        {
+            throw new InvalidArgumentException("Please specify one site entity only");
+        }
+
+        List<Site> result = new ArrayList<>(1);
+        result.add(sites.createSite(entity.get(0)));
+        return result;
+    }
 }

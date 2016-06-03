@@ -199,7 +199,8 @@ public class TextToPdfContentTransformer extends AbstractContentTransformer2
     private class PagedTextToPDF extends TextToPDF
     {
         // The following code is based on the code in TextToPDF with the addition of
-        // checks for page limits
+        // checks for page limits.
+        // The calling code must close the PDDocument once finished with it.
         public PDDocument createPDFFromText(Reader text, TransformationOptionPair pageLimits,
                 String contentUrl) throws IOException
         {

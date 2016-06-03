@@ -25,6 +25,8 @@
  */
 package org.alfresco.rest.api.tests.client.data;
 
+import org.alfresco.rest.api.model.Assoc;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -254,6 +256,18 @@ public class Node
     public void setRelativePath(String relativePath)
     {
         this.relativePath = relativePath;
+    }
+
+    protected Assoc association;
+
+    public Assoc getAssociation()
+    {
+        return association;
+    }
+
+    public void setAssociation(Assoc association)
+    {
+        this.association = association;
     }
 
     public void expected(Object o)

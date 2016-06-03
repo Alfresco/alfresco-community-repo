@@ -1628,6 +1628,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         //
         // See ALF-7888 for some background on this issue
         this.behaviourFilter.disableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
+        this.behaviourFilter.disableBehaviour(ContentModel.ASPECT_LOCKABLE);
         
         NodeRef siteParent = getSiteParent(shortName);
         this.behaviourFilter.disableBehaviour(siteParent, ContentModel.ASPECT_AUDITABLE);
@@ -1639,6 +1640,7 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
         finally
         {
             this.behaviourFilter.enableBehaviour(siteNodeRef, ContentModel.ASPECT_UNDELETABLE);
+            this.behaviourFilter.enableBehaviour(ContentModel.ASPECT_LOCKABLE);
             this.behaviourFilter.enableBehaviour(siteParent, ContentModel.ASPECT_AUDITABLE);
         }
         

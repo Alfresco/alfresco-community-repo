@@ -36,15 +36,9 @@ import java.util.Set;
 import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
-import org.alfresco.rest.framework.core.exceptions.DeletedResourceException;
-import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.actions.interfaces.BinaryResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
-import org.alfresco.rest.framework.resource.actions.interfaces.ResourceAction;
-import org.alfresco.rest.framework.resource.content.BinaryResource;
-import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.ArgumentTypeDescription;
 import org.springframework.extensions.webscripts.Container;
@@ -109,19 +103,20 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
         Match match = null;
 
         HttpMethod httpMethod = HttpMethod.valueOf(method);
-        if (httpMethod.equals(HttpMethod.GET))
+        boolean isPost = httpMethod.equals(HttpMethod.POST);
+        if (httpMethod.equals(HttpMethod.GET) || isPost)
         {
-            if (uri.equals(PublicApiTenantWebScriptServletRequest.NETWORKS_PATH))
+            if (!isPost && uri.equals(PublicApiTenantWebScriptServletRequest.NETWORKS_PATH))
             {
-                Map<String, String> templateVars = new HashMap<String, String>();
+                Map<String, String> templateVars = new HashMap<>();
                 templateVars.put("apiScope", "public");
                 templateVars.put("apiVersion", "1");
                 templateVars.put("apiName", "networks");
                 match = new Match("", templateVars, "", getNetworksWebScript);
             }
-            else if (uri.equals(PublicApiTenantWebScriptServletRequest.NETWORK_PATH))
+            else if (!isPost && uri.equals(PublicApiTenantWebScriptServletRequest.NETWORK_PATH))
             {
-                Map<String, String> templateVars = new HashMap<String, String>();
+                Map<String, String> templateVars = new HashMap<>();
                 templateVars.put("apiScope", "public");
                 templateVars.put("apiVersion", "1");
                 templateVars.put("apiName", "network");
@@ -161,6 +156,10 @@ public class PublicApiDeclarativeRegistry extends DeclarativeRegistry
                                 if (EntityResourceAction.Read.class.isAssignableFrom(rwm.getResource().getClass()))
                                 {
                                     resAction = EntityResourceAction.Read.class;
+                                }
+                                else if (EntityResourceAction.Create.class.isAssignableFrom(rwm.getResource().getClass()))
+                                {
+                                    resAction = EntityResourceAction.Create.class;
                                 }
                             }
                             break;

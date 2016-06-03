@@ -1147,4 +1147,29 @@
         <property name="quickShareLinks" ref="QuickShareLinks"/>
     </bean>
 
+    <!--                               -->
+    <!--    Authentications REST API   -->
+    <!--                               -->
+    <bean id="authentications" class="org.alfresco.rest.api.impl.AuthenticationsImpl" init-method="init">
+        <property name="authenticationService" ref="AuthenticationService" />
+        <property name="ticketComponent" ref="ticketComponent" />
+    </bean>
+
+    <bean id="Authentications" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="proxyInterfaces">
+            <value>org.alfresco.rest.api.Authentications</value>
+        </property>
+        <property name="target">
+            <ref bean="authentications" />
+        </property>
+        <property name="interceptorNames">
+            <list>
+                <idref bean="legacyExceptionInterceptor" />
+            </list>
+        </property>
+    </bean>
+
+    <bean class="org.alfresco.rest.api.authentications.AuthenticationTicketsEntityResource">
+        <property name="authentications" ref="Authentications" />
+    </bean>
 </beans>

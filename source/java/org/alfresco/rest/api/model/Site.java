@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.model;
 
+import org.alfresco.rest.framework.resource.UniqueId;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -85,6 +86,7 @@ public class Site implements Comparable<Site>
 		this.role = role;
 	}
 
+	@UniqueId
 	public String getId()
 	{
 		return id;

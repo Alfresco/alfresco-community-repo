@@ -151,6 +151,10 @@
             </map>
         </property>
     </bean>
+    <bean id="apiAssistant" class="org.alfresco.rest.framework.tools.ApiAssistant">
+        <property name="jsonHelper" ref="jsonHelper" />
+        <property name="resolver" ref="simpleMappingExceptionResolver" />
+    </bean>
 	<!-- Using annotation-config=false means AutowiredAnnotationBeanPostProcessor 
 		and CommonAnnotationBeanPostProcessor are both NOT included implicitly -->
 	<!-- context:component-scan base-package="org.alfresco.deleteme" annotation-config="false" 
@@ -160,8 +164,7 @@
     <context:component-scan base-package="org.alfresco.rest.api.modules"/>
 
     <bean id="apiWebScriptParent" abstract="true" parent="webscript" init-method="init">
-        <property name="resolver" ref="simpleMappingExceptionResolver" />
-        <property name="jsonHelper" ref="jsonHelper" />
+        <property name="assistant" ref="apiAssistant" />
         <property name="encryptTempFiles" value="${webscripts.encryptTempFiles}"/>
         <property name="tempDirectoryName" value="${webscripts.tempDirectoryName}"/>
         <property name="memoryThreshold" value="${webscripts.memoryThreshold}"/>

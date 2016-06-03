@@ -391,7 +391,7 @@ public class SerializeTests extends AbstractContextTest
     {        
         Api api3 = Api.valueOf("alfrescomock", "private", "3");
         ResourceWithMetadata propResource = locator.locateRelationResource(api3,"flock", "photo", HttpMethod.GET);
-        AbstractResourceWebScript executor = (AbstractResourceWebScript) applicationContext.getBean("executorOfGets");
+        AbstractResourceWebScript executor = getExecutor();
         Object result = executor.execute(propResource,  Params.valueOf("234", null, null),  mock(WebScriptResponse.class), true);
         assertNotNull(result);
     }

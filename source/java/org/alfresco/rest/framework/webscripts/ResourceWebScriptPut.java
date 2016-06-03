@@ -87,7 +87,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 } else
                 {
 
-                    Object putEnt = ResourceWebScriptHelper.extractJsonContent(req, jsonHelper, resourceMeta.getObjectType(operation));
+                    Object putEnt = ResourceWebScriptHelper.extractJsonContent(req, assistant.getJsonHelper(), resourceMeta.getObjectType(operation));
                     return Params.valueOf(entityId,params,putEnt, req);
                 }
             case RELATIONSHIP:
@@ -96,7 +96,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                     throw new UnsupportedResourceOperationException("PUT is executed against the instance URL");                  
                 } else
                 {
-                    Object putRel = ResourceWebScriptHelper.extractJsonContent(req, jsonHelper, resourceMeta.getObjectType(operation));
+                    Object putRel = ResourceWebScriptHelper.extractJsonContent(req, assistant.getJsonHelper(), resourceMeta.getObjectType(operation));
                     ResourceWebScriptHelper.setUniqueId(putRel,relationshipId);
                     return Params.valueOf(entityId, params, putRel, req);
                 }

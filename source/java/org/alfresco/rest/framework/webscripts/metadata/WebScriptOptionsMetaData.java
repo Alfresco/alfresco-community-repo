@@ -155,8 +155,8 @@ public class WebScriptOptionsMetaData extends ApiWebScript implements ResourceMe
     {
         
         final Object result = processResult(resource,allApiResources);
-        
-        jsonHelper.withWriter(out, new Writer()
+
+        assistant.getJsonHelper().withWriter(out, new Writer()
         {
             @Override
             public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)

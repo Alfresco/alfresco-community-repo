@@ -76,8 +76,8 @@ public class NetworkWebScriptGet extends ApiWebScript
                 {
                     // apply content type
                     res.setContentType(Format.JSON.mimetype() + ";charset=UTF-8");
-        
-                    jsonHelper.withWriter(res.getOutputStream(), new Writer()
+
+                    assistant.getJsonHelper().withWriter(res.getOutputStream(), new Writer()
                     {
                         @Override
                         public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
@@ -106,17 +106,13 @@ public class NetworkWebScriptGet extends ApiWebScript
                 }
             }, true, true);
         }
-        catch (ApiException apiException)
+        catch (ApiException | WebScriptException apiException)
         {
-            renderErrorResponse(resolveException(apiException), res);
-        }
-        catch (WebScriptException webException)
-        {
-            renderErrorResponse(resolveException(webException), res);
+            assistant.renderException(apiException, res);
         }
         catch (RuntimeException runtimeException)
         {
-            renderErrorResponse(resolveException(runtimeException), res);
+            assistant.renderException(runtimeException, res);
         }
     }
 }

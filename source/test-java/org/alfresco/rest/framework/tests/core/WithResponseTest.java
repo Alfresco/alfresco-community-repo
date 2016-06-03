@@ -38,6 +38,7 @@ import static org.mockito.Mockito.when;
 
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
+import org.alfresco.rest.framework.tools.ApiAssistant;
 import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
 import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptDelete;
@@ -69,17 +70,17 @@ public class WithResponseTest
     @Test
     public void testDefaults() throws Exception
     {
-        WithResponse callBack = new WithResponse(Status.STATUS_OK,ApiWebScript.DEFAULT_JSON_CONTENT, ApiWebScript.CACHE_NEVER);
+        WithResponse callBack = new WithResponse(Status.STATUS_OK,ApiAssistant.DEFAULT_JSON_CONTENT, ApiAssistant.CACHE_NEVER);
         assertEquals(Status.STATUS_OK, callBack.getStatus());
-        assertEquals(ApiWebScript.DEFAULT_JSON_CONTENT, callBack.getContentInfo());
-        assertEquals(ApiWebScript.CACHE_NEVER, callBack.getCache());
+        assertEquals(ApiAssistant.DEFAULT_JSON_CONTENT, callBack.getContentInfo());
+        assertEquals(ApiAssistant.CACHE_NEVER, callBack.getCache());
         assertTrue(callBack.getHeaders().isEmpty());
     }
 
     @Test
     public void testSetHeader() throws Exception
     {
-        WithResponse callBack = new WithResponse(Status.STATUS_OK,ApiWebScript.DEFAULT_JSON_CONTENT, ApiWebScript.CACHE_NEVER);
+        WithResponse callBack = new WithResponse(Status.STATUS_OK,ApiAssistant.DEFAULT_JSON_CONTENT, ApiAssistant.CACHE_NEVER);
         callBack.setHeader("king", "can");
         callBack.setHeader("king", "kong");
         assertTrue(callBack.getHeaders().size() == 1);
@@ -91,7 +92,7 @@ public class WithResponseTest
     @Test
     public void testAddHeader() throws Exception
     {
-        WithResponse callBack = new WithResponse(Status.STATUS_OK,ApiWebScript.DEFAULT_JSON_CONTENT, ApiWebScript.CACHE_NEVER);
+        WithResponse callBack = new WithResponse(Status.STATUS_OK,ApiAssistant.DEFAULT_JSON_CONTENT, ApiAssistant.CACHE_NEVER);
         callBack.addHeader("king", "can");
         callBack.addHeader("king", "kong");
         assertTrue(callBack.getHeaders().size() == 1);
@@ -104,7 +105,7 @@ public class WithResponseTest
     @Test
     public void testSetters() throws Exception
     {
-        WithResponse callBack = new WithResponse(Status.STATUS_OK, ApiWebScript.DEFAULT_JSON_CONTENT, ApiWebScript.CACHE_NEVER);
+        WithResponse callBack = new WithResponse(Status.STATUS_OK, ApiAssistant.DEFAULT_JSON_CONTENT, ApiAssistant.CACHE_NEVER);
         callBack.setStatus(Status.STATUS_GONE);
         Cache myCache = new Cache(new Description.RequiredCache()
         {
@@ -140,7 +141,8 @@ public class WithResponseTest
     public void testSetResponse() throws Exception
     {
         AbstractResourceWebScript responseWriter = new ResourceWebScriptDelete();
-        WithResponse wr = new WithResponse(Status.STATUS_OK, ApiWebScript.DEFAULT_JSON_CONTENT, ApiWebScript.CACHE_NEVER);
+        responseWriter.setAssistant(new ApiAssistant());
+        WithResponse wr = new WithResponse(Status.STATUS_OK, ApiAssistant.DEFAULT_JSON_CONTENT, ApiAssistant.CACHE_NEVER);
 
         WebScriptResponse response = mock(WebScriptResponse.class);
 

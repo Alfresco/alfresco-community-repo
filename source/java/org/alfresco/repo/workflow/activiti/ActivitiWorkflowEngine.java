@@ -1238,8 +1238,15 @@ public class ActivitiWorkflowEngine extends BPMEngine implements WorkflowEngine
     }
     
     /**
-     * Converts the given list of {@link Task}s to a list of {@link WorkflowTask}s
-     * that have a valid domain.
+     * Converts the given list of {@link Task}s to a list of
+     * {@link WorkflowTask}s that have a valid domain.
+     * 
+     * Note that this method is not very performant. It will do many DB queries
+     * for each of the Task item in the list of tasks as parameter. Make sure
+     * that you limit the size of the tasks list depending on your needs. Hint:
+     * use the WorkflowTaskQuery query parameter setLimit() method to limit the
+     * number of Tasks to process
+     * 
      * @param tasks List<Task>
      */
     private List<WorkflowTask> getValidWorkflowTasks(List<Task> tasks)

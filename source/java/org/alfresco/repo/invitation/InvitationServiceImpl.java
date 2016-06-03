@@ -828,16 +828,22 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     }
 
     /**
-     * This is the general search invitation method returning {@link Invitation}s
+     * {@inheritDoc}
      * 
-     * @param criteria InvitationSearchCriteria
-     * @return the list of start tasks for invitations
+     * @deprecated
      */
     public List<Invitation> searchInvitation(final InvitationSearchCriteria criteria)
     {
-        int limit = 200;
+        return searchInvitation(criteria, 200);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public List<Invitation> searchInvitation(InvitationSearchCriteria criteria, int limit)
+    {
         List<String> invitationIds = searchInvitationsForIds(criteria, limit);
-        return invitationIds.isEmpty() ? Collections.<Invitation>emptyList() : searchInvitation(criteria, invitationIds);
+        return invitationIds.isEmpty() ? Collections.<Invitation> emptyList() : searchInvitation(criteria, invitationIds);
     }
 
     private List<Invitation> searchInvitation(final InvitationSearchCriteria criteria, List<String> invitationIds)
@@ -872,7 +878,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         if (toSearch == InvitationSearchCriteria.InvitationType.ALL
                     || toSearch == InvitationSearchCriteria.InvitationType.NOMINATED)
         {
-            for (WorkflowTask task : searchNominatedInvitations(criteria))
+            for (WorkflowTask task : searchNominatedInvitations(criteria, limit))
             {
                 String invitationId = task.getPath().getInstance().getId();
                 invitationIds.add(invitationId);
@@ -886,7 +892,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             (toSearch == InvitationSearchCriteria.InvitationType.ALL
                      || toSearch == InvitationSearchCriteria.InvitationType.MODERATED))
         {
-            for (WorkflowTask task: searchModeratedInvitations(criteria))
+            for (WorkflowTask task: searchModeratedInvitations(criteria, limit))
             {
                 String invitationId = task.getPath().getInstance().getId();
                 invitationIds.add(invitationId);
@@ -937,14 +943,23 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         }
         return true;
     }
-    
-    private List<WorkflowTask> searchModeratedInvitations(InvitationSearchCriteria criteria)
+
+    /**
+     * 
+     * @param criteria criteria to search by
+     * @param limit maximum number of IDs to return. If less than 1, there is no limit.
+     * @return list of WorkflowTask representing moderated invitations
+     */
+    private List<WorkflowTask> searchModeratedInvitations(InvitationSearchCriteria criteria, int limit)
     {
         long start = (logger.isDebugEnabled()) ? System.currentTimeMillis() : 0;
 
         WorkflowTaskQuery query = new WorkflowTaskQuery();
         query.setTaskState(WorkflowTaskState.IN_PROGRESS);
-        
+        if (limit > 0)
+        {
+            query.setLimit(limit);
+        }
         Map<QName, Object> properties = new HashMap<QName, Object>();
         String invitee = criteria.getInvitee();
         if (invitee != null)
@@ -998,13 +1013,22 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         return results;
     }
 
-    private List<WorkflowTask> searchNominatedInvitations(InvitationSearchCriteria criteria)
+    /**
+     * 
+     * @param criteria
+     * @param limit maximum number of IDs to return. If less than 1, there is no limit.
+     * @return list of WorkflowTask representing nominated invitations
+     */
+    private List<WorkflowTask> searchNominatedInvitations(InvitationSearchCriteria criteria, int limit)
     {
         long start = (logger.isDebugEnabled()) ? System.currentTimeMillis() : 0;
 
         WorkflowTaskQuery query = new WorkflowTaskQuery();
         query.setTaskState(WorkflowTaskState.IN_PROGRESS);
-        
+        if (limit > 0)
+        {
+            query.setLimit(limit);
+        }
         String invitee = criteria.getInvitee();
         if(invitee != null)
         {

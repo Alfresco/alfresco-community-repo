@@ -283,13 +283,35 @@ public interface InvitationService
     public List<Invitation> listPendingInvitationsForResource(Invitation.ResourceType resourceType, String resourceName);
 
     /**
-     * search invitation
+     * This is the general search invitation method returning {@link Invitation}
+     * This method has a hardcoded limit of 200 invitations to return. It has
+     * been deprecated and it is recommended to use the overloaded version for
+     * which you can specify an appropriate limit depending on the needs
      * 
      * @param criteria InvitationSearchCriteria
+     *            search criteria
      * @return the list of invitations
+     * 
+     * @deprecated
      */
     @NotAuditable
     public List<Invitation> searchInvitation(InvitationSearchCriteria criteria);
+
+    /**
+     * This is the general search invitation method returning {@link Invitation}
+     * This is the recommended method to use for searching invitations; Consider
+     * that the performance of the method will be greatly influenced by the
+     * limit specified
+     * 
+     * @param criteria
+     *            search criteria
+     * @param limit
+     *            maximum number of IDs to return. If less than 1, there is no
+     *            limit.
+     * @return the list of invitations
+     */
+    @NotAuditable
+    public List<Invitation> searchInvitation(InvitationSearchCriteria criteria, int limit);
 
     /**
      * @return true if emails are sent on invite.

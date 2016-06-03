@@ -1142,12 +1142,20 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         List<Invitation> resFive = invitationService.searchInvitation(crit1);
         assertEquals("user one does not have 2 nominated", 2, resFive.size());
 
+        // now limit the search to 1 returned value
+        List<Invitation> limitRes = invitationService.searchInvitation(crit1, 1);
+        assertEquals("user one does not have 1 nominated", 1, limitRes.size());
+
         /**
          * Search with an empty criteria - should find all open invitations
          */
         InvitationSearchCriteria crit2 = new InvitationSearchCriteriaImpl();
         invitationService.searchInvitation(crit2);
         assertTrue("search everything returned 0 elements", resFive.size() > 0);
+
+        // now search everything but limit the results to 3
+        invitationService.searchInvitation(crit2, 3);
+        assertTrue("search everything returned 0 or more than 3 elements", resFive.size() > 0 && resFive.size() <=3);
 
         InvitationSearchCriteriaImpl crit3 = new InvitationSearchCriteriaImpl();
         crit3.setInviter(USER_MANAGER);
@@ -1156,6 +1164,51 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
         List<Invitation> res3 = invitationService.searchInvitation(crit3);
         assertEquals("user one does not have 2 nominated", 2, res3.size());
 
+        //now limit the search to 1 result
+        res3 = invitationService.searchInvitation(crit3, 1);
+        assertEquals("user one does not have 1 nominated", 1, res3.size());
+    }
+
+    /**
+     * test that the search limiter works
+     */
+    public void testSearchInvitationWithLimit() throws Exception
+    {
+        Invitation.ResourceType resourceType = Invitation.ResourceType.WEB_SITE;
+        String resourceName = SITE_SHORT_NAME_INVITE;
+        String inviteeRole = SiteModel.SITE_COLLABORATOR;
+        String serverPath = "wibble";
+        String acceptUrl = "froob";
+        String rejectUrl = "marshmallow";
+
+        authenticationComponent.setCurrentUser(USER_MANAGER);
+
+        // Create 10 invites
+        for (int i = 0; i < 10; i++)
+        {
+            invitationService
+                    .inviteNominated(USER_ONE, resourceType, resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
+        }
+
+        // Invite USER_TWO
+        NominatedInvitation inviteForUserTwo = invitationService.inviteNominated(USER_TWO, resourceType, resourceName,
+                inviteeRole, serverPath, acceptUrl, rejectUrl);
+
+        InvitationSearchCriteriaImpl query = new InvitationSearchCriteriaImpl();
+        query.setInvitee(USER_TWO);
+
+        // search all of them
+        List<Invitation> results = invitationService.searchInvitation(query, 0);
+        assertEquals(1, results.size());
+        assertEquals(inviteForUserTwo.getInviteId(), results.get(0).getInviteId());
+
+        query = new InvitationSearchCriteriaImpl();
+        query.setInvitee(USER_ONE);
+
+        final int MAX_SEARCH = 3;
+        // only search for the first MAX_SEARCH
+        results = invitationService.searchInvitation(query, MAX_SEARCH);
+        assertEquals(MAX_SEARCH, results.size());
     }
 
     public void disabled_test100Invites() throws Exception
@@ -1175,7 +1228,7 @@ public abstract class AbstractInvitationServiceImplTest extends BaseAlfrescoSpri
             invitationService.inviteNominated(USER_ONE, resourceType, resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
         }
         
-        // Invite USER_TWO
+        // Invite USER_TWO 
         NominatedInvitation invite = invitationService.inviteNominated(USER_TWO, resourceType, resourceName, inviteeRole, serverPath, acceptUrl, rejectUrl);
         
         InvitationSearchCriteriaImpl query = new InvitationSearchCriteriaImpl();

@@ -73,11 +73,16 @@ public interface TaskComponent
     /**
      * Query for tasks
      * 
-     * @param query  the filter by which tasks are queried
-     * @param sameSession indicates that the returned {@link WorkflowTask} elements will be used in
-     *        the same session. If {@code true}, the returned List will be a lazy loaded list
-     *        providing greater performance.
-     * @return  the list of tasks matching the specified query
+     * Hint: use {@link WorkflowTaskQuery} setLimit() method to limit the number
+     * of processed items if you don't really need to go through all of them
+     * 
+     * @param query
+     *            the filter by which tasks are queried
+     * @param sameSession
+     *            indicates that the returned {@link WorkflowTask} elements will
+     *            be used in the same session. If {@code true}, the returned
+     *            List will be a lazy loaded list providing greater performance.
+     * @return the list of tasks matching the specified query
      */
     public List<WorkflowTask> queryTasks(final WorkflowTaskQuery query, boolean sameSession);
 

@@ -101,15 +101,22 @@ public abstract class AbstractTestFixture implements TestFixture
 
 	public void setup() throws Exception
 	{
+		setup(true);
+	}
+
+	public void setup(boolean createTestData) throws Exception
+	{
 		this.jetty = makeJettyComponent();
 		this.jetty.start();
 		this.applicationContext = jetty.getApplicationContext();
     	this.repoService = makeRepoService();
 		this.transactionHelper = (RetryingTransactionHelper)repoService.getApplicationContext().getBean("retryingTransactionHelper");
-		
-		populateTestData();
 
-    	createTestData();
+		if (createTestData)
+		{
+			populateTestData();
+			createTestData();
+		}
 	}
 	
 	public RepoService getRepoService()
@@ -139,6 +146,11 @@ public abstract class AbstractTestFixture implements TestFixture
 
     public TestNetwork getRandomNetwork()
     {
+		if (networks.isEmpty())
+		{
+			populateTestData();
+			createTestData();
+		}
     	int r = random.nextInt(networks.size());
     	List<TestNetwork> a = new ArrayList<TestNetwork>();
     	a.addAll(networks.values());

@@ -31,6 +31,7 @@ import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.rest.api.tests.AbstractBaseApiTest;
+import org.alfresco.rest.api.tests.NodeApiTest;
 import org.alfresco.rest.api.tests.RepoService;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
@@ -75,7 +76,9 @@ public class AbstractSingleNetworkSiteTest extends AbstractBaseApiTest
 
         jacksonUtil = new JacksonUtil(applicationContext.getBean("jsonHelper", JacksonHelper.class));
 
-        networkOne = getTestFixture().getRandomNetwork();
+        getTestFixture(false);
+        networkOne = getRepoService().createNetwork(this.getClass().getName().toLowerCase(), true);
+        networkOne.create();
         u1 = networkOne.createUser();
         tSite = createSite(networkOne, u1, SiteVisibility.PRIVATE);
 

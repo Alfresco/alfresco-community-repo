@@ -39,6 +39,9 @@ import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantAdminService;
+import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.NodeTarget;
@@ -169,7 +172,9 @@ public class NodeApiTest extends AbstractBaseApiTest
         users.add(user1);
         users.add(user2);
 
-        networkOne = getTestFixture().getRandomNetwork();
+        getTestFixture(false);
+        networkOne = getRepoService().createNetwork(NodeApiTest.class.getName().toLowerCase(), true);
+        networkOne.create();
         userOneN1 = networkOne.createUser();
         userTwoN1 = networkOne.createUser();
 
@@ -1527,24 +1532,20 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testCopySite() throws Exception
     {
-        TestNetwork network = getTestFixture().getRandomNetwork();
-        TestPerson cs1 = network.createUser();
-        Site tSite = createSite(network.getId(), cs1.getId(), SiteVisibility.PRIVATE);
-
         // create folder
-        Folder folderResp = createFolder(cs1.getId(), Nodes.PATH_MY, "siteCopytarget");
+        Folder folderResp = createFolder(userOneN1.getId(), Nodes.PATH_MY, "siteCopytarget");
         String targetId = folderResp.getId();
 
         Map<String, String> body = new HashMap<>();
         body.put("targetParentId", targetId);
 
         //test that you can't copy a site
-        post("nodes/"+tSite.getGuid()+"/copy", cs1.getId(), toJsonAsStringNonNull(body), null, 422);
+        post("nodes/"+userOneN1Site.getGuid()+"/copy", userOneN1.getId(), toJsonAsStringNonNull(body), null, 422);
 
-        String docLibNodeId = getSiteContainerNodeId(network.getId(), cs1.getId(), tSite.getId(), "documentLibrary");
+        String docLibNodeId = getSiteContainerNodeId(networkOne.getId(), userOneN1.getId(), userOneN1Site.getId(), "documentLibrary");
 
         //test that you can't copy a site doclib
-        post("nodes/"+docLibNodeId+"/copy", cs1.getId(), toJsonAsStringNonNull(body), null, 422);
+        post("nodes/"+docLibNodeId+"/copy", userOneN1.getId(), toJsonAsStringNonNull(body), null, 422);
 
     }
 

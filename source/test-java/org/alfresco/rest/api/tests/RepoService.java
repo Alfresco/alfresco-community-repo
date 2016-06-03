@@ -1329,12 +1329,12 @@ public class RepoService
 
 		public void create()
 		{
-			if(!getId().equals(TenantService.DEFAULT_DOMAIN))
+			if(!getId().equals(TenantService.DEFAULT_DOMAIN) && !tenantAdminService.existsTenant(getId()))
 			{
 				tenantAdminService.createTenant(getId(), "admin".toCharArray());
+				numNetworks++;
+				log("Created network " + getId());
 			}
-	    	numNetworks++;
-			log("Created network " + getId());
 		}
 
 		public TestSite createSite(SiteVisibility siteVisibility)

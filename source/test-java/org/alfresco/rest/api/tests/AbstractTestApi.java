@@ -73,8 +73,9 @@ public abstract class AbstractTestApi
 	@Before
 	public void setupTests() throws Exception
 	{
-		this.applicationContext = getTestFixture().getApplicationContext();
-		this.repoService = getTestFixture().getRepoService();
+		TestFixture testFixture = getTestFixture(false);
+		this.applicationContext = testFixture.getApplicationContext();
+		this.repoService = testFixture.getRepoService();
 		this.transactionHelper = (RetryingTransactionHelper)applicationContext.getBean("retryingTransactionHelper");
 		
 		HttpClientProvider httpClientProvider = (HttpClientProvider)applicationContext.getBean("httpClientProvider");
@@ -222,4 +223,9 @@ public abstract class AbstractTestApi
 	}
 
 	protected abstract TestFixture getTestFixture() throws Exception;
+
+	/**
+	 * @param createTestData The created instance can optionally create test data if required
+     */
+	protected abstract TestFixture getTestFixture(boolean createTestData) throws Exception;
 }

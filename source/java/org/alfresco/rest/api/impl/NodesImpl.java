@@ -2485,7 +2485,7 @@ public class NodesImpl implements Nodes
             }
 
             // Create a new file.
-            Node fileNode = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters);
+            final Node fileNode = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters);
 
             // RA-1052
             try
@@ -2852,3 +2852,4 @@ public class NodesImpl implements Nodes
         }
     }
 }
+

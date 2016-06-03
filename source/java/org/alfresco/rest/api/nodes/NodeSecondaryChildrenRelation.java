@@ -18,27 +18,21 @@
  */
 package org.alfresco.rest.api.nodes;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.framework.WebApiDescription;
-import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
-import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
-import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -88,37 +82,9 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
 
     @Override
     @WebApiDescription(title="Add secondary child assoc")
-    public List<AssocChild> create(String parentNodeId, List<AssocChild> entity, Parameters parameters)
+    public List<AssocChild> create(String parentNodeId, List<AssocChild> entities, Parameters parameters)
     {
-        List<AssocChild> result = new ArrayList<>(entity.size());
-
-        NodeRef parentNodeRef = nodes.validateNode(parentNodeId);
-
-        for (AssocChild assoc : entity)
-        {
-            QName assocTypeQName = getAssocType(assoc.getAssocType());
-
-            try
-            {
-                NodeRef childNodeRef = nodes.validateNode(assoc.getChildId());
-
-                String nodeName = (String)nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
-                QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
-
-                nodeService.addChild(parentNodeRef, childNodeRef, assocTypeQName, assocChildQName);
-            }
-            catch (AssociationExistsException aee)
-            {
-                throw new ConstraintViolatedException(aee.getMessage());
-            }
-            catch (DuplicateChildNodeNameException dcne)
-            {
-                throw new ConstraintViolatedException(dcne.getMessage());
-            }
-
-            result.add(assoc);
-        }
-        return result;
+        return nodes.addChildren(parentNodeId, entities);
     }
 
     @Override
@@ -129,7 +95,7 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
         NodeRef childNodeRef = nodes.validateNode(childNodeId);
 
         String assocTypeStr = parameters.getParameter(PARAM_ASSOC_TYPE);
-        QName assocTypeQName = getAssocType(assocTypeStr, false);
+        QName assocTypeQName = nodes.getAssocType(assocTypeStr, false);
 
         List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(parentNodeRef);
 

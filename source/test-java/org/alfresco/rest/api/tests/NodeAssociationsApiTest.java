@@ -1198,6 +1198,77 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         }
     }
 
+    @Test
+    public void testCreateNodeWithAssocs() throws Exception
+    {
+        // as user 1
+        String myFolderNodeId = getMyNodeId(user1);
+
+        // create node with some assocs in a single call
+
+        // create folder
+        Node n = new Node();
+        n.setName("f1");
+        n.setNodeType(TYPE_CM_FOLDER);
+        n.setAspectNames(Arrays.asList(ASPECT_CM_PREFERENCES));
+        HttpResponse response = post(getNodeChildrenUrl(myFolderNodeId), user1, toJsonAsStringNonNull(n), 201);
+        String f1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+
+        // create content node
+        String o1Name = "o1";
+        n = new Node();
+        n.setName(o1Name);
+        n.setNodeType(TYPE_CM_CONTENT);
+        response = post(getNodeChildrenUrl(f1Id), user1, toJsonAsStringNonNull(n), 201);
+        String o1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+
+        String o2Name = "o2";
+        n = new Node();
+        n.setName(o2Name);
+        n.setNodeType(TYPE_CM_CONTENT);
+        response = post(getNodeChildrenUrl(f1Id), user1, toJsonAsStringNonNull(n), 201);
+        String o2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+
+        // create folder node with some assocs
+        String f2Name = "f2";
+        n = new Node();
+        n.setName(f2Name);
+        n.setNodeType(TYPE_CM_FOLDER);
+
+        AssocChild secChild = new AssocChild(o1Id, ASSOC_TYPE_CM_CONTAINS);
+        n.setSecondaryChildren(Collections.singletonList(secChild));
+
+        AssocTarget tgt = new AssocTarget(o2Id, ASSOC_TYPE_CM_REFERENCES);
+        n.setTargets(Collections.singletonList(tgt));
+
+        response = post(getNodeChildrenUrl(myFolderNodeId), user1, toJsonAsStringNonNull(n), 201);
+        String f2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+
+        try
+        {
+            Paging paging = getPaging(0, 100);
+
+            response = getAll(getNodeSecondaryChildrenUrl(f2Id), user1, paging, null, 200);
+            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(o1Id, nodes.get(0).getId());
+
+            response = getAll(getNodeTargetsUrl(f2Id), user1, paging, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(o2Id, nodes.get(0).getId());
+
+            // TODO test model with mandatory aspect
+        }
+        finally
+        {
+            // some cleanup
+            Map<String, String> params = Collections.singletonMap(Nodes.PARAM_PERMANENT, "true");
+            delete(URL_NODES, user1, f1Id, params, 204);
+            delete(URL_NODES, user1, f2Id, params, 204);
+        }
+    }
+
     @Override
     public String getScope()
     {

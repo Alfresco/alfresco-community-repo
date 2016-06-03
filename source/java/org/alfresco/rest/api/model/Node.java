@@ -75,8 +75,11 @@ public class Node implements Comparable<Node>
     protected PathInfo pathInfo;
     protected String prefixTypeQName;
 
-    // note: currently only used for create request
+    // please note: these are currently only used (optionally) for node create request
     protected String relativePath;
+    protected List<AssocChild> secondaryChildren;
+    protected List<AssocTarget> targets;
+
 
     protected List<String> aspectNames;
     protected Map<String, Object> properties;
@@ -304,14 +307,14 @@ public class Node implements Comparable<Node>
         this.allowableOperations = allowableOperations;
     }
 
-    public String getRelativePath()
+    public List<AssocTarget> getTargets()
     {
-        return relativePath;
+        return targets;
     }
 
-    public void setRelativePath(String relativePath)
+    public void setTargets(List<AssocTarget> targets)
     {
-        this.relativePath = relativePath;
+        this.targets = targets;
     }
 
     public Date getArchivedAt()
@@ -348,6 +351,26 @@ public class Node implements Comparable<Node>
 
         Node node = (Node)other;
         return EqualsHelper.nullSafeEquals(getNodeRef(), node.getNodeRef());
+    }
+
+    public String getRelativePath()
+    {
+        return relativePath;
+    }
+
+    public void setRelativePath(String relativePath)
+    {
+        this.relativePath = relativePath;
+    }
+
+    public List<AssocChild> getSecondaryChildren()
+    {
+        return secondaryChildren;
+    }
+
+    public void setSecondaryChildren(List<AssocChild> secondaryChildren)
+    {
+        this.secondaryChildren = secondaryChildren;
     }
 
     @Override

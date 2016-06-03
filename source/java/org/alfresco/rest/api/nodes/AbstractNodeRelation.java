@@ -24,7 +24,6 @@ import org.alfresco.rest.api.model.Assoc;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
-import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
@@ -101,37 +100,6 @@ public class AbstractNodeRelation implements InitializingBean
         this.dictionaryService = sr.getDictionaryService();
     }
 
-    protected QName getAssocType(String assocTypeQNameStr)
-    {
-        return getAssocType(assocTypeQNameStr, true);
-    }
-
-    protected QName getAssocType(String assocTypeQNameStr, boolean mandatory)
-    {
-        QName assocType = null;
-
-        if ((assocTypeQNameStr != null) && (! assocTypeQNameStr.isEmpty()))
-        {
-            assocType = nodes.createQName(assocTypeQNameStr);
-            if (dictionaryService.getAssociation(assocType) == null)
-            {
-                throw new InvalidArgumentException("Unknown assocType: " + assocTypeQNameStr);
-            }
-
-            if (EXCLUDED_NS.contains(assocType.getNamespaceURI()))
-            {
-                throw new InvalidArgumentException("Invalid assocType: " + assocTypeQNameStr);
-            }
-        }
-
-        if (mandatory && (assocType == null))
-        {
-            throw new InvalidArgumentException("Missing "+PARAM_ASSOC_TYPE);
-        }
-
-        return assocType;
-    }
-
     protected QNamePattern getAssocTypeFromWhereElseAll(Parameters parameters)
     {
         QNamePattern assocTypeQNamePattern = RegexQNamePattern.MATCH_ALL;
@@ -145,7 +113,7 @@ public class AbstractNodeRelation implements InitializingBean
             String assocTypeQNameStr = propertyWalker.getProperty(PARAM_ASSOC_TYPE, WhereClauseParser.EQUALS, String.class);
             if (assocTypeQNameStr != null)
             {
-                assocTypeQNamePattern = getAssocType(assocTypeQNameStr);
+                assocTypeQNamePattern = nodes.getAssocType(assocTypeQNameStr);
             }
         }
 

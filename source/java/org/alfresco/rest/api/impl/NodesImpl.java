@@ -56,6 +56,7 @@ import org.alfresco.rest.api.Activities;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.model.AssocChild;
+import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
@@ -64,6 +65,7 @@ import org.alfresco.rest.api.model.PathInfo;
 import org.alfresco.rest.api.model.PathInfo.ElementInfo;
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.api.nodes.NodeAssocService;
 import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.DisabledServiceException;
@@ -100,6 +102,7 @@ import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.model.FileNotFoundException;
+import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentService;
@@ -198,6 +201,7 @@ public class NodesImpl implements Nodes
     private SiteService siteService;
     private ActivityPoster poster;
     private RetryingTransactionHelper retryingTransactionHelper;
+    private NodeAssocService nodeAssocService;
 
     private enum Activity_Type
     {
@@ -288,6 +292,13 @@ public class NodesImpl implements Nodes
     {
         this.poster = poster;
     }
+
+    // Introduces permissions for Node Assoc (see public-rest-context.xml)
+    public void setNodeAssocService(NodeAssocService nodeAssocService)
+    {
+        this.nodeAssocService = nodeAssocService;
+    }
+
 
     // excluded namespaces (aspects, properties, assoc types)
     private static final List<String> EXCLUDED_NS = Arrays.asList(NamespaceService.SYSTEM_MODEL_1_0_URI);
@@ -1586,6 +1597,18 @@ public class NodesImpl implements Nodes
             writer.putContent("");
         }
 
+        // eg. to create mandatory assoc(s)
+
+        if (nodeInfo.getTargets() != null)
+        {
+            addTargets(nodeRef.getId(), nodeInfo.getTargets());
+        }
+
+        if (nodeInfo.getSecondaryChildren() != null)
+        {
+            addChildren(nodeRef.getId(), nodeInfo.getSecondaryChildren());
+        }
+
         Node newNode = getFolderOrDocument(nodeRef.getId(), parameters);
 
         /* RA-834: commented-out since not currently applicable for empty file
@@ -1611,6 +1634,105 @@ public class NodesImpl implements Nodes
 
         return parentNodeRef;
     }
+
+    public List<AssocChild> addChildren(String parentNodeId, List<AssocChild> entities)
+    {
+        NodeRef parentNodeRef = validateNode(parentNodeId);
+
+        List<AssocChild> result = new ArrayList<>(entities.size());
+
+        for (AssocChild assoc : entities)
+        {
+            QName assocTypeQName = getAssocType(assoc.getAssocType());
+
+            try
+            {
+                NodeRef childNodeRef = validateNode(assoc.getChildId());
+
+                String nodeName = (String)nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
+                QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
+
+                nodeService.addChild(parentNodeRef, childNodeRef, assocTypeQName, assocChildQName);
+            }
+            catch (AssociationExistsException aee)
+            {
+                throw new ConstraintViolatedException(aee.getMessage());
+            }
+            catch (DuplicateChildNodeNameException dcne)
+            {
+                throw new ConstraintViolatedException(dcne.getMessage());
+            }
+
+            result.add(assoc);
+        }
+
+        return result;
+    }
+
+    public List<AssocTarget> addTargets(String sourceNodeId, List<AssocTarget> entities)
+    {
+        List<AssocTarget> result = new ArrayList<>(entities.size());
+
+        NodeRef srcNodeRef = validateNode(sourceNodeId);
+
+        for (AssocTarget assoc : entities)
+        {
+            String assocTypeStr = assoc.getAssocType();
+            QName assocTypeQName = getAssocType(assocTypeStr);
+
+            String targetNodeId = assoc.getTargetId();
+
+            try
+            {
+                NodeRef tgtNodeRef = validateNode(targetNodeId);
+                nodeAssocService.createAssociation(srcNodeRef, tgtNodeRef, assocTypeQName);
+            }
+            catch (AssociationExistsException aee)
+            {
+                throw new ConstraintViolatedException("Node association '"+assocTypeStr+"' already exists from "+sourceNodeId+" to "+targetNodeId);
+            }
+            catch (IllegalArgumentException iae)
+            {
+                // note: for now, we assume it is invalid assocType - alternatively, we could attempt to pre-validate via dictionary.getAssociation
+                throw new InvalidArgumentException(sourceNodeId+","+assocTypeStr+","+targetNodeId);
+            }
+
+            result.add(assoc);
+        }
+        return result;
+    }
+
+    public QName getAssocType(String assocTypeQNameStr)
+    {
+        return getAssocType(assocTypeQNameStr, true);
+    }
+
+    public QName getAssocType(String assocTypeQNameStr, boolean mandatory)
+    {
+        QName assocType = null;
+
+        if ((assocTypeQNameStr != null) && (! assocTypeQNameStr.isEmpty()))
+        {
+            assocType = createQName(assocTypeQNameStr);
+            if (dictionaryService.getAssociation(assocType) == null)
+            {
+                throw new InvalidArgumentException("Unknown assocType: " + assocTypeQNameStr);
+            }
+
+            if (EXCLUDED_NS.contains(assocType.getNamespaceURI()))
+            {
+                throw new InvalidArgumentException("Invalid assocType: " + assocTypeQNameStr);
+            }
+        }
+
+        if (mandatory && (assocType == null))
+        {
+            throw new InvalidArgumentException("Missing assocType");
+        }
+
+        return assocType;
+    }
+
 
     private NodeRef createNodeImpl(NodeRef parentNodeRef, String nodeName, QName nodeTypeQName, Map<QName, Serializable> props)
     {

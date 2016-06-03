@@ -5810,8 +5810,6 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
         ((CMISAbstractDictionaryService) cmisDictionaryService).afterDictionaryDestroy();
         ((CMISAbstractDictionaryService) cmisDictionaryService).afterDictionaryInit();
-
-        namespaceDao.addPrefix("test", "http://www.alfresco.org/test/cmis-query-test");
     }
 
     private void addTypeSortTestData()

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2010 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -30,6 +30,7 @@ import java.util.Set;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoMySQLClusterNDBDialect;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.domain.node.NodeDAO.ChildAssocRefQueryCallback;
 import org.alfresco.repo.domain.node.Transaction;
@@ -716,17 +717,17 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
      * @see SchemaBootstrap#DEFAULT_MAX_STRING_LENGTH
      */
     @SuppressWarnings("deprecation")
-    public void testNodeStringLengthWorker() throws Exception
+    public void testMySQLInnoDBNodeStringLengthWorker() throws Exception
     {
         setComplete();
         endTransaction();
         
-        // Skip of the dialect is not MySQL
+        // Skip of the dialect if not MySQL (also skip for MySQL Cluster NDB)
         Dialect dialect = (Dialect) applicationContext.getBean("dialect");
-        if (!(dialect instanceof MySQLInnoDBDialect))
+        if ((dialect instanceof AlfrescoMySQLClusterNDBDialect) || (! (dialect instanceof MySQLInnoDBDialect)))
         {
             return;
-}
+        }
         SchemaBootstrap schemaBootstrap = (SchemaBootstrap) applicationContext.getBean("schemaBootstrap");
         assertEquals("Expected max string length to be MAX", Integer.MAX_VALUE, SchemaBootstrap.getMaxStringLength());
         
@@ -751,7 +752,7 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
             sb.append("A");
         }
         final String longString = sb.toString();
-        // Persist the property using the default MAX_VALUE so that it does into the string_value
+        // Persist the property using the default MAX_VALUE so that it goes into the string_value
         schemaBootstrap.setMaximumStringLength(Integer.MAX_VALUE);
         schemaBootstrap.onApplicationEvent(new ContextRefreshedEvent(applicationContext));
         txnService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2005-2014 Alfresco Software Limited.
+ * Copyright (C) 2005-2016 Alfresco Software Limited.
  *
  * This file is part of Alfresco
  *
@@ -37,6 +37,7 @@ import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
 import org.alfresco.repo.domain.audit.AuditDAO.AuditApplicationInfo;
 import org.alfresco.repo.domain.contentdata.ContentDataDAO;
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoMySQLClusterNDBDialect;
 import org.alfresco.repo.domain.propval.PropValGenerator;
 import org.alfresco.repo.domain.propval.PropertyValueDAO;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -51,6 +52,7 @@ import org.alfresco.util.ApplicationContextHelper;
 import org.alfresco.util.GUID;
 import org.alfresco.util.Pair;
 import org.apache.commons.lang.mutable.MutableInt;
+import org.hibernate.dialect.Dialect;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -542,6 +544,12 @@ public class AuditDAOTest extends TestCase
      */
     public void testScriptCanDeleteOrphanedProps() throws Exception
     {
+        Dialect dialect = (Dialect) ctx.getBean("dialect");
+        if (dialect instanceof AlfrescoMySQLClusterNDBDialect)
+        {
+            throw new Exception("TODO review this test case with NDB - note: throw exeception here else causes later tests to fail (when running via DomainTestSuite)");
+        }
+        
         // single test
         scriptCanDeleteOrphanedPropsWork(false);
     }

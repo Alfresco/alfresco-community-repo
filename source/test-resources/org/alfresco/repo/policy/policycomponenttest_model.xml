@@ -60,28 +60,28 @@
          </associations>            
       </type>
 
-      <type name="test:a_type">
+      <type name="poltest:a_type">
          <parent>sys:base</parent>
          <properties>
-            <property name="test:a_type">
+            <property name="poltest:a_type">
                <type>d:text</type>
             </property>
          </properties>
       </type>
 
-      <type name="test:b_type">
-         <parent>test:a_type</parent>
+      <type name="poltest:b_type">
+         <parent>poltest:a_type</parent>
          <properties>
-            <property name="test:b_type">
+            <property name="poltest:b_type">
                <type>d:text</type>
             </property>
          </properties>
       </type>
 
-      <type name="test:c_type">
-         <parent>test:b_type</parent>
+      <type name="poltest:c_type">
+         <parent>poltest:b_type</parent>
          <properties>
-            <property name="test:c_type">
+            <property name="poltest:c_type">
                <type>d:text</type>
             </property>
          </properties>

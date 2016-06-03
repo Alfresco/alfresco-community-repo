@@ -34,15 +34,15 @@ public class Association
     }
 
     // child assoc
-    private Boolean isPrimaryParent;
+    private Boolean isPrimary;
 
-    public Boolean getIsPrimaryParent()
+    public Boolean getIsPrimary()
     {
-        return isPrimaryParent;
+        return isPrimary;
     }
 
-    public void setIsPrimaryParent(Boolean isPrimaryParent)
+    public void setIsPrimary(Boolean isPrimary)
     {
-        this.isPrimaryParent = isPrimaryParent;
+        this.isPrimary = isPrimary;
     }
 }

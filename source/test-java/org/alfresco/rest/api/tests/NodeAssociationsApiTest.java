@@ -513,7 +513,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertEquals(1, nodes.size());
             assertEquals(f2Id, nodes.get(0).getId());
             assertEquals(ASSOC_TYPE_CM_CONTAINS, nodes.get(0).getAssociation().getAssocType());
-            assertTrue(nodes.get(0).getAssociation().getIsPrimaryParent());
+            assertTrue(nodes.get(0).getAssociation().getIsPrimary());
 
             // create secondary child assoc
             AssocChild secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS);
@@ -540,7 +540,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                     i++;
                 }
                 assertEquals(o2Id, node.getId());
-                assertFalse(nodeAssoc.getIsPrimaryParent());
+                assertFalse(nodeAssoc.getIsPrimary());
             }
             assertEquals(2, i);
 
@@ -555,7 +555,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                 if (nodeId.equals(f2Id))
                 {
                     assertEquals(ASSOC_TYPE_CM_CONTAINS, nodeAssoc.getAssocType());
-                    assertTrue(nodeAssoc.getIsPrimaryParent());
+                    assertTrue(nodeAssoc.getIsPrimary());
                     i++;
                 }
                 else if (nodeId.equals(f1Id))
@@ -568,7 +568,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                     {
                         i++;
                     }
-                    assertFalse(nodeAssoc.getIsPrimaryParent());
+                    assertFalse(nodeAssoc.getIsPrimary());
                 }
             }
             assertEquals(3, i);
@@ -594,13 +594,13 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                 if (nodeId.equals(f2Id))
                 {
                     assertEquals(ASSOC_TYPE_CM_CONTAINS, nodeAssoc.getAssocType());
-                    assertTrue(nodeAssoc.getIsPrimaryParent());
+                    assertTrue(nodeAssoc.getIsPrimary());
                     i++;
                 }
                 else if (nodeId.equals(f1Id))
                 {
                     assertEquals(ASSOC_TYPE_CM_CONTAINS, nodeAssoc.getAssocType());
-                    assertFalse(nodeAssoc.getIsPrimaryParent());
+                    assertFalse(nodeAssoc.getIsPrimary());
                     i++;
                 }
             }
@@ -614,14 +614,14 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertEquals(1, nodes.size());
             assertEquals(o2Id, nodes.get(0).getId());
             assertEquals(ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
-            assertFalse(nodes.get(0).getAssociation().getIsPrimaryParent());
+            assertFalse(nodes.get(0).getAssociation().getIsPrimary());
 
             response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f1Id, nodes.get(0).getId());
             assertEquals(ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
-            assertFalse(nodes.get(0).getAssociation().getIsPrimaryParent());
+            assertFalse(nodes.get(0).getAssociation().getIsPrimary());
 
 
             params = new HashMap<>(2);

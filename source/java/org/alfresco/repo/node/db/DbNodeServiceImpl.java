@@ -840,9 +840,9 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
     public int countChildAssocs(NodeRef nodeRef, boolean isPrimary) throws InvalidNodeRefException
     {    
-    	final Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
-    	final Long nodeId = nodePair.getFirst();
-    	return nodeDAO.countChildAssocsByParent(nodeId, isPrimary);
+        final Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+        final Long nodeId = nodePair.getFirst();
+        return nodeDAO.countChildAssocsByParent(nodeId, isPrimary);
     }
     
     @Override
@@ -911,7 +911,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                         {
                             logger.trace(
                                     "Aspect-triggered association removal: " +
-                            		"Ignoring child associations where one of the nodes is pending delete: " + childAssocPair);
+                                    "Ignoring child associations where one of the nodes is pending delete: " + childAssocPair);
                         }
                         return true;
                     }
@@ -1971,10 +1971,10 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
     @Extend(traitAPI=NodeServiceTrait.class,extensionAPI=NodeServiceExtension.class)
     public NodeRef getChildByName(NodeRef nodeRef, QName assocTypeQName, String childName)
     {
-    	ParameterCheck.mandatory("childName", childName);
-    	ParameterCheck.mandatory("nodeRef", nodeRef);
-    	ParameterCheck.mandatory("assocTypeQName", assocTypeQName);
-    	
+        ParameterCheck.mandatory("childName", childName);
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        ParameterCheck.mandatory("assocTypeQName", assocTypeQName);
+        
         // Get the node
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
         Long nodeId = nodePair.getFirst();

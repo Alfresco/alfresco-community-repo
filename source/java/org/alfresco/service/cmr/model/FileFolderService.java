@@ -454,14 +454,15 @@ public interface FileFolderService
      * Lists page of immediate child objects of the given context node
      * with specification of which types to list and optional filtering (exclusion of certain child file/folder subtypes) and sorting
      * @param rootNodeRef NodeRef
-     * @param searchTypeQNames   QNames of types to list
+     * @param searchTypeQNames QNames of assoc types to list
+     * @param searchTypeQNames QNames of node types to list
      * @param ignoreAspectQNames Set<QName>
      * @param sortProps List<Pair<QName, Boolean>>
      * @param pagingRequest PagingRequest
      * @return list of node refs, never null
      */
     @Auditable(parameters = {"rootNodeRef"})
-    public PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, List<FilterProp> filterProps, PagingRequest pagingRequest);
+    public PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> assocTypeQNames, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, List<FilterProp> filterProps, PagingRequest pagingRequest);
 
 
     /**

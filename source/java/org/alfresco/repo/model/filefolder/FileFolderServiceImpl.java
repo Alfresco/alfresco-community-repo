@@ -490,9 +490,15 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
     }
 
     @Override
-    public PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, List<FilterProp> filterProps, PagingRequest pagingRequest)
+    public PagingResults<FileInfo> list(NodeRef rootNodeRef,
+                                        Set<QName> assocTypeQNames,
+                                        Set<QName> searchTypeQNames,
+                                        Set<QName> ignoreAspectQNames,
+                                        List<Pair<QName, Boolean>> sortProps,
+                                        List<FilterProp> filterProps,
+                                        PagingRequest pagingRequest)
     {
-        CannedQueryResults<NodeRef> results = listImpl(rootNodeRef, null,  searchTypeQNames, ignoreAspectQNames, sortProps, filterProps, pagingRequest);
+        CannedQueryResults<NodeRef> results = listImpl(rootNodeRef, null,  assocTypeQNames, searchTypeQNames, ignoreAspectQNames, sortProps, filterProps, pagingRequest);
         return getPagingResults(pagingRequest, results);
     }
     
@@ -521,10 +527,10 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
      */
     private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern,  Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest)
     {
-        return listImpl(contextNodeRef, pattern, searchTypeQNames, ignoreAspectQNames, sortProps, null, pagingRequest);
+        return listImpl(contextNodeRef, pattern, Collections.singleton(ContentModel.ASSOC_CONTAINS), searchTypeQNames, ignoreAspectQNames, sortProps, null, pagingRequest);
     }
 
-    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern,  Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames,
+    private CannedQueryResults<NodeRef> listImpl(NodeRef contextNodeRef, String pattern, Set<QName> assocTypeQNames, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames,
                                                  List<Pair<QName, Boolean>> sortProps, List<FilterProp> filterProps, PagingRequest pagingRequest)
     {
         Long start = (logger.isDebugEnabled() ? System.currentTimeMillis() : null);
@@ -532,7 +538,7 @@ public class FileFolderServiceImpl extends AbstractBaseCopyService implements Fi
         // get canned query
         GetChildrenCannedQueryFactory getChildrenCannedQueryFactory = (GetChildrenCannedQueryFactory)cannedQueryRegistry.getNamedObject(CANNED_QUERY_FILEFOLDER_LIST);
 
-        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, Collections.singleton(ContentModel.ASSOC_CONTAINS), searchTypeQNames, ignoreAspectQNames, filterProps, sortProps, pagingRequest);
+        GetChildrenCannedQuery cq = (GetChildrenCannedQuery)getChildrenCannedQueryFactory.getCannedQuery(contextNodeRef, pattern, assocTypeQNames, searchTypeQNames, ignoreAspectQNames, filterProps, sortProps, pagingRequest);
 
         // execute canned query
         CannedQueryResults<NodeRef> results = cq.execute();

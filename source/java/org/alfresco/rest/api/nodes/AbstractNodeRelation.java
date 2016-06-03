@@ -63,7 +63,7 @@ public class AbstractNodeRelation implements InitializingBean
     // excluded namespaces (assoc types)
     protected static final List<String> EXCLUDED_NS = Arrays.asList(NamespaceService.SYSTEM_MODEL_1_0_URI);
 
-    private final static Set<String> WHERE_PARAMS =
+    private final static Set<String> WHERE_PARAMS_ASSOC_TYPE =
             new HashSet<>(Arrays.asList(new String[] {PARAM_ASSOC_TYPE}));
 
     protected ServiceRegistry sr;
@@ -131,7 +131,7 @@ public class AbstractNodeRelation implements InitializingBean
         Query q = parameters.getQuery();
         if (q != null)
         {
-            MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(WHERE_PARAMS, null);
+            MapBasedQueryWalker propertyWalker = new MapBasedQueryWalker(WHERE_PARAMS_ASSOC_TYPE, null);
             QueryHelper.walk(q, propertyWalker);
 
             String assocTypeQNameStr = propertyWalker.getProperty(PARAM_ASSOC_TYPE, WhereClauseParser.EQUALS, String.class);

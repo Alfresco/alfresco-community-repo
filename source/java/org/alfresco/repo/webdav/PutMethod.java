@@ -249,7 +249,7 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
             //                     Note, for MNT-15801, that the aspect is only applied if:
             //                         - the node is locked AND
             //                         - the node does not have any content (zero length binaries included)
-            if (nodeLockInfo != null && nodeLockInfo.getToken() != null && !(ContentData.hasContent(contentData) && contentData.getSize() > 0))
+            if (nodeLockInfo != null && nodeLockInfo.isExclusive() && !(ContentData.hasContent(contentData) && contentData.getSize() > 0))
             {
                 getNodeService().addAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_NO_CONTENT, null);
             }

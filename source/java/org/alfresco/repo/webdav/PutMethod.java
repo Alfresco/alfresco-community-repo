@@ -231,11 +231,6 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
                 getDAVHelper().getPolicyBehaviourFilter().disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
                 disabledVersioning = true;
             }
-            // ALF-16756: To avoid firing inbound rules too early (while a node is still locked) apply the no content aspect
-            if (nodeLockInfo != null && nodeLockInfo.isExclusive() && !(ContentData.hasContent(contentData) && contentData.getSize() > 0))
-            {
-                getNodeService().addAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_NO_CONTENT, null);
-            }
             // Access the content
             ContentWriter writer = fileFolderService.getWriter(contentNodeInfo.getNodeRef());
         
@@ -245,10 +240,20 @@ public class PutMethod extends WebDAVMethod implements ActivityPostProducer
     
             // Get the input stream from the request data
             InputStream is = m_request.getInputStream();
-        
+            
     
             // Write the new data to the content node
             writer.putContent(is);
+          
+            // ALF-16756: To avoid firing inbound rules too early (while a node is still locked) apply the no content aspect
+            //                     Note, for MNT-15801, that the aspect is only applied if:
+            //                         - the node is locked AND
+            //                         - the node does not have any content (zero length binaries included)
+            if (nodeLockInfo != null && nodeLockInfo.getToken() != null && !(ContentData.hasContent(contentData) && contentData.getSize() > 0))
+            {
+                getNodeService().addAspect(contentNodeInfo.getNodeRef(), ContentModel.ASPECT_NO_CONTENT, null);
+            }
+            
             // Ask for the document metadata to be extracted
             Action extract = getActionService().createAction(ContentMetadataExtracter.EXECUTOR_NAME);
             if(extract != null)

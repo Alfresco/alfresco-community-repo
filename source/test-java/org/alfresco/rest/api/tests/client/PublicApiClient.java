@@ -744,7 +744,7 @@ public class PublicApiClient
 
         public HttpResponse remove(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String errorMessage) throws PublicApiException
         {
-            return remove(entityCollectionName, entityId, relationCollectionName, relationId, errorMessage, HttpServletResponse.SC_GONE);
+            return remove(entityCollectionName, entityId, relationCollectionName, relationId, errorMessage, HttpServletResponse.SC_NO_CONTENT);
         }
 		
 		public HttpResponse remove(String entityCollectionName, String entityId, String relationCollectionName, String relationId, String errorMessage, int expectedStatus) throws PublicApiException

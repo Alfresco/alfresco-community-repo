@@ -927,13 +927,14 @@ public class SitesImpl implements Sites
         }
 
         String siteId = siteInfo.getShortName();
+        NodeRef siteNodeRef = siteInfo.getNodeRef();
 
         // default false (if not provided)
         boolean skipShareSurfConfig = Boolean.valueOf(parameters.getParameter(PARAM_SKIP_SURF_CONFIGURATION));
         if (skipShareSurfConfig == false)
         {
             // import default/fixed preset Share surf config
-            importSite(siteId);
+            importSite(siteId, siteNodeRef);
         }
 
         // pre-create doclib
@@ -943,7 +944,6 @@ public class SitesImpl implements Sites
         boolean skipAddToFavorites = Boolean.valueOf(parameters.getParameter(PARAM_SKIP_ADDTOFAVORITES));
         if (skipAddToFavorites == false)
         {
-            NodeRef siteNodeRef = siteInfo.getNodeRef();
             String personId = AuthenticationUtil.getFullyAuthenticatedUser();
             favouritesService.addFavourite(personId, siteNodeRef); // ignore result
         }
@@ -1012,11 +1012,10 @@ public class SitesImpl implements Sites
         return site;
     }
 
-    private void importSite(final String siteId)
+    private void importSite(final String siteId, final NodeRef siteNodeRef)
     {
         ImportPackageHandler acpHandler = new SiteImportPackageHandler(siteSurfConfig, siteId);
-        Location location = new Location(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
-        location.setPath("/app:company_home/st:sites/cm:" + ISO9075.encode(siteId));
+        Location location = new Location(siteNodeRef);
         ImporterBinding binding = new ImporterBinding()
         {
             @Override

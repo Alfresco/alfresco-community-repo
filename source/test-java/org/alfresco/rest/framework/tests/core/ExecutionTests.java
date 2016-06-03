@@ -321,7 +321,7 @@ public class ExecutionTests extends AbstractContextTest
         //System.out.println(errorMessage);
         assertTrue(errorMessage.contains("\"errorKey\":\"framework.exception.ApiDefault\""));
         assertTrue(errorMessage.contains("\"statusCode\":500"));
-        assertTrue(errorMessage.contains("\"stackTrace\":\"[org.alfresco.rest.framework.tests.core.ExecutionTests.testRenderError("));
+        assertTrue(errorMessage.contains("\"stackTrace\":\" \""));
         assertTrue(errorMessage.contains("\"descriptionURL\":\""+DefaultExceptionResolver.ERROR_URL+"\""));
     }
 

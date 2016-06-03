@@ -40,8 +40,11 @@ import org.alfresco.rest.framework.jacksonextensions.JacksonHelper.Writer;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.apache.chemistry.opencmis.server.shared.ThresholdOutputStreamFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonMappingException;
@@ -64,6 +67,7 @@ import org.springframework.extensions.webscripts.servlet.WebScriptServletRespons
  */
 public abstract class ApiWebScript extends AbstractWebScript
 {
+    private static Log logger = LogFactory.getLog(ApiWebScript.class);
     protected JacksonHelper jsonHelper;
     ExceptionResolver<Exception> defaultResolver = new DefaultExceptionResolver();
     ExceptionResolver<Exception> resolver;
@@ -208,15 +212,27 @@ public abstract class ApiWebScript extends AbstractWebScript
      * @param res web script response
      * @throws IOException
      */
-    public void renderErrorResponse(final ErrorResponse errorResponse, final WebScriptResponse res) throws IOException {
-        
-        errorResponse.setDescriptionURL(DefaultExceptionResolver.ERROR_URL);
+    public void renderErrorResponse(ErrorResponse errorResponse, final WebScriptResponse res) throws IOException {
+
+        String errorKey = errorResponse.getErrorKey();
+
+        if (logger.isDebugEnabled())
+        {
+            errorKey = GUID.generate();
+            logger.debug(errorKey+" : ApiWebScript : "+errorResponse.getStackTrace());
+        }
+
+        final ErrorResponse errorToWrite = new ErrorResponse(errorKey,
+                                                    errorResponse.getStatusCode(),
+                                                    errorResponse.getBriefSummary(),
+                                                    DefaultExceptionResolver.ERROR_URL,
+                                                    errorResponse.getAdditionalState());
 
         setContentInfoOnResponse(res, DEFAULT_JSON_CONTENT);
         
         // Status must be set before the response is written by Jackson (which will by default close and commit the response).
         // In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important.
-        res.setStatus(errorResponse.getStatusCode());
+        res.setStatus(errorToWrite.getStatusCode());
 
         jsonHelper.withWriter(res.getOutputStream(), new Writer()
         {
@@ -226,7 +242,7 @@ public abstract class ApiWebScript extends AbstractWebScript
                         throws JsonGenerationException, JsonMappingException, IOException
             {
                 JSONObject obj = new JSONObject();
-                obj.put("error", errorResponse);
+                obj.put("error", errorToWrite);
                 objectMapper.writeValue(generator, obj);
             }
         });

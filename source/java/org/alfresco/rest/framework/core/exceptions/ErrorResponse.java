@@ -26,6 +26,7 @@
 package org.alfresco.rest.framework.core.exceptions;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -35,12 +36,12 @@ import java.util.Map;
  */
 public class ErrorResponse
 {
-    private String errorKey;
-    private int statusCode;
-    private String briefSummary;
-    private String stackTrace;
-    private Map<String,Object> additionalState;
-    private String descriptionURL;
+    final private String errorKey;
+    final private int statusCode;
+    final private String briefSummary;
+    final private String stackTrace;
+    final private Map<String,Object> additionalState;
+    final private String descriptionURL;
     
     public ErrorResponse(String errorKey, int statusCode, String briefSummary,
                 StackTraceElement[] stackTrace, Map<String,Object> additionalState)
@@ -50,7 +51,20 @@ public class ErrorResponse
         this.statusCode = statusCode;
         this.briefSummary = briefSummary;
         this.stackTrace = Arrays.toString(stackTrace);
-        this.additionalState = additionalState;
+        this.additionalState = additionalState==null?null:Collections.unmodifiableMap(additionalState);
+        this.descriptionURL = null;
+    }
+
+    public ErrorResponse(String errorKey, int statusCode, String briefSummary,
+                         String descriptionURL, Map<String,Object> additionalState)
+    {
+        super();
+        this.errorKey = errorKey;
+        this.statusCode = statusCode;
+        this.briefSummary = briefSummary;
+        this.stackTrace = " ";
+        this.additionalState = additionalState==null?null:Collections.unmodifiableMap(additionalState);
+        this.descriptionURL = descriptionURL;
     }
 
     public String getErrorKey()
@@ -76,11 +90,6 @@ public class ErrorResponse
     public String getDescriptionURL()
     {
         return this.descriptionURL;
-    }
-
-    public void setDescriptionURL(String descriptionURL)
-    {
-        this.descriptionURL = descriptionURL;
     }
 
     public Map<String, Object> getAdditionalState()

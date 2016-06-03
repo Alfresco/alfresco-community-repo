@@ -36,12 +36,6 @@
             <version>${alfresco.share.version}</version>
             <type>war</type>
         </dependency>
-        <dependency>
-            <groupId>org.alfresco</groupId>
-            <artifactId>alfresco-server-root</artifactId>
-            <version>${alfresco.platform.version}</version>
-            <type>war</type>
-        </dependency>
 
         <!-- Provided dependencies, unpacked -->
         <!-- Distribution zip -->
@@ -191,11 +185,6 @@
                             <groupId>org.alfresco</groupId>
                             <artifactId>share</artifactId>
                             <bundleFileName>share.war</bundleFileName>
-                        </webModule>
-                        <webModule>
-                            <groupId>org.alfresco</groupId>
-                            <artifactId>alfresco-server-root</artifactId>
-                            <bundleFileName>ROOT.war</bundleFileName>
                         </webModule>
                     </modules>
                 </configuration>

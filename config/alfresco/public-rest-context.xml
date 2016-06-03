@@ -137,6 +137,7 @@
                 <entry key="org.alfresco.rest.framework.core.exceptions.InvalidArgumentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.NotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.EntityNotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
+                <entry key="org.alfresco.service.cmr.repository.InvalidNodeRefException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.PermissionDeniedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_FORBIDDEN}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_METHOD_NOT_ALLOWED}" />

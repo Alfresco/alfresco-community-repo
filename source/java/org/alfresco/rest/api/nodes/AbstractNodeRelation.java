@@ -36,6 +36,7 @@ import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.AssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -70,6 +71,7 @@ public class AbstractNodeRelation implements InitializingBean
     protected ServiceRegistry sr;
     protected NodeService nodeService;
     protected NamespaceService namespaceService;
+    protected DictionaryService dictionaryService;
     protected Nodes nodes;
 
     public void setNodes(Nodes nodes)
@@ -90,21 +92,42 @@ public class AbstractNodeRelation implements InitializingBean
 
         this.nodeService = sr.getNodeService();
         this.namespaceService = sr.getNamespaceService();
+        this.dictionaryService = sr.getDictionaryService();
     }
 
-    protected QName getAssocType(String prefixAssocTypeStr, boolean mandatory)
+    protected QName getAssocType(String prefixAssocTypeStr)
     {
-        if (mandatory && ((prefixAssocTypeStr == null) || prefixAssocTypeStr.isEmpty()))
+        return getAssocType(prefixAssocTypeStr, true, true);
+    }
+
+    protected QName getAssocType(String prefixAssocTypeStr, boolean mandatory, boolean validate)
+    {
+        QName assocType = null;
+
+        if ((prefixAssocTypeStr != null) && (! prefixAssocTypeStr.isEmpty()))
+        {
+            assocType = QName.createQName(prefixAssocTypeStr, namespaceService);
+
+            if (validate)
+            {
+                if (dictionaryService.getAssociation(assocType) == null)
+                {
+                    throw new InvalidArgumentException("Unknown filter assocType: "+prefixAssocTypeStr);
+                }
+
+            }
+        }
+        else if (mandatory)
         {
             throw new InvalidArgumentException("Missing "+PARAM_ASSOC_TYPE);
         }
 
-        return QName.createQName(prefixAssocTypeStr, namespaceService);
+        return assocType;
     }
 
     protected QNamePattern getAssocTypeFromWhereElseAll(Parameters parameters)
     {
-        QNamePattern assocTypeQNameParam = RegexQNamePattern.MATCH_ALL;
+        QNamePattern assocTypeQNamePattern = RegexQNamePattern.MATCH_ALL;
 
         Query q = parameters.getQuery();
         if (q != null)
@@ -115,10 +138,10 @@ public class AbstractNodeRelation implements InitializingBean
             String assocTypeQNameStr = propertyWalker.getProperty(PARAM_ASSOC_TYPE, WhereClauseParser.EQUALS, String.class);
             if (assocTypeQNameStr != null)
             {
-                assocTypeQNameParam = getAssocType(assocTypeQNameStr, true);
+                assocTypeQNamePattern = getAssocType(assocTypeQNameStr);
             }
         }
 
-        return assocTypeQNameParam;
+        return assocTypeQNamePattern;
     }
 }

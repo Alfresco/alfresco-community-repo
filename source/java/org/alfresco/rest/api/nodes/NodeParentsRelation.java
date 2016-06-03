@@ -41,20 +41,19 @@ import java.util.Map;
 /**
  * Node Parents
  *
- * List node's parent(s) - primary & also secondary, if any - based on (parent ->) child associations
- * 
  * @author janv
  */
 @RelationshipResource(name = "parents",  entityResource = NodesEntityResource.class, title = "Node Parents")
 public class NodeParentsRelation extends AbstractNodeRelation implements RelationshipResourceAction.Read<Node>
 {
     /**
-     * List parents
+     * List child node's parent(s) based on (parent ->) child associations.
+     * Returns primary parent & also secondary parents, if any.
      *
      * @param childNodeId String id of child node
      */
     @Override
-    @WebApiDescription(title = "Return a paged list of parent nodes based on child assocs")
+    @WebApiDescription(title = "Return a list of parent nodes based on child assocs")
     public CollectionWithPagingInfo<Node> readAll(String childNodeId, Parameters parameters)
     {
         NodeRef childNodeRef = nodes.validateOrLookupNode(childNodeId, null);
@@ -84,7 +83,6 @@ public class NodeParentsRelation extends AbstractNodeRelation implements Relatio
             Node node = nodes.getFolderOrDocument(assocRef.getParentRef(), null, null, includeParam, mapUserInfo);
 
             QName assocTypeQName = assocRef.getTypeQName();
-            QName assocChildQName = assocRef.getQName();
 
             String assocType = qnameMap.get(assocTypeQName);
             if (assocType == null)
@@ -93,14 +91,7 @@ public class NodeParentsRelation extends AbstractNodeRelation implements Relatio
                 qnameMap.put(assocTypeQName, assocType);
             }
 
-            String childQNameStr = qnameMap.get(assocChildQName);
-            if (childQNameStr == null)
-            {
-                childQNameStr = assocChildQName.toPrefixString(namespaceService);
-                qnameMap.put(assocChildQName, childQNameStr);
-            }
-
-            node.setAssociation(new AssocChild(assocType, assocRef.isPrimary(), childQNameStr));
+            node.setAssociation(new AssocChild(assocType, assocRef.isPrimary()));
 
             collection.add(node);
         }

@@ -922,8 +922,8 @@ public class NodesImpl implements Nodes
 
             AssocChild childAssoc = new AssocChild(
                     parentAssocRef.getTypeQName().toPrefixString(namespaceService),
-                    parentAssocRef.isPrimary(),
-                    parentAssocRef.getQName().toPrefixString(namespaceService));
+                    parentAssocRef.isPrimary());
+
             node.setAssociation(childAssoc);
         }
 

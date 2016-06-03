@@ -21,19 +21,12 @@ package org.alfresco.rest.api.tests;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
-import org.alfresco.rest.api.Queries;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.tests.client.HttpResponse;
-import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
-import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Association;
-import org.alfresco.rest.api.tests.client.data.ContentInfo;
-import org.alfresco.rest.api.tests.client.data.Document;
-import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
-import org.alfresco.rest.api.tests.client.data.Tag;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -44,12 +37,10 @@ import org.junit.Test;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull;
 import static org.junit.Assert.*;
@@ -99,9 +90,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
     private static final String ASPECT_CM_PREFERENCES = "cm:preferences";
     private static final String ASSOC_TYPE_CM_PREFERENCE_IMAGE = "cm:preferenceImage";
-
-    private static final String PARAM_CHILD_NAME = "childQName";
-
 
 
     private String user1;
@@ -220,10 +208,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
             Paging paging = getPaging(0, 100);
 
-            // -ve test - unauthenticated - belts-and-braces ;-)
-            getAll(getNodeTargetsUrl(f1Id), null, paging, null, 401);
-            getAll(getNodeSourcesUrl(f1Id), null, paging, null, 401);
-
             // empty lists - before
 
             response = getAll(getNodeTargetsUrl(o1Id), user1, paging, null, 200);
@@ -242,13 +226,9 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            // -ve test - unauthenticated - belts-and-braces ;-)
-            AssocTarget tgt = new AssocTarget(o2Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(o1Id), null, toJsonAsStringNonNull(tgt), 401);
-
             // create two assocs in one direction (from src to tgt)
 
-            tgt = new AssocTarget(o2Id, ASSOC_TYPE_CM_REFERENCES);
+            AssocTarget tgt = new AssocTarget(o2Id, ASSOC_TYPE_CM_REFERENCES);
             post(getNodeTargetsUrl(o1Id), user1, toJsonAsStringNonNull(tgt), 201);
 
             tgt = new AssocTarget(o2Id, ASSOC_TYPE_CM_PARTS);
@@ -311,7 +291,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertEquals(o2Id, nodes.get(0).getId());
             assertEquals(ASSOC_TYPE_CM_REFERENCES, nodes.get(0).getAssociation().getAssocType());
 
-            params = new HashMap<>();
+            params = new HashMap<>(1);
             params.put("where", "(assocType='"+ASSOC_TYPE_CM_PARTS+"')");
 
             response = getAll(getNodeTargetsUrl(o2Id), user1, paging, params, 200);
@@ -325,10 +305,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertEquals(1, nodes.size());
             assertEquals(o1Id, nodes.get(0).getId());
             assertEquals(ASSOC_TYPE_CM_PARTS, nodes.get(0).getAssociation().getAssocType());
-
-
-            // -ve test - unauthenticated - belts-and-braces ;-)
-            delete(getNodeTargetsUrl(o1Id), null, o2Id, 401);
 
             // remove assocs - specific type - in one direction
             params = new HashMap<>(2);
@@ -393,18 +369,74 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertEquals(0, nodes.size());
 
 
-            // -ve test - model integrity
-            tgt = new AssocTarget(f2Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(o1Id), user1, toJsonAsStringNonNull(tgt), 422);
+            //
+            // -ve tests - add assoc
+            //
 
-            // -ve test - duplicate assoc
-            tgt = new AssocTarget(o1Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(o2Id), user1, toJsonAsStringNonNull(tgt), 201);
-            post(getNodeTargetsUrl(o2Id), user1, toJsonAsStringNonNull(tgt), 409);
+            {
+                // -ve test - unauthenticated - belts-and-braces ;-)
+                tgt = new AssocTarget(o2Id, ASSOC_TYPE_CM_REFERENCES);
+                post(getNodeTargetsUrl(o1Id), null, toJsonAsStringNonNull(tgt), 401);
 
-            // TODO some more negative tests
-            // 400s - eg. invalid qname
-            // 404s - eg. unknown src, tgt, assoc of given type
+                // -ve test - model integrity
+                tgt = new AssocTarget(f2Id, ASSOC_TYPE_CM_REFERENCES);
+                post(getNodeTargetsUrl(o1Id), user1, toJsonAsStringNonNull(tgt), 422);
+
+                // -ve test - duplicate assoc
+                tgt = new AssocTarget(o1Id, ASSOC_TYPE_CM_REFERENCES);
+                post(getNodeTargetsUrl(o2Id), user1, toJsonAsStringNonNull(tgt), 201);
+                post(getNodeTargetsUrl(o2Id), user1, toJsonAsStringNonNull(tgt), 409);
+
+                tgt = new AssocTarget(o1Id, "cm:unknowntype");
+                post(getNodeTargetsUrl(o2Id), user1, toJsonAsStringNonNull(tgt), 400);
+            }
+
+            //
+            // -ve test - list assocs
+            //
+
+            {
+                // -ve test - unauthenticated - belts-and-braces ;-)
+                getAll(getNodeTargetsUrl(f1Id), null, paging, null, 401);
+                getAll(getNodeSourcesUrl(f1Id), null, paging, null, 401);
+
+                getAll(getNodeTargetsUrl(UUID.randomUUID().toString()), user1, paging, null, 404);
+                getAll(getNodeSourcesUrl(UUID.randomUUID().toString()), user1, paging, null, 404);
+
+                params = new HashMap<>(1);
+                params.put("where", "(assocType='cm:unknownassoctype')");
+
+                getAll(getNodeTargetsUrl(o1Id), user1, paging, params, 400);
+                getAll(getNodeSourcesUrl(o1Id), user1, paging, params, 400);
+
+                // TODO paging - in-built sort order ?
+            }
+
+
+            //
+            // -ve test - remove assoc(s)
+            //
+
+            {
+                // -ve test - unauthenticated - belts-and-braces ;-)
+                delete(getNodeTargetsUrl(o1Id), null, o2Id, 401);
+
+                delete(getNodeTargetsUrl(UUID.randomUUID().toString()), user1, o2Id, null, 404);
+                delete(getNodeTargetsUrl(o1Id), user1, UUID.randomUUID().toString(), null, 404);
+
+                // -ve test -nothing to delete - for any assoc type
+                delete(getNodeTargetsUrl(o1Id), user1, o2Id, null, 404);
+
+                // -ve test - nothing to delete - for given assoc type
+                params = new HashMap<>(2);
+                params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_REFERENCES);
+                delete(getNodeTargetsUrl(o1Id), user1, o2Id, params, 404);
+
+                // -ve test - unknown assoc type
+                params = new HashMap<>(2);
+                params.put(PARAM_ASSOC_TYPE, "cm:unknowntype");
+                delete(getNodeTargetsUrl(o1Id), user1, o2Id, params, 400);
+            }
         }
         finally
         {
@@ -469,10 +501,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
             Paging paging = getPaging(0, 100);
 
-            // -ve test - unauthenticated - belts-and-braces ;-)
-            getAll(getNodeSecondaryChildrenUrl(f1Id), null, paging, null, 401);
-            getAll(getNodeParentsUrl(o2Id), null, paging, null, 401);
-
             // lists - before
 
             response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
@@ -485,22 +513,14 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertEquals(1, nodes.size());
             assertEquals(f2Id, nodes.get(0).getId());
             assertEquals(ASSOC_TYPE_CM_CONTAINS, nodes.get(0).getAssociation().getAssocType());
-            assertEquals("cm:"+o2Name, nodes.get(0).getAssociation().getChildQName());
             assertTrue(nodes.get(0).getAssociation().getIsPrimaryParent());
 
-            String o2SecChildName = "cm:o2SecChildName";
-
-            // -ve test - unauthenticated - belts-and-braces ;-)
-            AssocChild secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS, o2SecChildName);
-            post(getNodeSecondaryChildrenUrl(f1Id), null, toJsonAsStringNonNull(secChild), 401);
-
-
             // create secondary child assoc
-            secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS, o2SecChildName);
+            AssocChild secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS);
             post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
 
             // create ano' secondary child assoc (different type) between the same two nodes
-            secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_PREFERENCE_IMAGE, o2SecChildName);
+            secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_PREFERENCE_IMAGE);
             post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
 
 
@@ -520,7 +540,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                     i++;
                 }
                 assertEquals(o2Id, node.getId());
-                assertEquals(o2SecChildName, nodeAssoc.getChildQName());
                 assertFalse(nodeAssoc.getIsPrimaryParent());
             }
             assertEquals(2, i);
@@ -536,7 +555,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                 if (nodeId.equals(f2Id))
                 {
                     assertEquals(ASSOC_TYPE_CM_CONTAINS, nodeAssoc.getAssocType());
-                    assertEquals("cm:"+o2Name, nodeAssoc.getChildQName());
                     assertTrue(nodeAssoc.getIsPrimaryParent());
                     i++;
                 }
@@ -550,7 +568,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                     {
                         i++;
                     }
-                    assertEquals(o2SecChildName, nodeAssoc.getChildQName());
                     assertFalse(nodeAssoc.getIsPrimaryParent());
                 }
             }
@@ -577,14 +594,12 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                 if (nodeId.equals(f2Id))
                 {
                     assertEquals(ASSOC_TYPE_CM_CONTAINS, nodeAssoc.getAssocType());
-                    assertEquals("cm:"+o2Name, nodeAssoc.getChildQName());
                     assertTrue(nodeAssoc.getIsPrimaryParent());
                     i++;
                 }
                 else if (nodeId.equals(f1Id))
                 {
                     assertEquals(ASSOC_TYPE_CM_CONTAINS, nodeAssoc.getAssocType());
-                    assertEquals(o2SecChildName, nodeAssoc.getChildQName());
                     assertFalse(nodeAssoc.getIsPrimaryParent());
                     i++;
                 }
@@ -611,10 +626,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
             params = new HashMap<>(2);
             params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_CONTAINS);
-            params.put(PARAM_CHILD_NAME, o2SecChildName);
-
-            // -ve test - unauthenticated - belts-and-braces ;-)
-            delete(getNodeSecondaryChildrenUrl(f1Id), null, o2Id, params, 401);
 
             // remove one secondary child assoc
             delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, params, 204);
@@ -629,7 +640,6 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
             params = new HashMap<>(2);
             params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_PREFERENCE_IMAGE);
-            params.put(PARAM_CHILD_NAME, o2SecChildName);
 
             // remove other secondary child assoc
             delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, params, 204);
@@ -642,26 +652,83 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
 
-            // TODO test delete of multiple secondary child assocs (if assoc type is not specified)
+            // TODO +ve test delete of multiple secondary child assocs (if assoc type is not specified)
 
+            //
+            // -ve tests - add assoc
+            //
 
-            // -ve test - model integrity
-            secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS, o2SecChildName);
-            post(getNodeSecondaryChildrenUrl(o1Id), user1, toJsonAsStringNonNull(secChild), 422);
+            {
+                // -ve test - unauthenticated - belts-and-braces ;-)
+                secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS);
+                post(getNodeSecondaryChildrenUrl(f1Id), null, toJsonAsStringNonNull(secChild), 401);
 
-            // -ve test - duplicate assoc
-            secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS, o2SecChildName);
-            post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
-            post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 409);
+                // -ve test - model integrity
+                secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS);
+                post(getNodeSecondaryChildrenUrl(o1Id), user1, toJsonAsStringNonNull(secChild), 422);
 
-            // TODO some more negative tests
-            // 400s - eg. invalid qname
-            // 404s - eg. unknown src, tgt, assoc of given type
+                // -ve test - duplicate assoc
+                secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS);
+                post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
+                post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 409);
+                delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, null, 204); // cleanup
+
+                secChild = new AssocChild(o2Id, "cm:unknowntype");
+                post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 400);
+            }
+
+            //
+            // -ve test - list assocs
+            //
+
+            {
+                // -ve test - unauthenticated - belts-and-braces ;-)
+                getAll(getNodeSecondaryChildrenUrl(f1Id), null, paging, null, 401);
+                getAll(getNodeParentsUrl(o2Id), null, paging, null, 401);
+
+                getAll(getNodeSecondaryChildrenUrl(UUID.randomUUID().toString()), user1, paging, null, 404);
+                getAll(getNodeParentsUrl(UUID.randomUUID().toString()), user1, paging, null, 404);
+
+                params = new HashMap<>(1);
+                params.put("where", "(assocType='cm:unknownassoctype')");
+
+                getAll(getNodeSecondaryChildrenUrl(o1Id), user1, paging, params, 400);
+                getAll(getNodeParentsUrl(o1Id), user1, paging, params, 400);
+
+                // TODO paging - in-built sort order ?
+            }
+
+            //
+            // -ve test - remove assoc(s)
+            //
+
+            {
+                // unauthenticated - belts-and-braces ;-)
+                delete(getNodeSecondaryChildrenUrl(f1Id), null, o2Id, null, 401);
+
+                delete(getNodeSecondaryChildrenUrl(UUID.randomUUID().toString()), user1, o2Id, null, 404);
+                delete(getNodeSecondaryChildrenUrl(f1Id), user1, UUID.randomUUID().toString(), null, 404);
+
+                // nothing to delete - for any assoc type
+                delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, null, 404);
+
+                // nothing to delete - for given assoc type
+                params = new HashMap<>(2);
+                params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_PREFERENCE_IMAGE);
+                delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, params, 404);
+
+                // unknown assoc type
+                params = new HashMap<>(2);
+                params.put(PARAM_ASSOC_TYPE, "cm:unknowntype");
+                delete(getNodeSecondaryChildrenUrl(o1Id), user1, o2Id, params, 400);
+
+                // TODO 400 - try to delete primary assoc using /secondary-children
+            }
         }
         finally
         {
             // some cleanup
-            Map<String, String> params = Collections.singletonMap("permanent", "true");
+            Map<String, String> params = Collections.singletonMap(Nodes.PARAM_PERMANENT, "true");
             delete(URL_NODES, user1, f1Id, params, 204);
             delete(URL_NODES, user1, f2Id, params, 204);
         }

@@ -24,37 +24,24 @@ package org.alfresco.rest.api.model;
 public class AssocChild extends Assoc
 {
     private String childId;
-    private String prefixAssocChildQName;
     private Boolean isPrimaryParent;
 
     public AssocChild()
     {
     }
 
-    public AssocChild(String prefixAssocTypeQName, boolean isPrimaryParent, String prefixAssocChildQName)
+    public AssocChild(String prefixAssocTypeQName, boolean isPrimaryParent)
     {
         super(prefixAssocTypeQName);
 
-        this.prefixAssocChildQName = prefixAssocChildQName;
         this.isPrimaryParent = isPrimaryParent;
     }
 
-    public AssocChild(String childId, String prefixAssocTypeQName, String prefixAssocNameQName)
+    public AssocChild(String childId, String prefixAssocTypeQName)
     {
         super(prefixAssocTypeQName);
 
         this.childId = childId;
-        this.prefixAssocChildQName = prefixAssocNameQName;
-    }
-
-    public String getChildQName()
-    {
-        return prefixAssocChildQName;
-    }
-
-    public void setChildQName(String prefixAssocChildQName)
-    {
-        this.prefixAssocChildQName = prefixAssocChildQName;
     }
 
     public Boolean getIsPrimaryParent()

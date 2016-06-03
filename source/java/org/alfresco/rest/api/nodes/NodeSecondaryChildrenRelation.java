@@ -18,11 +18,13 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
+import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
@@ -33,6 +35,7 @@ import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.QNamePattern;
 import org.alfresco.service.namespace.RegexQNamePattern;
@@ -106,15 +109,7 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
                     qnameMap.put(assocTypeQName, assocType);
                 }
 
-                QName assocChildQName = assocRef.getQName();
-                String childQNameStr = qnameMap.get(assocChildQName);
-                if (childQNameStr == null)
-                {
-                    childQNameStr = assocChildQName.toPrefixString(namespaceService);
-                    qnameMap.put(assocChildQName, childQNameStr);
-                }
-
-                node.setAssociation(new AssocChild(assocType, assocRef.isPrimary(), childQNameStr));
+                node.setAssociation(new AssocChild(assocType, assocRef.isPrimary()));
 
                 collection.add(node);
             }
@@ -134,20 +129,16 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
 
         for (AssocChild assoc : entity)
         {
-            QName assocTypeQName = getAssocType(assoc.getAssocType(), true);
-
-            String childQNameStr = assoc.getChildQName();
-            if ((childQNameStr == null) || childQNameStr.isEmpty())
-            {
-                throw new InvalidArgumentException("Missing childQName");
-            }
-
-            QName childQName = QName.createQName(childQNameStr, namespaceService);
+            QName assocTypeQName = getAssocType(assoc.getAssocType());
 
             try
             {
                 NodeRef childNodeRef = nodes.validateNode(assoc.getChildId());
-                nodeService.addChild(parentNodeRef, childNodeRef, assocTypeQName, childQName);
+
+                String nodeName = (String)nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
+                QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
+
+                nodeService.addChild(parentNodeRef, childNodeRef, assocTypeQName, assocChildQName);
             }
             catch (AssociationExistsException aee)
             {
@@ -170,41 +161,53 @@ public class NodeSecondaryChildrenRelation extends AbstractNodeRelation implemen
         NodeRef parentNodeRef = nodes.validateNode(parentNodeId);
         NodeRef childNodeRef = nodes.validateNode(childNodeId);
 
-        QName assocTypeQName = getAssocType(parameters.getParameter("assocType"), false);
+        String assocTypeStr = parameters.getParameter(PARAM_ASSOC_TYPE);
+        QName assocTypeQName = getAssocType(assocTypeStr, false, true);
 
-        String childQNameStr = parameters.getParameter("childQName");
-        QName childQName = null;
-        if ((childQNameStr != null) && (!childQNameStr.isEmpty()))
-        {
-            childQName = QName.createQName(childQNameStr, namespaceService);
-        }
+        List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(parentNodeRef);
 
-        if (assocTypeQName != null)
+        boolean found = false;
+
+        for (ChildAssociationRef assocRef : assocRefs)
         {
-            if (childQName != null)
+            if (! assocRef.getChildRef().equals(childNodeRef))
             {
-                ChildAssociationRef assocRef = new ChildAssociationRef(assocTypeQName, parentNodeRef, childQName, childNodeRef);
-                nodeService.removeSecondaryChildAssociation(assocRef);
+                continue;
+            }
+
+            if (assocTypeQName != null)
+            {
+                if (assocTypeQName.equals(assocRef.getTypeQName()))
+                {
+                    if (assocRef.isPrimary())
+                    {
+                        throw new InvalidArgumentException("Cannot use secondary-children to delete primary assoc: "
+                            +parentNodeId+","+assocTypeStr+","+childNodeId);
+                    }
+
+                    boolean existed = nodeService.removeSecondaryChildAssociation(assocRef);
+                    if (existed)
+                    {
+                        found = true;
+                    }
+                }
             }
             else
             {
-                throw new InvalidArgumentException("Missing childQName (in addition to assocType)");
-            }
-        }
-        else if (childQName != null)
-        {
-            throw new InvalidArgumentException("Missing assocType (in addition to childQName)");
-        }
-        else
-        {
-            List<ChildAssociationRef> assocRefs = nodeService.getChildAssocs(parentNodeRef);
-            for (ChildAssociationRef assocRef : assocRefs)
-            {
-                if (assocRef.getChildRef().equals(childNodeRef) && (! assocRef.isPrimary()))
+                if (! assocRef.isPrimary())
                 {
-                    nodeService.removeSecondaryChildAssociation(assocRef);
+                    boolean existed = nodeService.removeSecondaryChildAssociation(assocRef);
+                    if (existed)
+                    {
+                        found = true;
+                    }
                 }
             }
+        }
+
+        if (! found)
+        {
+            throw new EntityNotFoundException(parentNodeId+","+assocTypeStr+","+childNodeId);
         }
     }
 }

@@ -462,28 +462,39 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
     @Test
     public void testNodePeerAssocsPermissions() throws Exception
     {
-        // as user 1
+        // as user 1 - create folder in "Shared Files" area and content within the folder
 
         String sharedFolderNodeId = getSharedNodeId(user1);
-        String sfId = createFolder(user1, sharedFolderNodeId, "shared folder "+RUNID).getId();
+
+        String sf1Id = createFolder(user1, sharedFolderNodeId, "shared folder "+RUNID).getId();
+
+        Node n = new Node();
+        n.setName("shared content "+RUNID);
+        n.setNodeType(TYPE_CM_CONTENT);
+        n.setAspectNames(Arrays.asList(ASPECT_CM_REFERENCING, ASPECT_CM_PARTABLE));
+        HttpResponse response = post(getNodeChildrenUrl(sf1Id), user1, toJsonAsStringNonNull(n), 201);
+        String so1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+
+
+        // as user 1 - create folder in user's home (My Files) area and content within the folder
 
         String u1myNodeId = getMyNodeId(user1);
+
         String u1f1Id = createFolder(user1, u1myNodeId, "f1").getId();
 
-        // create content node
-        Node n = new Node();
+        n = new Node();
         n.setName("o1");
         n.setNodeType(TYPE_CM_CONTENT);
         n.setAspectNames(Arrays.asList(ASPECT_CM_REFERENCING, ASPECT_CM_PARTABLE));
-        HttpResponse response = post(getNodeChildrenUrl(u1f1Id), user1, toJsonAsStringNonNull(n), 201);
+        response = post(getNodeChildrenUrl(u1f1Id), user1, toJsonAsStringNonNull(n), 201);
         String u1o1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
-        // as user 2
+        // as user 2 - create folder in user's home (My Files) area and content within the folder
 
         String u2myNodeId = getMyNodeId(user2);
+
         String u2f1Id = createFolder(user2, u2myNodeId, "f1").getId();
 
-        // create content node
         n = new Node();
         n.setName("o1");
         n.setNodeType(TYPE_CM_CONTENT);
@@ -542,46 +553,84 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             }
 
 
-            // Test listing targets with permissions applied
+            // Test listing targets (with permissions applied)
 
             // update permission
             // TODO refactor with remote permission api calls (use v0 until we have v1 ?)
             AuthenticationUtil.setFullyAuthenticatedUser(user1);
-            permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sfId), user2, PermissionService.EDITOR, true);
+            permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sf1Id), user2, PermissionService.EDITOR, true);
 
             // TODO improve - admin-related tests
             publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
-            response = publicApiClient.get(getScope(), "nodes/"+sfId+"/targets", null, null, null, createParams(paging, null));
+            response = publicApiClient.get(getScope(), "nodes/"+sf1Id+"/targets", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             // user 1
             tgt = new AssocTarget(u1o1Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(sfId), user1, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(sf1Id), user1, toJsonAsStringNonNull(tgt), 201);
 
             // user 2
             tgt = new AssocTarget(u2o1Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(sfId), user2, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(sf1Id), user2, toJsonAsStringNonNull(tgt), 201);
 
             // TODO improve - admin-related tests
             publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
-            response = publicApiClient.get(getScope(), "nodes/"+sfId+"/targets", null, null, null, createParams(paging, null));
+            response = publicApiClient.get(getScope(), "nodes/"+sf1Id+"/targets", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(sfId), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(sf1Id), user1, paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(u1o1Id, nodes.get(0).getId());
 
-            response = getAll(getNodeTargetsUrl(sfId), user2, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(sf1Id), user2, paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(u2o1Id, nodes.get(0).getId());
 
-            // TODO test listing sources with permissions applied
+
+            // Test listing sources (with permissions applied)
+
+            // update permission
+            // TODO refactor with remote permission api calls (use v0 until we have v1 ?)
+            AuthenticationUtil.setFullyAuthenticatedUser(user1);
+            permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sf1Id), user2, PermissionService.EDITOR, true);
+
+            // TODO improve - admin-related tests
+            publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
+            response = publicApiClient.get(getScope(), "nodes/"+so1Id+"/sources", null, null, null, createParams(paging, null));
+            checkStatus(200, response.getStatusCode());
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            // user 1
+            tgt = new AssocTarget(so1Id, ASSOC_TYPE_CM_REFERENCES);
+            post(getNodeTargetsUrl(u1f1Id), user1, toJsonAsStringNonNull(tgt), 201);
+
+            // user 2
+            tgt = new AssocTarget(so1Id, ASSOC_TYPE_CM_REFERENCES);
+            post(getNodeTargetsUrl(u2f1Id), user2, toJsonAsStringNonNull(tgt), 201);
+
+            // TODO improve - admin-related tests
+            publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
+            response = publicApiClient.get(getScope(), "nodes/"+so1Id+"/sources", null, null, null, createParams(paging, null));
+            checkStatus(200, response.getStatusCode());
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+
+            response = getAll(getNodeSourcesUrl(so1Id), user1, paging, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(u1f1Id, nodes.get(0).getId());
+
+            response = getAll(getNodeSourcesUrl(so1Id), user2, paging, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals(u2f1Id, nodes.get(0).getId());
         }
         finally
         {
@@ -589,7 +638,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             Map<String, String> params = Collections.singletonMap("permanent", "true");
             delete(URL_NODES, user1, u1f1Id, params, 204);
             delete(URL_NODES, user2, u2f1Id, params, 204);
-            delete(URL_NODES, user1, sfId, params, 204);
+            delete(URL_NODES, user1, sf1Id, params, 204);
         }
     }
 

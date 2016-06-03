@@ -132,6 +132,7 @@ public class FileContentWriter extends AbstractContentWriter
     @Override
     protected WritableByteChannel getDirectWritableChannel() throws ContentIOException
     {
+        RandomAccessFile randomAccessFile = null;
         try
         {
             // we may not write to an existing file - EVER!!
@@ -143,7 +144,7 @@ public class FileContentWriter extends AbstractContentWriter
             WritableByteChannel channel = null;
             if (allowRandomAccess)
             {
-                RandomAccessFile randomAccessFile = new RandomAccessFile(file, "rw");  // will create it
+                randomAccessFile = new RandomAccessFile(file, "rw");  // will create it
                 channel = randomAccessFile.getChannel();
             }
             else
@@ -163,6 +164,20 @@ public class FileContentWriter extends AbstractContentWriter
         catch (Throwable e)
         {
             throw new ContentIOException("Failed to open file channel: " + this, e);
+        }
+        finally
+        {
+            if (randomAccessFile != null)
+            {
+                try
+                {
+                    randomAccessFile.close();
+                }
+                catch (IOException e)
+                {
+                    logger.error("Problem while closing file.", e);
+                }
+            }
         }
     }
 

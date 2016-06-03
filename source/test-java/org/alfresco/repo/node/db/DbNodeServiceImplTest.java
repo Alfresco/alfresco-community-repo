@@ -21,6 +21,7 @@ package org.alfresco.repo.node.db;
 import java.io.Serializable;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -36,22 +37,27 @@ import org.alfresco.repo.domain.schema.SchemaBootstrap;
 import org.alfresco.repo.node.BaseNodeServiceTest;
 import org.alfresco.repo.node.cleanup.NodeCleanupRegistry;
 import org.alfresco.repo.node.db.NodeStringLengthWorker.NodeStringLengthWorkResult;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.repo.transaction.TransactionListenerAdapter;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
+import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
 import org.alfresco.service.cmr.repository.MLText;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.Pair;
-import org.junit.experimental.categories.Category;
 import org.hibernate.dialect.Dialect;
 import org.hibernate.dialect.MySQLInnoDBDialect;
+import org.junit.Test;
+import org.junit.experimental.categories.Category;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -784,5 +790,112 @@ public class DbNodeServiceImplTest extends BaseNodeServiceTest
             }
         });
         assertEquals("String manipulation corrupted the long string value. ", longString, checkLongString);
+    }
+
+    @Test
+    public void testMNT15655() throws Exception {
+    	class TestData
+    	{
+    		NodeRef rootFolderNodeRef;
+    		NodeRef folder1NodeRef;
+            NodeRef folder2NodeRef;
+            String folder1Name;
+            String folder2Name;
+    	}
+    	final TestData testData = new TestData();
+
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+            	AuthenticationUtil.runAs(new RunAsWork<Void>()
+            	{
+					@Override
+					public Void doWork() throws Exception {
+		                Map<QName, Serializable> properties = new HashMap<>();
+
+		                StoreRef storeRef = nodeService.createStore(
+		                        StoreRef.PROTOCOL_WORKSPACE,
+		                        "Test_" + System.currentTimeMillis());
+		                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+
+		                testData.rootFolderNodeRef = nodeService.createNode(
+		                        rootNodeRef,
+		                        ContentModel.ASSOC_CHILDREN,
+		                        QName.createQName(NAMESPACE, "rootFolder"),
+		                        ContentModel.TYPE_FOLDER,
+		                        properties).getChildRef();
+
+		                properties.clear();
+		                properties.put(ContentModel.PROP_NAME, "folder");
+		                testData.folder1NodeRef = nodeService.createNode(
+		                		testData.rootFolderNodeRef,
+		                        ContentModel.ASSOC_CONTAINS,
+		                        QName.createQName(NAMESPACE, "folder"),
+		                        ContentModel.TYPE_FOLDER,
+		                        properties).getChildRef();
+
+		                properties.clear();
+		                properties.put(ContentModel.PROP_NAME, "folder1");
+		                testData.folder2NodeRef = nodeService.createNode(
+		                		testData.rootFolderNodeRef,
+		                        ContentModel.ASSOC_CONTAINS,
+		                        QName.createQName(NAMESPACE, "folder1"),
+		                        ContentModel.TYPE_FOLDER,
+		                        properties).getChildRef();
+
+		                String name1 = (String)nodeService.getProperty(
+		                		testData.folder1NodeRef,
+		                        ContentModel.PROP_NAME);
+		                String name2 = (String)nodeService.getProperty(
+		                		testData.folder2NodeRef,
+		                        ContentModel.PROP_NAME);
+
+		                assertEquals("folder", name1);
+		                assertEquals("folder1", name2);
+
+						return null;
+					}
+            		
+            	}, AuthenticationUtil.SYSTEM_USER_NAME);
+
+                return null;
+            }
+        }, false, true);
+
+        try
+        {
+	        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+	        {
+	            @Override
+	            public Void execute() throws Throwable
+	            {
+	            	AuthenticationUtil.runAs(new RunAsWork<Void>()
+	            	{
+						@Override
+						public Void doWork() throws Exception {
+			                Map<QName, Serializable> aspectProperties = new HashMap<>();
+			                aspectProperties.put(ContentModel.PROP_NAME, "folder");
+			                nodeService.addAspect(
+			                		testData.folder2NodeRef,
+			                        ContentModel.ASPECT_AUTHOR,
+			                        aspectProperties);
+	
+			                fail("Should have generated a DuplicateChildNodeNameException");
+
+							return null;
+						}
+	            		
+	            	}, AuthenticationUtil.SYSTEM_USER_NAME);
+	
+	                return null;
+	            }
+	        }, false, true);
+        }
+        catch(DuplicateChildNodeNameException e)
+        {
+        	// ok
+        }
     }
 }

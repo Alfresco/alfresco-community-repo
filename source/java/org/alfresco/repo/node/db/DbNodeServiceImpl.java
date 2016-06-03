@@ -817,6 +817,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
         // Add aspect and defaults
         Pair<Long, NodeRef> nodePair = getNodePairNotNull(nodeRef);
+        // SetProperties common tasks
+        setPropertiesCommonWork(nodePair, aspectProperties);
         boolean modified = addAspectsAndProperties(
                     nodePair,
                     aspectTypeQName,

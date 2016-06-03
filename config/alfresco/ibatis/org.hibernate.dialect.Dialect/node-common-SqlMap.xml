@@ -1073,6 +1073,9 @@
             </if>
         where
             assoc.parent_node_id = #{parentNodeId}
+            <if test="isPrimary != null">
+            and assoc.is_primary = #{isPrimary}
+            </if>
             <if test="childNodeTypeQNameIds != null">
             and childNode.type_qname_id in 
                 <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">
@@ -1093,7 +1096,7 @@
         </if>
     </select>
     
-    <!-- GetChildren - with no explicit sorting (or prop filtering) - note: still filtered by child type -->
+    <!-- GetChildren - with no explicit sorting (or prop filtering) - note: still filtered by child type (and optionally primary or secondary) -->
     <select id="select_GetChildrenCannedQueryWithoutProps" parameterType="FilterSortNode" resultMap="result_NodeRef">
        select
             childNode.id             as id,
@@ -1110,6 +1113,9 @@
             </if>
         where
             assoc.parent_node_id = #{parentNodeId}
+            <if test="isPrimary != null">
+            and assoc.is_primary = #{isPrimary}
+            </if>
             <if test="childNodeTypeQNameIds != null">
             and childNode.type_qname_id in 
                 <foreach item="item" index="index" collection="childNodeTypeQNameIds" open="(" separator="," close=")">

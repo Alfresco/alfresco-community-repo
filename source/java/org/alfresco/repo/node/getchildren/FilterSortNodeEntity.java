@@ -59,6 +59,8 @@ public class FilterSortNodeEntity
     private Long namePropertyQNameId;
     private boolean auditableProps;
     private boolean nodeType;
+
+    private Boolean isPrimary;
     
     /**
      * Default constructor
@@ -245,5 +247,15 @@ public class FilterSortNodeEntity
     public void setNodeType(boolean nodeType)
     {
         this.nodeType = nodeType;
+    }
+
+    public Boolean isPrimary()
+    {
+        return isPrimary;
+    }
+
+    public void setIsPrimary(Boolean isPrimary)
+    {
+        this.isPrimary = isPrimary;
     }
 }

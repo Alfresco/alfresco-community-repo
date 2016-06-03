@@ -31,6 +31,7 @@ import java.util.Set;
 import org.alfresco.api.AlfrescoPublicApi;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
+import org.alfresco.repo.node.getchildren.FilterProp;
 import org.alfresco.service.Auditable;
 import org.alfresco.service.cmr.repository.ContentReader;
 import org.alfresco.service.cmr.repository.ContentWriter;
@@ -448,8 +449,21 @@ public interface FileFolderService
      */
     @Auditable(parameters = {"rootNodeRef"})
     public PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, PagingRequest pagingRequest);
-    
-    
+
+    /**
+     * Lists page of immediate child objects of the given context node
+     * with specification of which types to list and optional filtering (exclusion of certain child file/folder subtypes) and sorting
+     * @param rootNodeRef NodeRef
+     * @param searchTypeQNames   QNames of types to list
+     * @param ignoreAspectQNames Set<QName>
+     * @param sortProps List<Pair<QName, Boolean>>
+     * @param pagingRequest PagingRequest
+     * @return list of node refs, never null
+     */
+    @Auditable(parameters = {"rootNodeRef"})
+    public PagingResults<FileInfo> list(NodeRef rootNodeRef, Set<QName> searchTypeQNames, Set<QName> ignoreAspectQNames, List<Pair<QName, Boolean>> sortProps, List<FilterProp> filterProps, PagingRequest pagingRequest);
+
+
     /**
      * Helper method to transform a list of {@link NodeRef} to a list of {@link FileInfo}
      * 

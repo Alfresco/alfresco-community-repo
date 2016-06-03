@@ -50,13 +50,8 @@ import org.codehaus.jackson.JsonGenerator;
 import org.codehaus.jackson.map.JsonMappingException;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.json.simple.JSONObject;
-import org.springframework.extensions.webscripts.AbstractWebScript;
-import org.springframework.extensions.webscripts.Cache;
+import org.springframework.extensions.webscripts.*;
 import org.springframework.extensions.webscripts.Description.RequiredCache;
-import org.springframework.extensions.webscripts.Format;
-import org.springframework.extensions.webscripts.WebScriptRequest;
-import org.springframework.extensions.webscripts.WebScriptResponse;
-import org.springframework.extensions.webscripts.WrappingWebScriptResponse;
 import org.springframework.extensions.webscripts.servlet.WebScriptServletResponse;
 
 /**
@@ -214,19 +209,20 @@ public abstract class ApiWebScript extends AbstractWebScript
      */
     public void renderErrorResponse(ErrorResponse errorResponse, final WebScriptResponse res) throws IOException {
 
-        String errorKey = errorResponse.getErrorKey();
+        String logKey = " ";
 
-        if (logger.isDebugEnabled())
+        if (Status.STATUS_INTERNAL_SERVER_ERROR == errorResponse.getStatusCode() || logger.isDebugEnabled())
         {
-            errorKey = GUID.generate();
-            logger.debug(errorKey+" : ApiWebScript : "+errorResponse.getStackTrace());
+            logKey = GUID.generate();
+            logger.error(logKey+" : "+errorResponse.getStackTrace());
         }
 
-        final ErrorResponse errorToWrite = new ErrorResponse(errorKey,
+        final ErrorResponse errorToWrite = new ErrorResponse(errorResponse.getErrorKey(),
                                                     errorResponse.getStatusCode(),
                                                     errorResponse.getBriefSummary(),
-                                                    DefaultExceptionResolver.ERROR_URL,
-                                                    errorResponse.getAdditionalState());
+                                                    logKey,
+                                                    errorResponse.getAdditionalState(),
+                                                    DefaultExceptionResolver.ERROR_URL);
 
         setContentInfoOnResponse(res, DEFAULT_JSON_CONTENT);
         

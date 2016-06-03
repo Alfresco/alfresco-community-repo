@@ -26,10 +26,7 @@
  
 package org.alfresco.rest.framework.tests.core;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.anyString;
@@ -42,9 +39,7 @@ import org.alfresco.rest.framework.Api;
 import org.alfresco.rest.framework.core.ResourceLocator;
 import org.alfresco.rest.framework.core.ResourceLookupDictionary;
 import org.alfresco.rest.framework.core.ResourceWithMetadata;
-import org.alfresco.rest.framework.core.exceptions.DefaultExceptionResolver;
-import org.alfresco.rest.framework.core.exceptions.ErrorResponse;
-import org.alfresco.rest.framework.core.exceptions.SimpleMappingExceptionResolver;
+import org.alfresco.rest.framework.core.exceptions.*;
 import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
 import org.alfresco.rest.framework.resource.actions.ActionExecutor;
 import org.alfresco.rest.framework.resource.content.ContentInfo;
@@ -321,8 +316,26 @@ public class ExecutionTests extends AbstractContextTest
         //System.out.println(errorMessage);
         assertTrue(errorMessage.contains("\"errorKey\":\"framework.exception.ApiDefault\""));
         assertTrue(errorMessage.contains("\"statusCode\":500"));
-        assertTrue(errorMessage.contains("\"stackTrace\":\" \""));
+        assertTrue(errorMessage.contains("\"stackTrace\":\""));
         assertTrue(errorMessage.contains("\"descriptionURL\":\""+DefaultExceptionResolver.ERROR_URL+"\""));
+
+        ErrorResponse anError = simpleMappingExceptionResolver.resolveException(new ApiException("nothing"));
+        out = new ByteArrayOutputStream();
+        executor.renderErrorResponse(anError, mockResponse(out));
+        errorMessage = out.toString();
+        System.out.println(errorMessage);
+        assertTrue(errorMessage.contains("\"errorKey\":\"nothing\""));
+        assertTrue(errorMessage.contains("\"statusCode\":500"));
+        assertTrue(errorMessage.contains("\"stackTrace\":\""));
+
+        anError = simpleMappingExceptionResolver.resolveException(new EntityNotFoundException("2"));
+        out = new ByteArrayOutputStream();
+        executor.renderErrorResponse(anError, mockResponse(out));
+        errorMessage = out.toString();
+        System.out.println(errorMessage);
+        assertTrue(errorMessage.contains("\"errorKey\":\"framework.exception.EntityNotFound\""));
+        assertTrue(errorMessage.contains("\"statusCode\":404"));
+        assertTrue("Only 500 errors should have a stracktrace", errorMessage.contains("\"stackTrace\":\" \""));
     }
 
     private WebScriptResponse mockResponse() throws IOException

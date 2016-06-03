@@ -56,13 +56,13 @@ public class ErrorResponse
     }
 
     public ErrorResponse(String errorKey, int statusCode, String briefSummary,
-                         String descriptionURL, Map<String,Object> additionalState)
+                         String stackTrace, Map<String,Object> additionalState, String descriptionURL)
     {
         super();
         this.errorKey = errorKey;
         this.statusCode = statusCode;
         this.briefSummary = briefSummary;
-        this.stackTrace = " ";
+        this.stackTrace = stackTrace;
         this.additionalState = additionalState==null?null:Collections.unmodifiableMap(additionalState);
         this.descriptionURL = descriptionURL;
     }

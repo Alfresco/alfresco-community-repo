@@ -848,6 +848,9 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
                 properties.put(ContentModel.PROP_USERNAME, realUserName);
             }
         }
+
+        checkIfPersonShouldBeDisabledAndSetAspect(personNode, properties);
+
         Map<QName, Serializable> update = nodeService.getProperties(personNode);
         update.putAll(properties);
 
@@ -987,6 +990,8 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
             beforeCreateNodeValidationBehaviour.enable();
         }
         
+        checkIfPersonShouldBeDisabledAndSetAspect(personRef, properties);
+        
         if (zones != null)
         {
             for (String zone : zones)
@@ -1004,6 +1009,26 @@ public class PersonServiceImpl extends TransactionListenerAdapter implements Per
         return personRef;
     }
     
+    private void checkIfPersonShouldBeDisabledAndSetAspect(NodeRef person, Map<QName, Serializable> properties)
+    {
+        if (properties.get(ContentModel.PROP_ENABLED) != null)
+        {
+            boolean isEnabled = Boolean.parseBoolean(properties.get(ContentModel.PROP_ENABLED).toString());
+
+            if (isEnabled)
+            {
+                if (nodeService.hasAspect(person, ContentModel.ASPECT_PERSON_DISABLED))
+                {
+                    nodeService.removeAspect(person, ContentModel.ASPECT_PERSON_DISABLED);
+                }
+            }
+            else
+            {
+                nodeService.addAspect(person, ContentModel.ASPECT_PERSON_DISABLED, null);
+            }
+        }
+    }
+
     /**
      * {@inheritDoc}
      */

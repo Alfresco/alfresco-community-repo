@@ -36,6 +36,10 @@ import org.alfresco.repo.security.authentication.AuthenticationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.person.PersonServiceImpl;
+import org.alfresco.repo.security.sync.ldap.AbstractDirectoryServiceUserAccountStatusInterpreter;
+import org.alfresco.repo.security.sync.ldap.LDAPUserAccountStatusInterpreter;
+import org.alfresco.repo.security.sync.ldap.LDAPUserRegistry;
+import org.alfresco.repo.security.sync.ldap_ad.LDAPADUserAccountStatusInterpreter;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.repository.NodeRef;
@@ -44,6 +48,7 @@ import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
@@ -405,6 +410,135 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             }
         }, false, true);
         tearDownTestUsersAndGroups();
+    }
+
+    private class MockLDAPUserRegistry extends LDAPUserRegistry implements IMockUserRegistry
+    {
+        MockUserRegistry mockUserRegistry;
+
+        public MockLDAPUserRegistry(MockUserRegistry mockUserRegistry)
+        {
+            this.mockUserRegistry = mockUserRegistry;
+        }
+
+        @Override
+        public void setActive(boolean active)
+        {
+            mockUserRegistry.setActive(active);
+        }
+
+        @Override
+        public boolean isActive()
+        {
+            return mockUserRegistry.isActive();
+        }
+
+        @Override
+        public Set<QName> getPersonMappedProperties()
+        {
+            return mockUserRegistry.getPersonMappedProperties();
+        }
+
+        @Override
+        public Collection<NodeDescription> getPersons(Date modifiedSince)
+        {
+            return mockUserRegistry.getPersons(modifiedSince);
+        }
+
+        @Override
+        public Collection<String> getPersonNames()
+        {
+            return mockUserRegistry.getPersonNames();
+        }
+
+        @Override
+        public Collection<String> getGroupNames()
+        {
+            return mockUserRegistry.getGroupNames();
+        }
+
+        @Override
+        public Collection<NodeDescription> getGroups(Date modifiedSince)
+        {
+            return mockUserRegistry.getGroups(modifiedSince);
+        }
+
+        @Override
+        public String getZoneId()
+        {
+            return mockUserRegistry.getZoneId();
+        }
+
+        @Override
+        public void updateState(Collection<NodeDescription> persons, Collection<NodeDescription> groups)
+        {
+            mockUserRegistry.updateState(persons, groups);
+        }
+    }
+
+    private void testLDAPDisableUserAccount(AbstractDirectoryServiceUserAccountStatusInterpreter userAccountStatusInterpreter,
+            String enabledAccountPropertyValue, String disabledAccountPropertyValue) throws Exception
+    {
+        MockUserRegistry mockUserRegistry = new MockUserRegistry("ldap1", new NodeDescription[] {
+                newPersonWithUserAccountStatusProperty("EnabledUser", enabledAccountPropertyValue),
+                newPersonWithUserAccountStatusProperty("DisabledUser", disabledAccountPropertyValue) }, new NodeDescription[] {});
+
+        MockLDAPUserRegistry mockLDAPUserRegistry = new MockLDAPUserRegistry(mockUserRegistry);
+        mockLDAPUserRegistry.setUserAccountStatusInterpreter(userAccountStatusInterpreter);
+
+        this.applicationContextManager.setUserRegistries(mockLDAPUserRegistry);
+
+        ChainingUserRegistrySynchronizer chainingSynchronizer = (ChainingUserRegistrySynchronizer) this.synchronizer;
+        chainingSynchronizer.setExternalUserControl("true");
+        chainingSynchronizer.setExternalUserControlSubsystemName("ldap1");
+
+        this.synchronizer.synchronize(false, false);
+
+        this.retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        {
+            public Object execute() throws Throwable
+            {
+                NodeRef enabledUserRef = ChainingUserRegistrySynchronizerTest.this.personService.getPerson("EnabledUser", false);
+                assertFalse(ChainingUserRegistrySynchronizerTest.this.nodeService.hasAspect(enabledUserRef, ContentModel.ASPECT_PERSON_DISABLED));
+
+                NodeRef disabledUserRef = ChainingUserRegistrySynchronizerTest.this.personService.getPerson("DisabledUser", false);
+                assertTrue(ChainingUserRegistrySynchronizerTest.this.nodeService.hasAspect(disabledUserRef, ContentModel.ASPECT_PERSON_DISABLED));
+
+                return null;
+            }
+        }, false, true);
+    }
+
+    public void testLDAPDisableUserAccountWithActiveDirectoryProperty() throws Exception
+    {
+        LDAPADUserAccountStatusInterpreter ldapadUserAccountStatusInterpreter = new LDAPADUserAccountStatusInterpreter();
+
+        // Active Directory enabled account: userAccountControl=512; 
+        // disabled account: userAccountControl=514.
+        testLDAPDisableUserAccount(ldapadUserAccountStatusInterpreter, "512", "514");
+    }
+
+    public void testLDAPDisableUserAccountWithNetscapDSProperty() throws Exception
+    {
+        LDAPUserAccountStatusInterpreter ldapUserAccountStatusInterpreter = new LDAPUserAccountStatusInterpreter();
+        ldapUserAccountStatusInterpreter.setAcceptNullArgument(true);
+
+        // Netscape Directory Server derivatives (Oracle, Red Hat, 389 DS)
+        // disabled account property: nsAccountLock=true.
+        ldapUserAccountStatusInterpreter.setDisabledAccountPropertyValue("true");
+
+        testLDAPDisableUserAccount(ldapUserAccountStatusInterpreter, null, "true");
+    }
+
+    public void testLDAPDisableUserAccountWithOpenLDAPProperty() throws Exception
+    {
+        LDAPUserAccountStatusInterpreter ldapUserAccountStatusInterpreter = new LDAPUserAccountStatusInterpreter();
+        ldapUserAccountStatusInterpreter.setAcceptNullArgument(true);
+
+        // OpenLDAP disabled account: pwdAccountLockedTime=000001010000Z (part of PPolicy module)
+        ldapUserAccountStatusInterpreter.setDisabledAccountPropertyValue("000001010000Z");
+
+        testLDAPDisableUserAccount(ldapUserAccountStatusInterpreter, null, "000001010000Z");
     }
 
     /**
@@ -785,6 +919,16 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         return person;
     }
 
+    private NodeDescription newPersonWithUserAccountStatusProperty(String userName, String userAccountPropertyValue)
+    {
+        NodeDescription person = newPerson(userName, userName + "@somedomain.com");
+
+        person.getProperties().put(QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "userAccountStatusProperty"), userAccountPropertyValue);
+        person.setLastModified(new Date());
+
+        return person;
+    }
+
     /**
      * Perform all the necessary assertions to ensure that an authority and its members exist in the correct zone.
      * 
@@ -936,10 +1080,31 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         
     }
 
+    public static interface IMockUserRegistry extends UserRegistry, ActivateableBean
+    {
+        /**
+         * Gets the zone id.
+         * 
+         * @return the zoneId
+         */
+        String getZoneId();
+
+        /**
+         * Modifies the state to match the arguments. Compares new with old and
+         * records new modification dates only for changes.
+         * 
+         * @param persons
+         *            the persons
+         * @param groups
+         *            the groups
+         */
+        void updateState(Collection<NodeDescription> persons, Collection<NodeDescription> groups);
+    }
+
     /**
      * A Mock {@link UserRegistry} that returns a fixed set of users and groups.
      */
-    public static class MockUserRegistry implements UserRegistry, ActivateableBean
+    public static class MockUserRegistry implements IMockUserRegistry
     {
         private boolean isActive = true;
         
@@ -973,15 +1138,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         
 
 
-        /**
-         * Modifies the state to match the arguments. Compares new with old and records new modification dates only for
-         * changes.
-         * 
-         * @param persons
-         *            the persons
-         * @param groups
-         *            the groups
-         */
+        @Override
         public void updateState(Collection<NodeDescription> persons, Collection<NodeDescription> groups)
         {
             List<NodeDescription> newPersons = new ArrayList<NodeDescription>(this.persons);
@@ -1066,11 +1223,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
             this(zoneId, Arrays.asList(persons), Arrays.asList(groups));
         }
 
-        /**
-         * Gets the zone id.
-         * 
-         * @return the zoneId
-         */
+        @Override
         public String getZoneId()
         {
             return this.zoneId;
@@ -1195,10 +1348,10 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
          * @param registries
          *            the new user registries
          */
-        public void setUserRegistries(MockUserRegistry... registries)
+        public void setUserRegistries(IMockUserRegistry... registries)
         {
             this.contexts = new LinkedHashMap<String, ApplicationContext>(registries.length * 2);
-            for (MockUserRegistry registry : registries)
+            for (IMockUserRegistry registry : registries)
             {
                 StaticApplicationContext context = new StaticApplicationContext();
                 context.getDefaultListableBeanFactory().registerSingleton("userRegistry", registry);
@@ -1230,7 +1383,7 @@ public class ChainingUserRegistrySynchronizerTest extends TestCase
         public void updateZone(String zoneId, NodeDescription[] persons, NodeDescription[] groups)
         {
             ApplicationContext context = this.contexts.get(zoneId);
-            MockUserRegistry registry = (MockUserRegistry) context.getBean("userRegistry");
+            IMockUserRegistry registry = (IMockUserRegistry) context.getBean("userRegistry");
             registry.updateState(Arrays.asList(persons), Arrays.asList(groups));
         }
 

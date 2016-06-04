@@ -39,6 +39,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.authentication.AuthenticatorDeletedEvent;
 import org.alfresco.repo.security.authority.UnknownAuthorityException;
+import org.alfresco.repo.security.sync.ldap.LDAPUserRegistry;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
@@ -65,6 +66,7 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 import org.springframework.extensions.surf.util.I18NUtil;
 
 import javax.management.*;
+
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.UnsupportedEncodingException;
@@ -195,6 +197,10 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
     private NameChecker nameChecker;
 
     private SysAdminParams sysAdminParams;
+
+    private String externalUserControl = "";
+
+    private String externalUserControlSubsystemName = "";
     
     public void init()
     {
@@ -206,6 +212,16 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
         PropertyCheck.mandatory(this, "jobLockService", jobLockService);
         PropertyCheck.mandatory(this, "applicationEventPublisher", applicationEventPublisher);
         PropertyCheck.mandatory(this, "sysAdminParams", sysAdminParams);
+    }
+
+    public void setExternalUserControl(String externalUserControl)
+    {
+        this.externalUserControl = externalUserControl;
+    }
+
+    public void setExternalUserControlSubsystemName(String externalUserControlSubsystemName)
+    {
+        this.externalUserControlSubsystemName = externalUserControlSubsystemName;
     }
 
     /**
@@ -1765,6 +1781,9 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 this.applicationEventPublisher,
                 ChainingUserRegistrySynchronizer.logger,
                 this.loggingInterval);
+
+        final UserRegistry userRegistryFinalRef = userRegistry;
+
         class PersonWorker extends BaseBatchProcessWorker<NodeDescription>
         {
             private long latestTime;
@@ -1790,6 +1809,36 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
                 HashMap<QName, Serializable> personProperties = new HashMap<QName, Serializable>(person.getProperties());
                 String personName = personProperties.get(ContentModel.PROP_USERNAME).toString().trim();
                 personProperties.put(ContentModel.PROP_USERNAME, personName);
+
+                if (Boolean.parseBoolean(ChainingUserRegistrySynchronizer.this.externalUserControl)
+                        && ChainingUserRegistrySynchronizer.this.externalUserControlSubsystemName.equals(zone)
+                        && userRegistryFinalRef instanceof LDAPUserRegistry)
+                {
+                    try
+                    {
+                        LDAPUserRegistry ldapUserRegistry = (LDAPUserRegistry) userRegistryFinalRef;
+
+                        if (ldapUserRegistry.getUserAccountStatusInterpreter() != null)
+                        {
+                            QName propertyNameToCheck = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "userAccountStatusProperty");
+    
+                            if (personProperties.get(propertyNameToCheck) != null || ldapUserRegistry.getUserAccountStatusInterpreter().acceptsNullArgument())
+                            {
+                                boolean isUserAccountDisabled = ldapUserRegistry.getUserAccountStatusInterpreter().isUserAccountDisabled(
+                                        personProperties.get(propertyNameToCheck));
+    
+                                personProperties.put(ContentModel.PROP_ENABLED, !isUserAccountDisabled);
+                            }
+                        }
+                    }
+                    catch (IllegalArgumentException iae)
+                    {
+                        // Can be thrown by certain implementations of AbstractDirectoryServiceUserAccountStatusInterpreter;
+                        // We'll just log it.
+                        ChainingUserRegistrySynchronizer.logger.debug(iae.getMessage(), iae);
+                    }
+                }
+
                 // for invalid names will throw ConstraintException that will be catched by BatchProcessor$TxnCallback
                 nameChecker.evaluate(personName);
                 Set<String> zones = ChainingUserRegistrySynchronizer.this.authorityService

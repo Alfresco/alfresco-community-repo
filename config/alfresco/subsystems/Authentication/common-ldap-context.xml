@@ -93,6 +93,9 @@
       <property name="sysAdminParams">
          <ref bean="sysAdminParams" />
       </property>
+      <property name="personService">
+         <ref bean="PersonService" />
+      </property>
    </bean>
 
    <!--
@@ -366,6 +369,13 @@
         </property>
 
         <!--
+        The user account status property interpreter. Unfortunately, this varies between directory servers.
+        -->
+        <property name="userAccountStatusInterpreter">
+            <ref bean="${ldap.synchronization.userAccountStatusInterpreter}" />
+        </property>
+
+        <!--
         An attribute that is a unique identifier for each group found. 
         This is also the name of the group with the current group implementation.
         This is mandatory for any groups found.
@@ -450,6 +460,12 @@
                 <!-- Always use the default -->
                 <entry key="cm:homeFolderProvider">
                     <null/>
+                </entry>
+                <entry key="cm:userAccountStatusProperty">
+                    <!-- Oracle / Red Hat / 389 DS:  "nsAccountLock"-->
+                    <!-- OpenLDAP: "pwdAccountLockedTime" -->
+                    <!-- Active Directory: "userAccountControl" -->
+                    <value>${ldap.synchronization.userAccountStatusProperty}</value>
                 </entry>
             </map>
         </property>

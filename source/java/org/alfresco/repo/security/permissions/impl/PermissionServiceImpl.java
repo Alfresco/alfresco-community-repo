@@ -1050,6 +1050,8 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
         accessCache.clear();
     }
     
+    @Override
+    @Extend(traitAPI = PermissionServiceTrait.class, extensionAPI = PermissionServiceExtension.class)
     public void setInheritParentPermissions(NodeRef nodeRef, final boolean inheritParentPermissions, boolean asyncCall)
     {
         final NodeRef actualRef = tenantService.getName(nodeRef);

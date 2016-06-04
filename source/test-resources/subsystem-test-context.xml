@@ -29,16 +29,22 @@
             </map>
         </property>
     </bean>
-    <bean id="testPortEarlyChecker1" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+    <bean id="testPortEarlyChecker1" class="org.alfresco.repo.management.subsystems.test.TestPortEarlyPropertyChecker">
         <constructor-arg value="TestSubsystem" />
         <constructor-arg value="false" />
         <constructor-arg value="true" />
+        <property name="blockedPort">
+            <ref bean="testPortNumber" />
+        </property>
     </bean>
-        <bean id="testPortEarlyChecker2" class="org.alfresco.repo.management.subsystems.PortEarlyPropertyChecker">
+    <bean id="testPortEarlyChecker2" class="org.alfresco.repo.management.subsystems.test.TestPortEarlyPropertyChecker">
         <constructor-arg value="TestSubsystem" />
         <constructor-arg value="test.subsystem.host" />
         <constructor-arg value="false" />
         <constructor-arg value="true" />
+        <property name="wrongHost">
+            <ref bean="testHost" />
+        </property>
     </bean>
     
     <bean id="sampleService" class="org.alfresco.repo.management.subsystems.test.SampleService">
@@ -48,6 +54,10 @@
         <constructor-arg>
             <value>65534</value>
         </constructor-arg> 
+    </bean>
+
+    <bean id="testHost" class="java.lang.String">
+        <constructor-arg type="java.lang.String" value="testHost"/>
     </bean>
 
 </beans>

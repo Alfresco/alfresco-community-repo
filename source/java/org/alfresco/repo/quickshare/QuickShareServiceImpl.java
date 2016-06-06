@@ -144,10 +144,61 @@ public class QuickShareServiceImpl implements QuickShareService,
     private SiteService siteService;
     private AuthorityService authorityService;
 
+    private SearchService searchService;
+    private SiteService siteService;
+    private AuthorityService authorityService;
     private boolean enabled;
     private String defaultEmailSender;
     private ClientAppConfig clientAppConfig;
 
+    /**
+     * Spring configuration
+     * 
+     * @param behaviourFilter the behaviourFilter to set
+     */
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+
+    /**
+     * Spring configuration
+     *
+     * @param searchService the searchService to set
+     */
+    public void setSearchService(SearchService searchService)
+    {
+        this.searchService = searchService;
+    }
+
+    /**
+     * Spring configuration
+     *
+     * @param siteService the siteService to set
+     */
+    public void setSiteService(SiteService siteService)
+    {
+        this.siteService = siteService;
+    }
+
+    /**
+     * Spring configuration
+     *
+     * @param authorityService the authorityService to set
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+
+    /**
+     * Enable or disable this service.
+     */
+    public void setEnabled(boolean enabled)
+    {
+        this.enabled = enabled;
+    }
+    
     /**
      * Set the attribute service
      */
@@ -804,7 +855,54 @@ public class QuickShareServiceImpl implements QuickShareService,
         }, tenantDomain);
         
     }
+    @Override
+    public boolean canDeleteSharedLink(NodeRef nodeRef, String sharedByUserId)
+    {
+        boolean canDeleteSharedLink = false;
 
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+        String siteName = getSiteName(nodeRef);
+        boolean isSharedByCurrentUser = currentUser.equals(sharedByUserId);
+
+        if (siteName != null)
+        {
+            // node belongs to a site - current user must be a manager or collaborator or someone who shared the link
+            String role = siteService.getMembersRole(siteName, currentUser);
+            if (isSharedByCurrentUser || (role != null && (role.equals(SiteModel.SITE_MANAGER) || role.equals(SiteModel.SITE_COLLABORATOR))))
+            {
+                canDeleteSharedLink = true;
+            }
+        }
+        else if (isSharedByCurrentUser || (authorityService.isAdminAuthority(currentUser)))
+        {
+            // node does not belongs to a site - current user must be the person who shared the link or an admin
+            canDeleteSharedLink = true;
+        }
+
+        return canDeleteSharedLink;
+    }
+
+    private String getSiteName(NodeRef nodeRef)
+    {
+        NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
+        while (parent != null && !nodeService.getType(parent).equals(SiteModel.TYPE_SITE))
+        {
+            // check that we can read parent name
+            String parentName = (String) nodeService.getProperty(parent, ContentModel.PROP_NAME);
+
+            if (nodeService.getPrimaryParent(nodeRef) != null)
+            {
+                parent = nodeService.getPrimaryParent(parent).getParentRef();
+            }
+        }
+
+        if (parent == null)
+        {
+            return null;
+        }
+
+        return nodeService.getProperty(parent, ContentModel.PROP_NAME).toString();
+    }
     @Override
     public void sendEmailNotification(final QuickShareEmailRequest emailRequest)
     {

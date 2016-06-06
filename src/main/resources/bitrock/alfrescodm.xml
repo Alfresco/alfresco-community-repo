@@ -34,7 +34,7 @@
             <name>alfresco_license</name>
             <title>License Agreement</title>
             <insertAfter>welcome</insertAfter>
-            <description>Please read the following License Agreement. You must accept the terms of this agreement before continuing with the installation.</description>
+            <description>Read the following License Agreement. You must accept the terms of this agreement before continuing with the installation.</description>
             <wrapText>1</wrapText>
             <file>licenses/alfresco.trial.agreement-en.txt</file>
             <licenseFileList>

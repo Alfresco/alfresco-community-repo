@@ -245,6 +245,27 @@ public class PersonServiceTest extends BaseWebScriptTest
         response = sendRequest(new GetRequest(URL_PEOPLE + "/" + userName), 200);
     }
     
+    public void testGetPeopleSkipCount() throws Exception
+    {
+        // Test case for MNT-15357 skipCount
+        int skipCount = 1;
+
+        // Ensure that the REST call with no filter will always be routed to a DB canned query rather than a FTS
+        // (see ALF-18876 for details)
+        String filter = "*%20[hint:useCQ]";
+
+        Response response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter), 200);
+        JSONObject res = new JSONObject(response.getContentAsString());
+
+        int peopleFound = res.getJSONArray("people").length();
+        assertTrue("No people found", peopleFound > 0);
+
+        response = sendRequest(new GetRequest(URL_PEOPLE + "?filter=" + filter + "&skipCount=" + skipCount), 200);
+
+        res = new JSONObject(response.getContentAsString());
+        assertTrue("skipCount ignored", res.getJSONArray("people").length() < peopleFound);
+    }
+    
     public void testUpdatePerson() throws Exception
     {
         // Create a new person

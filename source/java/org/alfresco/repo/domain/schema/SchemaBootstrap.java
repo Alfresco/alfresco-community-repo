@@ -1976,44 +1976,51 @@ public class SchemaBootstrap extends AbstractLifecycleBean
                     dialect.getClass().getSimpleName(),
                     reference.getDbPrefix()
         };
-        PrintWriter pw;
+        PrintWriter pw = null;
         File outputFile = null;
-        if (out == null)
-        {
-            String outputFileName = MessageFormat.format(outputFileNameTemplate, outputFileNameParams);
 
-            outputFile = TempFileProvider.createTempFile(outputFileName, ".txt");
+        try
+        {
+            if (out == null)
+            {
+                String outputFileName = MessageFormat.format(outputFileNameTemplate, outputFileNameParams);
 
-            try
-            {
-                pw = new PrintWriter(outputFile, SchemaComparator.CHAR_SET);
+                outputFile = TempFileProvider.createTempFile(outputFileName, ".txt");
+
+                try
+                {
+                    pw = new PrintWriter(outputFile, SchemaComparator.CHAR_SET);
+                }
+                catch (FileNotFoundException error)
+                {
+                    throw new RuntimeException("Unable to open file for writing: " + outputFile);
+                }
+                catch (UnsupportedEncodingException error)
+                {
+                    throw new RuntimeException("Unsupported char set: " + SchemaComparator.CHAR_SET, error);
+                }
             }
-            catch (FileNotFoundException error)
+            else
             {
-                throw new RuntimeException("Unable to open file for writing: " + outputFile);
+                pw = out;
             }
-            catch (UnsupportedEncodingException error)
+
+            // Populate the file with details of the comparison's results.
+            for (Result result : results)
             {
-                throw new RuntimeException("Unsupported char set: " + SchemaComparator.CHAR_SET, error);
+                pw.print(result.describe());
+                pw.print(SchemaComparator.LINE_SEPARATOR);
             }
         }
-        else
+        finally
         {
-            pw = out;
-        }
-        
-        // Populate the file with details of the comparison's results.
-        for (Result result : results)
-        {
-            pw.print(result.describe());
-            pw.print(SchemaComparator.LINE_SEPARATOR);
+            // We care only about output streams for reporting, which are created specially for current reference resource...
+            if (null == out)
+            {
+                pw.close();
+            }
         }
 
-        // We care only about output streams for reporting, which are created specially for current reference resource...
-        if (null == out)
-        {
-            pw.close();
-        }
 
         if (results.size() == 0)
         {

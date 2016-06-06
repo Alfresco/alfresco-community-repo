@@ -148,6 +148,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     private Properties properties;
     private Map<String, MetadataExtracterLimits> mimetypeLimits;
     private ExecutorService executorService;
+    protected MetadataExtracterConfig metadataExtracterConfig;
 
     /**
      * Default constructor.  If this is called, then {@link #isSupported(String)} should
@@ -417,7 +418,15 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     {
         this.properties = properties;
     }
-
+    
+    /**
+     * The metadata extracter config.
+     */
+    public void setMetadataExtracterConfig(MetadataExtracterConfig metadataExtracterConfig)
+    {
+        this.metadataExtracterConfig = metadataExtracterConfig;
+    }
+    
     /**
      * Whether or not to enable the pass through of simple strings to cm:taggable tags
      * 

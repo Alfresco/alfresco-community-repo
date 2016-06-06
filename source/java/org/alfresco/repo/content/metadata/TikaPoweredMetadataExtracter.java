@@ -379,7 +379,11 @@ public abstract class TikaPoweredMetadataExtracter
             
             Metadata metadata = new Metadata();
             metadata.add(Metadata.CONTENT_TYPE, reader.getMimetype());
-            
+            if (metadataExtracterConfig != null)
+            {
+               metadataExtracterConfig.prepareMetadataWithConfigParams(metadata);
+            }
+
             ParseContext context = buildParseContext(metadata, reader.getMimetype());
             
             ContentHandler handler;

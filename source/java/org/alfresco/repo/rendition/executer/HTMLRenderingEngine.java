@@ -45,6 +45,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.action.ParameterDefinitionImpl;
+import org.alfresco.repo.content.metadata.MetadataExtracterConfig;
 import org.alfresco.repo.rendition.RenditionLocation;
 import org.alfresco.service.cmr.action.ParameterDefinition;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -88,7 +89,7 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
 {
     private static Log logger = LogFactory.getLog(HTMLRenderingEngine.class);
     private TikaConfig tikaConfig;
-    
+    private MetadataExtracterConfig metadataExtracterConfig;
     /**
      * This optional parameter, when set to true, causes only the
      *  contents of the HTML body to be written out as the rendition.
@@ -127,6 +128,14 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
     public void setTikaConfig(TikaConfig tikaConfig)
     {
         this.tikaConfig = tikaConfig;
+    }
+
+    /**
+     * The metadata extracter config.
+     */
+    public void setMetadataExtracterConfig(MetadataExtracterConfig metadataExtracterConfig)
+    {
+        this.metadataExtracterConfig = metadataExtracterConfig;
     }
 
     /*
@@ -350,6 +359,10 @@ public class HTMLRenderingEngine extends AbstractRenderingEngine
                    ContentModel.PROP_NAME
              ).toString()
        );
+       if (metadataExtracterConfig != null)
+       {
+          metadataExtracterConfig.prepareMetadataWithConfigParams(metadata);
+       }
        
        // Our parse context needs to extract images
        ParseContext parseContext = new ParseContext();

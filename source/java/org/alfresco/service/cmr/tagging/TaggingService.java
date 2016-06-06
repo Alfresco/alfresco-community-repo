@@ -94,7 +94,7 @@ public interface TaggingService
     NodeRef createTag(StoreRef storeRef, String tag);
     
     /**
-     * Delete an existing tag
+     * Delete an existing tag and any references to it(cascade delete).
      * 
      * @param storeRef  store reference
      * @param tag       tag name

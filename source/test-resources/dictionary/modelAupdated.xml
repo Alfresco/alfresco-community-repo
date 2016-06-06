@@ -1,0 +1,31 @@
+<model xmlns="http://www.alfresco.org/model/dictionary/1.0" name="prefixA:model-A">
+    <author>Administrator</author>
+    <imports>
+        <import uri="http://www.alfresco.org/model/content/1.0" prefix="cm"/>
+        <import uri="http://www.mycompany.com/model/modelBnamespace/1.0" prefix="prefixB"/>
+    </imports>
+    <namespaces>
+        <namespace uri="http://www.mycompany.com/model/modelAnamespace/1.0" prefix="prefixA"/>
+    </namespaces>
+    <data-types/>
+    <constraints/>
+    <types>
+        <type name="prefixA:TypeA">
+            <title>Model-A Type A</title>
+            <parent>cm:content</parent>
+            <properties/>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+        <type name="prefixA:modelATypeB">
+            <title>Model-A Type B</title>
+            <parent>prefixB:TypeB</parent>
+            <properties/>
+            <associations/>
+            <overrides/>
+            <mandatory-aspects/>
+        </type>
+    </types>
+    <aspects/>
+</model>

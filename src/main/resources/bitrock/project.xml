@@ -481,6 +481,10 @@
     </showInfo>
     </finalPageActionList>
     
+    <readyToInstallActionList>
+        <setInstallerVariable name="validInstallDir" value="1" />
+    </readyToInstallActionList>
+    
     <installationAbortedActionList>
         <actionGroup>
             <actionList>
@@ -496,6 +500,7 @@
                 <deleteFile path="${installdir}" />
             </actionList>
             <ruleList>
+                <compareText text="${validInstallDir}" logic="equals" value="1" />
                 <compareText text="${installation_aborted_by_user}" logic="equals" value="1" />
             </ruleList>
         </actionGroup>

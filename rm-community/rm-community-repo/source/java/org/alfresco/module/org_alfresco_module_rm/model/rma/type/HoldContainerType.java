@@ -37,18 +37,13 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.springframework.extensions.surf.util.I18NUtil;
 
-
-
 /**
  * rma:holdContainer behaviour bean
  *
  * @author Mihai Cozma
  * @since 2.4
  */
-@BehaviourBean
-(
-   defaultType = "rma:holdContainer"
-)
+@BehaviourBean(defaultType = "rma:holdContainer")
 public class HoldContainerType extends BaseBehaviourBean
             implements NodeServicePolicies.OnCreateChildAssociationPolicy, NodeServicePolicies.OnCreateNodePolicy
 {
@@ -66,10 +61,8 @@ public class HoldContainerType extends BaseBehaviourBean
     {
 
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true)
-        {
-            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER));
-        }
+        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true) { throw new AlfrescoRuntimeException(
+                    I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER)); }
 
     }
 
@@ -77,8 +70,8 @@ public class HoldContainerType extends BaseBehaviourBean
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT)) { throw new AlfrescoRuntimeException(
-                    "Operation failed, because you can't place content directly in hold container."); }
+        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true) { throw new AlfrescoRuntimeException(
+                    I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER)); }
 
     }
 }

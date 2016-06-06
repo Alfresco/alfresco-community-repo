@@ -189,6 +189,79 @@ public class NodeDAOTest extends TestCase
         }
     }
     
+    public void testGetNodeIdsIntervalForType() throws Exception
+    {
+        // Different calls with equivalent parameters should return the same values
+        Pair<Long, Long> interval1 = getNodeIdsInterval(0L, System.currentTimeMillis());
+        Pair<Long, Long> interval2 = getNodeIdsInterval(null, System.currentTimeMillis());
+        Pair<Long, Long> interval3 = getNodeIdsInterval(null, null);
+        
+        assertEquals(interval1.getFirst(), interval2.getFirst());
+        assertEquals(interval2.getFirst(), interval3.getFirst());
+        
+        assertEquals(interval1.getSecond(), interval2.getSecond());
+        assertEquals(interval2.getSecond(), interval3.getSecond());
+    }
+    
+    private Pair<Long, Long> getNodeIdsInterval(final Long minTxnTime, final Long maxTxnTime)
+    {
+        RetryingTransactionCallback<Pair<Long, Long>> callback = new RetryingTransactionCallback<Pair<Long, Long>>()
+        {
+            public Pair<Long, Long> execute() throws Throwable
+            {
+                return nodeDAO.getNodeIdsIntervalForType(ContentModel.TYPE_FOLDER, minTxnTime, maxTxnTime);
+            }
+        };
+        
+        return txnHelper.doInTransaction(callback, true);
+    }
+    
+    public void testSelectChildAssocsWithoutNodeAssocsOfTypes()
+    {
+        final StoreRef storeRef = new StoreRef(StoreRef.PROTOCOL_WORKSPACE, "SpacesStore");
+        final Long parentId = nodeDAO.getRootNode(storeRef).getFirst();
+        
+        final AtomicLong min = new AtomicLong(0L);
+        final AtomicLong max = new AtomicLong(0L);
+        final Set<QName> typeAssocsToExclude = Collections.singleton(QName.createQName("noType"));
+        
+        RetryingTransactionCallback<List<Node>> callback = new RetryingTransactionCallback<List<Node>>()
+        {
+            public List<Node> execute() throws Throwable
+            {
+                long minNodeId = min.get();
+                long maxNodeId = max.get();
+                return nodeDAO.selectChildAssocsWithoutNodeAssocsOfTypes(parentId, minNodeId, maxNodeId, typeAssocsToExclude);
+            }
+        };
+        
+        // Get the current node range
+        Pair<Long, Long> nodeRange = getNodeIdsInterval(0L, System.currentTimeMillis());
+                
+        Long minNodeId = nodeRange.getFirst();
+        Long maxNodeId = nodeRange.getSecond();
+        
+        min.set(minNodeId.longValue());
+
+        // Iterate across the nodes in the [minNodeId, maxNodeId] interval
+        while (min.longValue() <= maxNodeId.longValue())
+        {
+            max.set(min.get() + 100L);  // 100 increments
+            // Get the nodes
+            List<Node> nodes = txnHelper.doInTransaction(callback, true);
+            for (Node node : nodes)
+            {
+                Long nodeId = node.getId();
+                assertNotNull(nodeId);
+                assertTrue("the min should be inclusive.", min.longValue() <= nodeId.longValue());
+                assertTrue("the max should be exclusive.", max.longValue() > nodeId.longValue());
+            }
+
+            // Shift the window up
+            min.set(max.get());
+        }
+    }
+    
     public void testGetNodesWithAspects() throws Throwable
     {
         final NodeRefQueryCallback callback = new NodeRefQueryCallback()

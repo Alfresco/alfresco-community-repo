@@ -184,6 +184,11 @@
         <association property="node" resultMap="alfresco.node.result_Node"/>
     </resultMap>
     
+    <resultMap id="result_nodeIdInterval" type="java.util.HashMap">
+        <result property="minId" column="min_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+        <result property="maxId" column="max_id" jdbcType="BIGINT" javaType="java.lang.Long"/>
+    </resultMap>
+    
     <!--                -->
     <!-- Parameter Maps -->
     <!--                -->
@@ -1438,5 +1443,47 @@
             <if test="sortOrderAscending == true">order by childNode.id ASC</if>
             <if test="sortOrderAscending == false">order by childNode.id DESC</if>
     </sql>
+    
+    <select id="select_ChildAssocsOfParentWithoutNodeAssocsOfType" parameterType="Ids" resultMap="result_NodeRef">
+        select
+            childNode.id             as id,
+            childStore.protocol      as protocol,
+            childStore.identifier    as identifier,
+            childNode.uuid           as uuid
+        from
+            alf_child_assoc assoc
+            join alf_node childNode on (childNode.id = assoc.child_node_id)
+            join alf_store childStore on (childStore.id = childNode.store_id)
+        where
+            assoc.parent_node_id = #{idOne} 
+            <if test="idTwo != null"><![CDATA[and childNode.id >= #{idTwo} ]]></if>
+            <if test="idThree != null"><![CDATA[and childNode.id < #{idThree}]]></if>
+            <if test="ids != null">
+            and not exists 
+                ( 
+                   select 1 
+                   from alf_node_assoc nodeAssoc 
+                   where 
+                     nodeAssoc.source_node_id = childNode.id 
+                     and nodeAssoc.type_qname_id in 
+                     <foreach item="item" index="index" collection="ids" open="(" separator="," close=")"> #{item} </foreach>
+                )
+            </if>
+        <include refid="alfresco.node.select_ChildAssoc_OrderBy"/>
+    </select>
+    
+    <select id="select_MinMaxNodeIdForNodeType" parameterType="TransactionQuery" resultMap="result_nodeIdInterval">
+        select 
+            min(node.id) as min_id,
+            max(node.id) as max_id
+        from
+            alf_node node 
+            join alf_transaction txn on (node.transaction_id = txn.id)
+        where
+            1 = 1
+            <if test="typeQNameId != null"><![CDATA[and node.type_qname_id = #{typeQNameId}]]></if>
+            <if test="maxCommitTime != null"><![CDATA[and txn.commit_time_ms <= #{maxCommitTime}]]></if>
+            <if test="minCommitTime != null"><![CDATA[and txn.commit_time_ms >= #{minCommitTime}]]></if>
+    </select>
     
 </mapper>

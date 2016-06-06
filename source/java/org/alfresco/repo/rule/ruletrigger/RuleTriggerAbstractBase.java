@@ -50,26 +50,12 @@ import org.alfresco.service.namespace.QName;
  */
 public abstract class RuleTriggerAbstractBase implements RuleTrigger
 {
-    /** the types (hardcoded) to ignore generally */
-    private static final Set<QName> IGNORE_TYPES;
-    
-    static
-    {
-        IGNORE_TYPES = new HashSet<QName>(13);
-        IGNORE_TYPES.add(RuleModel.TYPE_RULE);
-        IGNORE_TYPES.add(ActionModel.TYPE_ACTION);
-        IGNORE_TYPES.add(ContentModel.TYPE_THUMBNAIL);
-        IGNORE_TYPES.add(ContentModel.TYPE_FAILED_THUMBNAIL);
-        // Workaround to prevent rules running on cm:rating nodes (which happened for 'liked' folders ALF-8308 & ALF-8382)
-        IGNORE_TYPES.add(ContentModel.TYPE_RATING);
-        IGNORE_TYPES.add(ContentModel.TYPE_SYSTEM_FOLDER);
-    }
-    
     /**
      * A list of the rule types that are interested in this trigger
      */
     private Set<RuleType> ruleTypes = new HashSet<RuleType>();
     private Set<QName> ignoredAspects = Collections.emptySet();
+    private Set<QName> ignoredTypes=Collections.emptySet();
 
     protected PolicyComponent policyComponent;
     protected NodeService nodeService;
@@ -194,7 +180,7 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
     {
     	boolean result = false;    	
     	QName typeQName = nodeService.getType(actionedUponNodeRef);
-    	if (IGNORE_TYPES.contains(typeQName))
+    	if (ignoredTypes.contains(typeQName))
     	{
     		result = true;
     	}
@@ -229,6 +215,25 @@ public abstract class RuleTriggerAbstractBase implements RuleTrigger
         for (String ignoredAspectStr : ignoredAspects)
         {
             this.ignoredAspects.add(QName.createQName(ignoredAspectStr));
+        }
+    }
+
+    public Set<QName> getIgnoredTypes()
+    {
+        return ignoredTypes;
+    }
+
+    /**
+     * Converting String ignored Types from Spring context to QNames
+     * 
+     * @param ignoredTypes
+     */
+    public void setIgnoredTypeStr(List<String> ignoredTypes)
+    {
+        this.ignoredTypes = new HashSet<QName>(13);
+        for (String ignoredTypeStr : ignoredTypes)
+        {
+            this.ignoredTypes.add(QName.createQName(ignoredTypeStr));
         }
     }
 }

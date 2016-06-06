@@ -126,7 +126,7 @@ public final class WebScriptUtils
      * @param req The webscript request
      * @return The request content as JSON object
      */
-    public static JSONObject getRequestContentAsJsonObject(WebScriptRequest req)
+    public static JSONObject getRequestContentAsJSONObject(WebScriptRequest req)
     {
         mandatory("req", req);
 
@@ -172,7 +172,7 @@ public final class WebScriptUtils
      * @param jsonObject The json object
      * @param paramName The parameter name to check for
      */
-    public static void checkMandatoryJsonParam(JSONObject jsonObject, String paramName)
+    public static void checkMandatoryJSONParam(JSONObject jsonObject, String paramName)
     {
         mandatory("jsonObject", jsonObject);
         mandatoryString("paramName", paramName);
@@ -189,14 +189,14 @@ public final class WebScriptUtils
      * @param jsonObject The json object.
      * @param paramNames The parameter names to check for
      */
-    public static void checkMandatoryJsonParams(JSONObject jsonObject, List<String> paramNames)
+    public static void checkMandatoryJSONParams(JSONObject jsonObject, List<String> paramNames)
     {
         mandatory("jsonObject", jsonObject);
         mandatory("paramNames", paramNames);
 
         for (String name : paramNames)
         {
-            checkMandatoryJsonParam(jsonObject, name);
+            checkMandatoryJSONParam(jsonObject, name);
         }
     }
 
@@ -231,7 +231,7 @@ public final class WebScriptUtils
 
         if (checkKey)
         {
-            checkMandatoryJsonParam(jsonObject, key);
+            checkMandatoryJSONParam(jsonObject, key);
         }
 
         String value = null;
@@ -262,7 +262,7 @@ public final class WebScriptUtils
      * @param key The key
      * @param value The value
      */
-    public static void putValuetoJSONObject(JSONObject jsonObject, String key, Object value)
+    public static void putValueToJSONObject(JSONObject jsonObject, String key, Object value)
     {
         mandatory("jsonObject", jsonObject);
         mandatoryString("key", key);

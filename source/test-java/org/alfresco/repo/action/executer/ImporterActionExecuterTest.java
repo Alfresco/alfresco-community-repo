@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.action.executer;
 
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -50,6 +51,8 @@ import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.test.junitrules.ApplicationContextInit;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -59,57 +62,86 @@ import org.junit.Test;
  */
 public class ImporterActionExecuterTest
 {
+    // Rule to initialise the default Alfresco spring configuration
+    public static ApplicationContextInit ctx = new ApplicationContextInit();
+
     private static final String FILE_NAME = "import-archive-test/SuspiciousPathsArchive.zip";
+
+    private static ContentService contentService;
+    private static ImporterActionExecuter importerActionExecuter;
+    private static NodeService nodeService;
+    private static ServiceRegistry serviceRegistry;
+
+    private static StoreRef storeRef;
+
+    @BeforeClass
+    public static void setup() throws Exception
+    {
+        serviceRegistry = ctx.getApplicationContext().getBean(ServiceRegistry.SERVICE_REGISTRY, ServiceRegistry.class);
+        contentService = serviceRegistry.getContentService();
+        nodeService = serviceRegistry.getNodeService();
+        importerActionExecuter = ctx.getApplicationContext().getBean(ImporterActionExecuter.NAME, ImporterActionExecuter.class);
+
+        AuthenticationUtil.setRunAsUserSystem();
+
+        // we need a store
+        storeRef = serviceRegistry.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<StoreRef>()
+        {
+            public StoreRef execute()
+            {
+                StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());
+                return storeRef;
+            }
+        });
+    }
+
+    @AfterClass
+    public static void tearDown()
+    {
+        try
+        {
+            serviceRegistry.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+            {
+                public Void execute()
+                {
+                    if (storeRef != null)
+                    {
+                        nodeService.deleteStore(storeRef);
+                    }
+                    return null;
+                }
+            });
+        }
+        finally
+        {
+            AuthenticationUtil.clearCurrentSecurityContext();
+        }
+    }
 
     @Test
     public void testImportArchiveWithSuspiciousPaths() throws IOException
     {
-        final ApplicationContextInit applicationContextInit = new ApplicationContextInit();
-        final ServiceRegistry serviceRegistry = (ServiceRegistry) applicationContextInit.getApplicationContext().getBean(ServiceRegistry.SERVICE_REGISTRY);
-        final NodeService nodeService = serviceRegistry.getNodeService();
-        final ContentService contentService = serviceRegistry.getContentService();
-        final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getTransactionService().getRetryingTransactionHelper();
-
-
-        URL url = AbstractContentTransformerTest.class.getClassLoader().getResource(FILE_NAME);
-        final File file = new File(url.getFile());
+        final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
 
         retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
         {
             public Void execute()
             {
-                AuthenticationUtil.setRunAsUserSystem();
-
-                StoreRef storeRef = nodeService.createStore(StoreRef.PROTOCOL_WORKSPACE, "Test_" + System.nanoTime());
-
                 NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
 
                 NodeRef zipFileNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
-                        QName.createQName("http://www.alfresco.org/test/ImporterActionExecuterTest", "testAssocQName1"),
-                        ContentModel.TYPE_CONTENT).getChildRef();
+                        QName.createQName("http://www.alfresco.org/test/ImporterActionExecuterTest", "testAssocQName1"), ContentModel.TYPE_CONTENT).getChildRef();
 
                 NodeRef targetFolderNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN,
-                        QName.createQName("http://www.alfresco.org/test/ImporterActionExecuterTest", "testAssocQName2"),
-                        ContentModel.TYPE_FOLDER).getChildRef();
+                        QName.createQName("http://www.alfresco.org/test/ImporterActionExecuterTest", "testAssocQName2"), ContentModel.TYPE_FOLDER).getChildRef();
 
-                contentService.getWriter(zipFileNodeRef, ContentModel.PROP_CONTENT, true).putContent(file);
+                putContent(zipFileNodeRef, FILE_NAME);
 
-                ContentData contentData = (ContentData) nodeService.getProperty(zipFileNodeRef, ContentModel.PROP_CONTENT);
-                ContentData newContentData = ContentData.setMimetype(contentData, MimetypeMap.MIMETYPE_ZIP);
-
-                nodeService.setProperty(zipFileNodeRef, ContentModel.PROP_CONTENT, newContentData);
-
-                Action action = new ActionImpl(zipFileNodeRef, GUID.generate(), "ImporterActionExecuterTestActionDefinition");
-                action.setParameterValue(ImporterActionExecuter.PARAM_DESTINATION_FOLDER, targetFolderNodeRef);
-                action.setParameterValue(ImporterActionExecuter.PARAM_ENCODING, "UTF-8");
-
-                ImporterActionExecuter executer = new ImporterActionExecuter();
-                executer.setNodeService(nodeService);
-                executer.setContentService(contentService);
+                Action action = createAction(zipFileNodeRef, "ImporterActionExecuterTestActionDefinition", targetFolderNodeRef);
 
                 try
                 {
-                    executer.execute(action, zipFileNodeRef);
+                    importerActionExecuter.execute(action, zipFileNodeRef);
                     fail("An AlfrescoRuntimeException should have occured.");
                 }
                 catch (AlfrescoRuntimeException e)
@@ -120,13 +152,81 @@ public class ImporterActionExecuterTest
                 {
                     nodeService.deleteNode(targetFolderNodeRef);
                     nodeService.deleteNode(zipFileNodeRef);
-                    nodeService.deleteStore(storeRef);
-                    
-                    AuthenticationUtil.clearCurrentSecurityContext();
                 }
 
                 return null;
             }
         });
+    }
+
+    /**
+     * MNT-16292: Unzipped files which have folders do not get the cm:titled
+     * aspect applied
+     * 
+     * @throws IOException
+     */
+    @Test
+    public void testImportHasTitledAspectForFolders() throws IOException
+    {
+        final RetryingTransactionHelper retryingTransactionHelper = serviceRegistry.getRetryingTransactionHelper();
+
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute()
+            {
+                NodeRef rootNodeRef = nodeService.getRootNode(storeRef);
+
+                // create test data
+                NodeRef zipFileNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_CONTENT).getChildRef();
+                NodeRef targetFolderNodeRef = nodeService.createNode(rootNodeRef, ContentModel.ASSOC_CHILDREN, ContentModel.ASSOC_CHILDREN, ContentModel.TYPE_FOLDER).getChildRef();
+
+                putContent(zipFileNodeRef, "import-archive-test/folderCmTitledAspectArchive.zip");
+
+                Action action = createAction(zipFileNodeRef, "ImporterActionExecuterTestActionDefinition", targetFolderNodeRef);
+
+                try
+                {
+                    importerActionExecuter.execute(action, zipFileNodeRef);
+
+                    // check if import succeeded 
+                    NodeRef importedFolder = nodeService.getChildByName(targetFolderNodeRef, ContentModel.ASSOC_CONTAINS, "folderCmTitledAspectArchive");
+                    assertNotNull("import action failed", importedFolder);
+
+                    // check if aspect is set
+                    boolean hasAspectTitled = nodeService.hasAspect(importedFolder, ContentModel.ASPECT_TITLED);
+                    assertTrue("folder didn't get the cm:titled aspect applied", hasAspectTitled);
+                }
+                finally
+                {
+                    // clean test data
+                    nodeService.deleteNode(targetFolderNodeRef);
+                    nodeService.deleteNode(zipFileNodeRef);
+                }
+
+                return null;
+            }
+        });
+    }
+
+    private void putContent(NodeRef zipFileNodeRef, String resource)
+    {
+        URL url = AbstractContentTransformerTest.class.getClassLoader().getResource(resource);
+        final File file = new File(url.getFile());
+        
+        contentService.getWriter(zipFileNodeRef, ContentModel.PROP_CONTENT, true).putContent(file);
+
+        ContentData contentData = (ContentData) nodeService.getProperty(zipFileNodeRef, ContentModel.PROP_CONTENT);
+        ContentData newContentData = ContentData.setMimetype(contentData, MimetypeMap.MIMETYPE_ZIP);
+
+        nodeService.setProperty(zipFileNodeRef, ContentModel.PROP_CONTENT, newContentData);
+    }
+
+    private Action createAction(NodeRef nodeRef, String actionDefinitionName, NodeRef targetNodeRef)
+    {
+        Action action = new ActionImpl(nodeRef, GUID.generate(), actionDefinitionName);
+        action.setParameterValue(ImporterActionExecuter.PARAM_DESTINATION_FOLDER, targetNodeRef);
+        action.setParameterValue(ImporterActionExecuter.PARAM_ENCODING, "UTF-8");
+
+        return action;
     }
 }

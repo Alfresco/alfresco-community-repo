@@ -1024,11 +1024,11 @@ function getSearchResults(params)
    if (ftsQuery.length !== 0)
    {
       // Filter queries
-	  var fqs = [];
-      if (params.filters != null)
+      var fqs = [];
+      if (params.filters)
       {
          var filters = [];
-         if(params.encodedFilters)
+         if (params.encodedFilters)
          {
             var encodedFilters = params.encodedFilters.split(",");
             for(var i=0; i<encodedFilters.length;i++)
@@ -1039,9 +1039,15 @@ function getSearchResults(params)
          }
          else
          {
-         // comma separated list of filter pairs - filter|value|value|...
-         var filters = params.filters.split(",");
+            // comma separated list of filter pairs - filter|value|value|...
+            var filters = params.filters.split(",");
          }
+         
+         // ACE-5203
+         // bracket the main fts query before applied facets - ensure AND does not take precidence over any OR in the query
+         ftsQuery = '(' + ftsQuery + ')';
+         
+         // apply each filter to the query
          for (var f=0; f<filters.length; f++)
          {
             var filterParts = filters[f].split("|");
@@ -1075,7 +1081,7 @@ function getSearchResults(params)
       // ensure a TYPE is specified - if no add one to remove system objects from result sets
       if (ftsQuery.indexOf("TYPE:\"") === -1 && ftsQuery.indexOf("TYPE:'") === -1)
       {
-    	 fqs.push('+TYPE:"cm:content" OR +TYPE:"cm:folder"');
+         fqs.push('+TYPE:"cm:content" OR +TYPE:"cm:folder"');
       }
 
       // we processed the search terms, so suffix the PATH query
@@ -1122,16 +1128,15 @@ function getSearchResults(params)
       }
       else if (path !== null)
       {
-    	 fqs.push('PATH:"' + path + '/*"');
+         fqs.push('PATH:"' + path + '/*"');
       }
       else if (site !== null)
       {
-    	 fqs.push(site);
+         fqs.push(site);
       }
       
       fqs.push('-TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -TYPE:"st:site"' +
                ' AND -ASPECT:"st:siteContainer" AND -ASPECT:"sys:hidden" AND -cm:creator:system AND -QNAME:comment\\-*');
-      
       
       // sort field - expecting field to in one of the following formats:
       //  - short QName form such as: cm:name

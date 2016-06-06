@@ -39,8 +39,6 @@ import org.alfresco.ibatis.IdsEntity;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.domain.qname.QNameDAO;
 import org.alfresco.repo.domain.query.CannedQueryDAO;
-import org.alfresco.repo.lock.JobLockService;
-import org.alfresco.repo.lock.LockAcquisitionException;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport;
 import org.alfresco.repo.transaction.AlfrescoTransactionSupport.TxnReadState;
 import org.alfresco.service.cmr.admin.RepoUsage;
@@ -77,7 +75,6 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     private AuthorityService authorityService;
     private AttributeService attributeService;
     private DictionaryService dictionaryService;
-    private JobLockService jobLockService;
     private CannedQueryDAO cannedQueryDAO;
     private QNameDAO qnameDAO;
     
@@ -131,14 +128,6 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
     }
 
     /**
-     * @param jobLockService            service to prevent duplicate work when updating usages
-     */
-    public void setJobLockService(JobLockService jobLockService)
-    {
-        this.jobLockService = jobLockService;
-    }
-
-    /**
      * @param cannedQueryDAO            DAO for executing queries
      */
     public void setCannedQueryDAO(CannedQueryDAO cannedQueryDAO)
@@ -169,7 +158,6 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
         PropertyCheck.mandatory(this, "authorityService", authorityService);
         PropertyCheck.mandatory(this, "attributeService", attributeService);
         PropertyCheck.mandatory(this, "dictionaryService", dictionaryService);
-        PropertyCheck.mandatory(this, "jobLockService", jobLockService);
         PropertyCheck.mandatory(this, "cannedQueryDAO", cannedQueryDAO);
         PropertyCheck.mandatory(this, "qnameDAO", qnameDAO);
     }
@@ -287,48 +275,28 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
      */
     private boolean updateUsers(boolean reset)
     {
-        String lockToken = null;
-        try
-        {
-            // Lock to prevent concurrent queries
-            lockToken = jobLockService.getLock(LOCK_USAGE_USERS, LOCK_TTL);
-            Long userCount = 0L;
-            
-            if (!reset)
-            {
-                // Count users
-                IdsEntity idsParam = new IdsEntity();
-                idsParam.setIdOne(qnameDAO.getOrCreateQName(ContentModel.ASPECT_PERSON_DISABLED).getFirst());
-                idsParam.setIdTwo(qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst());
-                userCount = cannedQueryDAO.executeCountQuery(QUERY_NS, QUERY_SELECT_COUNT_PERSONS_NOT_DISABLED, idsParam);
-            
-                // We subtract one to cater for 'guest', which is implicit
-                userCount = userCount > 0L ? userCount - 1L : 0L;
+        Long userCount = 0L;
 
-                // Lock again to be sure we still have the right to update
-                jobLockService.refreshLock(lockToken, LOCK_USAGE_USERS, LOCK_TTL);
-            }
-            attributeService.setAttribute(
-                    new Long(System.currentTimeMillis()),
-                    KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_LAST_UPDATE_USERS);
-            attributeService.setAttribute(
-                    userCount,
-                    KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_USERS);
-            // Success
-            return true;
-        }
-        catch (LockAcquisitionException e)
+        if (!reset)
         {
-            logger.debug("Failed to get lock for user counts: " + e.getMessage());
-            return false;
+            // Count users
+            IdsEntity idsParam = new IdsEntity();
+            idsParam.setIdOne(qnameDAO.getOrCreateQName(ContentModel.ASPECT_PERSON_DISABLED).getFirst());
+            idsParam.setIdTwo(qnameDAO.getOrCreateQName(ContentModel.TYPE_PERSON).getFirst());
+            userCount = cannedQueryDAO.executeCountQuery(QUERY_NS, QUERY_SELECT_COUNT_PERSONS_NOT_DISABLED, idsParam);
+
+            // We subtract one to cater for 'guest', which is implicit
+            userCount = userCount > 0L ? userCount - 1L : 0L;
+
         }
-        finally
-        {
-            if (lockToken != null)
-            {
-                jobLockService.releaseLock(lockToken, LOCK_USAGE_USERS);
-            }
-        }
+        attributeService.setAttribute(
+                new Long(System.currentTimeMillis()),
+                KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_LAST_UPDATE_USERS);
+        attributeService.setAttribute(
+                userCount,
+                KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_USERS);
+        // Success
+        return true;
     }
     
     /**
@@ -336,52 +304,31 @@ public class RepoUsageComponentImpl implements RepoUsageComponent
      */
     private boolean updateDocuments(boolean reset)
     {
-        String lockToken = null;
-        try
-        {
-            // Lock to prevent concurrent queries
-            lockToken = jobLockService.getLock(LOCK_USAGE_DOCUMENTS, LOCK_TTL);
-            Long documentCount = 0L;
+        Long documentCount = 0L;
 
-            if (!reset)
-            {
-                // Count documents
-                Set<QName> searchTypeQNames = new HashSet<QName>(11);
-                Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_CONTENT, true);
-                searchTypeQNames.addAll(qnames);
-                searchTypeQNames.add(ContentModel.TYPE_CONTENT);
-                qnames = dictionaryService.getSubTypes(ContentModel.TYPE_LINK, true);
-                searchTypeQNames.addAll(qnames);
-                searchTypeQNames.add(ContentModel.TYPE_LINK);
-                Set<Long> searchTypeQNameIds = qnameDAO.convertQNamesToIds(searchTypeQNames, false);
-                IdsEntity idsParam = new IdsEntity();
-                idsParam.setIds(new ArrayList<Long>(searchTypeQNameIds));
-                documentCount = cannedQueryDAO.executeCountQuery(QUERY_NS, QUERY_SELECT_COUNT_DOCUMENTS, idsParam);
-            
-                // Lock again to be sure we still have the right to update
-                jobLockService.refreshLock(lockToken, LOCK_USAGE_DOCUMENTS, LOCK_TTL);
-            }
-            attributeService.setAttribute(
-                    new Long(System.currentTimeMillis()),
-                    KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_LAST_UPDATE_DOCUMENTS);
-            attributeService.setAttribute(
-                    documentCount,
-                    KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_DOCUMENTS);
-            // Success
-            return true;
-        }
-        catch (LockAcquisitionException e)
+        if (!reset)
         {
-            logger.debug("Failed to get lock for document counts: " + e.getMessage());
-            return false;
+            // Count documents
+            Set<QName> searchTypeQNames = new HashSet<QName>(11);
+            Collection<QName> qnames = dictionaryService.getSubTypes(ContentModel.TYPE_CONTENT, true);
+            searchTypeQNames.addAll(qnames);
+            searchTypeQNames.add(ContentModel.TYPE_CONTENT);
+            qnames = dictionaryService.getSubTypes(ContentModel.TYPE_LINK, true);
+            searchTypeQNames.addAll(qnames);
+            searchTypeQNames.add(ContentModel.TYPE_LINK);
+            Set<Long> searchTypeQNameIds = qnameDAO.convertQNamesToIds(searchTypeQNames, false);
+            IdsEntity idsParam = new IdsEntity();
+            idsParam.setIds(new ArrayList<Long>(searchTypeQNameIds));
+            documentCount = cannedQueryDAO.executeCountQuery(QUERY_NS, QUERY_SELECT_COUNT_DOCUMENTS, idsParam);
         }
-        finally
-        {
-            if (lockToken != null)
-            {
-                jobLockService.releaseLock(lockToken, LOCK_USAGE_DOCUMENTS);
-            }
-        }
+        attributeService.setAttribute(
+                new Long(System.currentTimeMillis()),
+                KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_LAST_UPDATE_DOCUMENTS);
+        attributeService.setAttribute(
+                documentCount,
+                KEY_USAGE_ROOT, KEY_USAGE_CURRENT, KEY_USAGE_DOCUMENTS);
+        // Success
+        return true;
     }
 
     /**

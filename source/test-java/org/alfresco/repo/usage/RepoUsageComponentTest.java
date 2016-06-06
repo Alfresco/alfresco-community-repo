@@ -236,7 +236,10 @@ public class RepoUsageComponentTest extends TestCase
     
     /**
      * Check that concurrent updates are prevented
+     *
+     * The test is disabled as the Component is not using JobLocks any more
      */
+/*
     public void test6ConcurrentUpdates() throws Exception
     {
         // Firstly check that we can get an update
@@ -286,4 +289,5 @@ public class RepoUsageComponentTest extends TestCase
             jobLockService.releaseLock(lockToken, RepoUsageComponent.LOCK_USAGE_USERS);
         }
     }
+*/
 }

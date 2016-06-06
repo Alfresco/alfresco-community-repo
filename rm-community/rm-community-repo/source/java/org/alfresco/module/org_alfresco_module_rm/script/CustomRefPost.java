@@ -27,7 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
+import static org.alfresco.util.WebScriptUtils.getRequestContentAsJSONObject;
 import static org.alfresco.util.WebScriptUtils.getStringValueFromJSONObject;
 
 import java.util.HashMap;
@@ -130,7 +130,7 @@ public class CustomRefPost extends AbstractRmWebScript
      */
     protected void addCustomRelationship(WebScriptRequest req)
     {
-        JSONObject json = getRequestContentAsJsonObject(req);
+        JSONObject json = getRequestContentAsJSONObject(req);
         String uniqueName = getStringValueFromJSONObject(json, REF_ID);
         NodeRef target = getTargetNode(json);
         NodeRef source = parseRequestForNodeRef(req);

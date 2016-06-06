@@ -106,11 +106,12 @@ public interface Action extends ParameterizedItem
     void setTrackStatus(Boolean trackStatus);
     
     /**
-     * Gets a value indicating whether the action should be executed asychronously or not.
+     * A guide for the ActionService; Should the action be executed asychronously or not?
+     * It is not a general purpose flag to indicate the action is running asychronously.
      * <p>
      * The default is to execute the action synchronously.
      * 
-     * @return    true if the action is executed asychronously, false otherwise.  
+     * @return    true if the action should be executed asychronously, false otherwise.
      */
     boolean getExecuteAsychronously();
     

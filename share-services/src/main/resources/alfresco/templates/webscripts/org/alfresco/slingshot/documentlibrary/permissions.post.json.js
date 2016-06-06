@@ -61,17 +61,6 @@ function main()
       // collect values for the permission setting
       var authority = perm.getString("authority");
       
-      var isSpecialAutority = false;
-      if (authority == "GROUP_EVERYONE" || authority == "ROLE_ADMINISTRATOR" || authority == "ROLE_GUEST" || authority == "ROLE_OWNER")
-      {
-         isSpecialAutority = true;
-      }
-
-      if (!isSpecialAutority && people.getGroup(authority) == null && people.getPerson(authority) == null)
-      {
-         // ACE-3280: silently not add non-existent users
-         return;
-      }
       var role = perm.getString("role");
       var remove = false;
       if (perm.has("remove"))
@@ -90,6 +79,23 @@ function main()
       }
       else
       {
+         var isSpecialAuthority = false;
+         switch (authority)
+         {
+            case "GROUP_EVERYONE":
+            case "ROLE_ADMINISTRATOR":
+            case "ROLE_GUEST":
+            case "ROLE_OWNER":
+               isSpecialAuthority = true;
+               break;
+         }
+
+         if (!isSpecialAuthority && people.getGroup(authority) == null && people.getPerson(authority) == null)
+         {
+            // ACE-3280: silently not add non-existent users
+            return;
+         }
+
          node.setPermission(role, authority);
       }
    }

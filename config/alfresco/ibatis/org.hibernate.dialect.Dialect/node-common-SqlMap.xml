@@ -916,7 +916,7 @@
             join alf_node parentNode on (parentNode.id = assoc.parent_node_id)
             join alf_store parentStore on (parentStore.id = parentNode.store_id)
             join alf_node childNode on (childNode.id = assoc.child_node_id)
-            join alf_store childStore on (childStore.id = childNode.store_id)
+            left join alf_store childStore on (childStore.id = childNode.store_id)
     </sql>
 
     <sql id="select_ChildAssoc_OrderBy">

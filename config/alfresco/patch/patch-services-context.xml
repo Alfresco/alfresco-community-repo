@@ -1441,8 +1441,8 @@
         <property name="id"><value>patch.redeployInvitationNominatedAddDirectActivitiWorkflow</value></property>
         <property name="description"><value>patch.redeployInvitationNominatedAddDirectActivitiWorkflow.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>10050</value></property>
-        <property name="targetSchema"><value>10051</value></property>
+        <property name="fixesToSchema"><value>10001</value></property>
+        <property name="targetSchema"><value>10002</value></property>
         <property name="workflowDefinitions">
             <list>
                <props>
@@ -1458,8 +1458,8 @@
         <property name="id"><value>patch.updateAdminUserWhenDefault</value></property>
         <property name="description"><value>patch.updateAdminUserWhenDefault.description</value></property>
         <property name="fixesFromSchema"><value>0</value></property>
-        <property name="fixesToSchema"><value>10051</value></property>
-        <property name="targetSchema"><value>10052</value></property>
+        <property name="fixesToSchema"><value>10002</value></property>
+        <property name="targetSchema"><value>10003</value></property>
         <property name="authenticationContextManager" ref="Authentication" />
     </bean>
 </beans>

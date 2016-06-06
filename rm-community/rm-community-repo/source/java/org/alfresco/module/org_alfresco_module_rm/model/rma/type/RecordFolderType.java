@@ -215,11 +215,6 @@ public class RecordFolderType extends    AbstractDisposableItem
 
         if (nodeService.exists(nodeRef))
         {
-            // only records can be added in a record folder
-            if (!instanceOf(nodeRef, ContentModel.TYPE_CONTENT))
-            {
-                throw new AlfrescoRuntimeException("Operation failed, because you can only place content into a record folder.");
-            }
             // ensure nothing is being added to a closed record folder
             NodeRef recordFolder = childAssocRef.getParentRef();
             Boolean isClosed = (Boolean) nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
@@ -244,6 +239,12 @@ public class RecordFolderType extends    AbstractDisposableItem
     public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
     {
         final NodeRef recordFolder = childAssocRef.getChildRef();
+
+        // only records can be added in a record folder or hidden folders(is the case of e-mail attachments)
+        if (!instanceOf(recordFolder, ContentModel.TYPE_CONTENT) && !nodeService.hasAspect(recordFolder, ContentModel.ASPECT_HIDDEN))
+        {
+            throw new AlfrescoRuntimeException("Operation failed, because you can only place content into a record folder.");
+        }
 
         behaviourFilter.disableBehaviour();
         try

@@ -35,8 +35,7 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
-
-
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:transferContainer behaviour bean
@@ -44,13 +43,11 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @author Mihai Cozma
  * @since 2.4
  */
-@BehaviourBean
-(
-   defaultType = "rma:transferContainer"
-)
+@BehaviourBean(defaultType = "rma:transferContainer")
 public class TransferContainerType extends BaseBehaviourBean
             implements NodeServicePolicies.OnCreateChildAssociationPolicy, NodeServicePolicies.OnCreateNodePolicy
 {
+    private final static String MSG_ERROR_ADD_CONTENT_CONTAINER = "rm.service.error-add-content-container";
 
     /**
      * On every event
@@ -64,17 +61,15 @@ public class TransferContainerType extends BaseBehaviourBean
     {
         // ensure not content to be added in Holdsfolder
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT)) { throw new AlfrescoRuntimeException(
-                    "Operation failed, because you can't place content directly into a record category."); }
-
+        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true) { throw new AlfrescoRuntimeException(
+                    I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER)); }
     }
 
     @Override
     public void onCreateNode(ChildAssociationRef childAssocRef)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT)) { throw new AlfrescoRuntimeException(
-                    "Operation failed, because you can't place content directly into a record category."); }
-
+        if (instanceOf(nodeRef, ContentModel.TYPE_CONTENT) == true) { throw new AlfrescoRuntimeException(
+                    I18NUtil.getMessage(MSG_ERROR_ADD_CONTENT_CONTAINER)); }
     }
 }

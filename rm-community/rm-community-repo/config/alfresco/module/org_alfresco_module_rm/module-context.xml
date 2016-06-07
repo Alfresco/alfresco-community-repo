@@ -200,7 +200,7 @@
    </bean>
 
    <!-- Java script interface for rm caveat config-->
-   <bean id="rmConfigServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.module.org_alfresco_module_rm.caveat.ScriptRMCaveatConfigService">
+   <bean id="rmConfigServiceScript" parent="baseJavaScriptExtension" class="org.alfresco.module.org_alfresco_module_rm.securitymarks.ScriptRMCaveatConfigService">
       <property name="extensionName">
          <value>caveatConfig</value>
       </property>

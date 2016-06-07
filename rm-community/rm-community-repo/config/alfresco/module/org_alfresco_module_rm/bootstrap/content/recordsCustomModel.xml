@@ -30,7 +30,7 @@
    <constraints>
    
       <!-- Note: intentionally empty list of values - allowed values can be added/updated dynamically -->
-      <constraint name="rmc:smList" type="org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint">
+      <constraint name="rmc:smList" type="org.alfresco.module.org_alfresco_module_rm.securitymarks.RMListOfValuesConstraint">
          <title>listconstraint.rmc_smList.title</title>
          <parameter name="allowedValues">
             <list>
@@ -40,7 +40,7 @@
       </constraint>
 
       <!-- Note: intentionally empty list of values - allowed values can be added/updated dynamically -->
-      <constraint name="rmc:tlList" type="org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint">
+      <constraint name="rmc:tlList" type="org.alfresco.module.org_alfresco_module_rm.securitymarks.RMListOfValuesConstraint">
          <title>listconstraint.rmc_tlList.title</title>
          <parameter name="allowedValues">
             <list>

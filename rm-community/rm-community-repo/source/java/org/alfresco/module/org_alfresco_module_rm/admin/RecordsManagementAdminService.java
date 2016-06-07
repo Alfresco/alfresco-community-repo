@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
-import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
+import org.alfresco.module.org_alfresco_module_rm.securitymarks.RMListOfValuesConstraint.MatchLogic;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipService;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.ConstraintDefinition;

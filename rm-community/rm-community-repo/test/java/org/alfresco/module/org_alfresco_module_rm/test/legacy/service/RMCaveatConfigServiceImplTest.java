@@ -33,8 +33,8 @@ import java.util.List;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService;
-import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigServiceImpl;
+import org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService;
+import org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigServiceImpl;
 import org.alfresco.module.org_alfresco_module_rm.dod5015.DOD5015Model;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;

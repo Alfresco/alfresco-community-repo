@@ -39,8 +39,8 @@ import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.Befo
 import org.alfresco.module.org_alfresco_module_rm.RecordsManagementPolicies.OnCreateReference;
 import org.alfresco.module.org_alfresco_module_rm.admin.CustomMetadataException;
 import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
-import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint;
-import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
+import org.alfresco.module.org_alfresco_module_rm.securitymarks.RMListOfValuesConstraint;
+import org.alfresco.module.org_alfresco_module_rm.securitymarks.RMListOfValuesConstraint.MatchLogic;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.relationship.RelationshipDefinition;

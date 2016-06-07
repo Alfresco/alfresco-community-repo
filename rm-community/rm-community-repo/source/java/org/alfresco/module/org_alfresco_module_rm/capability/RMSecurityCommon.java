@@ -30,7 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.capability;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.capability.impl.ViewRecordsCapability;
-import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponent;
+import org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigComponent;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;

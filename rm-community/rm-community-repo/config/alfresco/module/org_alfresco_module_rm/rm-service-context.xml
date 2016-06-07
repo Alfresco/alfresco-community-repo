@@ -1296,7 +1296,7 @@
 
     <!-- RM caveats -->
 
-    <bean id="caveatConfigService" class="org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigServiceImpl">
+    <bean id="caveatConfigService" class="org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigServiceImpl">
         <property name="caveatConfigComponent" ref="caveatConfigComponent"/>
         <property name="dictionaryService" ref="dictionaryService"/>
         <property name="namespaceService" ref="namespaceService" />
@@ -1304,7 +1304,7 @@
     </bean>
 
     <bean id="caveatConfigComponent"
-          class="org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigComponentImpl"
+          class="org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigComponentImpl"
           depends-on="org_alfresco_module_rm_dictionaryBootstrap">
         <property name="contentService" ref="contentService"/>
         <property name="dictionaryService" ref="dictionaryService"/>
@@ -1355,30 +1355,30 @@
       </constructor-arg>
    </bean>
 
-    <bean id="rmListOfValuesContraintInit" class="org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint">
+    <bean id="rmListOfValuesContraintInit" class="org.alfresco.module.org_alfresco_module_rm.securitymarks.RMListOfValuesConstraint">
         <property name="caveatConfigService" ref="caveatConfigService"/>
     </bean>
 
     <bean id="CaveatConfigService_security" parent="baseSecurity">
         <property name="objectDefinitionSource">
             <value>
-                <![CDATA[
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.getRMAllowedValues=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.hasAccess=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.getRMConstraint=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.getAllRMConstraints=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.getListDetails=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.updateOrCreateCaveatConfig=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.addRMConstraint=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.updateRMConstraintAllowedValues=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.updateRMConstraintTitle=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.deleteRMConstraint=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.addRMConstraintListValue=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.updateRMConstraintListAuthority=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.removeRMConstraintListAuthority=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.updateRMConstraintListValue=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.removeRMConstraintListValue=RM_ALLOW
-                   org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService.*=RM_DENY
+               <![CDATA[
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.getRMAllowedValues=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.hasAccess=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.getRMConstraint=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.getAllRMConstraints=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.getListDetails=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.updateOrCreateCaveatConfig=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.addRMConstraint=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.updateRMConstraintAllowedValues=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.updateRMConstraintTitle=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.deleteRMConstraint=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.addRMConstraintListValue=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.updateRMConstraintListAuthority=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.removeRMConstraintListAuthority=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.updateRMConstraintListValue=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.removeRMConstraintListValue=RM_ALLOW
+                   org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService.*=RM_DENY
                 ]]>
             </value>
         </property>
@@ -1398,7 +1398,7 @@
     <bean id="CaveatConfigService" class="org.springframework.aop.framework.ProxyFactoryBean">
         <property name="proxyInterfaces">
             <list>
-                <value>org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService</value>
+                <value>org.alfresco.module.org_alfresco_module_rm.securitymarks.RMCaveatConfigService</value>
             </list>
         </property>
         <property name="targetName">

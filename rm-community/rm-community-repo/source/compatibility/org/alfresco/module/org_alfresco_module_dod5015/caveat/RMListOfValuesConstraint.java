@@ -35,7 +35,7 @@ package org.alfresco.module.org_alfresco_module_dod5015.caveat;
  * 
  * @author Roy Wetherall
  */
-public class RMListOfValuesConstraint extends org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint
+public class RMListOfValuesConstraint extends org.alfresco.module.org_alfresco_module_rm.securitymarks.RMListOfValuesConstraint
 {
     // No implementation
 }

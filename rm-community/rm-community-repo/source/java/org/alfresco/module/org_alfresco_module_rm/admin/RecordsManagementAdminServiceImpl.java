@@ -41,8 +41,8 @@ import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
-import org.alfresco.module.org_alfresco_module_rm.securitymarks.RMListOfValuesConstraint;
-import org.alfresco.module.org_alfresco_module_rm.securitymarks.RMListOfValuesConstraint.MatchLogic;
+import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint;
+import org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic;
 import org.alfresco.module.org_alfresco_module_rm.compatibility.CompatibilityModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementCustomModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -99,7 +99,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     private static final String MSG_ERROR_CLIENT_ID = "rm.admin.error-client-id";
 
     /** Constants */
-    private static final String CUSTOM_CONSTRAINT_TYPE = org.alfresco.module.org_alfresco_module_rm.securitymarks.RMListOfValuesConstraint.class.getName();
+    private static final String CUSTOM_CONSTRAINT_TYPE = org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.class.getName();
     private static final String CAPATIBILITY_CUSTOM_CONTRAINT_TYPE = org.alfresco.module.org_alfresco_module_dod5015.caveat.RMListOfValuesConstraint.class.getName();
     private static final String PARAM_ALLOWED_VALUES = "allowedValues";
     private static final String PARAM_CASE_SENSITIVE = "caseSensitive";
@@ -1068,7 +1068,7 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#addCustomConstraintDefinition(org.alfresco.service.namespace.QName, java.lang.String, boolean, java.util.List, org.alfresco.module.org_alfresco_module_rm.securitymarks.RMListOfValuesConstraint.MatchLogic)
+     * @see org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService#addCustomConstraintDefinition(org.alfresco.service.namespace.QName, java.lang.String, boolean, java.util.List, org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint.MatchLogic)
      */
     public void addCustomConstraintDefinition(QName constraintName, String title, boolean caseSensitive, List<String> allowedValues, MatchLogic matchLogic)
     {

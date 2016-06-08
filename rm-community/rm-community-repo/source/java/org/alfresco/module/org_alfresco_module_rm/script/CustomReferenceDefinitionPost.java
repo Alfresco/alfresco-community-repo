@@ -27,7 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.script;
 
-import static org.alfresco.util.WebScriptUtils.getRequestContentAsJsonObject;
+import static org.alfresco.util.WebScriptUtils.getRequestContentAsJSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -56,7 +56,7 @@ public class CustomReferenceDefinitionPost extends CustomReferenceDefinitionBase
     @Override
     protected Map<String, Object> executeImpl(WebScriptRequest req, Status status, Cache cache)
     {
-        JSONObject requestContent = getRequestContentAsJsonObject(req);
+        JSONObject requestContent = getRequestContentAsJSONObject(req);
         RelationshipDisplayName displayName = createDisplayName(requestContent);
         RelationshipDefinition relationshipDefinition =  getRelationshipService().createRelationshipDefinition(displayName);
 

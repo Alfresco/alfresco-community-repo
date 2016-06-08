@@ -25,17 +25,15 @@
  * #L%
  */
 
-package org.alfresco.module.org_alfresco_module_dod5015.caveat;
+package org.alfresco.module.org_alfresco_module_rm.caveat;
 
 /**
- * Compatibility Implementation.
- * <p>
- * Used as a compatibility implementation when migrating from V1.0 to V2.0.  RMCustom model still references
- * this class implementation, but package has been changed.
+ * A class to hold I18N keys for messages related to constraint validation.
  * 
- * @author Roy Wetherall
+ * @author tpage
  */
-public class RMListOfValuesConstraint extends org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint
+public class RMConstraintMessageKeys
 {
-    // No implementation
+    public static final String ERR_NON_STRING = "d_dictionary.constraint.string_length.non_string";
+    public static final String ERR_INVALID_VALUE = "d_dictionary.constraint.list_of_values.invalid_value";
 }

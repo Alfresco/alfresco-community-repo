@@ -25,17 +25,42 @@
  * #L%
  */
 
-package org.alfresco.module.org_alfresco_module_dod5015.caveat;
+package org.alfresco.module.org_alfresco_module_rm.caveat;
 
-/**
- * Compatibility Implementation.
- * <p>
- * Used as a compatibility implementation when migrating from V1.0 to V2.0.  RMCustom model still references
- * this class implementation, but package has been changed.
- * 
- * @author Roy Wetherall
- */
-public class RMListOfValuesConstraint extends org.alfresco.module.org_alfresco_module_rm.caveat.RMListOfValuesConstraint
+import java.io.Serializable;
+import java.util.List;
+
+public class ScriptConstraintValue implements Serializable
 {
-    // No implementation
+    /**
+     * 
+     */
+    private static final long serialVersionUID = -4659454215122271811L;
+    private String value;
+    private List<ScriptAuthority>authorities;
+    
+    public void setAuthorities(List<ScriptAuthority> values)
+    {
+        this.authorities = values;
+    }
+    public List<ScriptAuthority> getAuthorities()
+    {
+        return authorities;
+    }
+    public void setValueName(String authorityName)
+    {
+        this.value = authorityName;
+    }
+    public String getValueName()
+    {
+        return value;
+    }
+    public void setValueTitle(String authorityName)
+    {
+        this.value = authorityName;
+    }
+    public String getValueTitle()
+    {
+        return value;
+    }
 }

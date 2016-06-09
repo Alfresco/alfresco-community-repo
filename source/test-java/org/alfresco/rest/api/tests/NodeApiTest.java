@@ -681,13 +681,13 @@ public class NodeApiTest extends AbstractBaseApiTest
         d1.setName(contentName);
         d1.setNodeType(TYPE_CM_CONTENT);
 
-        ContentInfo ci = new ContentInfo();
-        ci.setMimeType("text/plain");
-        ci.setMimeTypeName("Plain Text");
-        ci.setSizeInBytes(44L);
-        ci.setEncoding("ISO-8859-1");
+        ContentInfo ciExpected = new ContentInfo();
+        ciExpected.setMimeType("text/plain");
+        ciExpected.setMimeTypeName("Plain Text");
+        ciExpected.setSizeInBytes(44L);
+        ciExpected.setEncoding("ISO-8859-1");
 
-        d1.setContent(ci);
+        d1.setContent(ciExpected);
         d1.setCreatedByUser(expectedUser);
         d1.setModifiedByUser(expectedUser);
 
@@ -809,6 +809,137 @@ public class NodeApiTest extends AbstractBaseApiTest
     }
 
     /**
+     * Tests guess mimetype & guess encoding when uploading file/content (create or update) - also empty file/content
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
+     * <p>PUT:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
+     */
+    @Test
+    public void testGuessMimeTypeAndEncoding() throws Exception
+    {
+        String fId = createFolder(user1, getMyNodeId(user1), "test-folder-guess-"+System.currentTimeMillis()).getId();
+
+        // create empty files
+
+        Document d = new Document();
+        d.setName("my doc");
+        d.setNodeType(TYPE_CM_CONTENT);
+
+        HttpResponse response = post(getNodeChildrenUrl(fId), user1, toJsonAsStringNonNull(d), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(MimetypeMap.MIMETYPE_BINARY, documentResp.getContent().getMimeType());
+        assertEquals("Binary File (Octet Stream)", documentResp.getContent().getMimeTypeName());
+        assertEquals(0L, documentResp.getContent().getSizeInBytes().longValue());
+        assertEquals("UTF-8",  documentResp.getContent().getEncoding());
+
+        d = new Document();
+        d.setName("my doc.txt");
+        d.setNodeType(TYPE_CM_CONTENT);
+
+        response = post(getNodeChildrenUrl(fId), user1, toJsonAsStringNonNull(d), 201);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, documentResp.getContent().getMimeType());
+        assertEquals("Plain Text", documentResp.getContent().getMimeTypeName());
+        assertEquals(0L, documentResp.getContent().getSizeInBytes().longValue());
+        assertEquals("UTF-8",  documentResp.getContent().getEncoding());
+
+        d = new Document();
+        d.setName("my doc.pdf");
+        d.setNodeType(TYPE_CM_CONTENT);
+
+        response = post(getNodeChildrenUrl(fId), user1, toJsonAsStringNonNull(d), 201);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals(MimetypeMap.MIMETYPE_PDF, documentResp.getContent().getMimeType());
+        assertEquals("Adobe PDF Document", documentResp.getContent().getMimeTypeName());
+        assertEquals(0L, documentResp.getContent().getSizeInBytes().longValue());
+        assertEquals("UTF-8",  documentResp.getContent().getEncoding());
+
+        // upload files
+
+        String fileName = "quick.pdf";
+        File file = getResourceFile(fileName);
+
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file));
+        MultiPartRequest reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(fId), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        ContentInfo contentInfo = document.getContent();
+        assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
+        assertEquals("UTF-8", contentInfo.getEncoding());
+
+        fileName = "example-1.txt";
+        file = getResourceFile(fileName);
+
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file));
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(fId), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        contentInfo = document.getContent();
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+        assertEquals("ISO-8859-1", contentInfo.getEncoding());
+
+        fileName = "example-2.txt";
+        file = getResourceFile(fileName);
+
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file));
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(fId), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        contentInfo = document.getContent();
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+        assertEquals("UTF-8", contentInfo.getEncoding());
+
+        fileName = "shift-jis.txt";
+        file = getResourceFile(fileName);
+
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file));
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(fId), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        contentInfo = document.getContent();
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
+        assertEquals("Shift_JIS", contentInfo.getEncoding());
+
+        fileName = "example-1.xml";
+        file = getResourceFile(fileName);
+
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file));
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(fId), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        contentInfo = document.getContent();
+        assertEquals(MimetypeMap.MIMETYPE_XML, contentInfo.getMimeType());
+        assertEquals("ISO-8859-1", contentInfo.getEncoding());
+
+        fileName = "example-2.xml";
+        file = getResourceFile(fileName);
+
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file));
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(fId), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        contentInfo = document.getContent();
+        assertEquals(MimetypeMap.MIMETYPE_XML, contentInfo.getMimeType());
+        assertEquals("UTF-8", contentInfo.getEncoding());
+
+        // cleanup
+        delete(URL_NODES, user1, fId, 204);
+    }
+
+    /**
      * Tests Multipart upload to user's home (a.k.a My Files).
      * <p>POST:</p>
      * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
@@ -826,7 +957,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         final int numOfNodes = pagingResult.getCount();
 
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF));
+                    .setFileData(new FileData(fileName, file));
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Try to upload into a non-existent folder
@@ -894,7 +1025,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         final String fileName1 = "quick-1.txt";
         final File file1 = getResourceFile(fileName1);
         reqBody = MultiPartBuilder.create()
-                .setFileData(new FileData(null, file1, null))
+                .setFileData(new FileData(null, file1))
                 .build();
         response = post(getNodeChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
@@ -907,7 +1038,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         final String fileName2b = "quick-2b.txt";
         final File file2 = getResourceFile(fileName2);
         reqBody = MultiPartBuilder.create()
-                .setFileData(new FileData(fileName2b, file2, MimetypeMap.MIMETYPE_BINARY))
+                .setFileData(new FileData(fileName2b, file2))
                 .build();
         response = post(getNodeChildrenUrl(Nodes.PATH_MY), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
@@ -915,12 +1046,13 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(fileName2b, document.getName());
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, document.getContent().getMimeType());
 
+
         // User2 tries to upload a new file into the user1's home folder.
         response = getSingle(NodesEntityResource.class, user1, Nodes.PATH_MY, null, 200);
         Folder user1Home = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
         final File file3 = getResourceFile(fileName2);
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file3, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .setFileData(new FileData(fileName2, file3))
                     .build();
         post(getNodeChildrenUrl(user1Home.getId()), user2, reqBody.getBody(), null, reqBody.getContentType(), 403);
 
@@ -938,7 +1070,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // Test unsupported node type
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file2, null))
+                    .setFileData(new FileData(fileName2, file2))
                     .setAutoRename(true)
                     .setNodeType("cm:link")
                     .build();
@@ -966,7 +1098,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         {
             // quick.pdf size is about 23 KB
             reqBody = MultiPartBuilder.create()
-                        .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
+                        .setFileData(new FileData(fileName, file))
                         .setAutoRename(true)
                         .build();
 
@@ -1002,7 +1134,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         final int numOfNodes = pagingResult.getCount();
 
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName, file, null));
+                    .setFileData(new FileData(fileName, file));
         MultiPartRequest reqBody = multiPartBuilder.build();
         // Try to upload
         response = post(getNodeChildrenUrl(folderA_id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
@@ -1039,7 +1171,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         final String fileName2 = "quick-2.txt";
         final File file2 = getResourceFile(fileName2);
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .setFileData(new FileData(fileName2, file2))
                     .build();
         // userTwoN1 tries to upload a new file into the folderA of userOneN1
         post(getNodeChildrenUrl(folderA_id), userTwoN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 403);
@@ -1061,7 +1193,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         props.put("cm:title", "test title");
         props.put("cm:description", "test description");
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .setFileData(new FileData(fileName2, file2))
                     .setAutoRename(true)
                     .setProperties(props)
                     .build();
@@ -1082,7 +1214,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         props = new HashMap<>(1);
         props.put("unknownPrefix" + System.currentTimeMillis() + ":description", "test description");
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .setFileData(new FileData(fileName2, file2))
                     .setAutoRename(true)
                     .setProperties(props)
                     .build();
@@ -1092,7 +1224,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         // Test relativePath multi-part field.
         // Any folders in the relativePath that do not exist, are created before the content is created.
         multiPartBuilder = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .setFileData(new FileData(fileName, file))
                     .setRelativePath("X/Y/Z");
         reqBody = multiPartBuilder.build();
 
@@ -1727,9 +1859,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document d1 = new Document();
         d1.setName("d1.txt");
         d1.setNodeType(TYPE_CM_CONTENT);
-        ContentInfo ci = new ContentInfo();
-        ci.setMimeType("text/plain");
-        d1.setContent(ci);
 
         response = post(postUrl, user1, toJsonAsStringNonNull(d1), 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
@@ -2100,9 +2229,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document d1 = new Document();
         d1.setName("d1.txt");
         d1.setNodeType(TYPE_CM_CONTENT);
-        ContentInfo ci = new ContentInfo();
-        ci.setMimeType("text/plain");
-        d1.setContent(ci);
 
         HttpResponse response = post(getNodeChildrenUrl(f1Id), user1, toJsonAsStringNonNull(d1), 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
@@ -2281,9 +2407,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document d1 = new Document();
         d1.setName("d1.txt");
         d1.setNodeType(TYPE_CM_CONTENT);
-        ContentInfo ci = new ContentInfo();
-        ci.setMimeType("text/plain");
-        d1.setContent(ci);
 
         // create empty file
         HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(d1), 201);
@@ -2297,9 +2420,12 @@ public class NodeApiTest extends AbstractBaseApiTest
         d1.setCreatedByUser(expectedUser);
         d1.setModifiedByUser(expectedUser);
 
-        d1.getContent().setMimeTypeName("Plain Text");
-        d1.getContent().setSizeInBytes(0L);
-        d1.getContent().setEncoding("UTF-8");
+        ContentInfo ciExpected = new ContentInfo();
+        ciExpected.setMimeType("text/plain");
+        ciExpected.setMimeTypeName("Plain Text");
+        ciExpected.setSizeInBytes(0L);
+        ciExpected.setEncoding("UTF-8");
+        d1.setContent(ciExpected);
 
         d1.expected(documentResp);
 
@@ -2324,7 +2450,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         d2.setCreatedByUser(expectedUser);
         d2.setModifiedByUser(expectedUser);
 
-        ContentInfo ciExpected = new ContentInfo();
+        ciExpected = new ContentInfo();
         ciExpected.setMimeType("text/plain");
         ciExpected.setMimeTypeName("Plain Text");
         ciExpected.setSizeInBytes(0L);
@@ -2443,9 +2569,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document d1 = new Document();
         d1.setName("d1.txt");
         d1.setNodeType(TYPE_CM_CONTENT);
-        ContentInfo ci = new ContentInfo();
-        ci.setMimeType("text/plain");
-        d1.setContent(ci);
 
         HttpResponse response = post(postUrl, user1, toJsonAsStringNonNull(d1), 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
@@ -2459,9 +2582,12 @@ public class NodeApiTest extends AbstractBaseApiTest
         d1.setCreatedByUser(expectedUser);
         d1.setModifiedByUser(expectedUser);
 
-        d1.getContent().setMimeTypeName("Plain Text");
-        d1.getContent().setSizeInBytes(0L);
-        d1.getContent().setEncoding("UTF-8");
+        ContentInfo ciExpected = new ContentInfo();
+        ciExpected.setMimeType("text/plain");
+        ciExpected.setMimeTypeName("Plain Text");
+        ciExpected.setSizeInBytes(0L);
+        ciExpected.setEncoding("UTF-8");
+        d1.setContent(ciExpected);
 
         d1.expected(documentResp);
 
@@ -2857,9 +2983,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         Document d1 = new Document();
         d1.setName("d1.txt");
         d1.setNodeType(TYPE_CM_CONTENT);
-        ContentInfo ci = new ContentInfo();
-        ci.setMimeType("text/plain");
-        d1.setContent(ci);
 
         // create *empty* text file - as of now, versioning is not enabled by default
         HttpResponse response = post(getNodeChildrenUrl(myNodeId), user1, toJsonAsStringNonNull(d1), 201);
@@ -3170,7 +3293,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         File file = getResourceFile(fileName);
 
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
-                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_TEXT_PLAIN));
+                .setFileData(new FileData(fileName, file));
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload text content
@@ -3233,7 +3356,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         byte[] originalBytes = Files.readAllBytes(Paths.get(file.getAbsolutePath()));
 
         multiPartBuilder = MultiPartBuilder.create()
-                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF));
+                .setFileData(new FileData(fileName, file));
         reqBody = multiPartBuilder.build();
 
         // Upload binary content

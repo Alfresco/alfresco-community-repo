@@ -140,9 +140,13 @@ import org.springframework.extensions.webscripts.servlet.FormData;
 import org.springframework.http.InvalidMediaTypeException;
 import org.springframework.http.MediaType;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.nio.charset.Charset;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -1625,10 +1629,8 @@ public class NodesImpl implements Nodes
 
         if (isContent)
         {
-            // add empty file
-            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-            setWriterContentType(writer, new ContentInfoWrapper(nodeInfo.getContent()), nodeRef, false);
-            writer.putContent("");
+            // add empty file - note: currently will be set to default encoding only (UTF-8)
+            writeContent(nodeRef, nodeName, new ByteArrayInputStream("".getBytes()), false);
         }
 
         // eg. to create mandatory assoc(s)
@@ -2256,7 +2258,7 @@ public class NodesImpl implements Nodes
         behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         try
         {
-            writeContent(nodeRef, contentInfo, stream);
+            writeContent(nodeRef, fileName, stream, true);
 
             if ((isVersioned) || (versionMajor != null) || (versionComment != null) )
             {
@@ -2281,11 +2283,69 @@ public class NodesImpl implements Nodes
         return getFolderOrDocumentFullInfo(nodeRef, null, null, parameters);
     }
 
-    private void writeContent(NodeRef nodeRef, BasicContentInfo contentInfo, InputStream stream)
+    private void writeContent(NodeRef nodeRef, String fileName, InputStream stream, boolean guessEncoding)
     {
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-        setWriterContentType(writer, new ContentInfoWrapper(contentInfo), nodeRef, true);
-        writer.putContent(stream);
+
+        String mimeType = mimetypeService.guessMimetype(fileName);
+        writer.setMimetype(mimeType);
+
+        InputStream is = null;
+
+        if (guessEncoding)
+        {
+            is = new BufferedInputStream(stream);
+            is.mark(1024);
+            writer.setEncoding(guessEncoding(is, mimeType, false));
+            try
+            {
+                is.reset();
+            }
+            catch (IOException ioe)
+            {
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn("Failed to reset stream after trying to guess encoding: " + ioe.getMessage());
+                }
+            }
+        }
+        else
+        {
+            is = stream;
+        }
+
+        writer.putContent(is);
+    }
+
+    private String guessEncoding(InputStream in, String mimeType, boolean close)
+    {
+        String encoding = "UTF-8";
+        try
+        {
+            if (in != null)
+            {
+                Charset charset = mimetypeService.getContentCharsetFinder().getCharset(in, mimeType);
+                encoding = charset.name();
+            }
+        }
+        finally
+        {
+            try
+            {
+                if (close && (in != null))
+                {
+                    in.close();
+                }
+            }
+            catch (IOException ioe)
+            {
+                if (logger.isWarnEnabled())
+                {
+                    logger.warn("Failed to close stream after trying to guess encoding: " + ioe.getMessage());
+                }
+            }
+        }
+        return encoding;
     }
 
     protected void createVersion(NodeRef nodeRef, boolean isVersioned, VersionType versionType, String reason)
@@ -2307,34 +2367,6 @@ public class NodesImpl implements Nodes
             versionService.createVersion(nodeRef, versionProperties);
         }
     }
-
-    private void setWriterContentType(ContentWriter writer, ContentInfoWrapper contentInfo, NodeRef nodeRef, boolean guessEncodingIfNull)
-    {
-        String mimeType = contentInfo.mimeType;
-        // Manage MimeType
-        if ((mimeType == null) || mimeType.equals(DEFAULT_MIMETYPE))
-        {
-            // the mimeType was not provided (or was the default binary mimeType) via the contentInfo, so try to guess
-            final String fileName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
-            mimeType = mimetypeService.guessMimetype(fileName);
-        }
-        writer.setMimetype(mimeType);
-
-        // Manage Encoding
-        if (contentInfo.encoding == null)
-        {
-            if (guessEncodingIfNull)
-            {
-                // the encoding was not provided, so try to guess
-                writer.guessEncoding();
-            }
-        }
-        else
-        {
-            writer.setEncoding(contentInfo.encoding);
-        }
-    }
-
 
     @Override
     public Node upload(String parentFolderNodeId, FormData formData, Parameters parameters)
@@ -2543,19 +2575,20 @@ public class NodesImpl implements Nodes
         {
             nodeType = ContentModel.TYPE_CONTENT;
         }
-        NodeRef newFile = createNodeImpl(parentNodeRef, fileName, nodeType, props, assocTypeQName);
+
+        NodeRef nodeRef = createNodeImpl(parentNodeRef, fileName, nodeType, props, assocTypeQName);
 
         // Write content
-        write(newFile, content);
+        writeContent(nodeRef, fileName, content.getInputStream(), true);
 
         // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)
-        ensureVersioningEnabled(newFile, true, false);
+        ensureVersioningEnabled(nodeRef, true, false);
 
         // Extract the metadata
-        extractMetadata(newFile);
+        extractMetadata(nodeRef);
 
         // Create the response
-        return getFolderOrDocumentFullInfo(newFile, parentNodeRef, nodeType, params);
+        return getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeType, params);
     }
 
     private String getStringOrNull(String value)
@@ -2650,23 +2683,6 @@ public class NodesImpl implements Nodes
                 actionService.executeAction(action, sourceNodeRef, true, true);
             }
         }
-    }
-
-
-
-    /**
-     * Writes the content to the repository.
-     *
-     * @param nodeRef       the reference to the node having a content property
-     * @param content       the content
-     */
-    protected void write(NodeRef nodeRef, Content content)
-    {
-        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-        // Per RA-637 & RA-885 requirement the mimeType provided by the client takes precedence, however,
-        // if the mimeType is null (or default binary mimeType) then it will be guessed.
-        setWriterContentType(writer, new ContentInfoWrapper(content), nodeRef, true);
-        writer.putContent(content.getInputStream());
     }
 
     /**
@@ -2806,10 +2822,21 @@ public class NodesImpl implements Nodes
     /**
      * @author Jamal Kaabi-Mofrad
      */
-    private static class ContentInfoWrapper
+    /*
+    private static class ContentInfoWrapper implements BasicContentInfo
     {
         private String mimeType;
         private String encoding;
+
+        public String getEncoding()
+        {
+            return encoding;
+        }
+
+        public String getMimeType()
+        {
+            return mimeType;
+        }
 
         ContentInfoWrapper(BasicContentInfo basicContentInfo)
         {
@@ -2851,5 +2878,6 @@ public class NodesImpl implements Nodes
             }
         }
     }
+    */
 }
 

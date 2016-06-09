@@ -335,7 +335,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertArrayEquals(content2Text.getBytes(), response.getResponseAsBytes());
         responseHeaders = response.getHeaders();
         assertNotNull(responseHeaders);
-        assertEquals(file2_MimeType+";charset=UTF-8", responseHeaders.get("Content-Type"));
+        assertEquals(file2_MimeType+";charset=ISO-8859-1", responseHeaders.get("Content-Type"));
         assertNotNull(responseHeaders.get("Expires"));
         assertNotNull(responseHeaders.get(LAST_MODIFIED_HEADER));
         assertEquals("attachment; filename=\"" + fileName2 + "\"; filename*=UTF-8''" + fileName2 + "", responseHeaders.get("Content-Disposition"));

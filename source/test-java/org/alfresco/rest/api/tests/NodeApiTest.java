@@ -39,9 +39,6 @@ import org.alfresco.repo.content.ContentLimitProvider.SimpleFixedLimitProvider;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.tenant.TenantAdminService;
-import org.alfresco.repo.tenant.TenantService;
-import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.NodeTarget;
@@ -346,10 +343,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         String folder2 = "folder " + System.currentTimeMillis() + " 2";
         String folder2_Id = createFolder(user1, myNodeId, folder2, props).getId();
 
-        String contentF2 = "content" + System.currentTimeMillis() + " in folder 2";
+        String contentF2 = "content" + System.currentTimeMillis() + " in folder 2.txt";
         String contentF2_Id = createTextFile(user1, folder2_Id, contentF2, "The quick brown fox jumps over the lazy dog 2.").getId();
 
-        String content1 = "content" + System.currentTimeMillis() + " 1";
+        String content1 = "content" + System.currentTimeMillis() + " 1.txt";
         String content1_Id = createTextFile(user1, myNodeId, content1, "The quick brown fox jumps over the lazy dog.").getId();
 
         props = new HashMap<>();
@@ -666,7 +663,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         String title = "test title";
         Map<String,String> docProps = new HashMap<>();
         docProps.put("cm:title", title);
-        String contentName = "content " + System.currentTimeMillis();
+        String contentName = "content " + System.currentTimeMillis() + ".txt";
         String content1Id = createTextFile(user1, folderB_Id, contentName, "The quick brown fox jumps over the lazy dog.", "UTF-8", docProps).getId();
 
 
@@ -688,7 +685,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         ci.setMimeType("text/plain");
         ci.setMimeTypeName("Plain Text");
         ci.setSizeInBytes(44L);
-        ci.setEncoding("UTF-8");
+        ci.setEncoding("ISO-8859-1");
 
         d1.setContent(ci);
         d1.setCreatedByUser(expectedUser);
@@ -949,7 +946,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // User1 uploads a new file
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file2, MimetypeMap.MIMETYPE_TEXT_PLAIN, "windows-1252"))
+                    .setFileData(new FileData(fileName2, file2))
                     .build();
         response = post(getNodeChildrenUrl(user1Home.getId()), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
         document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
@@ -958,14 +955,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         contentInfo = document.getContent();
         assertNotNull(contentInfo);
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
-        assertEquals("windows-1252", contentInfo.getEncoding());
-
-        // Test invalid mimeType
-        reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName2, file2, "*/invalidSubType", "ISO-8859-1"))
-                    .setAutoRename(true)
-                    .build();
-        post(getNodeChildrenUrl(user1Home.getId()), user1, reqBody.getBody(), null, reqBody.getContentType(), 400);
+        assertEquals("ISO-8859-1", contentInfo.getEncoding());
 
         // Test content size limit
         final SimpleFixedLimitProvider limitProvider = applicationContext.getBean("defaultContentLimitProvider", SimpleFixedLimitProvider.class);
@@ -2754,27 +2744,29 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(f1_nodeId);
 
         Document doc = new Document();
-        final String docName = "testdoc";
+        final String docName = "testdoc.txt";
         doc.setName(docName);
         doc.setNodeType(TYPE_CM_CONTENT);
         doc.setProperties(Collections.singletonMap("cm:title", (Object)"test title"));
         ContentInfo contentInfo = new ContentInfo();
-        contentInfo.setMimeType(MimetypeMap.MIMETYPE_TEXT_PLAIN);
         doc.setContent(contentInfo);
 
         // create an empty file within F1 folder
         response = post(getNodeChildrenUrl(f1_nodeId), user1, toJsonAsStringNonNull(doc), 201);
         Document docResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
         assertEquals(docName, docResp.getName());
         assertNotNull(docResp.getContent());
         assertEquals(0, docResp.getContent().getSizeInBytes().intValue());
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, docResp.getContent().getMimeType());
+        // Default encoding
+        assertEquals("UTF-8", docResp.getContent().getEncoding());
 
         // Update the empty node's content
         String content = "The quick brown fox jumps over the lazy dog.";
         ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes());
         File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
-        BinaryPayload payload = new BinaryPayload(txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        BinaryPayload payload = new BinaryPayload(txtFile);
 
         // Try to update a folder!
         putBinary(getNodeContentUrl(f1_nodeId), user1, payload, null, null, 400);
@@ -2804,11 +2796,10 @@ public class NodeApiTest extends AbstractBaseApiTest
         contentInfo = docResp.getContent();
         assertNotNull(contentInfo);
         assertNotNull(contentInfo.getEncoding());
-        // Default encoding
-        assertEquals("UTF-8", contentInfo.getEncoding());
         assertTrue(contentInfo.getSizeInBytes() > 0);
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
         assertNotNull(contentInfo.getMimeTypeName());
+        assertEquals("ISO-8859-1", contentInfo.getEncoding());
         // path is not part of the default response
         assertNull(docResp.getPath());
 
@@ -2816,17 +2807,19 @@ public class NodeApiTest extends AbstractBaseApiTest
         response = getSingle(url, user1, null, 200);
         assertEquals(content, response.getResponse());
 
-        // Update the node's content again. Also, change the mimeType and make the response to return path!
-        File pdfFile = getResourceFile("quick.pdf");
-        payload = new BinaryPayload(pdfFile, MimetypeMap.MIMETYPE_PDF, "ISO-8859-1");
+        // Update the node's content again. Also make the response return the path!
+        content = "The quick brown fox jumps over the lazy dog updated !";
+        inputStream = new ByteArrayInputStream(content.getBytes());
+        txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+        payload = new BinaryPayload(txtFile);
 
         response = putBinary(url + "?include=path", user1, payload, null, null, 200);
         docResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         assertEquals(docName, docResp.getName());
         assertNotNull(docResp.getContent());
-        assertEquals("ISO-8859-1", docResp.getContent().getEncoding());
         assertTrue(docResp.getContent().getSizeInBytes().intValue() > 0);
-        assertEquals(MimetypeMap.MIMETYPE_PDF, docResp.getContent().getMimeType());
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, docResp.getContent().getMimeType());
+        assertEquals("ISO-8859-1", docResp.getContent().getEncoding());
         PathInfo pathInfo = docResp.getPath();
         assertNotNull(pathInfo);
         assertTrue(pathInfo.getIsComplete());
@@ -2835,16 +2828,6 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertTrue(pathElements.size() > 0);
         // check the last element is F1
         assertEquals(f1.getName(), pathElements.get(pathElements.size() - 1).getName());
-
-        // update the original content with different encoding
-        payload = new BinaryPayload(txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN, "ISO-8859-15");
-        response = putBinary(url, user1, payload, null, null, 200);
-        docResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-        assertEquals(docName, docResp.getName());
-        assertNotNull(docResp.getContent());
-        assertEquals("ISO-8859-15", docResp.getContent().getEncoding());
-        assertTrue(docResp.getContent().getSizeInBytes().intValue() > 0);
-        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, docResp.getContent().getMimeType());
 
         // Download the file
         response = getSingle(url, user1, null, 200);

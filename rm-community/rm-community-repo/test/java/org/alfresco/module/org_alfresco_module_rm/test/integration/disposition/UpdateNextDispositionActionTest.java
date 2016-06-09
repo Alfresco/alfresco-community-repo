@@ -28,15 +28,19 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.disposition;
 
 import static org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils.DEFAULT_DISPOSITION_DESCRIPTION;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils.DEFAULT_DISPOSITION_INSTRUCTIONS;
-import static org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils.PERIOD_IMMEDIATELY;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils.DEFAULT_EVENT_NAME;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils.PERIOD_ONE_WEEK;
 import static org.alfresco.util.GUID.generate;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.EditDispositionActionAsOfDateAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
 import org.alfresco.module.org_alfresco_module_rm.disposition.DispositionSchedule;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
@@ -88,23 +92,30 @@ public class UpdateNextDispositionActionTest extends BaseRMTestCase
 
                 // create record inside folder1
                 record = utils.createRecord(folder1, generate(), generate());
-            }
-
-            @Override
-            public void when()
-            {
+                
                 // link the record to folder2
                 recordService.link(record, folder2);
 
                 // complete record
                 utils.completeRecord(record);
+                
+                // set the disposition as of date to now on the record
+                rmActionService.executeRecordsManagementAction(record, 
+                                                               EditDispositionActionAsOfDateAction.NAME, 
+                                                               Collections.singletonMap(EditDispositionActionAsOfDateAction.PARAM_AS_OF_DATE, new Date()));
+            }
+
+            @Override
+            public void when()
+            {
+                // cut off
+                rmActionService.executeRecordsManagementAction(record, CutOffAction.NAME, null);
             }
 
             @Override
             public void then() throws Exception
             {
-                // cut off
-                rmActionService.executeRecordsManagementAction(record, CutOffAction.NAME, null);
+                assertTrue(nodeService.hasAspect(record, ASPECT_CUT_OFF));
             }
         });
     }
@@ -117,21 +128,21 @@ public class UpdateNextDispositionActionTest extends BaseRMTestCase
         Map<QName, Serializable> cutOff = new HashMap<QName, Serializable>(3);
         cutOff.put(PROP_DISPOSITION_ACTION_NAME, CutOffAction.NAME);
         cutOff.put(PROP_DISPOSITION_DESCRIPTION, generate());
-        cutOff.put(PROP_DISPOSITION_PERIOD, PERIOD_IMMEDIATELY);
+        cutOff.put(PROP_DISPOSITION_PERIOD, PERIOD_ONE_WEEK);
         dispositionService.addDispositionActionDefinition(ds, cutOff);
 
         // create the properties for TRANSFER action and add it to the disposition action definition
         Map<QName, Serializable> transfer = new HashMap<QName, Serializable>(3);
         transfer.put(PROP_DISPOSITION_ACTION_NAME, TransferAction.NAME);
         transfer.put(PROP_DISPOSITION_DESCRIPTION, generate());
-        transfer.put(PROP_DISPOSITION_PERIOD, PERIOD_IMMEDIATELY);
+        transfer.put(PROP_DISPOSITION_EVENT, (Serializable)Collections.singletonList(DEFAULT_EVENT_NAME));
         dispositionService.addDispositionActionDefinition(ds, transfer);
 
         // create the properties for DESTROY action and add it to the disposition action definition
         Map<QName, Serializable> destroy = new HashMap<QName, Serializable>(3);
         destroy.put(PROP_DISPOSITION_ACTION_NAME, DestroyAction.NAME);
         destroy.put(PROP_DISPOSITION_DESCRIPTION, generate());
-        destroy.put(PROP_DISPOSITION_PERIOD, PERIOD_IMMEDIATELY);
+        destroy.put(PROP_DISPOSITION_PERIOD, PERIOD_ONE_WEEK);
         dispositionService.addDispositionActionDefinition(ds, destroy);
     }
 }

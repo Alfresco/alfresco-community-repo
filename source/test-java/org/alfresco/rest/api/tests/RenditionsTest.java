@@ -121,7 +121,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         // Create multipart request
         String fileName = "quick.pdf";
         File file = getResourceFile(fileName);
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF));
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload quick.pdf file into 'folder'
@@ -259,7 +259,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         // Create multipart request
         String fileName = "quick.pdf";
         File file = getResourceFile(fileName);
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF));
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload quick.pdf file into 'folder'
@@ -307,7 +307,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         String jpgFileName = "quick.jpg";
         File jpgFile = getResourceFile(fileName);
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(jpgFileName, jpgFile, MimetypeMap.MIMETYPE_IMAGE_JPEG))
+                    .setFileData(new FileData(jpgFileName, jpgFile))
                     .build();
 
         // Upload quick.jpg file into 'folder'
@@ -341,7 +341,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         // Create multipart request
         String fileName = "quick.pdf";
         File file = getResourceFile(fileName);
-        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF));
+        MultiPartBuilder multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData(fileName, file));
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload quick.pdf file into 'folder'
@@ -419,7 +419,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         String content = "The quick brown fox jumps over the lazy dog.";
         file = TempFileProvider.createTempFile(new ByteArrayInputStream(content.getBytes()), getClass().getSimpleName(), ".bin");
-        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData("binaryFileName", file, MimetypeMap.MIMETYPE_BINARY));
+        multiPartBuilder = MultiPartBuilder.create().setFileData(new FileData("binaryFileName", file));
         reqBody = multiPartBuilder.build();
         response = post(getNodeChildrenUrl(folder_Id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document binaryDocument = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
@@ -435,7 +435,7 @@ public class RenditionsTest extends AbstractBaseApiTest
             // Create multipart request
             String txtFileName = "quick-1.txt";
             File txtFile = getResourceFile(fileName);
-            reqBody = MultiPartBuilder.create().setFileData(new FileData(txtFileName, txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN)).build();
+            reqBody = MultiPartBuilder.create().setFileData(new FileData(txtFileName, txtFile)).build();
 
             // Upload quick-1.txt file into 'folder'
             response = post(getNodeChildrenUrl(folder_Id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);
@@ -476,7 +476,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         String fileName = "quick.pdf";
         File file = getResourceFile(fileName);
         MultiPartRequest reqBody = MultiPartBuilder.create()
-                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
+                .setFileData(new FileData(fileName, file))
                 .setRenditions(Collections.singletonList(renditionName))
                 .build();
 
@@ -498,7 +498,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         fileName = "farmers_markets_list_2003.doc";
         file = getResourceFile(fileName);
         reqBody = MultiPartBuilder.create()
-                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_WORD))
+                .setFileData(new FileData(fileName, file))
                 .setRenditions(Collections.singletonList(renditionName))
                 .build();
 
@@ -541,7 +541,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // Currently we do not support multiple rendition requests on create
         reqBody = MultiPartBuilder.create()
-                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
+                .setFileData(new FileData(fileName, file))
                 .setAutoRename(true)
                 .setRenditions(Arrays.asList(new String[]{"doclib,imgpreview"}))
                 .build();
@@ -550,7 +550,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
         // Unknown rendition
         reqBody = MultiPartBuilder.create()
-                .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
+                .setFileData(new FileData(fileName, file))
                 .setAutoRename(true)
                 .setRenditions(Arrays.asList(new String[]{"unknown"}))
                 .build();
@@ -566,7 +566,7 @@ public class RenditionsTest extends AbstractBaseApiTest
             String txtFileName = "quick-1.txt";
             File txtFile = getResourceFile(fileName);
             reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(txtFileName, txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .setFileData(new FileData(txtFileName, txtFile))
                     .setRenditions(Arrays.asList(new String[]{"doclib"}))
                     .build();
 
@@ -594,7 +594,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         String fileName = "quick.pdf";
         File file = getResourceFile(fileName);
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF));
+                    .setFileData(new FileData(fileName, file));
         MultiPartRequest reqBody = multiPartBuilder.build();
 
         // Upload quick.pdf file into 'folder'
@@ -701,7 +701,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         // the old fileName and setting overwrite field to true
         file = getResourceFile("quick-2.pdf");
         multiPartBuilder = MultiPartBuilder.create()
-                    .setFileData(new FileData(fileName, file, MimetypeMap.MIMETYPE_PDF))
+                    .setFileData(new FileData(fileName, file))
                     .setOverwrite(true);
         reqBody = multiPartBuilder.build();
 
@@ -731,7 +731,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         InputStream inputStream = new ByteArrayInputStream("The quick brown fox jumps over the lazy dog".getBytes());
         file = TempFileProvider.createTempFile(inputStream, "RenditionsTest-", ".abcdef");
         reqBody = MultiPartBuilder.create()
-                    .setFileData(new FileData(file.getName(), file, MimetypeMap.MIMETYPE_TEXT_PLAIN))
+                    .setFileData(new FileData(file.getName(), file))
                     .build();
         // Upload temp file into 'folder'
         response = post(getNodeChildrenUrl(folder_Id), userOneN1.getId(), reqBody.getBody(), null, reqBody.getContentType(), 201);

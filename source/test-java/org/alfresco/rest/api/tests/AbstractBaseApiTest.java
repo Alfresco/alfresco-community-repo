@@ -536,7 +536,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
 
         MultiPartBuilder.MultiPartRequest reqBody = MultiPartBuilder.create()
-                .setFileData(new MultiPartBuilder.FileData(fileName, txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN, encoding))
+                .setFileData(new MultiPartBuilder.FileData(fileName, txtFile))
                 .setProperties(props)
                 .build();
 
@@ -554,7 +554,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
         File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
-        BinaryPayload payload = new BinaryPayload(txtFile, MimetypeMap.MIMETYPE_TEXT_PLAIN);
+        BinaryPayload payload = new BinaryPayload(txtFile);
 
         HttpResponse response = putBinary(getNodeContentUrl(contentId), userId, payload, null, parameters, 200);
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);

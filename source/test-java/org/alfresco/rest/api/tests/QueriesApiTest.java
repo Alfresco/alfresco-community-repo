@@ -474,7 +474,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 String contentText = "f1 " + testTerm + " test document " + user1 + " document " + i;
 
                 String num = String.format("%05d", nameIdx);
-                String docName = name+num+name;
+                String docName = name+num+name+".txt";
 
                 Document doc = createTextFile(user1, f1Id, docName, contentText, "UTF-8", null);
 
@@ -491,7 +491,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 String contentText = "f2 " + testTerm + " test document";
 
                 String num = String.format("%05d", nameIdx);
-                String docName = name+num+name;
+                String docName = name+num+name+".txt";
 
                 Document doc = createTextFile(user1, f2Id, docName, contentText, "UTF-8", null);
 

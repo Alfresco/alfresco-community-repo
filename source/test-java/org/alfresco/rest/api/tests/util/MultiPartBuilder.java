@@ -190,6 +190,11 @@ public class MultiPartBuilder
         private final String mimetype;
         private final String encoding;
 
+        public FileData(String fileName, File file)
+        {
+            this(fileName, file, null, null);
+        }
+
         public FileData(String fileName, File file, String mimetype)
         {
             this(fileName, file, mimetype, null);

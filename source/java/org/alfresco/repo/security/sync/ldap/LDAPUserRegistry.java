@@ -1151,6 +1151,8 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
             if (attributeName != null)
             {
                 Attribute attribute = ldapAttributes.get(attributeName);
+                String defaultAttribute = attributeDefaults.get(key);
+                
                 if (attribute != null)
                 {
                     String value = (String) attribute.get(0);
@@ -1159,13 +1161,14 @@ public class LDAPUserRegistry implements UserRegistry, LDAPNameResolver, Initial
                         properties.put(keyQName, value);
                     }
                 }
+                else if (defaultAttribute != null)
+                {
+                    properties.put(keyQName, defaultAttribute);
+                }
                 else
                 {
-                    String defaultValue = attributeDefaults.get(key);
-                    if (defaultValue != null)
-                    {
-                        properties.put(keyQName, defaultValue);
-                    }
+                    // Make sure that a 2nd sync, updates deleted ldap attributes(MNT-14026)
+                    properties.put(keyQName, null);
                 }
             }
             else

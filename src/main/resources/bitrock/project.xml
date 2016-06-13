@@ -39,19 +39,9 @@
             <width>600</width>
         </platformOptions>
         <platformOptions>
-            <platform>linux</platform>
-            <height>430</height>
-            <width>600</width>
-        </platformOptions>
-        <platformOptions>
             <platform>linux-x64</platform>
             <height>430</height>
-            <width>600</width>
-        </platformOptions>
-        <platformOptions>
-            <platform>linux-ia64</platform>
-            <height>430</height>
-            <width>600</width>
+            <width>800</width>
         </platformOptions>
         <platformOptions>
             <platform>windows</platform>

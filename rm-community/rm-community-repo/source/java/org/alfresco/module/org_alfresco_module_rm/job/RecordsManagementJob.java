@@ -42,18 +42,21 @@ import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.scheduling.quartz.QuartzJobBean;
 
 /**
  * Base records management job implementation.
  * <p>
- * Delegates job execution and ensures locking
- * is enforced.
+ * Delegates job execution and ensures locking is enforced.
  *
  * @author Roy Wetherall
  */
 public class RecordsManagementJob implements Job
 {
     private static Log logger = LogFactory.getLog(RecordsManagementJob.class);
+
+    /** indicates whether the audit history should be run as admin or not */
+    private boolean runAsAdmin = false;
 
     private static final long DEFAULT_TIME = 30000L;
 
@@ -67,17 +70,17 @@ public class RecordsManagementJob implements Job
     {
         return QName.createQName(NamespaceService.SYSTEM_MODEL_1_0_URI, jobName);
     }
-    
+
     private class LockCallback implements JobLockRefreshCallback
     {
         final AtomicBoolean running = new AtomicBoolean(true);
-        
+
         @Override
         public boolean isActive()
         {
             return running.get();
         }
-        
+
         @Override
         public void lockReleased()
         {
@@ -85,11 +88,10 @@ public class RecordsManagementJob implements Job
         }
     }
 
-
     /**
-     * Attempts to get the lock.  If the lock couldn't be taken, then <tt>null</tt> is returned.
+     * Attempts to get the lock. If the lock couldn't be taken, then <tt>null</tt> is returned.
      *
-     * @return          Returns the lock token or <tt>null</tt>
+     * @return Returns the lock token or <tt>null</tt>
      */
     private String getLock()
     {
@@ -107,27 +109,21 @@ public class RecordsManagementJob implements Job
     public void execute(JobExecutionContext context) throws JobExecutionException
     {
         // get the job lock service
-        jobLockService = (JobLockService)context.getJobDetail().getJobDataMap().get("jobLockService");
-        if (jobLockService == null)
-        {
-            throw new AlfrescoRuntimeException("Job lock service has not been specified.");
-        }
+        jobLockService = (JobLockService) context.getJobDetail().getJobDataMap().get("jobLockService");
+        if (jobLockService == null) { throw new AlfrescoRuntimeException("Job lock service has not been specified."); }
 
         // get the job executer
-        jobExecuter = (RecordsManagementJobExecuter)context.getJobDetail().getJobDataMap().get("jobExecuter");
-        if (jobExecuter == null)
-        {
-            throw new AlfrescoRuntimeException("Job executer has not been specified.");
-        }
+        jobExecuter = (RecordsManagementJobExecuter) context.getJobDetail().getJobDataMap().get("jobExecuter");
+        if (jobExecuter == null) { throw new AlfrescoRuntimeException("Job executer has not been specified."); }
 
         // get the job name
-        jobName = (String)context.getJobDetail().getJobDataMap().get("jobName");
-        if (jobName == null)
-        {
-            throw new AlfrescoRuntimeException("Job name has not been specified.");
-        }
+        jobName = (String) context.getJobDetail().getJobDataMap().get("jobName");
+        if (jobName == null) { throw new AlfrescoRuntimeException("Job name has not been specified."); }
+
+        setRunAsAdmin(Boolean.parseBoolean((String) context.getJobDetail().getJobDataMap().get("runAsAdmin")));
 
         final LockCallback lockCallback = new LockCallback();
+
         AuthenticationUtil.runAs(new RunAsWork<Void>()
         {
             public Void doWork()
@@ -154,7 +150,8 @@ public class RecordsManagementJob implements Job
                             // Ignore
                             if (logger.isDebugEnabled())
                             {
-                                logger.debug("Lock release failed: " + getLockQName() + ": " + lockToken + "(" + e.getMessage() + ")");
+                                logger.debug("Lock release failed: " + getLockQName() + ": " + lockToken + "("
+                                            + e.getMessage() + ")");
                             }
                         }
                     }
@@ -163,6 +160,17 @@ public class RecordsManagementJob implements Job
                 // return
                 return null;
             }
-        }, AuthenticationUtil.getSystemUserName());
+        }, this.runAsAdmin ? AuthenticationUtil.getAdminUserName() : AuthenticationUtil.getSystemUserName());
     }
+
+    public boolean isRunAsAdmin()
+    {
+        return runAsAdmin;
+    }
+
+    public void setRunAsAdmin(boolean runAsAdmin)
+    {
+        this.runAsAdmin = runAsAdmin;
+    }
+
 }

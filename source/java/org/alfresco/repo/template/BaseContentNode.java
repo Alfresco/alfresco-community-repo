@@ -34,10 +34,9 @@ import java.util.Set;
 import org.alfresco.model.ApplicationModel;
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
-import org.alfresco.service.cmr.model.FileInfo;
-import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentReader;
@@ -635,7 +634,7 @@ public abstract class BaseContentNode implements TemplateContent
                        }
                     }
                 }
-                catch (NoTransformerException e)
+                catch (NoTransformerException|UnsupportedTransformationException e)
                 {
                     // ignore
                 }

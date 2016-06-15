@@ -25,16 +25,28 @@
  */
 package org.alfresco.repo.content.transform;
 
-import junit.framework.TestCase;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.content.filestore.*;
+import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.ServiceRegistry;
-import org.alfresco.service.cmr.repository.*;
+import org.alfresco.service.cmr.repository.ContentReader;
+import org.alfresco.service.cmr.repository.ContentService;
+import org.alfresco.service.cmr.repository.ContentWriter;
+import org.alfresco.service.cmr.repository.MimetypeService;
+import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.TransformationOptions;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
@@ -46,20 +58,20 @@ import org.junit.After;
 import org.junit.Before;
 import org.springframework.context.ApplicationContext;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.Serializable;
-import java.util.*;
+import junit.framework.TestCase;
 
 
 /**
- * Tests the ContentTransformer correct work if the file extension is different from its MIME type
+ * Tests that ContentTransformers only correctly process source nodes if the
+ * mimetype of the node matches the content. This is the opposite of what this
+ * test class was originally written to prove for MNT-11015. The current version
+ * was reworked for MNT-16381.
  */
 public class DifferrentMimeTypeTest extends TestCase
 {
     private static Log log = LogFactory.getLog(DifferrentMimeTypeTest.class);
 
-    private ContentTransformer contentTransformer;
+    private AbstractContentTransformer2 contentTransformer;
     private TransformationOptions options;
     private ServiceRegistry serviceRegistry;
     private MimetypeService mimetypeService;
@@ -97,9 +109,9 @@ public class DifferrentMimeTypeTest extends TestCase
 
     public void testDifferentMimeType() throws IOException
     {
-
         final QName propertyQName = ContentModel.PROP_CONTENT;
-        String sourceMimeType = mimetypeService.guessMimetype(testFile.getName());
+        String fileName = testFile.getName();
+        String sourceMimeType = mimetypeService.guessMimetype(fileName);
         String targetMimeType = MimetypeMap.MIMETYPE_IMAGE_JPEG;
 
         // mimetypeService.guessMimetype returns file mime type based entirely on the file extension
@@ -126,19 +138,51 @@ public class DifferrentMimeTypeTest extends TestCase
         outputWriter.setMimetype(targetMimeType);
 
         // verify that there is a desired transformer for actual file MIME type
-        ContentTransformer actualTransformer = this.registry.getTransformer(mimetypeService.getMimetypeIfNotMatches(contentReader),contentReader.getSize(), targetMimeType, options);
-        String assertMessageActualTransformer = "Transformer not found for converting " + mimetypeService.getMimetypeIfNotMatches(contentReader) + " to " + targetMimeType;
+        String actualSourceMimetype = mimetypeService.getMimetypeIfNotMatches(contentReader);
+        ContentTransformer actualTransformer = this.registry.getTransformer(actualSourceMimetype,contentReader.getSize(), targetMimeType, options);
+        String assertMessageActualTransformer = "Transformer not found for converting " + actualSourceMimetype + " to " + targetMimeType;
         assertNotNull(assertMessageActualTransformer, actualTransformer);
 
-        contentTransformer = this.registry.getTransformer(sourceMimeType, contentReader.getSize(), targetMimeType, options);
+        contentTransformer = (AbstractContentTransformer2)registry.getTransformer(sourceMimeType, contentReader.getSize(), targetMimeType, options);
         String assertMessageContentTransformer = "Transformer not found for converting " +sourceMimeType + " to " + targetMimeType;
         assertNotNull(assertMessageContentTransformer, contentTransformer);
 
         // Try to transform file with inaccurate MIME type
-        contentTransformer.transform(contentReader, outputWriter, options);
-        
-        // After successful transformation image size should be grater than 0
-        assertTrue("File transformation failed. Output file size is '0'", outputWriter.getSize() > 0);
+        boolean originalStrict = contentTransformer.getStrictMimeTypeCheck();
+        assertTrue("Content Transformations should be 'strict' by default", originalStrict);
+        for (boolean strict: new boolean[] {false, true})
+        {
+            try
+            {
+                contentTransformer.setStrictMimeTypeCheck(strict);
+                contentTransformer.transform(contentReader.getReader(), outputWriter, options);
+                if (strict)
+                {
+                    fail("The contentTransformer should have failed with an UnsupportedTransformationException");
+                }
+                // After successful transformation image size should be grater than 0
+                assertTrue("File transformation failed. Output file size is '0'", outputWriter.getSize() > 0);
+            }
+            catch (UnsupportedTransformationException e)
+            {
+                if (!strict)
+                {
+                    fail("The contentTransformer should NOT have failed with an UnsupportedTransformationException "+e);
+                }
+                String message = e.getMessage();
+                assertTrue("Message should contain the original filename ("+fileName+")",                    message.contains(fileName));
+                assertTrue("Message should contain the declared source mimetype ("+sourceMimeType+")",       message.contains(sourceMimeType));
+                assertTrue("Message should contain the detected source mimetype ("+actualSourceMimetype+")", message.contains(actualSourceMimetype));
+            }
+            finally
+            {
+                ((AbstractContentTransformer2)contentTransformer).setStrictMimeTypeCheck(originalStrict);
+            }
+        }
+
+        // Try to transform file with accurate MIME type
+        contentReader.setMimetype(actualSourceMimetype);
+        actualTransformer.transform(contentReader, outputWriter, options);
     }
 
     public void testSetUp()
@@ -189,6 +233,10 @@ public class DifferrentMimeTypeTest extends TestCase
                         QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, fileName),
                         ContentModel.TYPE_CONTENT,
                         props).getChildRef();
+                
+                // Make sure the error message contains the file name. Without this it is null.
+                nodeService.setProperty(node, ContentModel.PROP_NAME, fileName);
+                options.setSourceNodeRef(node);
 
                 // node should be removed after tests
                 nodesToDeleteAfterTest.add(node);

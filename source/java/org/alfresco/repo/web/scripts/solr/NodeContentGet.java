@@ -37,6 +37,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.domain.node.NodeDAO;
 import org.alfresco.repo.web.scripts.content.StreamContent;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -214,7 +215,7 @@ public class NodeContentGet extends StreamContent
                 long transformDuration = System.currentTimeMillis() - start;
                 res.setHeader(TRANSFORM_DURATION_HEADER, String.valueOf(transformDuration));
             }
-            catch (ContentIOException e)
+            catch (ContentIOException|UnsupportedTransformationException e)
             {
                 transformException = e;
             }

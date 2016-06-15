@@ -59,6 +59,7 @@
       <property name="jobDataAsMap">
          <map>
             <entry key="jobName" value="dispositionLifecycle"/>
+            <entry key="runAsAdmin" value="${audit.rm.runasadmin}"/>
             <entry key="jobLockService">
                <ref bean="jobLockService" />
             </entry>
@@ -94,7 +95,7 @@
          <ref bean="schedulerFactory" />
       </property>
       <property name="cronExpression">
-         
+
          <!-- run at 3am -->
          <!-- <value>0 30 3 * * ?</value> -->
          <!-- <value>0/30 * * * * ?</value> -->

@@ -181,6 +181,7 @@ public class DifferrentMimeTypeTest extends TestCase
         }
 
         // Try to transform file with accurate MIME type
+        contentReader = contentReader.getReader();
         contentReader.setMimetype(actualSourceMimetype);
         actualTransformer.transform(contentReader, outputWriter, options);
     }

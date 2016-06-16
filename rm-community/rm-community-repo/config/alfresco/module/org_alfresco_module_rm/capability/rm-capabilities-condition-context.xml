@@ -60,6 +60,11 @@
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.TransferredCapabilityCondition">
     </bean>
 
+    <bean id="capabilityCondition.moveAction"
+          parent="capabilityCondition.base"
+          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.MoveActionCapabilityCondition">
+    </bean>
+
     <bean id="capabilityCondition.destroyed"
           parent="capabilityCondition.base"
           class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.DestroyedCapabilityCondition">
@@ -218,7 +223,7 @@
       <property name="includedInHold" value="true"/>
       <property name="holdService" ref="HoldService" />
    </bean>
-   
+
    <bean id="capabilityCondition.hasFillingOnHoldContainer"
          parent="capabilityCondition.base"
          class="org.alfresco.module.org_alfresco_module_rm.capability.declarative.condition.FillingOnHoldContainerCapabilityCondition">

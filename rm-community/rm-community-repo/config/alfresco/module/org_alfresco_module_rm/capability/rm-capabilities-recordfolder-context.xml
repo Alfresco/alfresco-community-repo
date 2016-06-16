@@ -129,8 +129,7 @@
       </property>
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.cutoff" value="false"/>
-            <entry key="capabilityCondition.closed" value="false"/>
+            <entry key="capabilityCondition.moveAction" value="true"/>
          </map>
       </property>
       <property name="targetCapability" ref="rmCreateRecordFolderCapability"/>

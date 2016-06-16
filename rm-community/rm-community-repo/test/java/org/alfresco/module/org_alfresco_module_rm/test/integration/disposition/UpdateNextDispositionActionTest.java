@@ -92,24 +92,24 @@ public class UpdateNextDispositionActionTest extends BaseRMTestCase
 
                 // create record inside folder1
                 record = utils.createRecord(folder1, generate(), generate());
-                
+
+            }
+            @Override
+            public void when() throws Exception
+            {
                 // link the record to folder2
                 recordService.link(record, folder2);
 
                 // complete record
                 utils.completeRecord(record);
-                
+
                 // set the disposition as of date to now on the record
                 rmActionService.executeRecordsManagementAction(record, 
-                                                               EditDispositionActionAsOfDateAction.NAME, 
-                                                               Collections.singletonMap(EditDispositionActionAsOfDateAction.PARAM_AS_OF_DATE, new Date()));
-            }
+                        EditDispositionActionAsOfDateAction.NAME, 
+                        Collections.singletonMap(EditDispositionActionAsOfDateAction.PARAM_AS_OF_DATE, new Date()));
 
-            @Override
-            public void when()
-            {
                 // cut off
-                rmActionService.executeRecordsManagementAction(record, CutOffAction.NAME, null);
+                rmActionService.executeRecordsManagementAction(record, CutOffAction.NAME, null); 
             }
 
             @Override

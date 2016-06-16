@@ -182,6 +182,11 @@ public class DifferrentMimeTypeTest extends TestCase
 
         // Try to transform file with accurate MIME type
         contentReader = contentReader.getReader();
+
+        outputFile = TempFileProvider.createTempFile("DifferentMimeTypeTest-results-", outputFileExtension);
+        outputWriter = new FileContentWriter(outputFile);
+        outputWriter.setMimetype(targetMimeType);
+        
         contentReader.setMimetype(actualSourceMimetype);
         actualTransformer.transform(contentReader, outputWriter, options);
     }

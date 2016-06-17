@@ -880,6 +880,13 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                         // Get the current action
                         String currentADId = (String) nodeService.getProperty(currentDispositionAction, PROP_DISPOSITION_ACTION_ID);
                         currentDispositionActionDefinition = di.getDispositionActionDefinition(currentADId);
+                        // When the record has multiple disposition schedules the current disposition action may not be found by id
+                        // In this case it will be searched by name
+                        if(currentDispositionActionDefinition == null)
+                        {
+                            String currentADName = (String) nodeService.getProperty(currentDispositionAction, PROP_DISPOSITION_ACTION);
+                            currentDispositionActionDefinition = di.getDispositionActionDefinitionByName(currentADName);
+                        }
 
                         // Get the next disposition action
                         int index = currentDispositionActionDefinition.getIndex();

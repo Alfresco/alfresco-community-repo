@@ -30,12 +30,18 @@ import org.alfresco.module.org_alfresco_module_rm.capability.declarative.Abstrac
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
+ * Movable capability condition.
+ *
  * @author Roxana Dina
+ * @since 2.4.1
  *
  */
-public class MoveActionCapabilityCondition extends AbstractCapabilityCondition
+public class MovableCapabilityCondition extends AbstractCapabilityCondition
 {
 
+    /**
+     * A record folder should not be moved when it is cut off, but it should be possible to move it when it is destroyed.
+     */
     @Override
     public boolean evaluateImpl(NodeRef nodeRef)
     {

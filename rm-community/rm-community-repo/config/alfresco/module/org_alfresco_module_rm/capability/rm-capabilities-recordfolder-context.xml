@@ -129,7 +129,7 @@
       </property>
       <property name="conditions">
          <map>
-            <entry key="capabilityCondition.moveAction" value="true"/>
+            <entry key="capabilityCondition.movable" value="true"/>
          </map>
       </property>
       <property name="targetCapability" ref="rmCreateRecordFolderCapability"/>

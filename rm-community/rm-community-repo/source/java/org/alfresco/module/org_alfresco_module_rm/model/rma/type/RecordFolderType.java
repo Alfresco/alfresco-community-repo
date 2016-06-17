@@ -31,6 +31,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import org.alfresco.error.AlfrescoRuntimeException;
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.behaviour.AbstractDisposableItem;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.recordfolder.RecordFolderService;
@@ -49,6 +50,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.ArrayUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:recordFolder behaviour bean
@@ -72,6 +74,9 @@ public class RecordFolderType extends    AbstractDisposableItem
 
     /** vital record service */
     protected VitalRecordService vitalRecordService;
+
+    /** I18N */
+    private static final String MSG_CANNOT_CREATE_RECORD_FOLDER = "rm.action.record-folder-create";
 
     /**
      * @param recordService record service
@@ -211,12 +216,13 @@ public class RecordFolderType extends    AbstractDisposableItem
     public void onCreateChildAssociation(ChildAssociationRef childAssocRef, boolean bNew)
     {
         NodeRef nodeRef = childAssocRef.getChildRef();
-        if (nodeService.exists(nodeRef) && instanceOf(nodeRef, TYPE_RECORD_FOLDER))
+
+        if (nodeService.exists(nodeRef))
         {
             // ensure nothing is being added to a closed record folder
             NodeRef recordFolder = childAssocRef.getParentRef();
             Boolean isClosed = (Boolean) nodeService.getProperty(recordFolder, PROP_IS_CLOSED);
-            if (isClosed != null && Boolean.TRUE.equals(isClosed))
+            if (isClosed != null && isClosed)
             {
                 throw new AlfrescoRuntimeException("You can't add new items to a closed record folder.");
             }
@@ -237,6 +243,12 @@ public class RecordFolderType extends    AbstractDisposableItem
     public void onCreateChildAssociationOnCommit(ChildAssociationRef childAssocRef, boolean bNew)
     {
         final NodeRef recordFolder = childAssocRef.getChildRef();
+
+        // only records can be added in a record folder or hidden folders(is the case of e-mail attachments)
+        if (!instanceOf(recordFolder, ContentModel.TYPE_CONTENT) && !nodeService.hasAspect(recordFolder, ContentModel.ASPECT_HIDDEN))
+        {
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER));
+        }
 
         behaviourFilter.disableBehaviour();
         try

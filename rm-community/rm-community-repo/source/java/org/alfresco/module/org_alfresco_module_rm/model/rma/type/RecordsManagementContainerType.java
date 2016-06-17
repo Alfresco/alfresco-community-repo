@@ -148,17 +148,15 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                         }
                         else
                         {
-                            // Throw exception if the type is not cm:content
-                            if (!ContentModel.TYPE_FOLDER.equals(childType) && 
-                                    !dictionaryService.isSubClass(childType, ContentModel.TYPE_CONTENT))
-                            {
-                                throw new AlfrescoRuntimeException("Record can't be created from this type.");
-                            }
-
                             // We need to automatically cast the created folder to RM type if it is a plain folder
                             // This occurs if the RM folder has been created via IMap, WebDav, etc
                             if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
                             {
+                                // Throw exception if the type is not cm:folder
+                                if (!ContentModel.TYPE_FOLDER.equals(childType))
+                                {
+                                    throw new AlfrescoRuntimeException("Record can't be created from this type.");
+                                }
                                 // check the type of the parent to determine what 'kind' of artifact to create
                                 NodeRef parent = childAssocRef.getParentRef();
                                 QName parentType = nodeService.getType(parent);

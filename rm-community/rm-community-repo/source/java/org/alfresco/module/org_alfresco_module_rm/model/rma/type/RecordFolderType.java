@@ -50,6 +50,7 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.apache.commons.lang.ArrayUtils;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:recordFolder behaviour bean
@@ -73,6 +74,9 @@ public class RecordFolderType extends    AbstractDisposableItem
 
     /** vital record service */
     protected VitalRecordService vitalRecordService;
+
+    /** I18N */
+    private static final String MSG_CANNOT_CREATE_RECORD_FOLDER = "rm.action.record-folder-create";
 
     /**
      * @param recordService record service
@@ -243,7 +247,7 @@ public class RecordFolderType extends    AbstractDisposableItem
         // only records can be added in a record folder or hidden folders(is the case of e-mail attachments)
         if (!instanceOf(recordFolder, ContentModel.TYPE_CONTENT) && !nodeService.hasAspect(recordFolder, ContentModel.ASPECT_HIDDEN))
         {
-            throw new AlfrescoRuntimeException("Operation failed, because you can only place content into a record folder.");
+            throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CANNOT_CREATE_RECORD_FOLDER));
         }
 
         behaviourFilter.disableBehaviour();

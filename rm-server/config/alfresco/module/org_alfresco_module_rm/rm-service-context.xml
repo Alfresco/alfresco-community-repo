@@ -770,6 +770,7 @@
         <property name="nodeService" ref="NodeService"/>
         <property name="policyComponent" ref="policyComponent"/>
         <property name="contentService" ref="contentService"/>
+        <property name="transactionService" ref="transactionService"/>
         <property name="dictionaryRepositoryBootstrap" ref="dictionaryRepositoryBootstrap"/>
         <property name="customisableTypes">
            <list>
@@ -813,7 +814,6 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.initialiseCustomModel=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCustomisable=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.isCustomisable=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.makeCustomisable=RM_ALLOW

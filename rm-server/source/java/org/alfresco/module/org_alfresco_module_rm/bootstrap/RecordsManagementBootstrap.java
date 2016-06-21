@@ -18,7 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bootstrap;
 
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService;
 import org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService;
@@ -40,8 +39,7 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
     private TransactionService transactionService;
     private RMCaveatConfigService caveatConfigService;
     private CustomEmailMappingService customEmailMappingService;
-    private RecordsManagementAdminService adminService;
-
+    
     public void setTransactionService(TransactionService transactionService)
     {
         this.transactionService = transactionService;
@@ -56,11 +54,6 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
     {
         this.customEmailMappingService = customEmailMappingService;
     }
-
-    public void setRecordsManagementAdminService(RecordsManagementAdminService adminService)
-    {
-		this.adminService = adminService;
-	}
 
     public CustomEmailMappingService getCustomEmailMappingService()
     {
@@ -81,9 +74,6 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
                     {
                         // initialise caveat config
                         caveatConfigService.init();
-
-                        // Initialise the custom model
-                        adminService.initialiseCustomModel();
 
                         // Initialise the SplitEmailAction
                         SplitEmailAction action = (SplitEmailAction)getApplicationContext().getBean("splitEmail");

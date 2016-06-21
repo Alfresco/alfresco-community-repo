@@ -34,7 +34,10 @@ import javax.transaction.UserTransaction;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.activities.feed.FeedGenerator;
+import org.alfresco.repo.activities.post.lookup.PostLookup;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -44,6 +47,7 @@ import org.alfresco.repo.security.permissions.impl.ModelDAO;
 import org.alfresco.repo.security.permissions.impl.SimplePermissionEntry;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
@@ -99,6 +103,9 @@ public class CommentsApiTest extends BaseWebScriptTest
     private AuthenticationComponent authenticationComponent;
     protected PermissionServiceSPI permissionService;
     protected ModelDAO permissionModelDAO;
+    private ActivityService activityService;
+    private FeedGenerator feedGenerator;
+    private PostLookup postLookup;
     
     private NodeRef rootNodeRef;
     private NodeRef companyHomeNodeRef; 
@@ -133,6 +140,11 @@ public class CommentsApiTest extends BaseWebScriptTest
         siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         nodeArchiveService = (NodeArchiveService)getServer().getApplicationContext().getBean("nodeArchiveService");
+        activityService = (ActivityService)getServer().getApplicationContext().getBean("activityService");
+        ChildApplicationContextFactory activitiesFeed = (ChildApplicationContextFactory)getServer().getApplicationContext().getBean("ActivitiesFeed");
+        ApplicationContext activitiesFeedCtx = activitiesFeed.getApplicationContext();
+        feedGenerator = (FeedGenerator)activitiesFeedCtx.getBean("feedGenerator");
+        postLookup = (PostLookup)activitiesFeedCtx.getBean("postLookup");
 
         AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
         
@@ -420,7 +432,33 @@ public class CommentsApiTest extends BaseWebScriptTest
         assertEquals(modifiedDateBefore.getTime(), modifiedDateAfter.getTime());
         assertEquals(modifierBefore, modifierAfter);
     }
-    
+
+    /**
+     * REPO-828 (MNT-16401)
+     * @throws Exception
+     */
+    public void testDeleteCommentPostActivity() throws Exception
+    {
+        permissionService.setPermission(sitePage, USER_TWO, PermissionService.ALL_PERMISSIONS, true);
+        postLookup.execute();
+        feedGenerator.execute();
+        int activityNumStart = activityService.getSiteFeedEntries(SITE_SHORT_NAME).size();
+        Response response = addComment(sitePage, USER_TWO, 200);
+        postLookup.execute();
+        feedGenerator.execute();
+        int activityNumNext = activityService.getSiteFeedEntries(SITE_SHORT_NAME).size();
+        assertEquals("The activity feeds were not generated after adding a comment", activityNumStart + 1, activityNumNext);
+        JSONObject jsonResponse = parseResponseJSON(response);
+        String nodeRefComment = getOrNull(jsonResponse, JSON_KEY_NODEREF);
+        NodeRef commentNodeRef = new NodeRef(nodeRefComment);
+        deleteComment(commentNodeRef, sitePage, USER_TWO, 200);
+        activityNumStart = activityNumNext;
+        postLookup.execute();
+        feedGenerator.execute();
+        activityNumNext = activityService.getSiteFeedEntries(SITE_SHORT_NAME).size();
+        assertEquals("The activity feeds were not generated after deleting a comment", activityNumStart + 1, activityNumNext);
+    }
+
     /**
      * MNT-12082
      */

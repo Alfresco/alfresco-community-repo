@@ -33,12 +33,16 @@ import java.util.List;
 import javax.transaction.UserTransaction;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.activities.feed.FeedGenerator;
+import org.alfresco.repo.activities.post.lookup.PostLookup;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
@@ -54,6 +58,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
@@ -81,6 +86,9 @@ public class LinksRestApiTest extends BaseWebScriptTest
     private NodeService internalNodeService;
     private SiteService siteService;
     private NodeArchiveService nodeArchiveService;
+    private ActivityService activityService;
+    private FeedGenerator feedGenerator;
+    private PostLookup postLookup;
     
     private static final String USER_ONE = "UserOneSecondToo";
     private static final String USER_TWO = "UserTwoSecondToo";
@@ -119,7 +127,13 @@ public class LinksRestApiTest extends BaseWebScriptTest
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         this.internalNodeService = (NodeService)getServer().getApplicationContext().getBean("nodeService");
         this.nodeArchiveService = (NodeArchiveService)getServer().getApplicationContext().getBean("nodeArchiveService");
-        
+        this.activityService = (ActivityService)getServer().getApplicationContext().getBean("activityService");
+        ChildApplicationContextFactory activitiesFeed = (ChildApplicationContextFactory)getServer().getApplicationContext().getBean("ActivitiesFeed");
+        ApplicationContext activitiesFeedCtx = activitiesFeed.getApplicationContext();
+        this.feedGenerator = (FeedGenerator)activitiesFeedCtx.getBean("feedGenerator");
+        this.postLookup = (PostLookup)activitiesFeedCtx.getBean("postLookup");
+
+
         // Authenticate as user
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
@@ -766,5 +780,56 @@ public class LinksRestApiTest extends BaseWebScriptTest
         JSONObject result = new JSONObject(response.getContentAsString());
         
         assertTrue("The user sould have permission to create a new link.", Boolean.parseBoolean(result.getJSONObject("metadata").getJSONObject("linkPermissions").getString("create")));
+    }
+
+    public void testCommentLink() throws Exception
+    {
+        JSONObject link = createLink(LINK_TITLE_ONE, "commented link", LINK_URL_ONE, false, Status.STATUS_OK);
+        postLookup.execute();
+        feedGenerator.execute();
+        int activityNumStart = activityService.getUserFeedEntries(USER_ONE, SITE_SHORT_NAME_LINKS).size();
+        String name = getNameFromLink(link);
+        link = getLink(name, Status.STATUS_OK);
+        String nodeRef = link.getString("nodeRef");
+        JSONObject commentOne = createComment(nodeRef, "comment", "content", 200);
+        postLookup.execute();
+        feedGenerator.execute();
+        int activityNumNext = activityService.getUserFeedEntries(USER_ONE, SITE_SHORT_NAME_LINKS).size();
+        assertEquals("The activity feeds were not generated after adding a comment", activityNumStart + 1, activityNumNext);
+
+        sendRequest(new DeleteRequest(getCommentUrl(commentOne.getString("nodeRef"))), 200);
+        postLookup.execute();
+        feedGenerator.execute();
+        activityNumNext = activityService.getUserFeedEntries(USER_ONE, SITE_SHORT_NAME_LINKS).size();
+        assertEquals("The activity feeds were not generated after deleting a comment", activityNumStart + 1, activityNumNext);
+    }
+
+    private JSONObject createComment(String nodeRef, String title, String content, int expectedStatus)
+            throws Exception
+    {
+        JSONObject comment = new JSONObject();
+        comment.put("title", title);
+        comment.put("content", content);
+        comment.put("site", SITE_SHORT_NAME_LINKS);
+        Response response = sendRequest(new PostRequest(getCommentsUrl(nodeRef), comment.toString(), "application/json"), expectedStatus);
+
+        if (expectedStatus != 200)
+        {
+            return null;
+        }
+
+        //logger.debug("Comment created: " + response.getContentAsString());
+        JSONObject result = new JSONObject(response.getContentAsString());
+        return result.getJSONObject("item");
+    }
+
+    private String getCommentsUrl(String nodeRef)
+    {
+        return "/api/node/" + nodeRef.replace("://", "/") + "/comments";
+    }
+
+    private String getCommentUrl(String nodeRef)
+    {
+        return "/api/comment/node/" + nodeRef.replace("://", "/");
     }
 }

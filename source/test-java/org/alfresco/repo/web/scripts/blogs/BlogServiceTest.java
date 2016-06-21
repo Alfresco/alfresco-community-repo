@@ -31,11 +31,15 @@ import java.util.Collections;
 import java.util.List;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.activities.feed.FeedGenerator;
+import org.alfresco.repo.activities.post.lookup.PostLookup;
+import org.alfresco.repo.management.subsystems.ChildApplicationContextFactory;
 import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
+import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -49,6 +53,7 @@ import org.apache.commons.logging.LogFactory;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONStringer;
+import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
@@ -71,7 +76,10 @@ public class BlogServiceTest extends BaseWebScriptTest
     private PersonService personService;
     private SiteService siteService;
     private NodeArchiveService nodeArchiveService;
-    
+    private ActivityService activityService;
+    private FeedGenerator feedGenerator;
+    private PostLookup postLookup;
+
     private static final String USER_ONE = "UserOneSecondToo";
     private static final String USER_TWO = "UserTwoSecondToo";
     private static final String SITE_SHORT_NAME_BLOG = "BlogSiteShortNameTest";
@@ -102,7 +110,12 @@ public class BlogServiceTest extends BaseWebScriptTest
         this.personService = (PersonService)getServer().getApplicationContext().getBean("PersonService");
         this.siteService = (SiteService)getServer().getApplicationContext().getBean("SiteService");
         this.nodeArchiveService = (NodeArchiveService)getServer().getApplicationContext().getBean("nodeArchiveService");
-        
+        this.activityService = (ActivityService)getServer().getApplicationContext().getBean("activityService");
+        ChildApplicationContextFactory activitiesFeed = (ChildApplicationContextFactory)getServer().getApplicationContext().getBean("ActivitiesFeed");
+        ApplicationContext activitiesFeedCtx = activitiesFeed.getApplicationContext();
+        this.feedGenerator = (FeedGenerator)activitiesFeedCtx.getBean("feedGenerator");
+        this.postLookup = (PostLookup)activitiesFeedCtx.getBean("postLookup");
+
         // Authenticate as user
         this.authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
         
@@ -281,6 +294,7 @@ public class BlogServiceTest extends BaseWebScriptTest
         JSONObject comment = new JSONObject();
         comment.put("title", title);
         comment.put("content", content);
+        comment.put("site", SITE_SHORT_NAME_BLOG);
         Response response = sendRequest(new PostRequest(getCommentsUrl(nodeRef), comment.toString(), "application/json"), expectedStatus);
 
         if (expectedStatus != 200)
@@ -728,7 +742,32 @@ public class BlogServiceTest extends BaseWebScriptTest
         assertEquals("new title", commentTwoUpdated.getString("title"));
         assertEquals("new content", commentTwoUpdated.getString("content"));
     }
-    
+
+    /**
+     * REPO-828 (MNT-16401)
+     * @throws Exception
+     */
+    public void testDeleteCommentPostActivity() throws Exception
+    {
+        this.authenticationComponent.setCurrentUser(USER_ONE);
+        JSONObject item = createPost("testActivity", "test", null, false, 200);
+        postLookup.execute();
+        feedGenerator.execute();
+        int activityNumStart = activityService.getUserFeedEntries(USER_ONE, SITE_SHORT_NAME_BLOG).size();
+        String nodeRef = item.getString("nodeRef");
+        JSONObject commentOne = createComment(nodeRef, "comment", "content", 200);
+        postLookup.execute();
+        feedGenerator.execute();
+        int activityNumNext = activityService.getUserFeedEntries(USER_ONE, SITE_SHORT_NAME_BLOG).size();
+        assertEquals("The activity feeds were not generated after adding a comment", activityNumStart + 1, activityNumNext);
+
+        sendRequest(new DeleteRequest(getCommentUrl(commentOne.getString("nodeRef"))), 200);
+        postLookup.execute();
+        feedGenerator.execute();
+        activityNumNext = activityService.getUserFeedEntries(USER_ONE, SITE_SHORT_NAME_BLOG).size();
+        assertEquals("The activity feeds were not generated after deleting a comment", activityNumStart + 1, activityNumNext);
+    }
+
     /**
      * You can attach information to the blog container relating
      *  to integration with external blogs.

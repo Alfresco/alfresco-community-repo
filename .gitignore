@@ -24,6 +24,7 @@ test-output
 /rm-server/alfresco-solr.zip
 /rm-server/solr
 /rm-server/shared
+/rm-server/alf_data
 
 # /rm-server/config/
 /rm-server/config/alfresco-global.properties

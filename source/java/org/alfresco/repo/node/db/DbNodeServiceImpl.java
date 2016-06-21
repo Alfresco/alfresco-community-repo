@@ -2777,6 +2777,8 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
         StoreRef oldStoreRef = oldNodeToMoveRef.getStoreRef();
         StoreRef newStoreRef = parentNodeRef.getStoreRef();
         
+        List<ChildAssociationRef> nodesToRestoreAssociationsFor = new ArrayList<ChildAssociationRef>();
+        
         // Get the primary parent association
         Pair<Long, ChildAssociationRef> oldParentAssocPair = nodeDAO.getPrimaryParentAssoc(nodeToMoveId);
         if (oldParentAssocPair == null)
@@ -2881,8 +2883,21 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
                 // Fire node policies.  This ensures that each node in the hierarchy gets a notification fired.
                 invokeOnDeleteNode(oldChildAssoc, childNodeTypeQName, childNodeAspectQNames, true);
                 invokeOnCreateNode(newChildAssoc);
+
+                // collect working copy nodes that need to be updated; we need all nodes 
+                // to be already moved when create association between nodes
+                if (hasAspect(newChildAssoc.getChildRef(), ContentModel.ASPECT_ARCHIVE_LOCKABLE))
+                {
+                    nodesToRestoreAssociationsFor.add(newChildAssoc);
+                }
             }
             
+            // invoke onRestoreNode for working copy nodes in order to restore original lock
+            for (ChildAssociationRef childAssoc : nodesToRestoreAssociationsFor)
+            {
+                invokeOnRestoreNode(childAssoc);
+            }
+
             return newParentAssocRef;
         }
         else

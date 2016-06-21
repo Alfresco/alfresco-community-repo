@@ -393,8 +393,8 @@ public class SiteServiceImplMoreTest
      * This test also checks that after restore the locks are restored correctly for all the locked
      * files;
      * 
-     * TODO in MNT-15855:
-     * It should also checks the case when there is a working copy (simulate lock for offline edit)
+     * MNT-15855:
+     * Checks the case when there is a working copy (simulate lock for offline edit)
      * 
      * @throws Exception
      */
@@ -443,6 +443,7 @@ public class SiteServiceImplMoreTest
          *                  |-- [folder] fileFolderPrefix + "subfolder"
          *                         |
          *                         |-- [cm:content] fileFolderPrefix + "fileInSubfolder.txt"
+         *          --- [cm:content] fileFolderPrefix + "fileEditOfline.txt"
          */
         String fileFolderPrefix = "TESTLOCK_";
         String componentId = "doclib";
@@ -479,10 +480,10 @@ public class SiteServiceImplMoreTest
         ContentWriter writer3 = FILE_FOLDER_SERVICE.getWriter(fileInfo3.getNodeRef());
         writer3.putContent("Just some old content that doesn't mean anything");
 
-        // make sure there are no locks on the fileInfo yet
+        // Make sure there are no locks on the fileInfo yet
         assertEquals(LockStatus.NO_LOCK, LOCK_SERVICE.getLockStatus(fileInfo.getNodeRef()));
 
-        // lock a file as userOwner
+        // Lock a file as userOwner
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
@@ -492,15 +493,15 @@ public class SiteServiceImplMoreTest
             }
         });
 
-        // make sure we have a lock now
+        // Make sure we have a lock now
         assertEquals(LockStatus.LOCK_OWNER, LOCK_SERVICE.getLockStatus(fileInfo.getNodeRef()));
 
         checkThatNonMembersCanNotCreateFiles(userCollaborator, fileFolderPrefix, folder2Info);
 
-        // make sure we are running as userOwner
+        // Make sure we are running as userOwner
         AUTHENTICATION_COMPONENT.setCurrentUser(userOwner);
 
-        // make userCollaborator a member of the site
+        // Make userCollaborator a member of the site
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Object>()
         {
             public Object execute() throws Throwable
@@ -510,7 +511,7 @@ public class SiteServiceImplMoreTest
             }
         });
 
-        // now, as userCollaborator create a file and lock it
+        // Now, as userCollaborator create a file and lock it
         AUTHENTICATION_COMPONENT.setCurrentUser(userCollaborator);
 
         final FileInfo fileInfoForCollaboratorUser = FILE_FOLDER_SERVICE.create(
@@ -536,7 +537,32 @@ public class SiteServiceImplMoreTest
         // Test valid lock
         assertEquals(LockStatus.LOCK_OWNER, LOCK_SERVICE.getLockStatus(fileInfoForCollaboratorUser.getNodeRef()));
 
-        // switch back to userOwner so we can call delete the site
+        // Create a file to test Edit offline
+        final FileInfo fileEditOffline = FILE_FOLDER_SERVICE.create(
+                       siteContainer, 
+                       fileFolderPrefix + "fileEditOfline.txt",
+                       ContentModel.TYPE_CONTENT);
+        ContentWriter writerEO = FILE_FOLDER_SERVICE.getWriter(fileEditOffline.getNodeRef());
+        writerEO.putContent("Just some old content that doesn't mean anything");
+
+        //Make sure there are no locks on the fileEditOffline yet
+        assertEquals(LockStatus.NO_LOCK, LOCK_SERVICE.getLockStatus(fileEditOffline.getNodeRef()));
+
+        // Check out the document - simulate Edit offline
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                NodeRef workingCopy = COCI_SERVICE.checkout(fileEditOffline.getNodeRef());
+                assertNotNull(workingCopy);
+                return null;
+            }
+        });
+
+        // Make sure we have a lock now on fileEditOffline
+        assertEquals(LockStatus.LOCK_OWNER, LOCK_SERVICE.getLockStatus(fileEditOffline.getNodeRef()));
+
+        // Switch back to userOwner so we can call delete the site
         AUTHENTICATION_COMPONENT.setCurrentUser(userOwner);
 
         // Delete the site
@@ -553,7 +579,7 @@ public class SiteServiceImplMoreTest
             }
         });
 
-        // restore the site
+        // Restore the site
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
@@ -573,14 +599,18 @@ public class SiteServiceImplMoreTest
             }
         });
 
-        // check that the files have been restored and all the locks are present
+        // Check that the files have been restored and all the locks are present
         AUTHENTICATION_COMPONENT.setCurrentUser(userCollaborator);
         assertEquals(LockStatus.LOCK_OWNER, LOCK_SERVICE.getLockStatus(fileInfoForCollaboratorUser.getNodeRef()));
+        // Check that the file for edit offline has been restored and has the expected lock owner
+        assertEquals(LockStatus.LOCK_OWNER, LOCK_SERVICE.getLockStatus(fileEditOffline.getNodeRef()));
 
         AUTHENTICATION_COMPONENT.setCurrentUser(userOwner);
         assertEquals(LockStatus.LOCK_OWNER, LOCK_SERVICE.getLockStatus(fileInfo.getNodeRef()));
+        // Check that the file for edit offline has been restored and is locked
+        assertEquals(LockStatus.LOCKED, LOCK_SERVICE.getLockStatus(fileEditOffline.getNodeRef()));
 
-        // remove site completely
+        // Remove site completely
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable

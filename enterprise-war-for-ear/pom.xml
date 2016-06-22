@@ -50,6 +50,7 @@
                     </dependency>
                 </dependencies>
                 <configuration>
+                    <useCache>true</useCache>
                     <overlays>
                         <overlay>
                             <groupId>org.alfresco</groupId>
@@ -68,6 +69,300 @@
                         </overlay>
                     </overlays>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>prepare-war</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                             <goal>exploded</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Adds AOSM config to web.xml, see MNT-16334 -->
+            <plugin>
+                <groupId>com.google.code.maven-replacer-plugin</groupId>
+                <artifactId>replacer</artifactId>
+                <executions>
+                    <execution>
+                        <id>aosm-in-web.xml</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>replace</goal>
+                        </goals>
+                        <configuration>
+                            <file>${project.build.directory}/${project.build.finalName}/WEB-INF/web.xml</file>
+                            <replacements>
+                                <replacement>
+                                    <token><![CDATA[<!-- AOSM filter placeholder -->]]></token>
+                                    <value><![CDATA[
+    <filter>
+        <filter-name>Office Services Authentication Filter</filter-name>
+        <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
+        <init-param>
+            <param-name>beanName</param-name>
+            <param-value>AosAuthenticationFilter</param-value>
+        </init-param>
+    </filter>
+
+    <filter>
+        <filter-name>Office Services Filter</filter-name>
+        <filter-class>org.alfresco.module.aosmodule.service.ServiceFilter</filter-class>
+    </filter>
+
+    <filter>
+        <filter-name>Office Services Context Root Filter</filter-name>
+        <filter-class>org.alfresco.module.aosmodule.service.ContextRootFilter</filter-class>
+    </filter>
+                                ]]></value>
+                                </replacement>
+                                <replacement>
+                                    <token><![CDATA[<!-- AOSM filter-mapping placeholder -->]]></token>
+                                    <value><![CDATA[
+    <filter-mapping>
+        <filter-name>Office Services Authentication Filter</filter-name>
+        <url-pattern>/aos/*</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>Office Services Authentication Filter</filter-name>
+        <url-pattern>/AosResponder_ServerRoot</url-pattern>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>Office Services Authentication Filter</filter-name>
+        <url-pattern>/AosResponder_Context</url-pattern>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>Office Services Filter</filter-name>
+        <url-pattern>/aos/*</url-pattern>
+    </filter-mapping>
+
+    <filter-mapping>
+        <filter-name>Office Services Context Root Filter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+                                ]]></value>
+                                </replacement>
+                                <replacement>
+                                    <token><![CDATA[<!-- AOSM servlet placeholder -->]]></token>
+                                    <value><![CDATA[
+    <servlet>
+        <servlet-name>AosAuthorService</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.AuthorService</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosBrowsingService</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.BrowsingService</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosCopyService</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.CopyService</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosDwsService</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.DwsService</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosListsService</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.ListsService</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosServiceDispatcher</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.ServiceDispatcher</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosSiteDataService</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.SiteDataService</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosVersionsService</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.VersionsService</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosViewsService</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.ViewsService</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosVtiInfService</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.VtiInfService</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosWebsService</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.WebsService</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosWebViewResourcesService</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.WebViewResourcesService</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosWebdavService</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.WebdavService</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosServerRootResponder</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.ServerRootResponder</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AosContextResponder</servlet-name>
+        <servlet-class>org.alfresco.module.aosmodule.service.ContextResponder</servlet-class>
+        <load-on-startup>5</load-on-startup>
+    </servlet>
+                                ]]></value>
+                                </replacement>
+
+                                <replacement>
+                                    <token><![CDATA[<!-- AOSM filter placeholder -->]]></token>
+                                    <value><![CDATA[
+    <filter>
+        <filter-name>Office Services Authentication Filter</filter-name>
+        <filter-class>org.alfresco.repo.web.filter.beans.BeanProxyFilter</filter-class>
+        <init-param>
+            <param-name>beanName</param-name>
+            <param-value>AosAuthenticationFilter</param-value>
+        </init-param>
+    </filter>
+
+    <filter>
+        <filter-name>Office Services Filter</filter-name>
+        <filter-class>org.alfresco.module.aosmodule.service.ServiceFilter</filter-class>
+    </filter>
+
+    <filter>
+        <filter-name>Office Services Context Root Filter</filter-name>
+        <filter-class>org.alfresco.module.aosmodule.service.ContextRootFilter</filter-class>
+    </filter>
+                                ]]></value>
+                                </replacement>
+                                <replacement>
+                                    <token><![CDATA[<!-- AOSM servlet-mapping placeholder -->]]></token>
+                                    <value><![CDATA[
+    <servlet-mapping>
+        <servlet-name>AosServiceDispatcher</servlet-name>
+        <url-pattern>/aos/_vti_bin/shtml.dll/_vti_rpc</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosAuthorService</servlet-name>
+        <url-pattern>/aos/_vti_bin/_vti_aut/author.dll</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosBrowsingService</servlet-name>
+        <url-pattern>/aos/_vti_bin/owssvr.dll</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosCopyService</servlet-name>
+        <url-pattern>/aos/_vti_bin/copy.asmx</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosCopyService</servlet-name>
+        <url-pattern>/aos/_vti_bin/Copy.asmx</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosDwsService</servlet-name>
+        <url-pattern>/aos/_vti_bin/dws.asmx</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosListsService</servlet-name>
+        <url-pattern>/aos/_vti_bin/lists.asmx</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosListsService</servlet-name>
+        <url-pattern>/aos/_vti_bin/Lists.asmx</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosSiteDataService</servlet-name>
+        <url-pattern>/aos/_vti_bin/SiteData.asmx</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosVersionsService</servlet-name>
+        <url-pattern>/aos/_vti_bin/versions.asmx</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosViewsService</servlet-name>
+        <url-pattern>/aos/_vti_bin/views.asmx</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosVtiInfService</servlet-name>
+        <url-pattern>/aos/_vti_inf.html</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosWebsService</servlet-name>
+        <url-pattern>/aos/_vti_bin/webs.asmx</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosWebsService</servlet-name>
+        <url-pattern>/aos/_vti_bin/Webs.asmx</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosServerRootResponder</servlet-name>
+        <url-pattern>/AosResponder_ServerRoot</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosContextResponder</servlet-name>
+        <url-pattern>/AosResponder_Context</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosWebViewResourcesService</servlet-name>
+        <url-pattern>/aos/_aos_resources/*</url-pattern>
+    </servlet-mapping>
+
+    <servlet-mapping>
+        <servlet-name>AosWebdavService</servlet-name>
+        <url-pattern>/aos/*</url-pattern>
+    </servlet-mapping>
+                                ]]></value>
+                                </replacement>
+                            </replacements>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

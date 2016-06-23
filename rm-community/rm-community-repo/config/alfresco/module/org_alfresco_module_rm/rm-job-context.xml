@@ -51,24 +51,25 @@
       </property>
    </bean>
 
-	 <!-- Disposition Lifecycle Job -->
-   <bean id="scheduledDispositionLifecyceleJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
-      <property name="jobClass">
-         <value>org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob</value>
-      </property>
-      <property name="jobDataAsMap">
-         <map>
-            <entry key="jobName" value="dispositionLifecycle"/>
-            <entry key="runAsAdmin" value="${audit.rm.runasadmin}"/>
-            <entry key="jobLockService">
-               <ref bean="jobLockService" />
-            </entry>
-            <entry key="jobExecuter">
-               <ref bean="dispositionLifecycleJobExecuter" />
-            </entry>
-         </map>
-      </property>
-   </bean>
+	<!-- Disposition Lifecycle Job -->
+	<bean id="scheduledDispositionLifecyceleJobDetail" class="org.springframework.scheduling.quartz.JobDetailBean">
+
+		<property name="jobClass">
+			<value>org.alfresco.module.org_alfresco_module_rm.job.RecordsManagementJob</value>
+		</property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="jobName" value="dispositionLifecycle" />
+				<entry key="runAuditAs" value="${audit.rm.runas}" />
+				<entry key="jobLockService">
+					<ref bean="jobLockService" />
+				</entry>
+				<entry key="jobExecuter">
+					<ref bean="dispositionLifecycleJobExecuter" />
+				</entry>
+ 			</map>
+		</property>
+	</bean>
 
    <bean id="dispositionLifecycleJobExecuter"
    		 class="org.alfresco.module.org_alfresco_module_rm.job.DispositionLifecycleJobExecuter"
@@ -84,6 +85,7 @@
 
       <property name="nodeService" ref="nodeService" />
       <property name="searchService" ref="searchService" />
+      <property name="authenticationService" ref="authenticationService" />
       <property name="recordsManagementActionService" ref="recordsManagementActionService" />
    </bean>
 

@@ -47,7 +47,11 @@
             assoc.qname_localname    as authority_name <!-- see note -->
         from
             alf_child_assoc assoc
-            join alf_node childNode on (childNode.id = assoc.child_node_id)
+            join alf_node childNode on (childNode.id = assoc.child_node_id
+            <if test="typeQNameId != null">
+                 and childNode.type_qname_id = #{typeQNameId}
+            </if>
+             )
             left join alf_node_properties adn on (adn.node_id = childNode.id and adn.qname_id = #{authorityDisplayNameQNameId})
         where
             assoc.parent_node_id = #{parentNodeId}

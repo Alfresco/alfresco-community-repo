@@ -1516,6 +1516,35 @@ public class AuthorityServiceTest extends TestCase
         */
     }
 
+    public void testGetAuthoritiesForZone() 
+    {
+        String role = pubAuthorityService.createAuthority(AuthorityType.ROLE, "one");
+        String group = pubAuthorityService.createAuthority(AuthorityType.GROUP, "group1");
+        String user = "user@" + System.currentTimeMillis();
+        createUserAuthority(user);
+
+        PagingResults<String> authorities = authorityService.getAuthorities(null, AuthorityService.ZONE_APP_DEFAULT, "*", false, false, new PagingRequest(100));
+        assertTrue(authorities.getPage().contains(user));
+        assertTrue(authorities.getPage().contains(role));
+        assertTrue(authorities.getPage().contains(group));
+        
+        PagingResults<String> groups = authorityService.getAuthorities(AuthorityType.GROUP, AuthorityService.ZONE_APP_DEFAULT, "*", false, false, new PagingRequest(100));
+        assertTrue(groups.getPage().contains(group));
+        assertFalse(groups.getPage().contains(user));
+        assertFalse(groups.getPage().contains(role));
+    }
+
+    private void createUserAuthority(String user)
+    {
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>(4, 1.0f);
+        props.put(ContentModel.PROP_USERNAME, user);
+        props.put(ContentModel.PROP_FIRSTNAME, user);
+        props.put(ContentModel.PROP_LASTNAME, user);
+        props.put(ContentModel.PROP_EMAIL, user + "@gmail.com");
+        personService.createPerson(props);
+        authenticationService.createAuthentication(user, "123123".toCharArray());
+    }
+
     private void assertContains(List<String> results, List<String> checklist, boolean included)
     {
         for (String check : checklist)

@@ -42,7 +42,6 @@ import org.apache.commons.logging.LogFactory;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 
 /**
  * Base records management job implementation.
@@ -55,14 +54,14 @@ public class RecordsManagementJob implements Job
 {
     private static Log logger = LogFactory.getLog(RecordsManagementJob.class);
 
-    /** indicates whether the audit history should be run as admin or not */
-    private boolean runAsAdmin = false;
+    /** which user should be used to log audit */
+    private String runAuditAs = AuthenticationUtil.getSystemUserName();
 
     private static final long DEFAULT_TIME = 30000L;
 
     private JobLockService jobLockService;
 
-    private RecordsManagementJobExecuter jobExecuter;
+    private RecordsManagementJobExecuter jobExecuter = null;
 
     private String jobName;
 
@@ -105,9 +104,12 @@ public class RecordsManagementJob implements Job
         }
     }
 
-    @Override
+    /**
+     * @see org.quartz.Job#execute(org.quartz.JobExecutionContext)
+     */
     public void execute(JobExecutionContext context) throws JobExecutionException
     {
+
         // get the job lock service
         jobLockService = (JobLockService) context.getJobDetail().getJobDataMap().get("jobLockService");
         if (jobLockService == null) { throw new AlfrescoRuntimeException("Job lock service has not been specified."); }
@@ -118,9 +120,35 @@ public class RecordsManagementJob implements Job
 
         // get the job name
         jobName = (String) context.getJobDetail().getJobDataMap().get("jobName");
+
         if (jobName == null) { throw new AlfrescoRuntimeException("Job name has not been specified."); }
 
-        setRunAsAdmin(Boolean.parseBoolean((String) context.getJobDetail().getJobDataMap().get("runAsAdmin")));
+        if (jobName.compareTo("dispositionLifecycle") == 0)
+        {
+            //RM-3293 - set user for audit
+            if (jobExecuter instanceof DispositionLifecycleJobExecuter)
+            {
+                String auditUser = (String) context.getJobDetail().getJobDataMap().get("runAuditAs");
+                if (((DispositionLifecycleJobExecuter) jobExecuter).getAuthenticationService()
+                            .authenticationExists(auditUser))
+                {
+
+                    setRunAuditAs(auditUser);
+                }
+                else
+                {
+                    setRunAuditAs(AuthenticationUtil.getSystemUserName());
+                }
+
+            }
+
+            if (logger.isDebugEnabled())
+            {
+                logger.debug("DispositionLifecycleJobExecuter() logged audit history with user: " + getRunAuditAs());
+
+            }
+
+        }
 
         final LockCallback lockCallback = new LockCallback();
 
@@ -160,17 +188,18 @@ public class RecordsManagementJob implements Job
                 // return
                 return null;
             }
-        }, this.runAsAdmin ? AuthenticationUtil.getAdminUserName() : AuthenticationUtil.getSystemUserName());
+        }, getRunAuditAs());
     }
 
-    public boolean isRunAsAdmin()
+    public String getRunAuditAs()
     {
-        return runAsAdmin;
+        return runAuditAs;
     }
 
-    public void setRunAsAdmin(boolean runAsAdmin)
+    public void setRunAuditAs(String runAuditAs)
     {
-        this.runAsAdmin = runAsAdmin;
+
+        this.runAuditAs = runAuditAs;
     }
 
 }

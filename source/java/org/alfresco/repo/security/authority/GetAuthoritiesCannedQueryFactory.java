@@ -116,8 +116,11 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
             qnameAuthDisplayNameId = qnameAuthDisplayNamePair.getFirst();
         }
         
+        // this can be null, in which case, there is no filtering on type, done at the database level
+        Long typeQNameId = getQNameIdForType(type);
         // specific query params
         GetAuthoritiesCannedQueryParams paramBean = new GetAuthoritiesCannedQueryParams(type,
+                                                                                        typeQNameId,
                                                                                         containerNodeId,
                                                                                         qnameAuthDisplayNameId,
                                                                                         displayNameFilter);
@@ -140,7 +143,29 @@ public class GetAuthoritiesCannedQueryFactory extends AbstractCannedQueryFactory
         // return canned query instance
         return getCannedQuery(params);
     }
-    
+
+    private Long getQNameIdForType(AuthorityType type)
+    {
+        if (type == null)
+        {
+            return null;
+        }
+        Pair<Long, QName> typeQNamePair = null;
+        switch (type)
+        {
+        case GROUP:
+        case ROLE:
+            typeQNamePair = qnameDAO.getQName(ContentModel.TYPE_AUTHORITY_CONTAINER);
+            break;
+        case USER:
+            typeQNamePair = qnameDAO.getQName(ContentModel.TYPE_PERSON);
+            break;
+        default:
+            break;
+        }
+        return typeQNamePair != null ? typeQNamePair.getFirst() : null;
+    }
+
     @Override
     public void afterPropertiesSet() throws Exception
     {

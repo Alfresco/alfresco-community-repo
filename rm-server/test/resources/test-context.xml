@@ -241,4 +241,26 @@
          </list>
       </property>
    </bean>
+
+    <!--  Test listeners -->
+    
+    <!--  Executed with '0' order.  This is default order and as such the application event will be executed relative to the other
+          beans in the order in which they appear in the spring context -->
+    <bean id="test.rm3314.1" class="org.alfresco.module.org_alfresco_module_rm.test.integration.issue.rm3314.RM3314TestListener">
+        <property name="order" value="0"/>
+        <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="repository" ref="repositoryHelper" />
+    </bean>
+    
+    <!--  The default order has this bean executing its application event with the lowest precendence, ie after all the other
+          beans set to '0' precendence by default -->
+    <bean id="test.rm3314.2" class="org.alfresco.module.org_alfresco_module_rm.test.integration.issue.rm3314.RM3314TestListener">
+        <property name="recordsManagementAdminService" ref="recordsManagementAdminService"/>
+        <property name="nodeService" ref="NodeService"/>
+        <property name="fileFolderService" ref="FileFolderService" />
+        <property name="repository" ref="repositoryHelper" />
+    </bean>
+    
 </beans>

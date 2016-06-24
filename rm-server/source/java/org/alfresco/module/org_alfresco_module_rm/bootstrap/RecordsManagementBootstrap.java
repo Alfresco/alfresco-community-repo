@@ -18,7 +18,6 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.bootstrap;
 
-import org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.SplitEmailAction;
 import org.alfresco.module.org_alfresco_module_rm.caveat.RMCaveatConfigService;
 import org.alfresco.module.org_alfresco_module_rm.email.CustomEmailMappingService;
@@ -41,7 +40,6 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
     private TransactionService transactionService;
     private RMCaveatConfigService caveatConfigService;
     private CustomEmailMappingService customEmailMappingService;
-    private RecordsManagementAdminService adminService;
     private NodeParameterSuggesterBootstrap suggesterBootstrap;
 
     public NodeParameterSuggesterBootstrap getSuggesterBootstrap() 
@@ -69,11 +67,6 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
         this.customEmailMappingService = customEmailMappingService;
     }
 
-    public void setRecordsManagementAdminService(RecordsManagementAdminService adminService)
-    {
-		this.adminService = adminService;
-	}
-
     public CustomEmailMappingService getCustomEmailMappingService()
     {
         return customEmailMappingService;
@@ -93,9 +86,6 @@ public class RecordsManagementBootstrap extends AbstractLifecycleBean
                     {
                         // initialise caveat config
                         caveatConfigService.init();
-
-                        // Initialise the custom model
-                        adminService.initialiseCustomModel();
                         
                         // Initialize the suggester after the model
                         // in case it contains namespaces from custom models

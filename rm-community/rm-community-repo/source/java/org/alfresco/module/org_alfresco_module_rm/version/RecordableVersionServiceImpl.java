@@ -403,6 +403,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                         standardVersionProperties.get(
                                 QName.createQName(Version2Model.NAMESPACE_URI,
                                         Version2Model.PROP_VERSION_DESCRIPTION)));
+                // run as system as we can't be sure if the user has add aspect rights
                 authenticationUtil.runAsSystem(new RunAsWork<Void>()
                 {
                     @Override

@@ -393,7 +393,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                 final NodeRef record = recordService.createRecordFromCopy(filePlan, nodeRef);
 
                 // apply version record aspect to record
-                PropertyMap versionRecordProps = new PropertyMap(3);
+                final PropertyMap versionRecordProps = new PropertyMap(3);
                 versionRecordProps.put(PROP_VERSIONED_NODEREF, nodeRef);
                 versionRecordProps.put(RecordableVersionModel.PROP_VERSION_LABEL,
                         standardVersionProperties.get(
@@ -403,7 +403,15 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                         standardVersionProperties.get(
                                 QName.createQName(Version2Model.NAMESPACE_URI,
                                         Version2Model.PROP_VERSION_DESCRIPTION)));
-                nodeService.addAspect(record, ASPECT_VERSION_RECORD, versionRecordProps);
+                authenticationUtil.runAsSystem(new RunAsWork<Void>()
+                {
+                    @Override
+                    public Void doWork() throws Exception
+                    {
+                        nodeService.addAspect(record, ASPECT_VERSION_RECORD, versionRecordProps);
+                        return null;
+                    }
+                });
 
                 // wire record up to previous record
                 linkToPreviousVersionRecord(nodeRef, record);

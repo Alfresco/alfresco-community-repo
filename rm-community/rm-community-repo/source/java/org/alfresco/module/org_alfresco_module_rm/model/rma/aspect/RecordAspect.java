@@ -154,7 +154,7 @@ public class RecordAspect extends    AbstractDisposableItem
        kind = BehaviourKind.CLASS,
        notificationFrequency = NotificationFrequency.TRANSACTION_COMMIT
     )
-    public void onCreateReference(NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
+    public void onCreateReference(final NodeRef fromNodeRef, NodeRef toNodeRef, QName reference)
     {
         // Deal with versioned records
         if (reference.equals(CUSTOM_REF_VERSIONS))

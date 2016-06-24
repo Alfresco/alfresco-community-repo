@@ -34,6 +34,7 @@ import org.apache.chemistry.opencmis.tck.impl.AbstractSessionTestGroup;
 import org.apache.chemistry.opencmis.tck.impl.JUnitHelper;
 import org.apache.chemistry.opencmis.tck.tests.basics.BasicsTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.control.ControlTestGroup;
+import org.apache.chemistry.opencmis.tck.tests.crud.BulkUpdatePropertiesTest;
 import org.apache.chemistry.opencmis.tck.tests.crud.ChangeTokenTest;
 import org.apache.chemistry.opencmis.tck.tests.crud.ContentRangesTest;
 import org.apache.chemistry.opencmis.tck.tests.crud.CopyTest;
@@ -137,9 +138,8 @@ public abstract class AbstractEnterpriseOpenCMIS11TCKTest extends AbstractEnterp
             addTest(new CreateAndDeleteRelationshipTest());
             addTest(new CreateAndDeleteItemTest());
             addTest(new UpdateSmokeTest());
-            // TCK fails because we support only 1 object in bulk update at present
-            // See ACE-34
-            //addTest(new BulkUpdatePropertiesTest());
+            addTest(new BulkUpdatePropertiesTest());
+            addTest(new BulkUpdatePropertiesCustomTest());
             addTest(new SetAndDeleteContentTest());
             addTest(new ChangeTokenTest());
             addTest(new ContentRangesTest());

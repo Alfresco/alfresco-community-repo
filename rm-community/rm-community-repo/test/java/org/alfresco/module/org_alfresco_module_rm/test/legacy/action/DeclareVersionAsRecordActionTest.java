@@ -34,6 +34,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.dm.CreateRecordAction;
 import org.alfresco.module.org_alfresco_module_rm.action.dm.DeclareAsVersionRecordAction;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionModel;
 import org.alfresco.module.org_alfresco_module_rm.version.RecordableVersionServiceImpl;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.service.cmr.action.Action;
@@ -50,11 +51,11 @@ public class DeclareVersionAsRecordActionTest extends BaseRMTestCase
     private NodeRef ruleFile;
     protected static final String DESCRIPTION = "description";
 
+
     @Override
     protected void initServices()
     {
         super.initServices();
-
         ruleService = (RuleService)applicationContext.getBean("RuleService");
     }
 
@@ -70,16 +71,21 @@ public class DeclareVersionAsRecordActionTest extends BaseRMTestCase
         return true;
     }
 
+
     /**
      * Given a node set to auto-declare documents as records for minor and major versions
      * When I try to upload a minor or major version
      * Then the version record aspect is added
      */
-    public void testAutoDeclareVersionAsRecord()
+    public void testUpdateNextDispositionAction_RM3060() throws Exception
     {
-        doTestInTransaction(new Test<Void>()
+        doBehaviourDrivenTest(new BehaviourDrivenTest(dmContributor)
         {
-            public Void run()
+            Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(4);
+            Version recordedVersion;
+
+            @Override
+            public void given()
             {
                 // create the file
                 ruleFile = fileFolderService.create(documentLibrary, "mytestfile", ContentModel.TYPE_CONTENT).getNodeRef();
@@ -94,22 +100,27 @@ public class DeclareVersionAsRecordActionTest extends BaseRMTestCase
                 rule.setExecuteAsynchronously(true);
                 ruleService.saveRule(ruleFile, rule);
 
-                return null;
-            }
-
-            public void test(Void result) throws Exception
-            {
                 // setup version properties
-                final Map<String, Serializable> versionProperties = new HashMap<String, Serializable>(4);
                 versionProperties.put(Version.PROP_DESCRIPTION, DESCRIPTION);
                 versionProperties.put(VersionModel.PROP_VERSION_TYPE, VersionType.MINOR);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_RECORDABLE_VERSION, true);
                 versionProperties.put(RecordableVersionServiceImpl.KEY_FILE_PLAN, filePlan);
+            }
 
-                versionService.createVersion(ruleFile, versionProperties);
+            @Override
+            public void when()
+            {
+                recordedVersion = versionService.createVersion(ruleFile, versionProperties);
+            }
 
-            };
-        }, dmContributor);
+            @Override
+            public void then() throws Exception
+            {
+                NodeRef recordedVersionNodeRef= (NodeRef)recordedVersion.getVersionProperties().get(RecordableVersionModel.PROP_RECORD_NODE_REF.getLocalName());
+                assertNotNull("Recorded version shouldn't be null.", recordedVersionNodeRef);
+                assertTrue(nodeService.hasAspect(recordedVersionNodeRef, RecordableVersionModel.ASPECT_VERSION_RECORD));
+            }
+        });
     }
 
 }

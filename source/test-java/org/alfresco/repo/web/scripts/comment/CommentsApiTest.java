@@ -72,20 +72,28 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.extensions.webscripts.Status;
 import org.springframework.extensions.webscripts.TestWebScriptServer.DeleteRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.PostRequest;
+import org.springframework.extensions.webscripts.TestWebScriptServer.PutRequest;
 import org.springframework.extensions.webscripts.TestWebScriptServer.Response;
 import org.springframework.extensions.webscripts.WebScriptException;
 
 /**
  * TODO: Fix the loose transaction handling.
+ * TODO: Rationalise with other v0 Comment REST API tests (eg. see BlogServiceTest ... etc). See also ACE-5437.
  */
 public class CommentsApiTest extends BaseWebScriptTest
 {
+    // V0 Comments REST API
     private static final String URL_POST_COMMENT = "api/node/{0}/{1}/{2}/comments";
     private static final String URL_DELETE_COMMENT = "api/comment/node/{0}/{1}/{2}?site={3}&itemtitle={4}&page={5}&pageParams={6}";
+    private static final String URL_PUT_COMMENT = "api/comment/node/{0}/{1}/{2}";
+    
     private static final String JSON = "application/json";
-    private static final String SITE_SHORT_NAME = "SomeTestSiteShortName";
+    private static final String SITE_SHORT_NAME = "SomeTestSiteShortName-"+System.currentTimeMillis();
+    
     private static final String USER_ONE = "SomeTestUserOne";
     private static final String USER_TWO = "SomeTestUserTwo";
+    private static final String USER_THREE = "SomeTestUserThree";
+    private static final String USER_FOUR = "SomeTestUserFour";
     
     private static final String JSON_KEY_NODEREF = "nodeRef";
     private static final String JSON_KEY_ITEM = "item";
@@ -106,13 +114,16 @@ public class CommentsApiTest extends BaseWebScriptTest
     private ActivityService activityService;
     private FeedGenerator feedGenerator;
     private PostLookup postLookup;
-    
+
     private NodeRef rootNodeRef;
-    private NodeRef companyHomeNodeRef; 
+    private NodeRef companyHomeNodeRef;
+    private NodeRef sharedHomeNodeRef;
     private NodeRef nodeRef;
     private NodeRef sitePage;
-    
+
     private static final String USER_TEST = "UserTest";
+
+    private static final String DOCLIB_CONTAINER = "documentLibrary";
     
     private UserTransaction txn;
 
@@ -151,14 +162,23 @@ public class CommentsApiTest extends BaseWebScriptTest
         txn = transactionService.getUserTransaction();
         txn.begin();
 
+        // Get Company Home
         rootNodeRef = nodeService.getRootNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
         List<NodeRef> results = searchService.selectNodes(rootNodeRef, "/app:company_home", null, namespaceService, false);
         if (results.size() == 0)
         {
             throw new AlfrescoRuntimeException("Can't find /app:company_home");
         }
-        
         companyHomeNodeRef = results.get(0);
+        
+        // Get Shared
+        results = searchService.selectNodes(rootNodeRef, "/app:company_home/app:shared", null, namespaceService, false);
+        if (results.size() == 0)
+        {
+            throw new AlfrescoRuntimeException("Can't find /app:company_home/app:shared");
+        }
+
+        sharedHomeNodeRef = results.get(0);
         
         results = searchService.selectNodes(rootNodeRef, "/app:company_home/cm:Commenty", null, namespaceService, false);
         if (results.size() > 0)
@@ -189,12 +209,22 @@ public class CommentsApiTest extends BaseWebScriptTest
             siteInfo = siteService.createSite("SomeTestSite", SITE_SHORT_NAME, "SiteTitle", "SiteDescription", SiteVisibility.PUBLIC);
         }
 
+        NodeRef docLibContainer = siteService.getContainer(SITE_SHORT_NAME, DOCLIB_CONTAINER);
+        if (docLibContainer == null)
+        {
+            siteService.createContainer(SITE_SHORT_NAME, DOCLIB_CONTAINER, ContentModel.TYPE_FOLDER, null);
+        }
+
         txn = transactionService.getUserTransaction();
         txn.begin();
 
         // Create users
+        
         createUser(USER_ONE, SiteModel.SITE_CONSUMER);
         createUser(USER_TWO, SiteModel.SITE_CONTRIBUTOR);
+
+        createUser(USER_THREE, SiteModel.SITE_COLLABORATOR);
+        createUser(USER_FOUR, SiteModel.SITE_COLLABORATOR);
 
         // Create site page
         sitePage = nodeService.createNode(siteInfo.getNodeRef(),
@@ -240,11 +270,13 @@ public class CommentsApiTest extends BaseWebScriptTest
         // delete the users
         deleteUser(USER_ONE);
         deleteUser(USER_TWO);
+        deleteUser(USER_THREE);
+        deleteUser(USER_FOUR);
     }
-    
+
     /**
      * add a comment to given node ref
-     * 
+     *
      * @param nodeRef
      * @param user
      * @param status
@@ -257,7 +289,7 @@ public class CommentsApiTest extends BaseWebScriptTest
 
         UserTransaction txn = transactionService.getUserTransaction();
         txn.begin();
-        
+
         // Not allowed if you're not an admin
         AuthenticationUtil.setFullyAuthenticatedUser(user);
 
@@ -296,6 +328,94 @@ public class CommentsApiTest extends BaseWebScriptTest
             txn.commit();
         }
 
+        return response;
+    }
+
+
+    /**
+     * delete comment
+     *
+     * @param commentNodeRef
+     * @param parentNodeRef
+     * @param user
+     * @param status
+     * @throws Exception
+     */
+    private void deleteComment(NodeRef commentNodeRef, NodeRef parentNodeRef, String user, int status) throws Exception
+    {
+        Response response = null;
+
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+
+        // Not allowed if you're not an admin
+        AuthenticationUtil.setFullyAuthenticatedUser(user);
+
+        String itemTitle = "Test Title";
+        String page = "document-details";
+
+        StringBuilder pageParamsBuilder = new StringBuilder("{");
+        pageParamsBuilder.append("\"nodeRef\" : \"");
+        pageParamsBuilder.append(parentNodeRef.toString());
+        pageParamsBuilder.append("\", ");
+        pageParamsBuilder.append("}");
+        String pageParams = pageParamsBuilder.toString();
+
+        String URL = MessageFormat.format(URL_DELETE_COMMENT, new Object[] { commentNodeRef.getStoreRef().getProtocol(),
+                commentNodeRef.getStoreRef().getIdentifier(), commentNodeRef.getId(), SITE_SHORT_NAME, itemTitle, page, pageParams });
+        response = sendRequest(new DeleteRequest(URL), status);
+        assertEquals(status, response.getStatus());
+
+        // Normally, webscripts are in their own transaction. The test
+        // infrastructure here forces us to have a transaction
+        // around the calls. if the WebScript fails, then we should rollback.
+        if (response.getStatus() == 500)
+        {
+            txn.rollback();
+        }
+        else
+        {
+            txn.commit();
+        }
+    }
+    
+    /**
+     * 
+     * @param nodeRef
+     * @param user
+     * @param expectedStatus
+     * @return
+     * @throws Exception
+     */
+    private Response updateComment(NodeRef nodeRef, String user, int expectedStatus) throws Exception
+    {
+        Response response = null;
+        UserTransaction txn = transactionService.getUserTransaction();
+        txn.begin();
+        AuthenticationUtil.setFullyAuthenticatedUser(user);
+
+        String now = System.currentTimeMillis()+"";
+
+        JSONObject comment = new JSONObject();
+        comment.put("title", "Test title updated "+now);
+        comment.put("content", "Test comment updated "+now);
+
+        response = sendRequest(new PutRequest(MessageFormat.format(URL_PUT_COMMENT,
+                new Object[] {nodeRef.getStoreRef().getProtocol(), nodeRef.getStoreRef().getIdentifier(), nodeRef.getId()}), comment.toString(), JSON), expectedStatus);
+
+        assertEquals(expectedStatus, response.getStatus());
+
+        // Normally, webscripts are in their own transaction.  The test infrastructure here forces us to have a transaction
+        // around the calls.  if the WebScript fails, then we should rollback.
+        if (response.getStatus() == 500)
+        {
+            txn.rollback();
+        }
+        else
+        {
+            txn.commit();
+        }
+        
         return response;
     }
     
@@ -345,8 +465,88 @@ public class CommentsApiTest extends BaseWebScriptTest
         
         txn.commit();
     }
-    
-    
+
+    /**
+     * MNT-16446
+     * @throws Exception
+     */
+    public void testCommentUpdateAndDeletePermission() throws Exception
+    {
+        authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+
+        NodeRef sharedContent = null;
+        NodeRef siteContent = null;
+
+        {
+            //
+            // in Shared folder
+            //
+            UserTransaction txn = transactionService.getUserTransaction();
+            txn.begin();
+            sharedContent = fileFolderService.create(sharedHomeNodeRef, "SharedContent" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+            txn.commit();
+
+            Response response = addComment(sharedContent, USER_THREE, 200);
+            JSONObject jsonResponse = parseResponseJSON(response);
+            NodeRef commentNodeRef = new NodeRef(getOrNull(jsonResponse, JSON_KEY_NODEREF));
+
+            // MNT-16446 - now returns 403 rather than 500
+            // -ve test:
+            updateComment(commentNodeRef, USER_FOUR, 403);
+
+            updateComment(commentNodeRef, USER_THREE, 200);
+
+            // -ve test: ideally would return 403, but currently v0 REST API returns 500 :-(
+            deleteComment(commentNodeRef, sharedContent, USER_FOUR, 500);
+
+            deleteComment(commentNodeRef, sharedContent, USER_THREE, 200);
+        }
+
+        {
+            //
+            // in a public Site
+            //
+            txn = transactionService.getUserTransaction();
+            txn.begin();
+            NodeRef siteDocLibNodeRef = siteService.getContainer(SITE_SHORT_NAME, DOCLIB_CONTAINER);
+            siteContent = fileFolderService.create(siteDocLibNodeRef, "SiteContent" + System.currentTimeMillis(), ContentModel.TYPE_CONTENT).getNodeRef();
+            txn.commit();
+
+            Response response = addComment(siteContent, USER_THREE, 200);
+            JSONObject jsonResponse = parseResponseJSON(response);
+            NodeRef commentNodeRef = new NodeRef(getOrNull(jsonResponse, JSON_KEY_NODEREF));
+
+            // MNT-16446 - now returns 403 rather than 200 !!
+            // -ve test:
+            updateComment(commentNodeRef, USER_FOUR, 403);
+
+            updateComment(commentNodeRef, USER_THREE, 200);
+
+            // -ve test: ideally would return 403, but currently v0 REST API returns 500 :-(
+            deleteComment(commentNodeRef, siteContent, USER_FOUR, 500);
+
+            deleteComment(commentNodeRef, siteContent, USER_THREE, 200);
+        }
+
+        {
+            // cleanup
+            authenticationComponent.setCurrentUser(AuthenticationUtil.getAdminUserName());
+            txn = transactionService.getUserTransaction();
+            txn.begin();
+
+            if (sharedContent != null)
+            {
+                nodeService.deleteNode(sharedContent);
+            }
+
+            if (siteContent != null)
+            {
+                nodeService.deleteNode(siteContent);
+            }
+            txn.commit();
+        }
+    }
+
     private void createUser(String userName)
     {
         // if user with given user name doesn't already exist then create user
@@ -515,54 +715,6 @@ public class CommentsApiTest extends BaseWebScriptTest
         {
            authenticationService.deleteAuthentication(user);
         }        
-    }
-
-   
-    /**
-     * delete comment
-     * 
-     * @param commentNodeRef
-     * @param parentNodeRef
-     * @param user
-     * @param status
-     * @throws Exception
-     */
-    private void deleteComment(NodeRef commentNodeRef, NodeRef parentNodeRef, String user, int status) throws Exception
-    {
-        Response response = null;
-
-        UserTransaction txn = transactionService.getUserTransaction();
-        txn.begin();
-
-        // Not allowed if you're not an admin
-        AuthenticationUtil.setFullyAuthenticatedUser(user);
-
-        String itemTitle = "Test Title";
-        String page = "document-details";
-
-        StringBuilder pageParamsBuilder = new StringBuilder("{");
-        pageParamsBuilder.append("\"nodeRef\" : \"");
-        pageParamsBuilder.append(parentNodeRef.toString());
-        pageParamsBuilder.append("\", ");
-        pageParamsBuilder.append("}");
-        String pageParams = pageParamsBuilder.toString();
-
-        String URL = MessageFormat.format(URL_DELETE_COMMENT, new Object[] { commentNodeRef.getStoreRef().getProtocol(),
-                commentNodeRef.getStoreRef().getIdentifier(), commentNodeRef.getId(), SITE_SHORT_NAME, itemTitle, page, pageParams });
-        response = sendRequest(new DeleteRequest(URL), status);
-        assertEquals(status, response.getStatus());
-
-        // Normally, webscripts are in their own transaction. The test
-        // infrastructure here forces us to have a transaction
-        // around the calls. if the WebScript fails, then we should rollback.
-        if (response.getStatus() == 500)
-        {
-            txn.rollback();
-        }
-        else
-        {
-            txn.commit();
-        }
     }
     
     /**

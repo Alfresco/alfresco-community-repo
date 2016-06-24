@@ -18,6 +18,7 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 
+import org.alfresco.module.org_alfresco_module_rm.test.integration.issue.rm3314.RM3314Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -48,7 +49,8 @@ import org.junit.runners.Suite.SuiteClasses;
     RM1887Test.class,
     RM1914Test.class,
     //RM2190Test.class,
-    RM2192Test.class
+    RM2192Test.class,
+    RM3314Test.class
 })
 public class IssueTestSuite
 {

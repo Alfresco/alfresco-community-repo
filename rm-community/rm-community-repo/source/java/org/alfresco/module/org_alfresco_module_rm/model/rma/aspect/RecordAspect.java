@@ -159,8 +159,17 @@ public class RecordAspect extends    AbstractDisposableItem
         // Deal with versioned records
         if (reference.equals(CUSTOM_REF_VERSIONS))
         {
-            // Apply the versioned aspect to the from node
-            nodeService.addAspect(fromNodeRef, ASPECT_VERSIONED_RECORD, null);
+            // run as system, to apply the versioned aspect to the from node 
+            // as we can't be sure if the user has add aspect rights
+            authenticationUtil.runAsSystem(new RunAsWork<Void>()
+            {
+                @Override
+                public Void doWork() throws Exception
+                {
+                    nodeService.addAspect(fromNodeRef, ASPECT_VERSIONED_RECORD, null);
+                    return null;
+                }
+            });
         }
 
         // Execute script if for the reference event

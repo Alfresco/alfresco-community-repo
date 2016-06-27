@@ -31,6 +31,8 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.service.cmr.repository.NodeRef;
 
+import java.util.Map;
+
 /**
  * A service for handling comments.
  * 
@@ -93,4 +95,16 @@ public interface CommentService
      * @param commentNodeRef the node in Share which is being commented on.
      */
     void deleteComment(NodeRef commentNodeRef);
+
+    /**
+     * canEdit / canDelete
+     * 
+     * @param discussableNode
+     * @param commentNodeRef
+     * @return
+     */
+    Map<String, Boolean> getCommentPermissions(NodeRef discussableNode, NodeRef commentNodeRef);
+    
+    String CAN_EDIT = "canEdit";
+    String CAN_DELETE = "canDelete";
 }

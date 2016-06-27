@@ -46,6 +46,7 @@ import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -55,6 +56,7 @@ import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.activities.ActivityService;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
 import org.alfresco.service.cmr.repository.ContentIOException;
@@ -99,6 +101,7 @@ public class CommentServiceImpl extends AbstractLifecycleBean
     private ActivityService activityService;
     private SiteService siteService;
     private PolicyComponent policyComponent;
+    private BehaviourFilter behaviourFilter;
     private PermissionService permissionService;
     private LockService lockService;
     
@@ -132,6 +135,11 @@ public class CommentServiceImpl extends AbstractLifecycleBean
     public void setPolicyComponent(PolicyComponent policyComponent)
     {
         this.policyComponent = policyComponent;
+    }
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
     }
 
     public void setPermissionService(PermissionService permissionService)
@@ -176,8 +184,7 @@ public class CommentServiceImpl extends AbstractLifecycleBean
         // containment tree in a controlled manner.
         // We could navigate up looking for the first fm:discussable ancestor, but that might not find the correct node - it could,
         // for example, find a parent folder which was discussable.
-
-        // TODO review - is this reasonable or should we (also) check for assoc "Comments" ?
+        
         NodeRef result = null;
         if (nodeService.getType(descendantNodeRef).equals(ForumModel.TYPE_POST))
         {
@@ -185,15 +192,20 @@ public class CommentServiceImpl extends AbstractLifecycleBean
             
             if (nodeService.getType(topicNode).equals(ForumModel.TYPE_TOPIC))
             {
-                NodeRef forumNode = nodeService.getPrimaryParent(topicNode).getParentRef();
-                
-                if (nodeService.getType(forumNode).equals(ForumModel.TYPE_FORUM))
+                ChildAssociationRef forumToTopicChildAssocRef = nodeService.getPrimaryParent(topicNode);
+
+                if (forumToTopicChildAssocRef.getQName().equals(FORUM_TO_TOPIC_ASSOC_QNAME))
                 {
-                    NodeRef discussableNode = nodeService.getPrimaryParent(forumNode).getParentRef();
+                    NodeRef forumNode = forumToTopicChildAssocRef.getParentRef();
                     
-                    if (nodeService.hasAspect(discussableNode, ForumModel.ASPECT_DISCUSSABLE))
+                    if (nodeService.getType(forumNode).equals(ForumModel.TYPE_FORUM))
                     {
-                        result = discussableNode;
+                        NodeRef discussableNode = nodeService.getPrimaryParent(forumNode).getParentRef();
+    
+                        if (nodeService.hasAspect(discussableNode, ForumModel.ASPECT_DISCUSSABLE))
+                        {
+                            result = discussableNode;
+                        }
                     }
                 }
             }
@@ -372,13 +384,13 @@ public class CommentServiceImpl extends AbstractLifecycleBean
         // Forum node is created automatically by DiscussableAspect behaviour.
         NodeRef forumNode = nodeService.getChildAssocs(discussableNode, ForumModel.ASSOC_DISCUSSION, QName.createQName(NamespaceService.FORUMS_MODEL_1_0_URI, "discussion")).get(0).getChildRef();
         
-        final List<ChildAssociationRef> existingTopics = nodeService.getChildAssocs(forumNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Comments"));
+        final List<ChildAssociationRef> existingTopics = nodeService.getChildAssocs(forumNode, ContentModel.ASSOC_CONTAINS, FORUM_TO_TOPIC_ASSOC_QNAME);
         NodeRef topicNode = null;
         if (existingTopics.isEmpty())
         {
             Map<QName, Serializable> props = new HashMap<QName, Serializable>(1, 1.0f);
             props.put(ContentModel.PROP_NAME, COMMENTS_TOPIC_NAME);
-            topicNode = nodeService.createNode(forumNode, ContentModel.ASSOC_CONTAINS, QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, "Comments"), ForumModel.TYPE_TOPIC, props).getChildRef();
+            topicNode = nodeService.createNode(forumNode, ContentModel.ASSOC_CONTAINS, FORUM_TO_TOPIC_ASSOC_QNAME, ForumModel.TYPE_TOPIC, props).getChildRef();
         }
         else
         {
@@ -418,11 +430,19 @@ public class CommentServiceImpl extends AbstractLifecycleBean
         }
         catch (ContentIOException cioe)
         {
-            if (cioe.getCause() instanceof AccessDeniedException)
+            Throwable cause = cioe.getCause();
+            if (cause instanceof AccessDeniedException)
             {
-                throw (AccessDeniedException)cioe.getCause();
+                throw (AccessDeniedException)cause;
             }
-            throw cioe;
+            else if (cause instanceof NodeLockedException)
+            {
+                throw (NodeLockedException)cause;
+            }
+            else
+            {
+                throw cioe;
+            }
         }
 
     	if(title != null)
@@ -542,50 +562,44 @@ public class CommentServiceImpl extends AbstractLifecycleBean
     @Override
     public void beforeUpdateNode(NodeRef commentNodeRef)
     {
-        if (! canEdit(commentNodeRef))
-        {
-            throw new AccessDeniedException("Cannot edit comment");
-        }
-    }
-    
-    protected boolean canEdit(NodeRef commentNodeRef)
-    {
-        boolean canEdit = false;
-        
         NodeRef discussableNodeRef = getDiscussableAncestor(commentNodeRef);
         if (discussableNodeRef != null)
         {
-            if (! isWorkingCopyOrLocked(discussableNodeRef))
+            if (behaviourFilter.isEnabled(ContentModel.ASPECT_LOCKABLE) 
+                    && isWorkingCopyOrLocked(discussableNodeRef))
             {
-                canEdit = canEditPermission(commentNodeRef);
+                throw new NodeLockedException(discussableNodeRef);
+            }
+            else
+            {
+                boolean canEdit = canEditPermission(commentNodeRef);
+                if (! canEdit)
+                {
+                    throw new AccessDeniedException("Cannot edit comment");
+                }
             }
         }
-        
-        return canEdit;
     }
-
+    
     @Override
     public void beforeDeleteNode(final NodeRef commentNodeRef)
     {
-        if (! canDelete(commentNodeRef))
-        {
-            throw new AccessDeniedException("Cannot delete comment");
-        }
-    }
-    
-    protected boolean canDelete(NodeRef commentNodeRef)
-    {
-        boolean canDelete = false;
-        
         NodeRef discussableNodeRef = getDiscussableAncestor(commentNodeRef);
         if (discussableNodeRef != null)
         {
-            if (! isWorkingCopyOrLocked(discussableNodeRef))
+            if (behaviourFilter.isEnabled(ContentModel.ASPECT_LOCKABLE) // eg. delete site (MNT-14671)
+                    && isWorkingCopyOrLocked(discussableNodeRef))
             {
-                canDelete = canDeletePermission(commentNodeRef);
+                throw new NodeLockedException(discussableNodeRef);
+            }
+            else
+            {
+                boolean canDelete = canDeletePermission(commentNodeRef);
+                if (! canDelete)
+                {
+                    throw new AccessDeniedException("Cannot delete comment");
+                }
             }
         }
-        
-        return canDelete;
     }
 }

@@ -803,35 +803,33 @@ public class TestNodeComments extends EnterpriseTestApi
 			}
 			catch(PublicApiException e)
 			{
-				assertEquals(HttpStatus.SC_FORBIDDEN, e.getHttpResponse().getStatusCode());
+				assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
 			}
 
 			// test PUT for a locked node
+			try
 			{
-				TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-				{
-					@Override
-					public Void doWork() throws Exception
-					{
-						repoService.lockNode(nodeRef1);
-						return null;
-					}
-				}, person11.getId(), network1.getId());
+				Comment updatedComment = new Comment();
+				updatedComment.setContent("my comment");
+				commentsProxy.updateNodeComment(nodeRef1.getId(), createdComment.getId(), updatedComment);
 				
-				try
-				{
-					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
+				fail("");
+			}
+			catch(PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
+			}
 
-					Comment updatedComment = new Comment();
-					updatedComment.setContent("my comment");
-					commentsProxy.updateNodeComment(nodeRef1.getId(), createdComment.getId(), updatedComment);
-					
-					fail("");
-				}
-				catch(PublicApiException e)
-				{
-					assertEquals(HttpStatus.SC_FORBIDDEN, e.getHttpResponse().getStatusCode());
-				}
+			// test DELETE for a locked node
+			try
+			{
+				commentsProxy.removeNodeComment(nodeRef1.getId(), createdComment.getId());
+
+				fail("");
+			}
+			catch(PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
 			}
 		}
 		finally

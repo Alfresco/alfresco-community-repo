@@ -407,8 +407,6 @@
         <property name="nodeService" ref="NodeService" />
         <property name="commentService" ref="CommentService" />
         <property name="contentService" ref="ContentService" />
-        <property name="permissionService" ref="PermissionService" />
-        <property name="lockService" ref="LockService" />
         <property name="typeConstraint" ref="nodeTypeConstraint" />
     </bean>
 

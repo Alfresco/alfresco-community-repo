@@ -302,7 +302,7 @@
       <servlet-class>org.springframework.extensions.webscripts.servlet.WebScriptServlet</servlet-class>
       <init-param>
          <param-name>authenticator</param-name>
-         <param-value>webscripts.authenticator.webclient</param-value>
+         <param-value>webscripts.authenticator.remoteuser</param-value>
       </init-param>
    </servlet>
 

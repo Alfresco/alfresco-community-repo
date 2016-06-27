@@ -817,12 +817,21 @@ public class TestNodeComments extends EnterpriseTestApi
 						return null;
 					}
 				}, person11.getId(), network1.getId());
-	
-				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
+				
+				try
+				{
+					publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
 
-				Comment updatedComment = new Comment();
-				updatedComment.setContent("my comment");
-				commentsProxy.updateNodeComment(nodeRef1.getId(), createdComment.getId(), updatedComment);
+					Comment updatedComment = new Comment();
+					updatedComment.setContent("my comment");
+					commentsProxy.updateNodeComment(nodeRef1.getId(), createdComment.getId(), updatedComment);
+					
+					fail("");
+				}
+				catch(PublicApiException e)
+				{
+					assertEquals(HttpStatus.SC_FORBIDDEN, e.getHttpResponse().getStatusCode());
+				}
 			}
 		}
 		finally

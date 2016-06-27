@@ -37,11 +37,14 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.forum.CommentService;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.rest.api.Comments;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Comment;
 import org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
@@ -119,43 +122,70 @@ public class CommentsImpl implements Comments
 	        nodeProps.remove(ContentModel.PROP_CONTENT);
         }
 
-        boolean canEdit = true;
-        boolean canDelete = true;
+        boolean canEdit = false;
+        boolean canDelete = false;
 
-        boolean isNodeLocked = false;
-        boolean isWorkingCopy = false;
-
-        if(nodeRef != null)
+        if (! isWorkingCopyOrLocked(nodeRef))
         {
-	        Set<QName> aspects = nodeService.getAspects(nodeRef);
-
-	        isWorkingCopy = aspects.contains(ContentModel.ASPECT_WORKING_COPY);
-	        if(!isWorkingCopy)
-	        {
-		        if(aspects.contains(ContentModel.ASPECT_LOCKABLE))
-		        {
-		            LockStatus lockStatus = lockService.getLockStatus(nodeRef);
-		            if (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER)
-		            {
-		            	isNodeLocked = true;
-		            }
-		        }
-	        }
+            canEdit = canEditPermission(commentNodeRef);
+            canDelete = canDeletePermission(commentNodeRef);
         }
 
-        if(isNodeLocked || isWorkingCopy)
-        {
-        	canEdit = false;
-        	canDelete = false;
-        }
-        else
-        {
-        	canEdit = permissionService.hasPermission(commentNodeRef, PermissionService.WRITE) == AccessStatus.ALLOWED;
-        	canDelete = permissionService.hasPermission(commentNodeRef, PermissionService.DELETE) == AccessStatus.ALLOWED;
-        }
 
         Comment comment = new Comment(commentNodeRef.getId(), nodeProps, canEdit, canDelete);
         return comment;
+    }
+
+    private boolean isWorkingCopyOrLocked(NodeRef nodeRef)
+    {
+        boolean isWorkingCopy = false;
+        boolean isLocked = false;
+
+        if (nodeRef != null)
+        {
+            Set<QName> aspects = nodeService.getAspects(nodeRef);
+
+            isWorkingCopy = aspects.contains(ContentModel.ASPECT_WORKING_COPY);
+            if(!isWorkingCopy)
+            {
+                if(aspects.contains(ContentModel.ASPECT_LOCKABLE))
+                {
+                    LockStatus lockStatus = lockService.getLockStatus(nodeRef);
+                    if (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER)
+                    {
+                        isLocked = true;
+                    }
+                }
+            }
+        }
+        return (isWorkingCopy || isLocked);
+    }
+
+    private boolean canEdit(NodeRef nodeRef, NodeRef commentNodeRef)
+    {
+        return ((! isWorkingCopyOrLocked(nodeRef) && canEditPermission(commentNodeRef)));
+    }
+
+    // TODO refactor (ACE-5437) - see also CommentsPost
+    private boolean canEditPermission(NodeRef commentNodeRef)
+    {
+        String creator = (String)nodeService.getProperty(commentNodeRef, ContentModel.PROP_CREATOR);
+        Serializable owner = nodeService.getProperty(commentNodeRef, ContentModel.PROP_OWNER);
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+
+        boolean isSiteManager = permissionService.hasPermission(commentNodeRef, SiteModel.SITE_MANAGER) == (AccessStatus.ALLOWED);
+        boolean isCoordinator = permissionService.hasPermission(commentNodeRef, PermissionService.COORDINATOR) == (AccessStatus.ALLOWED);
+        return (isSiteManager || isCoordinator || currentUser.equals(creator) || currentUser.equals(owner));
+    }
+
+    private boolean canDelete(NodeRef nodeRef, NodeRef commentNodeRef)
+    {
+        return ((! isWorkingCopyOrLocked(nodeRef) || canDeletePermission(commentNodeRef)));
+    }
+
+    private boolean canDeletePermission(NodeRef commentNodeRef)
+    {
+        return permissionService.hasPermission(commentNodeRef, PermissionService.DELETE) == AccessStatus.ALLOWED;
     }
 
     public Comment createComment(String nodeId, Comment comment)
@@ -193,8 +223,14 @@ public class CommentsImpl implements Comments
 			{
 				throw new InvalidArgumentException();
 			}
-			
-	        commentService.updateComment(commentNodeRef, title, content);
+
+            // MNT-16446 (pending future ACE-5437)
+            if (! canEdit(nodeRef, commentNodeRef))
+            {
+                throw new PermissionDeniedException("Cannot edit comment");
+            }
+
+            commentService.updateComment(commentNodeRef, title, content);
 	        return toComment(nodeRef, commentNodeRef);
 		}
 		catch(IllegalArgumentException e)
@@ -243,9 +279,16 @@ public class CommentsImpl implements Comments
     {
     	try
     	{
-	    	nodes.validateNode(nodeId);
+            NodeRef nodeRef = nodes.validateNode(nodeId);
 	        NodeRef commentNodeRef = nodes.validateNode(commentNodeId);
-	        commentService.deleteComment(commentNodeRef);
+
+            // MNT-16446 (pending future ACE-5437)
+            if (! canDelete(nodeRef, commentNodeRef))
+            {
+                throw new PermissionDeniedException("Cannot delete comment");
+            }
+
+            commentService.deleteComment(commentNodeRef);
 		}
 		catch(IllegalArgumentException e)
 		{

@@ -135,6 +135,7 @@
                 <entry key="org.alfresco.rest.framework.core.exceptions.EntityNotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.RelationshipResourceNotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.PermissionDeniedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_FORBIDDEN}" />
+                <entry key="org.alfresco.repo.security.permissions.AccessDeniedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_FORBIDDEN}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.UnsupportedResourceOperationException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_METHOD_NOT_ALLOWED}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.ConstraintViolatedException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.StaleEntityException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />         
@@ -389,8 +390,6 @@
         <property name="nodeService" ref="NodeService" />
         <property name="commentService" ref="CommentService" />
         <property name="contentService" ref="ContentService" />
-        <property name="permissionService" ref="PermissionService" />
-        <property name="lockService" ref="LockService" />
         <property name="typeConstraint" ref="nodeTypeConstraint" />
     </bean>
 

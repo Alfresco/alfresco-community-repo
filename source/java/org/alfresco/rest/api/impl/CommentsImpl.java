@@ -71,8 +71,6 @@ public class CommentsImpl implements Comments
     private NodeService nodeService;
     private CommentService commentService;
     private ContentService contentService;
-    private LockService lockService;
-    private PermissionService permissionService;
     private TypeConstraint typeConstraint;
 
 	public void setTypeConstraint(TypeConstraint typeConstraint)
@@ -84,17 +82,7 @@ public class CommentsImpl implements Comments
 	{
 		this.nodes = nodes;
 	}
-	
-	public void setLockService(LockService lockService)
-	{
-		this.lockService = lockService;
-	}
-
-	public void setPermissionService(PermissionService permissionService)
-	{
-		this.permissionService = permissionService;
-	}
-
+    
 	public void setNodeService(NodeService nodeService)
     {
         this.nodeService = nodeService;
@@ -122,72 +110,16 @@ public class CommentsImpl implements Comments
 	        nodeProps.remove(ContentModel.PROP_CONTENT);
         }
 
-        boolean canEdit = false;
-        boolean canDelete = false;
 
-        if (! isWorkingCopyOrLocked(nodeRef))
-        {
-            canEdit = canEditPermission(commentNodeRef);
-            canDelete = canDeletePermission(commentNodeRef);
-        }
+        Map<String, Boolean> map = commentService.getCommentPermissions(nodeRef, commentNodeRef);
+        boolean canEdit = map.get(CommentService.CAN_EDIT);
+        boolean canDelete =  map.get(CommentService.CAN_DELETE);
 
 
         Comment comment = new Comment(commentNodeRef.getId(), nodeProps, canEdit, canDelete);
         return comment;
     }
-
-    private boolean isWorkingCopyOrLocked(NodeRef nodeRef)
-    {
-        boolean isWorkingCopy = false;
-        boolean isLocked = false;
-
-        if (nodeRef != null)
-        {
-            Set<QName> aspects = nodeService.getAspects(nodeRef);
-
-            isWorkingCopy = aspects.contains(ContentModel.ASPECT_WORKING_COPY);
-            if(!isWorkingCopy)
-            {
-                if(aspects.contains(ContentModel.ASPECT_LOCKABLE))
-                {
-                    LockStatus lockStatus = lockService.getLockStatus(nodeRef);
-                    if (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER)
-                    {
-                        isLocked = true;
-                    }
-                }
-            }
-        }
-        return (isWorkingCopy || isLocked);
-    }
-
-    private boolean canEdit(NodeRef nodeRef, NodeRef commentNodeRef)
-    {
-        return ((! isWorkingCopyOrLocked(nodeRef) && canEditPermission(commentNodeRef)));
-    }
-
-    // TODO refactor (ACE-5437) - see also CommentsPost
-    private boolean canEditPermission(NodeRef commentNodeRef)
-    {
-        String creator = (String)nodeService.getProperty(commentNodeRef, ContentModel.PROP_CREATOR);
-        Serializable owner = nodeService.getProperty(commentNodeRef, ContentModel.PROP_OWNER);
-        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
-
-        boolean isSiteManager = permissionService.hasPermission(commentNodeRef, SiteModel.SITE_MANAGER) == (AccessStatus.ALLOWED);
-        boolean isCoordinator = permissionService.hasPermission(commentNodeRef, PermissionService.COORDINATOR) == (AccessStatus.ALLOWED);
-        return (isSiteManager || isCoordinator || currentUser.equals(creator) || currentUser.equals(owner));
-    }
-
-    private boolean canDelete(NodeRef nodeRef, NodeRef commentNodeRef)
-    {
-        return ((! isWorkingCopyOrLocked(nodeRef) || canDeletePermission(commentNodeRef)));
-    }
-
-    private boolean canDeletePermission(NodeRef commentNodeRef)
-    {
-        return permissionService.hasPermission(commentNodeRef, PermissionService.DELETE) == AccessStatus.ALLOWED;
-    }
-
+    
     public Comment createComment(String nodeId, Comment comment)
     {
 		NodeRef nodeRef = nodes.validateNode(nodeId);
@@ -223,13 +155,7 @@ public class CommentsImpl implements Comments
 			{
 				throw new InvalidArgumentException();
 			}
-
-            // MNT-16446 (pending future ACE-5437)
-            if (! canEdit(nodeRef, commentNodeRef))
-            {
-                throw new PermissionDeniedException("Cannot edit comment");
-            }
-
+            
             commentService.updateComment(commentNodeRef, title, content);
 	        return toComment(nodeRef, commentNodeRef);
 		}
@@ -274,20 +200,18 @@ public class CommentsImpl implements Comments
     }
 
     @Override
-    // TODO validate that it is a comment of the node
     public void deleteComment(String nodeId, String commentNodeId)
     {
     	try
     	{
             NodeRef nodeRef = nodes.validateNode(nodeId);
 	        NodeRef commentNodeRef = nodes.validateNode(commentNodeId);
-
-            // MNT-16446 (pending future ACE-5437)
-            if (! canDelete(nodeRef, commentNodeRef))
+            
+            if (! nodeRef.equals(commentService.getDiscussableAncestor(commentNodeRef)))
             {
-                throw new PermissionDeniedException("Cannot delete comment");
+                throw new InvalidArgumentException("Unexpected "+nodeId+","+commentNodeId);
             }
-
+            
             commentService.deleteComment(commentNodeRef);
 		}
 		catch(IllegalArgumentException e)

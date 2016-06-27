@@ -55,7 +55,6 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
  * @author Sergey Scherbovich (based on existing JavaScript webscript controller)
  * @since 4.1.7.1
  */
-
 public class CommentsPost extends AbstractCommentsWebScript
 {
     /**
@@ -146,7 +145,8 @@ public class CommentsPost extends AbstractCommentsWebScript
         {
            isUpdated = ((Date)modified).getTime() - ((Date)created).getTime() > 5000;
         }
-        
+
+        // TODO refactor v0 Comments API to use CommentService (see ACE-5437)
         Serializable owner = this.nodeService.getProperty(commentNodeRef, ContentModel.PROP_OWNER);
         String currentUser = this.serviceRegistry.getAuthenticationService().getCurrentUserName();
         

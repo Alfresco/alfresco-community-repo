@@ -753,23 +753,9 @@ public class TestNodeComments extends EnterpriseTestApi
 			comment.setContent("my comment");
 			Comment createdComment = commentsProxy.createNodeComment(nodeRef1.getId(), comment);
 
-			{
-				TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-				{
-					@Override
-					public Void doWork() throws Exception
-					{
-						repoService.lockNode(nodeRef1);
-						return null;
-					}
-				}, person11.getId(), network1.getId());
-	
-				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-
-				Comment updatedComment = new Comment();
-				updatedComment.setContent(null);
-				commentsProxy.updateNodeComment(nodeRef1.getId(), createdComment.getId(), updatedComment);
-			}
+			Comment updatedComment = new Comment();
+			updatedComment.setContent(null);
+			commentsProxy.updateNodeComment(nodeRef1.getId(), createdComment.getId(), updatedComment);
 			
 			fail();
 		}
@@ -778,9 +764,15 @@ public class TestNodeComments extends EnterpriseTestApi
 			assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
 		}
 
-		// locked node comments
+		// locked node - cannot add/edit/delete comments (MNT-14945, MNT-16446)
 		try
 		{
+			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
+			
+			Comment comment = new Comment();
+			comment.setContent("my comment");
+			Comment createdComment = commentsProxy.createNodeComment(nodeRef1.getId(), comment);
+			
 			TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
 			{
 				@Override
@@ -801,10 +793,18 @@ public class TestNodeComments extends EnterpriseTestApi
 			commentsProxy.getNodeComments(nodeRef1.getId(), createParams(paging, null));
 
 			// test POST for a locked node
+			try
+			{
+				comment = new Comment();
+				comment.setContent("my other comment");
+				createdComment = commentsProxy.createNodeComment(nodeRef1.getId(), comment);
 
-			Comment comment = new Comment();
-			comment.setContent("my comment");
-			Comment createdComment = commentsProxy.createNodeComment(nodeRef1.getId(), comment);
+				fail("");
+			}
+			catch(PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_FORBIDDEN, e.getHttpResponse().getStatusCode());
+			}
 
 			// test PUT for a locked node
 			{

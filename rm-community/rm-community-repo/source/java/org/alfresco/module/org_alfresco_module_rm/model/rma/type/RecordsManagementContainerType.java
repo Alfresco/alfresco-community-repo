@@ -44,6 +44,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:recordsManagementContainer behaviour bean.
@@ -69,6 +70,9 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
 
     /** record folder service */
     protected RecordFolderService recordFolderService;
+
+    /** I18N */
+    private static final String MSG_CANNOT_CAST_TO_RM_TYPE = "rm.action.cast-to-rm-type";
 
     /**
      * @param identifierService identifier service
@@ -155,7 +159,7 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                                 // Throw exception if the type is not cm:folder
                                 if (!ContentModel.TYPE_FOLDER.equals(childType))
                                 {
-                                    throw new AlfrescoRuntimeException("Record can't be created from this type.");
+                                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CANNOT_CAST_TO_RM_TYPE));
                                 }
                                 // check the type of the parent to determine what 'kind' of artifact to create
                                 NodeRef parent = childAssocRef.getParentRef();

@@ -35,6 +35,7 @@ import org.apache.chemistry.opencmis.tck.impl.JUnitHelper;
 import org.apache.chemistry.opencmis.tck.tests.basics.BasicsTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.control.ControlTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.crud.BulkUpdatePropertiesTest;
+import org.apache.chemistry.opencmis.tck.tests.crud.CRUDTestGroup;
 import org.apache.chemistry.opencmis.tck.tests.crud.ChangeTokenTest;
 import org.apache.chemistry.opencmis.tck.tests.crud.ContentRangesTest;
 import org.apache.chemistry.opencmis.tck.tests.crud.CopyTest;

@@ -79,6 +79,9 @@
        <property name="siteService" ref="SiteService"/>
        <property name="activityService" ref="activityService"/>       
        <property name="cannedQueryRegistry" ref="commentsCannedQueryRegistry"/>
+       <property name="policyComponent" ref="policyComponent"/>
+       <property name="permissionService" ref="PermissionService"/>
+       <property name="lockService" ref="LockService"/>
     </bean>
 
     <!-- Policies/behaviours for forum-related nodes  -->

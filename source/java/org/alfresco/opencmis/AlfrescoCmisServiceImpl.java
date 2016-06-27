@@ -1858,6 +1858,10 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
         {
             throw new CmisConstraintException("Bulk update not supported for more than " + connector.getBulkMaxItems() + " objects.");
         }
+        // MNT-16376 We need the CMIS call context from this thread to set 
+        // to the working threads below, in order to correctly identify 
+        // the CMIS version protocol used for this CMIS call
+        final CallContext cmisCallContext = AlfrescoCmisServiceCall.get();
 
         // WorkProvider
         class WorkProvider implements BatchProcessWorkProvider<BulkEntry>
@@ -1917,6 +1921,7 @@ public class AlfrescoCmisServiceImpl extends AbstractCmisService implements Alfr
                 // Authentication
                 AuthenticationUtil.pushAuthentication();
                 AuthenticationUtil.setFullyAuthenticatedUser(runAsUser);
+                AlfrescoCmisServiceCall.set(cmisCallContext);
             }
 
             @Override

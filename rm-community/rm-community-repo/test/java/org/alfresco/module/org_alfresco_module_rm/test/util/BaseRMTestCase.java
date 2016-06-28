@@ -271,6 +271,8 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
     /** collaboration site users */
     protected String dmConsumer;
     protected NodeRef dmConsumerNodeRef;
+    protected String dmContributor;
+    protected NodeRef dmContributorNodeRef;
     protected String dmCollaborator;
     protected NodeRef dmCollaboratorNodeRef;
 
@@ -772,6 +774,10 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         dmConsumer = GUID.generate();
         dmConsumerNodeRef = createPerson(dmConsumer);
         siteService.setMembership(collabSiteId, dmConsumer, SiteModel.SITE_CONSUMER);
+        
+        dmContributor = GUID.generate();
+        dmContributorNodeRef = createPerson(dmContributor);
+        siteService.setMembership(collabSiteId, dmContributor, SiteModel.SITE_CONTRIBUTOR);
 
         dmCollaborator = GUID.generate();
         dmCollaboratorNodeRef = createPerson(dmCollaborator);

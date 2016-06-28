@@ -52,6 +52,7 @@ import org.alfresco.repo.policy.annotation.BehaviourBean;
 import org.alfresco.repo.policy.annotation.BehaviourKind;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
 import org.alfresco.service.cmr.dictionary.AssociationDefinition;
 import org.alfresco.service.cmr.dictionary.Constraint;
@@ -64,7 +65,11 @@ import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.GUID;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.Ordered;
 import org.springframework.extensions.surf.util.I18NUtil;
 import org.springframework.extensions.surf.util.URLDecoder;
 
@@ -74,10 +79,14 @@ import org.springframework.extensions.surf.util.URLDecoder;
  * @author Neil McErlean, janv
  */
 @BehaviourBean
-public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBase implements RecordsManagementAdminService,
-                                                                                                NodeServicePolicies.OnAddAspectPolicy,
-                                                                                                NodeServicePolicies.OnRemoveAspectPolicy,
-                                                                                                NodeServicePolicies.OnCreateNodePolicy
+public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBase
+											   implements RecordsManagementAdminService,
+														  RecordsManagementCustomModel,
+														  NodeServicePolicies.OnAddAspectPolicy,
+														  NodeServicePolicies.OnRemoveAspectPolicy,	
+														  NodeServicePolicies.OnCreateNodePolicy,
+														  ApplicationListener<ContextRefreshedEvent>, 
+														  Ordered
 {
     /** I18N messages*/
     private static final String MSG_SERVICE_NOT_INIT = "rm.admin.service-not-init";
@@ -98,14 +107,26 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
     /** Relationship service */
     private RelationshipService relationshipService;
+    
+    /** Transaction service */
+    private TransactionService transactionService;
 
     /** List of types that can be customisable */
     private List<QName> pendingCustomisableTypes;
     private Map<QName, QName> customisableTypes;
+    
+    /** indicates whether the custom map has been initialised or not */
+    private boolean isCustomMapInit = false;
+	
+	/**
+	 * @param transactionService   transaction service
+	 */
+	public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
 
     /**
-     * Sets the relationship instance
-     *
      * @param relationshipService The relationship service instance
      */
     public void setRelationshipService(RelationshipService relationshipService)
@@ -123,6 +144,48 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
         return this.relationshipService;
     }
 
+	/**
+	 * Indicate that this application content listener must be executed with the lowest 
+	 * precedence. (ie last)
+	 * 
+	 * @see Ordered#getOrder()
+	 */
+    @Override
+    public int getOrder()
+    {
+        return Ordered.LOWEST_PRECEDENCE;
+    }
+
+    /**
+     * Load the custom properties map
+     * 
+     * @see ApplicationListener#onApplicationEvent(org.springframework.context.ApplicationEvent)
+     */
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent event)
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // initialise custom properties
+                initCustomMap();
+                
+                return null;
+            }
+         });                 
+    }
+    
+    /**
+     * Helper method to indicate whether the custom map is initialised or not.
+     * 
+     * @return  boolean true if initialised, false otherwise
+     */
+    public boolean isCustomMapInit()
+    {
+        return isCustomMapInit;
+    }   
+
     /**
      * @see org.alfresco.repo.node.NodeServicePolicies.OnAddAspectPolicy#onAddAspect(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.service.namespace.QName)
      */
@@ -135,25 +198,25 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     )
     public void onAddAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
-        mandatory("nodeRef", nodeRef);
-        mandatory("aspectTypeQName", aspectTypeQName);
-
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        if (isCustomMapInit)
         {
-            @Override
-            public Void doWork()
+            AuthenticationUtil.runAs(new RunAsWork<Void>()
             {
-                if (getNodeService().exists(nodeRef) &&
-                    getDictionaryService().getAllModels().contains(RM_CUSTOM_MODEL) &&
-                    isCustomisable(aspectTypeQName))
+                @Override
+                public Void doWork()
                 {
-                    QName customPropertyAspect = getCustomAspect(aspectTypeQName);
-                    getNodeService().addAspect(nodeRef, customPropertyAspect, null);
+                    if (getNodeService().exists(nodeRef) &&
+                        getDictionaryService().getAllModels().contains(RM_CUSTOM_MODEL) &&
+                        isCustomisable(aspectTypeQName))
+                    {
+                        QName customPropertyAspect = getCustomAspect(aspectTypeQName);
+                        getNodeService().addAspect(nodeRef, customPropertyAspect, null);
+                    }
+    
+                    return null;
                 }
-
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
+            }, AuthenticationUtil.getSystemUserName());
+        }
     }
 
     /**
@@ -168,24 +231,24 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     )
     public void onRemoveAspect(final NodeRef nodeRef, final QName aspectTypeQName)
     {
-        mandatory("nodeRef", nodeRef);
-        mandatory("aspectTypeQName", aspectTypeQName);
-
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
+        if (isCustomMapInit)
         {
-            @Override
-            public Void doWork()
+            AuthenticationUtil.runAs(new RunAsWork<Void>()
             {
-                if (getNodeService().exists(nodeRef) &&
-                    isCustomisable(aspectTypeQName))
+                @Override
+                public Void doWork()
                 {
-                    QName customPropertyAspect = getCustomAspect(aspectTypeQName);
-                    getNodeService().removeAspect(nodeRef, customPropertyAspect);
+                    if (getNodeService().exists(nodeRef) &&
+                        isCustomisable(aspectTypeQName))
+                    {
+                        QName customPropertyAspect = getCustomAspect(aspectTypeQName);
+                        getNodeService().removeAspect(nodeRef, customPropertyAspect);
+                    }
+    
+                    return null;
                 }
-
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
+            }, AuthenticationUtil.getSystemUserName());
+        }
     }
 
     /**
@@ -202,49 +265,41 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
     )
     public void onCreateNode(final ChildAssociationRef childAssocRef)
     {
-        mandatory("nodeRef", childAssocRef);
-
-        AuthenticationUtil.runAs(new RunAsWork<Void>()
-        {
-            @Override
-            public Void doWork()
+        if (isCustomMapInit)
+        {            
+            AuthenticationUtil.runAs(new RunAsWork<Void>()
             {
-                if (getDictionaryService().getAllModels().contains(RecordsManagementCustomModel.RM_CUSTOM_MODEL))
+                @Override
+                public Void doWork()
                 {
-                    NodeRef nodeRef = childAssocRef.getChildRef();
-                    QName type = getNodeService().getType(nodeRef);
-                    while (type != null && !ContentModel.TYPE_CMOBJECT.equals(type))
+                    if (getDictionaryService().getAllModels().contains(RecordsManagementCustomModel.RM_CUSTOM_MODEL))
                     {
-                        if (isCustomisable(type))
+                        NodeRef nodeRef = childAssocRef.getChildRef();
+                        QName type = getNodeService().getType(nodeRef);
+                        while (type != null && !ContentModel.TYPE_CMOBJECT.equals(type))
                         {
-                            QName customPropertyAspect = getCustomAspect(type);
-                            getNodeService().addAspect(nodeRef, customPropertyAspect, null);
-                        }
-
-                        TypeDefinition def = getDictionaryService().getType(type);
-                        if (def != null)
-                        {
-                            type = def.getParentName();
-                        }
-                        else
-                        {
-                            type = null;
+                            if (isCustomisable(type))
+                            {
+                                QName customPropertyAspect = getCustomAspect(type);
+                                getNodeService().addAspect(nodeRef, customPropertyAspect, null);
+                            }
+    
+                            TypeDefinition def = getDictionaryService().getType(type);
+                            if (def != null)
+                            {
+                                type = def.getParentName();
+                            }
+                            else
+                            {
+                                type = null;
+                            }
                         }
                     }
+    
+                    return null;
                 }
-
-                return null;
-            }
-        }, AuthenticationUtil.getSystemUserName());
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.RecordsManagementAdminService#initialiseCustomModel()
-     */
-    public void initialiseCustomModel()
-    {
-        // Initialise the map
-        getCustomisableMap();
+            }, AuthenticationUtil.getSystemUserName());
+        }
     }
 
     /**
@@ -329,6 +384,92 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
 
         return result;
     }
+    
+    /**
+     * Initialise custom type map
+     */
+    private void initCustomMap()
+    {
+        customisableTypes = new HashMap<QName, QName>(7);
+        Collection<QName> aspects = getDictionaryService().getAspects(RM_CUSTOM_MODEL);
+        for (QName aspect : aspects)
+        {
+            AspectDefinition aspectDef = getDictionaryService().getAspect(aspect);
+            String name = aspectDef.getName().getLocalName();
+            if (name.endsWith("Properties"))
+            {
+                QName type = null;
+                String prefixString = aspectDef.getDescription(getDictionaryService());
+                if (prefixString == null)
+                {
+                    // Backward compatibility from previous RM V1.0 custom models
+                    if (CompatibilityModel.NAME_CUSTOM_RECORD_PROPERTIES.equals(name))
+                    {
+                        type = RecordsManagementModel.ASPECT_RECORD;
+                    }
+                    else if (CompatibilityModel.NAME_CUSTOM_RECORD_FOLDER_PROPERTIES.equals(name))
+                    {
+                        type = RecordsManagementModel.TYPE_RECORD_FOLDER;
+                    }
+                    else if (CompatibilityModel.NAME_CUSTOM_RECORD_CATEGORY_PROPERTIES.equals(name))
+                    {
+                        type = RecordsManagementModel.TYPE_RECORD_CATEGORY;
+                    }
+                    else if (CompatibilityModel.NAME_CUSTOM_RECORD_SERIES_PROPERTIES.equals(name) &&
+                            // Only add the deprecated record series type as customisable if
+                            // a v1.0 installation has added custom properties
+                            aspectDef.getProperties().size() != 0)
+                    {
+                        type = CompatibilityModel.TYPE_RECORD_SERIES;
+                    }
+                }
+                else
+                {
+                    type = QName.createQName(prefixString, getNamespaceService());
+                }
+
+                // Add the customisable type to the map
+                if (type != null)
+                {
+                    customisableTypes.put(type, aspect);
+
+                    // Remove customisable type from the pending list
+                    if (pendingCustomisableTypes != null && pendingCustomisableTypes.contains(type))
+                    {
+                        pendingCustomisableTypes.remove(type);
+                    }
+                }
+            }
+        }
+
+        // Deal with any pending types left over
+        if (pendingCustomisableTypes != null && pendingCustomisableTypes.size() != 0)
+        {
+            NodeRef modelRef = getCustomModelRef(RecordsManagementModel.RM_CUSTOM_URI);
+            M2Model model = readCustomContentModel(modelRef);
+            try
+            {
+                for (QName customisableType : pendingCustomisableTypes)
+                {
+                    QName customAspect = getCustomAspectImpl(customisableType);
+
+                    // Create the new aspect to hold the custom properties
+                    M2Aspect aspect = model.createAspect(customAspect.toPrefixString(getNamespaceService()));
+                    aspect.setDescription(customisableType.toPrefixString(getNamespaceService()));
+
+                    // Make a record of the customisable type
+                    customisableTypes.put(customisableType, customAspect);
+                }
+            }
+            finally
+            {
+                writeCustomContentModel(modelRef, model);
+            }
+        }
+        
+        // indicate map is initialised
+        isCustomMapInit = true;
+    }
 
     /**
      * Gets a map containing all the customisable types
@@ -337,86 +478,11 @@ public class RecordsManagementAdminServiceImpl extends RecordsManagementAdminBas
      */
     private Map<QName, QName> getCustomisableMap()
     {
-        if (customisableTypes == null)
-        {
-            customisableTypes = new HashMap<QName, QName>(7);
-            Collection<QName> aspects = getDictionaryService().getAspects(RM_CUSTOM_MODEL);
-            for (QName aspect : aspects)
-            {
-                AspectDefinition aspectDef = getDictionaryService().getAspect(aspect);
-                String name = aspectDef.getName().getLocalName();
-                if (name.endsWith("Properties"))
-                {
-                    QName type = null;
-                    String prefixString = aspectDef.getDescription(getDictionaryService());
-                    if (prefixString == null)
-                    {
-                        // Backward compatibility from previous RM V1.0 custom models
-                        if (CompatibilityModel.NAME_CUSTOM_RECORD_PROPERTIES.equals(name))
-                        {
-                            type = RecordsManagementModel.ASPECT_RECORD;
-                        }
-                        else if (CompatibilityModel.NAME_CUSTOM_RECORD_FOLDER_PROPERTIES.equals(name))
-                        {
-                            type = RecordsManagementModel.TYPE_RECORD_FOLDER;
-                        }
-                        else if (CompatibilityModel.NAME_CUSTOM_RECORD_CATEGORY_PROPERTIES.equals(name))
-                        {
-                            type = RecordsManagementModel.TYPE_RECORD_CATEGORY;
-                        }
-                        else if (CompatibilityModel.NAME_CUSTOM_RECORD_SERIES_PROPERTIES.equals(name) &&
-	                            // Only add the deprecated record series type as customisable if
-	                            // a v1.0 installation has added custom properties
-                                aspectDef.getProperties().size() != 0)
-                        {
-                            type = CompatibilityModel.TYPE_RECORD_SERIES;
-                        }
-                    }
-                    else
-                    {
-                        type = QName.createQName(prefixString, getNamespaceService());
-                    }
-
-                    // Add the customisable type to the map
-                    if (type != null)
-                    {
-                        customisableTypes.put(type, aspect);
-
-                        // Remove customisable type from the pending list
-                        if (pendingCustomisableTypes != null && pendingCustomisableTypes.contains(type))
-                        {
-                            pendingCustomisableTypes.remove(type);
-                        }
-                    }
-                }
-            }
-
-            // Deal with any pending types left over
-            if (pendingCustomisableTypes != null && pendingCustomisableTypes.size() != 0)
-            {
-                NodeRef modelRef = getCustomModelRef(RecordsManagementModel.RM_CUSTOM_URI);
-                M2Model model = readCustomContentModel(modelRef);
-                try
-                {
-                    for (QName customisableType : pendingCustomisableTypes)
-                    {
-                        QName customAspect = getCustomAspectImpl(customisableType);
-
-                        // Create the new aspect to hold the custom properties
-                        M2Aspect aspect = model.createAspect(customAspect.toPrefixString(getNamespaceService()));
-                        aspect.setDescription(customisableType.toPrefixString(getNamespaceService()));
-
-                        // Make a record of the customisable type
-                        customisableTypes.put(customisableType, customAspect);
-                    }
-                }
-                finally
-                {
-                    writeCustomContentModel(modelRef, model);
-                }
-            }
-        }
-        return customisableTypes;
+    	if (customisableTypes == null)
+    	{
+    		throw AlfrescoRuntimeException.create("Customisable map has not been initialised correctly.");
+    	}
+    	return customisableTypes;
     }
 
     /**

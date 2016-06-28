@@ -89,6 +89,7 @@
    </modules>
 
    <properties>
+      <alfresco.rm.version>${project.version}</alfresco.rm.version>
       <alfresco.db.params>AUTO_SERVER=TRUE;DB_CLOSE_ON_EXIT=FALSE;LOCK_TIMEOUT=10000;MVCC=FALSE;LOCK_MODE=0;IGNORECASE=TRUE</alfresco.db.params>
       <maven.alfresco.includeDependencies>false</maven.alfresco.includeDependencies>
       <maven.build.sourceVersion>1.7</maven.build.sourceVersion>

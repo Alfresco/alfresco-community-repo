@@ -146,7 +146,7 @@
                         </regexPropertySetting>
                         <regexPropertySetting>
                            <name>rm.module.version</name>
-                           <value>${project.version}</value>
+                           <value>${alfresco.rm.version}</value>
                            <regex>(\d+)\.(\d+).*</regex>
                            <replacement>$1.$2</replacement>
                            <failIfNoMatch>false</failIfNoMatch>

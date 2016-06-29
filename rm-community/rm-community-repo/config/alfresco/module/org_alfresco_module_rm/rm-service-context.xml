@@ -775,6 +775,7 @@
 
    <bean id="recordsManagementAdminService" class="org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminServiceImpl" parent="recordsManagementAdminBase">
       <property name="relationshipService" ref="RelationshipService" />
+      <property name="transactionService" ref="transactionService"/>
       <property name="customisableTypes">
          <list>
             <value>rma:recordCategory</value>
@@ -817,7 +818,6 @@
         <property name="objectDefinitionSource">
             <value>
                 <![CDATA[
-                org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.initialiseCustomModel=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.getCustomisable=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.isCustomisable=RM_ALLOW
                 org.alfresco.module.org_alfresco_module_rm.admin.RecordsManagementAdminService.makeCustomisable=RM_ALLOW

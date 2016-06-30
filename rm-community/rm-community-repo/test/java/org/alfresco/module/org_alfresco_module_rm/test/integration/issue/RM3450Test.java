@@ -29,6 +29,7 @@ package org.alfresco.module.org_alfresco_module_rm.test.integration.issue;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.TestModel;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.util.GUID;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -54,8 +55,14 @@ public class RM3450Test extends BaseRMTestCase
             @Override
             public void run() throws Exception
             {
-                //expect failure
-                fileFolderService.create(unfiledContainer, GUID.generate(), TestModel.NOT_RM_FOLDER_TYPE).getNodeRef();
+                transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionCallback<Object>()
+                {
+                    public Object execute() throws Exception
+                    {
+                        fileFolderService.create(unfiledContainer, GUID.generate(), TestModel.NOT_RM_FOLDER_TYPE).getNodeRef();
+                        return null;
+                    }
+                }, false, true);
             }
         }, ADMIN_USER); 
     }

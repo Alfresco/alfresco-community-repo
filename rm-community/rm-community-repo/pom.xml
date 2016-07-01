@@ -25,6 +25,8 @@
       <alfresco.rm.artifactId>alfresco-rm-community-repo</alfresco.rm.artifactId>
       <skip.integrationtests>true</skip.integrationtests>
       <alfresco.solr.home>${project.build.directory}/solr/home</alfresco.solr.home>
+      <!-- FIXME: There is no h2version for Alfresco 5.1.1 -->
+      <h2scripts.version>5.1</h2scripts.version>
    </properties>
 
    <build>
@@ -328,7 +330,7 @@
       <dependency>
          <groupId>${alfresco.groupId}</groupId>
          <artifactId>alfresco-repository</artifactId>
-         <version>${alfresco.version}</version>
+         <version>${h2scripts.version}</version>
          <classifier>h2scripts</classifier>
          <exclusions>
             <exclusion>
@@ -548,7 +550,7 @@
                      <dependency>
                         <groupId>${alfresco.groupId}</groupId>
                         <artifactId>alfresco-repository</artifactId>
-                        <version>${alfresco.version}</version>
+                        <version>${h2scripts.version}</version>
                         <classifier>h2scripts</classifier>
                         <exclusions>
                            <exclusion>

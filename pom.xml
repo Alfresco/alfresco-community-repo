@@ -45,6 +45,14 @@
          <id>alfresco-internal</id>
          <url>https://artifacts.alfresco.com/nexus/content/groups/private</url>
       </repository>
+      <repository>
+         <id>alfresco-staging-platform</id>
+         <url>https://nexus.alfresco.com/nexus/content/repositories/servicepack-staging-profile-1145</url>
+      </repository>
+      <repository>
+         <id>alfresco-staging-share</id>
+         <url>https://nexus.alfresco.com/nexus/content/repositories/servicepack-staging-profile-1146</url>
+      </repository>
    </repositories>
 
    <pluginRepositories>

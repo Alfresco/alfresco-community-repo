@@ -43,7 +43,6 @@ public interface LDAPInitialDirContextFactory
     /**
      * Set the LDAP environment Hashtable properties used ot initialise the LDAP connection.
      * 
-     * @param environment Map<String, String>
      */
     public void setInitialDirContextEnvironment(Map<String, String> environment);
     

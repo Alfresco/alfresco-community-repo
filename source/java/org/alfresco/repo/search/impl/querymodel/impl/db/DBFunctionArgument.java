@@ -41,7 +41,6 @@ public class DBFunctionArgument extends BaseFunctionArgument
     /**
      * @param name String
      * @param function Function
-     * @param arguments Map<String, Argument>
      */
     public DBFunctionArgument(String name, Function function, Map<String, Argument> arguments)
     {

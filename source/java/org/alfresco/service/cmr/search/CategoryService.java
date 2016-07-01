@@ -97,7 +97,6 @@ public interface CategoryService
     /**
      * Get all the classification entries
      * 
-     * @return Collection<ChildAssociationRef>
      */
     @Auditable(parameters = {"storeRef"})
     public Collection<ChildAssociationRef> getClassifications(StoreRef storeRef);
@@ -107,7 +106,6 @@ public interface CategoryService
      * 
      * @param storeRef StoreRef
      * @param aspectName QName
-     * @return Collection<ChildAssociationRef>
      */
     @Auditable(parameters = {"storeRef", "aspectName"})
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName);
@@ -119,7 +117,6 @@ public interface CategoryService
      * @param aspectName QName
      * @param pagingRequest PagingRequest
      * @param sortByName boolean
-     * @return PagingResults<ChildAssociationRef>
      */
     @Auditable(parameters = {"storeRef", "aspectName", "pagingRequest", "sortByName"})
     PagingResults<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, PagingRequest pagingRequest, boolean sortByName);
@@ -143,7 +140,6 @@ public interface CategoryService
      * @param storeRef StoreRef
      * @param aspectName QName
      * @param filter String
-     * @return Collection<ChildAssociationRef>
      */
     @Auditable(parameters = {"storeRef", "aspectName"})
     public Collection<ChildAssociationRef> getRootCategories(StoreRef storeRef, QName aspectName, String filter);
@@ -184,7 +180,6 @@ public interface CategoryService
     /**
      * Get all the types that represent categories
      * 
-     * @return Collection<QName>
      */
     @Auditable
     public Collection<QName> getClassificationAspects();

@@ -442,8 +442,6 @@ public interface FileFolderService
      * with specification of which types to list and optional filtering (exclusion of certain child file/folder subtypes) and sorting
      * @param rootNodeRef NodeRef
      * @param searchTypeQNames   QNames of types to list
-     * @param ignoreAspectQNames Set<QName>
-     * @param sortProps List<Pair<QName, Boolean>>
      * @param pagingRequest PagingRequest
      * @return list of node refs, never null
      */
@@ -456,8 +454,6 @@ public interface FileFolderService
      * @param rootNodeRef NodeRef
      * @param assocTypeQNames QNames of assoc types to list
      * @param searchTypeQNames QNames of node types to list
-     * @param ignoreAspectQNames Set<QName>
-     * @param sortProps List<Pair<QName, Boolean>>
      * @param pagingRequest PagingRequest
      * @return list of node refs, never null
      */
@@ -468,7 +464,6 @@ public interface FileFolderService
     /**
      * Helper method to transform a list of {@link NodeRef} to a list of {@link FileInfo}
      * 
-     * @param nodeRefs List<NodeRef>
      * @return list of {@link FileInfo}
      */
     @Auditable(parameters = {"nodeRefs"})

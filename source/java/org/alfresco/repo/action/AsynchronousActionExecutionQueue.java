@@ -42,7 +42,6 @@ public interface AsynchronousActionExecutionQueue
 	 * @param action Action
 	 * @param actionedUponNodeRef NodeRef
 	 * @param checkConditions boolean
-	 * @param actionChain Set<String>
 	 */
 	void executeAction(
 			RuntimeActionService actionService,

@@ -122,7 +122,6 @@ public abstract class AbstractPermissionsDaoComponentImpl implements Permissions
 
     /**
      * Set the mapping of protocol to DAO
-     * @param map Map<String, AccessControlListDAO>
      */
     public void setProtocolToACLDAO(Map<String, AccessControlListDAO> map)
     {

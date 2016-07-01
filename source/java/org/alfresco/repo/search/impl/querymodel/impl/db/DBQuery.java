@@ -75,10 +75,8 @@ public class DBQuery extends BaseQuery implements DBQueryBuilderComponent
     Set<String> selectorGroup;
 
     /**
-     * @param columns List<Column>
      * @param source Source
      * @param constraint Constraint
-     * @param orderings List<Ordering>
      */
     public DBQuery(List<Column> columns, Source source, Constraint constraint, List<Ordering> orderings)
     {

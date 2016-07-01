@@ -185,7 +185,6 @@ public class PolicyScope extends AspectDetails
 	 * Get a child association
 	 * 
 	 * @param classRef QName
-	 * @return List<ChildAssociationRef>
 	 */
 	public List<ChildAssociationRef> getChildAssociations(QName classRef) 
 	{
@@ -255,7 +254,6 @@ public class PolicyScope extends AspectDetails
 	 * Get associations
 	 * 
 	 * @param classRef QName
-	 * @return List<AssociationRef>
 	 */
 	public List<AssociationRef> getAssociations(QName classRef) 
 	{

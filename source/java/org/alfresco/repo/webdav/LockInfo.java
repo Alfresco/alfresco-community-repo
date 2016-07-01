@@ -92,14 +92,12 @@ public interface LockInfo
     /**
      * Getter for sharedLockTokens list.
      * 
-     * @return LinkedList<String>
      */
     Set<String> getSharedLockTokens();
 
     /**
      * Setter for sharedLockTokens list.
      * 
-     * @param sharedLockTokens Set<String>
      */
     void setSharedLockTokens(Set<String> sharedLockTokens);
 

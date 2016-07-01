@@ -140,7 +140,6 @@ public class NodeMetaData
         this.childAssocs = childAssocs;
     }
     /**
-     * @param parentAssocs List<ChildAssociationRef>
      * @param parentAssocsCrc Long
      */
     public void setParentAssocs(List<ChildAssociationRef> parentAssocs, Long parentAssocsCrc)

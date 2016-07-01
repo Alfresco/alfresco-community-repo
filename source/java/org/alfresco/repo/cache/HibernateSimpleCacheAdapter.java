@@ -44,7 +44,6 @@ public class HibernateSimpleCacheAdapter implements Cache
     
     /**
      * Adapt a 
-     * @param cache SimpleCache<Serializable, Object>
      * @param regionName String
      */
     public HibernateSimpleCacheAdapter(SimpleCache<Serializable, Object> cache, String regionName)

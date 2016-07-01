@@ -43,7 +43,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * </h1><u>Aggregating Content Store</u></h1>
+ * <h1><u>Aggregating Content Store</u></h1>
  * <p>
  * A content store implementation that aggregates a set of stores.  Content is not 
  * persisted by this store, but rather it relies on any number of

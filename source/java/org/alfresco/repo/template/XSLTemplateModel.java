@@ -113,7 +113,6 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @return Set<QName>
      * @see java.util.Map#keySet()
      */
     public Set<QName> keySet()
@@ -133,7 +132,6 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @param m Map<? extends QName, ? extends Object>
      * @see java.util.Map#putAll(java.util.Map)
      */
     public void putAll(Map<? extends QName, ? extends Object> m)
@@ -161,7 +159,6 @@ public class XSLTemplateModel implements Map<QName, Object>
     }
 
     /**
-     * @return Collection<Object>
      * @see java.util.Map#values()
      */
     public Collection<Object> values()

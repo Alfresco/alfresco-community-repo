@@ -88,7 +88,6 @@ public class SortedResultSet implements ResultSet
      * 
      * @param resultSet ResultSet
      * @param nodeService NodeService
-     * @param sortDefinitions List<SortDefinition>
      * @param namespacePrefixResolver NamespacePrefixResolver
      * @param dictionaryService DictionaryService
      * @param locale Locale

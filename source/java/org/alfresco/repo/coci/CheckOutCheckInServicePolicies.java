@@ -85,7 +85,6 @@ public interface CheckOutCheckInServicePolicies
         /**
          * 
          * @param workingCopyNodeRef NodeRef
-         * @param versionProperties Map<String,Serializable>
          * @param contentUrl String
          * @param keepCheckedOut boolean
          */

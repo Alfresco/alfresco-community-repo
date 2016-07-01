@@ -55,7 +55,6 @@ public class ImporterBootstrapViews implements InitializingBean
     /**
      * Sets the bootstrap views
      * 
-     * @param bootstrapViews List<Properties>
      */
     public void setBootstrapViews(List<Properties> bootstrapViews)
     {

@@ -323,7 +323,7 @@ public class Reference
      * @param mutatedNodeRef
      * @return a mutated version of this {@link Reference} corresponding to the
      *         given mutated node or
-     *         <code>this<code> Reference if no mutations are detected
+     *         <code>this</code> Reference if no mutations are detected
      */
     public Reference propagateNodeRefMutations(NodeRef mutatedNodeRef)
     {

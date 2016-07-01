@@ -48,7 +48,6 @@ public interface AccessControlList extends Serializable
      * 
      * To make permission evaluation faster for the common cases
      * 
-     * @return List<AccessControlEntry>
      */
     public List<AccessControlEntry> getEntries();
     

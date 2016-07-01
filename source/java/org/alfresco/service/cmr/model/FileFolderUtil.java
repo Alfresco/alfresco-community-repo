@@ -76,10 +76,8 @@ public class FileFolderUtil
      * 
      * @param service FileFolderService
      * @param parentNodeRef NodeRef
-     * @param pathElements List<String>
      * @param folderTypeQName QName
      * @param behaviourFilter BehaviourFilter
-     * @param parentBehavioursToDisable Set<QName>
      * @return FileInfo
      */
     public static FileInfo makeFolders(FileFolderService service, NodeRef parentNodeRef, List<String> pathElements,

@@ -108,7 +108,6 @@ public interface DbObject
     /**
      * Set/override the validators associated with this database object.
      * 
-     * @param validators List<DbValidator>
      */
     void setValidators(List<DbValidator> validators);
     

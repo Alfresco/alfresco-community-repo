@@ -211,7 +211,6 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Sets the bootstrap views
      * 
-     * @param bootstrapViews List<Properties>
      */
     public void setBootstrapViews(List<Properties> bootstrapViews)
     {
@@ -221,7 +220,6 @@ public class ImporterBootstrap extends AbstractLifecycleBean
     /**
      * Sets the bootstrap views
      * 
-     * @param bootstrapViews List<Properties>
      */
     public void addBootstrapViews(List<Properties> bootstrapViews)
     {

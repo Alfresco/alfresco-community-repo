@@ -170,7 +170,7 @@ public class DbNodeServiceImpl extends AbstractNodeServiceImpl implements Extens
 
     /**
      * Set whether <b>cm:auditable</b> timestamps should be propagated to parent nodes
-     * where the parent-child relationship has been marked using <b>propagateTimestamps<b/>.
+     * where the parent-child relationship has been marked using <b>propagateTimestamps</b>.
      * 
      * @param enableTimestampPropagation        <tt>true</tt> to propagate timestamps to the parent
      *                                          node where appropriate

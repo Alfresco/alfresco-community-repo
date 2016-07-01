@@ -335,7 +335,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
      * Controls whether we trigger a differential sync when missing people log in.
      * 
      * @param syncWhenMissingPeopleLogIn
-     *            <codetrue</code> if we should trigger a sync when missing people log in
+     *            <code>true</code> if we should trigger a sync when missing people log in
      */
     public void setSyncWhenMissingPeopleLogIn(boolean syncWhenMissingPeopleLogIn)
     {
@@ -346,7 +346,7 @@ public class ChainingUserRegistrySynchronizer extends AbstractLifecycleBean
      * Controls whether we trigger a differential sync when the subsystem starts up.
      * 
      * @param syncOnStartup
-     *            <codetrue</code> if we should trigger a sync on startup
+     *            <code>true</code> if we should trigger a sync on startup
      */
     public void setSyncOnStartup(boolean syncOnStartup)
     {

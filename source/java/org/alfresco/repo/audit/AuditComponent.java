@@ -221,7 +221,7 @@ public interface AuditComponent
      *                          '/' ({@link AuditApplication#AUDIT_PATH_SEPARATOR})
      * @param values            the values to audit mapped by {@link AuditPath} key relative to root path
      *                          (may be <tt>null</tt>)
-     * @param useUserFilter     if <tt>false<tt> the user filter is disabled.
+     * @param useUserFilter     if <tt>false</tt> the user filter is disabled.
      * @return                  Returns the values that were actually persisted, keyed by their full path.
      * @throws IllegalStateException if the transaction state could not be determined
      */

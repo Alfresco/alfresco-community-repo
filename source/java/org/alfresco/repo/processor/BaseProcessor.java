@@ -161,7 +161,7 @@ public abstract class BaseProcessor implements Processor
     /**
      * Get the collection of processor extensions
      * 
-     * @return  Collection<ProcessorExtension>  collection of processor extensions
+     * @return collection of processor extensions
      */
     public Collection<ProcessorExtension> getProcessorExtensions()
     {

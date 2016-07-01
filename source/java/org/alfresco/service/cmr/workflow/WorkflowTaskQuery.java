@@ -125,7 +125,6 @@ public class WorkflowTaskQuery
     }
 
     /**
-     * @param taskCustomProps Map<QName, Object>
      */
     public void setTaskCustomProps(Map<QName, Object> taskCustomProps)
     {
@@ -261,7 +260,6 @@ public class WorkflowTaskQuery
     }
 
     /**
-     * @param processCustomProps Map<QName, Object>
      */
     public void setProcessCustomProps(Map<QName, Object> processCustomProps)
     {

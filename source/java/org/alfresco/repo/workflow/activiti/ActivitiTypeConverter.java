@@ -120,8 +120,6 @@ public class ActivitiTypeConverter
      * including all instances for default domain
      * and excluding shared instances (THOR-206) for tenants 
      * 
-     * @param values List<F>
-     * @param processKeyGetter Function<F, String>
      * @return List
      */
     public <F, T> List<T> doSpecialTenantFilterAndSafeConvert(List<F> values, Function<F, String> processKeyGetter)

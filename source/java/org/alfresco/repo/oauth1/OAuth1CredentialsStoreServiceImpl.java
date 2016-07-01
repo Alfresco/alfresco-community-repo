@@ -194,7 +194,6 @@ public class OAuth1CredentialsStoreServiceImpl implements OAuth1CredentialsStore
 
     /**
      * @param remoteSystemId String
-     * @return List<OAuth1CredentialInfo>
      */
     @Override
     public List<OAuth1CredentialsInfo> listSharedOAuth1Credentials(String remoteSystemId)

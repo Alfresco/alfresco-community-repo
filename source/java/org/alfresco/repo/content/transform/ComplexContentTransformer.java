@@ -127,7 +127,6 @@ public class ComplexContentTransformer extends AbstractContentTransformer2 imple
      *  to control the transformers in a different way to their default.
      * Note that only properties that are supported by the passed-in 
      *  {@link TransformationOptions} are changed, others are ignored.
-     * @param transformationOptionOverrides Map<String, Serializable>
      */
     public void setTransformationOptionOverrides(
           Map<String, Serializable> transformationOptionOverrides) 

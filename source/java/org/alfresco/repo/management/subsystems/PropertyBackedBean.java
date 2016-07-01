@@ -76,7 +76,6 @@ public interface PropertyBackedBean extends PropertyBackedBeanState
      * confirmed to the entire cluster with {@link #start()}, presumably after persistence of the new state has been
      * completed.
      * 
-     * @param properties Map<String, String>
      */
     public void setProperties(Map<String, String> properties);
 
@@ -86,7 +85,6 @@ public interface PropertyBackedBean extends PropertyBackedBeanState
      * confirmed to the entire cluster with {@link #start()}, presumably after persistence of the new state has been
      * completed.
      * 
-     * @param attributes Collection<String>
      */
     public void removeProperties(Collection<String> attributes);
 }

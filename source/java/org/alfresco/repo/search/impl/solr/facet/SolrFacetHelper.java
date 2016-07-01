@@ -58,7 +58,6 @@ public class SolrFacetHelper
     /**
      * Constructor
      * 
-     * @param facetQueryProviders List<FacetQueryProvider>
      */
     public SolrFacetHelper(List<FacetQueryProvider> facetQueryProviders)
     {

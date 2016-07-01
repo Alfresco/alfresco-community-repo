@@ -138,7 +138,7 @@ public interface ThumbnailService
      * @param contentProperty       content property name
      * @param mimetype              mimetype
      * @param options               transformation options
-     * @return List<NodeRef>        list of matching thumbnail node references, empty if no matches found
+     * @return list of matching thumbnail node references, empty if no matches found
      */
     @Auditable(parameters = {"node", "contentProperty", "mimetype", "options"})
     List<NodeRef> getThumbnails(NodeRef node, QName contentProperty, String mimetype, TransformationOptions options);

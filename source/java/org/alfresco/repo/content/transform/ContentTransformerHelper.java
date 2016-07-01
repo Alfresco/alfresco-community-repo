@@ -308,8 +308,6 @@ public class ContentTransformerHelper implements BeanNameAware
      * Helper method for {@link #getComments(boolean)} to
      * create a line that indicates which source and target mimetypes
      * it supports.
-     * @param sourceMimetypes List<String>
-     * @param targetMimetypes List<String>
      * @param available TODO
      * @return a String of the form "# only supports xxx, yyy or zzz to aaa or bb\n".
      */

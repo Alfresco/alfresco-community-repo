@@ -1198,7 +1198,6 @@ public class IndexInfo implements IndexMonitor
      * Get the deletions for a given index (there is no check if they should be applied that is up to the calling layer)
      * 
      * @param id String
-     * @return Set<String>
      * @throws IOException
      */
     public Set<String> getDeletions(String id) throws IOException
@@ -1453,8 +1452,6 @@ public class IndexInfo implements IndexMonitor
      * Get the main index reader augmented with the specified TX data As above but we add the TX data
      * 
      * @param id String
-     * @param deletions Set<String>
-     * @param containerDeletions Set<String>
      * @param deleteOnlyNodes boolean
      * @return IndexReader
      * @throws IOException

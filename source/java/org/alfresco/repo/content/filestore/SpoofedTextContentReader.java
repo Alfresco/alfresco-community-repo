@@ -49,7 +49,7 @@ import org.json.simple.parser.JSONParser;
 /**
  * Provides access to text data that is generated when requested.
  * <p/>
- * The URL has the format: <b>spoofed://{locale=en_GB,seed=12345,length=1024,strings=["Alfresco", "Cloud"]}
+ * The URL has the format: spoofed://{locale=en_GB,seed=12345,length=1024,strings=["Alfresco", "Cloud"]}
  * <p/>
  * The lexicon for the given locale is found by taking the language part of the locale (<b>en</b> in <b>en_GB</b>)
  * and finding the resource <b>alfresco/textgen/lexicon-stem-en.txt</b>.

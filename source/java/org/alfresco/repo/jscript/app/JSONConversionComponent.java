@@ -391,7 +391,6 @@ public class JSONConversionComponent
     /**
      * 
      * @param nodeRef NodeRef
-     * @param properties Map<QName, Serializable>
      * @param useShortQNames boolean
      * @return JSONObject
      */

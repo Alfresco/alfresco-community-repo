@@ -68,7 +68,6 @@ public interface DbValidator
     /**
      * Get the complete set of validator properties in use.
      * 
-     * @return Set<String>
      */
     Set<String> getPropertyNames();
 

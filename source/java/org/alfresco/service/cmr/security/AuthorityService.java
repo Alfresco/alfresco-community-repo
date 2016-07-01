@@ -313,7 +313,6 @@ public interface AuthorityService
      * @param immediate -
      *            if true, limit the depth to just immediate child, if false
      *            find authorities at any depth
-     * @return Set<String>
      */
     @Auditable(parameters = {"type", "name", "immediate"})
     public Set<String> getContainedAuthorities(AuthorityType type, String name, boolean immediate);
@@ -335,7 +334,6 @@ public interface AuthorityService
      *            are required.
      * @param immediate -
      *            limit to immediate parents or any ancestor.
-     * @return Set<String>
      */
     @Auditable(parameters = {"type", "name", "immediate"})
     public Set<String> getContainingAuthorities(AuthorityType type, String name, boolean immediate);
@@ -483,7 +481,6 @@ public interface AuthorityService
     /**
      * Add a zone to an authority.
      * @param authorityName String
-     * @param zones Set<String>
      */
     @Auditable(parameters = {"authorityName", "zones"})
     public void addAuthorityToZones(String authorityName, Set<String> zones);
@@ -491,7 +488,6 @@ public interface AuthorityService
     /**
      * Remove a zone from an authority
      * @param authorityName String
-     * @param zones Set<String>
      */
     @Auditable(parameters = {"authorityName", "zones"})
     public void removeAuthorityFromZones(String authorityName, Set<String> zones);
@@ -512,7 +508,6 @@ public interface AuthorityService
      * @param immediate if <code>true</code> then only search root groups if parentAuthority is null, or immediate children of parentAuthority if it is non-null.
      * @param displayNamePattern String
      * @param zoneName - may be null to indicate all zones
-     * @return Set<String>
      */
     @Auditable(parameters = {"type"})
     public Set<String> findAuthorities(AuthorityType type, String parentAuthority, boolean immediate, String displayNamePattern, String zoneName);

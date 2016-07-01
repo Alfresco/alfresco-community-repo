@@ -72,7 +72,6 @@ public class ChainingAuthenticationComponentImpl extends AbstractChainingAuthent
     /**
      * Set a list of authentication components
      * 
-     * @param authenticationComponents List<AuthenticationComponent>
      */
     public void setAuthenticationComponents(List<AuthenticationComponent> authenticationComponents)
     {
@@ -293,7 +292,6 @@ public class ChainingAuthenticationComponentImpl extends AbstractChainingAuthent
     /**
      * Helper to get authentication components
      * 
-     * @return Collection<AuthenticationComponent>
      */
     protected Collection<AuthenticationComponent> getUsableAuthenticationComponents()
     {

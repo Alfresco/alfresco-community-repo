@@ -62,7 +62,6 @@ public abstract class BasePathResultsMap extends BaseTemplateMap
      * @param xpath        XPath to execute
      * @param firstOnly    True to return the first result only
      * 
-     * @return List<TemplateNode>
      */
     protected List<TemplateNode> getChildrenByXPath(String xpath, QueryParameterDefinition[] params, boolean firstOnly)
     {

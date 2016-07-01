@@ -248,7 +248,6 @@ public interface WorkflowService
      * Gets all "in-flight" workflow instances according to the specified workflowInstanceQuery parameter
      * 
      * @param workflowInstanceQuery WorkflowInstanceQuery
-     * @return List<WorkflowInstance>
      */
     public List<WorkflowInstance> getWorkflows(WorkflowInstanceQuery workflowInstanceQuery);
     
@@ -396,11 +395,9 @@ public interface WorkflowService
     /**
      * Gets the start task instances for the given workflow instances.
      * 
-     * @param workflowInstanceIds List<String>
      * @param sameSession indicates that the returned {@link WorkflowTask} elements will be used in
      *        the same session. If {@code true}, the returned List will be a lazy loaded list
      *        providing greater performance.
-     * @return List<WorkflowTask>
      */
     @Auditable(parameters = {"pathIds"})
     public List<WorkflowTask> getStartTasks(List<String> workflowInstanceIds, boolean sameSession);

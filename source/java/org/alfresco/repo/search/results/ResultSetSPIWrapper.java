@@ -52,7 +52,6 @@ public class ResultSetSPIWrapper<ROW extends ResultSetRow, MD extends ResultSetM
 
     /**
      * Create a wrapped result set
-     * @param wrapped ResultSetSPI<ROW, MD>
      */
     public ResultSetSPIWrapper(ResultSetSPI<ROW, MD> wrapped)
     {

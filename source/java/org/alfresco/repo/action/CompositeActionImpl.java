@@ -89,7 +89,6 @@ public class CompositeActionImpl extends ActionImpl implements CompositeAction
     }
 
     /**
-     * @return List<Action>
      * @see org.alfresco.service.cmr.action.ActionList#getActions()
      */
     public List<Action> getActions()

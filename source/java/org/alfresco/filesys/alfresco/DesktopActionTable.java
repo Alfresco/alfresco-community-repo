@@ -104,7 +104,6 @@ public class DesktopActionTable {
 	/**
 	 * Enumerate the action names
 	 * 
-	 * @return Enumeration<String>
 	 */
 	public final Enumeration<String> enumerateActionNames()
 	{

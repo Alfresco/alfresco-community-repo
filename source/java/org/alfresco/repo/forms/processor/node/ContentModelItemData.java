@@ -76,7 +76,7 @@ public class ContentModelItemData<ItemType> implements TransientValueGetter
 
     /**
      * @return the property value associated with the <code>key</code> or
-     *         <code>null</null> if none exists.
+     *         <code>null</code> if none exists.
      */
     public Serializable getPropertyValue(QName key)
     {
@@ -85,7 +85,7 @@ public class ContentModelItemData<ItemType> implements TransientValueGetter
 
     /**
      * @return the association value associated with the <code>key</code> or
-     *         <code>null</null> if none exists.
+     *         <code>null</code> if none exists.
      */
     public Serializable getAssociationValue(QName key)
     {
@@ -94,7 +94,7 @@ public class ContentModelItemData<ItemType> implements TransientValueGetter
 
     /**
      * @return the value associated with the transient property specified by the
-     *         fieldName or <code>null</null> if none exists.
+     *         fieldName or <code>null</code> if none exists.
      */
     public Object getTransientValue(String fieldName)
     {

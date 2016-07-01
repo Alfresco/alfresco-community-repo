@@ -104,7 +104,6 @@ public class ResourceMetadata
 
     /**
      * Indicates if this resource action is no longer supported.
-     * @param resourceAction Class<? extends ResourceAction>
      * @return true if it is no longer supported
      */
     public boolean isDeleted(Class<? extends ResourceAction> resourceAction)

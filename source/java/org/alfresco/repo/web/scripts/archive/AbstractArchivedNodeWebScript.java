@@ -174,7 +174,6 @@ public abstract class AbstractArchivedNodeWebScript extends DeclarativeWebScript
      * @param storeRef mandatory store ref
      * @param paging mandatory paging
      * @param filter optional filter
-     * @return PagingResults<NodeRef>
      */
     protected PagingResults<NodeRef> getArchivedNodesFrom(StoreRef storeRef, ScriptPagingDetails paging, String filter)
     {

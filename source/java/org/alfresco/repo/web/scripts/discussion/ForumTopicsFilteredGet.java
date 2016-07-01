@@ -198,7 +198,6 @@ public class ForumTopicsFilteredGet extends AbstractDiscussionWebScript
     * @param searchQuery Pair with query string in first and query language in second
     * @param sortAscending boolean
     * @param paging PagingRequest
-    * @return PagingResults<TopicInfo>
     */
    protected PagingResults<TopicInfo> doSearch(Pair<String, String> searchQuery, boolean sortAscending, PagingRequest paging)
    {
@@ -317,7 +316,6 @@ public class ForumTopicsFilteredGet extends AbstractDiscussionWebScript
     * 
     * @param finalResults ResultSet
     * @param paging PagingRequest
-    * @return PagingResults<TopicInfo>
     */
    protected PagingResults<TopicInfo> wrap(final ResultSet finalResults, PagingRequest paging)
    {

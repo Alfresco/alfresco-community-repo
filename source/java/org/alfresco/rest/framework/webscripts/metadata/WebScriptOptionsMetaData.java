@@ -122,7 +122,6 @@ public class WebScriptOptionsMetaData extends ApiWebScript implements ResourceMe
     /**
      * Processes the resulting resource and returns the data to be displayed
      * @param resource ResourceWithMetadata
-     * @param apiResources Map<String, ResourceWithMetadata>
      * @return Either a ExecutionResult or a CollectionWithPagingInfo
      */
     public static Object processResult(ResourceWithMetadata resource, Map<String, ResourceWithMetadata> apiResources)

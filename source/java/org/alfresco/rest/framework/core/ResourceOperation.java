@@ -47,7 +47,6 @@ public class ResourceOperation
      * @param httpMethod HttpMethod
      * @param title String
      * @param description String
-     * @param parameters List<ResourceParameter>
      * @param successStatus HTTP status
      */
     public ResourceOperation(HttpMethod httpMethod, String title, String description, List<ResourceParameter> parameters, int successStatus)

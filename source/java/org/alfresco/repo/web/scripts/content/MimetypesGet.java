@@ -145,7 +145,6 @@ public class MimetypesGet extends DeclarativeWebScript implements ApplicationCon
      * Sets the map of content transformer worker bean names to
      * message formatting labels
      * 
-     * @param knownWorkerBeanLabels Map<String, String>
      */
     public void setKnownWorkerBeanLabels(Map<String, String> knownWorkerBeanLabels)
     {

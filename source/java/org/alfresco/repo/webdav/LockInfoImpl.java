@@ -176,7 +176,6 @@ public class LockInfoImpl implements Serializable, LockInfo
     /**
      * Getter for sharedLockTokens list.
      * 
-     * @return LinkedList<String>
      */
     @Override
     public Set<String> getSharedLockTokens()
@@ -187,7 +186,6 @@ public class LockInfoImpl implements Serializable, LockInfo
     /**
      * Setter for sharedLockTokens list.
      * 
-     * @param sharedLockTokens Set<String>
      */
     @Override
     public void setSharedLockTokens(Set<String> sharedLockTokens)

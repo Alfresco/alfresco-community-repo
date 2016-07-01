@@ -239,7 +239,7 @@ public class ResourceWebScriptHelper
     /**
      * Takes the "select" parameter and turns it into a List<String> property names
      * @param selectParam String
-     * @return List<String> bean property names potentially using JSON Pointer syntax
+     * @return bean property names potentially using JSON Pointer syntax
      */
     @SuppressWarnings("unchecked")
     @Deprecated
@@ -251,7 +251,7 @@ public class ResourceWebScriptHelper
     /**
      * Takes the "include" parameter and turns it into a List<String> property names
      * @param includeParam String
-     * @return List<String> bean property names potentially using JSON Pointer syntax
+     * @return bean property names potentially using JSON Pointer syntax
      */
     @SuppressWarnings("unchecked")
     public static List<String> getIncludeClause(String includeParam) throws InvalidArgumentException
@@ -334,7 +334,7 @@ public class ResourceWebScriptHelper
      * e.g. "name DESC, age ASC".  It is not case sensitive and the sort direction is optional
      * It default to sort ASCENDING.
      * @param sortParams - String passed in on the request
-     * @return List<SortColumn> - the sort columns or an empty list if the params were invalid.
+     * @return - the sort columns or an empty list if the params were invalid.
      */
     public static List<SortColumn> getSort(String sortParams)
     {

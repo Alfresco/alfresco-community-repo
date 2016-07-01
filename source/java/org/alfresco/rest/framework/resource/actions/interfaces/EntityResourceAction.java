@@ -71,7 +71,6 @@ public interface EntityResourceAction
          * 
          * Paging information is provided.
          * @param params - will never be null and will have the PAGING default values
-         * @return CollectionWithPagingInfo<E>
          */
         public CollectionWithPagingInfo<E> readAll (Parameters params);
     }
@@ -87,7 +86,6 @@ public interface EntityResourceAction
          *
          * Paging information is provided.
          * @param params - will never be null and will have the PAGING default values
-         * @return CollectionWithPagingInfo<E>
          */
         public CollectionWithPagingInfo<E> readAll (Parameters params, WithResponse withResponse);
     }

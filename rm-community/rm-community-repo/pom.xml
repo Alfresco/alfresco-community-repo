@@ -3,7 +3,7 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>alfresco-rm-community-repo</artifactId>
    <name>Alfresco Records Management Community Repo</name>
-   <description>Alfresco Record Management Core Repository Extension</description>
+   <description>Alfresco Record Management Community Repository Extension</description>
    <packaging>amp</packaging>
 
    <parent>
@@ -83,10 +83,10 @@
                   </goals>
                   <configuration>
                      <target>
-                        <copy todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
+                        <move todir="${project.build.directory}/${project.build.finalName}/config/alfresco">
                            <fileset dir="${project.build.outputDirectory}/alfresco" />
-                        </copy>
-                        <move file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties" todir="${project.build.directory}/${project.build.finalName}" />
+                        </move>
+                        <copy file="${project.build.directory}/${project.build.finalName}/config/alfresco/module/org_alfresco_module_rm/module.properties" todir="${project.build.directory}/${project.build.finalName}" />
                      </target>
                   </configuration>
                </execution>
@@ -205,24 +205,21 @@
                </excludes>
             </configuration>
          </plugin>
-
-            <!-- License header generation -->
-            <plugin>
-               <groupId>org.codehaus.mojo</groupId>
-               <artifactId>license-maven-plugin</artifactId>
-               <configuration>
-                  <licenseName>alfresco_community</licenseName>
-                  <roots>
-                     <root>source/java</root>
-                     <root>unit-test/java</root>
-                     <root>source/compatibility</root>
-                     <root>config</root>
-                     <root>test/java</root>
-                     <root>test/resources</root>
-                  </roots>
-               </configuration>
-            </plugin>
-
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <configuration>
+               <licenseName>alfresco_community</licenseName>
+               <roots>
+                  <root>source/java</root>
+                  <root>unit-test/java</root>
+                  <root>source/compatibility</root>
+                  <root>config</root>
+                  <root>test/java</root>
+                  <root>test/resources</root>
+               </roots>
+            </configuration>
+         </plugin>
       </plugins>
       <pluginManagement>
          <plugins>

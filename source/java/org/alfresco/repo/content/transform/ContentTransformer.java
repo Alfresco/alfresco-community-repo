@@ -139,6 +139,9 @@ public interface ContentTransformer extends ContentWorker
     
     /**
      * @see #transform(ContentReader, ContentWriter, TransformationOptions)
+     * 
+     * @deprecated 
+     * Deprecated use {link {@link #transform(ContentReader, ContentWriter, TransformationOptions)}.
      */
     public void transform(ContentReader reader, ContentWriter writer) throws ContentIOException;
     

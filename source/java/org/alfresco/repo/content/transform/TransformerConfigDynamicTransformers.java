@@ -37,6 +37,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.MimetypeMap;
@@ -60,15 +61,17 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
 
     public TransformerConfigDynamicTransformers(TransformerConfig transformerConfig, TransformerProperties transformerProperties,
             MimetypeService mimetypeService, ContentService contentService, ContentTransformerRegistry transformerRegistry,
-            TransformerDebug transformerDebug, ModuleService moduleService, DescriptorService descriptorService)
+            TransformerDebug transformerDebug, ModuleService moduleService, DescriptorService descriptorService,
+            Properties globalProperties)
     {
         createDynamicTransformers(transformerConfig, transformerProperties, mimetypeService, contentService,
-                transformerRegistry, transformerDebug, moduleService, descriptorService);
+                transformerRegistry, transformerDebug, moduleService, descriptorService, globalProperties);
     }
 
     private void createDynamicTransformers(TransformerConfig transformerConfig, TransformerProperties transformerProperties,
             MimetypeService mimetypeService, ContentService contentService, ContentTransformerRegistry transformerRegistry,
-            TransformerDebug transformerDebug, ModuleService moduleService, DescriptorService descriptorService)
+            TransformerDebug transformerDebug, ModuleService moduleService, DescriptorService descriptorService,
+            Properties globalProperties)
     {
         Collection<String> SUFFIXES = Arrays.asList(new String [] {
                 FAILOVER,
@@ -118,9 +121,11 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
                             
                             AbstractContentTransformer2 transformer = property.suffix.equals(PIPELINE)
                                     ? createComplexTransformer(property, transformerConfig, mimetypeService,
-                                            contentService, transformerRegistry, transformerDebug, available)
+                                            contentService, transformerRegistry, transformerDebug, available,
+                                            globalProperties)
                                     : createFailoverTransformer(property, transformerConfig, mimetypeService,
-                                            contentService, transformerRegistry, transformerDebug, available);
+                                            contentService, transformerRegistry, transformerDebug, available,
+                                            globalProperties);
                             transformer.register();
                             processed.add(property);
                             dynamicTransformers.add(transformer);
@@ -168,7 +173,7 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
             TransformerConfig transformerConfig,
             MimetypeService mimetypeService, ContentService contentService,
             ContentTransformerRegistry transformerRegistry, TransformerDebug transformerDebug,
-            boolean available)
+            boolean available, Properties globalProperties)
     {
         List<ContentTransformer> transformers = new ArrayList<ContentTransformer>();
         List<String> intermediateMimetypes = new ArrayList<String>();
@@ -185,7 +190,7 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
             }
         };
         setupContentTransformer2(property, transformerConfig, mimetypeService, contentService,
-                transformerRegistry, transformerDebug, available, transformer, transformers);
+                transformerRegistry, transformerDebug, available, transformer, transformers, globalProperties);
         
         // baseComplexContentTransformer
         transformer.setContentService(contentService);
@@ -201,7 +206,7 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
             TransformerConfig transformerConfig,
             MimetypeService mimetypeService, ContentService contentService,
             ContentTransformerRegistry transformerRegistry, TransformerDebug transformerDebug,
-            boolean available)
+            boolean available, Properties globalProperties)
     {
         List<ContentTransformer> transformers = new ArrayList<ContentTransformer>();
 
@@ -217,7 +222,7 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
             }
         };
         setupContentTransformer2(property, transformerConfig, mimetypeService, contentService,
-                transformerRegistry, transformerDebug, available, transformer, transformers);
+                transformerRegistry, transformerDebug, available, transformer, transformers, globalProperties);
         
         // FailoverContentTransformer
         transformer.setTransformers(transformers);
@@ -286,7 +291,8 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
             TransformerConfig transformerConfig, MimetypeService mimetypeService,
             ContentService contentService, ContentTransformerRegistry transformerRegistry,
             TransformerDebug transformerDebug, boolean available,
-            AbstractContentTransformer2 transformer, List<ContentTransformer> transformers)
+            AbstractContentTransformer2 transformer, List<ContentTransformer> transformers,
+            Properties globalProperties)
     {
         try
         {
@@ -312,6 +318,14 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
         // AbstractContentTransformer2
         transformer.setBeanName(property.transformerName);
         transformer.setRegisterTransformer(available);
+        transformer.setStrictMimeTypeCheck(getBoolean(globalProperties, "content.transformer.strict.mimetype.check"));
+        transformer.setRetryTransformOnDifferentMimeType(getBoolean(globalProperties, "content.transformer.retryOn.different.mimetype"));
+    }
+
+    private boolean getBoolean(Properties properties, String name)
+    {
+        String value = properties == null ? null : properties.getProperty(name);
+        return "true".equalsIgnoreCase(value);
     }
 
     private void error(String msg)

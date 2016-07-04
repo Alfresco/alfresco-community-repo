@@ -68,7 +68,7 @@ function main()
 /* Sort the results by case-insensitive name */
 function sortByName(a, b)
 {
-   return (b.toLowerCase() > a.toLowerCase() ? -1 : 1);
+   return a.localeCompare(b);
 }
 
 main();

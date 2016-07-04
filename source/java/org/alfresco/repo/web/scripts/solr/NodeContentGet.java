@@ -211,7 +211,7 @@ public class NodeContentGet extends StreamContent
             try
             {
                 long start = System.currentTimeMillis();
-                transformer.transform(reader, writer);
+                transformer.transform(reader, writer, options);
                 long transformDuration = System.currentTimeMillis() - start;
                 res.setHeader(TRANSFORM_DURATION_HEADER, String.valueOf(transformDuration));
             }

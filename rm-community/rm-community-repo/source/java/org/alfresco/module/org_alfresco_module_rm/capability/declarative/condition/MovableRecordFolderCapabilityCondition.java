@@ -36,7 +36,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
  * @since 2.4.1
  *
  */
-public class MovableCapabilityCondition extends AbstractCapabilityCondition
+public class MovableRecordFolderCapabilityCondition extends AbstractCapabilityCondition
 {
 
     /**
@@ -47,6 +47,6 @@ public class MovableCapabilityCondition extends AbstractCapabilityCondition
     {
         if (nodeService.hasAspect(nodeRef, ASPECT_GHOSTED) && dispositionService.isDisposableItemCutoff(nodeRef))
             return true;
-        return !dispositionService.isDisposableItemCutoff(nodeRef);
+        return ! (dispositionService.isDisposableItemCutoff(nodeRef) || recordFolderService.isRecordFolderClosed(nodeRef));
     }
 }

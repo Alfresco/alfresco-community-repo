@@ -27,6 +27,7 @@
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,7 +47,7 @@ import org.mockito.InjectMocks;
  * @author Ana Bozianu
  * @since 2.4
  */
-public class RecordsManagementContainerTypeTest extends BaseUnitTest
+public class RecordsManagementContainerTypeUnitTest extends BaseUnitTest
 {
     /** test object */
     private @InjectMocks RecordsManagementContainerType recordManagementContainerType;
@@ -111,7 +112,7 @@ public class RecordsManagementContainerTypeTest extends BaseUnitTest
         try
         {
             recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
-            assertTrue("Expected to throw exception on create child association.", false);
+            fail("Expected to throw exception on create child association.");
         }
         catch (Throwable e)
         {

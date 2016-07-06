@@ -40,4 +40,5 @@ public interface TestModel
     
     public static final QName ASPECT_RECORD_METADATA = QName.createQName(TEST_URI, "recordMetaData");
     public static final QName PROPERTY_RECORD_METADATA = QName.createQName(TEST_URI, "recordMetaDataProperty");
+    public static final QName NOT_RM_FOLDER_TYPE = QName.createQName(TEST_URI, "notRmFolderType");
 }

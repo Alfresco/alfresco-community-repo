@@ -70,7 +70,7 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
 
     /** File plan service */
     private FilePlanService filePlanService;
-    
+
     /** Permission processor registry */
     private PermissionProcessorRegistry permissionProcessorRegistry;
 
@@ -93,13 +93,13 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
     {
         this.filePlanService = filePlanService;
     }
-    
+
     /**
      * Sets the permission processor registry
-     * 
+     *
      * @param permissionProcessorRegistry	the permissions processor registry
      */
-    public void setPermissionProcessorRegistry(PermissionProcessorRegistry permissionProcessorRegistry) 
+    public void setPermissionProcessorRegistry(PermissionProcessorRegistry permissionProcessorRegistry)
     {
 		this.permissionProcessorRegistry = permissionProcessorRegistry;
 	}
@@ -146,40 +146,42 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl
     public AccessStatus hasPermission(NodeRef nodeRef, String perm)
     {
     	AccessStatus result = AccessStatus.UNDETERMINED;
-    	
-    	// permission pre-processors
-    	List<PermissionPreProcessor> preProcessors = permissionProcessorRegistry.getPermissionPreProcessors();
-    	for (PermissionPreProcessor preProcessor : preProcessors) 
-    	{
-    		// pre process permission
-    		result = preProcessor.process(nodeRef, perm);
-    		
-    		// veto if denied
-    		if (AccessStatus.DENIED.equals(result))
-    		{
-    			return result;
+    	if (nodeService.exists(nodeRef))
+            {
+
+        	// permission pre-processors
+        	List<PermissionPreProcessor> preProcessors = permissionProcessorRegistry.getPermissionPreProcessors();
+        	for (PermissionPreProcessor preProcessor : preProcessors)
+        	{
+        		// pre process permission
+        		result = preProcessor.process(nodeRef, perm);
+
+        		// veto if denied
+        		if (AccessStatus.DENIED.equals(result))
+        		{
+        			return result;
+        		}
     		}
-		}
-    	
-    	// evaluate permission
-        result = hasPermissionImpl(nodeRef, perm);
-        
-        // permission post-processors
-        List<PermissionPostProcessor> postProcessors = permissionProcessorRegistry.getPermissionPostProcessors();
-        for (PermissionPostProcessor postProcessor : postProcessors) 
-        {
-        	// post process permission
-        	result = postProcessor.process(result, nodeRef, perm);
-		}        
-        
+
+        	// evaluate permission
+            result = hasPermissionImpl(nodeRef, perm);
+
+            // permission post-processors
+            List<PermissionPostProcessor> postProcessors = permissionProcessorRegistry.getPermissionPostProcessors();
+            for (PermissionPostProcessor postProcessor : postProcessors)
+            {
+            	// post process permission
+            	result = postProcessor.process(result, nodeRef, perm);
+    		}
+        }
         return result;
     }
-    
+
     /**
      * Implementation of hasPermission method call.
      * <p>
      * Separation also convenient for unit testing.
-     * 
+     *
      * @param nodeRef	node reference
      * @param perm		permission
      * @return {@link AccessStatus}	access status result

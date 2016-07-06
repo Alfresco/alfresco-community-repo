@@ -400,4 +400,30 @@ public final class WebScriptUtils
         final int status = e.getStatus();
         return status >= lowerLimitInclusive && status < upperLimitExclusive;
     }
+
+    /**
+     * Gets the {@link JSONObject} value of a given key from a json object
+     *
+     * @param jsonObject The json object
+     * @param key The key
+     * @return The {@link JSONObject} value of the given key from the json object
+     */
+    public static JSONObject getValueFromJSONObject(JSONObject jsonObject, String key)
+    {
+        mandatory("jsonObject", jsonObject);
+        mandatoryString("key", key);
+
+        JSONObject value = null;
+
+        try
+        {
+            value = jsonObject.getJSONObject(key);
+        }
+        catch (JSONException error)
+        {
+            throw new WebScriptException(Status.STATUS_BAD_REQUEST, "Could not get value for the key '" + key + "'.", error);
+        }
+
+        return value;
+    }
 }

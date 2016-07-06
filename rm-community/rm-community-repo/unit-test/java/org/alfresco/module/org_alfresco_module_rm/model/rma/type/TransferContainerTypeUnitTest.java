@@ -40,7 +40,7 @@ import org.mockito.InjectMocks;
  * @author Mihai Cozma
  * @since 2.4
  */
-public class TransferContainerTypeTest extends BaseUnitTest
+public class TransferContainerTypeUnitTest extends BaseUnitTest
 {
     /** test object */
     private @InjectMocks TransferContainerType transferContainerType;

@@ -125,6 +125,38 @@ public class FileFolderUtil
                 List<PathElementDetails> pathElementDetails, QName folderTypeQName, BehaviourFilter behaviourFilter,
                 Set<QName> parentBehavioursToDisable)
     {
+        return makeFolders(service, nodeService, parentNodeRef, pathElementDetails, folderTypeQName, behaviourFilter, parentBehavioursToDisable, null);
+    }
+
+    /**
+     * Checks for the presence of, and creates as necessary, the folder
+     * structure in the provided paths with the following options:
+     * <ul>
+     * <li>Option to disable parent behaviour(s) when creating sub-folder.</li>
+     * <li>Each folder has the option to have its own set of aspects</li>
+     *</ul>
+     *
+     * @param service the FileFolderService object
+     * @param nodeService the NodeService object
+     * @param parentNodeRef the node under which the path will be created
+     * @param pathElementDetails the list of folder hierarchy where each folder
+     *            can have its own set of aspects - may not be empty
+     * @param folderTypeQName the types of nodes to create. This must be a valid
+     *            subtype of {@link org.alfresco.model.ContentModel#TYPE_FOLDER
+     *            they folder type}
+     * @param behaviourFilter the BehaviourFilter object
+     * @param parentBehavioursToDisable the set of behaviours that must be
+     *            disabled
+     * @param allFoldersRefsInThePath (Optional) if an instance of a Set is provided,
+     *                                then it'd be populated with nodeRefs of all
+     *                                the folders that have been specified in the path
+     *                                elements details.({@code pathElementDetails}).
+     * @return Returns the {@code FileInfo} of the last folder in the path.
+     */
+    public static FileInfo makeFolders(FileFolderService service, NodeService nodeService, NodeRef parentNodeRef,
+                List<PathElementDetails> pathElementDetails, QName folderTypeQName, BehaviourFilter behaviourFilter,
+                Set<QName> parentBehavioursToDisable, Set<NodeRef> allFoldersRefsInThePath)
+    {
         validate(pathElementDetails, service, folderTypeQName);
 
         NodeRef currentParentRef = parentNodeRef;
@@ -179,6 +211,10 @@ public class FileFolderUtil
             {
                 // it exists
                 currentParentRef = nodeRef;
+            }
+            if (allFoldersRefsInThePath != null)
+            {
+                allFoldersRefsInThePath.add(currentParentRef);
             }
         }
         // done

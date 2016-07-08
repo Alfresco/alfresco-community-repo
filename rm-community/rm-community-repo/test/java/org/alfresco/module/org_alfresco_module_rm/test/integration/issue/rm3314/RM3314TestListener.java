@@ -105,23 +105,28 @@ public class RM3314TestListener implements ApplicationListener<ContextRefreshedE
             {
                 try
                 {
-                    // create node
-                    NodeRef folder = fileFolderService.create(
-                                repository.getCompanyHome(), 
-                                name, 
-                                ContentModel.TYPE_FOLDER).getNodeRef();
-                    try
-                    {                
-                        // add aspect
-                        nodeService.addAspect(folder, ContentModel.ASPECT_CLASSIFIABLE, null);
-                        
-                        // remove aspect
-                        nodeService.removeAspect(folder, ContentModel.ASPECT_CLASSIFIABLE);
-                    }
-                    finally
+                    NodeRef companyHome = repository.getCompanyHome();
+                    
+                    if (fileFolderService.searchSimple(companyHome, name) == null)
                     {
-                        // delete node
-                        nodeService.deleteNode(folder);
+                        // create node
+                        NodeRef folder = fileFolderService.create(
+                                    repository.getCompanyHome(), 
+                                    name, 
+                                    ContentModel.TYPE_FOLDER).getNodeRef();
+                        try
+                        {                
+                            // add aspect
+                            nodeService.addAspect(folder, ContentModel.ASPECT_CLASSIFIABLE, null);
+                            
+                            // remove aspect
+                            nodeService.removeAspect(folder, ContentModel.ASPECT_CLASSIFIABLE);
+                        }
+                        finally
+                        {
+                            // delete node
+                            nodeService.deleteNode(folder);
+                        }
                     }
                 }
                 catch (BadSqlGrammarException e)

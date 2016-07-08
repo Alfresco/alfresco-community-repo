@@ -40,6 +40,17 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
  */
 public class RM3314Test extends BaseRMTestCase
 {
+    /** Application context */
+    protected String[] getConfigLocations()
+    {
+        return new String[]
+        {
+            "classpath:alfresco/application-context.xml",
+            "classpath:test-context.xml",
+            "classpath:test-rm3314-context.xml"
+        };
+    }
+    
 	/** registry to record callback from test beans "test.rm3114.1" and "test.rm3114.2" */
     public static Map<String, Boolean> callback = new HashMap<String, Boolean>(2);
     

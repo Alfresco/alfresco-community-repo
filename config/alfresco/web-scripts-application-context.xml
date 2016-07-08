@@ -308,7 +308,7 @@
    </bean>
    
    <!--  Remote Store service - ADM -->
-   <bean id="webscript.org.alfresco.repository.store.remoteadm.get" class="org.alfresco.repo.web.scripts.bean.ADMRemoteStore" parent="webscript">
+   <bean id="baseADMRemoteStore" abstract="true" class="org.alfresco.repo.web.scripts.bean.ADMRemoteStore" parent="webscript" >
       <property name="nodeService" ref="NodeService" />
       <property name="unprotectedNodeService" ref="nodeService" />
       <property name="mimetypeService" ref="MimetypeService" />
@@ -317,34 +317,22 @@
       <property name="siteService" ref="SiteService" />
       <property name="hiddenAspect" ref="hiddenAspect" />
       <property name="behaviourFilter" ref="policyBehaviourFilter" />
+      <property name="permissionService" ref="permissionService" />
+      <property name="ownableService" ref="OwnableService" />
    </bean>
-   <bean id="surfConfigCleaner" parent="webscript.org.alfresco.repository.store.remoteadm.get" class="org.alfresco.repo.surf.policy.SurfConfigCleaner"
-      init-method="init">
+   
+   <bean id="webscript.org.alfresco.repository.store.remoteadm.get"  parent="baseADMRemoteStore" />
+   
+   <bean id="surfConfigCleaner" parent="baseADMRemoteStore" class="org.alfresco.repo.surf.policy.SurfConfigCleaner" init-method="init">
       <property name="fileFolderService" ref="fileFolderService" />
       <property name="nodeService" ref="nodeService" />
       <property name="policyComponent" ref="policyComponent" />
       <property name="siteService" ref="siteService" />
    </bean>
-   <bean id="webscript.org.alfresco.repository.store.remoteadm.post" class="org.alfresco.repo.web.scripts.bean.ADMRemoteStore" parent="webscript">
-      <property name="nodeService" ref="NodeService" />
-      <property name="unprotectedNodeService" ref="nodeService" />
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="fileFolderService" ref="FileFolderService"/>
-      <property name="contentService" ref="ContentService"/>
-      <property name="siteService" ref="SiteService" />
-      <property name="hiddenAspect" ref="hiddenAspect" />
-      <property name="behaviourFilter" ref="policyBehaviourFilter" />
-   </bean>
-   <bean id="webscript.org.alfresco.repository.store.remoteadm.delete" class="org.alfresco.repo.web.scripts.bean.ADMRemoteStore" parent="webscript">
-      <property name="nodeService" ref="NodeService" />
-      <property name="unprotectedNodeService" ref="nodeService" />
-      <property name="mimetypeService" ref="MimetypeService" />
-      <property name="fileFolderService" ref="FileFolderService"/>
-      <property name="contentService" ref="ContentService"/>
-      <property name="siteService" ref="SiteService" />
-      <property name="hiddenAspect" ref="hiddenAspect" />
-      <property name="behaviourFilter" ref="policyBehaviourFilter" />
-   </bean>
+   
+   <bean id="webscript.org.alfresco.repository.store.remoteadm.post" parent="baseADMRemoteStore" />
+   
+   <bean id="webscript.org.alfresco.repository.store.remoteadm.delete"  parent="baseADMRemoteStore" />
    
    <!-- Web-tier SSO authentication touch point -->
    <bean id="webscript.org.alfresco.repository.touch.get" class="org.alfresco.repo.web.scripts.bean.Touch" parent="webscript" />

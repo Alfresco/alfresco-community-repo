@@ -56,11 +56,6 @@ import org.alfresco.service.namespace.RegexQNamePattern;
 public interface RecordsManagementAdminService
 {
     /**
-     * Initialise the custom model
-     */
-    void initialiseCustomModel();
-
-    /**
      * Get a list of all registered customisable types and aspects.
      *
      * @return Set of <{@link QName}>s of customisable types and aspects

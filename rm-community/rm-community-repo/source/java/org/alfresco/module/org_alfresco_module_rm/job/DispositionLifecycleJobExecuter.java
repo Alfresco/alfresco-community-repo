@@ -43,16 +43,13 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.security.AuthenticationService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * The Disposition Lifecycle Job Finds all disposition action nodes which are
- * for disposition actions specified Where asOf > now OR
- * dispositionEventsEligible = true;
- *
- * Runs the cut off or retain action for
- * eligible records.
+ * The Disposition Lifecycle Job Finds all disposition action nodes which are for disposition actions specified Where
+ * asOf > now OR dispositionEventsEligible = true; Runs the cut off or retain action for eligible records.
  *
  * @author mrogers
  * @author Roy Wetherall
@@ -77,10 +74,13 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** search service */
     private SearchService searchService;
 
+    /** authenticationService service */
+    private AuthenticationService authenticationService;
+
     /**
      * List of disposition actions to automatically execute when eligible.
      *
-     * @param dispositionActions    disposition actions
+     * @param dispositionActions disposition actions
      */
     public void setDispositionActions(List<String> dispositionActions)
     {
@@ -88,7 +88,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * @param recordsManagementActionService    records management action service
+     * @param recordsManagementActionService records management action service
      */
     public void setRecordsManagementActionService(RecordsManagementActionService recordsManagementActionService)
     {
@@ -96,7 +96,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     }
 
     /**
-     * @param nodeService   node service
+     * @param nodeService node service
      */
     public void setNodeService(NodeService nodeService)
     {
@@ -114,7 +114,7 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /**
      * Get the search query string.
      *
-     * @return  job query string
+     * @return job query string
      */
     protected String getQuery()
     {
@@ -165,7 +165,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
             if (dispositionActions != null && !dispositionActions.isEmpty())
             {
                 // execute search
-                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, SearchService.LANGUAGE_FTS_ALFRESCO, getQuery());
+                ResultSet results = searchService.query(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,
+                            SearchService.LANGUAGE_FTS_ALFRESCO, getQuery());
                 List<NodeRef> resultNodes = results.getNodeRefs();
                 results.close();
 
@@ -183,7 +184,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                     {
                         public Boolean execute()
                         {
-                            final String dispAction = (String) nodeService.getProperty(currentNode, RecordsManagementModel.PROP_DISPOSITION_ACTION);
+                            final String dispAction = (String) nodeService.getProperty(currentNode,
+                                        RecordsManagementModel.PROP_DISPOSITION_ACTION);
 
                             // Run disposition action
                             if (dispAction != null && dispositionActions.contains(dispAction))
@@ -192,12 +194,14 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                                 if (parent.getTypeQName().equals(RecordsManagementModel.ASSOC_NEXT_DISPOSITION_ACTION))
                                 {
                                     Map<String, Serializable> props = new HashMap<String, Serializable>(1);
-                                    props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK, Boolean.FALSE);
+                                    props.put(RMDispositionActionExecuterAbstractBase.PARAM_NO_ERROR_CHECK,
+                                                Boolean.FALSE);
 
                                     try
                                     {
                                         // execute disposition action
-                                        recordsManagementActionService.executeRecordsManagementAction(parent.getParentRef(), dispAction, props);
+                                        recordsManagementActionService.executeRecordsManagementAction(
+                                                    parent.getParentRef(), dispAction, props);
 
                                         if (logger.isDebugEnabled())
                                         {
@@ -235,5 +239,15 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
                 logger.debug(exception);
             }
         }
+    }
+
+    public AuthenticationService getAuthenticationService()
+    {
+        return authenticationService;
+    }
+
+    public void setAuthenticationService(AuthenticationService authenticationService)
+    {
+        this.authenticationService = authenticationService;
     }
 }

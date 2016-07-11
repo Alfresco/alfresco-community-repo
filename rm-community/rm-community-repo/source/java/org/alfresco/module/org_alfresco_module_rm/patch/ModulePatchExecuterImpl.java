@@ -55,7 +55,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     private static final int START_SCHEMA = 0;
 
     /** attribute key */
-    private static final String KEY_MODULE_SCHEMA = "module-schema";
+    private String moduleSchemaKeyName;
 
     /** configured module schema version */
     protected int moduleSchema = START_SCHEMA;
@@ -65,6 +65,14 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
 
     /** module patches */
     protected Map<String, ModulePatch> modulePatches = new HashMap<String, ModulePatch>(21);
+
+    /**
+     * @param moduleSchemaKeyName  configured module schema key name
+     */
+    public void setModuleSchemaKeyName(String moduleSchemaKeyName)
+    {
+        this.moduleSchemaKeyName = moduleSchemaKeyName;
+    }
 
     /**
      * @param attributeService  attribute service
@@ -149,9 +157,9 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
     protected int getCurrentSchema()
     {
         Integer result = START_SCHEMA;
-        if (attributeService.exists(KEY_MODULE_SCHEMA, getModuleId()))
+        if (attributeService.exists(moduleSchemaKeyName, getModuleId()))
         {
-            result = (Integer)attributeService.getAttribute(KEY_MODULE_SCHEMA, getModuleId());
+            result = (Integer)attributeService.getAttribute(moduleSchemaKeyName, getModuleId());
         }
         return result;
     }
@@ -163,7 +171,7 @@ public class ModulePatchExecuterImpl extends   AbstractModuleComponent
      */
     protected void updateSchema(int newSchema)
     {
-        attributeService.setAttribute(Integer.valueOf(newSchema), KEY_MODULE_SCHEMA,  getModuleId());
+        attributeService.setAttribute(Integer.valueOf(newSchema), moduleSchemaKeyName,  getModuleId());
     }
 
     /**

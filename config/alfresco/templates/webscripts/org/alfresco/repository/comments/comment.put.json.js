@@ -28,6 +28,16 @@ function main()
    {
       return;
    }
+   
+   // MNT-16446 (pending future ACE-5437)
+   // TODO: commentedOn node is locked or pwc
+   var commentData = getCommentData(node);
+   var canEdit = commentData.canEditComment;
+   if (! canEdit)
+   {
+      status.setCode(status.STATUS_FORBIDDEN, "Cannot edit comment");
+      return null;
+   }
 
    // update comment
    updateComment(node);   

@@ -275,7 +275,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
             
             Pair<HttpClient, String> httpClientAndBaseUrl = mapping.getHttpClientAndBaseUrl();
             HttpClient httpClient = httpClientAndBaseUrl.getFirst();
-            String url = buildStatsUrl(searchParameters, httpClientAndBaseUrl.getSecond(), locale);
+            String url = buildStatsUrl(searchParameters, httpClientAndBaseUrl.getSecond(), locale, mapping);
             JSONObject body = buildStatsBody(searchParameters, tenantService.getCurrentUserDomain(), locale);
             
             if(httpClient == null)
@@ -312,7 +312,7 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         }
     }
 
-    protected String buildStatsUrl(StatsParameters searchParameters, String baseUrl, Locale locale) throws UnsupportedEncodingException
+    protected String buildStatsUrl(StatsParameters searchParameters, String baseUrl, Locale locale, SolrStoreMappingWrapper mapping) throws UnsupportedEncodingException
     {
         URLCodec encoder = new URLCodec();
         StringBuilder url = new StringBuilder();
@@ -335,6 +335,28 @@ public class SolrQueryHTTPClient implements BeanFactoryAware, InitializingBean
         for(Entry<String, String> entry : searchParameters.getStatsParameters().entrySet())
         {
             url.append("&stats.").append(entry.getKey()).append("=").append(encoder.encode(entry.getValue(), "UTF-8"));
+        }
+        
+        if((mapping != null) && ((searchParameters.getStores().size() > 1) || (mapping.isSharded())))
+        {
+            boolean requiresSeparator = false;
+            url.append("&shards=");
+            for(StoreRef storeRef : searchParameters.getStores())
+            {
+                SolrStoreMappingWrapper storeMapping = extractMapping(storeRef);
+
+                if(requiresSeparator)
+                {
+                    url.append(',');
+                }
+                else
+                {
+                    requiresSeparator = true;
+                }
+
+                url.append(storeMapping.getShards());
+               
+            }
         }
         
         return url.toString();

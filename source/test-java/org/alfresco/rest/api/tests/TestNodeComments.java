@@ -55,6 +55,7 @@ import org.alfresco.rest.api.tests.client.PublicApiException;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.Comment;
+import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.client.data.Tag;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -70,9 +71,12 @@ public class TestNodeComments extends EnterpriseTestApi
 
 	private List<TestPerson> people = new ArrayList<TestPerson>();
 	private List<TestSite> sites = new ArrayList<TestSite>();
-	
+
 	private TestPerson person11;
 	private TestPerson person12;
+	private TestPerson person13;
+	private TestPerson person14;
+
 	private TestPerson person21;
 	private TestPerson person22;
 	
@@ -101,11 +105,20 @@ public class TestNodeComments extends EnterpriseTestApi
 				people.add(person);
 				person = network1.createUser();
 				people.add(person);
+				person = network1.createUser();
+				people.add(person);
+				person = network1.createUser();
+				people.add(person);
 
 				return null;
 			}
 		}, network1.getId());
-		
+
+		this.person11 = people.get(0);
+		this.person12 = people.get(1);
+		this.person13 = people.get(2);
+		this.person14 = people.get(3);
+
 		TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
 		{
 			@Override
@@ -119,11 +132,9 @@ public class TestNodeComments extends EnterpriseTestApi
 				return null;
 			}
 		}, network2.getId());
-		
-		this.person11 = people.get(0);
-		this.person12 = people.get(1);
-		this.person21 = people.get(2);
-		this.person22 = people.get(3);
+
+		this.person21 = people.get(4);
+		this.person22 = people.get(5);
 
 		TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
 		{
@@ -132,6 +143,9 @@ public class TestNodeComments extends EnterpriseTestApi
 			{
 				TestSite site = network1.createSite(SiteVisibility.PRIVATE);
 				sites.add(site);
+
+				site.updateMember(person13.getId(), SiteRole.SiteCollaborator);
+				site.updateMember(person14.getId(), SiteRole.SiteCollaborator);
 				
 				return null;
 			}
@@ -823,5 +837,38 @@ public class TestNodeComments extends EnterpriseTestApi
 				}
 			}, person11.getId(), network1.getId());
 		}
+	}
+	
+	@Test
+	public void test_MNT_16446() throws Exception
+	{
+		Comments commentsProxy = publicApiClient.comments();
+
+		// in a site
+
+		publicApiClient.setRequestContext(new RequestContext(network1.getId(), person13.getId()));
+		Comment comment = new Comment("Test Comment 1", "Test Comment 1");
+		Comment resp = commentsProxy.createNodeComment(nodeRef1.getId(), comment);
+		String commentId = resp.getId();
+
+		// MNT-16446: another site collaborator should not be able to edit
+		try
+		{
+			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person14.getId()));
+			Comment update = new Comment("Test Comment 4", "Test Comment 4");
+			commentsProxy.updateNodeComment(nodeRef1.getId(), commentId, update);
+			fail();
+		}
+		catch (PublicApiException e)
+		{
+			assertEquals(HttpStatus.SC_FORBIDDEN, e.getHttpResponse().getStatusCode());
+		}
+
+		publicApiClient.setRequestContext(new RequestContext(network1.getId(), person13.getId()));
+
+		Comment update = new Comment("Updated comment", "Updated comment");
+		commentsProxy.updateNodeComment(nodeRef1.getId(), commentId, update);
+
+		commentsProxy.removeNodeComment(nodeRef1.getId(), commentId);
 	}
 }

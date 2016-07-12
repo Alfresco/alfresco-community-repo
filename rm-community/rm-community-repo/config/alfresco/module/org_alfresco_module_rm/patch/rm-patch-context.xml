@@ -7,7 +7,6 @@
    <bean id="rm.modulePatchExecuter" parent="module.baseComponent" class="org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuterImpl">
       <property name="moduleId" value="org_alfresco_module_rm"/>
       <property name="description" value="RM patch executer"/>
-      <property name="moduleSchemaKeyName" value="module-schema"/>
       <property name="sinceVersion" value="2.2"/>
       <property name="executeOnceOnly" value="false"/>
       <property name="moduleSchema" value="2501"/>

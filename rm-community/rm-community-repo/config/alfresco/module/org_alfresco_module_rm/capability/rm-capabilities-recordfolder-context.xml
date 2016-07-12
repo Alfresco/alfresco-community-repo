@@ -122,6 +122,11 @@
       <property name="name" value="MoveRecordFolder"/>
       <property name="private" value="true"/>
       <property name="undetermined" value="true"/>
+      <property name="kinds">
+         <list>
+            <value>RECORD_FOLDER</value>
+         </list>
+      </property>
       <property name="capabilities">
          <list>
             <ref bean="rmDeleteRecordFolderCapability"/>

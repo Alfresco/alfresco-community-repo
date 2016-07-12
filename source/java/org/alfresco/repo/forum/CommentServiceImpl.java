@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
@@ -42,17 +43,27 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.query.PagingResults;
 import org.alfresco.repo.activities.ActivityType;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQuery;
 import org.alfresco.repo.node.getchildren.GetChildrenCannedQueryFactory;
+import org.alfresco.repo.policy.JavaBehaviour;
+import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
@@ -61,13 +72,16 @@ import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.json.simple.JSONObject;
+import org.springframework.context.ApplicationEvent;
+import org.springframework.extensions.surf.util.AbstractLifecycleBean;
 
 /**
  * @author Neil Mc Erlean
  * @since 4.0
  */
 // TODO consolidate this and ScriptCommentService and the implementations of comments.* web scripts.
-public class CommentServiceImpl implements CommentService
+public class CommentServiceImpl extends AbstractLifecycleBean 
+        implements CommentService, NodeServicePolicies.BeforeDeleteNodePolicy, NodeServicePolicies.BeforeUpdateNodePolicy
 {
     private static Log logger = LogFactory.getLog(CommentServiceImpl.class);  
 
@@ -84,6 +98,9 @@ public class CommentServiceImpl implements CommentService
     private ContentService contentService;
     private ActivityService activityService;
     private SiteService siteService;
+    private PolicyComponent policyComponent;
+    private PermissionService permissionService;
+    private LockService lockService;
     
     private NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry;
 
@@ -112,7 +129,40 @@ public class CommentServiceImpl implements CommentService
 		this.cannedQueryRegistry = cannedQueryRegistry;
 	}
 
-	@Override
+    public void setPolicyComponent(PolicyComponent policyComponent)
+    {
+        this.policyComponent = policyComponent;
+    }
+
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
+
+    public void setLockService(LockService lockService)
+    {
+        this.lockService = lockService;
+    }
+
+    @Override
+    protected void onBootstrap(ApplicationEvent event)
+    {
+        this.policyComponent.bindClassBehaviour(
+                NodeServicePolicies.BeforeUpdateNodePolicy.QNAME,
+                ForumModel.TYPE_POST,
+                new JavaBehaviour(this, "beforeUpdateNode"));
+        this.policyComponent.bindClassBehaviour(
+                NodeServicePolicies.BeforeDeleteNodePolicy.QNAME,
+                ForumModel.TYPE_POST,
+                new JavaBehaviour(this, "beforeDeleteNode"));
+    }
+
+    @Override
+    protected void onShutdown(ApplicationEvent event)
+    {
+    }
+
+    @Override
     public NodeRef getDiscussableAncestor(NodeRef descendantNodeRef)
     {
         // For "Share comments" i.e. fm:post nodes created via the Share commenting UI, the containment structure is as follows:
@@ -126,7 +176,8 @@ public class CommentServiceImpl implements CommentService
         // containment tree in a controlled manner.
         // We could navigate up looking for the first fm:discussable ancestor, but that might not find the correct node - it could,
         // for example, find a parent folder which was discussable.
-        
+
+        // TODO review - is this reasonable or should we (also) check for assoc "Comments" ?
         NodeRef result = null;
         if (nodeService.getType(descendantNodeRef).equals(ForumModel.TYPE_POST))
         {
@@ -358,10 +409,21 @@ public class CommentServiceImpl implements CommentService
     	{
     		throw new IllegalArgumentException("Node to update is not a comment node.");
     	}
-
-    	ContentWriter writer = contentService.getWriter(commentNodeRef, ContentModel.PROP_CONTENT, true);
-    	writer.setMimetype(MimetypeMap.MIMETYPE_HTML); // TODO should this be set by the caller?
-    	writer.putContent(comment);
+        
+        try
+        {
+            ContentWriter writer = contentService.getWriter(commentNodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setMimetype(MimetypeMap.MIMETYPE_HTML); // TODO should this be set by the caller?
+            writer.putContent(comment);
+        }
+        catch (ContentIOException cioe)
+        {
+            if (cioe.getCause() instanceof AccessDeniedException)
+            {
+                throw (AccessDeniedException)cioe.getCause();
+            }
+            throw cioe;
+        }
 
     	if(title != null)
     	{
@@ -410,5 +472,120 @@ public class CommentServiceImpl implements CommentService
         {
         	logger.warn("Unable to determine discussable node for the comment with nodeRef " + commentNodeRef + ", not posting an activity");
         }
+    }
+
+    // TODO review against ACE-5437 (eg. introduce CommentInfo as part of the CommentService)
+    public Map<String, Boolean> getCommentPermissions(NodeRef discussableNode, NodeRef commentNodeRef)
+    {
+        boolean canEdit = false;
+        boolean canDelete = false;
+        
+        // belts-and-braces
+        NodeRef discussableNodeRef = getDiscussableAncestor(commentNodeRef);
+        if (discussableNodeRef.equals(discussableNode))
+        {
+            if (!isWorkingCopyOrLocked(discussableNode))
+            {
+                canEdit = canEditPermission(commentNodeRef);
+                canDelete = canDeletePermission(commentNodeRef);
+            }
+        }
+        
+        Map<String, Boolean> map = new HashMap<>(2);
+        map.put(CommentService.CAN_EDIT, canEdit);
+        map.put(CommentService.CAN_DELETE, canDelete);
+        
+        return map;
+    }
+
+    private boolean canEditPermission(NodeRef commentNodeRef)
+    {
+        String creator = (String)nodeService.getProperty(commentNodeRef, ContentModel.PROP_CREATOR);
+        Serializable owner = nodeService.getProperty(commentNodeRef, ContentModel.PROP_OWNER);
+        String currentUser = AuthenticationUtil.getFullyAuthenticatedUser();
+
+        boolean isSiteManager = permissionService.hasPermission(commentNodeRef, SiteModel.SITE_MANAGER) == (AccessStatus.ALLOWED);
+        boolean isCoordinator = permissionService.hasPermission(commentNodeRef, PermissionService.COORDINATOR) == (AccessStatus.ALLOWED);
+        return (isSiteManager || isCoordinator || currentUser.equals(creator) || currentUser.equals(owner));
+    }
+    
+    private boolean canDeletePermission(NodeRef commentNodeRef)
+    {
+        return permissionService.hasPermission(commentNodeRef, PermissionService.DELETE) == AccessStatus.ALLOWED;
+    }
+
+    private boolean isWorkingCopyOrLocked(NodeRef nodeRef)
+    {
+        boolean isWorkingCopy = false;
+        boolean isLocked = false;
+
+        if (nodeRef != null)
+        {
+            Set<QName> aspects = nodeService.getAspects(nodeRef);
+
+            isWorkingCopy = aspects.contains(ContentModel.ASPECT_WORKING_COPY);
+            if (!isWorkingCopy)
+            {
+                if (aspects.contains(ContentModel.ASPECT_LOCKABLE))
+                {
+                    LockStatus lockStatus = lockService.getLockStatus(nodeRef);
+                    if (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER)
+                    {
+                        isLocked = true;
+                    }
+                }
+            }
+        }
+        return (isWorkingCopy || isLocked);
+    }
+
+    @Override
+    public void beforeUpdateNode(NodeRef commentNodeRef)
+    {
+        if (! canEdit(commentNodeRef))
+        {
+            throw new AccessDeniedException("Cannot edit comment");
+        }
+    }
+    
+    protected boolean canEdit(NodeRef commentNodeRef)
+    {
+        boolean canEdit = false;
+        
+        NodeRef discussableNodeRef = getDiscussableAncestor(commentNodeRef);
+        if (discussableNodeRef != null)
+        {
+            if (! isWorkingCopyOrLocked(discussableNodeRef))
+            {
+                canEdit = canEditPermission(commentNodeRef);
+            }
+        }
+        
+        return canEdit;
+    }
+
+    @Override
+    public void beforeDeleteNode(final NodeRef commentNodeRef)
+    {
+        if (! canDelete(commentNodeRef))
+        {
+            throw new AccessDeniedException("Cannot delete comment");
+        }
+    }
+    
+    protected boolean canDelete(NodeRef commentNodeRef)
+    {
+        boolean canDelete = false;
+        
+        NodeRef discussableNodeRef = getDiscussableAncestor(commentNodeRef);
+        if (discussableNodeRef != null)
+        {
+            if (! isWorkingCopyOrLocked(discussableNodeRef))
+            {
+                canDelete = canDeletePermission(commentNodeRef);
+            }
+        }
+        
+        return canDelete;
     }
 }

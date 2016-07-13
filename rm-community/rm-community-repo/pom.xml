@@ -34,9 +34,6 @@
          <resource>
             <directory>config</directory>
             <filtering>${app.filtering.enabled}</filtering>
-            <includes>
-                <include>alfresco/module/org_alfresco_module_rm/version.properties</include>
-            </includes>
          </resource>
       </resources>
       <testResources>

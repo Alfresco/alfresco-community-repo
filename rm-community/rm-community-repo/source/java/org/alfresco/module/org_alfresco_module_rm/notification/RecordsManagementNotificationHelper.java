@@ -244,34 +244,38 @@ public class RecordsManagementNotificationHelper implements RecordsManagementMod
         ParameterCheck.mandatory("records", records);
         if (!records.isEmpty())
         {
-            NodeRef root = getRMRoot(records.get(0));
-            String groupName = getGroupName(root);
-
-            if (doesGroupContainUsers(groupName))
+            if (nodeService.hasAspect(records.get(0), RecordsManagementModel.ASPECT_RECORD))
             {
-                NotificationContext notificationContext = new NotificationContext();
-                notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORDS_DUE_FOR_REVIEW));
-                notificationContext.setAsyncNotification(false);
-                notificationContext.setIgnoreNotificationFailure(true);
+                NodeRef root = getRMRoot(records.get(0));
+                String groupName = getGroupName(root);
 
-                notificationContext.setBodyTemplate(getDueForReviewTemplate().toString());
-                Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
-                args.put("records", (Serializable)records);
-                args.put("site", getSiteName(root));
-                notificationContext.setTemplateArgs(args);
-
-                notificationContext.addTo(groupName);
-
-                notificationService.sendNotification(EMailNotificationProvider.NAME, notificationContext);
-            }
-            else
-            {
-                if (logger.isWarnEnabled())
+                if (doesGroupContainUsers(groupName))
                 {
-                    logger.warn("Unable to send record due for review email notification, because notification group was empty.");
-                }
+                    NotificationContext notificationContext = new NotificationContext();
+                    notificationContext.setSubject(I18NUtil.getMessage(MSG_SUBJECT_RECORDS_DUE_FOR_REVIEW));
+                    notificationContext.setAsyncNotification(false);
+                    notificationContext.setIgnoreNotificationFailure(true);
 
-                throw new AlfrescoRuntimeException("Unable to send record due for review email notification, because notification group was empty.");
+                    notificationContext.setBodyTemplate(getDueForReviewTemplate().toString());
+                    Map<String, Serializable> args = new HashMap<String, Serializable>(1, 1.0f);
+                    args.put("records", (Serializable) records);
+                    args.put("site", getSiteName(root));
+                    notificationContext.setTemplateArgs(args);
+
+                    notificationContext.addTo(groupName);
+
+                    notificationService.sendNotification(EMailNotificationProvider.NAME, notificationContext);
+                }
+                else
+                {
+                    if (logger.isWarnEnabled())
+                    {
+                        logger.warn("Unable to send record due for review email notification, because notification group was empty.");
+                    }
+
+                    throw new AlfrescoRuntimeException(
+                                "Unable to send record due for review email notification, because notification group was empty.");
+                }
             }
         }
     }

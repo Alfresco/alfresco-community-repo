@@ -155,6 +155,48 @@ public class CommentServiceImpl extends AbstractLifecycleBean
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
+        // belts-and-braces (in case of broken spring-bean override)
+        ApplicationContext ctx = getApplicationContext();
+        if (ctx != null)
+        {
+            if (this.nodeService == null)
+            {
+                this.nodeService = (NodeService)ctx.getBean("NodeService");
+            }
+            if (this.contentService == null)
+            {
+                this.contentService = (ContentService)ctx.getBean("ContentService");
+            }
+            if (this.siteService == null)
+            {
+                this.siteService = (SiteService)ctx.getBean("SiteService");
+            }
+            if (this.activityService == null)
+            {
+                this.activityService = (ActivityService)ctx.getBean("activityService");
+            }
+            if (this.cannedQueryRegistry == null)
+            {
+                this.cannedQueryRegistry = (NamedObjectRegistry<CannedQueryFactory<? extends Object>>)ctx.getBean("commentsCannedQueryRegistry");
+            }
+            if (this.policyComponent == null)
+            {
+                this.policyComponent = (PolicyComponent)ctx.getBean("policyComponent");
+            }
+            if (this.behaviourFilter == null)
+            {
+                this.behaviourFilter = (BehaviourFilter)ctx.getBean("policyBehaviourFilter");
+            }
+            if (this.permissionService == null)
+            {
+                this.permissionService = (PermissionService)ctx.getBean("PermissionService");
+            }
+            if (this.lockService == null)
+            {
+                this.lockService = (LockService)ctx.getBean("LockService");
+            }
+        }
+        
         this.policyComponent.bindClassBehaviour(
                 NodeServicePolicies.BeforeUpdateNodePolicy.QNAME,
                 ForumModel.TYPE_POST,

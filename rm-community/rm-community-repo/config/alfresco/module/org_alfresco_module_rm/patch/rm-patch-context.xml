@@ -18,7 +18,7 @@
       <property name="description" value="RM patch executer"/>
       <property name="sinceVersion" value="2.2"/>
       <property name="executeOnceOnly" value="false"/>
-      <property name="moduleSchema"><value>${version.rm.schema}</value></property>
+      <property name="moduleSchema" value="${version.rm.schema}" />
       <property name="attributeService" ref="AttributeService" />
       <property name="dependsOn">
          <list>

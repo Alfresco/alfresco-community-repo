@@ -46,7 +46,7 @@ import org.mockito.InjectMocks;
  * @author Mihai Cozma
  * @since 2.4
  */
-public class HoldContainerTypeTest extends BaseUnitTest
+public class HoldContainerTypeUnitTest extends BaseUnitTest
 {
     /** test object */
     private @InjectMocks HoldContainerType holdContainerType;

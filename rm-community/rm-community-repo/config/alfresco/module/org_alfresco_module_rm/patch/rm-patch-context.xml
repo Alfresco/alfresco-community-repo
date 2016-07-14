@@ -3,13 +3,22 @@
 
 <beans>
 
+   <!-- load version.properties -->
+   <bean id="rm.version.properties" parent="common-placeholder-configurer">
+      <property name="locations">
+         <list>
+            <value>classpath*:alfresco/module/org_alfresco_module_rm/version.properties</value>
+         </list>
+      </property>
+   </bean>
+
    <!--  rm module patch executer -->
    <bean id="rm.modulePatchExecuter" parent="module.baseComponent" class="org.alfresco.module.org_alfresco_module_rm.patch.ModulePatchExecuterImpl">
       <property name="moduleId" value="org_alfresco_module_rm"/>
       <property name="description" value="RM patch executer"/>
       <property name="sinceVersion" value="2.2"/>
       <property name="executeOnceOnly" value="false"/>
-      <property name="moduleSchema" value="2502"/>
+      <property name="moduleSchema" value="${version.rm.schema}" />
       <property name="attributeService" ref="AttributeService" />
       <property name="dependsOn">
          <list>

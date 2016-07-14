@@ -26,13 +26,17 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
+import org.alfresco.module.org_alfresco_module_rm.test.util.TestModel;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.junit.Test;
@@ -43,7 +47,7 @@ import org.mockito.InjectMocks;
  * @author Ana Bozianu
  * @since 2.4
  */
-public class RecordsManagementContainerTypeTest extends BaseUnitTest
+public class RecordsManagementContainerTypeUnitTest extends BaseUnitTest
 {
     /** test object */
     private @InjectMocks RecordsManagementContainerType recordManagementContainerType;
@@ -95,6 +99,28 @@ public class RecordsManagementContainerTypeTest extends BaseUnitTest
     }
 
     /**
+     * Trying to create a RM folder and its sub-types via SFDC, IMap, WebDav, etc
+     * Check that exception is thrown on creating child associations
+     */
+    @Test
+    public void testRM3450()
+    {
+        NodeRef rmContainer = generateRMContainer();
+        NodeRef nonRmFolder = generateNonRmFolderNode();
+
+        ChildAssociationRef childAssoc = new ChildAssociationRef(ContentModel.ASSOC_CONTAINS, rmContainer, TestModel.NOT_RM_FOLDER_TYPE, nonRmFolder);
+        try
+        {
+            recordManagementContainerType.onCreateChildAssociation(childAssoc, true);
+            fail("Expected to throw exception on create child association.");
+        }
+        catch (Throwable e)
+        {
+            assertTrue(e instanceof AlfrescoRuntimeException);
+        }
+    }
+
+    /**
      * Generates a record management container
      * @return reference to the generated container
      */
@@ -121,5 +147,20 @@ public class RecordsManagementContainerTypeTest extends BaseUnitTest
         when(mockedNodeService.hasAspect(rmFolder, ContentModel.ASPECT_HIDDEN)).thenReturn(hasHiddenAspect);
         when(mockedNodeService.hasAspect(rmFolder, ASPECT_FILE_PLAN_COMPONENT)).thenReturn(false);
         return rmFolder;
+    }
+    
+    /**
+     * Generates a folder node
+     * @return reference to the created folder
+     */
+    private NodeRef generateNonRmFolderNode()
+    {
+        NodeRef nonRmFolder = generateNodeRef();
+        when(mockedDictionaryService.isSubClass(TestModel.NOT_RM_FOLDER_TYPE, ContentModel.TYPE_FOLDER)).thenReturn(true);
+        when(mockedNodeService.getType(nonRmFolder)).thenReturn(TestModel.NOT_RM_FOLDER_TYPE);
+        when(mockedNodeService.exists(nonRmFolder)).thenReturn(true);
+        when(mockedNodeService.hasAspect(nonRmFolder, ContentModel.ASPECT_HIDDEN)).thenReturn(false);
+        when(mockedNodeService.hasAspect(nonRmFolder, ASPECT_FILE_PLAN_COMPONENT)).thenReturn(false);
+        return nonRmFolder;
     }
 }

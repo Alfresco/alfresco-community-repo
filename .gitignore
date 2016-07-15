@@ -36,3 +36,4 @@ test-output
 # /rm-enterprise/rm-automation-enterprise/
 /rm-enterprise/rm-automation-enterprise/l10n
 /rm-enterprise/rm-automation-enterprise/root
+rm-automation/src/test/resources/webdriver.properties

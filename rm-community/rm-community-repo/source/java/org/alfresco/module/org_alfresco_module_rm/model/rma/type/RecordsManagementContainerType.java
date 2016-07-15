@@ -27,6 +27,7 @@
 
 package org.alfresco.module.org_alfresco_module_rm.model.rma.type;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.identifier.IdentifierService;
 import org.alfresco.module.org_alfresco_module_rm.model.BaseBehaviourBean;
@@ -43,6 +44,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.QName;
+import org.springframework.extensions.surf.util.I18NUtil;
 
 /**
  * rma:recordsManagementContainer behaviour bean.
@@ -68,6 +70,9 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
 
     /** record folder service */
     protected RecordFolderService recordFolderService;
+
+    /** I18N */
+    private static final String MSG_CANNOT_CAST_TO_RM_TYPE = "rm.action.cast-to-rm-type";
 
     /**
      * @param identifierService identifier service
@@ -151,6 +156,11 @@ public class RecordsManagementContainerType extends    BaseBehaviourBean
                             // This occurs if the RM folder has been created via IMap, WebDav, etc
                             if (!nodeService.hasAspect(child, ASPECT_FILE_PLAN_COMPONENT))
                             {
+                                // Throw exception if the type is not cm:folder
+                                if (!ContentModel.TYPE_FOLDER.equals(childType))
+                                {
+                                    throw new AlfrescoRuntimeException(I18NUtil.getMessage(MSG_CANNOT_CAST_TO_RM_TYPE));
+                                }
                                 // check the type of the parent to determine what 'kind' of artifact to create
                                 NodeRef parent = childAssocRef.getParentRef();
                                 QName parentType = nodeService.getType(parent);

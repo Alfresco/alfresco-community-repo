@@ -25,6 +25,7 @@
  */
 package org.alfresco.repo.web.scripts.blogs;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -93,6 +94,7 @@ public class BlogServiceTest extends BaseWebScriptTest
     private static final String URL_MY_PUBLISHED_BLOG_POSTS = "/api/blog/site/" + SITE_SHORT_NAME_BLOG +
                                                           "/" + COMPONENT_BLOG + "/posts/mypublished";
 
+    private static final String URL_DELETE_COMMENT = "api/comment/node/{0}/{1}/{2}?site={3}&itemtitle={4}&page={5}";
 
     private List<String> posts;
     private List<String> drafts;
@@ -287,7 +289,17 @@ public class BlogServiceTest extends BaseWebScriptTest
     {
         return "/api/comment/node/" + nodeRef.replace("://", "/");
     }
-    
+
+    private String getDeleteCommentUrl(NodeRef commentNodeRef)
+    {
+        String itemTitle = "Test Title";
+        String page = "document-details";
+
+        String URL = MessageFormat.format(URL_DELETE_COMMENT, new Object[] { commentNodeRef.getStoreRef().getProtocol(),
+                commentNodeRef.getStoreRef().getIdentifier(), commentNodeRef.getId(), SITE_SHORT_NAME_BLOG, itemTitle, page});
+        return URL;
+    }
+
     private JSONObject createComment(String nodeRef, String title, String content, int expectedStatus)
     throws Exception
     {
@@ -751,20 +763,24 @@ public class BlogServiceTest extends BaseWebScriptTest
     {
         this.authenticationComponent.setCurrentUser(USER_ONE);
         JSONObject item = createPost("testActivity", "test", null, false, 200);
+        assertNotNull(item);
         postLookup.execute();
         feedGenerator.execute();
-        int activityNumStart = activityService.getUserFeedEntries(USER_ONE, SITE_SHORT_NAME_BLOG).size();
+        int activityNumStart = activityService.getSiteFeedEntries(SITE_SHORT_NAME_BLOG).size();
         String nodeRef = item.getString("nodeRef");
         JSONObject commentOne = createComment(nodeRef, "comment", "content", 200);
+        assertNotNull(item);
         postLookup.execute();
         feedGenerator.execute();
-        int activityNumNext = activityService.getUserFeedEntries(USER_ONE, SITE_SHORT_NAME_BLOG).size();
+        int activityNumNext = activityService.getSiteFeedEntries(SITE_SHORT_NAME_BLOG).size();
         assertEquals("The activity feeds were not generated after adding a comment", activityNumStart + 1, activityNumNext);
-
-        sendRequest(new DeleteRequest(getCommentUrl(commentOne.getString("nodeRef"))), 200);
+        activityNumStart = activityNumNext;
+        NodeRef commentNodeRef = new NodeRef(commentOne.getString("nodeRef"));
+        Response resp = sendRequest(new DeleteRequest(getDeleteCommentUrl(commentNodeRef)), 200);
+        assertTrue(resp.getStatus() == 200);
         postLookup.execute();
         feedGenerator.execute();
-        activityNumNext = activityService.getUserFeedEntries(USER_ONE, SITE_SHORT_NAME_BLOG).size();
+        activityNumNext = activityService.getSiteFeedEntries(SITE_SHORT_NAME_BLOG).size();
         assertEquals("The activity feeds were not generated after deleting a comment", activityNumStart + 1, activityNumNext);
     }
 

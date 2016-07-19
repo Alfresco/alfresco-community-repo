@@ -24,7 +24,7 @@
               <view:authority>ROLE_OWNER</view:authority>
               <view:permission>FullControl</view:permission>
           </view:ace>
-      </view:acl>
+      </view:acl> 
    </sys:container>
 
 </view:view>

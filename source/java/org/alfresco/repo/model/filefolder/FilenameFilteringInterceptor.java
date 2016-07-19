@@ -80,16 +80,16 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     {
     }
     
-	/**
+    /**
      * A list of regular expressions that represent patterns of temporary files.
      * 
      */
-	public void setTemporaryFiles(PatternFilter temporaryFiles)
-	{
-		this.temporaryFiles = temporaryFiles;
-	}
+    public void setTemporaryFiles(PatternFilter temporaryFiles)
+    {
+        this.temporaryFiles = temporaryFiles;
+    }
     
-	public void setHiddenAspect(HiddenAspect hiddenAspect)
+    public void setHiddenAspect(HiddenAspect hiddenAspect)
     {
         this.hiddenAspect = hiddenAspect;
     }
@@ -103,17 +103,17 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
      * A list of regular expressions that represent patterns of system paths.
      * 
      */
-	public void setSystemPaths(PatternFilter systemPaths)
-	{
-		this.systemPaths = systemPaths;
-	}
-	
-	public Mode getMode()
-	{
-		return FileFilterMode.getMode();
-	}
-	
-	public Client getClient()
+    public void setSystemPaths(PatternFilter systemPaths)
+    {
+        this.systemPaths = systemPaths;
+    }
+    
+    public Mode getMode()
+    {
+        return FileFilterMode.getMode();
+    }
+    
+    public Client getClient()
     {
         return FileFilterMode.getClient();
     }
@@ -125,11 +125,11 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     {
         this.nodeService = nodeService;
     }
-	
-	public void setPermissionService(PermissionService permissionService)
-	{
-		this.permissionService = permissionService;
-	}
+    
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
 
     public void setContentService(ContentService contentService)
     {
@@ -145,7 +145,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
     {
         checkTemporaryAspect(isTemporary, fileInfo.getNodeRef());
     }
-	
+    
     private void checkTemporaryAspect(boolean isTemporary,  NodeRef nodeRef)
     {
         if(isTemporary)
@@ -177,7 +177,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 
     private Object runAsSystem(MethodInvocation invocation) throws Throwable
     {
-    	Object ret = null;
+        Object ret = null;
 
         // We're creating in enhanced mode and have a matching filename or path. Switch to
         // the system user to do the operation.
@@ -185,7 +185,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
         AuthenticationUtil.pushAuthentication();
         try
         {
-        	AuthenticationUtil.setRunAsUserSystem();
+            AuthenticationUtil.setRunAsUserSystem();
             ret = invocation.proceed();
         }
         finally
@@ -198,19 +198,19 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
 
     private boolean isSystemPath(NodeRef parentNodeRef, String filename)
     {
-    	boolean ret = false;
+        boolean ret = false;
         Path path = nodeService.getPath(parentNodeRef);
 
         Iterator<Element> it = path.iterator();
         while(it.hasNext())
         {
-        	Path.ChildAssocElement elem = (Path.ChildAssocElement)it.next();
-        	QName qname = elem.getRef().getQName();
-        	if(qname != null && systemPaths.isFiltered(qname.getLocalName()))
-        	{
-        		ret = true;
-        		break;
-        	}
+            Path.ChildAssocElement elem = (Path.ChildAssocElement)it.next();
+            QName qname = elem.getRef().getQName();
+            if(qname != null && systemPaths.isFiltered(qname.getLocalName()))
+            {
+                ret = true;
+                break;
+            }
         }
 
         return ret;
@@ -251,10 +251,10 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                     ret = runAsSystem(invocation);
                     FileInfoImpl fileInfo = (FileInfoImpl)ret;
                     permissionService.setPermission(fileInfo.getNodeRef(), PermissionService.ALL_AUTHORITIES, PermissionService.FULL_CONTROL, true);                
-    		            
+                        
                     // it's always marked temporary and hidden
                     checkTemporaryAspect(true, fileInfo);
-    		            hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask(), false, false, false);
+                    hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask(), false, false, false);
                 }
                 else
                 {
@@ -267,7 +267,7 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                     {
                         // it's on a system path, check whether temporary, hidden and noindex aspects need to be applied
                         checkTemporaryAspect(true, fileInfo);
-    	            		hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask(), false, false, false);
+                        hiddenAspect.hideNode(fileInfo, getSystemFileVisibilityMask(), false, false, false);
                     }
                     else
                     {
@@ -275,8 +275,8 @@ public class FilenameFilteringInterceptor implements MethodInterceptor
                         FileInfo sourceInfo = (FileInfo)ret;
                         boolean isTmp = isTemporaryObject(filename, sourceInfo.getNodeRef());
                         checkTemporaryAspect(isTmp, sourceInfo);
-    	                boolean isHidden = hiddenAspect.checkHidden(fileInfo, false, false);
-	                if(isHidden && fileInfo instanceof FileInfoImpl)
+                        boolean isHidden = hiddenAspect.checkHidden(fileInfo, false, false);
+                        if(isHidden && fileInfo instanceof FileInfoImpl)
                         {
                             ((FileInfoImpl)fileInfo).setHidden(true);
                         }

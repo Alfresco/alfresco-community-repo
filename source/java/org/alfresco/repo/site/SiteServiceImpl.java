@@ -2524,37 +2524,41 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
 
                 }, AuthenticationUtil.SYSTEM_USER_NAME);
 
+                AuthorityType authorityType = AuthorityType.getAuthorityType(authorityName);
+                String authorityDisplayName = authorityName;
+                if (authorityType == AuthorityType.GROUP)
+                {
+                    authorityDisplayName = authorityService.getAuthorityDisplayName(authorityName);
+                }
+
                 if (currentRole == null)
                 {
-                    AuthorityType authorityType = AuthorityType.getAuthorityType(authorityName);
                     if (authorityType == AuthorityType.USER)
                     {
                         activityService.postActivity(
                                 ActivityType.SITE_USER_JOINED, shortName,
-                                ACTIVITY_TOOL, getActivityUserData(authorityName, role), authorityName);
+                                ACTIVITY_TOOL, getActivityUserData(authorityDisplayName, role), authorityName);
                     } 
                     else if (authorityType == AuthorityType.GROUP)
                     { 
-                        String authorityDisplayName = authorityService.getAuthorityDisplayName(authorityName);
                         activityService.postActivity(
                                 ActivityType.SITE_GROUP_ADDED, shortName,
                                 ACTIVITY_TOOL, getActivityGroupData(authorityDisplayName, role));                   
                     }
-                } 
+                }
                 else
                 {
-                    AuthorityType authorityType = AuthorityType.getAuthorityType(authorityName);
                     if (authorityType == AuthorityType.USER)
                     {
                         activityService.postActivity(
                                 ActivityType.SITE_USER_ROLE_UPDATE, shortName,
-                                ACTIVITY_TOOL, getActivityUserData(authorityName, role));
+                                ACTIVITY_TOOL, getActivityUserData(authorityDisplayName, role));
                     } 
                     else if (authorityType == AuthorityType.GROUP)
                     {
                         activityService.postActivity(
                                 ActivityType.SITE_GROUP_ROLE_UPDATE, shortName,
-                                ACTIVITY_TOOL, getActivityGroupData(authorityName, role));
+                                ACTIVITY_TOOL, getActivityGroupData(authorityDisplayName, role));
                     }
                 }
             } 

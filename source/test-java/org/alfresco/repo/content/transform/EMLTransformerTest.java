@@ -60,6 +60,7 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
     private EMLTransformer transformer;
 
     private ContentTransformerRegistry registry;
+    private ContentTransformerWorker ooWorker;
 
     @Override
     public void setUp() throws Exception
@@ -72,6 +73,8 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
         transformer.setTransformerConfig(transformerConfig);
         
         registry = (ContentTransformerRegistry) ctx.getBean("contentTransformerRegistry");
+
+        ooWorker = (ContentTransformerWorker) ctx.getBean("transformer.worker.OpenOffice");
     }
 
     @Override
@@ -112,6 +115,15 @@ public class EMLTransformerTest extends AbstractContentTransformerTest
      */
     public void testRFC822ToPdf() throws Exception
     {
+        assertNotNull(registry.getTransformer("transformer.complex.Rfc822ToPdf"));
+                
+        // workaround for build machines (borrowed from OpenOfficeContentTransformerTest)
+        if (!ooWorker.isAvailable())
+        {
+            // no connection
+            return;
+        }
+        
         String sourceMimetype = MimetypeMap.MIMETYPE_RFC822;
         String targetMimetype = MimetypeMap.MIMETYPE_PDF;
 

@@ -194,8 +194,7 @@
                               <echo>Recreating database...</echo>
                               <sql driver="org.postgresql.Driver" url="jdbc:postgresql:template1" userid="alfresco" password="alfresco" autocommit="true">drop database if exists alfresco; create database alfresco</sql>
                               <echo>Downloading Alfresco installer...</echo>
-                              <sshexec username="tomcat" host="pbam01.alfresco.com" keyfile="${user.home}/.ssh/id_rsa" outputproperty="installerPath" command="ls -rt ${installer.path} | tail -1 | tr ' ' '?' " />
-                              <scp remoteFile="tomcat@pbam01.alfresco.com:${installerPath}" localTofile="target/alf-installer.bin" keyfile="${user.home}/.ssh/id_rsa" />
+                              <get src="https://releases.alfresco.com/${installer.path}" dest="target/alf-installer.bin"/>
                               <chmod file="target/alf-installer.bin" perm="a+x" verbose="true" />
                               <echo>Installing Alfresco...</echo>
                               <exec executable="${basedir}/target/alf-installer.bin" dir="target" failonerror="true">

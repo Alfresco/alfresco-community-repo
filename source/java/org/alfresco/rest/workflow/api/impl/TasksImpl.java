@@ -138,6 +138,7 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     private MessageService messageService;
     private PersonService personService;
     private ActivitiPropertyConverter propertyConverter;
+    private int taskVariablesLimit = 20000;
     
     public void setPropertyConverter(ActivitiPropertyConverter propertyConverter)
     {
@@ -157,6 +158,16 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
     public void setPersonService(PersonService personService)
     {
         this.personService = personService;
+    }
+    
+    public int getTaskVariablesLimit()
+    {
+        return taskVariablesLimit;
+    }
+    
+    public void setTaskVariablesLimit(int taskVariablesLimit)
+    {
+        this.taskVariablesLimit = taskVariablesLimit;
     }
     
     @Override
@@ -292,6 +303,9 @@ public class TasksImpl extends WorkflowRestImpl implements Tasks
             if (includeTaskVariables != null && includeTaskVariables) {
                 query.includeTaskLocalVariables();
             }
+            
+            // use the limit set in alfresco-global.properties
+            query.limitTaskVariables(taskVariablesLimit);
             
             List<QueryVariableHolder> variableProperties = propertyWalker.getVariableProperties();
             setQueryUsingVariables(query, variableProperties);

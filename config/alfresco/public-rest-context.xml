@@ -1011,6 +1011,7 @@
         <property name="messageService" ref="messageService" />
         <property name="personService" ref="PersonService" />
         <property name="propertyConverter" ref="activitiPropertyConverter" />
+        <property name="taskVariablesLimit" value="${system.workflow.engine.activiti.taskvariableslimit}" />
     </bean>
 
     <bean id="Tasks" class="org.springframework.aop.framework.ProxyFactoryBean">

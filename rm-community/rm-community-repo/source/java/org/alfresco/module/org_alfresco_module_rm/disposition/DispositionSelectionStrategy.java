@@ -104,7 +104,7 @@ public class DispositionSelectionStrategy implements RecordsManagementModel
 
             if (logger.isDebugEnabled())
             {
-                logger.debug("Selected disposition schedule: " + dispSchedule);
+                logger.debug("Selected retention schedule: " + dispSchedule);
             }
 
             NodeRef result = null;

@@ -1813,7 +1813,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 if (recordDispositionSchedule.isRecordLevelDisposition() != recordFolderDispositionSchedule.isRecordLevelDisposition())
                 {
                     // we can't link a record to an incompatible disposition schedule
-                    throw new RecordLinkRuntimeException("Can not link a record to a record folder with an incompatible disposition schedule.  "
+                    throw new RecordLinkRuntimeException("Can not link a record to a record folder with an incompatible retention schedule.  "
                                                      + "They must either both be record level or record folder level dispositions.");
                 }
             }

@@ -522,7 +522,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             		List<NodeRef> items = getDisposableItemsImpl(currentDispositionSchdule.isRecordLevelDisposition(), nodeRef);
             		if (items.size() != 0)
             		{
-            			throw new AlfrescoRuntimeException("Can not create a retention schedule if there are disposable items already under the control of an other disposition schedule");
+            			throw new AlfrescoRuntimeException("Can not create a retention schedule if there are disposable items already under the control of an other retention schedule");
             		}
             	}
 
@@ -537,7 +537,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             else
             {
                 // Error since the node already has a disposition schedule set
-                throw new AlfrescoRuntimeException("Unable to create retention schedule on node that already has a disposition schedule.");
+                throw new AlfrescoRuntimeException("Unable to create retention schedule on node that already has a retention schedule.");
             }
         }
         finally

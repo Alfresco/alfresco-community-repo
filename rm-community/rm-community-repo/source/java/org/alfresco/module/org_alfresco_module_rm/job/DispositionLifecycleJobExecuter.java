@@ -43,7 +43,7 @@ import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchService;
-import org.alfresco.service.cmr.security.AuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
@@ -74,8 +74,8 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
     /** search service */
     private SearchService searchService;
 
-    /** authenticationService service */
-    private AuthenticationService authenticationService;
+    /** person service */
+    private PersonService personService;
 
     /**
      * List of disposition actions to automatically execute when eligible.
@@ -241,13 +241,13 @@ public class DispositionLifecycleJobExecuter extends RecordsManagementJobExecute
         }
     }
 
-    public AuthenticationService getAuthenticationService()
+    public PersonService getPersonService()
     {
-        return authenticationService;
+        return personService;
     }
 
-    public void setAuthenticationService(AuthenticationService authenticationService)
+    public void setPersonService(PersonService personService)
     {
-        this.authenticationService = authenticationService;
+        this.personService = personService;
     }
 }

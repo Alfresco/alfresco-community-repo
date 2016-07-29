@@ -195,8 +195,6 @@ public class FilePlanRoleServiceImpl implements FilePlanRoleService,
                     // Set the permissions
                     permissionService.setInheritParentPermissions(filePlan, false);
                     permissionService.setPermission(filePlan, allRoles, RMPermissionModel.READ_RECORDS, true);
-                    permissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-                    permissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
 
                     // Create the transfer and hold containers
                     systemContainers.add(filePlanService.createHoldContainer(filePlan));

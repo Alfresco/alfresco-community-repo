@@ -609,7 +609,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
             nodeService.getType(childAssocRef.getParentRef()).equals(ContentModel.TYPE_FOLDER))
         {
             // ..then remove the extended readers and writers up the tree for this remaining node
-            extendedSecurityService.removeExtendedSecurity(childAssocRef.getChildRef(), extendedSecurityService.getExtendedReaders(childAssocRef.getChildRef()), extendedSecurityService.getExtendedWriters(childAssocRef.getChildRef()), true);
+            extendedSecurityService.removeAllExtendedSecurity(childAssocRef.getChildRef());
         }
     }
 

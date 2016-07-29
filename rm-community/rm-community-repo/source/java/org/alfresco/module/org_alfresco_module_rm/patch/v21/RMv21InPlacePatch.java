@@ -164,10 +164,6 @@ public class RMv21InPlacePatch extends RMv21PatchComponent
                 ruleService.disableRules();
                 try
                 {
-                    // set permissions
-                    filePlanPermissionService.setPermission(filePlan, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS);
-                    filePlanPermissionService.setPermission(filePlan, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING);
-
                     // create fileplan containers
                     filePlanService.createHoldContainer(filePlan);
                     filePlanService.createTransferContainer(filePlan);

@@ -27,23 +27,28 @@
 
 package org.alfresco.module.org_alfresco_module_rm.security;
 
-import java.io.Serializable;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.RenditionModel;
+import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessPermission;
+import org.alfresco.service.cmr.security.AuthorityService;
+import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.namespace.QName;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.util.ParameterCheck;
+import org.springframework.extensions.webscripts.ui.common.StringUtils;
+
+import com.google.gdata.util.common.base.Pair;
 
 /**
  * Extended security service implementation.
@@ -55,11 +60,20 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                                          implements ExtendedSecurityService,
                                                     RecordsManagementModel
 {
+    private static final String READER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "R_";
+    private static final String WRITER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "W_";
+    
     /** File plan service */
     private FilePlanService filePlanService;
 
     /** File plan role service */
     private FilePlanRoleService filePlanRoleService;
+    
+    /** authority service */
+    private AuthorityService authorityService;
+    
+    /** permission service */
+    private PermissionService permissionService;
 
     /**
      * @param filePlanService   file plan service
@@ -76,13 +90,29 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         this.filePlanRoleService = filePlanRoleService;
     }
+    
+    /**
+     * @param authorityService  authority service
+     */
+    public void setAuthorityService(AuthorityService authorityService)
+    {
+        this.authorityService = authorityService;
+    }
+    
+    /**
+     * @param permissionService permission service
+     */
+    public void setPermissionService(PermissionService permissionService)
+    {
+        this.permissionService = permissionService;
+    }
 
 	/**
      * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#hasExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef)
      */
     public boolean hasExtendedSecurity(NodeRef nodeRef)
     {
-        return nodeService.hasAspect(nodeRef, ASPECT_EXTENDED_SECURITY);
+        return (getIPRGroups(nodeRef) != null);
     }
 
     /**
@@ -93,13 +123,18 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     public Set<String> getExtendedReaders(NodeRef nodeRef)
     {
         Set<String> result = null;
-
-        Map<String, Integer> readerMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
-        if (readerMap != null)
+        
+        Pair<String, String> iprGroups = getIPRGroups(nodeRef);
+        if (iprGroups != null)
         {
-            result = readerMap.keySet();
+            result = authorityService.getContainedAuthorities(null, iprGroups.first, true);
+            result.remove(iprGroups.second);
         }
-
+        else
+        {
+            result = Collections.EMPTY_SET;
+        }
+        
         return result;
     }
 
@@ -111,14 +146,19 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     public Set<String> getExtendedWriters(NodeRef nodeRef)
     {
         Set<String> result = null;
-
-        Map<String, Integer> map = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_WRITERS);
-        if (map != null)
+        
+        Pair<String, String> iprGroups = getIPRGroups(nodeRef);
+        if (iprGroups != null)
         {
-            result = map.keySet();
+            result = authorityService.getContainedAuthorities(null, iprGroups.second, true);
         }
-
+        else
+        {
+            result = Collections.EMPTY_SET;
+        }
+        
         return result;
+        
     }
 
     /**
@@ -127,24 +167,14 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     @Override
     public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
-        addExtendedSecurity(nodeRef, readers, writers, true);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#addExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set, boolean)
-     */
-    @Override
-    public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents)
-    {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        ParameterCheck.mandatory("applyToParents", applyToParents);
 
         if (nodeRef != null)
         {
-            addExtendedSecurityImpl(nodeRef, readers, writers, applyToParents);
+            addExtendedSecurityImpl(nodeRef, readers, writers);
 
             // add to the extended security roles
-	        addExtendedSecurityRoles(nodeRef, readers, writers);
+            addExtendedSecurityRoles(nodeRef, readers, writers);
         }
     }
 
@@ -156,38 +186,16 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * @param writers
      * @param applyToParents
      */
-    @SuppressWarnings("unchecked")
-    private void addExtendedSecurityImpl(final NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents)
+    private void addExtendedSecurityImpl(final NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-        ParameterCheck.mandatory("applyToParents", applyToParents);
-
-        // get the properties
-        final Map<QName, Serializable> properties = nodeService.getProperties(nodeRef);
-
-        // update the readers map
-        if (readers != null && readers.size() != 0)
-        {
-            // get reader map
-            Map<String, Integer> readersMap = (Map<String, Integer>)properties.get(PROP_READERS);
-
-            // set the readers property (this will in turn apply the aspect if required)
-            properties.put(PROP_READERS, (Serializable)addToMap(readersMap, readers));
-        }
-
-        // update the writers map
-	    if (writers != null && writers.size() != 0)
-	    {
-	    	// get writer map
-	        Map<String, Integer> writersMap = (Map<String, Integer>)properties.get(PROP_WRITERS);
-
-	        // set the writers property (this will in turn apply the aspect if required)
-	        properties.put(PROP_WRITERS, (Serializable)addToMap(writersMap, writers));
-	    }
-
-	    // set properties
-	    nodeService.setProperties(nodeRef, properties);
-
+        
+        // find groups
+        Pair<String, String> iprGroups = getIPRGroups(readers, writers);
+        
+        // assign groups to node
+        assignIPRGroupsToNode(iprGroups, nodeRef);
+        
         // apply the readers to any renditions of the content
         if (isRecord(nodeRef))
         {
@@ -195,9 +203,187 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             for (ChildAssociationRef assoc : assocs)
             {
                 NodeRef child = assoc.getChildRef();
-                addExtendedSecurityImpl(child, readers, writers, false);
+                assignIPRGroupsToNode(iprGroups, child);
             }
         }
+    }
+    
+    /**
+     * 
+     * @param nodeRef
+     * @return
+     */
+    private Pair<String, String> getIPRGroups(NodeRef nodeRef)
+    {
+        Pair<String, String> result = null;
+        String iprReaderGroup = null;
+        String iprWriterGroup = null;
+        
+        Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
+        for (AccessPermission permission : permissions)
+        {
+            if (permission.getAuthority().startsWith(PermissionService.GROUP_PREFIX + READER_GROUP_PREFIX))
+            {
+                iprReaderGroup = permission.getAuthority();
+            }   
+            else if (permission.getAuthority().startsWith(PermissionService.GROUP_PREFIX + WRITER_GROUP_PREFIX))
+            {
+                iprWriterGroup = permission.getAuthority();
+            }
+        }
+        
+        if (iprReaderGroup != null && iprWriterGroup != null)
+        {
+            result = new Pair<String, String>(iprReaderGroup, iprWriterGroup);
+        }
+            
+        return result;
+    }
+    
+    /**
+     * 
+     * @param readers
+     * @param writers
+     * @return
+     */
+    private Pair<String, String> getIPRGroups(Set<String> readers, Set<String> writers)
+    {
+        Pair<String, String> result = null;
+        
+        // see if the groups already exists or not
+        String readerGroupName = getIPRGroupName(READER_GROUP_PREFIX, readers, writers, false);
+        String writerGroupName = getIPRGroupName(WRITER_GROUP_PREFIX, readers, writers, false);
+        if (authorityService.authorityExists(readerGroupName) &&
+            authorityService.authorityExists(writerGroupName))
+        {
+            // check that the groups are a true match
+            if (authorityService.getContainingAuthorities(AuthorityType.GROUP, writerGroupName, true).contains(readerGroupName) &&
+                isIPRGroupTrueMatch(readers, readerGroupName) &&
+                isIPRGroupTrueMatch(writers, writerGroupName))
+            {     
+                // reuse the existing groups
+                result = new Pair<String, String>(readerGroupName, writerGroupName);
+            }
+            else
+            {
+                // TODO - CLASH
+                throw new AlfrescoRuntimeException("IPR Group Name Clash!");
+            }
+        }        
+        else
+        {
+            // create inplace record reader and writer groups
+            result = createIPRGroups(readers, writers);
+        }
+        
+        return result;
+    }
+    
+    /**
+     * 
+     * @param authorities
+     * @param group
+     * @return
+     */
+    private boolean isIPRGroupTrueMatch(Set<String> authorities, String group)
+    {
+        // TODO
+        return true;
+    }
+    
+    /**
+     * 
+     * @param prefix
+     * @param authorities
+     * @param shortName
+     * @return
+     */
+    private String getIPRGroupName(String prefix, Set<String> readers, Set<String> writers, boolean shortName)
+    {
+        StringBuilder builder = new StringBuilder(128);
+        
+        if (!shortName)
+        {
+            builder.append(PermissionService.GROUP_PREFIX);
+        }
+        
+        builder.append(prefix)
+               .append(getAuthoritySetHashCode(readers))
+               .append("-")
+               .append(getAuthoritySetHashCode(writers));
+        
+        return builder.toString();
+    }
+    
+    /**
+     * 
+     * @param authorities
+     * @return
+     */
+    private int getAuthoritySetHashCode(Set<String> authorities)
+    {
+        int result = 0;
+        if (authorities != null && !authorities.isEmpty())
+        {
+            result = StringUtils.join(authorities.toArray(), "").hashCode();   
+        }
+        return result;
+    }
+    
+    /**
+     * 
+     * @param readers
+     * @param writers
+     * @return
+     */
+    private Pair<String, String> createIPRGroups(Set<String> readers, Set<String> writers)
+    {
+        String iprReaderGroup = createIPRGroup(getIPRGroupName(READER_GROUP_PREFIX, readers, writers, true), null, readers); 
+        String iprWriterGroup = createIPRGroup(getIPRGroupName(WRITER_GROUP_PREFIX, readers, writers, true), iprReaderGroup, writers);
+        return new Pair<String, String>(iprReaderGroup, iprWriterGroup);
+    }
+    
+    /**
+     * 
+     * @param groupShortName
+     * @param parent
+     * @param children
+     * @return
+     */
+    private String createIPRGroup(String groupShortName, String parent, Set<String> children)
+    {
+        ParameterCheck.mandatory("groupShortName", groupShortName);
+        
+        String group = authorityService.createAuthority(AuthorityType.GROUP, groupShortName); // TODO set appropriate zone
+        
+        if (parent != null)
+        {
+            authorityService.addAuthority(parent, group);
+        }
+        
+        if (children != null)
+        {
+            for (String child : children)
+            {
+                if (!PermissionService.ALL_AUTHORITIES.equals(child))
+                {
+                    authorityService.addAuthority(group, child);
+                }
+            }
+        }
+        
+        return group;
+    }
+    
+    /**
+     * 
+     * @param iprGroups
+     * @param nodeRef
+     */
+    private void assignIPRGroupsToNode(Pair<String, String> iprGroups, NodeRef nodeRef)
+    {
+        permissionService.setPermission(nodeRef, iprGroups.first, RMPermissionModel.READ_RECORDS, true);
+        permissionService.setPermission(nodeRef, iprGroups.second, RMPermissionModel.FILING, true);
     }
 
     /**
@@ -235,60 +421,16 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             }
         }
     }
-
+    
     /**
-     *
-     * @param map
-     * @param keys
-     * @return
-     */
-    private Map<String, Integer> addToMap(Map<String, Integer> map, Set<String> keys)
-    {
-        if (map == null)
-        {
-            // create map
-            map = new HashMap<String, Integer>(7);
-        }
-
-        for (String key : keys)
-        {
-            if (!key.equals(PermissionService.ALL_AUTHORITIES))
-            {
-                if (map.containsKey(key))
-                {
-                    // increment reference count
-                    Integer count = map.get(key);
-                    map.put(key, Integer.valueOf(count.intValue()+1));
-                }
-                else
-                {
-                    // add key with initial count
-                    map.put(key, Integer.valueOf(1));
-                }
-            }
-        }
-
-        return map;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeAllExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
-    {
-        removeExtendedSecurity(nodeRef, readers, writers, true);
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set, boolean)
-     */
-    @Override
-    public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String>writers, boolean applyToParents)
+    public void removeAllExtendedSecurity(NodeRef nodeRef)
     {
         if (hasExtendedSecurity(nodeRef))
         {
-            removeExtendedSecurityImpl(nodeRef, readers, writers);
+            removeExtendedSecurityImpl(nodeRef);
 
             // remove the readers from any renditions of the content
             if (isRecord(nodeRef))
@@ -297,110 +439,62 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 for (ChildAssociationRef assoc : assocs)
                 {
                     NodeRef child = assoc.getChildRef();
-                    removeExtendedSecurityImpl(child, readers, writers);
-                }
-            }
-
-            if (applyToParents)
-            {
-                // apply the extended readers up the file plan primary hierarchy
-                NodeRef parent = nodeService.getPrimaryParent(nodeRef).getParentRef();
-                if (parent != null &&
-                    filePlanService.isFilePlanComponent(parent))
-                {
-                    removeExtendedSecurity(parent, readers, null, applyToParents);
-                    removeExtendedSecurity(parent, writers, null, applyToParents);
+                    removeExtendedSecurityImpl(child);
                 }
             }
         }
     }
 
     /**
-     * Removes a set of readers and writers from a node reference.
-     * <p>
-     * Removes the aspect and resets the property to null if all readers and writers are removed.
-     *
-     * @param nodeRef   node reference
-     * @param readers   {@link Set} of readers
-     * @param writers   {@link Set} of writers
+     * 
+     * @param nodeRef
+     * @param readers
+     * @param writers
      */
-    @SuppressWarnings("unchecked")
-    private void removeExtendedSecurityImpl(NodeRef nodeRef, Set<String> readers, Set<String> writers)
+    private void removeExtendedSecurityImpl(NodeRef nodeRef)
     {
-        Map<String, Integer> readersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_READERS);
-        nodeService.setProperty(nodeRef, PROP_READERS, (Serializable)removeFromMap(readersMap, readers));
-
-        Map<String, Integer> writersMap = (Map<String, Integer>)nodeService.getProperty(nodeRef, PROP_WRITERS);
-        nodeService.setProperty(nodeRef, PROP_WRITERS, (Serializable)removeFromMap(writersMap, writers));
-
-        if (readersMap == null && writersMap == null)
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
+        Pair<String, String> iprGroups = getIPRGroups(nodeRef);
+        if (iprGroups != null)
         {
-            // remove the aspect
-            nodeService.removeAspect(nodeRef, ASPECT_EXTENDED_SECURITY);
+            // remove group permissions from node
+            permissionService.clearPermission(nodeRef, iprGroups.first);
+            permissionService.clearPermission(nodeRef, iprGroups.second);
+            
+            // TODO delete the groups if they are no longer in use (easier said than done perhaps!)
         }
+    }        
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#addExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set, boolean)
+     */
+    @Override @Deprecated public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents)
+    {
+        addExtendedSecurity(nodeRef, readers, writers);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set)
+     */
+    @Override @Deprecated public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
+    {
+        removeAllExtendedSecurity(nodeRef);
     }
 
     /**
-     * Helper method to remove items from map or reduce reference count
-     *
-     * @param map                       ref count map
-     * @param keys                      keys
-     * @return Map<String, Integer>     ref count map
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set, boolean)
      */
-    private Map<String, Integer> removeFromMap(Map<String, Integer> map, Set<String> keys)
+    @Override @Deprecated public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String>writers, boolean applyToParents)
     {
-        if (map != null && keys != null && keys.size() != 0)
-        {
-            // remove the keys
-            for (String key : keys)
-            {
-                if (!key.equals(PermissionService.ALL_AUTHORITIES))
-                {
-                    Integer count = map.get(key);
-                    if (count != null)
-                    {
-                        if (count == 1)
-                        {
-                            // remove entry all together if the reference count is now 0
-                            map.remove(key);
-                        }
-                        else
-                        {
-                            // decrement the reference count by 1
-                            map.put(key, Integer.valueOf(count.intValue()-1));
-                        }
-                    }
-                }
-            }
-        }
-
-        // reset the map to null if now empty
-        if (map != null && map.isEmpty())
-        {
-            map = null;
-        }
-
-        return map;
-    }
-
-    /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeAllExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef)
-     */
-    @Override
-    public void removeAllExtendedSecurity(NodeRef nodeRef)
-    {
-        removeAllExtendedSecurity(nodeRef, true);
+        removeAllExtendedSecurity(nodeRef);        
     }
 
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeAllExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
-    @Override
-    public void removeAllExtendedSecurity(NodeRef nodeRef, boolean applyToParents)
+    @Override @Deprecated public void removeAllExtendedSecurity(NodeRef nodeRef, boolean applyToParents)
     {
-        if (hasExtendedSecurity(nodeRef))
-        {
-            removeExtendedSecurity(nodeRef, getExtendedReaders(nodeRef), getExtendedWriters(nodeRef));
-        }
+        removeAllExtendedSecurity(nodeRef); 
     }
 }

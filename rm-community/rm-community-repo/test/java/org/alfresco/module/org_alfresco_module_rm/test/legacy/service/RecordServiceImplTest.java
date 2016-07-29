@@ -38,8 +38,6 @@ import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.record.RecordService;
 import org.alfresco.module.org_alfresco_module_rm.role.Role;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -181,22 +179,13 @@ public class RecordServiceImplTest extends BaseRMTestCase
 
     public void testExtendedWriters() throws Exception
     {
-        final ExtendedReaderDynamicAuthority readerDy = (ExtendedReaderDynamicAuthority)applicationContext.getBean("extendedReaderDynamicAuthority");
-        final ExtendedWriterDynamicAuthority writerDy = (ExtendedWriterDynamicAuthority)applicationContext.getBean("extendedWriterDynamicAuthority");
-
         doTestInTransaction(new Test<Void>()
         {
             @Override
             public Void run()
             {
-                assertNull(extendedSecurityService.getExtendedReaders(recordOne));
-                assertNull(extendedSecurityService.getExtendedWriters(recordOne));
-
-                assertFalse(readerDy.hasAuthority(recordOne, dmCollaborator));
-                assertFalse(writerDy.hasAuthority(recordOne, dmCollaborator));
-
-                assertFalse(readerDy.hasAuthority(filePlan, dmCollaborator));
-                assertFalse(writerDy.hasAuthority(filePlan, dmCollaborator));
+                assertTrue(extendedSecurityService.getExtendedReaders(recordOne).isEmpty());
+                assertTrue(extendedSecurityService.getExtendedWriters(recordOne).isEmpty());
 
                 return null;
             }
@@ -209,15 +198,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
             {
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
-
-                assertFalse(readerDy.hasAuthority(recordOne, dmCollaborator));
-                assertFalse(writerDy.hasAuthority(recordOne, dmCollaborator));
-
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 assertEquals(AccessStatus.DENIED, permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA));
-
-                assertFalse(readerDy.hasAuthority(filePlan, dmCollaborator));
-                assertFalse(writerDy.hasAuthority(filePlan, dmCollaborator));
 
                 return null;
             }
@@ -232,7 +214,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 writers.add(dmCollaborator);
                 extendedSecurityService.addExtendedSecurity(recordOne, null, writers);
 
-                assertNull(extendedSecurityService.getExtendedReaders(recordOne));
+                assertTrue(extendedSecurityService.getExtendedReaders(recordOne).isEmpty());
                 assertFalse(extendedSecurityService.getExtendedWriters(recordOne).isEmpty());
 
                 return null;
@@ -247,9 +229,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(recordOne, RMPermissionModel.READ_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(recordOne, RMPermissionModel.FILING));
 
-                assertFalse(readerDy.hasAuthority(recordOne, dmCollaborator));
-                assertTrue(writerDy.hasAuthority(recordOne, dmCollaborator));
-
+                // ALLOWED, becuase users have been added to the in-place roles
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.VIEW_RECORDS));
                 assertEquals(AccessStatus.ALLOWED, permissionService.hasPermission(filePlan, RMPermissionModel.EDIT_NON_RECORD_METADATA));
 

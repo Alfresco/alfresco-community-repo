@@ -573,7 +573,9 @@
           parent="baseService">
         <property name="nodeService" ref="nodeService"/>
         <property name="filePlanService" ref="filePlanService" />
-        <property name="filePlanRoleService" ref="filePlanRoleService" />
+        <property name="filePlanRoleService" ref="filePlanRoleService" />        
+        <property name="authorityService" ref="authorityService"/>        
+        <property name="permissionService" ref="permissionService"/>
     </bean>
 
     <bean id="ExtendedSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">

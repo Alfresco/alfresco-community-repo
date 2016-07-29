@@ -360,8 +360,6 @@ public class FilePlanServiceImpl extends ServiceBaseImpl
         // set inheritance to false
         getPermissionService().setInheritParentPermissions(container, false);
         getPermissionService().setPermission(container, allRoles, RMPermissionModel.READ_RECORDS, true);
-        getPermissionService().setPermission(container, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-        getPermissionService().setPermission(container, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
         
         // prevent inheritance of rules
         nodeService.addAspect(container, RuleModel.ASPECT_IGNORE_INHERITED_RULES, null);

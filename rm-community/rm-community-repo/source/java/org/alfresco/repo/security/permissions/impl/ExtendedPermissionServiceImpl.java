@@ -337,9 +337,6 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) && isNotBlank(adminRole)
                     && !inheritParentPermissions)
         {
-            setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS,
-                        true);
-            setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
             setPermission(nodeRef, adminRole, RMPermissionModel.FILING, true);
         }
         super.setInheritParentPermissions(nodeRef, inheritParentPermissions);

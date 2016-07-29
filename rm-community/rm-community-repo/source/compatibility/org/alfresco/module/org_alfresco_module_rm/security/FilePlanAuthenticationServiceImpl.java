@@ -34,6 +34,7 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
  * @author Roy Wetherall
  * @since 2.1
  */
+@Deprecated
 public class FilePlanAuthenticationServiceImpl implements FilePlanAuthenticationService
 {
     /** Default rm admin user values */

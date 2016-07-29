@@ -28,6 +28,7 @@
 package org.alfresco.module.org_alfresco_module_rm.security;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,15 +37,16 @@ import org.alfresco.repo.security.permissions.PermissionReference;
 import org.alfresco.service.cmr.repository.NodeRef;
 
 /**
- * Extended readers dynamic authority implementation.
+ * Extended writers dynamic authority implementation.
  * 
  * @author Roy Wetherall
  * @since 2.1
  */
-public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicAuthority
+@Deprecated
+public class ExtendedWriterDynamicAuthority extends ExtendedSecurityBaseDynamicAuthority
 {
-    /** Extended reader role */
-    public static final String EXTENDED_READER = "ROLE_EXTENDED_READER";
+    /** Extended writer role */
+    public static final String EXTENDED_WRITER = "ROLE_EXTENDED_WRITER";
     
     /**
      * @see org.alfresco.repo.security.permissions.DynamicAuthority#getAuthority()
@@ -52,9 +54,9 @@ public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicA
     @Override
     public String getAuthority()
     {
-        return EXTENDED_READER;
-    }    
-
+        return EXTENDED_WRITER;
+    }
+    
     /**
      * @see org.alfresco.repo.security.permissions.DynamicAuthority#requiredFor()
      */
@@ -63,7 +65,11 @@ public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicA
     {
     	if (requiredFor == null)
     	{
-    		requiredFor = Collections.singleton(getModelDAO().getPermissionReference(null, RMPermissionModel.READ_RECORDS));
+    		requiredFor = new HashSet<PermissionReference>(3);
+    		Collections.addAll(requiredFor, 
+    						   getModelDAO().getPermissionReference(null, RMPermissionModel.READ_RECORDS),
+    				           getModelDAO().getPermissionReference(null, RMPermissionModel.FILING), 
+    				           getModelDAO().getPermissionReference(null, RMPermissionModel.FILE_RECORDS));
     	}
     	
     	return requiredFor;
@@ -75,16 +81,16 @@ public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicA
     @SuppressWarnings("unchecked")
 	protected Set<String> getAuthorites(NodeRef nodeRef) 
     {
-        Set<String> result = null;
+    	Set<String> result = null;
         
-        Map<String, Integer> readerMap = (Map<String, Integer>)getNodeService().getProperty(nodeRef, PROP_READERS);
-        if (readerMap != null)
+        Map<String, Integer> map = (Map<String, Integer>)getNodeService().getProperty(nodeRef, PROP_WRITERS);
+        if (map != null)
         {
-            result = readerMap.keySet();
+            result = map.keySet();
         }
         
         return result;
-    }
+    }  
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityBaseDynamicAuthority#getTransactionCacheName()
@@ -92,6 +98,6 @@ public class ExtendedReaderDynamicAuthority extends ExtendedSecurityBaseDynamicA
     @Override
     protected String getTransactionCacheName() 
     {
-    	return "rm.extendedreaderdynamicauthority";
-    }
+    	return "rm.extendedwriterdynamicauthority";
+    }  
 }

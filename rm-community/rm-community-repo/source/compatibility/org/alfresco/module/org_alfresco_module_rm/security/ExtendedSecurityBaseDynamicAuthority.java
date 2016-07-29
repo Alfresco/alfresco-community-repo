@@ -48,6 +48,7 @@ import org.springframework.context.ApplicationContextAware;
  * @author Roy Wetherall
  * @since 2.1
  */
+@Deprecated
 public abstract class ExtendedSecurityBaseDynamicAuthority implements DynamicAuthority,
                                                                       RecordsManagementModel,
                                                                       ApplicationContextAware

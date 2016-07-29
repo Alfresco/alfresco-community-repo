@@ -27,8 +27,6 @@
 
 package org.alfresco.module.org_alfresco_module_rm.security;
 
-import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority.EXTENDED_READER;
-import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority.EXTENDED_WRITER;
 import static org.alfresco.repo.policy.Behaviour.NotificationFrequency.TRANSACTION_COMMIT;
 import static org.alfresco.repo.policy.annotation.BehaviourKind.CLASS;
 import static org.alfresco.repo.security.authentication.AuthenticationUtil.getSystemUserName;
@@ -383,13 +381,29 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     boolean inheritanceAllowed = isInheritanceAllowed(nodeRef, isParentNodeFilePlan);
                     getPermissionService().setInheritParentPermissions(nodeRef, inheritanceAllowed);
 
-                    // clear all existing permissions
+                    Set<AccessPermission> keepPerms = new HashSet<AccessPermission>(5);
+                    Set<AccessPermission> origionalPerms= getPermissionService().getAllSetPermissions(nodeRef);
+
+                    for (AccessPermission perm : origionalPerms)
+                    {
+                        if (perm.getAuthority().startsWith(PermissionService.GROUP_PREFIX + ExtendedSecurityService.IPR_GROUP_PREFIX))
+                        {
+                            // then we can assume this is a permission we want to preserve
+                            keepPerms.add(perm);
+                        }
+                    }
+
+                    // clear all existing permissions and start again
                     getPermissionService().clearPermission(nodeRef, null);
+
+                    // re-add keep'er permissions
+                    for (AccessPermission keeper : keepPerms)
+                    {
+                        setPermission(nodeRef, keeper.getAuthority(), keeper.getPermission());
+                    }
 
                     if (!inheritanceAllowed)
                     {
-                        getPermissionService().setPermission(nodeRef, EXTENDED_READER, READ_RECORDS, true);
-                        getPermissionService().setPermission(nodeRef, EXTENDED_WRITER, FILING, true);
                         String adminRole = getAdminRole(nodeRef);
                         getPermissionService().setPermission(nodeRef, adminRole, RMPermissionModel.FILING, true);
                     }
@@ -494,11 +508,8 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     for (AccessPermission recordPermission : origionalRecordPerms)
                     {
                         String permission = recordPermission.getPermission();
-                        String authority = recordPermission.getAuthority();
                         if ((RMPermissionModel.FILING.equals(permission) || RMPermissionModel.READ_RECORDS.equals(permission)) &&
-                                recordPermission.isSetDirectly() &&
-                                !ExtendedReaderDynamicAuthority.EXTENDED_READER.equals(authority) &&
-                                !ExtendedWriterDynamicAuthority.EXTENDED_WRITER.equals(authority))
+                             recordPermission.isSetDirectly())
                         {
                             // then we can assume this is a permission we want to preserve
                             keepPerms.add(recordPermission);
@@ -506,7 +517,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                     }
 
                     // clear all existing permissions and start again
-                    permissionService.deletePermissions(record);
+                   // permissionService.deletePermissions(record);
 
                     // re-setup the records permissions
                     setupPermissions(destinationAssocRef.getParentRef(), record);

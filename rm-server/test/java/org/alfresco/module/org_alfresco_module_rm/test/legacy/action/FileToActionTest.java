@@ -29,6 +29,7 @@ import org.alfresco.module.org_alfresco_module_rm.action.impl.FileToAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.model.FileInfo;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -109,16 +110,27 @@ public class FileToActionTest extends BaseRMTestCase
                 // create record from document
                 recordService.createRecord(filePlan, dmDocument);
 
-                // check things have gone according to plan
-                assertTrue(recordService.isRecord(dmDocument));
-                assertFalse(recordService.isFiled(dmDocument));
-
-                // is the unfiled container the primary parent of the filed record
-                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
-                assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
-
                 return null;
             }
+            
+            @Override
+            public void test(Void result) throws Exception 
+            {
+            	AuthenticationUtil.runAs(() ->
+            	{
+	                // check things have gone according to plan
+	                assertTrue(recordService.isRecord(dmDocument));
+	                assertFalse(recordService.isFiled(dmDocument));
+	
+	                // is the unfiled container the primary parent of the filed record
+	                NodeRef parent = nodeService.getPrimaryParent(dmDocument).getParentRef();
+	                assertEquals(filePlanService.getUnfiledContainer(filePlan), parent);
+	                
+	                return null;
+            	},
+                AuthenticationUtil.getAdminUserName());
+            }
+            
         }, dmCollaborator);
     }
 

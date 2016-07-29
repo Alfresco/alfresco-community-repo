@@ -30,6 +30,7 @@ import java.util.Set;
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.RecordsManagementActionService;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.CompleteEventAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.TransferAction;
@@ -291,5 +292,21 @@ public class CommonRMTestUtils implements RecordsManagementModel
         }
 
         return filePlanRoleService.createRole(filePlan, roleName, roleName, capabilities);
+    }
+    
+    /**
+     * Helper method to complete event on disposable item
+     * 
+     * @param disposableItem    disposable item (record or record folder)
+     * @param eventName         event name
+     */
+    public void completeEvent(NodeRef disposableItem, String eventName)
+    {
+        // build action properties
+        Map<String, Serializable> params = new HashMap<String, Serializable>(1);
+        params.put(CompleteEventAction.PARAM_EVENT_NAME, eventName);
+        
+        // complete event
+        actionService.executeRecordsManagementAction(disposableItem, CompleteEventAction.NAME, params); 
     }
 }

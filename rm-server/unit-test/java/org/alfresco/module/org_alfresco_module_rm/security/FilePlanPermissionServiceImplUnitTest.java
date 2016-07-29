@@ -18,13 +18,10 @@
  */
 package org.alfresco.module.org_alfresco_module_rm.security;
 
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -163,16 +160,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setPermission(unfiledRecordFolder, AUTHORITY, RMPermissionModel.READ_RECORDS);
         
         // verify permission set on target node
-        verify(mockedPermissionService, times(1)).setPermission(unfiledRecordFolder, AUTHORITY, RMPermissionModel.READ_RECORDS, true);
-        
-        // verify READ permission set up hierarchy
-        verify(mockedPermissionService, times(1)).setPermission(unfiledRecordContainer, AUTHORITY, RMPermissionModel.READ_RECORDS, true);
-        verify(mockedPermissionService, times(1)).setPermission(filePlan, AUTHORITY, RMPermissionModel.READ_RECORDS, true);       
-        
-        // verify READ permission set down hierarchy
-        verify(mockedPermissionService, times(1)).setPermission(unfiledRecordFolderChild, AUTHORITY, RMPermissionModel.READ_RECORDS, true);
-        verify(mockedPermissionService, times(1)).setPermission(unfiledRecord, AUTHORITY, RMPermissionModel.READ_RECORDS, true);  
-        
+        verify(mockedPermissionService, times(1)).setPermission(unfiledRecordFolder, AUTHORITY, RMPermissionModel.READ_RECORDS, true);        
     }
     
     /**
@@ -185,15 +173,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setPermission(unfiledRecordFolder, AUTHORITY, RMPermissionModel.FILING);
         
         // verify permission set on target node
-        verify(mockedPermissionService, times(1)).setPermission(unfiledRecordFolder, AUTHORITY, RMPermissionModel.FILING, true);
-        
-        // verify READ permission set up hierarchy
-        verify(mockedPermissionService, times(1)).setPermission(unfiledRecordContainer, AUTHORITY, RMPermissionModel.READ_RECORDS, true);
-        verify(mockedPermissionService, times(1)).setPermission(filePlan, AUTHORITY, RMPermissionModel.READ_RECORDS, true);       
-        
-        // verify FILING permission set down hierarchy
-        verify(mockedPermissionService, times(1)).setPermission(unfiledRecordFolderChild, AUTHORITY, RMPermissionModel.FILING, true);
-        verify(mockedPermissionService, times(1)).setPermission(unfiledRecord, AUTHORITY, RMPermissionModel.FILING, true);         
+        verify(mockedPermissionService, times(1)).setPermission(unfiledRecordFolder, AUTHORITY, RMPermissionModel.FILING, true);        
     }
     
     /**
@@ -207,14 +187,6 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         
         // verify permission deleted on target node
         verify(mockedPermissionService, times(1)).deletePermission(unfiledRecordFolder, AUTHORITY, RMPermissionModel.READ_RECORDS);
-        
-        // verify no permissions deleted up the hierarchy
-        verify(mockedPermissionService, never()).deletePermission(eq(unfiledRecordContainer), eq(AUTHORITY), anyString());
-        verify(mockedPermissionService, never()).deletePermission(eq(filePlan), eq(AUTHORITY), anyString());       
-        
-        // verify READ permission removed down hierarchy
-        verify(mockedPermissionService, times(1)).deletePermission(unfiledRecordFolderChild, AUTHORITY, RMPermissionModel.READ_RECORDS);
-        verify(mockedPermissionService, times(1)).deletePermission(unfiledRecord, AUTHORITY, RMPermissionModel.READ_RECORDS); 
     }
     
     /**
@@ -228,16 +200,6 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         
         // verify permission set on target node
         verify(mockedPermissionService, times(1)).setPermission(holdContainer, AUTHORITY, RMPermissionModel.READ_RECORDS, true);
-        
-        // verify READ permission set up hierarchy
-        verify(mockedPermissionService, times(1)).setPermission(filePlan, AUTHORITY, RMPermissionModel.READ_RECORDS, true);       
-        
-        // verify READ permission set on hold
-        verify(mockedPermissionService, times(1)).setPermission(hold, AUTHORITY, RMPermissionModel.READ_RECORDS, true);
-        
-        // verify permission not set on child of hold
-        verify(mockedPermissionService, never()).setPermission(eq(heldRecord), eq(AUTHORITY), anyString(), eq(true));   
-        
     }
     
     /**
@@ -250,17 +212,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setPermission(holdContainer, AUTHORITY, RMPermissionModel.FILING);
         
         // verify permission set on target node
-        verify(mockedPermissionService, times(1)).setPermission(holdContainer, AUTHORITY, RMPermissionModel.FILING, true);
-        
-        // verify READ permission set up hierarchy
-        verify(mockedPermissionService, times(1)).setPermission(filePlan, AUTHORITY, RMPermissionModel.READ_RECORDS, true);       
-        
-        // verify FILING permission set on hold
-        verify(mockedPermissionService, times(1)).setPermission(hold, AUTHORITY, RMPermissionModel.FILING, true);
-        
-        // verify permission not set on child of hold
-        verify(mockedPermissionService, never()).setPermission(eq(heldRecord), eq(AUTHORITY), anyString(), eq(true));   
-        
+        verify(mockedPermissionService, times(1)).setPermission(holdContainer, AUTHORITY, RMPermissionModel.FILING, true);       
     }
     
     /**
@@ -274,13 +226,6 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         
         // verify permission set on target node
         verify(mockedPermissionService, times(1)).setPermission(hold, AUTHORITY, RMPermissionModel.READ_RECORDS, true);
-        
-        // verify READ permission set up hierarchy
-        verify(mockedPermissionService, times(1)).setPermission(holdContainer, AUTHORITY, RMPermissionModel.READ_RECORDS, true);
-        verify(mockedPermissionService, times(1)).setPermission(filePlan, AUTHORITY, RMPermissionModel.READ_RECORDS, true);       
-        
-        // verify permission not set on child of hold
-        verify(mockedPermissionService, never()).setPermission(eq(heldRecord), eq(AUTHORITY), anyString(), eq(true));          
     }
     
     /**
@@ -293,14 +238,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setPermission(hold, AUTHORITY, RMPermissionModel.FILING);
         
         // verify permission set on target node
-        verify(mockedPermissionService, times(1)).setPermission(hold, AUTHORITY, RMPermissionModel.FILING, true);
-        
-        // verify READ permission set up hierarchy
-        verify(mockedPermissionService, times(1)).setPermission(holdContainer, AUTHORITY, RMPermissionModel.READ_RECORDS, true);
-        verify(mockedPermissionService, times(1)).setPermission(filePlan, AUTHORITY, RMPermissionModel.READ_RECORDS, true);       
-        
-        // verify permission not set on child of hold
-        verify(mockedPermissionService, never()).setPermission(eq(heldRecord), eq(AUTHORITY), anyString(), eq(true));          
+        verify(mockedPermissionService, times(1)).setPermission(hold, AUTHORITY, RMPermissionModel.FILING, true);         
     }
     
     /**
@@ -313,10 +251,6 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         // setup basic file and read for authorities
         perms.add(new AccessPermissionImpl(RMPermissionModel.READ_RECORDS, AccessStatus.ALLOWED, AUTHORITY, 0));
         perms.add(new AccessPermissionImpl(RMPermissionModel.FILING, AccessStatus.ALLOWED, AUTHORITY2, 1));
-        
-        // setup in-place readers and writers
-        perms.add(new AccessPermissionImpl(RMPermissionModel.READ_RECORDS, AccessStatus.ALLOWED, ExtendedReaderDynamicAuthority.EXTENDED_READER, 2));
-        perms.add(new AccessPermissionImpl(RMPermissionModel.FILING, AccessStatus.ALLOWED, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, 3));
 
         doReturn(perms).when(mockedPermissionService).getAllSetPermissions(nodeRef);
     }
@@ -324,13 +258,12 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
     /**
      * Helper to verify the core permissions have been initialized correctly
      */
-    private void verifyInitPermissions(NodeRef nodeRef)
+    private void verifyInitPermissions(NodeRef nodeRef, boolean isInherited)
     {
-        verify(mockedPermissionService, times(1)).setInheritParentPermissions(nodeRef, false);
-        verify(mockedPermissionService, times(1)).clearPermission(nodeRef, null);
-        verify(mockedPermissionService, times(1)).setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-        verify(mockedPermissionService, times(1)).setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
-        verify(mockedOwnableService, times(1)).setOwner(nodeRef, OwnableService.NO_OWNER);
+        verify(mockedPermissionService).getAllSetPermissions(nodeRef);
+        verify(mockedPermissionService).setInheritParentPermissions(nodeRef, isInherited);
+        verify(mockedPermissionService).clearPermission(nodeRef, null);
+        verify(mockedOwnableService).setOwner(nodeRef, OwnableService.NO_OWNER);
     }
     
     /**
@@ -341,21 +274,20 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
      * @param read          verification mode relating to setting read on the child
      * @param filling       verification mode relating to setting filling on the child
      */
-    private void verifyInitPermissions(NodeRef parent, NodeRef child, VerificationMode read, VerificationMode filling)
+    private void verifyInitPermissions(NodeRef parent, NodeRef child, VerificationMode read, VerificationMode filling, boolean isParentFilePlan, boolean isInherited)
     {
         // verify the core permissions are set-up correctly
-        verifyInitPermissions(child);
+        verifyInitPermissions(child, isInherited);        
         
-        // verify the permissions came from the correct parent
-        verify(mockedPermissionService).getAllSetPermissions(parent);
-        
-        // verify all the inherited permissions are set correctly (note read are not inherited from fileplan)
-        verify(mockedPermissionService, filling).setPermission(child, AUTHORITY2, RMPermissionModel.FILING, true);
-        verify(mockedPermissionService, read).setPermission(child, AUTHORITY, RMPermissionModel.READ_RECORDS, true);  
-        
-        // verify that there are no unaccounted for interactions with the permission service
-        verifyNoMoreInteractions(mockedPermissionService);
-        
+        if (isParentFilePlan)
+        {
+            // verify the permissions came from the correct parent
+            verify(mockedPermissionService).getAllSetPermissions(parent);
+            
+            // verify all the inherited permissions are set correctly (note read are not inherited from fileplan)
+            verify(mockedPermissionService, filling).setPermission(child, AUTHORITY2, RMPermissionModel.FILING, true);
+            verify(mockedPermissionService, read).setPermission(child, AUTHORITY, RMPermissionModel.READ_RECORDS, true);
+        }       
     }
     
     /**
@@ -371,7 +303,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setupRecordCategoryPermissions(rootRecordCategory);
         
         // verify permission init
-        verifyInitPermissions(filePlan, rootRecordCategory, never(), times(1));
+        verifyInitPermissions(filePlan, rootRecordCategory, never(), times(1), true, false);
     }
     
     /**
@@ -387,7 +319,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setupRecordCategoryPermissions(recordCategory);
                 
         // verify permission init
-        verifyInitPermissions(rootRecordCategory, recordCategory, times(1), times(1));
+        verifyInitPermissions(rootRecordCategory, recordCategory, times(1), times(1), false, true);
     }
     
     /**
@@ -403,7 +335,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setupPermissions(recordCategory, newRecordFolder);
         
         // verify permission init
-        verifyInitPermissions(recordCategory, newRecordFolder, times(1), times(1));
+        verifyInitPermissions(recordCategory, newRecordFolder, times(1), times(1), false, true);
         
     }
     
@@ -420,7 +352,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setupPermissions(newRecordFolder, newRecord);
         
         // verify permission init
-        verifyInitPermissions(newRecordFolder, newRecord, times(1), times(1));        
+        verifyInitPermissions(newRecordFolder, newRecord, times(1), times(1), false, true);        
     }
     
     /**
@@ -436,7 +368,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setupPermissions(filePlan, holdContainer);
         
         // verify permissions are set-up correctly
-        verifyInitPermissions(filePlan, holdContainer, times(1), times(1));        
+        verifyInitPermissions(filePlan, holdContainer, times(1), times(1), false, true);        
     }
     
     /**
@@ -452,7 +384,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setupPermissions(holdContainer, hold);
         
         // verify permissions are set-up correctly
-        verifyInitPermissions(holdContainer, hold, never(), times(1));    
+        verifyInitPermissions(holdContainer, hold, never(), times(1), false, false);    
         
     }
     
@@ -469,7 +401,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setupPermissions(filePlan, unfiledRecordContainer);
         
         // verify permissions are set-up correctly
-        verifyInitPermissions(filePlan, unfiledRecordContainer, times(1), times(1));          
+        verifyInitPermissions(filePlan, unfiledRecordContainer, times(1), times(1), false, false);          
     }
     
     /**
@@ -485,7 +417,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setupPermissions(unfiledRecordContainer, unfiledRecordFolder);
         
         // verify permissions are set-up correctly
-        verifyInitPermissions(unfiledRecordContainer, unfiledRecordFolder, never(), times(1));  
+        verifyInitPermissions(unfiledRecordContainer, unfiledRecordFolder, never(), times(1), false, true);  
         
     }
     
@@ -502,7 +434,7 @@ public class FilePlanPermissionServiceImplUnitTest extends BaseUnitTest
         filePlanPermissionService.setupPermissions(unfiledRecordFolder, unfiledRecord);
         
         // verify permission init
-        verifyInitPermissions(unfiledRecordFolder, unfiledRecord, times(1), times(1));  
+        verifyInitPermissions(unfiledRecordFolder, unfiledRecord, times(1), times(1), false, true);  
         
     }
 }

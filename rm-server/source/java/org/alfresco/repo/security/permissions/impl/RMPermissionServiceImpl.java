@@ -29,16 +29,17 @@ import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedReaderDynamicAuthority;
-import org.alfresco.module.org_alfresco_module_rm.security.ExtendedWriterDynamicAuthority;
 import org.alfresco.repo.cache.SimpleCache;
 import org.alfresco.repo.security.permissions.AccessControlEntry;
 import org.alfresco.repo.security.permissions.AccessControlList;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -303,13 +304,17 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
         final String adminRole = getAdminRole(nodeRef);
         if (nodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_FILE_PLAN_COMPONENT) && isNotBlank(adminRole) && !inheritParentPermissions)
         {
-            setPermission(nodeRef, ExtendedReaderDynamicAuthority.EXTENDED_READER, RMPermissionModel.READ_RECORDS, true);
-            setPermission(nodeRef, ExtendedWriterDynamicAuthority.EXTENDED_WRITER, RMPermissionModel.FILING, true);
-            setPermission(nodeRef, adminRole, RMPermissionModel.FILING, true);
+           setPermission(nodeRef, adminRole, RMPermissionModel.FILING, true);
         }
         super.setInheritParentPermissions(nodeRef, inheritParentPermissions);
     }
 
+    /**
+     * Helper method to the RM admin role scoped by the correct file plan.
+     * 
+     * @param nodeRef   node reference
+     * @return String   RM admin role
+     */
     private String getAdminRole(NodeRef nodeRef)
     {
         String adminRole = null;
@@ -319,5 +324,29 @@ public class RMPermissionServiceImpl extends PermissionServiceImpl
             adminRole = authorityService.getName(AuthorityType.GROUP, FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
         }
         return adminRole;
+    }
+    
+    /**
+     * @see org.alfresco.repo.security.permissions.impl.ExtendedPermissionService#getReadersAndWriters(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public Pair<Set<String>, Set<String>> getReadersAndWriters(NodeRef nodeRef)
+    {
+        // get the documents readers
+        Long aclId = nodeService.getNodeAclId(nodeRef);
+        Set<String> readers = getReaders(aclId);
+        Set<String> writers = getWriters(aclId);
+
+        // add the current owner to the list of extended writers
+        Set<String> modifiedWrtiers = new HashSet<String>(writers);    
+        String owner = ownableService.getOwner(nodeRef);
+        if (StringUtils.isNotBlank(owner) && 
+            !owner.equals(OwnableService.NO_OWNER) &&
+            authorityService.authorityExists(owner))
+        {
+            modifiedWrtiers.add(owner);
+        }        
+        
+        return new Pair<Set<String>, Set<String>> (readers, modifiedWrtiers);
     }
 }

@@ -652,6 +652,12 @@
                     <prop key="location">alfresco/templates/invite-add-direct-email-templates.xml</prop>
                     <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
                </props>
+               
+               <props>
+                    <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.invite.childname}</prop>
+                    <prop key="location">alfresco/templates/invite-moderated-email-templates.xml</prop>
+                    <prop key="messages">alfresco/messages/bootstrap-spaces</prop>
+               </props>
 
                <props>
                     <prop key="path">/${spaces.company_home.childname}/${spaces.dictionary.childname}/${spaces.templates.email.childname}/${spaces.templates.email.notify.childname}</prop>

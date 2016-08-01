@@ -326,4 +326,15 @@ public interface InvitationService
     @NotAuditable
     boolean isSendEmails();
 
+    /**
+     * 
+     * Sends the site join request notification email using the given template, subject localization key, and variables.
+     * 
+     * @param invitationId
+     * @param emailTemplateXpath
+     * @param emailSubjectKey
+     * @param variables
+     */
+    @Auditable(parameters = { "inviteId" })
+    public void sendModeratedInvitation(String invitationId, String emailTemplateXpath, String emailSubjectKey, Map<String, Object> variables);
 }

@@ -64,6 +64,7 @@ public class AllUnitTestsSuite extends TestSuite
         suite.addTestSuite(org.alfresco.repo.forms.processor.workflow.TaskFormProcessorTest.class);
         suite.addTestSuite(org.alfresco.repo.forms.processor.workflow.WorkflowFormProcessorTest.class);
         suite.addTestSuite(org.alfresco.repo.invitation.site.InviteSenderTest.class);
+        suite.addTestSuite(org.alfresco.repo.invitation.site.InviteModeratedSenderTest.class);
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.lock.LockUtilsTest.class));
         suite.addTest(new JUnit4TestAdapter(org.alfresco.repo.lock.mem.LockStoreImplTest.class));
         suite.addTestSuite(org.alfresco.repo.module.ModuleDetailsImplTest.class);

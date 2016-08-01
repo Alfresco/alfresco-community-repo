@@ -108,5 +108,8 @@
          
     <bean id="SendNominatedInviteAddDirectDelegate" parent="baseInvitationDelegate" 
          class="org.alfresco.repo.invitation.activiti.SendNominatedInviteAddDirectDelegate" />
+         
+    <bean id="SendModeratedInviteDelegate" parent="baseInvitationDelegate" 
+         class="org.alfresco.repo.invitation.activiti.SendModeratedInviteDelegate" />
     
 </beans>

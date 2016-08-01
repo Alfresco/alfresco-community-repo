@@ -53,6 +53,8 @@ import org.alfresco.repo.action.executer.MailActionExecuter;
 import org.alfresco.repo.admin.SysAdminParams;
 import org.alfresco.repo.i18n.MessageService;
 import org.alfresco.repo.invitation.activiti.SendNominatedInviteDelegate;
+import org.alfresco.repo.invitation.site.InviteNominatedSender;
+import org.alfresco.repo.invitation.site.InviteModeratedSender;
 import org.alfresco.repo.invitation.site.InviteSender;
 import org.alfresco.repo.jscript.ScriptNode;
 import org.alfresco.repo.model.Repository;
@@ -126,7 +128,7 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private static final Log logger = LogFactory.getLog(InvitationServiceImpl.class);
     private static final String REJECT_TEMPLATE = "/alfresco/bootstrap/invite/moderated-reject-email.ftl";
     private static final String MSG_NOT_SITE_MANAGER = "invitation.cancel.not_site_manager";
-    private static final Collection<String> sendInvitePropertyNames = Arrays.asList(wfVarInviteeUserName,//
+    private static final List<String> SEND_INVITE_NOMINATED_PROP_NAMES = Arrays.asList(wfVarInviteeUserName,//
             wfVarResourceName,//
             wfVarInviterUserName,//
             wfVarInviteeUserName,//
@@ -137,7 +139,15 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
             wfVarServerPath,//
             wfVarAcceptUrl,//
             wfVarRejectUrl,
-            InviteSender.WF_INSTANCE_ID);
+            InviteNominatedSender.WF_INSTANCE_ID);
+    
+    private static final List<String> SEND_INVITE_MODERATED_PROP_NAMES = Arrays.asList(
+            WorkflowModelModeratedInvitation.wfVarInviteeUserName,
+            WorkflowModelModeratedInvitation.wfVarInviteeRole,
+            WorkflowModelModeratedInvitation.wfVarResourceName,
+            WorkflowModelModeratedInvitation.bpmGroupAssignee,
+            WorkflowModelModeratedInvitation.wfVarResourceType);
+    
     
     /**
      * Services
@@ -161,7 +171,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     private Repository repositoryHelper;
     private ServiceRegistry serviceRegistry;
     private MessageService messageService;
-    private InviteSender inviteSender;
+    private InviteNominatedSender inviteNominatedSender;
+    private InviteModeratedSender inviteModeratedSender;
 
     // maximum number of tries to generate a invitee user name which
     // does not already belong to an existing person
@@ -243,7 +254,8 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
         PropertyCheck.mandatory(this, "PolicyComponent", policyComponent);
         PropertyCheck.mandatory(this, "templateService", templateService);
         
-        this.inviteSender = new InviteSender(serviceRegistry, repositoryHelper, messageService);
+        this.inviteNominatedSender = new InviteNominatedSender(serviceRegistry, repositoryHelper, messageService);
+        this.inviteModeratedSender = new InviteModeratedSender(serviceRegistry, repositoryHelper, messageService);
         
         //
         this.policyComponent.bindClassBehaviour(QName.createQName(NamespaceService.ALFRESCO_URI, "beforeDeleteNode"),
@@ -2011,20 +2023,39 @@ public class InvitationServiceImpl implements InvitationService, NodeServicePoli
     public void sendNominatedInvitation(String inviteId, String emailTemplateXpath, 
             String emailSubjectKey, Map<String, Object> executionVariables)
     {
+        sendInviteEmail(inviteNominatedSender, SEND_INVITE_NOMINATED_PROP_NAMES, inviteId, emailTemplateXpath, emailSubjectKey, executionVariables);
+    }
+
+    private void sendInviteEmail(InviteSender inviteSender, List<String> invitePropNames, String inviteId, String emailTemplateXpath, String emailSubjectKey, Map<String, Object> executionVariables)
+    {
         if (isSendEmails())
         {
-            Map<String, String> properties = makePropertiesFromContextVariables(executionVariables, sendInvitePropertyNames);
+            Map<String, String> properties = makePropertiesFromContextVariables(executionVariables, invitePropNames);
 
-            String packageName = WorkflowModel.ASSOC_PACKAGE.toPrefixString(namespaceService).replace(":", "_");
-            ScriptNode packageNode = (ScriptNode) executionVariables.get(packageName);
-            String packageRef = packageNode.getNodeRef().toString();
-            properties.put(InviteSender.WF_PACKAGE, packageRef);
+            String packageRef = getPackageRef(executionVariables);
+            properties.put(InviteNominatedSender.WF_PACKAGE, packageRef);
             
-            properties.put(InviteSender.WF_INSTANCE_ID, inviteId);
+            properties.put(InviteNominatedSender.WF_INSTANCE_ID, inviteId);
             
             inviteSender.sendMail(emailTemplateXpath, emailSubjectKey, properties);
         }
-	}
+    }
+    
+
+    @Override
+    public void sendModeratedInvitation(String inviteId, String emailTemplateXpath, String emailSubjectKey, Map<String, Object> executionVariables)
+    {
+        sendInviteEmail(inviteModeratedSender, SEND_INVITE_MODERATED_PROP_NAMES, inviteId, emailTemplateXpath, emailSubjectKey, executionVariables);
+        
+    }
+
+    private String getPackageRef(Map<String, Object> executionVariables)
+    {
+        String packageName = WorkflowModel.ASSOC_PACKAGE.toPrefixString(namespaceService).replace(":", "_");
+        ScriptNode packageNode = (ScriptNode) executionVariables.get(packageName);
+        String packageRef = packageNode.getNodeRef().toString();
+        return packageRef;
+    }
     
     @Override
     public void cancelInvitation(String siteName, String invitee, String inviteId, String currentInviteId)

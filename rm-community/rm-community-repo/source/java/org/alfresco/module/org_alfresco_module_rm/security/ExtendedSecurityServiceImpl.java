@@ -71,9 +71,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                                                     ApplicationListener<ContextRefreshedEvent>
 {
     /** ipr group names */
-    private static final String ROOT_IPR_GROUP = "INPLACE_RECORD_MANAGEMENT";
-    private static final String READER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "R";
-    private static final String WRITER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "W";
+    static final String ROOT_IPR_GROUP = "INPLACE_RECORD_MANAGEMENT";
+    static final String READER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "R";
+    static final String WRITER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "W";
     
     /** max page size for authority query */
     private static final int MAX_ITEMS = 50;

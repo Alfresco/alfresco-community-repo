@@ -575,7 +575,8 @@
         <property name="filePlanService" ref="filePlanService" />
         <property name="filePlanRoleService" ref="filePlanRoleService" />        
         <property name="authorityService" ref="authorityService"/>        
-        <property name="permissionService" ref="permissionService"/>
+        <property name="permissionService" ref="permissionService"/>   
+        <property name="transactionService" ref="transactionService"/>
     </bean>
 
     <bean id="ExtendedSecurityService" class="org.springframework.aop.framework.ProxyFactoryBean">

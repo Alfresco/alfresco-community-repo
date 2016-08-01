@@ -449,9 +449,20 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
         return authorityService.getName(AuthorityType.GROUP, FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
     }
 
+    /**
+     * Indicates whether the default behaviour is to inherit permissions or not.
+     * 
+     * @param nodeRef               node reference
+     * @param isParentNodeFilePlan  true if parent node is a file plan, false otherwise
+     * @return boolean              true if inheritance true, false otherwise
+     */
     private boolean isInheritanceAllowed(NodeRef nodeRef, Boolean isParentNodeFilePlan)
     {
-        return !(isFilePlan(nodeRef) || isTransfer(nodeRef) || isHold(nodeRef) || isUnfiledRecordsContainer(nodeRef) || (isRecordCategory(nodeRef) && isTrue(isParentNodeFilePlan)));
+        return !(isFilePlan(nodeRef) || 
+                 isTransfer(nodeRef) || 
+                 isHold(nodeRef) || 
+                 isUnfiledRecordsContainer(nodeRef) || 
+                 (isRecordCategory(nodeRef) && isTrue(isParentNodeFilePlan)));
     }
 
     /**
@@ -515,9 +526,6 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
                             keepPerms.add(recordPermission);
                         }
                     }
-
-                    // clear all existing permissions and start again
-                   // permissionService.deletePermissions(record);
 
                     // re-setup the records permissions
                     setupPermissions(destinationAssocRef.getParentRef(), record);
@@ -600,7 +608,7 @@ public class FilePlanPermissionServiceImpl extends    ServiceBaseImpl
 
     private boolean canPerformPermissionAction(NodeRef nodeRef)
     {
-        return isFilePlanContainer(nodeRef) || isRecordFolder(nodeRef) || isRecord(nodeRef) || isTransfer(nodeRef);
+        return isFilePlanContainer(nodeRef) || isRecordFolder(nodeRef) || isRecord(nodeRef) || isTransfer(nodeRef) || isHold(nodeRef);
     }
 
     /**

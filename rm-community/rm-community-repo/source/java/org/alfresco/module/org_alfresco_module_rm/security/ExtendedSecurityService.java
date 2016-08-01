@@ -41,7 +41,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 @AlfrescoPublicApi
 public interface ExtendedSecurityService
 {
-    static final String IPR_GROUP_PREFIX = "IPR_";
+    static final String IPR_GROUP_PREFIX = "IPR";
     
 	/**
 	 * Indicates whether a node has extended security.

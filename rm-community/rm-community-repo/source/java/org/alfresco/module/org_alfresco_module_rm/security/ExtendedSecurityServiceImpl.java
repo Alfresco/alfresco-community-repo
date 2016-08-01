@@ -40,6 +40,8 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.query.PagingRequest;
+import org.alfresco.query.PagingResults;
 import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
@@ -72,6 +74,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     private static final String ROOT_IPR_GROUP = "INPLACE_RECORD_MANAGEMENT";
     private static final String READER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "R";
     private static final String WRITER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "W";
+    
+    /** max page size for authority query */
+    private static final int MAX_ITEMS = 50;
     
     /** File plan service */
     private FilePlanService filePlanService;
@@ -300,35 +305,82 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     private Pair<String, String> getIPRGroups(Set<String> readers, Set<String> writers)
     {
         Pair<String, String> result = null;
+                    
+        // find read group or determine what the next index is if no group exists or there is a clash            
+        Pair<String, Integer> readGroupResult = findIPRGoup(READER_GROUP_PREFIX, readers, writers); 
         
-        // see if the groups already exists or not
-        String readerGroupName = getIPRGroupName(READER_GROUP_PREFIX, readers, writers, false);
-        String writerGroupName = getIPRGroupName(WRITER_GROUP_PREFIX, readers, writers, false);
-        
-        if (authorityService.authorityExists(readerGroupName) &&
-            authorityService.authorityExists(writerGroupName))
-        {
-            // check that the groups are a true match
-            if (authorityService.getContainingAuthorities(AuthorityType.GROUP, writerGroupName, true).contains(readerGroupName) &&
-                isIPRGroupTrueMatch(readers, readerGroupName) &&
-                isIPRGroupTrueMatch(writers, writerGroupName))
-            {     
-                // reuse the existing groups
-                result = new Pair<String, String>(readerGroupName, writerGroupName);
-            }
-            else
-            {
-                // TODO - CLASH
-                throw new AlfrescoRuntimeException("IPR Group Name Clash!");
-            }
-        }        
-        else
+        if (readGroupResult.first == null)
         {
             // create inplace record reader and writer groups
-            result = createIPRGroups(readers, writers);
+            result = createIPRGroups(readers, writers, readGroupResult.second);
+        }
+        else
+        {
+            // get the write group
+            String index = readGroupResult.first.substring(readGroupResult.first.length() - 1);
+            String writeGroup = PermissionService.GROUP_PREFIX + 
+                                getIPRGroupShortName(WRITER_GROUP_PREFIX, readers, writers, index);
+            
+            // double check it's existence
+            if (!authorityService.authorityExists(writeGroup))
+            {
+                throw new AlfrescoRuntimeException("An inplace record write group does not exist for the corresponding read group " + readGroupResult.first);
+            }
+            
+            // set result
+            result = new Pair<String, String>(readGroupResult.first, writeGroup);
+        }
+ 
+        return result;
+    }
+    
+    /**
+     * 
+     * @param groupPrefix
+     * @param readers
+     * @param writers
+     * @return
+     */
+    private Pair<String, Integer> findIPRGoup(String groupPrefix, Set<String> readers, Set<String> writers)
+    {
+        String iprGroup = null;
+        int nextGroupIndex = 0;
+        boolean hasMoreItems = true;
+        int pageCount = 0;
+        
+        // determine the short name prefix
+        String groupShortNamePrefix = getIPRGroupPrefixShortName(groupPrefix, readers, writers);
+        
+        // iterate over the authorities to find a match
+        while (hasMoreItems == true)
+        {        
+            // get matching authorities
+            PagingResults<String> results = authorityService.getAuthorities(AuthorityType.GROUP, 
+                        RMAuthority.ZONE_APP_RM, 
+                        groupShortNamePrefix,
+                        false, 
+                        false, 
+                        new PagingRequest(MAX_ITEMS*pageCount, MAX_ITEMS));
+            
+            // record the total count
+            nextGroupIndex = nextGroupIndex + results.getPage().size();
+            
+            // see if any of the matching groups exactly match
+            for (String group : results.getPage())
+            {
+                if (isIPRGroupTrueMatch(group, readers, writers))
+                {
+                    iprGroup = group;
+                    break;
+                }
+            }
+            
+            // determine if there are any more pages to inspect
+            hasMoreItems = results.hasMoreItems();
+            pageCount ++;
         }
         
-        return result;
+        return new Pair<String, Integer>(iprGroup, nextGroupIndex);
     }
     
     /**
@@ -337,7 +389,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * @param group
      * @return
      */
-    private boolean isIPRGroupTrueMatch(Set<String> authorities, String group)
+    private boolean isIPRGroupTrueMatch(String group, Set<String> readers, Set<String> writers)
     {
         // TODO
         return true;
@@ -350,18 +402,28 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * @param shortName
      * @return
      */
-    private String getIPRGroupName(String prefix, Set<String> readers, Set<String> writers, boolean shortName)
+    private String getIPRGroupPrefixShortName(String prefix, Set<String> readers, Set<String> writers)
     {
-        StringBuilder builder = new StringBuilder(128);
-        
-        if (!shortName)
-        {
-            builder.append(GROUP_PREFIX);
-        }
-        
-        builder.append(prefix)
+        StringBuilder builder = new StringBuilder(128)
+               .append(prefix)
                .append(getAuthoritySetHashCode(readers))
                .append(getAuthoritySetHashCode(writers));
+        
+        return builder.toString();
+    }
+    
+    private String getIPRGroupShortName(String prefix, Set<String> readers, Set<String> writers, int index)
+    {
+        return getIPRGroupShortName(prefix, readers, writers, Integer.toString(index));
+    }
+    
+    private String getIPRGroupShortName(String prefix, Set<String> readers, Set<String> writers, String index)
+    {
+        StringBuilder builder = new StringBuilder(128)
+               .append(prefix)
+               .append(getAuthoritySetHashCode(readers))
+               .append(getAuthoritySetHashCode(writers))
+               .append(index);
         
         return builder.toString();
     }
@@ -387,10 +449,10 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * @param writers
      * @return
      */
-    private Pair<String, String> createIPRGroups(Set<String> readers, Set<String> writers)
+    private Pair<String, String> createIPRGroups(Set<String> readers, Set<String> writers, int index)
     {
-        String iprReaderGroup = createIPRGroup(getIPRGroupName(READER_GROUP_PREFIX, readers, writers, true), getRootIRPGroup(), readers); 
-        String iprWriterGroup = createIPRGroup(getIPRGroupName(WRITER_GROUP_PREFIX, readers, writers, true), iprReaderGroup, writers);
+        String iprReaderGroup = createIPRGroup(getIPRGroupShortName(READER_GROUP_PREFIX, readers, writers, index), getRootIRPGroup(), readers); 
+        String iprWriterGroup = createIPRGroup(getIPRGroupShortName(WRITER_GROUP_PREFIX, readers, writers, index), iprReaderGroup, writers);
         return new Pair<String, String>(iprReaderGroup, iprWriterGroup);
     }
     

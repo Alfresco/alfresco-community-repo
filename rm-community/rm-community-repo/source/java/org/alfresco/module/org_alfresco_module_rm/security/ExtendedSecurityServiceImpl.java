@@ -27,6 +27,8 @@
 
 package org.alfresco.module.org_alfresco_module_rm.security;
 
+import static org.alfresco.service.cmr.security.PermissionService.GROUP_PREFIX;
+
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -38,6 +40,8 @@ import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.util.ServiceBaseImpl;
+import org.alfresco.repo.security.authority.RMAuthority;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -45,7 +49,10 @@ import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.RegexQNamePattern;
+import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.util.ParameterCheck;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.extensions.webscripts.ui.common.StringUtils;
 
 import com.google.gdata.util.common.base.Pair;
@@ -58,10 +65,13 @@ import com.google.gdata.util.common.base.Pair;
  */
 public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                                          implements ExtendedSecurityService,
-                                                    RecordsManagementModel
+                                                    RecordsManagementModel,
+                                                    ApplicationListener<ContextRefreshedEvent>
 {
-    private static final String READER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "R_";
-    private static final String WRITER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "W_";
+    /** ipr group names */
+    private static final String ROOT_IPR_GROUP = "INPLACE_RECORD_MANAGEMENT";
+    private static final String READER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "R";
+    private static final String WRITER_GROUP_PREFIX = ExtendedSecurityService.IPR_GROUP_PREFIX + "W";
     
     /** File plan service */
     private FilePlanService filePlanService;
@@ -74,6 +84,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     
     /** permission service */
     private PermissionService permissionService;
+    
+    /** transaction service */
+    private TransactionService transactionService;
 
     /**
      * @param filePlanService   file plan service
@@ -106,10 +119,48 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         this.permissionService = permissionService;
     }
+    
+    /**
+     * @param transactionService    transaction service
+     */
+    public void setTransactionService(TransactionService transactionService)
+    {
+        this.transactionService = transactionService;
+    }
+    
+    /**
+     * Application context refresh event handler
+     */
+    @Override
+    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent)
+    {
+        transactionService.getRetryingTransactionHelper().doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // if the root group doesn't exist then create it
+                if (!authorityService.authorityExists(getRootIRPGroup()))
+                {
+                    authorityService.createAuthority(AuthorityType.GROUP, ROOT_IPR_GROUP, ROOT_IPR_GROUP, Collections.singleton(RMAuthority.ZONE_APP_RM));
+                }
+                
+                return null;
+            }
+        });
+    }
+    
+    /**
+     * Get root IPR group name
+     */
+    private String getRootIRPGroup()
+    {
+        return GROUP_PREFIX + ROOT_IPR_GROUP;
+    }
 
 	/**
      * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#hasExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef)
      */
+    @Override
     public boolean hasExtendedSecurity(NodeRef nodeRef)
     {
         return (getIPRGroups(nodeRef) != null);
@@ -222,11 +273,11 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         Set<AccessPermission> permissions = permissionService.getAllSetPermissions(nodeRef);
         for (AccessPermission permission : permissions)
         {
-            if (permission.getAuthority().startsWith(PermissionService.GROUP_PREFIX + READER_GROUP_PREFIX))
+            if (permission.getAuthority().startsWith(GROUP_PREFIX + READER_GROUP_PREFIX))
             {
                 iprReaderGroup = permission.getAuthority();
             }   
-            else if (permission.getAuthority().startsWith(PermissionService.GROUP_PREFIX + WRITER_GROUP_PREFIX))
+            else if (permission.getAuthority().startsWith(GROUP_PREFIX + WRITER_GROUP_PREFIX))
             {
                 iprWriterGroup = permission.getAuthority();
             }
@@ -253,6 +304,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         // see if the groups already exists or not
         String readerGroupName = getIPRGroupName(READER_GROUP_PREFIX, readers, writers, false);
         String writerGroupName = getIPRGroupName(WRITER_GROUP_PREFIX, readers, writers, false);
+        
         if (authorityService.authorityExists(readerGroupName) &&
             authorityService.authorityExists(writerGroupName))
         {
@@ -304,12 +356,11 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         
         if (!shortName)
         {
-            builder.append(PermissionService.GROUP_PREFIX);
+            builder.append(GROUP_PREFIX);
         }
         
         builder.append(prefix)
                .append(getAuthoritySetHashCode(readers))
-               .append("-")
                .append(getAuthoritySetHashCode(writers));
         
         return builder.toString();
@@ -338,7 +389,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      */
     private Pair<String, String> createIPRGroups(Set<String> readers, Set<String> writers)
     {
-        String iprReaderGroup = createIPRGroup(getIPRGroupName(READER_GROUP_PREFIX, readers, writers, true), null, readers); 
+        String iprReaderGroup = createIPRGroup(getIPRGroupName(READER_GROUP_PREFIX, readers, writers, true), getRootIRPGroup(), readers); 
         String iprWriterGroup = createIPRGroup(getIPRGroupName(WRITER_GROUP_PREFIX, readers, writers, true), iprReaderGroup, writers);
         return new Pair<String, String>(iprReaderGroup, iprWriterGroup);
     }
@@ -354,7 +405,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("groupShortName", groupShortName);
         
-        String group = authorityService.createAuthority(AuthorityType.GROUP, groupShortName); // TODO set appropriate zone
+        String group = authorityService.createAuthority(AuthorityType.GROUP, groupShortName, groupShortName, Collections.singleton(RMAuthority.ZONE_APP_RM)); 
         
         if (parent != null)
         {

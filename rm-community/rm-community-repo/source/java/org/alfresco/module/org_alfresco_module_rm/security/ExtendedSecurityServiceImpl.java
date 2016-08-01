@@ -247,7 +247,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
         // find groups
-        Pair<String, String> iprGroups = getIPRGroups(readers, writers);
+        Pair<String, String> iprGroups = createOrFindIPRGroups(readers, writers);
         
         // assign groups to node
         assignIPRGroupsToNode(iprGroups, nodeRef);
@@ -265,9 +265,12 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
     
     /**
+     * Get the IPR groups associated with a given node reference.
+     * <p>
+     * Return null if none found.
      * 
-     * @param nodeRef
-     * @return
+     * @param nodeRef                node reference
+     * @return Pair<String, String>  where first if the read group and second if the write group, null if none found
      */
     private Pair<String, String> getIPRGroups(NodeRef nodeRef)
     {
@@ -297,12 +300,20 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
     
     /**
+     * Given a set of readers and writers find or create the appropriate IPR groups.
+     * <p>
+     * The IPR groups are named with hashes of the authority lists in order to reduce 
+     * the set of groups that require exact match.  A further index is used to handle
+     * a situation where there is a hash clash, but a difference in the authority lists.
+     * <p>
+     * When no match is found the groups are created.
      * 
-     * @param readers
-     * @param writers
-     * @return
+     * @param readers               authorities with read
+     * @param writers               authorities with write
+     * @return Pair<String, String> where first is the full name of the read group and 
+     *                              second is the full name of the write group
      */
-    private Pair<String, String> getIPRGroups(Set<String> readers, Set<String> writers)
+    private Pair<String, String> createOrFindIPRGroups(Set<String> readers, Set<String> writers)
     {
         Pair<String, String> result = null;
                     
@@ -316,30 +327,26 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         }
         else
         {
-            // get the write group
-            String index = readGroupResult.first.substring(readGroupResult.first.length() - 1);
-            String writeGroup = PermissionService.GROUP_PREFIX + 
-                                getIPRGroupShortName(WRITER_GROUP_PREFIX, readers, writers, index);
-            
-            // double check it's existence
-            if (!authorityService.authorityExists(writeGroup))
-            {
-                throw new AlfrescoRuntimeException("An inplace record write group does not exist for the corresponding read group " + readGroupResult.first);
-            }
-            
             // set result
-            result = new Pair<String, String>(readGroupResult.first, writeGroup);
+            result = new Pair<String, String>(readGroupResult.first, 
+                                              getIRPWriteGroupNameFromReadGroupName(readGroupResult.first, readers, writers));
         }
  
         return result;
     }
     
     /**
+     * Give a group name prefix and the read/write authorities, finds the exact match existing read group
+     * (containing the exact match write group).
+     * <p>
+     * If the group does not exist then the group returned is null and the index shows the next available 
+     * group index for creation.
      * 
-     * @param groupPrefix
-     * @param readers
-     * @param writers
-     * @return
+     * @param groupPrefix             group name prefix
+     * @param readers                 authorities with read
+     * @param writers                 authorities with write
+     * @return Pair<String, Integer>  where first is the name of the found group, null if none found and second
+     *                                if the next available create index
      */
     private Pair<String, Integer> findIPRGoup(String groupPrefix, Set<String> readers, Set<String> writers)
     {
@@ -366,13 +373,24 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             nextGroupIndex = nextGroupIndex + results.getPage().size();
             
             // see if any of the matching groups exactly match
-            for (String group : results.getPage())
+            for (String readGroup : results.getPage())
             {
-                if (isIPRGroupTrueMatch(group, readers, writers))
+                // get the corresponding write group name
+                String writeGroup = getIRPWriteGroupNameFromReadGroupName(readGroup, readers, writers);
+                
+                // check for existence
+                if (!authorityService.authorityExists(writeGroup))
                 {
-                    iprGroup = group;
-                    break;
+                    throw new AlfrescoRuntimeException("Missing inplace writer group for reader group " + readGroup);
                 }
+                  
+                // if exists and matches we have found our groups
+                if (isIPRGroupTrueMatch(readGroup, readers, writeGroup) &&
+                    isIPRGroupTrueMatch(writeGroup, writers, null))
+                {
+                    iprGroup = readGroup;
+                    break;
+                } 
             }
             
             // determine if there are any more pages to inspect
@@ -384,23 +402,30 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
     
     /**
+     * Determines whether a group exactly matches a list of authorities.
      * 
-     * @param authorities
-     * @param group
+     * @param authorities           list of authorities
+     * @param group                 group 
+     * @param excludeAuthority      authority to exclude from comparision
      * @return
      */
-    private boolean isIPRGroupTrueMatch(String group, Set<String> readers, Set<String> writers)
+    private boolean isIPRGroupTrueMatch(String group, Set<String> authorities, String excludeAuthority)
     {
-        // TODO
-        return true;
+        Set<String> contained = authorityService.getContainedAuthorities(null, group, true);
+        if (excludeAuthority != null)
+        {
+            contained.remove(excludeAuthority);            
+        }        
+        return contained.equals(authorities);
     }
     
     /**
+     * Get IPR group prefix short name.
      * 
-     * @param prefix
-     * @param authorities
-     * @param shortName
-     * @return
+     * @param prefix        prefix
+     * @param authorities   read authorities
+     * @param shortName     write authorities
+     * @return String       group prefix short name
      */
     private String getIPRGroupPrefixShortName(String prefix, Set<String> readers, Set<String> writers)
     {
@@ -412,11 +437,33 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         return builder.toString();
     }
     
+    /**
+     * Get IPR group short name.
+     * <p>
+     * Note this excludes the "GROUP_" prefix.
+     * 
+     * @param prefix    prefix
+     * @param readers   read authorities
+     * @param writers   write authorities
+     * @param index     group index
+     * @return String   group short name
+     */
     private String getIPRGroupShortName(String prefix, Set<String> readers, Set<String> writers, int index)
     {
         return getIPRGroupShortName(prefix, readers, writers, Integer.toString(index));
     }
     
+    /**
+     * Get IPR group short name.
+     * <p>
+     * Note this excludes the "GROUP_" prefix.
+     * 
+     * @param prefix    prefix
+     * @param readers   read authorities
+     * @param writers   write authorities
+     * @param index     group index
+     * @return String   group short name
+     */
     private String getIPRGroupShortName(String prefix, Set<String> readers, Set<String> writers, String index)
     {
         StringBuilder builder = new StringBuilder(128)
@@ -429,9 +476,29 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
     
     /**
+     * Get the IPR write group name from the read group name.
+     * <p>
+     * Note this doesn't test for existence of the group, instead determines the name based on the index and 
+     * authorities.
+     * <p>
+     * Note this excludes the "GROUP_" prefix
      * 
-     * @param authorities
-     * @return
+     * @param readGroupShortName    read group short name
+     * @param readers               read authorities
+     * @param writers               write authorities
+     * @return String               write group name
+     */
+    private String getIRPWriteGroupNameFromReadGroupName(String readGroupnName, Set<String> readers, Set<String> writers)
+    {
+        String index = readGroupnName.substring(readGroupnName.length() - 1);
+        return PermissionService.GROUP_PREFIX + getIPRGroupShortName(WRITER_GROUP_PREFIX, readers, writers, index);        
+    }
+    
+    /**
+     * Gets the hashcode value of a set of authorities.
+     * 
+     * @param authorities   set of authorities
+     * @return int          hash code
      */
     private int getAuthoritySetHashCode(Set<String> authorities)
     {
@@ -444,10 +511,12 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
     
     /**
+     * Creates new IPR groups.
      * 
-     * @param readers
-     * @param writers
-     * @return
+     * @param readers               read authorities
+     * @param writers               write authorities
+     * @param index                 index
+     * @return Pair<String, String> where first if the full read group name and second is the full write group name
      */
     private Pair<String, String> createIPRGroups(Set<String> readers, Set<String> writers, int index)
     {
@@ -457,23 +526,27 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
     
     /**
+     * Creates a new IPR group.
      * 
-     * @param groupShortName
-     * @param parent
-     * @param children
-     * @return
+     * @param groupShortName    group short name
+     * @param parent            parent group, null if none
+     * @param children          child authorities
+     * @return String           full name of created group
      */
     private String createIPRGroup(String groupShortName, String parent, Set<String> children)
     {
         ParameterCheck.mandatory("groupShortName", groupShortName);
         
+        // create group
         String group = authorityService.createAuthority(AuthorityType.GROUP, groupShortName, groupShortName, Collections.singleton(RMAuthority.ZONE_APP_RM)); 
         
+        // add parent if provided
         if (parent != null)
         {
             authorityService.addAuthority(parent, group);
         }
         
+        // add children if provided
         if (children != null)
         {
             for (String child : children)
@@ -489,9 +562,10 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
     
     /**
+     * Assign IPR groups to a node reference with the appropraite permissions.
      * 
-     * @param iprGroups
-     * @param nodeRef
+     * @param iprGroups iprGroups, first read and second write
+     * @param nodeRef   node reference
      */
     private void assignIPRGroupsToNode(Pair<String, String> iprGroups, NodeRef nodeRef)
     {
@@ -500,10 +574,11 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     *
-     * @param nodeRef
-     * @param readers
-     * @param writers
+     * Add authorities to extended security roles.
+     * 
+     * @param nodeRef   node reference
+     * @param readers   read authorities
+     * @param writers   write authorities
      */
     private void addExtendedSecurityRoles(NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
@@ -559,10 +634,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
 
     /**
+     * Remove all extended security from node.
      * 
-     * @param nodeRef
-     * @param readers
-     * @param writers
+     * @param nodeRef   node reference
      */
     private void removeExtendedSecurityImpl(NodeRef nodeRef)
     {

@@ -687,7 +687,7 @@ public class ExtendedSecurityServiceImplUnitTest
     /**
      * Given that node has renditions
      * When I remove the extended security for a node
-     * Then the extended security is also removed from the rentitions
+     * Then the extended security is also removed from the renditions
      */
     // TODO
 }

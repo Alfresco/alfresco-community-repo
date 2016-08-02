@@ -224,14 +224,12 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
-
-        if (nodeRef != null)
-        {
-            addExtendedSecurityImpl(nodeRef, readers, writers);
-
-            // add to the extended security roles
-            addExtendedSecurityRoles(nodeRef, readers, writers);
-        }
+        
+        // TODO what happens if the node already has some extended permissions assigned?!
+        // TODO need to clear existing groups and add new ones
+        
+        // add extended security impl
+        addExtendedSecurityImpl(nodeRef, readers, writers);     
     }
 
     /**
@@ -248,6 +246,11 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         
         // find groups
         Pair<String, String> iprGroups = createOrFindIPRGroups(readers, writers);
+        
+        // assign groups to correct fileplan roles
+        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
+        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_EXTENDED_READERS, iprGroups.first);
+        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_EXTENDED_WRITERS, iprGroups.second);
         
         // assign groups to node
         assignIPRGroupsToNode(iprGroups, nodeRef);
@@ -306,8 +309,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * the set of groups that require exact match.  A further index is used to handle
      * a situation where there is a hash clash, but a difference in the authority lists.
      * <p>
-     * When no match is found the groups are created.
+     * When no match is found the groups are created.  Once created
      * 
+     * @param filePlan              file plan
      * @param readers               authorities with read
      * @param writers               authorities with write
      * @return Pair<String, String> where first is the full name of the read group and 
@@ -441,6 +445,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * Get IPR group short name.
      * <p>
      * Note this excludes the "GROUP_" prefix.
+     * <p>
+     * 'package' scope to help testing.
      * 
      * @param prefix    prefix
      * @param readers   read authorities
@@ -448,7 +454,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * @param index     group index
      * @return String   group short name
      */
-    private String getIPRGroupShortName(String prefix, Set<String> readers, Set<String> writers, int index)
+    /*package*/ String getIPRGroupShortName(String prefix, Set<String> readers, Set<String> writers, int index)
     {
         return getIPRGroupShortName(prefix, readers, writers, Integer.toString(index));
     }
@@ -511,7 +517,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
     
     /**
-     * Creates new IPR groups.
+     * Creates new IPR groups and assigns then to the correct RM roles.
      * 
      * @param readers               read authorities
      * @param writers               write authorities
@@ -562,7 +568,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
     
     /**
-     * Assign IPR groups to a node reference with the appropraite permissions.
+     * Assign IPR groups to a node reference with the correct permissions.
      * 
      * @param iprGroups iprGroups, first read and second write
      * @param nodeRef   node reference
@@ -571,43 +577,6 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         permissionService.setPermission(nodeRef, iprGroups.first, RMPermissionModel.READ_RECORDS, true);
         permissionService.setPermission(nodeRef, iprGroups.second, RMPermissionModel.FILING, true);
-    }
-
-    /**
-     * Add authorities to extended security roles.
-     * 
-     * @param nodeRef   node reference
-     * @param readers   read authorities
-     * @param writers   write authorities
-     */
-    private void addExtendedSecurityRoles(NodeRef nodeRef, Set<String> readers, Set<String> writers)
-    {
-        NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
-
-        addExtendedSecurityRolesImpl(filePlan, readers, FilePlanRoleService.ROLE_EXTENDED_READERS);
-        addExtendedSecurityRolesImpl(filePlan, writers, FilePlanRoleService.ROLE_EXTENDED_WRITERS);
-    }
-
-    /**
-     * Add extended security roles implementation
-     *
-     * @param filePlan      file plan
-     * @param authorities   authorities
-     * @param roleName      role name
-     */
-    private void addExtendedSecurityRolesImpl(NodeRef filePlan, Set<String> authorities, String roleName)
-    {
-        if (authorities != null)
-        {
-            for (String authority : authorities)
-            {
-                if ((!authority.equals(PermissionService.ALL_AUTHORITIES) && !authority.equals(PermissionService.OWNER_AUTHORITY)))
-                {
-                    // add the authority to the role
-                    filePlanRoleService.assignRoleToAuthority(filePlan, roleName, authority);
-                }
-            }
-        }
     }
     
     /**

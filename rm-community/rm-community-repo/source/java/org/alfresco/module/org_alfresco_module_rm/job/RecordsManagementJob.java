@@ -129,10 +129,8 @@ public class RecordsManagementJob implements Job
             if (jobExecuter instanceof DispositionLifecycleJobExecuter)
             {
                 String auditUser = (String) context.getJobDetail().getJobDataMap().get("runAuditAs");
-                if (((DispositionLifecycleJobExecuter) jobExecuter).getAuthenticationService()
-                            .authenticationExists(auditUser))
+                if (((DispositionLifecycleJobExecuter) jobExecuter).getPersonService().getPersonOrNull(auditUser) != null)
                 {
-
                     setRunAuditAs(auditUser);
                 }
                 else

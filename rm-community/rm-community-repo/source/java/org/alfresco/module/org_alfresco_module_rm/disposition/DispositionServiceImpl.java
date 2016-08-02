@@ -361,7 +361,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         // Make sure we are dealing with an RM node
         if (!filePlanService.isFilePlanComponent(nodeRef))
         {
-            throw new AlfrescoRuntimeException("Can not find the associated disposition schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
+            throw new AlfrescoRuntimeException("Can not find the associated retention schedule for a non records management component. (nodeRef=" + nodeRef.toString() + ")");
         }
 
         if (this.nodeService.hasAspect(nodeRef, ASPECT_SCHEDULED))
@@ -398,7 +398,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
                     //      only the first disposition schedule will be considered
                     if (logger.isWarnEnabled())
                     {
-                        logger.warn("Disposition schedule has more than one associated records management container.  " +
+                        logger.warn("Retention schedule has more than one associated records management container.  " +
                         		    "This is not currently supported so only the first container will be considered. " +
                         		    "(dispositionScheduleNodeRef=" + dispositionSchedule.getNodeRef().toString() + ")");
                     }
@@ -492,7 +492,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         // Check exists
         if (!nodeService.exists(nodeRef))
         {
-            throw new AlfrescoRuntimeException("Unable to create disposition schedule, because node does not exist. (nodeRef=" + nodeRef.toString() + ")");
+            throw new AlfrescoRuntimeException("Unable to create retention schedule, because node does not exist. (nodeRef=" + nodeRef.toString() + ")");
         }
 
         // Check is sub-type of rm:recordCategory
@@ -500,7 +500,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
         if (!TYPE_RECORD_CATEGORY.equals(nodeRefType) &&
             !dictionaryService.isSubClass(nodeRefType, TYPE_RECORD_CATEGORY))
         {
-            throw new AlfrescoRuntimeException("Unable to create disposition schedule on a node that is not a records management container.");
+            throw new AlfrescoRuntimeException("Unable to create retention schedule on a node that is not a records management container.");
         }
 
         behaviourFilter.disableBehaviour(nodeRef, ASPECT_SCHEDULED);
@@ -522,7 +522,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             		List<NodeRef> items = getDisposableItemsImpl(currentDispositionSchdule.isRecordLevelDisposition(), nodeRef);
             		if (items.size() != 0)
             		{
-            			throw new AlfrescoRuntimeException("Can not create a disposition schedule if there are disposable items already under the control of an other disposition schedule");
+            			throw new AlfrescoRuntimeException("Can not create a retention schedule if there are disposable items already under the control of an other retention schedule");
             		}
             	}
 
@@ -537,7 +537,7 @@ public class DispositionServiceImpl extends    ServiceBaseImpl
             else
             {
                 // Error since the node already has a disposition schedule set
-                throw new AlfrescoRuntimeException("Unable to create disposition schedule on node that already has a disposition schedule.");
+                throw new AlfrescoRuntimeException("Unable to create retention schedule on node that already has a retention schedule.");
             }
         }
         finally

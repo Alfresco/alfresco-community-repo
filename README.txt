@@ -32,7 +32,6 @@ Configuring a different DB other than H2 (e.g. MySQL or PostgreSQL):
   mvn clean install -Pstart-repo,use-mysql
 
 
-
 Running integration test:
 -------------------------
 
@@ -67,6 +66,23 @@ The latest Aikau snapshot can be pulled by running the following command in rm-c
    mvn clean install -DskipTests -Dalfresco.aikau.version=LATEST -U
 
 Thereafter start the Share instance and run automation tests as described above.
+
+
+Configuring Outlook Integration:
+-------------------------------
+
+To download and run RM with the Outlook Integration AMPs installed on the repo and Share use the following commands:
+
+  mvn clean install -Pstart-repo,outlook-integration
+  mvn clean install -Pstart-share,outlook-integration
+
+Follow these instructions install licence and Outlook plugin:
+  
+  - http://docs.alfresco.com/outlook2.1/tasks/Outlook-license.html
+  - http://docs.alfresco.com/outlook2.1/tasks/Outlook-install_v2.html 
+
+
+
 
 
 SNAPSHOT dependencies:

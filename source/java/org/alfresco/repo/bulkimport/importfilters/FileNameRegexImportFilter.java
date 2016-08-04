@@ -58,7 +58,7 @@ public class FileNameRegexImportFilter implements ImportFilter
      */
     public boolean shouldFilter(final ImportableItem importableItem)
     {
-        return(pattern.matcher(importableItem.getHeadRevision().getContentFile().getName()).matches());
+        return pattern.matcher(importableItem.getHeadRevision().getContentFile().getFileName().toString()).matches();
     }
 
 }

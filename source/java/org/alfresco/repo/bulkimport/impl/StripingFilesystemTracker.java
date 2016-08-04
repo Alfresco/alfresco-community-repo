@@ -62,7 +62,7 @@ public class StripingFilesystemTracker extends AbstractFilesystemTracker
 
 		// not really an importable item but the interface requires it to be in this form
 		rootFolder = new ImportableItem();
-		rootFolder.getHeadRevision().setContentFile(sourceFolder);
+		rootFolder.getHeadRevision().setContentFile(sourceFolder.toPath());
 		rootFolder.setNodeRef(target);
 
 		addDirectoryToProcess(rootFolder, currentLevel);

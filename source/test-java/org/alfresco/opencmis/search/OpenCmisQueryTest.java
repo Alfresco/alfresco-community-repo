@@ -857,6 +857,14 @@ public class OpenCmisQueryTest extends BaseCMISTest
 
     }
 
+    public void test_IS_PRIVATE_WORKING_COPY() throws Exception
+    {
+        // not allowed
+        testQuery("SELECT cmis:isPrivateWorkingCopy FROM cmis:document WHERE cmis:isPrivateWorkingCopy =  TRUE", 0, false, "cmis:objectId", new String(), true);
+        // not allowed in predicate
+        testQuery("SELECT cmis:objectId FROM cmis:document WHERE cmis:isPrivateWorkingCopy =  TRUE", 0, false, "cmis:objectId", new String(), true);
+    }
+
     public void test_CONTENT_STREAM_FILENAME() throws Exception
     {
         CMISQueryOptions options = new CMISQueryOptions("SELECT * FROM cmis:document", rootNodeRef.getStoreRef());

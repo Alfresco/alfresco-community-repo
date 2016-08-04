@@ -36,8 +36,11 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+import org.alfresco.repo.bulkimport.impl.FileUtils;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.apache.commons.lang.builder.ToStringBuilder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
 /**
  * This class is a DTO that represents an "importable item" - a series of files
@@ -55,6 +58,8 @@ public final class ImportableItem
         OTHER
     };
 
+    protected static final Log logger = LogFactory.getLog(ImportableItem.class);
+    
     private ContentAndMetadata headRevision = new ContentAndMetadata();
     private SortedSet<VersionedContentAndMetadata> versionEntries = null;
     private NodeRef nodeRef;
@@ -193,6 +198,7 @@ public final class ImportableItem
                     }
                     catch (IOException e)
                     {
+                        logger.error("Attributes for file '" + FileUtils.getFileName(contentFile) + "' could not be read.", e);
                     }
                 }
             }
@@ -269,6 +275,10 @@ public final class ImportableItem
                 }
                 catch (IOException e)
                 {
+                    if (logger.isWarnEnabled()) 
+                    {
+                        logger.warn("Size for the metadata file '" + FileUtils.getFileName(metadataFile) + "' could not be retrieved.", e);
+                    }
                 }
             }
         }

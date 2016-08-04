@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.nio.charset.Charset;
 import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -271,7 +272,7 @@ public class BulkImportTest extends AbstractBulkImportTests
 
         System.out.println(bulkImporter.getStatus());
 
-        assertEquals("", 74, bulkImporter.getStatus().getNumberOfContentNodesCreated());
+        assertEquals(74, bulkImporter.getStatus().getNumberOfContentNodesCreated());
 
         checkFiles(folderNode, null, 2, 9, new ExpectedFile[] {
                 new ExpectedFile("quickImg1.xls", MimetypeMap.MIMETYPE_EXCEL),
@@ -627,8 +628,9 @@ public class BulkImportTest extends AbstractBulkImportTests
         NodeImporter nodeImporter = null;
 
         File source = ResourceUtils.getFile("classpath:bulkimport4");
-        
-        String fileName = new String("135 CarbonÔÇô13 NMR spectroscopy_DS_NS_final_cau.txt".getBytes("ISO-8859-1"), "UTF-8");
+        //Simulate the name of the file with an invalid encoding.
+        String fileName = new String("135 CarbonÔÇô13 NMR spectroscopy_DS_NS_final_cau.txt".getBytes(Charset.forName("ISO-8859-1")), 
+                                      Charset.forName("UTF-8"));
         Path dest = source.toPath().resolve("encoding");
         try
         {
@@ -636,6 +638,7 @@ public class BulkImportTest extends AbstractBulkImportTests
         }
         catch (FileAlreadyExistsException ex)
         {
+            //It is fine if the folder already exists, though it should not.
         }
         Path destFile = dest.resolve(fileName);
 
@@ -653,7 +656,7 @@ public class BulkImportTest extends AbstractBulkImportTests
         bulkImportParameters.setBatchSize(40);
         bulkImporter.bulkImport(bulkImportParameters, nodeImporter);
 
-        assertEquals("", 1, bulkImporter.getStatus().getNumberOfContentNodesCreated());
+        assertEquals(1, bulkImporter.getStatus().getNumberOfContentNodesCreated());
 
         checkFiles(folderNode, null, 0, 1, 
                    new ExpectedFile[] { new ExpectedFile(fileName, MimetypeMap.MIMETYPE_TEXT_PLAIN)}, 

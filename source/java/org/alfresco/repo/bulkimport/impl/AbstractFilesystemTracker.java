@@ -25,8 +25,10 @@
  */
 package org.alfresco.repo.bulkimport.impl;
 
-import java.io.File;
-import java.io.FileFilter;
+import java.io.IOException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import org.alfresco.repo.bulkimport.AnalysedDirectory;
 import org.alfresco.repo.bulkimport.DirectoryAnalyser;
@@ -64,31 +66,31 @@ public abstract class AbstractFilesystemTracker implements FilesystemTracker
 
     protected final AnalysedDirectory getImportableDirectoriesInDirectory(ImportableItem directory, final int count)
     {
-    	FileFilter filter = null;
+        DirectoryStream.Filter<Path> filter = null;
 
-    	if(count != -1)
+    	if (count != -1)
     	{
-    		filter = new FileFilter()
-    		{
-				private int i = count;
-	
-				@Override
-				public boolean accept(File file)
-				{
-					return file.isDirectory() && i-- > 0;
-				}
-			};
+            filter = new DirectoryStream.Filter<Path>()
+            {
+                private int i = count;
+
+                @Override
+                public boolean accept(Path entry) throws IOException
+                {
+                    return Files.isDirectory(entry) && i-- > 0;
+                }
+            };
     	}
     	else
     	{
-    		filter = new FileFilter()
-    		{
-				@Override
-				public boolean accept(File file)
-				{
-					return file.isDirectory();
-				}
-			};
+            filter = new DirectoryStream.Filter<Path>()
+            {
+                @Override
+                public boolean accept(Path entry) throws IOException
+                {
+                    return Files.isDirectory(entry);
+                }
+            };
     	}
 
         AnalysedDirectory analysedDirectory = directoryAnalyser.analyseDirectory(directory, filter);

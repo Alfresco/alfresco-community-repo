@@ -26,9 +26,7 @@
 
 package org.alfresco.repo.bulkimport;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,23 +40,23 @@ import java.util.Map;
  */
 public class AnalysedDirectory
 {
-    private List<File> originalListing = null;
-    private Map<File, ImportableItem> importableItems = null;
-    private Map<File, ImportableItem> importableDirectories = null;
+    private List<Path> originalPaths = null;
+    private Map<Path, ImportableItem> importableItems = null;
+    private Map<Path, ImportableItem> importableDirectories = null;
 
-    public AnalysedDirectory(File[] files)
+    public AnalysedDirectory(List<Path> paths)
     {
-        originalListing = Arrays.asList(files);
+        originalPaths = paths;
         // Sort the files/directories so that the *.metadata.properties.xml found later, see ALF-17965 for details.
-        Collections.sort(originalListing);
-        importableItems = new HashMap<File, ImportableItem>();
-        importableDirectories = new HashMap<File, ImportableItem>();    	
+        Collections.sort(originalPaths);
+        importableItems = new HashMap<Path, ImportableItem>();
+        importableDirectories = new HashMap<Path, ImportableItem>();            
     }
     
-    public List<File> getOriginalListing()
-	{
-		return originalListing;
-	}
+    public List<Path> getOriginalPaths()
+    {
+        return originalPaths;
+    }
     
 	public Collection<ImportableItem> getImportableItems()
 	{
@@ -83,7 +81,7 @@ public class AnalysedDirectory
         }
     }
 
-    public ImportableItem findImportableItem(File contentFile)
+    public ImportableItem findImportableItem(Path contentFile)
     {
     	ImportableItem result = null;
     	result = importableItems.get(contentFile);

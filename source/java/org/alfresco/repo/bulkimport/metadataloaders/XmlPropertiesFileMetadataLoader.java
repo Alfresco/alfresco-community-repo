@@ -28,10 +28,10 @@ package org.alfresco.repo.bulkimport.metadataloaders;
 
 
 import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -112,14 +112,14 @@ public final class XmlPropertiesFileMetadataLoader extends AbstractMapBasedMetad
      * @see AbstractMapBasedMetadataLoader#loadMetadataFromFile(java.io.File)
      */
     @Override
-    protected Map<String,Serializable> loadMetadataFromFile(File metadataFile)
+    protected Map<String,Serializable> loadMetadataFromFile(Path metadataFile)
     {
         Map<String,Serializable> result = null;
         
         try
         {
             Properties props = new Properties();
-            props.loadFromXML(new BufferedInputStream(new FileInputStream(metadataFile)));
+            props.loadFromXML(new BufferedInputStream(Files.newInputStream(metadataFile)));
             result = new HashMap<String,Serializable>((Map)props);
         }
         catch (final IOException ioe)

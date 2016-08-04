@@ -25,8 +25,9 @@
  */
 package org.alfresco.repo.bulkimport.metadataloaders;
 
-import java.io.File;
 import java.io.Serializable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Map;
@@ -98,7 +99,7 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
      * @param metadataFile The file to load the properties from <i>(must not be null)</i>.
      * @return A new <code>Properties</code> object loaded from that file.
      */
-    abstract protected Map<String,Serializable> loadMetadataFromFile(final File metadataFile);
+    abstract protected Map<String,Serializable> loadMetadataFromFile(final Path metadataFile);
 
 
     @Override
@@ -106,9 +107,9 @@ abstract class AbstractMapBasedMetadataLoader implements MetadataLoader
     {
         if (contentAndMetadata.metadataFileExists())
         {
-            final File metadataFile = contentAndMetadata.getMetadataFile();
+            final Path metadataFile = contentAndMetadata.getMetadataFile();
 
-            if (metadataFile.canRead())
+            if (Files.isReadable(metadataFile))
             {
                 Map<String,Serializable> metadataProperties = loadMetadataFromFile(metadataFile);
                 

@@ -26,12 +26,15 @@
 package org.alfresco.repo.bulkimport.impl;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.bulkimport.ImportableItem;
 import org.alfresco.repo.bulkimport.MetadataLoader;
 import org.alfresco.repo.bulkimport.NodeImporter;
 import org.alfresco.repo.bulkimport.impl.BulkImportStatusImpl.NodeState;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.util.Triple;
@@ -85,7 +88,17 @@ public class StreamingNodeImporterFactory extends AbstractNodeImporterFactory
 				}
 
 	    		ContentWriter writer = fileFolderService.getWriter(nodeRef);
-	    		writer.putContent(contentAndMetadata.getContentFile());
+	    		try
+	    		{
+	    		    writer.putContent(Files.newInputStream(contentAndMetadata.getContentFile()));
+	    		}
+	    		catch (IOException e)
+	    		{
+	    		    throw new ContentIOException("Failed to copy content from file: \n" +
+	    		            "   writer: " + writer + "\n" +
+	    		            "   file: " + contentAndMetadata.getContentFile(),
+	    		            e);
+	    		}
 	    	}
 	    	else
 	    	{

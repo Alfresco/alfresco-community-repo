@@ -25,8 +25,8 @@
  */
 package org.alfresco.repo.bulkimport.impl;
 
-import java.io.File;
 import java.io.Serializable;
+import java.nio.file.Path;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -160,11 +160,11 @@ public abstract class AbstractNodeImporter implements NodeImporter
             importableItem != null &&
             importableItem.getHeadRevision() != null)
         {
-            File metadataFile = importableItem.getHeadRevision().getMetadataFile();
+            Path metadataFile = importableItem.getHeadRevision().getMetadataFile();
             
             if (metadataFile != null)
             {
-                final String metadataFileName = metadataFile.getName();
+                final String metadataFileName = metadataFile.getFileName().toString();
                 
                 result = metadataFileName.substring(0, metadataFileName.length() -
                                                        (MetadataLoader.METADATA_SUFFIX.length() + metadataLoader.getMetadataFileExtension().length()));
@@ -175,7 +175,7 @@ public abstract class AbstractNodeImporter implements NodeImporter
         if (result         == null &&
            importableItem != null)
         {
-           result = importableItem.getHeadRevision().getContentFile().getName();
+           result = importableItem.getHeadRevision().getContentFile().getFileName().toString();
         }
 
         return(result);
@@ -341,12 +341,12 @@ public abstract class AbstractNodeImporter implements NodeImporter
         return(result);
     }
     
-    protected String getFileName(File file)
+    protected String getFileName(Path file)
     {
         return FileUtils.getFileName(file);
     }
 
-    protected final void importImportableItemMetadata(NodeRef nodeRef, File parentFile, MetadataLoader.Metadata metadata)
+    protected final void importImportableItemMetadata(NodeRef nodeRef, Path parentFile, MetadataLoader.Metadata metadata)
     {
         // Attach aspects
         if (metadata.getAspects() != null)
@@ -405,9 +405,9 @@ public abstract class AbstractNodeImporter implements NodeImporter
         // Load "standard" metadata from the filesystem
         if (contentAndMetadata != null && contentAndMetadata.contentFileExists())
         {
-            final String filename = contentAndMetadata.getContentFile().getName().trim().replaceFirst(DirectoryAnalyser.VERSION_SUFFIX_REGEX, "");  // Strip off the version suffix (if any)
-            final Date   modified = new Date(contentAndMetadata.getContentFile().lastModified());
-            final Date   created  = modified;    //TODO: determine proper file creation time (awaiting JDK 1.7 NIO2 library)
+            final String filename = contentAndMetadata.getContentFile().getFileName().toString().trim().replaceFirst(DirectoryAnalyser.VERSION_SUFFIX_REGEX, "");  // Strip off the version suffix (if any)
+            final Date   modified = contentAndMetadata.getContentFileModifiedDate();
+            final Date   created  = contentAndMetadata.getContentFileCreatedDate();
 
             result.setType(ImportableItem.FileType.FILE.equals(contentAndMetadata.getContentFileType()) ? ContentModel.TYPE_CONTENT : ContentModel.TYPE_FOLDER);
             result.addProperty(ContentModel.PROP_NAME,     filename);

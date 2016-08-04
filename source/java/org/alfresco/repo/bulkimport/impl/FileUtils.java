@@ -27,6 +27,8 @@ package org.alfresco.repo.bulkimport.impl;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 
 /**
  * 
@@ -53,5 +55,24 @@ public class FileUtils
         }
         
         return(result);
+    }
+    
+    public static String getFileName(final Path path)
+    {
+        String result = null;
+     
+        if (path != null)
+        {
+            try
+            {
+                result = path.toRealPath(LinkOption.NOFOLLOW_LINKS).toString();
+            }
+            catch (final IOException ioe)
+            {
+                result = path.toString();
+            }
+        }
+        
+        return result;
     }
 }

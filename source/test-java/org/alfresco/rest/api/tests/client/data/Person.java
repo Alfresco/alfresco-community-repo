@@ -68,10 +68,6 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
             String mob, String instantmsg, String google, String description)
     {
         super();
-        if(id == null)
-        {
-            throw new IllegalArgumentException();
-        }
         this.id = id;
         this.username = username;
         this.enabled = enabled;

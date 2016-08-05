@@ -385,7 +385,8 @@ public class QueriesImpl implements Queries, InitializingBean
         }
 
         public CollectionWithPagingInfo<T> find(Parameters parameters,
-            String termName, int minTermLength, String queryTemplateName, Sort sort, Map<String, QName> sortParamsToQNames, SortColumn... defaultSort)
+            String termName, int minTermLength, String queryTemplateName,
+            Sort sort, Map<String, QName> sortParamsToQNames, SortColumn... defaultSort)
         {
             SearchParameters sp = new SearchParameters();
             sp.setLanguage(SearchService.LANGUAGE_FTS_ALFRESCO);
@@ -541,6 +542,10 @@ public class QueriesImpl implements Queries, InitializingBean
                 for (SortColumn sortCol : sortCols)
                 {
                     QName sortPropQName = sortParamsToQNames.get(sortCol.column);
+                    if (sortPropQName == null)
+                    {
+                        throw new InvalidArgumentException("Invalid sort field: "+sortCol.column);
+                    }
                     sortPropQNames.add(sortPropQName);
                 }
                 

@@ -38,8 +38,11 @@ import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
 
 import java.util.List;
@@ -53,11 +56,23 @@ public class ModulePackagesApiTest extends AbstractBaseApiTest
 {
     public static final String MODULEPACKAGES = "modulepackages";
     protected String nonAdminUserName;
-
+    
     @Before
     public void setup() throws Exception
     {
-        this.nonAdminUserName = createUser("nonAdminUser" + System.currentTimeMillis());
+        nonAdminUserName = createUser("nonAdminUser" + System.currentTimeMillis());
+        
+        // used-by teardown to cleanup
+        authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
+        personService = applicationContext.getBean("personService", PersonService.class);
+        users.add(nonAdminUserName);
+    }
+    
+    @After
+    public void tearDown() throws Exception
+    {
+        // TODO rationalise createUser & deleteUser
+        super.tearDown();
     }
 
     @Test

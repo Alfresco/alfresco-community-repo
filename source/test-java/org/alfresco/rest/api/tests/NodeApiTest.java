@@ -1960,17 +1960,35 @@ public class NodeApiTest extends AbstractBaseApiTest
         post(postUrl, user1, toJsonAsStringNonNull(f1), 409);
 
         // Create a folder with a duplicate name (f1), but set the autoRename to true
-        response = post(postUrl, user1, toJsonAsStringNonNull(f1), "?autoRename=true", 201);
+        response = post(postUrl, user1, toJsonAsStringNonNull(f1), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("f1-1", documentResp.getName());
 
         // Create a folder with a duplicate name (f1) again, but set the autoRename to true
-        response = post(postUrl, user1, toJsonAsStringNonNull(f1), "?autoRename=true", 201);
+        response = post(postUrl, user1, toJsonAsStringNonNull(f1), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("f1-2", documentResp.getName());
 
         // -ve test - create a folder with a duplicate name (f1), but set the autoRename to false
-        post(postUrl, user1, toJsonAsStringNonNull(f1), "?autoRename=false", 409);
+        post(postUrl, user1, toJsonAsStringNonNull(f1), "?"+Nodes.PARAM_AUTO_RENAME+"=false", 409);
+        
+        // Create folder using relative path
+        n = new Node();
+        n.setName("fX");
+        n.setNodeType(TYPE_CM_FOLDER);
+        n.setRelativePath("/f1/f2");
+        
+        response = post(postUrl, user1, toJsonAsStringNonNull(n), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals("fX", documentResp.getName());
+
+        // Create a folder using relative path, with a duplicate name (fX) but set the autoRename to true
+        response = post(postUrl, user1, toJsonAsStringNonNull(n), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertEquals("fX-1", documentResp.getName());
+
+        // -ve test - create a folder with a duplicate name (fX), but set the autoRename to false
+        post(postUrl, user1, toJsonAsStringNonNull(n), "?"+Nodes.PARAM_AUTO_RENAME+"=false", 409);
 
         // -ve test - invalid relative path
         n = new Node();
@@ -2599,23 +2617,23 @@ public class NodeApiTest extends AbstractBaseApiTest
         post(postUrl, user1, toJsonAsStringNonNull(d1), 409);
 
         // Create a file with a duplicate name (d1.txt), but set the autoRename to true
-        response = post(postUrl, user1, toJsonAsStringNonNull(d1), "?autoRename=true", 201);
+        response = post(postUrl, user1, toJsonAsStringNonNull(d1), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("d1-1.txt", documentResp.getName());
 
         // Create a file with a duplicate name (d1.txt) again, but set the autoRename to true
-        response = post(postUrl, user1, toJsonAsStringNonNull(d1), "?autoRename=true", 201);
+        response = post(postUrl, user1, toJsonAsStringNonNull(d1), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("d1-2.txt", documentResp.getName());
 
         // Create a file with a duplicate name (d1-2.txt) again, but set the autoRename to true
         d1.setName("d1-2.txt");
-        response = post(postUrl, user1, toJsonAsStringNonNull(d1), "?autoRename=true", 201);
+        response = post(postUrl, user1, toJsonAsStringNonNull(d1), "?"+Nodes.PARAM_AUTO_RENAME+"=true", 201);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertEquals("d1-2-1.txt", documentResp.getName());
 
         // -ve test - create a file with a duplicate name (d1-2.txt), but set the autoRename to false
-        post(postUrl, user1, toJsonAsStringNonNull(d1), "?autoRename=false", 409);
+        post(postUrl, user1, toJsonAsStringNonNull(d1), "?"+Nodes.PARAM_AUTO_RENAME+"=false", 409);
     }
 
     /**

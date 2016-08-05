@@ -895,7 +895,7 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // upload files
 
-        String fileName = "quick.pdf";
+        String fileName = "quick-2.pdf";
         File file = getResourceFile(fileName);
 
         MultiPartBuilder multiPartBuilder = MultiPartBuilder.create()
@@ -905,6 +905,19 @@ public class NodeApiTest extends AbstractBaseApiTest
         response = post(getNodeChildrenUrl(fId), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
         Document document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         ContentInfo contentInfo = document.getContent();
+        assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
+        assertEquals("UTF-8", contentInfo.getEncoding());
+
+        fileName = "quick-2.pdf";
+        file = getResourceFile(fileName);
+
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData("quick-2", file)); // note: we've deliberately dropped the file ext here
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(fId), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        contentInfo = document.getContent();
         assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
         assertEquals("UTF-8", contentInfo.getEncoding());
 
@@ -971,6 +984,42 @@ public class NodeApiTest extends AbstractBaseApiTest
         document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         contentInfo = document.getContent();
         assertEquals(MimetypeMap.MIMETYPE_XML, contentInfo.getMimeType());
+        assertEquals("UTF-8", contentInfo.getEncoding());
+
+        // upload file, rename and then update file
+
+        fileName = "quick.pdf";
+        file = getResourceFile(fileName);
+
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData(fileName, file));
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(fId), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        String docId = document.getId();
+        contentInfo = document.getContent();
+        assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
+        assertEquals("UTF-8", contentInfo.getEncoding());
+
+        // rename (mimeType remains unchanged, binary has not changed)
+        Document dUpdate = new Document();
+        dUpdate.setName("quick.docx");
+
+        response = put(URL_NODES, user1, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        contentInfo = document.getContent();
+        assertEquals(MimetypeMap.MIMETYPE_PDF, contentInfo.getMimeType());
+        assertEquals("UTF-8", contentInfo.getEncoding());
+
+        fileName = "quick.docx";
+        file = getResourceFile(fileName);
+        BinaryPayload payload = new BinaryPayload(file);
+
+        response = putBinary(getNodeContentUrl(docId), user1, payload, null, null, 200);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        contentInfo = document.getContent();
+        assertEquals(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING, contentInfo.getMimeType());
         assertEquals("UTF-8", contentInfo.getEncoding());
 
         // cleanup

@@ -369,6 +369,35 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
     }
     
     /**
+     * Get a site for a provided site short name. If the current user does not have permission to view the site content, the info
+     * will still be returned, but none of the operations that would modify site information on save() will work. As usual ACLs
+     * will apply on any attempt to modify the Site object.
+     * <p>
+     * Returns null if the site does not exist.
+     * 
+     * @param shortName short name of the site
+     * @return Site the site, null if does not exist
+     */
+    public Site getSiteInfo(final String shortName)
+    {
+        Site site = null;
+        
+        SiteInfo siteInfo = AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<SiteInfo>()
+        {
+            public SiteInfo doWork() throws Exception
+            {
+                return siteService.getSite(shortName);
+            }
+        }, AuthenticationUtil.getAdminUserName());
+        
+        if (siteInfo != null)
+        {
+            site = new Site(siteInfo, this.serviceRegistry, this.siteService, getScope());
+        }
+        return site;
+    }
+    
+    /**
      * Returns an array of all the roles that can be assigned to a member of a site.
      * 
      * @return  String[]    roles available to assign to a member of a site

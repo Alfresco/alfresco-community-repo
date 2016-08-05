@@ -59,22 +59,22 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testCreateUpdate() throws Exception
     {
-        setRequestContext(u1.getId());
+        setRequestContext(user1);
         
         String folder1 = "folder" + System.currentTimeMillis() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
 
         String docName = "d1.txt";
-        Document documentResp = createDocument(createdFolder, docName);
+        Document documentResp = createEmptyTextFile(createdFolder, docName);
 
         //Update the file
         Document dUpdate = new Document();
         dUpdate.setName("d1b.txt");
-        put(URL_NODES, u1.getId(), documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
+        put(URL_NODES, user1, documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
 
         //Now download it
-        HttpResponse response = getSingle(NodesEntityResource.class, u1.getId(), documentResp.getId()+"/content", null, 200);
+        HttpResponse response = getSingle(NodesEntityResource.class, user1, documentResp.getId()+"/content", null, 200);
         String textContent = response.getResponse();
         assertNotNull(textContent);
 
@@ -83,22 +83,22 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
 
         List<Activity> activities = getMyActivities();
         assertEquals(activities.size(),6);
-        Activity act = matchActivity(activities, ActivityType.FOLDER_ADDED, u1.getId(), tSiteId, tDocLibNodeId, folder1);
+        Activity act = matchActivity(activities, ActivityType.FOLDER_ADDED, user1, tSiteId, tDocLibNodeId, folder1);
         assertNotNull(act);
 
-        act = matchActivity(activities, ActivityType.FILE_ADDED, u1.getId(), tSiteId, createdFolder.getId(), docName);
+        act = matchActivity(activities, ActivityType.FILE_ADDED, user1, tSiteId, createdFolder.getId(), docName);
         assertNotNull(act);
 
-        act = matchActivity(activities, ActivityType.FILE_UPDATED, u1.getId(), tSiteId, createdFolder.getId(), dUpdate.getName());
+        act = matchActivity(activities, ActivityType.FILE_UPDATED, user1, tSiteId, createdFolder.getId(), dUpdate.getName());
         assertNotNull(act);
 
-        act = matchActivity(activities, ActivityType.FOLDER_DELETED, u1.getId(), tSiteId, tDocLibNodeId, folder1);
+        act = matchActivity(activities, ActivityType.FOLDER_DELETED, user1, tSiteId, tDocLibNodeId, folder1);
         assertNotNull(act);
 
-        act = matchActivity(activities, ActivityType.FILE_DELETED, u1.getId(), tSiteId, createdFolder.getId(), dUpdate.getName());
+        act = matchActivity(activities, ActivityType.FILE_DELETED, user1, tSiteId, createdFolder.getId(), dUpdate.getName());
         assertNotNull(act);
 
-        act = matchActivity(activities, ActivityPoster.DOWNLOADED, u1.getId(), tSiteId, createdFolder.getId(), dUpdate.getName());
+        act = matchActivity(activities, ActivityPoster.DOWNLOADED, user1, tSiteId, createdFolder.getId(), dUpdate.getName());
         assertNotNull(act);
     }
 
@@ -108,7 +108,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testNonFileActivities() throws Exception
     {
-        setRequestContext(u1.getId());
+        setRequestContext(user1);
         
         String folder1 = "InSitefolder" + System.currentTimeMillis() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
@@ -131,7 +131,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testNonSite() throws Exception
     {
-        setRequestContext(u1.getId());
+        setRequestContext(user1);
         
         List<Activity> activities = getMyActivities();
         String folder1 = "nonSitefolder" + System.currentTimeMillis() + "_1";
@@ -140,13 +140,13 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         assertNotNull(createdFolder);
 
         String docName = "nonsite_d1.txt";
-        Document documentResp = createDocument(createdFolder, docName);
+        Document documentResp = createEmptyTextFile(createdFolder, docName);
         assertNotNull(documentResp);
 
         //Update the file
         Document dUpdate = new Document();
         dUpdate.setName("nonsite_d2.txt");
-        put(URL_NODES, u1.getId(), documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
+        put(URL_NODES, user1, documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
 
         List<Activity> activitiesAgain = getMyActivities();
         assertEquals("No activites should be created for non-site nodes", activities, activitiesAgain);
@@ -161,11 +161,11 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     {
         repoService.generateFeed();
 
-        setRequestContext(u1.getId());
+        setRequestContext(user1);
         
         Map<String, String> meParams = new HashMap<>();
         meParams.put("who", String.valueOf(Activities.ActivityWho.me));
-        return publicApiClient.people().getActivities(u1.getId(), meParams).getList();
+        return publicApiClient.people().getActivities(user1, meParams).getList();
     }
 
 

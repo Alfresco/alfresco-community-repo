@@ -26,14 +26,13 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
-import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Association;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
@@ -75,7 +74,7 @@ import static org.junit.Assert.*;
  *
  * @author janv
  */
-public class NodeAssociationsApiTest extends AbstractBaseApiTest
+public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_DELETED_NODES = "deleted-nodes";
 

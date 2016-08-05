@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Queries;
 import org.alfresco.rest.api.tests.client.HttpResponse;
@@ -57,7 +58,7 @@ import static org.junit.Assert.*;
  *
  * @author janv
  */
-public class QueriesApiTest extends AbstractBaseApiTest
+public class QueriesApiTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_QUERIES_LSN = "queries/live-search-nodes";
     

@@ -33,6 +33,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
+import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Site;
@@ -44,6 +45,7 @@ import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
@@ -127,21 +129,20 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     @Before
     public void setup() throws Exception
     {
-        authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
-        personService = applicationContext.getBean("personService", PersonService.class);
-
         // note: createUser currently relies on repoService
-        user1 = createUser("user1-" + RUNID, "user1Password");
-        user2 = createUser("user2-" + RUNID, "user2Password");
+        user1 = createUser("user1-" + RUNID, "user1Password", null);
+        user2 = createUser("user2-" + RUNID, "user2Password", null);
 
-        // to enable admin access via test calls - eg. after clean/purge
+        // to enable admin access via test calls - eg. via PublicApiClient -> AbstractTestApi -> findUserByUserName
         getOrCreateUser("admin", "admin");
 
-        // We just need to clean the on-premise-users,
-        // so the tests for the specific network would work.
+        // used-by teardown to cleanup
+        authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
+        personService = applicationContext.getBean("personService", PersonService.class);
         users.add(user1);
         users.add(user2);
 
+        // TODO this causes createTestData to be called
         networkOne = getTestFixture().getRandomNetwork();
         userOneN1 = networkOne.createUser();
         userTwoN1 = networkOne.createUser();
@@ -446,16 +447,16 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected String createUser(String username)
     {
-        return createUser(username, "password");
+        return createUser(username, "password", null);
     }
 
     /**
      * TODO implement as remote api call
      */
-    protected String createUser(String username, String password)
+    protected String createUser(String username, String password, TestNetwork network)
     {
         PersonInfo personInfo = new PersonInfo(username, username, username, password, null, null, null, null, null, null, null);
-        RepoService.TestPerson person = repoService.createUser(personInfo, username, null);
+        RepoService.TestPerson person = repoService.createUser(personInfo, username, network);
         return person.getId();
     }
 
@@ -537,11 +538,20 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
             password = DEFAULT_ADMIN_PWD;
         }
         
-        setRequestContext("-default-", runAsUser, password);
+        setRequestContext(null, runAsUser, password);
     }
 
     protected void setRequestContext(String runAsNetwork, String runAsUser, String password)
     {
+        if ((runAsNetwork == null) || TenantService.DEFAULT_DOMAIN.equals(runAsNetwork))
+        {
+            runAsNetwork = "-default-";
+        }
+        else if (runAsUser.equals(DEFAULT_ADMIN))
+        {
+            runAsUser = runAsUser+"@"+runAsNetwork;
+        }
+        
         publicApiClient.setRequestContext(new RequestContext(runAsNetwork, runAsUser, password));
     }
 
@@ -652,6 +662,20 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
             return null;
         }
 
+        return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+    }
+
+    protected Document createEmptyTextFile(Folder parentFolder, String docName) throws Exception
+    {
+        Document d1 = new Document();
+        d1.setName(docName);
+        d1.setNodeType("cm:content");
+        ContentInfo ci = new ContentInfo();
+        ci.setMimeType("text/plain");
+        d1.setContent(ci);
+
+        // create empty file
+        HttpResponse response = post(getNodeChildrenUrl(parentFolder.getId()), publicApiClient.getRequestContext().getRunAsUser(), toJsonAsStringNonNull(d1), 201);
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 

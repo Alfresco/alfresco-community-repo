@@ -37,6 +37,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -45,8 +46,10 @@ import org.alfresco.query.PagingRequest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Queries;
+import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.Person;
+import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.model.UserInfo;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
@@ -65,6 +68,8 @@ import org.alfresco.service.cmr.search.PermissionEvaluationMode;
 import org.alfresco.service.cmr.search.ResultSet;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.alfresco.service.cmr.search.SearchService;
+import org.alfresco.service.cmr.site.SiteInfo;
+import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ISO9075;
@@ -117,9 +122,11 @@ public class QueriesImpl implements Queries, InitializingBean
     private NodeService nodeService;
     private NamespaceService namespaceService;
     private DictionaryService dictionaryService;
+    private SiteService siteService;
 
     private Nodes nodes;
     private People people;
+    private Sites sites;
 
     public void setServiceRegistry(ServiceRegistry sr)
     {
@@ -136,17 +143,24 @@ public class QueriesImpl implements Queries, InitializingBean
         this.people = people;
     }
 
+    public void setSites(Sites sites)
+    {
+        this.sites = sites;
+    }
+
     @Override
     public void afterPropertiesSet()
     {
         ParameterCheck.mandatory("sr", this.sr);
         ParameterCheck.mandatory("nodes", this.nodes);
         ParameterCheck.mandatory("people", this.people);
-
+        ParameterCheck.mandatory("sites", this.sites);
+        
         this.searchService = sr.getSearchService();
         this.nodeService = sr.getNodeService();
         this.namespaceService = sr.getNamespaceService();
         this.dictionaryService = sr.getDictionaryService();
+        this.siteService = sr.getSiteService();
     }
 
     @Override
@@ -290,6 +304,70 @@ public class QueriesImpl implements Queries, InitializingBean
             new SortColumn(PARAM_FIRSTNAME, true), new SortColumn(PARAM_LASTNAME, true));
     }
 
+    @Override
+    public CollectionWithPagingInfo<Site> findSites(Parameters parameters)
+    {
+        // TODO Alternatively do we want to implement our own find rather than rely on SiteService ?!
+        return new AbstractQuery<Site>(nodeService, searchService)
+        {
+            @Override
+            protected void buildQuery(StringBuilder query, String term, SearchParameters sp, String queryTemplateName)
+            {
+                // not used
+            }
+            
+            @Override
+            protected List<Site> newList(int capacity)
+            {
+                return new ArrayList<>(capacity);
+            }
+
+            @Override
+            protected Site convert(NodeRef nodeRef, List<String> includeParam)
+            {
+                // not used
+                return null;
+            }
+
+            @Override
+            public CollectionWithPagingInfo<Site> find(Parameters parameters, String termName, int minTermLength, 
+                                                       String queryTemplateName, 
+                                                       Sort sort, Map<String, QName> sortParamsToQNames, SortColumn... defaultSort)
+            {
+                Paging paging = parameters.getPaging();
+                String term = getTerm(parameters, termName, minTermLength);
+                
+                // TODO optimise paging
+                // TODO implement sorting (see open-question)
+                List<SiteInfo> siteInfos = siteService.findSites(term, Integer.MAX_VALUE);
+                List<Site> collection = newList(siteInfos.size());
+                
+                for (SiteInfo siteInfo : siteInfos)
+                {
+                    // convert
+                    Site s = getSite(siteInfo, true);
+                    collection.add(s);
+                }
+                
+                return listPage(collection, paging);
+            }
+
+        }.find(parameters, PARAM_TERM, MIN_TERM_LENGTH_SITES, null, null, null, null);
+    }
+    
+    // note: see also Sites.getSite
+    private Site getSite(SiteInfo siteInfo, boolean includeRole)
+    {
+        // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
+        String siteId = siteInfo.getShortName();
+        String role = null;
+        if(includeRole)
+        {
+            role = sites.getSiteRole(siteId);
+        }
+        return new Site(siteInfo, role);
+    }
+
     public abstract static class AbstractQuery<T>
     {
         public enum Sort
@@ -332,7 +410,7 @@ public class QueriesImpl implements Queries, InitializingBean
             sp.setMaxItems(pagingRequest.getMaxItems());
 
             ResultSet queryResults = null;
-            List<T> colection = null;
+            List<T> collection = null;
             try
             {
                 queryResults = searchService.query(sp);
@@ -344,13 +422,13 @@ public class QueriesImpl implements Queries, InitializingBean
                     nodeRefs = postQuerySort(parameters, sortParamsToQNames, defaultSortCols, nodeRefs);
                 }
                 
-                colection = newList(nodeRefs.size());
+                collection = newList(nodeRefs.size());
                 List<String> includeParam = parameters.getInclude();
 
                 for (NodeRef nodeRef : nodeRefs)
                 {
                     T t = convert(nodeRef, includeParam);
-                    colection.add(t);
+                    collection.add(t);
                 }
             }
             finally
@@ -361,7 +439,7 @@ public class QueriesImpl implements Queries, InitializingBean
                 }
             }
             
-            return CollectionWithPagingInfo.asPaged(paging, colection, queryResults.hasMore(), new Long(queryResults.getNumberFound()).intValue());
+            return CollectionWithPagingInfo.asPaged(paging, collection, queryResults.hasMore(), new Long(queryResults.getNumberFound()).intValue());
         }
 
         /**
@@ -389,7 +467,7 @@ public class QueriesImpl implements Queries, InitializingBean
          */
         protected abstract T convert(NodeRef nodeRef, List<String> includeParam);
         
-        private String getTerm(Parameters parameters, String termName, int minTermLength)
+        protected String getTerm(Parameters parameters, String termName, int minTermLength)
         {
             String term = parameters.getParameter(termName);
             if (term == null)
@@ -503,5 +581,40 @@ public class QueriesImpl implements Queries, InitializingBean
             }
             return nodeRefs;
         }
+    }
+
+    // note: see also AbstractNodeRelation
+    protected CollectionWithPagingInfo listPage(List result, Paging paging)
+    {
+        // return 'page' of results (based on full result set)
+        int skipCount = paging.getSkipCount();
+        int pageSize = paging.getMaxItems();
+        int pageEnd = skipCount + pageSize;
+
+        final List page = new ArrayList<>(pageSize);
+        if (result == null)
+        {
+            result = Collections.emptyList();
+        }
+
+        Iterator it = result.iterator();
+        for (int counter = 0; counter < pageEnd && it.hasNext(); counter++)
+        {
+            Object element = it.next();
+            if (counter < skipCount)
+            {
+                continue;
+            }
+            if (counter > pageEnd - 1)
+            {
+                break;
+            }
+            page.add(element);
+        }
+
+        int totalCount = result.size();
+        boolean hasMoreItems = ((skipCount + page.size()) < totalCount);
+
+        return CollectionWithPagingInfo.asPaged(paging, page, hasMoreItems, totalCount);
     }
 }

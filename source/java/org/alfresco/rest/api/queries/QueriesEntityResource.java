@@ -39,6 +39,7 @@ import org.springframework.beans.factory.InitializingBean;
  * An implementation of an Entity Resource for Queries.
  *
  * @author janv
+ * @author Alan Davis
  */
 @EntityResource(name="queries", title = "Queries")
 public class QueriesEntityResource implements
@@ -47,6 +48,7 @@ public class QueriesEntityResource implements
 {
     private final static String QUERY_LIVE_SEARCH_NODES = "live-search-nodes";
     private final static String QUERY_LIVE_SEARCH_PEOPLE = "live-search-people";
+    private final static String QUERY_LIVE_SEARCH_SITES = "live-search-sites";
 
     private Queries queries;
 
@@ -72,6 +74,8 @@ public class QueriesEntityResource implements
             return queries.findNodes(parameters);
         case QUERY_LIVE_SEARCH_PEOPLE:
             return queries.findPeople(parameters);
+        case QUERY_LIVE_SEARCH_SITES:
+            return queries.findSites(parameters);
         default:
             throw new NotFoundException(queryId);
         }

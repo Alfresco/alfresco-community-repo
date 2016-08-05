@@ -552,6 +552,7 @@
     <bean id="queries" class="org.alfresco.rest.api.impl.QueriesImpl">
         <property name="nodes" ref="nodes"/>
         <property name="people" ref="people"/>
+        <property name="sites" ref="sites"/>
         <property name="serviceRegistry" ref="ServiceRegistry"/>
     </bean>
 

@@ -1610,9 +1610,28 @@ public class NodesImpl implements Nodes
         {
             assocTypeQName = getAssocType(nodeInfo.getAssociation().getAssocType());
         }
+        
+        Boolean versionMajor = null;
+        String str = parameters.getParameter(PARAM_VERSION_MAJOR);
+        if (str != null)
+        {
+            versionMajor = new Boolean(str);
+        }
+        String versionComment = parameters.getParameter(PARAM_VERSION_COMMENT);
 
         // Create the node
-        NodeRef nodeRef = createNodeImpl(parentNodeRef, nodeName, nodeTypeQName, props, assocTypeQName);
+        NodeRef nodeRef;
+
+        if (isContent)
+        {
+            // create empty file node - note: currently will be set to default encoding only (UTF-8)
+            nodeRef = createNewFile(parentNodeRef, nodeName, nodeTypeQName, null, props, assocTypeQName, parameters, versionMajor, versionComment);
+        }
+        else
+        {
+            // create non-content node
+            nodeRef = createNodeImpl(parentNodeRef, nodeName, nodeTypeQName, props, assocTypeQName);
+        }
 
         List<String> aspectNames = nodeInfo.getAspectNames();
         if (aspectNames != null)
@@ -1629,13 +1648,7 @@ public class NodesImpl implements Nodes
                 nodeService.addAspect(nodeRef, aspectQName, null);
             }
         }
-
-        if (isContent)
-        {
-            // add empty file - note: currently will be set to default encoding only (UTF-8)
-            writeContent(nodeRef, nodeName, new ByteArrayInputStream("".getBytes()), false);
-        }
-
+        
         // eg. to create mandatory assoc(s)
 
         if (nodeInfo.getTargets() != null)
@@ -2449,9 +2462,9 @@ public class NodesImpl implements Nodes
         String fileName = null;
         Content content = null;
         boolean autoRename = false;
-        QName nodeTypeQName = null;
+        QName nodeTypeQName = ContentModel.TYPE_CONTENT;
         boolean overwrite = false; // If a fileName clashes for a versionable file
-        Boolean majorVersion = null;
+        Boolean versionMajor = null;
         String versionComment = null;
         String relativePath = null;
         String renditionNames = null;
@@ -2496,7 +2509,7 @@ public class NodesImpl implements Nodes
                     break;
 
                 case "majorversion":
-                    majorVersion = Boolean.valueOf(field.getValue());
+                    versionMajor = Boolean.valueOf(field.getValue());
                     break;
 
                 case "comment":
@@ -2571,7 +2584,7 @@ public class NodesImpl implements Nodes
                 {
                     // overwrite existing (versionable) file
                     BasicContentInfo contentInfo = new ContentInfoImpl(content.getMimetype(), content.getEncoding(), -1, null);
-                    return updateExistingFile(parentNodeRef, existingFile, fileName, contentInfo, content.getInputStream(), parameters, majorVersion, versionComment);
+                    return updateExistingFile(parentNodeRef, existingFile, fileName, contentInfo, content.getInputStream(), parameters, versionMajor, versionComment);
                 }
                 else
                 {
@@ -2579,9 +2592,18 @@ public class NodesImpl implements Nodes
                     throw new ConstraintViolatedException(fileName + " already exists.");
                 }
             }
+            
+            // Note: pending REPO-159, we currently auto-enable versioning on new upload (but not when creating empty file)
+            if (versionMajor == null)
+            {
+                versionMajor = true;
+            }
 
             // Create a new file.
-            final Node fileNode = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters, majorVersion, versionComment);
+            NodeRef nodeRef = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters, versionMajor, versionComment);
+            
+            // Create the response
+            final Node fileNode = getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeTypeQName, parameters);
 
             // RA-1052
             try
@@ -2633,40 +2655,44 @@ public class NodesImpl implements Nodes
         }
     }
 
-    private Node createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, QName assocTypeQName, Parameters params,
-                               Boolean versionMajor, String versionComment)
+    private NodeRef createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, QName assocTypeQName, Parameters params,
+                                  Boolean versionMajor, String versionComment)
     {
-        if (nodeType == null)
-        {
-            nodeType = ContentModel.TYPE_CONTENT;
-        }
-
         NodeRef nodeRef = createNodeImpl(parentNodeRef, fileName, nodeType, props, assocTypeQName);
-
-        // Write content
-        writeContent(nodeRef, fileName, content.getInputStream(), true);
-
-        behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
-        try
+        
+        if (content == null)
         {
-            // by default, first version is major, unless specified otherwise
-            VersionType versionType = VersionType.MAJOR;
-            if ((versionMajor != null) && (! versionMajor))
+            // Write "empty" content
+            writeContent(nodeRef, fileName, new ByteArrayInputStream("".getBytes()), false);
+        }
+        else
+        {
+            // Write content
+            writeContent(nodeRef, fileName, content.getInputStream(), true);
+        }
+        
+        if ((versionMajor != null) || (versionComment != null))
+        {
+            behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+            try
             {
-                versionType = VersionType.MINOR;
+                // by default, first version is major, unless specified otherwise
+                VersionType versionType = VersionType.MAJOR;
+                if ((versionMajor != null) && (!versionMajor))
+                {
+                    versionType = VersionType.MINOR;
+                }
+
+                createVersion(nodeRef, false, versionType, versionComment);
+
+                extractMetadata(nodeRef);
+            } finally
+            {
+                behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
             }
-
-            createVersion(nodeRef, false, versionType, versionComment);
-
-            extractMetadata(nodeRef);
-        }
-        finally
-        {
-            behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
         }
 
-        // Create the response
-        return getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeType, params);
+        return nodeRef;
     }
 
     private String getStringOrNull(String value)

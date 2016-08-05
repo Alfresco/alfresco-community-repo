@@ -69,9 +69,10 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         String folder1 = "folder" + System.currentTimeMillis() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
+        String f1Id = createdFolder.getId();
 
         String docName = "d1.txt";
-        Document documentResp = createEmptyTextFile(createdFolder, docName);
+        Document documentResp = createEmptyTextFile(f1Id, docName);
 
         //Update the file
         Document dUpdate = new Document();
@@ -141,12 +142,14 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         
         List<Activity> activities = getMyActivities();
         String folder1 = "nonSitefolder" + System.currentTimeMillis() + "_1";
+        
         //Create a folder outside a site
         Folder createdFolder = createFolder(Nodes.PATH_MY, folder1, null);
         assertNotNull(createdFolder);
+        String f1Id = createdFolder.getId();
 
         String docName = "nonsite_d1.txt";
-        Document documentResp = createEmptyTextFile(createdFolder, docName);
+        Document documentResp = createEmptyTextFile(f1Id, docName);
         assertNotNull(documentResp);
 
         //Update the file

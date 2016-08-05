@@ -2872,6 +2872,74 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         f1.setNodeType("app:glossary");
         f1.expected(folderResp);
+        
+        {
+            // test versioning for metadata-only updates
+            
+            Map params = new HashMap<>();
+            params.put("majorVersion", "true");
+            params.put("comment", "Initial empty file :-)");
+
+            String fileName = "My File";
+            Node nodeResp = createEmptyTextFile(f0Id, fileName, params, 201);
+            assertEquals("1.0", nodeResp.getProperties().get("cm:versionLabel"));
+
+            props = new HashMap<>();
+            props.put("cm:title", "my file title");
+            dUpdate = new Document();
+            dUpdate.setProperties(props);
+
+            response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals("1.0", nodeResp.getProperties().get("cm:versionLabel"));
+
+            // turn-off auto-version on metadata-only updates (OOTB this is now false by default, as per MNT-12226)
+            props = new HashMap<>();
+            props.put("cm:autoVersionOnUpdateProps", true);
+            dUpdate = new Document();
+            dUpdate.setProperties(props);
+            
+            response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals("1.1", nodeResp.getProperties().get("cm:versionLabel"));
+            
+            props = new HashMap<>();
+            props.put("cm:title","my file title 2");
+            dUpdate = new Document();
+            dUpdate.setProperties(props);
+            
+            response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals("1.2", nodeResp.getProperties().get("cm:versionLabel"));
+
+            props = new HashMap<>();
+            props.put("cm:title","my file title 3");
+            dUpdate = new Document();
+            dUpdate.setProperties(props);
+
+            response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals("1.3", nodeResp.getProperties().get("cm:versionLabel"));
+
+            // turn-off auto-version on metadata-only updates
+            props = new HashMap<>();
+            props.put("cm:autoVersionOnUpdateProps", false);
+            dUpdate = new Document();
+            dUpdate.setProperties(props);
+
+            response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals("1.3", nodeResp.getProperties().get("cm:versionLabel"));
+
+            props = new HashMap<>();
+            props.put("cm:title","my file title 4");
+            dUpdate = new Document();
+            dUpdate.setProperties(props);
+
+            response = put(URL_NODES, dId, toJsonAsStringNonNull(dUpdate), null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals("1.3", nodeResp.getProperties().get("cm:versionLabel"));
+        }
 
         // -ve test - fail on unknown property
         props = new HashMap<>();

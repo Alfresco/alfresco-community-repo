@@ -29,14 +29,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
-import org.alfresco.rest.api.tests.RepoService.SiteInformation;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ListResponse;
@@ -50,6 +47,7 @@ import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
+import org.json.simple.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -289,6 +287,32 @@ public class TestSites extends EnterpriseTestApi
             sitesProxy.createSite(site);
         }
 
+        // -ve - minor: error code if updating via nodes api (REPO-512)
+        {
+            String siteId = "zzz";
+            String siteTitle = "ZZZ site";
+
+            Site site = new SiteImpl(null, siteId, null, siteTitle, null, SiteVisibility.PRIVATE.toString(), null, null);
+            String siteNodeId = sitesProxy.createSite(site).getGuid();
+
+            // try to update to invalid site visibility
+            JSONObject prop = new JSONObject();
+            prop.put("st:siteVisibility","INVALID");
+            JSONObject properties = new JSONObject();
+            properties.put("properties", new JSONObject(prop));
+            try
+            {
+                sitesProxy.update("nodes", siteNodeId, null, null, properties.toJSONString(), null);
+                fail();
+            } catch (PublicApiException e)
+            {
+                assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
+            }
+
+            sitesProxy.removeSite(siteId); // cleanup
+        }
+
+        // -ve tests - belts-and-braces for unsupported methods
         {
             publicApiClient.setRequestContext(new RequestContext(network1.getId(), person1Id));
 

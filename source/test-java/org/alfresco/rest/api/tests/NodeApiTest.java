@@ -1908,6 +1908,15 @@ public class NodeApiTest extends AbstractBaseApiTest
         n.setNodeType(TYPE_CM_FOLDER);
         n.setRelativePath("d1.txt");
         post(getNodeChildrenUrl(myNodeId), user1, RestApiUtil.toJsonAsStringNonNull(n), 409);
+
+        // -ve test - minor: error code if trying to create with property with invalid format (REPO-473)
+        props = new HashMap<>();
+        props.put("exif:pixelYDimension", "my unknown property");
+        n = new Folder();
+        n.setName("fZ");
+        n.setNodeType(TYPE_CM_FOLDER);
+        n.setProperties(props);
+        post(getNodeChildrenUrl(myNodeId), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
     }
 
     /**
@@ -2736,6 +2745,13 @@ public class NodeApiTest extends AbstractBaseApiTest
         fUpdate = new Folder();
         fUpdate.setParentId(myNodeId);
         put(URL_NODES, user1, fId, toJsonAsStringNonNull(fUpdate), null, 200);
+
+        // -ve test - minor: error code if trying to update property with invalid format (REPO-473)
+        props = new HashMap<>();
+        props.put("exif:pixelYDimension", "my unknown property");
+        fUpdate = new Folder();
+        fUpdate.setProperties(props);
+        put(URL_NODES, user1, f2Id, toJsonAsStringNonNull(fUpdate), null, 400);
     }
 
     /**
@@ -2961,6 +2977,10 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // -ve - try to  update content using multi-part form data
         payload = new BinaryPayload(txtFile, "multipart/form-data", null);
+        putBinary(url, user1, payload, null, null, 415);
+
+        // -ve - try to invalid media type argument (when parsing request)
+        payload = new BinaryPayload(txtFile, "/jpeg", null);
         putBinary(url, user1, payload, null, null, 415);
     }
 

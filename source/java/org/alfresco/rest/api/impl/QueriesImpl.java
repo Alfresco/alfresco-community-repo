@@ -269,6 +269,15 @@ public class QueriesImpl implements Queries, InitializingBean
             {
                 return nodes.getFolderOrDocument(nodeRef, null, null, includeParam, mapUserInfo);
             }
+
+            @Override
+            protected String escapeTerm(String term)
+            {
+                term = term.trim();
+                term = SearchLanguageConversion.escapeLuceneQuery(term);
+                return term;
+            }
+            
         }.find(parameters, PARAM_TERM, MIN_TERM_LENGTH_NODES, "keywords",
             IN_QUERY_SORT, NODE_SORT_PARAMS_TO_QNAMES,
             new SortColumn(PARAM_MODIFIEDAT, false));
@@ -346,15 +355,7 @@ public class QueriesImpl implements Queries, InitializingBean
                 query.append(term);
                 query.append("*\")");
             }
-
-            @Override
-            protected String getTerm(Parameters parameters, String termName, int minTermLength)
-            {
-                String filter = super.getTerm(parameters, termName, minTermLength);
-                String escNameFilter = SearchLanguageConversion.escapeLuceneQuery(filter.replace('"', ' '));
-                return escNameFilter;
-            }
-
+            
             @Override
             protected List<Site> newList(int capacity)
             {
@@ -497,9 +498,9 @@ public class QueriesImpl implements Queries, InitializingBean
             {
                 throw new InvalidArgumentException("Query '"+termName+"' not specified");
             }
-
-            term = term.trim();
-            term = term.replace("\"", "");
+            
+            term = escapeTerm(term);
+            
             int cnt = 0;
             for (int i = 0; i < term.length(); i++)
             {
@@ -522,6 +523,20 @@ public class QueriesImpl implements Queries, InitializingBean
             return term;
         }
 
+        /**
+         * Trim and escape the term - override if needed
+         * 
+         * @param term
+         * @return
+         */
+        protected String escapeTerm(String term)
+        {
+            term = term.trim();
+            term = term.replace("\"", "");
+            term = SearchLanguageConversion.escapeLuceneQuery(term);
+            return term;
+        }
+        
         /**
          * Adds sort order to the SearchParameters.
          */

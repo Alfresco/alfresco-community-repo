@@ -783,6 +783,11 @@
         <property name="nodes" ref="Nodes" />
     </bean>
 
+    <bean class="org.alfresco.rest.api.nodes.NodeVersionsRelation">
+      <property name="serviceRegistry" ref="ServiceRegistry"/>
+      <property name="nodes" ref="Nodes" />
+    </bean>
+
     <bean id="baseNodeRelation" class="org.alfresco.rest.api.nodes.AbstractNodeRelation" abstract="true">
         <property name="serviceRegistry" ref="ServiceRegistry"/>
         <property name="nodes" ref="Nodes" />

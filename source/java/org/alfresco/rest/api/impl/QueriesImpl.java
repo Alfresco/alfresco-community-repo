@@ -556,9 +556,10 @@ public class QueriesImpl implements Queries, InitializingBean
                     public int compare(NodeRef n1, NodeRef n2)
                     {
                         int result = 0;
-                        for (SortColumn sortCol : sortCols)
+                        for (int i=0; i<sortCols.size(); i++)
                         {
-                            QName sortPropQName = sortParamsToQNames.get(sortCol.column);
+                            SortColumn sortCol = sortCols.get(i);
+                            QName sortPropQName = sortPropQNames.get(i);
                             
                             Serializable  p1 = getProperty(n1, sortPropQName);
                             Serializable  p2 = getProperty(n2, sortPropQName);

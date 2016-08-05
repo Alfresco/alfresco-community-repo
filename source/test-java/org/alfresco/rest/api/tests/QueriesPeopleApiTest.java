@@ -25,8 +25,11 @@
  */
 package org.alfresco.rest.api.tests;
 
+import static org.alfresco.rest.api.Queries.PARAM_FIRSTNAME;
+import static org.alfresco.rest.api.Queries.PARAM_LASTNAME;
 import static org.junit.Assert.assertEquals;
-import static org.alfresco.rest.api.Queries.*;
+import static org.junit.Assert.fail;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -64,7 +67,7 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     //      deleting users is hard from from static methods. For the moment do it
     //      in the first and last tests, but we have to get the TEST count right!
     //      If we don't, a test fails or the users get left behind (not too bad).
-    private static int TEST_COUNT = 12;
+    private static int TEST_COUNT = 13;
     private static int testCounter = 0;
 
     // Test usernames
@@ -274,6 +277,10 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         for (String id: testUserIds)
         {
             Person person = testUsers.get(id);
+            if (person == null)
+            {
+                fail("Did not find test Person "+id+" Check TEST_COUNT has the correct number of tests.");
+            }
             String string = person.toString();
             list.add(string); 
         }
@@ -378,6 +385,21 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         //  6   C
         orderBy = "firstName desc, lastName";
         expectedPeople = expectedPeople(USER4, USER3, USER1, USER2, USER5, USER6);
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
+
+    @Test
+    public void testOrderbyDescAndDesc() throws Exception
+    {
+        //  4 C
+        //  3 B A
+        //  2 A B
+        //  1 A A
+        //  6   C
+        //  5   A
+        orderBy = "firstName desc, lastName desc";
+        expectedPeople = expectedPeople(USER4, USER3, USER2, USER1, USER6, USER5);
         
         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
     }

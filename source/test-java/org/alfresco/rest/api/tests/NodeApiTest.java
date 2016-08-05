@@ -348,10 +348,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(content1_Id, node.getId());
         UserInfo createdByUser = node.getCreatedByUser();
         assertEquals(user1, createdByUser.getId());
-        assertEquals(user1 + " " + user1, createdByUser.getDisplayName());
+        assertEquals(UserInfo.getTestDisplayName(user1), createdByUser.getDisplayName());
         UserInfo modifiedByUser = node.getModifiedByUser();
         assertEquals(user1, modifiedByUser.getId());
-        assertEquals(user1 + " " + user1, modifiedByUser.getDisplayName());
+        assertEquals(UserInfo.getTestDisplayName(user1), modifiedByUser.getDisplayName());
         assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, node.getContent().getMimeType());
         assertNotNull(node.getContent().getMimeTypeName());
         assertNotNull(node.getContent().getEncoding());
@@ -665,7 +665,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String content_Id = documentResp.getId();
 
         // Expected result ...
-        UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
+        UserInfo expectedUser = new UserInfo(user1);
 
         Document d1 = new Document();
         d1.setId(content_Id);
@@ -1912,7 +1912,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         
         String myNodeId = getMyNodeId();
 
-        UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
+        UserInfo expectedUser = new UserInfo(user1);
 
         String postUrl = getNodeChildrenUrl(myNodeId);
 
@@ -2392,7 +2392,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
 
         String myNodeId = getMyNodeId();
-        UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
+        UserInfo expectedUser = new UserInfo(user1);
         String myChildrenUrl = getNodeChildrenUrl(myNodeId);
         
         // create folder f1
@@ -2576,7 +2576,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String folder0Name = "f0-testCreateEmptyFile-"+RUNID;
         String f0Id = createFolder(Nodes.PATH_MY, folder0Name).getId();
 
-        UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
+        UserInfo expectedUser = new UserInfo(user1);
 
         String postUrl = getNodeChildrenUrl(f0Id);
 
@@ -2718,7 +2718,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         String folder0Name = "f0-testUpdateNodeInfo-"+RUNID;
         String f0Id = createFolder(Nodes.PATH_MY, folder0Name).getId();
 
-        UserInfo expectedUser = new UserInfo(user1, user1+" "+user1);
+        UserInfo expectedUser = new UserInfo(user1);
 
         String postUrl = getNodeChildrenUrl(f0Id);
 

@@ -257,7 +257,10 @@ public class MapBasedQueryWalker extends WalkerCallbackAdapter
             }
         }
 
-        if (throwError) { throw new InvalidArgumentException(type + " is not allowed for 'scope' comparison."); }
+        if (throwError) 
+        { 
+            throw new InvalidArgumentException("framework.exception.InvalidProperty", new Object[] {propertyName, propertyValue, WhereClauseParser.tokenNames[type]});
+        }
     }
 
     public String getProperty(String propertyName, int type)

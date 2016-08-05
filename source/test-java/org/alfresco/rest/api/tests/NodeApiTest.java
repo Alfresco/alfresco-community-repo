@@ -2713,7 +2713,8 @@ public class NodeApiTest extends AbstractBaseApiTest
         response = put(URL_NODES, user1, dId, toJsonAsStringNonNull(dUpdate), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
-        //d1.getProperties().put("cm:versionLabel","1.0"); // TODO ... fix api ?!
+        d1.getProperties().put("cm:versionLabel","1.0");
+        d1.getProperties().put("cm:versionType","MAJOR");
         d1.setAspectNames(Arrays.asList("cm:auditable","cm:titled","cm:versionable"));
         d1.expected(documentResp);
 

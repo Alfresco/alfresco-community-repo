@@ -1957,6 +1957,31 @@ public class NodesImpl implements Nodes
     @Override
     public Node updateNode(String nodeId, Node nodeInfo, Parameters parameters)
     {
+        retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+        {
+            @Override
+            public Void execute() throws Throwable
+            {
+                NodeRef nodeRef = updateNodeImpl(nodeId, nodeInfo, parameters);
+                ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
+                postActivity(Activity_Type.UPDATED, activityInfo, false);
+                
+                return null;
+            }
+        }, false, true);
+
+        return retryingTransactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Node>()
+        {
+            @Override
+            public Node execute() throws Throwable
+            {
+                return getFolderOrDocument(nodeId, parameters);
+            }
+        }, false, false);
+    }
+    
+    protected NodeRef updateNodeImpl(String nodeId, Node nodeInfo, Parameters parameters)
+    {
         final NodeRef nodeRef = validateNode(nodeId);
 
         QName nodeTypeQName = getNodeType(nodeRef);
@@ -2097,11 +2122,8 @@ public class NodesImpl implements Nodes
                 throw new ConstraintViolatedException(dcne.getMessage());
             }
         }
-
-        ActivityInfo activityInfo =  getActivityInfo(getParentNodeRef(nodeRef), nodeRef);
-        postActivity(Activity_Type.UPDATED, activityInfo, false);
-
-        return getFolderOrDocument(nodeRef.getId(), parameters);
+        
+        return nodeRef;
     }
 
     @Override

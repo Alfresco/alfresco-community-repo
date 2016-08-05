@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.nodes;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.node.integrity.IntegrityException;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.version.Version2Model;
@@ -254,7 +255,11 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
         Map<QName, Serializable> props = sr.getNodeService().getProperties(nodeRef);
         if (props.get(ContentModel.PROP_VERSION_LABEL) == null)
         {
-            // last version was deleted
+            // attempt to delete last version - we do not yet support this (see REPO-835 & REPO-834)
+            // note: alternatively, the client can remove the "cm:versionable" aspect (if permissions allow) to clear the version history and disable versioning
+            throw new IntegrityException("Cannot delete last version (did you mean to disable versioning instead ?) ["+nodeId+","+versionId+"]", null);
+            
+            /*
             if (props.get(ContentModel.PROP_VERSION_TYPE) != null)
             {
                 // minor fix up to versionable aspect - ie. remove versionType
@@ -270,6 +275,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
                     behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
                 }
             }
+            */
         }
     }
 

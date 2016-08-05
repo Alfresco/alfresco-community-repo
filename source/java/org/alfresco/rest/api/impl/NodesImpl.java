@@ -903,9 +903,9 @@ public class NodesImpl implements Nodes
                 String perm = kv.getKey();
                 String op = kv.getValue();
 
-                if (perm.equals(PermissionService.ADD_CHILDREN) && type.equals(Type.DOCUMENT))
+                if (perm.equals(PermissionService.ADD_CHILDREN) && Type.DOCUMENT.equals(type))
                 {
-                    // special case: do not return "create" (as an allowable op) for file/content types
+                    // special case: do not return "create" (as an allowable op) for file/content types - note: 'type' can be null
                     continue;
                 }
                 else if (perm.equals(PermissionService.DELETE) && (isSpecialNodeDoNotDelete(nodeRef, nodeTypeQName)))

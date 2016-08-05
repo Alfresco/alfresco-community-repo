@@ -39,6 +39,7 @@ import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
+import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
 import org.junit.After;
 import org.junit.Before;
@@ -160,6 +161,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             String contentName = "content-1-" + System.currentTimeMillis();
             String content = textContentSuffix + verCnt;
 
+            // create first version (ie. 1.0)
             Document documentResp = createTextFile(user1, f1Id, contentName, content, "UTF-8", null);
             String docId = documentResp.getId();
             assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
@@ -168,19 +170,19 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
 
             Map<String, String> params = null;
 
-            // create some minor versions (note: majorVersion=null)
+            // create some minor versions (note: majorVersion=null) (ie. 1.1, 1.2, 1.3)
             int cnt = 3;
-            versionLabel = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, verCnt, null, versionLabel);
+            versionLabel = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, verCnt, null, versionLabel).getFirst();
             verCnt = verCnt+cnt;
 
-            // create some major versions
+            // create some major versions  (ie. 2.0, 3.0)
             cnt = 2;
-            versionLabel = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, verCnt, true, versionLabel);
+            versionLabel = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, verCnt, true, versionLabel).getFirst();
             verCnt = verCnt+cnt;
 
-            // create some more minor versions
+            // create some more minor versions (ie. 3.1, 3.2, 3.3)
             cnt = 3;
-            versionLabel = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, verCnt, false, versionLabel);
+            versionLabel = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, verCnt, false, versionLabel).getFirst();
             verCnt = verCnt+cnt;
 
             assertEquals("3.3", versionLabel);
@@ -248,8 +250,13 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
         }
     }
 
+    /**
+     * Test uploading a new file which starts with a minor version (0.1).
+     *
+     * @throws Exception
+     */
     @Test
-    public void testUpdateFileVersionStartWithMinor() throws Exception
+    public void testUploadFileVersionAsMinor() throws Exception
     {
         String myFolderNodeId = getMyNodeId(user1);
 
@@ -302,70 +309,235 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
         }
     }
 
-    // create new versions - using upload by name (with overwrite)
-    private String uploadTextFileVersions(String userId, String parentFolderNodeId, String fileName, int cnt,
-                                          String textContentPrefix, int verCnt,
-                                          Boolean majorVersion, String currentVersionLabel) throws Exception
+    /**
+     * Test delete version
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testDeleteVersion() throws Exception
     {
-        String[] parts = currentVersionLabel.split("\\.");
+        String sharedFolderNodeId = getSharedNodeId(user1);
 
-        int majorVer = new Integer(parts[0]).intValue();
-        int minorVer = new Integer(parts[1]).intValue();
+        // create folder
+        String f1Id = null;
+
+        try
+        {
+            f1Id = createFolder(user1, sharedFolderNodeId, "testDeleteVersion-f1").getId();
+
+            String textContentSuffix = "Amazingly few discotheques provide jukeboxes ";
+            String contentName = "content-1";
+
+            int cnt = 4;
+            Pair<String, String> pair = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, 0, null, null);
+            String versionLabel = pair.getFirst();
+            String docId = pair.getSecond();
+
+            assertEquals("1.3", versionLabel);
+
+            // check version history count
+            HttpResponse response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(cnt, nodes.size());
+
+            {
+                // -ve test - unauthenticated - belts-and-braces ;-)
+                delete(getNodeVersionsUrl(docId), null, "1.0", null, 401);
+
+                // -ve test - unknown nodeId
+                delete(getNodeVersionsUrl("dummy"), user1, "1.0", null, 404);
+
+                // -ve test - unknown versionId
+                delete(getNodeVersionsUrl(docId), user1, "15.0", null, 404);
+
+                // -ve test - permission denied (on version other than most recent)
+                delete(getNodeVersionsUrl(docId), user2, "1.0", null, 403);
+
+                // -ve test - permission denied (on most recent version)
+                delete(getNodeVersionsUrl(docId), user2, "1.3", null, 403);
+            }
+
+            delete(getNodeVersionsUrl(docId), user1, "1.0", null, 204);
+
+            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(cnt - 1, nodes.size());
+
+            // check live node (version label does not change)
+            response = getSingle(URL_NODES, user1, docId, 200);
+            Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals("1.3", nodeResp.getProperties().get("cm:versionLabel"));
+
+            delete(getNodeVersionsUrl(docId), user1, "1.3", null, 204);
+
+            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(cnt - 2, nodes.size());
+
+            // check live node (version label changes)
+            response = getSingle(URL_NODES, user1, docId, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals("1.2", nodeResp.getProperties().get("cm:versionLabel"));
+
+            delete(getNodeVersionsUrl(docId), user1, "1.1", null, 204);
+
+            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(cnt - 3, nodes.size());
+
+            // check live node (version label does not change)
+            response = getSingle(URL_NODES, user1, docId, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals("1.2", nodeResp.getProperties().get("cm:versionLabel"));
+
+            delete(getNodeVersionsUrl(docId), user1, "1.2", null, 204);
+
+            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            // check live node - removing last version does not (currently) remove versionable aspect
+            response = getSingle(URL_NODES, user1, docId, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
+            Map<String, Object> props = nodeResp.getProperties();
+            if (props != null)
+            {
+                assertNull(props.get("cm:versionLabel"));
+                assertNull(props.get("cm:versionType")); // note: see special fix in delete version API (at least for now)
+            }
+
+            // Update again ..
+            String textContent = "more changes 1";
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
+            File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+            PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
+
+            response = putBinary(getNodeContentUrl(docId), user1, payload, null,  null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
+            assertEquals("1.0", nodeResp.getProperties().get("cm:versionLabel"));
+            assertEquals("MAJOR", nodeResp.getProperties().get("cm:versionType"));
+
+            textContent = "more changes 2";
+            inputStream = new ByteArrayInputStream(textContent.getBytes());
+            txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+            payload = new PublicApiHttpClient.BinaryPayload(txtFile);
+
+            response = putBinary(getNodeContentUrl(docId), user1, payload, null,  null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
+            assertEquals("1.1", nodeResp.getProperties().get("cm:versionLabel"));
+            assertEquals("MINOR", nodeResp.getProperties().get("cm:versionType"));
+        }
+        finally
+        {
+            if (f1Id != null)
+            {
+                // some cleanup
+                Map<String, String> params = Collections.singletonMap("permanent", "true");
+                delete(URL_NODES, user1, f1Id, params, 204);
+            }
+        }
+    }
+
+    /**
+     * This test helper method uses "overwrite=true" to create one or more new versions, including the initial create if needed.
+     *
+     * If the file does not already exist (currentVersionLabel should be null) and majorVersionIn is also null
+     * then the first version is created as MAJOR (1.0) and subsequent versions are created as MINOR.
+     *
+     * @param userId
+     * @param parentFolderNodeId - parent folder
+     * @param fileName - file name
+     * @param cnt - number of new versions (>= 1)
+     * @param textContentPrefix - prefix for text content
+     * @param currentVersionCounter - overall version counter, used as a suffix in text content and version comment
+     * @param majorVersionIn - if null then false, if true then create MAJOR versions else if false create MINOR versions
+     * @param currentVersionLabel - the current version label (if file already exists)
+     * @return
+     * @throws Exception
+     */
+    private Pair<String, String> uploadTextFileVersions(String userId, String parentFolderNodeId, String fileName, int cnt,
+                                                        String textContentPrefix, int currentVersionCounter,
+                                                        final Boolean majorVersionIn, String currentVersionLabel) throws Exception
+    {
         Map<String, String> params = new HashMap<>();
         params.put(Nodes.PARAM_OVERWRITE, "true");
 
-        if (majorVersion != null)
+        if (majorVersionIn != null)
         {
-            params.put(Nodes.PARAM_VERSION_MAJOR, majorVersion.toString());
-        }
-        else
-        {
-            majorVersion = false;
+            params.put(Nodes.PARAM_VERSION_MAJOR, majorVersionIn.toString());
         }
 
-
-        if (majorVersion)
-        {
-            minorVer = 0;
-        }
-
+        String docId = null;
         for (int i = 1; i <= cnt; i++)
         {
-            if (majorVersion)
+            boolean expectedMajorVersion = (majorVersionIn != null ? majorVersionIn : false);
+
+            if (currentVersionLabel == null)
+            {
+                currentVersionLabel = "0.0";
+
+                // special case - 1st version is major (if not specified otherwise)
+                if (majorVersionIn == null)
+                {
+                    expectedMajorVersion = true;
+                }
+            }
+
+            String[] parts = currentVersionLabel.split("\\.");
+            int majorVer = new Integer(parts[0]).intValue();
+            int minorVer = new Integer(parts[1]).intValue();
+
+            if (expectedMajorVersion)
             {
                 majorVer++;
-            }
-            else
+                minorVer = 0;
+            } else
             {
                 minorVer++;
             }
 
-            verCnt++;
+            currentVersionLabel = majorVer + "." + minorVer;
 
-            params.put("comment", "my version " + verCnt);
+            currentVersionCounter++;
 
-            String textContent = textContentPrefix + verCnt;
+            params.put("comment", "my version " + currentVersionCounter);
 
-            String versionId = majorVer + "." + minorVer;
+            String textContent = textContentPrefix + currentVersionCounter;
 
             // uses upload with overwrite here ...
             Document documentResp = createTextFile(userId, parentFolderNodeId, fileName, textContent, "UTF-8", params);
-            String docId = documentResp.getId();
+            docId = documentResp.getId();
             assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
             assertNotNull(documentResp.getProperties());
-            assertEquals(versionId, documentResp.getProperties().get("cm:versionLabel"));
+            assertEquals(currentVersionLabel, documentResp.getProperties().get("cm:versionLabel"));
 
             // double-check - get version node info
-            HttpResponse response = getSingle(getNodeVersionsUrl(docId), userId, versionId, null, 200);
+            HttpResponse response = getSingle(getNodeVersionsUrl(docId), userId, currentVersionLabel, null, 200);
             Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-            assertEquals(versionId, nodeResp.getProperties().get("cm:versionLabel"));
-            assertEquals((majorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
+            assertEquals(currentVersionLabel, nodeResp.getProperties().get("cm:versionLabel"));
+            assertEquals((expectedMajorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
         }
 
-        return majorVer + "." + minorVer;
+        return new Pair<String,String>(currentVersionLabel, docId);
     }
 
-    // create new versions - using update binary content
+    /**
+     * This test helper method uses "update binary content" to create one or more new versions. The file must already exist.
+     *
+     * @param userId
+     * @param contentNodeId
+     * @param cnt
+     * @param textContentPrefix
+     * @param verCnt
+     * @param majorVersion
+     * @param currentVersionLabel
+     * @return
+     * @throws Exception
+     */
     private String updateFileVersions(String userId, String contentNodeId, int cnt,
                                       String textContentPrefix, int verCnt,
                                       Boolean majorVersion, String currentVersionLabel) throws Exception
@@ -410,7 +582,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
 
             String textContent = textContentPrefix + verCnt;
 
-            String versionId = majorVer + "." + minorVer;
+            currentVersionLabel = majorVer + "." + minorVer;
 
             // Update
             ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
@@ -422,17 +594,17 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
 
             assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
             assertNotNull(nodeResp.getProperties());
-            assertEquals(versionId, nodeResp.getProperties().get("cm:versionLabel"));
+            assertEquals(currentVersionLabel, nodeResp.getProperties().get("cm:versionLabel"));
             assertEquals((majorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
 
             // double-check - get version node info
-            response = getSingle(getNodeVersionsUrl(contentNodeId), userId, versionId, null, 200);
+            response = getSingle(getNodeVersionsUrl(contentNodeId), userId, currentVersionLabel, null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-            assertEquals(versionId, nodeResp.getProperties().get("cm:versionLabel"));
+            assertEquals(currentVersionLabel, nodeResp.getProperties().get("cm:versionLabel"));
             assertEquals((majorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
         }
 
-        return majorVer + "." + minorVer;
+        return currentVersionLabel;
     }
 
 

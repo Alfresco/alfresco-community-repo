@@ -1,0 +1,68 @@
+{
+	"id": "9703fafd-3041-c6fb-2f20-367eeb1b7697",
+	"name": "CMIS Delete",
+	"description": "",
+	"order": [
+		"7d4fa49e-125d-7f40-328d-6998fd383b1c",
+		"fb149dbf-4725-db4c-163a-a541ce0bb830"
+	],
+	"folders": [],
+	"timestamp": 1461678623161,
+	"owner": "250102",
+	"remoteLink": "",
+	"public": false,
+	"requests": [
+		{
+			"id": "7d4fa49e-125d-7f40-328d-6998fd383b1c",
+			"headers": "Authorization: Basic xxxx\n",
+			"url": "{{baseUrl}}/{{networkId}}/public/cmis/versions/1.1/browser/root?objectId=d57861c1-48a3-4e3f-b1e3-9822e52707d1",
+			"preRequestScript": "",
+			"pathVariables": {},
+			"method": "POST",
+			"data": [
+				{
+					"key": "cmisaction",
+					"value": "delete",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {},
+			"time": 1461678196209,
+			"name": "Delete object",
+			"description": "NOTE: This will delete an empty folder but not a folder with children, use \"deletetree\" action for that!",
+			"collectionId": "9703fafd-3041-c6fb-2f20-367eeb1b7697",
+			"responses": []
+		},
+		{
+			"id": "fb149dbf-4725-db4c-163a-a541ce0bb830",
+			"headers": "Authorization: Basic xxxx\n",
+			"url": "{{baseUrl}}/{{networkId}}/public/cmis/versions/1.1/browser/root?objectId=14463495-b278-45f2-bef4-d9d2d0f91485",
+			"pathVariables": {},
+			"preRequestScript": "",
+			"method": "POST",
+			"collectionId": "9703fafd-3041-c6fb-2f20-367eeb1b7697",
+			"data": [
+				{
+					"key": "cmisaction",
+					"value": "deletetree",
+					"type": "text",
+					"enabled": true
+				}
+			],
+			"dataMode": "urlencoded",
+			"name": "Delete folder",
+			"description": "",
+			"descriptionFormat": "html",
+			"time": 1461678531597,
+			"version": 2,
+			"responses": [],
+			"tests": null,
+			"currentHelper": "normal",
+			"helperAttributes": {}
+		}
+	]
+}

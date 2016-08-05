@@ -76,6 +76,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.util.GUID;
 import org.alfresco.util.TempFileProvider;
 import org.json.simple.JSONObject;
 import org.junit.After;
@@ -1020,6 +1021,20 @@ public class NodeApiTest extends AbstractBaseApiTest
         document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         contentInfo = document.getContent();
         assertEquals(MimetypeMap.MIMETYPE_OPENXML_WORDPROCESSING, contentInfo.getMimeType());
+        assertEquals("UTF-8", contentInfo.getEncoding());
+        
+        // additional test
+        fileName = "CMIS-Delete.json";
+        file = getResourceFile(fileName);
+
+        multiPartBuilder = MultiPartBuilder.create()
+                .setFileData(new FileData("special-"+GUID.generate(), file));
+        reqBody = multiPartBuilder.build();
+
+        response = post(getNodeChildrenUrl(fId), user1, reqBody.getBody(), null, reqBody.getContentType(), 201);
+        document = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        contentInfo = document.getContent();
+        assertEquals(MimetypeMap.MIMETYPE_TEXT_PLAIN, contentInfo.getMimeType());
         assertEquals("UTF-8", contentInfo.getEncoding());
 
         // cleanup

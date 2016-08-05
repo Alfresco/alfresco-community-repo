@@ -74,27 +74,15 @@ import java.util.Map;
  * @author janv
  */
 @RelationshipResource(name = "versions", entityResource = NodesEntityResource.class, title = "Node Versions")
-public class NodeVersionsRelation implements
+public class NodeVersionsRelation extends AbstractNodeRelation implements
         RelationshipResourceAction.Read<Node>,
         RelationshipResourceAction.ReadById<Node>,
         RelationshipResourceBinaryAction.Read,
         RelationshipResourceAction.Delete,
         InitializingBean
 {
-    protected ServiceRegistry sr;
-    protected Nodes nodes;
     protected VersionService versionService;
-
-    public void setNodes(Nodes nodes)
-    {
-        this.nodes = nodes;
-    }
-
-    public void setServiceRegistry(ServiceRegistry sr)
-    {
-        this.sr = sr;
-    }
-
+    
     @Override
     public void afterPropertiesSet()
     {
@@ -118,8 +106,7 @@ public class NodeVersionsRelation implements
 
         Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
         List<String> includeParam = parameters.getInclude();
-
-        // TODO fixme - add paging etc
+        
         List<Node> collection = null;
         if (vh != null)
         {
@@ -131,9 +118,8 @@ public class NodeVersionsRelation implements
                 collection.add(node);
             }
         }
-
-        Paging paging = parameters.getPaging();
-        return CollectionWithPagingInfo.asPaged(paging, collection, false, (collection != null ? collection.size() : 0));
+        
+        return listPage(collection, parameters.getPaging());
     }
 
     private void mapVersionInfo(Version v, Node aNode)

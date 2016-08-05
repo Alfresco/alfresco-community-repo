@@ -31,10 +31,12 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.VersionOptions;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
+import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
+import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
@@ -1260,7 +1262,72 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
         // TODO add tests to also check version comment (when we can list version history)
     }
 
+    /**
+     * Test version history paging.
+     *
+     * <p>GET:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/versions}
+     */
+    @Test
+    public void testVersionHistoryPaging() throws Exception
+    {
+        // create folder
+        String f1Id = null;
 
+        try
+        {
+            f1Id = createFolder(user1, Nodes.PATH_MY, "testVersionHistoryPaging-f1").getId();
+            
+            String textContentSuffix = "Amazingly few discotheques provide jukeboxes ";
+            String contentName = "content-1";
+
+            int cnt = 6;
+            Pair<String, String> pair = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, 0, null, null);
+            String versionLabel = pair.getFirst();
+            String docId = pair.getSecond();
+
+            assertEquals("1.5", versionLabel); // 1.0, 1.1, ... 1.5
+
+            // check version history count (note: no paging => default max items => 100)
+            HttpResponse response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(cnt, nodes.size());
+
+            // Sanity Test paging
+            
+            // SkipCount=0,MaxItems=2
+            Paging paging = getPaging(0, 2);
+            response = getAll(getNodeVersionsUrl(docId), user1, paging, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(2, nodes.size());
+            PublicApiClient.ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+            assertEquals(2, expectedPaging.getCount().intValue());
+            assertEquals(0, expectedPaging.getSkipCount().intValue());
+            assertEquals(2, expectedPaging.getMaxItems().intValue());
+            assertTrue(expectedPaging.getTotalItems() >= cnt);
+            assertTrue(expectedPaging.getHasMoreItems());
+
+            // SkipCount=2,MaxItems=3
+            paging = getPaging(2, 3);
+            response = getAll(getNodeVersionsUrl(docId), user1, paging, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(3, nodes.size());
+            expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+            assertEquals(3, expectedPaging.getCount().intValue());
+            assertEquals(2, expectedPaging.getSkipCount().intValue());
+            assertEquals(3, expectedPaging.getMaxItems().intValue());
+            assertTrue(expectedPaging.getTotalItems() >= cnt);
+        }
+        finally
+        {
+            if (f1Id != null)
+            {
+                // some cleanup
+                Map<String, String> params = Collections.singletonMap("permanent", "true");
+                delete(URL_NODES, user1, f1Id, params, 204);
+            }
+        }
+    }
 
     @Override
     public String getScope()

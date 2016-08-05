@@ -27,6 +27,8 @@ package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.VersionOptions;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
@@ -114,6 +116,12 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
         }
         users.clear();
         AuthenticationUtil.clearCurrentSecurityContext();
+    }
+
+
+    protected String getNodeVersionRevertUrl(String nodeId, String versionId)
+    {
+        return getNodeVersionsUrl(nodeId) + "/" + versionId + "/revert";
     }
 
     protected String getNodeVersionsUrl(String nodeId)
@@ -305,8 +313,9 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
 
             int verCnt = 1;
 
+            String textContentSuffix = "The quick brown fox jumps over the lazy dog ";
             String contentName = "content " + System.currentTimeMillis();
-            String content = "The quick brown fox jumps over the lazy dog "+verCnt;
+            String content = textContentSuffix+verCnt;
 
             Document documentResp = createTextFile(user1, myFolderNodeId, contentName, content, "UTF-8", null);
             String d1Id = documentResp.getId();
@@ -343,7 +352,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
                 minorVersion++;
 
                 // Update
-                content = "The quick brown fox jumps over the lazy dog "+verCnt;
+                content = textContentSuffix+verCnt;
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes());
                 File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
                 PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
@@ -373,19 +382,20 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
 
             int totalVerCnt = verCnt;
 
+            // check total version count - also get properties so that we can check version label etc
             params = new HashMap<>();
             params.put("include", "properties");
             response = getAll(getNodeVersionsUrl(d1Id), user1, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(totalVerCnt, nodes.size());
 
-            checkVersionHistoryAndContent(d1Id, nodes, verCnt, majorVersion, minorVersion);
+            checkVersionHistoryAndContent(d1Id, nodes, verCnt, textContentSuffix, null, majorVersion, minorVersion, false);
 
             // delete to trashcan/archive ...
             delete(URL_NODES, user1, d1Id, null, 204);
 
             {
-                // -ver tests
+                // -ve tests
                 getSingle(NodesEntityResource.class, user1, d1Id, null, 404);
                 getAll(getNodeVersionsUrl(d1Id), user1, null, null, 404);
             }
@@ -401,7 +411,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
                 // -ve test - unauthenticated - belts-and-braces ;-)
                 getAll(getNodeVersionsUrl(d1Id), null, paging, null, 401);
 
-                // -ve test - unauthenticated - belts-and-braces ;-)
+                // -ve test - unknown nodeId
                 getAll(getNodeVersionsUrl("dummy"), user1, paging, null, 404);
             }
         }
@@ -413,7 +423,137 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
         }
     }
 
-    private void checkVersionHistoryAndContent(String docId, List<Node> nodesWithProps, int verCnt, int majorVersion, int minorVersion) throws Exception
+    /**
+     * Tests revert (ie. promote older version to become the latest/most recent version).
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/revert}
+     */
+    @Test
+    public void testRevert() throws Exception
+    {
+        // As user 1 ...
+        String sharedFolderNodeId = getSharedNodeId(user1);
+
+        // create folder
+        String f1Id = null;
+
+        try
+        {
+            f1Id = createFolder(user1, sharedFolderNodeId, "testRevert-f1-"+System.currentTimeMillis()).getId();
+
+            int majorVersion = 1;
+            int minorVersion = 0;
+            int verCnt = 1;
+
+            String textContentSuffix = "The quick brown fox jumps over the lazy dog ";
+            String contentName = "content " + System.currentTimeMillis();
+            String content = textContentSuffix+verCnt;
+
+            String updateVerCommentSuffix = "Update comment ";
+            Map<String, String> params = new HashMap<>();
+            params.put(Nodes.PARAM_VERSION_COMMENT, updateVerCommentSuffix+verCnt);
+
+            // Upload text file - versioning is currently auto enabled on upload (create file via multi-part/form-data)
+            Document documentResp = createTextFile(user1, f1Id, contentName, content, "UTF-8", params);
+            String d1Id = documentResp.getId();
+
+            // Update the content
+            int updateCnt = 3;
+            for (int i = 1; i <= updateCnt; i++)
+            {
+                verCnt++;
+                minorVersion++;
+
+                // Update
+                content = textContentSuffix+verCnt;
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes());
+                File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+                PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
+
+                params = new HashMap<>();
+                params.put(Nodes.PARAM_VERSION_COMMENT, updateVerCommentSuffix+verCnt);
+
+                putBinary(getNodeContentUrl(d1Id), user1, payload, null, params, 200);
+            }
+
+            // check version history count - also get properties so that we can check version label etc
+            params = new HashMap<>();
+            params.put("include", "properties");
+            HttpResponse response = getAll(getNodeVersionsUrl(d1Id), user1, null, params, 200);
+            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(verCnt, nodes.size());
+
+            // check version labels and content
+            checkVersionHistoryAndContent(d1Id, nodes, verCnt, textContentSuffix, updateVerCommentSuffix, majorVersion, minorVersion, false);
+
+            int revertMajorVersion = 1;
+            int revertMinorVersion = 0;
+
+            String revertVerCommentSuffix = "Revert comment ";
+
+            int revertCnt = 3;
+            for (int i = 1; i <= revertCnt; i++)
+            {
+                String revertVersionId = revertMajorVersion+"."+revertMinorVersion;
+
+                VersionOptions versionOptions = new VersionOptions();
+                versionOptions.setMajorVersion(true);
+                versionOptions.setComment(revertVerCommentSuffix+i);
+
+                post(getNodeVersionRevertUrl(d1Id, revertVersionId), user1, toJsonAsStringNonNull(versionOptions), null, 200);
+
+                verCnt++;
+                revertMinorVersion++;
+
+                majorVersion++;
+            }
+
+            // check version history count - also get properties so that we can check version label etc
+            params = new HashMap<>();
+            params.put("include", "properties");
+            response = getAll(getNodeVersionsUrl(d1Id), user1, null, params, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(verCnt, nodes.size());
+
+            //  check version labels and content - most recently reverted, eg. version labels 4.0, 3.0, 2.0
+            List<Node> revertedNodes = nodes.subList(0, revertCnt);
+            checkVersionHistoryAndContent(d1Id, revertedNodes, updateCnt, textContentSuffix, revertVerCommentSuffix, majorVersion, 0, true);
+
+            // check version labels and content - the rest of the version history (prior to reverted), eg. version labels 1.3, 1.2, 1.1, 1.0
+            minorVersion = 3;
+            List<Node> originalUpdatedNodes = nodes.subList(revertCnt, nodes.size());
+            checkVersionHistoryAndContent(d1Id, originalUpdatedNodes, updateCnt+1, textContentSuffix, updateVerCommentSuffix, 1, minorVersion, false);
+
+            // Currently, we also allow the most recent version to be reverted (ie. not disallowed by underlying VersionService)
+            post(getNodeVersionRevertUrl(d1Id, majorVersion+".0"), user1, "{}", null, 200);
+
+            {
+                // -ve test - unauthenticated - belts-and-braces ;-)
+                post(getNodeVersionRevertUrl(d1Id, "1.0"), null, "{}", null, 401);
+
+                // -ve test - unknown nodeId
+                post(getNodeVersionRevertUrl("dummy", "1.0"), user1, "{}", null, 404);
+
+                // -ve test - unknown versionId
+                post(getNodeVersionRevertUrl(d1Id, "15.0"), user1, "{}", null, 404);
+
+                // -ve test - permission denied
+                post(getNodeVersionRevertUrl(d1Id, "1.0"), user2, "{}", null, 403);
+            }
+        }
+        finally
+        {
+            if (f1Id != null)
+            {
+                // some cleanup
+                Map<String, String> params = Collections.singletonMap("permanent", "true");
+                delete(URL_NODES, user1, f1Id, params, 204);
+            }
+        }
+    }
+
+    private void checkVersionHistoryAndContent(String docId, List<Node> nodesWithProps, int verCnt, String textContentSuffix, String verCommentSuffix, int majorVersion, int minorVersion, boolean majorVersions) throws Exception
     {
         String versionId = null;
 
@@ -425,7 +565,8 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
 
             assertEquals(versionId, versionNode.getId());
             assertEquals(versionId, versionNode.getProperties().get("cm:versionLabel"));
-            if (versionId.equals("1.0"))
+
+            if (versionId.endsWith(".0"))
             {
                 assertEquals("MAJOR", versionNode.getProperties().get("cm:versionType"));
             }
@@ -437,12 +578,22 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             assertNull(versionNode.getCreatedByUser());
             assertNull(versionNode.getCreatedAt());
 
+            assertEquals((verCommentSuffix != null ? verCommentSuffix+verCnt : null), versionNode.getVersionComment());
+
             // Download version content - by default with Content-Disposition header
             HttpResponse response = getSingle(getNodeVersionsUrl(docId), user1, versionId+"/content", null, 200);
             String textContent = response.getResponse();
-            assertEquals("The quick brown fox jumps over the lazy dog "+verCnt, textContent);
+            assertEquals(textContentSuffix+verCnt, textContent);
 
-            minorVersion--;
+            if (majorVersions)
+            {
+                majorVersion--;
+            }
+            else
+            {
+                minorVersion--;
+            }
+
             verCnt--;
         }
 
@@ -501,9 +652,11 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             int cntBefore = 2;
             int verCnt = 1;
 
+            String textContentSuffix = "The quick brown fox jumps over the lazy dog ";
+
             for (int i = 1; i <= cntBefore; i++)
             {
-                String content = "The quick brown fox jumps over the lazy dog " + verCnt;
+                String content = textContentSuffix + verCnt;
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes());
                 File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
                 PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
@@ -548,7 +701,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             for (int i = 1; i <= cntAfter; i++)
             {
                 // Update again
-                String content = "The quick brown fox jumps over the lazy dog " + verCnt;
+                String content = textContentSuffix + verCnt;
                 ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes());
                 File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
                 PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
@@ -579,7 +732,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(totalVerCnt, nodes.size());
 
-            checkVersionHistoryAndContent(d1Id, nodes, verCnt, 1, minorVersion);
+            checkVersionHistoryAndContent(d1Id, nodes, verCnt, textContentSuffix, null, 1, minorVersion, false);
 
             // delete to trashcan/archive ...
             delete(URL_NODES, user1, d1Id, null, 204);

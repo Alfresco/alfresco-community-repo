@@ -2269,11 +2269,16 @@ public class NodesImpl implements Nodes
 
             if ((isVersioned) || (versionMajor != null) || (versionComment != null) )
             {
-                VersionType versionType = VersionType.MINOR;
-                if ((versionMajor != null) && (versionMajor == true))
+                VersionType versionType = null;
+                if (versionMajor != null)
                 {
-                    versionType = VersionType.MAJOR;
+                    versionType = (versionMajor ? VersionType.MAJOR : VersionType.MINOR);
                 }
+                else
+                {
+                    versionType = (isVersioned ? versionType = VersionType.MINOR : VersionType.MAJOR);
+                }
+
                 createVersion(nodeRef, isVersioned, versionType, versionComment);
             }
 
@@ -2368,20 +2373,22 @@ public class NodesImpl implements Nodes
     {
         if (! isVersioned)
         {
-            // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)
-            ensureVersioningEnabled(nodeRef, true, false);
-        }
-        else
-        {
-            Map<String, Serializable> versionProperties = new HashMap<>(2);
-            versionProperties.put(VersionModel.PROP_VERSION_TYPE, versionType);
-            if (reason != null)
-            {
-                versionProperties.put(VersionModel.PROP_DESCRIPTION, reason);
-            }
+            // Ensure versioning is enabled for the file (autoVersion = true, autoVersionProps = false)
+            Map<QName, Serializable> props = new HashMap<>(2);
+            props.put(ContentModel.PROP_AUTO_VERSION, true);
+            props.put(ContentModel.PROP_AUTO_VERSION_PROPS, false);
 
-            versionService.createVersion(nodeRef, versionProperties);
+            nodeService.addAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE, props);
         }
+
+        Map<String, Serializable> versionProperties = new HashMap<>(2);
+        versionProperties.put(VersionModel.PROP_VERSION_TYPE, versionType);
+        if (reason != null)
+        {
+            versionProperties.put(VersionModel.PROP_DESCRIPTION, reason);
+        }
+
+        versionService.createVersion(nodeRef, versionProperties);
     }
 
     @Override
@@ -2533,7 +2540,7 @@ public class NodesImpl implements Nodes
             }
 
             // Create a new file.
-            final Node fileNode = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters);
+            final Node fileNode = createNewFile(parentNodeRef, fileName, nodeTypeQName, content, properties, assocTypeQName, parameters, majorVersion, versionComment);
 
             // RA-1052
             try
@@ -2585,7 +2592,8 @@ public class NodesImpl implements Nodes
         }
     }
 
-    private Node createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, QName assocTypeQName, Parameters params)
+    private Node createNewFile(NodeRef parentNodeRef, String fileName, QName nodeType, Content content, Map<QName, Serializable> props, QName assocTypeQName, Parameters params,
+                               Boolean versionMajor, String versionComment)
     {
         if (nodeType == null)
         {
@@ -2597,11 +2605,24 @@ public class NodesImpl implements Nodes
         // Write content
         writeContent(nodeRef, fileName, content.getInputStream(), true);
 
-        // Ensure the file is versionable (autoVersion = true, autoVersionProps = false)
-        ensureVersioningEnabled(nodeRef, true, false);
+        behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        try
+        {
+            // by default, first version is major, unless specified otherwise
+            VersionType versionType = VersionType.MAJOR;
+            if ((versionMajor != null) && (! versionMajor))
+            {
+                versionType = VersionType.MINOR;
+            }
 
-        // Extract the metadata
-        extractMetadata(nodeRef);
+            createVersion(nodeRef, false, versionType, versionComment);
+
+            extractMetadata(nodeRef);
+        }
+        finally
+        {
+            behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+        }
 
         // Create the response
         return getFolderOrDocumentFullInfo(nodeRef, parentNodeRef, nodeType, params);
@@ -2699,25 +2720,6 @@ public class NodesImpl implements Nodes
                 actionService.executeAction(action, sourceNodeRef, true, true);
             }
         }
-    }
-
-    /**
-     * Ensures the given node has the {@code cm:versionable} aspect applied to it, and
-     * that it has the initial version in the version store.
-     *
-     * @param nodeRef          the reference to the node to be checked
-     * @param autoVersion      If the {@code cm:versionable} aspect is applied, should auto
-     *                         versioning be requested?
-     * @param autoVersionProps If the {@code cm:versionable} aspect is applied, should
-     *                         auto versioning of properties be requested?
-     */
-    protected void ensureVersioningEnabled(NodeRef nodeRef, boolean autoVersion, boolean autoVersionProps)
-    {
-        Map<QName, Serializable> props = new HashMap<>(2);
-        props.put(ContentModel.PROP_AUTO_VERSION, autoVersion);
-        props.put(ContentModel.PROP_AUTO_VERSION_PROPS, autoVersionProps);
-
-        versionService.ensureVersioningEnabled(nodeRef, props);
     }
 
     /**

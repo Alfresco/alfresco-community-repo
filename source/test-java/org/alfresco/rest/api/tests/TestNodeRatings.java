@@ -59,6 +59,7 @@ import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
+import org.json.simple.JSONArray;
 import org.junit.Test;
 
 public class TestNodeRatings extends EnterpriseTestApi
@@ -467,6 +468,22 @@ public class TestNodeRatings extends EnterpriseTestApi
 		// Test Case cloud-1977
 		// invalid methods
 		{
+			try
+			{
+				// -ve test - cannot create multiple ratings in single POST call (unsupported)
+				List<NodeRating> ratings = new ArrayList<>(2);
+				ratings.add(new NodeRating("likes", true));
+				ratings.add(new NodeRating("likes", false));
+                
+				publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
+				nodesProxy.create("nodes",  nodeRef1.getId(), "ratings", null, JSONArray.toJSONString(ratings), "Unable to POST to multiple ratings");
+				fail();
+			}
+			catch(PublicApiException e)
+			{
+				assertEquals(HttpStatus.SC_METHOD_NOT_ALLOWED, e.getHttpResponse().getStatusCode());
+			}
+
 			// get an arbitrary rating
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
 			ListResponse<NodeRating> resp = nodesProxy.getNodeRatings(nodeRef1.getId(), createParams(getPaging(0, Integer.MAX_VALUE), null));

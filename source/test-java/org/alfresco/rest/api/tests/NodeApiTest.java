@@ -1659,6 +1659,17 @@ public class NodeApiTest extends AbstractBaseApiTest
         publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
         response = publicApiClient.post(getScope(), "nodes/"+ddNodeId+"/move", null, null, null, toJsonAsStringNonNull(tgt));
         checkStatus(403, response.getStatusCode());
+
+        // -ve test - cannot move to multiple destinations in single POST call (unsupported)
+        List<NodeTarget> nodeDestinations = new ArrayList<>(2);
+        NodeTarget nodeTarget = new NodeTarget();
+        nodeTarget.setTargetParentId(f1Id);
+        nodeDestinations.add(nodeTarget);
+        nodeTarget = new NodeTarget();
+        nodeTarget.setTargetParentId(f2Id);
+        nodeDestinations.add(nodeTarget);
+
+        post("nodes/"+d1Id+"/move", user1, toJsonAsStringNonNull(nodeDestinations), null, 405);
     }
 
     /**
@@ -1746,6 +1757,17 @@ public class NodeApiTest extends AbstractBaseApiTest
         tgt = new NodeTarget();
         tgt.setTargetParentId(rootNodeId);
         post("nodes/"+d1Id+"/copy", user1, toJsonAsStringNonNull(tgt), null, 403);
+
+        // -ve test - cannot copy to multiple destinations in single POST call (unsupported)
+        List<NodeTarget> nodeDestinations = new ArrayList<>(2);
+        NodeTarget nodeTarget = new NodeTarget();
+        nodeTarget.setTargetParentId(sourceId);
+        nodeDestinations.add(nodeTarget);
+        nodeTarget = new NodeTarget();
+        nodeTarget.setTargetParentId(targetId);
+        nodeDestinations.add(nodeTarget);
+
+        post("nodes/"+d1Id+"/copy", user1, toJsonAsStringNonNull(nodeDestinations), null, 405);
     }
 
     @Test

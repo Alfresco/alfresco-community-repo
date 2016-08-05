@@ -35,6 +35,7 @@ import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.Test;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -208,6 +209,135 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
                 deleteSite(siteId, true, 204);
             }
         }
+    }
+
+    @Test
+    public void testLiveSearchSites_Sort() throws Exception
+    {
+        setRequestContext(user1);
+        
+        List<String> siteIds = new ArrayList<>(5);
+
+        try
+        {
+            // As user 1 ...
+
+            Paging paging = getPaging(0, 100);
+            
+            // create site
+            String s1 = createSite("siABCDEF", "ABCDEF DEF", "sdABCDEF", SiteVisibility.PRIVATE, 201).getId();
+            String s2 = createSite("siABCD", "ABCD DEF", "sdABCD", SiteVisibility.PRIVATE, 201).getId();
+            String s3 = createSite("siABCDE", "ABCDE DEF", "sdABCDE", SiteVisibility.PRIVATE, 201).getId();
+            String s4 = createSite("siAB", "AB DEF", "sdAB", SiteVisibility.PRIVATE, 201).getId();
+            String s5 = createSite("siABC", "ABC DEF", "sdABC", SiteVisibility.PRIVATE, 201).getId();
+            
+            siteIds.addAll(Arrays.asList(new String[] {s1, s2, s3, s4, s5}));
+            
+            int sCount = siteIds.size();
+
+            // test sort order
+            
+            // TODO agree and test default sort order
+
+            // sort order - id asc
+            Map<String, String> params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "siAB");
+            params.put(Queries.PARAM_ORDERBY, "id asc");
+            params.put("sortType", "in-query");
+            HttpResponse response = getAll(URL_QUERIES_LSS, paging, params, 200);
+            List<Site> sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+            assertEquals(sCount, sites.size());
+            assertEquals(Arrays.asList(new String[] {s4, s5, s2, s3, s1}), getSiteIds(sites));
+
+            // sort order - id desc
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "siAB");
+            params.put(Queries.PARAM_ORDERBY, "id desc");
+            params.put("sortType", "in-query");
+            response = getAll(URL_QUERIES_LSS, paging, params, 200);
+            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+            assertEquals(sCount, sites.size());
+            assertEquals(Arrays.asList(new String[] {s1, s3, s2, s5, s4}), getSiteIds(sites));
+
+            // sort order - title asc
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "siAB");
+            params.put(Queries.PARAM_ORDERBY, "title asc");
+            params.put("sortType", "in-query");
+            response = getAll(URL_QUERIES_LSS, paging, params, 200);
+            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+            assertEquals(sCount, sites.size());
+            assertEquals(Arrays.asList(new String[] {s2, s3, s5, s1, s4}), getSiteIds(sites));
+
+            // sort order - title desc
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "siAB");
+            params.put(Queries.PARAM_ORDERBY, "title desc");
+            params.put("sortType", "in-query");
+            response = getAll(URL_QUERIES_LSS, paging, params, 200);
+            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+            assertEquals(sCount, sites.size());
+            assertEquals(Arrays.asList(new String[] {s4, s1, s5, s3, s2}), getSiteIds(sites));
+
+            // sort order - title asc (post query - using Alfresco Collator which does not ignore spaces, unlike default RuleBasedCollator)
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "siAB");
+            params.put(Queries.PARAM_ORDERBY, "title asc");
+            params.put("sortType", "post-query");
+            response = getAll(URL_QUERIES_LSS, paging, params, 200);
+            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+            assertEquals(sCount, sites.size());
+            assertEquals(Arrays.asList(new String[] {s4, s5, s2, s3, s1}), getSiteIds(sites));
+
+            // sort order - title desc (post query - using Alfresco Collator which does not ignore spaces, unlike default RuleBasedCollator)
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "siAB");
+            params.put(Queries.PARAM_ORDERBY, "title desc");
+            params.put("sortType", "post-query");
+            response = getAll(URL_QUERIES_LSS, paging, params, 200);
+            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+            assertEquals(sCount, sites.size());
+            assertEquals(Arrays.asList(new String[] {s1, s3, s2, s5, s4}), getSiteIds(sites));
+            
+            // sort order - description asc
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "siAB");
+            params.put(Queries.PARAM_ORDERBY, "description asc");
+            params.put("sortType", "in-query");
+            response = getAll(URL_QUERIES_LSS, paging, params, 200);
+            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+            assertEquals(sCount, sites.size());
+            assertEquals(Arrays.asList(new String[] {s4, s5, s2, s3, s1}), getSiteIds(sites));
+
+            // sort order - description desc
+            params = new HashMap<>(1);
+            params.put(Queries.PARAM_TERM, "siAB");
+            params.put(Queries.PARAM_ORDERBY, "description desc");
+            params.put("sortType", "in-query");
+            response = getAll(URL_QUERIES_LSS, paging, params, 200);
+            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+            assertEquals(sCount, sites.size());
+            assertEquals(Arrays.asList(new String[] {s1, s3, s2, s5, s4}), getSiteIds(sites));
+        }
+        finally
+        {
+            // some cleanup
+            setRequestContext(user1);
+            for (String siteId : siteIds)
+            {
+                deleteSite(siteId, true, 204);
+            }
+        }
+    }
+    
+    private List<String> getSiteIds(List<Site> sites)
+    {
+        List<String> siteIds = new ArrayList<>(sites.size());
+        for (Site site : sites)
+        {
+            siteIds.add(site.getId());
+        }
+        return siteIds;
     }
 
     @Override

@@ -43,6 +43,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.query.PagingRequest;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.Queries;
@@ -72,8 +73,10 @@ import org.alfresco.service.cmr.site.SiteInfo;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.AlfrescoCollator;
 import org.alfresco.util.ISO9075;
 import org.alfresco.util.ParameterCheck;
+import org.alfresco.util.SearchLanguageConversion;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.extensions.surf.util.I18NUtil;
 
@@ -94,6 +97,11 @@ public class QueriesImpl implements Queries, InitializingBean
         ContentModel.PROP_USERNAME,
         ContentModel.PROP_FIRSTNAME,
         ContentModel.PROP_LASTNAME);
+
+    private final static Map<String, QName> SITE_SORT_PARAMS_TO_QNAMES = sortParamsToQNames(
+            PARAM_SITE_ID,  ContentModel.PROP_NAME,
+            PARAM_SITE_TITLE,  ContentModel.PROP_TITLE,
+            PARAM_SITE_DESCRIPTION, ContentModel.PROP_DESCRIPTION);
 
     /**
      * Helper method to build a map of sort parameter names to QNames. This method iterates through
@@ -307,15 +315,46 @@ public class QueriesImpl implements Queries, InitializingBean
     @Override
     public CollectionWithPagingInfo<Site> findSites(Parameters parameters)
     {
-        // TODO Alternatively do we want to implement our own find rather than rely on SiteService ?!
+        // TODO review
+        AbstractQuery.Sort sortType = IN_QUERY_SORT;
+        String sortTypeStr = parameters.getParameter(PARAM_SORT_TYPE);
+        if (sortTypeStr != null) {
+            if (sortTypeStr.equalsIgnoreCase("in-query"))
+            {
+                sortType = IN_QUERY_SORT;
+            }
+            else if (sortTypeStr.equalsIgnoreCase("post-query"))
+            {
+                sortType = POST_QUERY_SORT;
+            }
+            else
+            {
+               throw new IllegalArgumentException("Unexpected sortType: "+sortTypeStr+" (expected in-query or post-query)");
+            }
+        }
+        
         return new AbstractQuery<Site>(nodeService, searchService)
         {
             @Override
             protected void buildQuery(StringBuilder query, String term, SearchParameters sp, String queryTemplateName)
             {
-                // not used
+                sp.addQueryTemplate(queryTemplateName, "%(cm:name cm:title cm:description)");
+                sp.setExcludeTenantFilter(false);
+                sp.setPermissionEvaluation(PermissionEvaluationMode.EAGER);
+
+                query.append("TYPE:\"").append(SiteModel.TYPE_SITE).append("\" AND (\"*");
+                query.append(term);
+                query.append("*\")");
             }
-            
+
+            @Override
+            protected String getTerm(Parameters parameters, String termName, int minTermLength)
+            {
+                String filter = super.getTerm(parameters, termName, minTermLength);
+                String escNameFilter = SearchLanguageConversion.escapeLuceneQuery(filter.replace('"', ' '));
+                return escNameFilter;
+            }
+
             @Override
             protected List<Site> newList(int capacity)
             {
@@ -325,34 +364,10 @@ public class QueriesImpl implements Queries, InitializingBean
             @Override
             protected Site convert(NodeRef nodeRef, List<String> includeParam)
             {
-                // not used
-                return null;
+                return getSite(siteService.getSite(nodeRef), true);
             }
 
-            @Override
-            public CollectionWithPagingInfo<Site> find(Parameters parameters, String termName, int minTermLength, 
-                                                       String queryTemplateName, 
-                                                       Sort sort, Map<String, QName> sortParamsToQNames, SortColumn... defaultSort)
-            {
-                Paging paging = parameters.getPaging();
-                String term = getTerm(parameters, termName, minTermLength);
-                
-                // TODO optimise paging
-                // TODO implement sorting (see open-question)
-                List<SiteInfo> siteInfos = siteService.findSites(term, Integer.MAX_VALUE);
-                List<Site> collection = newList(siteInfos.size());
-                
-                for (SiteInfo siteInfo : siteInfos)
-                {
-                    // convert
-                    Site s = getSite(siteInfo, true);
-                    collection.add(s);
-                }
-                
-                return listPage(collection, paging);
-            }
-
-        }.find(parameters, PARAM_TERM, MIN_TERM_LENGTH_SITES, null, null, null, null);
+        }.find(parameters, PARAM_TERM, MIN_TERM_LENGTH_SITES, "_SITE", sortType, SITE_SORT_PARAMS_TO_QNAMES, new SortColumn(PARAM_SITE_TITLE, true));
     }
     
     // note: see also Sites.getSite
@@ -398,18 +413,19 @@ public class QueriesImpl implements Queries, InitializingBean
             StringBuilder query = new StringBuilder();
             buildQuery(query, term, sp, queryTemplateName);
             sp.setQuery(query.toString());
-            
-            List<SortColumn> defaultSortCols = Arrays.asList(defaultSort);
-            if (sort == IN_QUERY_SORT)
-            {
-                addSortOrder(parameters, sortParamsToQNames, defaultSortCols, sp);
-            }
 
             Paging paging = parameters.getPaging();
             PagingRequest pagingRequest = Util.getPagingRequest(paging);
-            sp.setSkipCount(pagingRequest.getSkipCount());
-            sp.setMaxItems(pagingRequest.getMaxItems());
+            
+            List<SortColumn> defaultSortCols = (defaultSort != null ? Arrays.asList(defaultSort) : Collections.emptyList());
+            if (sort == IN_QUERY_SORT)
+            {
+                addSortOrder(parameters, sortParamsToQNames, defaultSortCols, sp);
 
+                sp.setSkipCount(pagingRequest.getSkipCount());
+                sp.setMaxItems(pagingRequest.getMaxItems());
+            }
+            
             ResultSet queryResults = null;
             List<T> collection = null;
             try
@@ -439,8 +455,15 @@ public class QueriesImpl implements Queries, InitializingBean
                     queryResults.close();
                 }
             }
-            
-            return CollectionWithPagingInfo.asPaged(paging, collection, queryResults.hasMore(), new Long(queryResults.getNumberFound()).intValue());
+
+            if (sort == POST_QUERY_SORT)
+            {
+                return listPage(collection, paging);
+            }
+            else
+            {
+                return CollectionWithPagingInfo.asPaged(paging, collection, queryResults.hasMore(), new Long(queryResults.getNumberFound()).intValue());
+            }
         }
 
         /**
@@ -549,7 +572,7 @@ public class QueriesImpl implements Queries, InitializingBean
                     sortPropQNames.add(sortPropQName);
                 }
                 
-                final Collator col = Collator.getInstance(I18NUtil.getLocale());
+                final Collator col = AlfrescoCollator.getInstance(I18NUtil.getLocale());
                 Collections.sort(nodeRefs, new Comparator<NodeRef>()
                 {
                     @Override
@@ -566,7 +589,7 @@ public class QueriesImpl implements Queries, InitializingBean
 
                             result = ((p1 instanceof Long) && (p2 instanceof Long)
                                 ? Long.compare((Long)p1, (Long)p2)
-                                : col.compare(p1.toString(), p2))
+                                : col.compare(p1.toString(), p2.toString()))
                                 * (sortCol.asc ? 1 : -1);
                             
                             if (result != 0)
@@ -590,7 +613,7 @@ public class QueriesImpl implements Queries, InitializingBean
     }
 
     // note: see also AbstractNodeRelation
-    protected CollectionWithPagingInfo listPage(List result, Paging paging)
+    protected static CollectionWithPagingInfo listPage(List result, Paging paging)
     {
         // return 'page' of results (based on full result set)
         int skipCount = paging.getSkipCount();

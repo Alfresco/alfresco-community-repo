@@ -106,7 +106,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     
     // TODO improve admin-related tests, including ability to override default admin un/pw
     protected static final String DEFAULT_ADMIN = "admin";
-    private static final String DEFAULT_ADMIN_PWD = "admin";
+    protected static final String DEFAULT_ADMIN_PWD = "admin";
 
     // network1 with user1, user2 and a testsite1
     protected static TestNetwork networkOne;
@@ -141,8 +141,8 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
             networkOne = getTestFixture().getRandomNetwork();
         }
         
-        //userOneN1 = networkOne.createUser();
-        //userTwoN1 = networkOne.createUser();
+        //userOneN1 = networkN1.createUser();
+        //userTwoN1 = networkN1.createUser();
 
         String tenantDomain = networkOne.getId();
         
@@ -154,7 +154,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         // to enable admin access via test calls - eg. via PublicApiClient -> AbstractTestApi -> findUserByUserName
         getOrCreateUser(networkAdmin, "admin", networkOne);
         
-        setRequestContext(networkAdmin);
+        setRequestContext(networkOne.getId(), networkAdmin, DEFAULT_ADMIN_PWD);
         
         // note: createUser currently relies on repoService
         user1 = createUser("user1-" + RUNID, "user1Password", networkOne);
@@ -171,7 +171,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         tSiteId = createSite("TestSite A - " + RUNID, SiteVisibility.PRIVATE).getId();
         tDocLibNodeId = getSiteContainerNodeId(tSiteId, "documentLibrary");
 
-        setRequestContext(null);    
+        setRequestContext(null, null, null);
     }
 
     @After
@@ -183,25 +183,24 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
             deleteSite(tSiteId, true, 204);
         }
 
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        for (final String user : users)
+        setRequestContext(networkAdmin);
+        
+        for (final String username : users)
         {
             transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
             {
                 @Override
                 public Void execute() throws Throwable
                 {
-                    if (personService.personExists(user))
-                    {
-                        authenticationService.deleteAuthentication(user);
-                        personService.deletePerson(user);
-                    }
+                    deleteUser(username, networkOne);
                     return null;
                 }
             });
         }
+        
         users.clear();
-        AuthenticationUtil.clearCurrentSecurityContext();
+
+        setRequestContext(null);
     }
 
     /**
@@ -505,6 +504,30 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
             }
         }, networkAdmin);
     }
+
+    /**
+     * TODO implement as remote api call
+     */
+    protected String deleteUser(final String username, final TestNetwork network)
+    {
+        final String tenantDomain = (network != null ? network.getId() : TenantService.DEFAULT_DOMAIN);
+
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>()
+        {
+            @Override
+            public String doWork() throws Exception
+            {
+                return TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<String>()
+                {
+                    public String doWork() throws Exception
+                    {
+                        repoService.deleteUser(username, network);
+                        return null;
+                    }
+                }, tenantDomain);
+            }
+        }, networkAdmin);
+    }
     
     protected SiteMember addSiteMember(String siteId, String userId, final SiteRole siteRole) throws Exception
     {
@@ -571,6 +594,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         }
     }
 
+    /**
+     * @deprecated
+     * 
+     * @param runAsUser
+     */
     protected void setRequestContext(String runAsUser)
     {
         String password = null;
@@ -579,13 +607,16 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
             // TODO improve "admin" related tests
             password = DEFAULT_ADMIN_PWD;
         }
-        
-        // Assume "networkOne" if set !
+
+        // Assume "networkN1" if set !
         String runAsNetwork = (networkOne != null ? networkOne.getId() : null);
-        
+
         setRequestContext(runAsNetwork, runAsUser, password);
     }
 
+    /**
+     * TODO implement as remote (login) api call
+     */
     protected void setRequestContext(String runAsNetwork, String runAsUser, String password)
     {
         if ((runAsNetwork == null) || TenantService.DEFAULT_DOMAIN.equals(runAsNetwork))

@@ -60,19 +60,18 @@ public class ModulePackagesApiTest extends AbstractBaseApiTest
     @Before
     public void setup() throws Exception
     {
-        nonAdminUserName = createUser("nonAdminUser" + System.currentTimeMillis());
+        networkOne = null; // used by setRequestContext
         
-        // used-by teardown to cleanup
-        authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
-        personService = applicationContext.getBean("personService", PersonService.class);
-        users.add(nonAdminUserName);
+        nonAdminUserName = createUser("nonAdminUser" + System.currentTimeMillis(), "password", null);
+
+        // used-by teardown (deleteUser) to cleanup
+        //users.add(nonAdminUserName);
     }
     
     @After
     public void tearDown() throws Exception
     {
-        // TODO rationalise createUser & deleteUser
-        super.tearDown();
+        deleteUser(nonAdminUserName, networkOne);
     }
 
     @Test

@@ -1128,7 +1128,27 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
                 // -ve test - unknown node
                 getAll(getNodeVersionsUrl("dummy"), paging, null, 404);
+
+                //
+                // -ve tests for non-versionable node with no version history (could be content, folder or some other node type)
+                //
+                
+                // folder node - no version history
+                String f99Id = createFolder(f1Id, "f99").getId();
+                getSingle(getNodeVersionsUrl(f99Id), "1.0", null, 404);
+                getSingle(getNodeVersionsUrl(f99Id), "1.0/content", null, 404);
+                
+                //content node - no version history
+                n = new Node();
+                n.setName("z1");
+                n.setNodeType(TYPE_CM_CONTENT);
+                response = post(getNodeChildrenUrl(f1Id), toJsonAsStringNonNull(n), 201);
+                String z1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
+
+                getSingle(getNodeVersionsUrl(z1Id), "1.0", null, 404);
+                getSingle(getNodeVersionsUrl(z1Id), "1.0/content", null, 404);
             }
+
         }
         finally
         {

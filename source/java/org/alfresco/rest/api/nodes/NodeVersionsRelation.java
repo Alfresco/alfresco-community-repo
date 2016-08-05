@@ -282,6 +282,11 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     private Version findVersion(String nodeId, String versionLabelId)
     {
         NodeRef nodeRef = nodes.validateOrLookupNode(nodeId, null);
-        return versionService.getVersionHistory(nodeRef).getVersion(versionLabelId);
+        VersionHistory vh = versionService.getVersionHistory(nodeRef);
+        if (vh != null) 
+        {
+            return vh.getVersion(versionLabelId);
+        }
+        return null;
     }
 }

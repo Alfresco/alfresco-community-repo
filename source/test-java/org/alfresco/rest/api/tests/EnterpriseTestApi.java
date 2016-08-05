@@ -25,8 +25,17 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.junit.Before;
+
 public class EnterpriseTestApi extends AbstractTestApi
 {
+	@Before
+	public void setup() throws Exception
+	{
+		// force creation of some test data (if not specifically overridden)
+		getTestFixture().getRandomNetwork();
+	}
+	
 	@Override
 	protected TestFixture getTestFixture() throws Exception
 	{

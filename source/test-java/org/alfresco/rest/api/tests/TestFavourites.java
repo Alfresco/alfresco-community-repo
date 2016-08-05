@@ -126,6 +126,171 @@ public class TestFavourites extends EnterpriseTestApi
 	private Favourites favouritesProxy;
 	private SiteMembershipRequests siteMembershipRequestsProxy;
 
+	@Override
+	@Before
+	public void setup() throws Exception
+	{
+		// init networks
+		super.setup();
+
+		final Iterator<TestNetwork> networksIt = getTestFixture().networksIterator();
+
+		// Workaround for domain name mismatch in lucene indexing that occurs when this test runs.
+		repoService.disableInTxnIndexing();
+
+		transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+		{
+			@SuppressWarnings("synthetic-access")
+			public Void execute() throws Throwable
+			{
+				try
+				{
+					AuthenticationUtil.pushAuthentication();
+					AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+					// create some users
+					TestFavourites.this.network1 = networksIt.next();
+
+					String name = GUID.generate();
+					PersonInfo personInfo = new PersonInfo(name, name, name, "password", null, null, null, null, null, null, null);
+					TestFavourites.this.person10 = network1.createUser(personInfo);
+					assertNotNull(TestFavourites.this.person10);
+					TestFavourites.this.person10Id = TestFavourites.this.person10.getId();
+					name = GUID.generate();
+					personInfo = new PersonInfo(name, name, name, "password", null, null, null, null, null, null, null);
+					TestFavourites.this.person11 = network1.createUser(personInfo);
+					assertNotNull(TestFavourites.this.person11);
+					TestFavourites.this.person11Id = TestFavourites.this.person11.getId();
+					name = GUID.generate();
+					personInfo = new PersonInfo(name, name, name, "password", null, null, null, null, null, null, null);
+					TestFavourites.this.person12 = network1.createUser(personInfo);
+					assertNotNull(TestFavourites.this.person12);
+					TestFavourites.this.person12Id = TestFavourites.this.person12.getId();
+					name = GUID.generate();
+					personInfo = new PersonInfo(name, name, name, "password", null, null, null, null, null, null, null);
+					TestFavourites.this.person14 = network1.createUser(personInfo);
+					assertNotNull(TestFavourites.this.person14);
+					TestFavourites.this.person14Id = TestFavourites.this.person14.getId();
+
+					TestFavourites.this.network2 = networksIt.next();
+					name = GUID.generate();
+					personInfo = new PersonInfo(name, name, name, "password", null, null, null, null, null, null, null);
+					TestFavourites.this.person21 = network2.createUser(personInfo);
+					assertNotNull(TestFavourites.this.person21);
+					TestFavourites.this.person21Id = TestFavourites.this.person21.getId();
+
+					return null;
+				}
+				finally
+				{
+					AuthenticationUtil.popAuthentication();
+				}
+			}
+		}, false, true);
+
+		// Create some favourite targets, sites, files and folders
+		TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+		{
+			@Override
+			public Void doWork() throws Exception
+			{
+				String siteName = "site" + GUID.generate();
+				SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
+				TestSite site = network1.createSite(siteInfo);
+				person1PublicSites.add(site);
+
+				NodeRef nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc1", "Test Doc1 Title", "Test Doc1 Description", "Test Content");
+				person1PublicDocs.add(nodeRef);
+				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder1", "Test Folder1 Title", "Test Folder1 Description");
+				person1PublicFolders.add(nodeRef);
+				nodeRef = repoService.createDocument(nodeRef, "Test Doc2",  "Test Doc2 Title", "Test Doc2 Description", "Test Content");
+				person1PublicDocs.add(nodeRef);
+				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder2", "Test Folder2 Title", "Test Folder2 Description");
+				person1PublicFolders.add(nodeRef);
+				nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc3",  "Test Doc3 Title", "Test Doc3 Description", "Test Content");
+				person1PublicDocs.add(nodeRef);
+				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder3", "Test Folder3 Title", "Test Folder3 Description");
+				person1PublicFolders.add(nodeRef);
+
+				siteName = "site" + GUID.generate();
+				siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
+				site = network1.createSite(siteInfo);
+				person1PublicSites.add(site);
+
+				siteName = "site" + GUID.generate();
+				siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
+				site = network1.createSite(siteInfo);
+				person1PrivateSites.add(site);
+
+				nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc1", "Test Doc1 Title", "Test Doc1 Description", "Test Content");
+				person1PrivateDocs.add(nodeRef);
+				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder1", "Test Folder1 Title", "Test Folder1 Description");
+				person1PrivateFolders.add(nodeRef);
+				nodeRef = repoService.createDocument(nodeRef, "Test Doc2",  "Test Doc2 Title", "Test Doc2 Description", "Test Content");
+				person1PrivateDocs.add(nodeRef);
+				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder2", "Test Folder2 Title", "Test Folder2 Description");
+				person1PrivateFolders.add(nodeRef);
+				nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc3",  "Test Doc3 Title", "Test Doc3 Description", "Test Content");
+				person1PrivateDocs.add(nodeRef);
+				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder3", "Test Folder3 Title", "Test Folder3 Description");
+				person1PrivateFolders.add(nodeRef);
+
+				return null;
+			}
+		}, person11Id, network1.getId());
+
+		TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+		{
+			@Override
+			public Void doWork() throws Exception
+			{
+				String siteName = "site" + System.currentTimeMillis();
+				SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
+				TestSite site = network1.createSite(siteInfo);
+				person1PublicSites.add(site);
+
+				NodeRef nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc1", "Test Content");
+				personDocs.add(nodeRef);
+				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder1");
+				personFolders.add(nodeRef);
+				nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc2", "Test Content");
+				personDocs.add(nodeRef);
+				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder2");
+				personFolders.add(nodeRef);
+				nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc3", "Test Content");
+				personDocs.add(nodeRef);
+				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder3");
+				personFolders.add(nodeRef);
+
+				return null;
+			}
+		}, person10Id, network1.getId());
+
+		TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+		{
+			@Override
+			public Void doWork() throws Exception
+			{
+				String siteName = "site" + GUID.generate();
+				SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
+				TestSite site = network1.createSite(siteInfo);
+				personSites.add(site);
+
+				site.inviteToSite(person11Id, SiteRole.SiteCollaborator);
+
+				siteName = "site" + GUID.generate();
+				siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
+				site = network1.createSite(siteInfo);
+				personSites.add(site);
+
+				return null;
+			}
+		}, person10Id, network1.getId());
+
+		this.favouritesProxy = publicApiClient.favourites();
+		this.siteMembershipRequestsProxy = publicApiClient.siteMembershipRequests();
+	}
+
 	private void sort(List<Favourite> favourites, final List<Pair<FavouritesService.SortFields, Boolean>> sortProps)
 	{
     	Comparator<Favourite> comparator = new Comparator<Favourite>()
@@ -236,167 +401,6 @@ public class TestFavourites extends EnterpriseTestApi
 		return ret;
 	}
 	
-	@Before
-	public void setup() throws Exception
-	{
-		final Iterator<TestNetwork> networksIt = getTestFixture().networksIterator();
-
-		// Workaround for domain name mismatch in lucene indexing that occurs when this test runs.
-		repoService.disableInTxnIndexing();
-
-		transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
-        {
-        	@SuppressWarnings("synthetic-access")
-        	public Void execute() throws Throwable
-        	{
-        		try
-        		{
-        			AuthenticationUtil.pushAuthentication();
-        			AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-
-        	    	// create some users
-        			TestFavourites.this.network1 = networksIt.next();
-	    	        
-        			String name = GUID.generate();
-        			PersonInfo personInfo = new PersonInfo(name, name, name, "password", null, null, null, null, null, null, null);
-	    			TestFavourites.this.person10 = network1.createUser(personInfo);
-	    			assertNotNull(TestFavourites.this.person10);
-	    			TestFavourites.this.person10Id = TestFavourites.this.person10.getId();
-	    			name = GUID.generate();
-	    			personInfo = new PersonInfo(name, name, name, "password", null, null, null, null, null, null, null);
-	    			TestFavourites.this.person11 = network1.createUser(personInfo);
-	    			assertNotNull(TestFavourites.this.person11);
-	    			TestFavourites.this.person11Id = TestFavourites.this.person11.getId();
-	    			name = GUID.generate();
-	    			personInfo = new PersonInfo(name, name, name, "password", null, null, null, null, null, null, null);
-	    			TestFavourites.this.person12 = network1.createUser(personInfo);
-	    			assertNotNull(TestFavourites.this.person12);
-	    			TestFavourites.this.person12Id = TestFavourites.this.person12.getId();
-	    			name = GUID.generate();
-	    			personInfo = new PersonInfo(name, name, name, "password", null, null, null, null, null, null, null);
-	    			TestFavourites.this.person14 = network1.createUser(personInfo);
-	    			assertNotNull(TestFavourites.this.person14);
-	    			TestFavourites.this.person14Id = TestFavourites.this.person14.getId();
-
-	    			TestFavourites.this.network2 = networksIt.next();
-	    			name = GUID.generate();
-	    			personInfo = new PersonInfo(name, name, name, "password", null, null, null, null, null, null, null);
-	    			TestFavourites.this.person21 = network2.createUser(personInfo);
-	    			assertNotNull(TestFavourites.this.person21);
-	    			TestFavourites.this.person21Id = TestFavourites.this.person21.getId();
-	    			
-	    	        return null;
-        		}
-        		finally
-        		{
-        			AuthenticationUtil.popAuthentication();
-        		}
-        	}
-        }, false, true);
-		
-    	// Create some favourite targets, sites, files and folders
-    	TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-		{
-			@Override
-			public Void doWork() throws Exception
-			{
-				String siteName = "site" + GUID.generate();
-				SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
-				TestSite site = network1.createSite(siteInfo);
-				person1PublicSites.add(site);
-
-				NodeRef nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc1", "Test Doc1 Title", "Test Doc1 Description", "Test Content");
-				person1PublicDocs.add(nodeRef);
-				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder1", "Test Folder1 Title", "Test Folder1 Description");
-				person1PublicFolders.add(nodeRef);
-				nodeRef = repoService.createDocument(nodeRef, "Test Doc2",  "Test Doc2 Title", "Test Doc2 Description", "Test Content");
-				person1PublicDocs.add(nodeRef);
-				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder2", "Test Folder2 Title", "Test Folder2 Description");
-				person1PublicFolders.add(nodeRef);
-				nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc3",  "Test Doc3 Title", "Test Doc3 Description", "Test Content");
-				person1PublicDocs.add(nodeRef);
-				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder3", "Test Folder3 Title", "Test Folder3 Description");
-				person1PublicFolders.add(nodeRef);
-
-				siteName = "site" + GUID.generate();
-				siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
-				site = network1.createSite(siteInfo);
-				person1PublicSites.add(site);
-				
-				siteName = "site" + GUID.generate();
-				siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PRIVATE);
-				site = network1.createSite(siteInfo);
-				person1PrivateSites.add(site);
-				
-				nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc1", "Test Doc1 Title", "Test Doc1 Description", "Test Content");
-				person1PrivateDocs.add(nodeRef);
-				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder1", "Test Folder1 Title", "Test Folder1 Description");
-				person1PrivateFolders.add(nodeRef);
-				nodeRef = repoService.createDocument(nodeRef, "Test Doc2",  "Test Doc2 Title", "Test Doc2 Description", "Test Content");
-				person1PrivateDocs.add(nodeRef);
-				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder2", "Test Folder2 Title", "Test Folder2 Description");
-				person1PrivateFolders.add(nodeRef);
-				nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc3",  "Test Doc3 Title", "Test Doc3 Description", "Test Content");
-				person1PrivateDocs.add(nodeRef);
-				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder3", "Test Folder3 Title", "Test Folder3 Description");
-				person1PrivateFolders.add(nodeRef);
-
-				return null;
-			}
-		}, person11Id, network1.getId());
-		
-		TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-		{
-			@Override
-			public Void doWork() throws Exception
-			{
-				String siteName = "site" + System.currentTimeMillis();
-				SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
-				TestSite site = network1.createSite(siteInfo);
-				person1PublicSites.add(site);
-
-				NodeRef nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc1", "Test Content");
-				personDocs.add(nodeRef);
-				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder1");
-				personFolders.add(nodeRef);
-				nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc2", "Test Content");
-				personDocs.add(nodeRef);
-				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder2");
-				personFolders.add(nodeRef);
-				nodeRef = repoService.createDocument(site.getContainerNodeRef("documentLibrary"), "Test Doc3", "Test Content");
-				personDocs.add(nodeRef);
-				nodeRef = repoService.createFolder(site.getContainerNodeRef("documentLibrary"), "Test Folder3");
-				personFolders.add(nodeRef);
-
-				return null;
-			}
-		}, person10Id, network1.getId());
-
-    	TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
-		{
-			@Override
-			public Void doWork() throws Exception
-			{
-				String siteName = "site" + GUID.generate();
-				SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
-				TestSite site = network1.createSite(siteInfo);
-				personSites.add(site);
-
-		    	site.inviteToSite(person11Id, SiteRole.SiteCollaborator);
-
-				siteName = "site" + GUID.generate();
-				siteInfo = new SiteInformation(siteName, siteName, siteName, SiteVisibility.PUBLIC);
-				site = network1.createSite(siteInfo);
-				personSites.add(site);
-
-				return null;
-			}
-		}, person10Id, network1.getId());
-
-		this.favouritesProxy = publicApiClient.favourites();
-		this.siteMembershipRequestsProxy = publicApiClient.siteMembershipRequests();
-	}
-
 	private void updateFavourite(String networkId, String runAsUserId, String personId, TARGET_TYPE type) throws Exception
 	{
 		{

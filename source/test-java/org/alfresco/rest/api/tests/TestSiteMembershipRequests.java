@@ -88,10 +88,14 @@ public class TestSiteMembershipRequests extends EnterpriseTestApi
 	private SiteMembershipRequests siteMembershipRequestsProxy;
 	
 	private Random random = new Random(System.currentTimeMillis());
-	
+
+	@Override
 	@Before
 	public void setup() throws Exception
 	{
+		// init networks
+		super.setup();
+		
 		Iterator<TestNetwork> networksIt = getTestFixture().networksIterator();
 		this.network1 = networksIt.next();
 		Iterator<String> personIt = network1.getPersonIds().iterator();

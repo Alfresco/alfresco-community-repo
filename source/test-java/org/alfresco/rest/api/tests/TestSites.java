@@ -68,10 +68,15 @@ public class TestSites extends EnterpriseTestApi
     private Site site1;
     private Site site2;
     private Site site3;
-	
+
+    @Override
 	@Before
-	public void setup() throws Exception
+	public void 
+    setup() throws Exception
 	{
+        // init networks
+        super.setup();
+        
 		// Test: user is member of an account
 		this.network1 = getTestFixture().getRandomNetwork();
 

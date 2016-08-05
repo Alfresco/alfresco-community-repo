@@ -68,9 +68,13 @@ public class TestSiteContainers extends EnterpriseTestApi
 	
 	private TestSite site1;
 	
+	@Override
 	@Before
 	public void setup() throws Exception
 	{
+		// init networks
+		super.setup();
+		
 		Iterator<TestNetwork> networksIt = getTestFixture().getNetworksIt();
 
 		assertTrue(networksIt.hasNext());

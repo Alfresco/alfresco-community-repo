@@ -81,6 +81,8 @@ public class TestActivities extends EnterpriseTestApi
 	@Before
 	public void setup() throws Exception
 	{
+		// note: we don't call super.setup() since we create our own test data here !
+		
 		this.network1 = repoService.createNetworkWithAlias("activitiesNetwork1", true);
 		this.network2 = repoService.createNetworkWithAlias("activitiesNetwork2", true);
 		this.defaultNetwork = repoService.createNetwork(TenantService.DEFAULT_DOMAIN, true);

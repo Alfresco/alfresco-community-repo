@@ -367,22 +367,21 @@ public class QueriesImpl implements Queries, InitializingBean
                 return getSite(siteService.getSite(nodeRef), true);
             }
 
+            // note: see also Sites.getSite
+            private Site getSite(SiteInfo siteInfo, boolean includeRole)
+            {
+                // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
+                String siteId = siteInfo.getShortName();
+                String role = null;
+                if(includeRole)
+                {
+                    role = sites.getSiteRole(siteId);
+                }
+                return new Site(siteInfo, role);
+            }
         }.find(parameters, PARAM_TERM, MIN_TERM_LENGTH_SITES, "_SITE", sortType, SITE_SORT_PARAMS_TO_QNAMES, new SortColumn(PARAM_SITE_TITLE, true));
     }
     
-    // note: see also Sites.getSite
-    private Site getSite(SiteInfo siteInfo, boolean includeRole)
-    {
-        // set the site id to the short name (to deal with case sensitivity issues with using the siteId from the url)
-        String siteId = siteInfo.getShortName();
-        String role = null;
-        if(includeRole)
-        {
-            role = sites.getSiteRole(siteId);
-        }
-        return new Site(siteInfo, role);
-    }
-
     public abstract static class AbstractQuery<T>
     {
         public enum Sort

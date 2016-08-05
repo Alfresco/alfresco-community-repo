@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.nodes;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionModel;
@@ -82,6 +83,7 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
         InitializingBean
 {
     protected VersionService versionService;
+    protected BehaviourFilter behaviourFilter;
     
     @Override
     public void afterPropertiesSet()
@@ -91,6 +93,12 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
 
         this.versionService = sr.getVersionService();
     }
+
+    public void setBehaviourFilter(BehaviourFilter behaviourFilter)
+    {
+        this.behaviourFilter = behaviourFilter;
+    }
+    
     /**
      * List version history
      *
@@ -233,24 +241,34 @@ public class NodeVersionsRelation extends AbstractNodeRelation implements
     {
         Version v = findVersion(nodeId, versionId);
 
-        NodeRef liveVersionedNodeRef = v.getVersionedNodeRef();
+        // live (aka versioned) nodeRef
+        NodeRef nodeRef = v.getVersionedNodeRef();
 
-        if (sr.getPermissionService().hasPermission(liveVersionedNodeRef, PermissionService.DELETE) != AccessStatus.ALLOWED)
+        if (sr.getPermissionService().hasPermission(nodeRef, PermissionService.DELETE) != AccessStatus.ALLOWED)
         {
             throw new PermissionDeniedException("Cannot delete version");
         }
 
-        versionService.deleteVersion(liveVersionedNodeRef, v);
+        versionService.deleteVersion(nodeRef, v);
 
-        Map<QName, Serializable> props = sr.getNodeService().getProperties(liveVersionedNodeRef);
+        Map<QName, Serializable> props = sr.getNodeService().getProperties(nodeRef);
         if (props.get(ContentModel.PROP_VERSION_LABEL) == null)
         {
             // last version was deleted
             if (props.get(ContentModel.PROP_VERSION_TYPE) != null)
             {
                 // minor fix up to versionable aspect - ie. remove versionType
-                // TODO should we disable behaviours, eg. audit, versionable
-                sr.getNodeService().removeProperty(liveVersionedNodeRef, ContentModel.PROP_VERSION_TYPE);
+                behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                behaviourFilter.disableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                try
+                {
+                    sr.getNodeService().removeProperty(nodeRef, ContentModel.PROP_VERSION_TYPE);
+                }
+                finally
+                {
+                    behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_AUDITABLE);
+                    behaviourFilter.enableBehaviour(nodeRef, ContentModel.ASPECT_VERSIONABLE);
+                }
             }
         }
     }

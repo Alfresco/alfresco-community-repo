@@ -57,7 +57,7 @@ public interface Queries
     static int MIN_TERM_LENGTH_NODES = 3;
     
     // People query
-    static String PARAM_USERNAME  = ContentModel.PROP_USERNAME.getLocalName();
+    static String PARAM_PERSON_ID  = "id";
     static String PARAM_FIRSTNAME = ContentModel.PROP_FIRSTNAME.getLocalName();
     static String PARAM_LASTNAME  = ContentModel.PROP_LASTNAME.getLocalName();
     static int MIN_TERM_LENGTH_PEOPLE = 2;

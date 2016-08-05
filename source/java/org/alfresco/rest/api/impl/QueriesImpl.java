@@ -94,7 +94,7 @@ public class QueriesImpl implements Queries, InitializingBean
         PARAM_MODIFIEDAT, ContentModel.PROP_MODIFIED);
 
     private final static Map<String, QName> PEOPLE_SORT_PARAMS_TO_QNAMES = sortParamsToQNames(
-        ContentModel.PROP_USERNAME,
+        PARAM_PERSON_ID, ContentModel.PROP_USERNAME,
         ContentModel.PROP_FIRSTNAME,
         ContentModel.PROP_LASTNAME);
 
@@ -447,6 +447,15 @@ public class QueriesImpl implements Queries, InitializingBean
                     T t = convert(nodeRef, includeParam);
                     collection.add(t);
                 }
+
+                if (sort == POST_QUERY_SORT)
+                {
+                    return listPage(collection, paging);
+                }
+                else
+                {
+                    return CollectionWithPagingInfo.asPaged(paging, collection, queryResults.hasMore(), new Long(queryResults.getNumberFound()).intValue());
+                }
             }
             finally
             {
@@ -454,15 +463,6 @@ public class QueriesImpl implements Queries, InitializingBean
                 {
                     queryResults.close();
                 }
-            }
-
-            if (sort == POST_QUERY_SORT)
-            {
-                return listPage(collection, paging);
-            }
-            else
-            {
-                return CollectionWithPagingInfo.asPaged(paging, collection, queryResults.hasMore(), new Long(queryResults.getNumberFound()).intValue());
             }
         }
 

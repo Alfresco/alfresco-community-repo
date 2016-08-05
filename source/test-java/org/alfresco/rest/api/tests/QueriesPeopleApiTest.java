@@ -27,7 +27,10 @@ package org.alfresco.rest.api.tests;
 
 import static org.alfresco.rest.api.Queries.PARAM_FIRSTNAME;
 import static org.alfresco.rest.api.Queries.PARAM_LASTNAME;
+import static org.alfresco.rest.api.Queries.PARAM_PERSON_ID;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -67,7 +70,7 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     //      deleting users is hard from from static methods. For the moment do it
     //      in the first and last tests, but we have to get the TEST count right!
     //      If we don't, a test fails or the users get left behind (not too bad).
-    private static int TEST_COUNT = 13;
+    private static int TEST_COUNT = 20;
     private static int testCounter = 0;
 
     // Test usernames
@@ -246,20 +249,23 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
 
         response = getAll(URL_QUERIES_LSP, paging, params, expectedStatus);
         
-        if (expectedPeople != null && expectedStatus == 200)
+        if (expectedStatus == 200)
         {
             people = Person.parsePeople(response.getJsonResponse()).getList();
             
-            StringJoiner actual = new StringJoiner("\n");
-            StringJoiner expected = new StringJoiner("\n");
-            for (int i=0; i<expectedPeople.length; i++)
+            if (expectedPeople != null)
             {
-                actual.add(people.get(i).toString());
-                expected.add(expectedPeople[i]);
+                StringJoiner actual = new StringJoiner("\n");
+                StringJoiner expected = new StringJoiner("\n");
+                for (int i=0; i<expectedPeople.length; i++)
+                {
+                    actual.add(people.get(i).toString());
+                    expected.add(expectedPeople[i]);
+                }
+                String exp = expected.toString().replaceAll(TEST_TERM_PREFIX, "");
+                String act = actual.toString().replaceAll(TEST_TERM_PREFIX, "");
+                assertEquals(exp, act);
             }
-            String exp = expected.toString().replaceAll(TEST_TERM_PREFIX, "");
-            String act = actual.toString().replaceAll(TEST_TERM_PREFIX, "");
-            assertEquals(exp, act);
         }
     }
     
@@ -405,6 +411,15 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
+    public void testOrderbyId() throws Exception
+    {
+        orderBy = PARAM_PERSON_ID;
+        expectedPeople = expectedPeople(USER1, USER2, USER3, USER4, USER5, USER6);
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
+
+    @Test
     public void testBadOrderByField() throws Exception
     {
         orderBy = "rubbish";
@@ -425,6 +440,74 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
             "Person ["+"firstName=FirstB, lastName=LastA, ]", // USER3
         };
         
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
+    
+    @Test
+    public void testFieldsId() throws Exception
+    {
+        fields = PARAM_PERSON_ID;
+        term = LAST_A;
+        expectedPeople = new String[]
+        {
+            "Person [id=user5@org.alfresco.rest.api.tests.queriespeopleapitest, ]", // USER5
+            "Person [id=user1@org.alfresco.rest.api.tests.queriespeopleapitest, ]", // USER1
+            "Person [id=user3@org.alfresco.rest.api.tests.queriespeopleapitest, ]", // USER3
+        };
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
+    
+    @Test
+    public void testSearchFirstnameWithWildcard() throws Exception
+    {
+      term = FIRST_A;
+      term = term.substring(0,term.length()-3) + "*A";
+
+         expectedPeople = expectedPeople(USER1, USER2);
+         
+         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
+    
+    @Test
+    public void testSearchLastNameWithWildcard() throws Exception
+    {
+        term = LAST_A;
+        term = term.substring(0,term.length()-3) + "*A";
+        expectedPeople = expectedPeople(USER5, USER1, USER3);
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
+    
+    @Test
+    public void testSearchUsernameWithWildcard() throws Exception
+    {
+        term = TEST_TERM_PREFIX+"us*1";
+        expectedPeople = expectedPeople(USER1);
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
+    
+    @Test
+    public void testOrderbyDescAndAscWithWildcard() throws Exception
+    {
+        //  3 B A
+        //  1 A A
+        //  5   A
+        term = TEST_TERM_PREFIX+"la*A";
+        expectedPeople = expectedPeople(USER3, USER1, USER5);
+        
+        orderBy = "firstName desc,lastName";
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
+    
+    @Test
+    public void testOnlyWildcard() throws Exception
+    {
+        term = "*";
+        expectedStatus = 400;
+       
         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
     }
     

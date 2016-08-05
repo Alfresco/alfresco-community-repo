@@ -64,6 +64,10 @@ import org.apache.commons.httpclient.HttpStatus;
 import org.junit.Before;
 import org.junit.Test;
 
+/**
+ * V1 REST API tests for Node Comments
+ *
+ */
 public class TestNodeComments extends EnterpriseTestApi
 {
 	private TestNetwork network1;

@@ -48,6 +48,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * V1 REST API tests for managing the user's Trashcan (ie. "deleted nodes")
+ * 
  * Tests Deleting nodes and recovering
  *
  * @author gethin
@@ -93,7 +95,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
         PublicApiClient.Paging paging = getPaging(0, 5);
         //First get any deleted nodes
-        HttpResponse response = getAll(URL_DELETED_NODES, user1, paging, 200);
+        HttpResponse response = getAll(URL_DELETED_NODES, paging, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertNotNull(nodes);
         int numOfNodes = nodes.size();
@@ -102,13 +104,13 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         deleteNode(createdFolder.getId());
         deleteNode(createdFolderNonSite.getId());
 
-        response = getAll(URL_DELETED_NODES, user1, paging, 200);
+        response = getAll(URL_DELETED_NODES, paging, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertNotNull(nodes);
         assertEquals(numOfNodes+3,nodes.size());
 
         Map<String, String> params = Collections.singletonMap("include", "path");
-        response = getSingle(URL_DELETED_NODES, user1, document.getId(), params, 200);
+        response = getSingle(URL_DELETED_NODES, document.getId(), params, 200);
         Document node = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
         assertNotNull(node);
         assertEquals(user1, node.getArchivedByUser().getId());
@@ -117,7 +119,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNull("Path should be null because its parent has been deleted",path);
         assertNull("We don't show the parent id for a deleted node",node.getParentId());
 
-        response = getSingle(URL_DELETED_NODES, user1, createdFolder.getId(), params, 200);
+        response = getSingle(URL_DELETED_NODES, createdFolder.getId(), params, 200);
         Folder fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
         assertNotNull(fNode);
         assertEquals(user1, fNode.getArchivedByUser().getId());
@@ -128,7 +130,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertTrue(path.getIsComplete());
         assertNull("We don't show the parent id for a deleted node",fNode.getParentId());
 
-        response = getSingle(URL_DELETED_NODES, user1, createdFolderNonSite.getId(), params, 200);
+        response = getSingle(URL_DELETED_NODES, createdFolderNonSite.getId(), params, 200);
         fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
         assertNotNull(fNode);
         assertEquals(user1, fNode.getArchivedByUser().getId());
@@ -142,10 +144,13 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         checkDeletedNodes(now, createdFolder, createdFolderNonSite, document, nodes);
 
         //User 2 can't get it but user 1 can.
-        getSingle(URL_DELETED_NODES, user2, createdFolderNonSite.getId(), Status.STATUS_FORBIDDEN);
+        setRequestContext(user2);
+        getSingle(URL_DELETED_NODES, createdFolderNonSite.getId(), Status.STATUS_FORBIDDEN);
 
+        setRequestContext(user1);
+        
         //Invalid node ref
-        getSingle(URL_DELETED_NODES, user1, "iddontexist", 404);
+        getSingle(URL_DELETED_NODES, "iddontexist", 404);
 
         //Now as admin
         setRequestContext("admin");
@@ -182,24 +187,26 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         Document documentSameName = createEmptyTextFile(createdFolder, "restoreme.txt");
 
         //Can't restore a node of the same name
-        post(URL_DELETED_NODES+"/"+document.getId()+"/restore", user1, null, null, Status.STATUS_CONFLICT);
+        post(URL_DELETED_NODES+"/"+document.getId()+"/restore", null, null, Status.STATUS_CONFLICT);
 
         deleteNode(documentSameName.getId());
 
         //Now we can restore it.
-        post(URL_DELETED_NODES+"/"+document.getId()+"/restore", user1, null, null, 200);
+        post(URL_DELETED_NODES+"/"+document.getId()+"/restore", null, null, 200);
 
         deleteNode(createdFolder.getId());
 
         //We deleted the parent folder so lets see if we can restore a child doc, hopefully not.
-        post(URL_DELETED_NODES+"/"+documentSameName.getId()+"/restore", user1, null, null, Status.STATUS_NOT_FOUND);
+        post(URL_DELETED_NODES+"/"+documentSameName.getId()+"/restore", null, null, Status.STATUS_NOT_FOUND);
 
         //Can't delete "nonsense" noderef
-        post("deleted-nodes/nonsense/restore", user1, null, null, Status.STATUS_NOT_FOUND);
+        post("deleted-nodes/nonsense/restore", null, null, Status.STATUS_NOT_FOUND);
 
         //User 2 can't restore it but user 1 can.
-        post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", user2, null, null, Status.STATUS_FORBIDDEN);
-        post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", user1, null, null, 200);
+        setRequestContext(user2);
+        post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", null, null, Status.STATUS_FORBIDDEN);
+        setRequestContext(user1);
+        post(URL_DELETED_NODES+"/"+createdFolder.getId()+"/restore", null, null, 200);
     }
 
     /**
@@ -219,21 +226,24 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
         deleteNode(createdFolder.getId());
 
-        HttpResponse response = getSingle(URL_DELETED_NODES, user1, createdFolder.getId(), 200);
+        HttpResponse response = getSingle(URL_DELETED_NODES, createdFolder.getId(), 200);
         Folder fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);
         assertNotNull(fNode);
 
         //try purging "nonsense"
-        delete(URL_DELETED_NODES, user1, "nonsense", 404);
+        delete(URL_DELETED_NODES, "nonsense", 404);
 
         //User 2 can't do it
-        delete(URL_DELETED_NODES, user2, createdFolder.getId(), Status.STATUS_FORBIDDEN);
+        setRequestContext(user2);
+        delete(URL_DELETED_NODES, createdFolder.getId(), Status.STATUS_FORBIDDEN);
+
+        setRequestContext(user1);
 
         //Now purge the folder
-        delete(URL_DELETED_NODES, user1, createdFolder.getId(), 204);
+        delete(URL_DELETED_NODES, createdFolder.getId(), 204);
 
         //This time we can't find it.
-        getSingle(URL_DELETED_NODES, user1, createdFolder.getId(), 404);
+        getSingle(URL_DELETED_NODES, createdFolder.getId(), 404);
     }
 
     /**

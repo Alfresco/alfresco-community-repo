@@ -54,6 +54,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 /**
+ * V1 REST API tests for managing Sites
+ * 
  * @author sglover
  * @author janv
  */

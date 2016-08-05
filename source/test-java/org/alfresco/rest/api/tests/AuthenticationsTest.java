@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Authentication tickets API tests.
+ * V1 REST API tests for authentication Tickets
  *
  * @author Jamal Kaabi-Mofrad
  */
@@ -71,9 +71,11 @@ public class AuthenticationsTest extends AbstractBaseApiTest
     public void testCreateValidateDeleteTicket() throws Exception
     {
         Paging paging = getPaging(0, 100);
+
+        setRequestContext(null);
         
         // Unauthorized call
-        getAll(SiteEntityResource.class, null, paging, null, 401);
+        getAll(SiteEntityResource.class, paging, null, 401);
 
         /*
          *  user1 login - via alf_ticket parameter
@@ -82,22 +84,22 @@ public class AuthenticationsTest extends AbstractBaseApiTest
         // User1 login request
         LoginTicket loginRequest = new LoginTicket();
         // Invalid login details
-        post(TICKETS_URL, null, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 400);
+        post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 400);
 
         loginRequest.setUserId(null);
         loginRequest.setPassword("user1Password");
         // Invalid login details
-        post(TICKETS_URL, null, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 400);
+        post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 400);
 
         loginRequest.setUserId(user1);
         loginRequest.setPassword(null);
         // Invalid login details
-        post(TICKETS_URL, null, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 400);
+        post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 400);
 
         loginRequest.setUserId(user1);
         loginRequest.setPassword("user1Password");
         // Authenticate and create a ticket
-        HttpResponse response = post(TICKETS_URL, null, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 201);
+        HttpResponse response = post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 201);
         LoginTicketResponse loginResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), LoginTicketResponse.class);
         assertNotNull(loginResponse.getId());
         assertNotNull(loginResponse.getUserId());
@@ -105,35 +107,40 @@ public class AuthenticationsTest extends AbstractBaseApiTest
         // Get list of sites by appending the alf_ticket to the URL
         // e.g. .../alfresco/versions/1/sites/?alf_ticket=TICKET_57866258ea56c28491bb3e75d8355ebf6fbaaa23
         Map<String, String> ticket = Collections.singletonMap("alf_ticket", loginResponse.getId());
-        getAll(SiteEntityResource.class, null, paging, ticket, 200);
+        getAll(SiteEntityResource.class, paging, ticket, 200);
 
         // Unauthorized - Invalid ticket
-        getAll(SiteEntityResource.class, null, paging, Collections.singletonMap("alf_ticket", "TICKET_" + System.currentTimeMillis()), 401);
+        getAll(SiteEntityResource.class, paging, Collections.singletonMap("alf_ticket", "TICKET_" + System.currentTimeMillis()), 401);
 
         // Validate ticket - Invalid parameter. Only '-me-' is supported
-        getSingle(TICKETS_URL, null, loginResponse.getId(), ticket, null, TICKETS_API_NAME, 400);
+        getSingle(TICKETS_URL, loginResponse.getId(), ticket, null, TICKETS_API_NAME, 400);
 
         // Validate ticket
-        response = getSingle(TICKETS_URL, null, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 200);
+        response = getSingle(TICKETS_URL, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 200);
         LoginTicketResponse validatedTicket = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), LoginTicketResponse.class);
         assertEquals(loginResponse.getId(), validatedTicket.getId());
 
         // Validate ticket - Invalid parameter. Only '-me-' is supported
-        getSingle(TICKETS_URL, null, loginResponse.getId(), ticket, null, TICKETS_API_NAME, 400);
+        getSingle(TICKETS_URL, loginResponse.getId(), ticket, null, TICKETS_API_NAME, 400);
 
         // Delete the ticket  - Logout
-        delete(TICKETS_URL, null, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 204);
+        delete(TICKETS_URL, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 204);
 
         // Validate ticket - 401 as ticket has been invalidated so the API call is unauthorized
-        getSingle(TICKETS_URL, null, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 401);
+        getSingle(TICKETS_URL, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 401);
+
+        setRequestContext(user1);
+        
         // Check the ticket has been invalidated - the difference with the above is that the API call is authorized
-        getSingle(TICKETS_URL, user1, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 404);
+        getSingle(TICKETS_URL, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 404);
 
         // Ticket has already been invalidated
-        delete(TICKETS_URL, user1, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 404);
+        delete(TICKETS_URL, People.DEFAULT_USER, ticket, null, TICKETS_API_NAME, 404);
+
+        setRequestContext(null);
 
         // Get list of site by appending the invalidated ticket
-        getAll(SiteEntityResource.class, null, paging, ticket, 401);
+        getAll(SiteEntityResource.class, paging, ticket, 401);
 
 
         /*
@@ -146,25 +153,27 @@ public class AuthenticationsTest extends AbstractBaseApiTest
         Folder folderResp = createFolder(Nodes.PATH_MY, "F2", null);
         assertNotNull(folderResp.getId());
 
-        getAll(getNodeChildrenUrl(Nodes.PATH_MY), null, paging, 401);
+        setRequestContext(null);
+
+        getAll(getNodeChildrenUrl(Nodes.PATH_MY), paging, 401);
 
         // User2 login request
         loginRequest = new LoginTicket();
         loginRequest.setUserId(user2);
         loginRequest.setPassword("wrongPassword");
         // Authentication failed - wrong password
-        post(TICKETS_URL, null, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 403);
+        post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 403);
 
         loginRequest.setUserId(user1);
         loginRequest.setPassword("user2Password");
         // Authentication failed - userId/password mismatch
-        post(TICKETS_URL, null, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 403);
+        post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 403);
 
         // Set the correct details
         loginRequest.setUserId(user2);
         loginRequest.setPassword("user2Password");
         // Authenticate and create a ticket
-        response = post(TICKETS_URL, null, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 201);
+        response = post(TICKETS_URL, RestApiUtil.toJsonAsString(loginRequest), null, null, TICKETS_API_NAME, 201);
         loginResponse = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), LoginTicketResponse.class);
         assertNotNull(loginResponse.getId());
         assertNotNull(loginResponse.getUserId());
@@ -173,15 +182,15 @@ public class AuthenticationsTest extends AbstractBaseApiTest
         // Set the authorization (encoded ticket only) header rather than appending the ticket to the URL
         Map<String, String> header = Collections.singletonMap("Authorization", "Basic " + encodedTicket);
         // Get children of user2 home folder
-        response = getAll(getNodeChildrenUrl(Nodes.PATH_MY), null, paging, null, header, 200);
+        response = getAll(getNodeChildrenUrl(Nodes.PATH_MY), paging, null, header, 200);
         List<Document> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
 
         // Validate ticket - Invalid parameter. Only '-me-' is supported
-        getSingle(TICKETS_URL, null, loginResponse.getId(), null, header, TICKETS_API_NAME, 400);
+        getSingle(TICKETS_URL, loginResponse.getId(), null, header, TICKETS_API_NAME, 400);
 
         // Validate ticket - user2
-        response = getSingle(TICKETS_URL, null, People.DEFAULT_USER, null, header, TICKETS_API_NAME, 200);
+        response = getSingle(TICKETS_URL, People.DEFAULT_USER, null, header, TICKETS_API_NAME, 200);
         validatedTicket = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), LoginTicketResponse.class);
         assertEquals(loginResponse.getId(), validatedTicket.getId());
 
@@ -191,28 +200,32 @@ public class AuthenticationsTest extends AbstractBaseApiTest
         // Set the authorization (encoded userId:ticket) header rather than appending the ticket to the URL
         header = Collections.singletonMap("Authorization", "Basic " + encodedUserIdAndTicket);
         // Get children of user2 home folder
-        response = getAll(getNodeChildrenUrl(Nodes.PATH_MY), null, paging, null, header, 200);
+        response = getAll(getNodeChildrenUrl(Nodes.PATH_MY), paging, null, header, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
 
         // Try list children for user2 again - appending ticket
         ticket = Collections.singletonMap("alf_ticket", loginResponse.getId());
-        response = getAll(getNodeChildrenUrl(Nodes.PATH_MY), null, paging, ticket, 200);
+        response = getAll(getNodeChildrenUrl(Nodes.PATH_MY), paging, ticket, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Document.class);
         assertEquals(1, nodes.size());
 
+        setRequestContext(user2);
+
         // Try to validate the ticket without supplying the Authorization header or the alf_ticket param
-        getSingle(TICKETS_URL, user2, People.DEFAULT_USER, null, null, TICKETS_API_NAME, 400);
+        getSingle(TICKETS_URL, People.DEFAULT_USER, null, null, TICKETS_API_NAME, 400);
+
+        setRequestContext(null);
 
         // Delete the ticket  - Invalid parameter. Only '-me-' is supported
         header = Collections.singletonMap("Authorization", "Basic " + encodedUserIdAndTicket);
-        delete(TICKETS_URL, null, loginResponse.getId(), null, header, TICKETS_API_NAME, 400);
+        delete(TICKETS_URL, loginResponse.getId(), null, header, TICKETS_API_NAME, 400);
 
         // Delete the ticket  - Logout
-        delete(TICKETS_URL, null, People.DEFAULT_USER, null, header, TICKETS_API_NAME, 204);
+        delete(TICKETS_URL, People.DEFAULT_USER, null, header, TICKETS_API_NAME, 204);
 
         // Get children of user2 home folder - invalidated ticket
-        getAll(getNodeChildrenUrl(Nodes.PATH_MY), null, paging, null, header, 401);
+        getAll(getNodeChildrenUrl(Nodes.PATH_MY), paging, null, header, 401);
     }
 
     private String encodeB64(String str)

@@ -52,7 +52,7 @@ import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull
 import static org.junit.Assert.*;
 
 /**
- * API tests for Node Versions (File Version History)
+ * V1 REST API tests for Node Versions (File Version History)
  *
  * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/{nodeId}/versions</li>
  *
@@ -148,13 +148,13 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             Document dUpdate = new Document();
             dUpdate.setAspectNames(aspectNames);
 
-            HttpResponse response = put(URL_NODES, user1, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+            HttpResponse response = put(URL_NODES, docId, toJsonAsStringNonNull(dUpdate), null, 200);
             documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
             assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
             assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
 
             // check no version history
-            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
@@ -179,11 +179,11 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
                 File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
                 PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
 
-                putBinary(getNodeContentUrl(docId), user1, payload, null, null, 200);
+                putBinary(getNodeContentUrl(docId), payload, null, null, 200);
             }
 
             // check no version history
-            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
         }
@@ -244,7 +244,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(6, verCnt);
 
             // check version history count
-            HttpResponse response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            HttpResponse response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(verCnt, nodes.size());
         }
@@ -286,66 +286,74 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals("1.3", versionLabel);
 
             // check version history count
-            HttpResponse response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            HttpResponse response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(cnt, nodes.size());
 
             {
+                setRequestContext(null);
+                
                 // -ve test - unauthenticated - belts-and-braces ;-)
-                delete(getNodeVersionsUrl(docId), null, "1.0", null, 401);
+                delete(getNodeVersionsUrl(docId), "1.0", null, 401);
+
+                setRequestContext(user1);
 
                 // -ve test - unknown nodeId
-                delete(getNodeVersionsUrl("dummy"), user1, "1.0", null, 404);
+                delete(getNodeVersionsUrl("dummy"), "1.0", null, 404);
 
                 // -ve test - unknown versionId
-                delete(getNodeVersionsUrl(docId), user1, "15.0", null, 404);
+                delete(getNodeVersionsUrl(docId), "15.0", null, 404);
+
+                setRequestContext(user2);
 
                 // -ve test - permission denied (on version other than most recent)
-                delete(getNodeVersionsUrl(docId), user2, "1.0", null, 403);
+                delete(getNodeVersionsUrl(docId), "1.0", null, 403);
 
                 // -ve test - permission denied (on most recent version)
-                delete(getNodeVersionsUrl(docId), user2, "1.3", null, 403);
+                delete(getNodeVersionsUrl(docId), "1.3", null, 403);
             }
 
-            delete(getNodeVersionsUrl(docId), user1, "1.0", null, 204);
+            setRequestContext(user1);
 
-            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            delete(getNodeVersionsUrl(docId), "1.0", null, 204);
+
+            response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(cnt - 1, nodes.size());
 
             // check live node (version label does not change)
-            response = getSingle(URL_NODES, user1, docId, 200);
+            response = getSingle(URL_NODES, docId, 200);
             Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals("1.3", nodeResp.getProperties().get("cm:versionLabel"));
 
-            delete(getNodeVersionsUrl(docId), user1, "1.3", null, 204);
+            delete(getNodeVersionsUrl(docId), "1.3", null, 204);
 
-            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(cnt - 2, nodes.size());
 
             // check live node (version label changes)
-            response = getSingle(URL_NODES, user1, docId, 200);
+            response = getSingle(URL_NODES, docId, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals("1.2", nodeResp.getProperties().get("cm:versionLabel"));
 
-            delete(getNodeVersionsUrl(docId), user1, "1.1", null, 204);
+            delete(getNodeVersionsUrl(docId), "1.1", null, 204);
 
-            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(cnt - 3, nodes.size());
 
             // check live node (version label does not change)
-            response = getSingle(URL_NODES, user1, docId, 200);
+            response = getSingle(URL_NODES, docId, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals("1.2", nodeResp.getProperties().get("cm:versionLabel"));
 
             // -ve test - cannot delete last version (via delete version api call) (see REPO-835 & REPO-834)
-            delete(getNodeVersionsUrl(docId), user1, "1.2", null, 422);
+            delete(getNodeVersionsUrl(docId), "1.2", null, 422);
 
             /* note: currently we cannot delete last version so this is not applicable
             // check live node - removing last version does not (currently) remove versionable aspect
-            response = getSingle(URL_NODES, user1, docId, 200);
+            response = getSingle(URL_NODES, docId, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
             Map<String, Object> props = nodeResp.getProperties();
@@ -356,7 +364,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             }
             */
 
-            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals("1.2", nodes.get(0).getId());
@@ -367,14 +375,14 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
             PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
 
-            response = putBinary(getNodeContentUrl(docId), user1, payload, null,  null, 200);
+            response = putBinary(getNodeContentUrl(docId), payload, null,  null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
             assertEquals("1.3", nodeResp.getProperties().get("cm:versionLabel"));
             assertEquals("MINOR", nodeResp.getProperties().get("cm:versionType"));
             
             // remove versionable aspect (this will clear the history and disable versioning)
-            response = getSingle(URL_NODES, user1, docId, 200);
+            response = getSingle(URL_NODES, docId, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
 
             List<String> aspectNamesToKeep = new ArrayList<>();
@@ -384,7 +392,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             Node nUpdate = new Node();
             nUpdate.setAspectNames(aspectNamesToKeep);
 
-            response = put(URL_NODES, user1, docId, toJsonAsStringNonNull(nUpdate), null, 200);
+            response = put(URL_NODES, docId, toJsonAsStringNonNull(nUpdate), null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertFalse(nodeResp.getAspectNames().contains("cm:versionable"));
             Map<String, Object> props = nodeResp.getProperties();
@@ -394,7 +402,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
                 assertNull(props.get("cm:versionType"));
             }
             
-            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
             
@@ -403,12 +411,12 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             inputStream = new ByteArrayInputStream(textContent.getBytes());
             txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
             payload = new PublicApiHttpClient.BinaryPayload(txtFile);
-            response = putBinary(getNodeContentUrl(docId), user1, payload, null,  null, 200);
+            response = putBinary(getNodeContentUrl(docId), payload, null,  null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertFalse(nodeResp.getAspectNames().contains("cm:versionable"));
             
             // re-enable versioning (default model properties should cause initial version to be created as 1.0)
-            response = getSingle(URL_NODES, user1, docId, 200);
+            response = getSingle(URL_NODES, docId, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             aspectNamesToKeep = new ArrayList<>();
             aspectNamesToKeep.addAll(nodeResp.getAspectNames());
@@ -417,7 +425,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             nUpdate = new Node();
             nUpdate.setAspectNames(aspectNamesToKeep);
 
-            response = put(URL_NODES, user1, docId, toJsonAsStringNonNull(nUpdate), null, 200);
+            response = put(URL_NODES, docId, toJsonAsStringNonNull(nUpdate), null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
             props = nodeResp.getProperties();
@@ -425,7 +433,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals("MAJOR", props.get("cm:versionType"));
 
             // double-check content
-            response = getSingle(getNodeVersionsUrl(docId), user1, "1.0/content", null, 200);
+            response = getSingle(getNodeVersionsUrl(docId), "1.0/content", null, 200);
             assertEquals(textContent, response.getResponse());
 
             // Update again ..
@@ -434,7 +442,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
             payload = new PublicApiHttpClient.BinaryPayload(txtFile);
 
-            response = putBinary(getNodeContentUrl(docId), user1, payload, null,  null, 200);
+            response = putBinary(getNodeContentUrl(docId), payload, null,  null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
             props = nodeResp.getProperties();
@@ -442,7 +450,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals("MINOR", props.get("cm:versionType"));
 
             // double-check content
-            response = getSingle(getNodeVersionsUrl(docId), user1, "1.1/content", null, 200);
+            response = getSingle(getNodeVersionsUrl(docId), "1.1/content", null, 200);
             assertEquals(textContent, response.getResponse());
         }
         finally
@@ -530,7 +538,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(currentVersionLabel, documentResp.getProperties().get("cm:versionLabel"));
 
             // double-check - get version node info
-            HttpResponse response = getSingle(getNodeVersionsUrl(docId), userId, currentVersionLabel, null, 200);
+            HttpResponse response = getSingle(getNodeVersionsUrl(docId), currentVersionLabel, null, 200);
             Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals(currentVersionLabel, nodeResp.getProperties().get("cm:versionLabel"));
             assertEquals((expectedMajorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
@@ -603,7 +611,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
             PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
 
-            HttpResponse response = putBinary(getNodeContentUrl(contentNodeId), userId, payload, null, params, 200);
+            HttpResponse response = putBinary(getNodeContentUrl(contentNodeId), payload, null, params, 200);
             Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
 
             assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
@@ -612,7 +620,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals((majorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
 
             // double-check - get version node info
-            response = getSingle(getNodeVersionsUrl(contentNodeId), userId, currentVersionLabel, null, 200);
+            response = getSingle(getNodeVersionsUrl(contentNodeId), currentVersionLabel, null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals(currentVersionLabel, nodeResp.getProperties().get("cm:versionLabel"));
             assertEquals((majorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
@@ -665,7 +673,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
             String versionId = majorVersion+"."+minorVersion;
 
-            HttpResponse response = getSingle(URL_NODES, user1, d1Id, 200);
+            HttpResponse response = getSingle(URL_NODES, d1Id, 200);
             Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
             assertEquals(versionId, nodeResp.getProperties().get("cm:versionLabel"));
@@ -675,14 +683,14 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
             Map<String, String> params = new HashMap<>();
             params.put("include", "properties");
-            response = getAll(getNodeVersionsUrl(d1Id), user1, paging, params, 200);
+            response = getAll(getNodeVersionsUrl(d1Id), paging, params, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(verCnt, nodes.size());
             assertEquals(versionId, nodes.get(0).getProperties().get("cm:versionLabel"));
             assertEquals("MAJOR", nodes.get(0).getProperties().get("cm:versionType"));
 
             // get version info
-            response = getSingle(getNodeVersionsUrl(d1Id), user1, versionId, null, 200);
+            response = getSingle(getNodeVersionsUrl(d1Id), versionId, null, 200);
             Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals(versionId, node.getProperties().get("cm:versionLabel"));
             assertEquals("MAJOR", node.getProperties().get("cm:versionType"));
@@ -700,25 +708,25 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
                 File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
                 PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
 
-                putBinary(getNodeContentUrl(d1Id), user1, payload, null, null, 200);
+                putBinary(getNodeContentUrl(d1Id), payload, null, null, 200);
 
                 versionId = majorVersion+"."+minorVersion;
 
                 // get live node
-                response = getSingle(URL_NODES, user1, d1Id, 200);
+                response = getSingle(URL_NODES, d1Id, 200);
                 nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
                 assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
                 assertEquals(versionId, nodeResp.getProperties().get("cm:versionLabel"));
                 assertEquals("MINOR", nodeResp.getProperties().get("cm:versionType"));
 
                 // get version node info
-                response = getSingle(getNodeVersionsUrl(d1Id), user1, versionId, null, 200);
+                response = getSingle(getNodeVersionsUrl(d1Id), versionId, null, 200);
                 node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
                 assertEquals(versionId, node.getProperties().get("cm:versionLabel"));
                 assertEquals("MINOR", node.getProperties().get("cm:versionType"));
 
                 // check version history count
-                response = getAll(getNodeVersionsUrl(d1Id), user1, paging, null, 200);
+                response = getAll(getNodeVersionsUrl(d1Id), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(verCnt, nodes.size());
             }
@@ -728,7 +736,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             // check total version count - also get properties so that we can check version label etc
             params = new HashMap<>();
             params.put("include", "properties");
-            response = getAll(getNodeVersionsUrl(d1Id), user1, paging, params, 200);
+            response = getAll(getNodeVersionsUrl(d1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(totalVerCnt, nodes.size());
 
@@ -739,23 +747,27 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
             {
                 // -ve tests
-                getSingle(NodesEntityResource.class, user1, d1Id, null, 404);
-                getAll(getNodeVersionsUrl(d1Id), user1, null, null, 404);
+                getSingle(NodesEntityResource.class, d1Id, null, 404);
+                getAll(getNodeVersionsUrl(d1Id), null, null, 404);
             }
 
             // ... and then restore again
-            post(URL_DELETED_NODES+"/"+d1Id+"/restore", user1, null, null, 200);
+            post(URL_DELETED_NODES+"/"+d1Id+"/restore", null, null, 200);
 
-            response = getAll(getNodeVersionsUrl(d1Id), user1, paging, null, 200);
+            response = getAll(getNodeVersionsUrl(d1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(totalVerCnt, nodes.size());
 
             {
+                setRequestContext(null);
+                
                 // -ve test - unauthenticated - belts-and-braces ;-)
-                getAll(getNodeVersionsUrl(d1Id), null, paging, null, 401);
+                getAll(getNodeVersionsUrl(d1Id), paging, null, 401);
+
+                setRequestContext(user1);
 
                 // -ve test - unknown nodeId
-                getAll(getNodeVersionsUrl("dummy"), user1, paging, null, 404);
+                getAll(getNodeVersionsUrl("dummy"), paging, null, 404);
             }
         }
         finally
@@ -819,13 +831,13 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
                 params = new HashMap<>();
                 params.put(Nodes.PARAM_VERSION_COMMENT, updateVerCommentSuffix+verCnt);
 
-                putBinary(getNodeContentUrl(d1Id), user1, payload, null, params, 200);
+                putBinary(getNodeContentUrl(d1Id), payload, null, params, 200);
             }
 
             // check version history count - also get properties so that we can check version label etc
             params = new HashMap<>();
             params.put("include", "properties");
-            HttpResponse response = getAll(getNodeVersionsUrl(d1Id), user1, null, params, 200);
+            HttpResponse response = getAll(getNodeVersionsUrl(d1Id), null, params, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(verCnt, nodes.size());
 
@@ -846,7 +858,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
                 versionOptions.setMajorVersion(true);
                 versionOptions.setComment(revertVerCommentSuffix+i);
 
-                post(getNodeVersionRevertUrl(d1Id, revertVersionId), user1, toJsonAsStringNonNull(versionOptions), null, 200);
+                post(getNodeVersionRevertUrl(d1Id, revertVersionId), toJsonAsStringNonNull(versionOptions), null, 200);
 
                 verCnt++;
                 revertMinorVersion++;
@@ -857,7 +869,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             // check version history count - also get properties so that we can check version label etc
             params = new HashMap<>();
             params.put("include", "properties");
-            response = getAll(getNodeVersionsUrl(d1Id), user1, null, params, 200);
+            response = getAll(getNodeVersionsUrl(d1Id), null, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(verCnt, nodes.size());
 
@@ -871,20 +883,25 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             checkVersionHistoryAndContent(d1Id, originalUpdatedNodes, updateCnt+1, textContentSuffix, updateVerCommentSuffix, 1, minorVersion, false);
 
             // Currently, we also allow the most recent version to be reverted (ie. not disallowed by underlying VersionService)
-            post(getNodeVersionRevertUrl(d1Id, majorVersion+".0"), user1, "{}", null, 200);
+            post(getNodeVersionRevertUrl(d1Id, majorVersion+".0"), "{}", null, 200);
 
             {
+                setRequestContext(null);
+                
                 // -ve test - unauthenticated - belts-and-braces ;-)
-                post(getNodeVersionRevertUrl(d1Id, "1.0"), null, "{}", null, 401);
+                post(getNodeVersionRevertUrl(d1Id, "1.0"), "{}", null, 401);
+
+                setRequestContext(user1);
 
                 // -ve test - unknown nodeId
-                post(getNodeVersionRevertUrl("dummy", "1.0"), user1, "{}", null, 404);
+                post(getNodeVersionRevertUrl("dummy", "1.0"), "{}", null, 404);
 
                 // -ve test - unknown versionId
-                post(getNodeVersionRevertUrl(d1Id, "15.0"), user1, "{}", null, 404);
+                post(getNodeVersionRevertUrl(d1Id, "15.0"), "{}", null, 404);
 
                 // -ve test - permission denied
-                post(getNodeVersionRevertUrl(d1Id, "1.0"), user2, "{}", null, 403);
+                setRequestContext(user2);
+                post(getNodeVersionRevertUrl(d1Id, "1.0"), "{}", null, 403);
             }
         }
         finally
@@ -926,7 +943,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals((verCommentSuffix != null ? verCommentSuffix+verCnt : null), versionNode.getVersionComment());
 
             // Download version content - by default with Content-Disposition header
-            HttpResponse response = getSingle(getNodeVersionsUrl(docId), user1, versionId+"/content", null, 200);
+            HttpResponse response = getSingle(getNodeVersionsUrl(docId), versionId+"/content", null, 200);
             String textContent = response.getResponse();
             assertEquals(textContentSuffix+verCnt, textContent);
 
@@ -975,10 +992,10 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             Node n = new Node();
             n.setName("d1");
             n.setNodeType(TYPE_CM_CONTENT);
-            HttpResponse response = post(getNodeChildrenUrl(f1Id), user1, toJsonAsStringNonNull(n), 201);
+            HttpResponse response = post(getNodeChildrenUrl(f1Id), toJsonAsStringNonNull(n), 201);
             String d1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
-            response = getSingle(URL_NODES, user1, d1Id, 200);
+            response = getSingle(URL_NODES, d1Id, 200);
             Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertFalse(nodeResp.getAspectNames().contains("cm:versionable"));
 
@@ -986,12 +1003,12 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
             // empty list - before
 
-            response = getAll(getNodeVersionsUrl(d1Id), user1, paging, null, 200);
+            response = getAll(getNodeVersionsUrl(d1Id), paging, null, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             // note: we do not disallow listing version history on non-content node - however currently no API method to version say a folder
-            response = getAll(getNodeVersionsUrl(f1Id), user1, paging, null, 200);
+            response = getAll(getNodeVersionsUrl(f1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
@@ -1008,15 +1025,15 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
                 File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
                 PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
 
-                putBinary(getNodeContentUrl(d1Id), user1, payload, null, null, 200);
+                putBinary(getNodeContentUrl(d1Id), payload, null, null, 200);
 
                 verCnt++;
 
-                response = getSingle(URL_NODES, user1, d1Id, 200);
+                response = getSingle(URL_NODES, d1Id, 200);
                 nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
                 assertFalse(nodeResp.getAspectNames().contains("cm:versionable"));
 
-                response = getAll(getNodeVersionsUrl(d1Id), user1, paging, null, 200);
+                response = getAll(getNodeVersionsUrl(d1Id), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(0, nodes.size());
             }
@@ -1025,20 +1042,20 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             // note: alternatively can use version params ("comment" &/or "majorVersion") on update (see separate test below)
             Node nodeUpdate = new Node();
             nodeUpdate.setAspectNames(Collections.singletonList("cm:versionable"));
-            put(URL_NODES, user1, d1Id, toJsonAsStringNonNull(nodeUpdate), null, 200);
+            put(URL_NODES, d1Id, toJsonAsStringNonNull(nodeUpdate), null, 200);
 
             String versionId = "1.0";
 
             Map<String, String> params = new HashMap<>();
             params.put("include", "properties");
-            response = getAll(getNodeVersionsUrl(d1Id), user1, paging, params, 200);
+            response = getAll(getNodeVersionsUrl(d1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(versionId, nodes.get(0).getProperties().get("cm:versionLabel"));
             assertEquals("MAJOR", nodes.get(0).getProperties().get("cm:versionType"));
 
             // get version info
-            response = getSingle(getNodeVersionsUrl(d1Id), user1, versionId, null, 200);
+            response = getSingle(getNodeVersionsUrl(d1Id), versionId, null, 200);
             Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals(versionId, node.getProperties().get("cm:versionLabel"));
             assertEquals("MAJOR", node.getProperties().get("cm:versionType"));
@@ -1053,18 +1070,18 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
                 File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
                 PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
 
-                putBinary(getNodeContentUrl(d1Id), user1, payload, null, null, 200);
+                putBinary(getNodeContentUrl(d1Id), payload, null, null, 200);
 
                 verCnt++;
 
                 // get version info
                 versionId = "1."+i;
-                response = getSingle(getNodeVersionsUrl(d1Id), user1, versionId, null, 200);
+                response = getSingle(getNodeVersionsUrl(d1Id), versionId, null, 200);
                 node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
                 assertEquals(versionId, node.getProperties().get("cm:versionLabel"));
                 assertEquals("MINOR", node.getProperties().get("cm:versionType"));
 
-                response = getAll(getNodeVersionsUrl(d1Id), user1, paging, null, 200);
+                response = getAll(getNodeVersionsUrl(d1Id), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(i+1, nodes.size());
             }
@@ -1075,7 +1092,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
             params = new HashMap<>();
             params.put("include", "properties");
-            response = getAll(getNodeVersionsUrl(d1Id), user1, paging, params, 200);
+            response = getAll(getNodeVersionsUrl(d1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(totalVerCnt, nodes.size());
 
@@ -1086,14 +1103,14 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
             // -ve tests
             {
-                getSingle(NodesEntityResource.class, user1, d1Id, null, 404);
-                getAll(getNodeVersionsUrl(d1Id), user1, null, null, 404);
+                getSingle(NodesEntityResource.class, d1Id, null, 404);
+                getAll(getNodeVersionsUrl(d1Id), null, null, 404);
             }
 
             // ... and then restore again
-            post(URL_DELETED_NODES+"/"+d1Id+"/restore", user1, null, null, 200);
+            post(URL_DELETED_NODES+"/"+d1Id+"/restore", null, null, 200);
 
-            response = getAll(getNodeVersionsUrl(d1Id), user1, paging, null, 200);
+            response = getAll(getNodeVersionsUrl(d1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(cntAfter+1, nodes.size());
 
@@ -1102,11 +1119,15 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             //
 
             {
+                setRequestContext(null);
+                
                 // -ve test - unauthenticated - belts-and-braces ;-)
-                getAll(getNodeVersionsUrl(d1Id), null, paging, null, 401);
+                getAll(getNodeVersionsUrl(d1Id), paging, null, 401);
 
-                // -ve test - unauthenticated - belts-and-braces ;-)
-                getAll(getNodeVersionsUrl("dummy"), user1, paging, null, 404);
+                setRequestContext(user1);
+
+                // -ve test - unknown node
+                getAll(getNodeVersionsUrl("dummy"), paging, null, 404);
             }
         }
         finally
@@ -1138,7 +1159,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
         d1.setNodeType(TYPE_CM_CONTENT);
 
         // create *empty* text file - as of now, versioning is not enabled by default
-        HttpResponse response = post(getNodeChildrenUrl(myNodeId), user1, toJsonAsStringNonNull(d1), 201);
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), toJsonAsStringNonNull(d1), 201);
         Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         String docId = documentResp.getId();
@@ -1262,7 +1283,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
         Document dUpdate = new Document();
         dUpdate.setAspectNames(aspectNames);
 
-        response = put(URL_NODES, user1, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+        response = put(URL_NODES, docId, toJsonAsStringNonNull(dUpdate), null, 200);
         documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
         assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
         assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
@@ -1311,7 +1332,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals("1.5", versionLabel); // 1.0, 1.1, ... 1.5
 
             // check version history count (note: no paging => default max items => 100)
-            HttpResponse response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            HttpResponse response = getAll(getNodeVersionsUrl(docId), null, null, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(cnt, nodes.size());
 
@@ -1319,7 +1340,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
             
             // SkipCount=0,MaxItems=2
             Paging paging = getPaging(0, 2);
-            response = getAll(getNodeVersionsUrl(docId), user1, paging, 200);
+            response = getAll(getNodeVersionsUrl(docId), paging, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
             PublicApiClient.ExpectedPaging expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
@@ -1331,7 +1352,7 @@ public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 
             // SkipCount=2,MaxItems=3
             paging = getPaging(2, 3);
-            response = getAll(getNodeVersionsUrl(docId), user1, paging, 200);
+            response = getAll(getNodeVersionsUrl(docId), paging, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(3, nodes.size());
             expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());

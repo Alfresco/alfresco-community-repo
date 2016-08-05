@@ -54,7 +54,7 @@ import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull
 import static org.junit.Assert.*;
 
 /**
- * API tests for Node Associations
+ * V1 REST API tests for Node Associations
  *
  * Peer Associations  (source -> target)
  * <ul>
@@ -154,7 +154,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n.setName("o1");
         n.setNodeType(TYPE_CM_CONTENT);
         n.setAspectNames(Arrays.asList(ASPECT_CM_REFERENCING, ASPECT_CM_PARTABLE));
-        HttpResponse response = post(getNodeChildrenUrl(f1Id), user1, toJsonAsStringNonNull(n), 201);
+        HttpResponse response = post(getNodeChildrenUrl(f1Id), toJsonAsStringNonNull(n), 201);
         String o1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         // create ano' folder
@@ -165,7 +165,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n.setName("o2");
         n.setNodeType(TYPE_CM_CONTENT);
         n.setAspectNames(Arrays.asList(ASPECT_CM_REFERENCING, ASPECT_CM_PARTABLE));
-        response = post(getNodeChildrenUrl(f2Id), user1, toJsonAsStringNonNull(n), 201);
+        response = post(getNodeChildrenUrl(f2Id), toJsonAsStringNonNull(n), 201);
         String o2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
 
@@ -177,67 +177,67 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 
             // empty lists - before
 
-            response = getAll(getNodeTargetsUrl(o1Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(o1Id), paging, null, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeSourcesUrl(o1Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(o1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeSourcesUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             // create two assocs in one direction (from src to tgt)
 
             AssocTarget tgt = new AssocTarget(o2Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(o1Id), user1, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(o1Id), toJsonAsStringNonNull(tgt), 201);
 
             tgt = new AssocTarget(o2Id, ASSOC_TYPE_CM_PARTS);
-            post(getNodeTargetsUrl(o1Id), user1, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(o1Id), toJsonAsStringNonNull(tgt), 201);
 
-            response = getAll(getNodeTargetsUrl(o1Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(o1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
-            response = getAll(getNodeSourcesUrl(o1Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(o1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeSourcesUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
             // create two assocs in the other direction (from tgt to src)
 
             tgt = new AssocTarget(o1Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(o2Id), user1, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(o2Id), toJsonAsStringNonNull(tgt), 201);
 
             tgt = new AssocTarget(o1Id, ASSOC_TYPE_CM_PARTS);
-            post(getNodeTargetsUrl(o2Id), user1, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(o2Id), toJsonAsStringNonNull(tgt), 201);
 
-            response = getAll(getNodeTargetsUrl(o1Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(o1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
-            response = getAll(getNodeSourcesUrl(o1Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(o1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
-            response = getAll(getNodeSourcesUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
@@ -246,13 +246,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             Map<String, String> params = new HashMap<>(1);
             params.put("where", "(assocType='"+ASSOC_TYPE_CM_REFERENCES+"')");
 
-            response = getAll(getNodeTargetsUrl(o1Id), user1, paging, params, 200);
+            response = getAll(getNodeTargetsUrl(o1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o2Id, nodes.get(0).getId());
             assertEquals(ASSOC_TYPE_CM_REFERENCES, nodes.get(0).getAssociation().getAssocType());
 
-            response = getAll(getNodeSourcesUrl(o1Id), user1, paging, params, 200);
+            response = getAll(getNodeSourcesUrl(o1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o2Id, nodes.get(0).getId());
@@ -261,13 +261,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             params = new HashMap<>(1);
             params.put("where", "(assocType='"+ASSOC_TYPE_CM_PARTS+"')");
 
-            response = getAll(getNodeTargetsUrl(o2Id), user1, paging, params, 200);
+            response = getAll(getNodeTargetsUrl(o2Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o1Id, nodes.get(0).getId());
             assertEquals(ASSOC_TYPE_CM_PARTS, nodes.get(0).getAssociation().getAssocType());
 
-            response = getAll(getNodeSourcesUrl(o2Id), user1, paging, params, 200);
+            response = getAll(getNodeSourcesUrl(o2Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o1Id, nodes.get(0).getId());
@@ -276,62 +276,62 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             // remove assocs - specific type - in one direction
             params = new HashMap<>(1);
             params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_REFERENCES);
-            delete(getNodeTargetsUrl(o1Id), user1, o2Id, params, 204);
+            delete(getNodeTargetsUrl(o1Id), o2Id, params, 204);
 
-            response = getAll(getNodeTargetsUrl(o1Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(o1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
 
-            response = getAll(getNodeSourcesUrl(o1Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(o1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
-            response = getAll(getNodeSourcesUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
 
             params = new HashMap<>(1);
             params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_PARTS);
-            delete(getNodeTargetsUrl(o1Id), user1, o2Id, params, 204);
+            delete(getNodeTargetsUrl(o1Id), o2Id, params, 204);
 
-            response = getAll(getNodeTargetsUrl(o1Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(o1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeSourcesUrl(o1Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(o1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
-            response = getAll(getNodeSourcesUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             // remove assocs - both types at once (ie. no assocType param) - in the other direction
-            delete(getNodeTargetsUrl(o2Id), user1, o1Id, 204);
+            delete(getNodeTargetsUrl(o2Id), o1Id, 204);
 
             // empty lists - after
 
-            response = getAll(getNodeTargetsUrl(o1Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(o1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeSourcesUrl(o1Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(o1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeSourcesUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
@@ -341,21 +341,25 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             //
 
             {
+                setRequestContext(null);
+                
                 // -ve test - unauthenticated - belts-and-braces ;-)
                 tgt = new AssocTarget(o2Id, ASSOC_TYPE_CM_REFERENCES);
-                post(getNodeTargetsUrl(o1Id), null, toJsonAsStringNonNull(tgt), 401);
+                post(getNodeTargetsUrl(o1Id), toJsonAsStringNonNull(tgt), 401);
+
+                setRequestContext(user1);
 
                 // -ve test - model integrity
                 tgt = new AssocTarget(f2Id, ASSOC_TYPE_CM_REFERENCES);
-                post(getNodeTargetsUrl(o1Id), user1, toJsonAsStringNonNull(tgt), 422);
+                post(getNodeTargetsUrl(o1Id), toJsonAsStringNonNull(tgt), 422);
 
                 // -ve test - duplicate assoc
                 tgt = new AssocTarget(o1Id, ASSOC_TYPE_CM_REFERENCES);
-                post(getNodeTargetsUrl(o2Id), user1, toJsonAsStringNonNull(tgt), 201);
-                post(getNodeTargetsUrl(o2Id), user1, toJsonAsStringNonNull(tgt), 409);
+                post(getNodeTargetsUrl(o2Id), toJsonAsStringNonNull(tgt), 201);
+                post(getNodeTargetsUrl(o2Id), toJsonAsStringNonNull(tgt), 409);
 
                 tgt = new AssocTarget(o1Id, "cm:unknowntype");
-                post(getNodeTargetsUrl(o2Id), user1, toJsonAsStringNonNull(tgt), 400);
+                post(getNodeTargetsUrl(o2Id), toJsonAsStringNonNull(tgt), 400);
             }
 
             //
@@ -363,18 +367,22 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             //
 
             {
+                setRequestContext(null);
+                
                 // -ve test - unauthenticated - belts-and-braces ;-)
-                getAll(getNodeTargetsUrl(f1Id), null, paging, null, 401);
-                getAll(getNodeSourcesUrl(f1Id), null, paging, null, 401);
+                getAll(getNodeTargetsUrl(f1Id), paging, null, 401);
+                getAll(getNodeSourcesUrl(f1Id), paging, null, 401);
 
-                getAll(getNodeTargetsUrl(UUID.randomUUID().toString()), user1, paging, null, 404);
-                getAll(getNodeSourcesUrl(UUID.randomUUID().toString()), user1, paging, null, 404);
+                setRequestContext(user1);
+
+                getAll(getNodeTargetsUrl(UUID.randomUUID().toString()), paging, null, 404);
+                getAll(getNodeSourcesUrl(UUID.randomUUID().toString()), paging, null, 404);
 
                 params = new HashMap<>(1);
                 params.put("where", "(assocType='cm:unknownassoctype')");
 
-                getAll(getNodeTargetsUrl(o1Id), user1, paging, params, 400);
-                getAll(getNodeSourcesUrl(o1Id), user1, paging, params, 400);
+                getAll(getNodeTargetsUrl(o1Id), paging, params, 400);
+                getAll(getNodeSourcesUrl(o1Id), paging, params, 400);
 
                 // TODO paging - in-built sort order ? (RA-926, RA-927)
             }
@@ -385,24 +393,28 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             //
 
             {
+                setRequestContext(null);
+                
                 // -ve test - unauthenticated - belts-and-braces ;-)
-                delete(getNodeTargetsUrl(o1Id), null, o2Id, 401);
+                delete(getNodeTargetsUrl(o1Id), o2Id, 401);
 
-                delete(getNodeTargetsUrl(UUID.randomUUID().toString()), user1, o2Id, null, 404);
-                delete(getNodeTargetsUrl(o1Id), user1, UUID.randomUUID().toString(), null, 404);
+                setRequestContext(user1);
+
+                delete(getNodeTargetsUrl(UUID.randomUUID().toString()), o2Id, null, 404);
+                delete(getNodeTargetsUrl(o1Id), UUID.randomUUID().toString(), null, 404);
 
                 // -ve test -nothing to delete - for any assoc type
-                delete(getNodeTargetsUrl(o1Id), user1, o2Id, null, 404);
+                delete(getNodeTargetsUrl(o1Id), o2Id, null, 404);
 
                 // -ve test - nothing to delete - for given assoc type
                 params = new HashMap<>(1);
                 params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_REFERENCES);
-                delete(getNodeTargetsUrl(o1Id), user1, o2Id, params, 404);
+                delete(getNodeTargetsUrl(o1Id), o2Id, params, 404);
 
                 // -ve test - unknown assoc type
                 params = new HashMap<>(1);
                 params.put(PARAM_ASSOC_TYPE, "cm:unknowntype");
-                delete(getNodeTargetsUrl(o1Id), user1, o2Id, params, 400);
+                delete(getNodeTargetsUrl(o1Id), o2Id, params, 400);
             }
         }
         finally
@@ -441,7 +453,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n.setName("shared content "+RUNID);
         n.setNodeType(TYPE_CM_CONTENT);
         n.setAspectNames(Arrays.asList(ASPECT_CM_REFERENCING, ASPECT_CM_PARTABLE));
-        HttpResponse response = post(getNodeChildrenUrl(sf1Id), user1, toJsonAsStringNonNull(n), 201);
+        HttpResponse response = post(getNodeChildrenUrl(sf1Id), toJsonAsStringNonNull(n), 201);
         String so1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
 
@@ -455,7 +467,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n.setName("o1");
         n.setNodeType(TYPE_CM_CONTENT);
         n.setAspectNames(Arrays.asList(ASPECT_CM_REFERENCING, ASPECT_CM_PARTABLE));
-        response = post(getNodeChildrenUrl(u1f1Id), user1, toJsonAsStringNonNull(n), 201);
+        response = post(getNodeChildrenUrl(u1f1Id), toJsonAsStringNonNull(n), 201);
         String u1o1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         // as user 2 - create folder in user's home (My Files) area and content within the folder
@@ -470,38 +482,48 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n.setName("o1");
         n.setNodeType(TYPE_CM_CONTENT);
         n.setAspectNames(Arrays.asList(ASPECT_CM_REFERENCING, ASPECT_CM_PARTABLE));
-        response = post(getNodeChildrenUrl(u2f1Id), user2, toJsonAsStringNonNull(n), 201);
+        response = post(getNodeChildrenUrl(u2f1Id), toJsonAsStringNonNull(n), 201);
         String u2o1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         try
         {
-            setRequestContext(user1);
-            
             Paging paging = getPaging(0, 100);
 
             // empty lists - before
 
-            response = getAll(getNodeTargetsUrl(u1f1Id), user1, paging, null, 200);
+            setRequestContext(user1);
+
+            response = getAll(getNodeTargetsUrl(u1f1Id), paging, null, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(u2f1Id), user2, paging, null, 200);
+            setRequestContext(user2);
+
+            response = getAll(getNodeTargetsUrl(u2f1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             // Create some assocs
 
+            setRequestContext(user1);
+
             AssocTarget tgt = new AssocTarget(u1o1Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(u1f1Id), user1, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(u1f1Id), toJsonAsStringNonNull(tgt), 201);
+
+            setRequestContext(user2);
 
             tgt = new AssocTarget(u2o1Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(u2f1Id), user2, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(u2f1Id), toJsonAsStringNonNull(tgt), 201);
 
-            response = getAll(getNodeTargetsUrl(u1f1Id), user1, paging, null, 200);
+            setRequestContext(user1);
+
+            response = getAll(getNodeTargetsUrl(u1f1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(u2f1Id), user2, paging, null, 200);
+            setRequestContext(user2);
+
+            response = getAll(getNodeTargetsUrl(u2f1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
 
@@ -509,22 +531,29 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             {
                 // source/target not readable
 
+                setRequestContext(user2);
+
                 // list
-                getAll(getNodeTargetsUrl(u1f1Id), user2, paging, null, 403);
-                getAll(getNodeSourcesUrl(u1o1Id), user2, paging, null, 403);
+                getAll(getNodeTargetsUrl(u1f1Id), paging, null, 403);
+                getAll(getNodeSourcesUrl(u1o1Id), paging, null, 403);
+
+                setRequestContext(user1);
 
                 // create
                 tgt = new AssocTarget(u2o1Id, ASSOC_TYPE_CM_REFERENCES);
-                post(getNodeTargetsUrl(u1f1Id), user1, toJsonAsStringNonNull(tgt), 403);
+                post(getNodeTargetsUrl(u1f1Id), toJsonAsStringNonNull(tgt), 403);
 
                 tgt = new AssocTarget(u1o1Id, ASSOC_TYPE_CM_REFERENCES);
-                post(getNodeTargetsUrl(u2f1Id), user1, toJsonAsStringNonNull(tgt), 403);
+                post(getNodeTargetsUrl(u2f1Id), toJsonAsStringNonNull(tgt), 403);
+
+                setRequestContext(user2);
 
                 // remove
-                delete(getNodeTargetsUrl(u1f1Id), user2, u2o1Id, null, 403);
-                delete(getNodeTargetsUrl(u2f1Id), user2, u1o1Id, null, 404);
+                delete(getNodeTargetsUrl(u1f1Id), u2o1Id, null, 403);
+                delete(getNodeTargetsUrl(u2f1Id), u1o1Id, null, 404);
             }
 
+            setRequestContext(user1);
 
             // Test listing targets (with permissions applied)
 
@@ -543,12 +572,12 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             // user 1
             setRequestContext(user1);
             tgt = new AssocTarget(u1o1Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(sf1Id), user1, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(sf1Id), toJsonAsStringNonNull(tgt), 201);
 
             // user 2
             setRequestContext(user2);
             tgt = new AssocTarget(u2o1Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(sf1Id), user2, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(sf1Id), toJsonAsStringNonNull(tgt), 201);
 
             setRequestContext(DEFAULT_ADMIN);
             
@@ -558,13 +587,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(2, nodes.size());
 
             setRequestContext(user1);
-            response = getAll(getNodeTargetsUrl(sf1Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(sf1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(u1o1Id, nodes.get(0).getId());
 
             setRequestContext(user2);
-            response = getAll(getNodeTargetsUrl(sf1Id), user2, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(sf1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(u2o1Id, nodes.get(0).getId());
@@ -587,12 +616,12 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             // user 1
             setRequestContext(user1);
             tgt = new AssocTarget(so1Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(u1f1Id), user1, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(u1f1Id), toJsonAsStringNonNull(tgt), 201);
 
             // user 2
             setRequestContext(user2);
             tgt = new AssocTarget(so1Id, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(u2f1Id), user2, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(u2f1Id), toJsonAsStringNonNull(tgt), 201);
 
             setRequestContext(DEFAULT_ADMIN);
             
@@ -602,13 +631,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             assertEquals(2, nodes.size());
 
             setRequestContext(user1);
-            response = getAll(getNodeSourcesUrl(so1Id), user1, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(so1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(u1f1Id, nodes.get(0).getId());
 
             setRequestContext(user2);
-            response = getAll(getNodeSourcesUrl(so1Id), user2, paging, null, 200);
+            response = getAll(getNodeSourcesUrl(so1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(u2f1Id, nodes.get(0).getId());
@@ -653,7 +682,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n.setName("f1");
         n.setNodeType(TYPE_CM_FOLDER);
         n.setAspectNames(Arrays.asList(ASPECT_CM_PREFERENCES));
-        HttpResponse response = post(getNodeChildrenUrl(myFolderNodeId), user1, toJsonAsStringNonNull(n), 201);
+        HttpResponse response = post(getNodeChildrenUrl(myFolderNodeId), toJsonAsStringNonNull(n), 201);
         String f1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         // create content node
@@ -661,7 +690,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n = new Node();
         n.setName(o1Name);
         n.setNodeType(TYPE_CM_CONTENT);
-        response = post(getNodeChildrenUrl(f1Id), user1, toJsonAsStringNonNull(n), 201);
+        response = post(getNodeChildrenUrl(f1Id), toJsonAsStringNonNull(n), 201);
         String o1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         // create ano' folder
@@ -672,7 +701,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n = new Node();
         n.setName(o2Name);
         n.setNodeType(TYPE_CM_CONTENT);
-        response = post(getNodeChildrenUrl(f2Id), user1, toJsonAsStringNonNull(n), 201);
+        response = post(getNodeChildrenUrl(f2Id), toJsonAsStringNonNull(n), 201);
         String o2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
 
@@ -689,12 +718,12 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 
             // lists - before
 
-            response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+            response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, null, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             // primary parent only
-            response = getAll(getNodeParentsUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeParentsUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f2Id, nodes.get(0).getId());
@@ -703,14 +732,14 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 
             // create secondary child assoc
             AssocChild secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS);
-            post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
+            post(getNodeSecondaryChildrenUrl(f1Id), toJsonAsStringNonNull(secChild), 201);
 
             // create ano' secondary child assoc (different type) between the same two nodes
             secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_PREFERENCE_IMAGE);
-            post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
+            post(getNodeSecondaryChildrenUrl(f1Id), toJsonAsStringNonNull(secChild), 201);
 
 
-            response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+            response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             int i = 0;
             for (Node node : nodes)
@@ -729,7 +758,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             }
             assertEquals(2, i);
 
-            response = getAll(getNodeParentsUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeParentsUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             i = 0;
             for (Node node : nodes)
@@ -762,13 +791,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             Map<String, String> params = new HashMap<>(1);
             params.put("where", "(assocType='"+ASSOC_TYPE_CM_CONTAINS+"')");
 
-            response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, params, 200);
+            response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o2Id, nodes.get(0).getId());
             assertEquals(ASSOC_TYPE_CM_CONTAINS, nodes.get(0).getAssociation().getAssocType());
 
-            response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
+            response = getAll(getNodeParentsUrl(o2Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             i = 0;
             for (Node node : nodes)
@@ -793,14 +822,14 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             params = new HashMap<>(1);
             params.put("where", "(assocType='"+ASSOC_TYPE_CM_PREFERENCE_IMAGE+"')");
 
-            response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, params, 200);
+            response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o2Id, nodes.get(0).getId());
             assertEquals(ASSOC_TYPE_CM_PREFERENCE_IMAGE, nodes.get(0).getAssociation().getAssocType());
             assertFalse(nodes.get(0).getAssociation().getIsPrimary());
 
-            response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
+            response = getAll(getNodeParentsUrl(o2Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f1Id, nodes.get(0).getId());
@@ -813,7 +842,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             // note: see NodeApiTest for other filters related to /nodes/{parentId}/children filters
 
             // note: currently collapses same nodeIds (o2Id x 2) into one - makes sense in terms of File/Folder to avoid duplicate names
-            response = getAll(getNodeChildrenUrl(f1Id), user1, paging, null, 200);
+            response = getAll(getNodeChildrenUrl(f1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
             List<String> nodeIds = Arrays.asList(new String[] { nodes.get(0).getId(), nodes.get(1).getId()} );
@@ -823,7 +852,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             params = new HashMap<>(1);
             params.put("where", "(isPrimary=true)");
 
-            response = getAll(getNodeChildrenUrl(f1Id), user1, paging, params, 200);
+            response = getAll(getNodeChildrenUrl(f1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o1Id, nodes.get(0).getId());
@@ -832,7 +861,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             params.put("where", "(isPrimary=false)");
 
             // note: currently collapses same nodeIds (o2Id x 2) into one - makes sense in terms of File/Folder to avoid duplicate names
-            response = getAll(getNodeChildrenUrl(f1Id), user1, paging, params, 200);
+            response = getAll(getNodeChildrenUrl(f1Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o2Id, nodes.get(0).getId());
@@ -840,14 +869,14 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
 
             // test list filter - isPrimary (/parents)
 
-            response = getAll(getNodeParentsUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeParentsUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(3, nodes.size());
 
             params = new HashMap<>(1);
             params.put("where", "(isPrimary=true)");
 
-            response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
+            response = getAll(getNodeParentsUrl(o2Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f2Id, nodes.get(0).getId());
@@ -855,7 +884,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             params = new HashMap<>(1);
             params.put("where", "(isPrimary=false)");
 
-            response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
+            response = getAll(getNodeParentsUrl(o2Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             i = 0;
             for (Node node : nodes)
@@ -881,7 +910,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             params = new HashMap<>(1);
             params.put("where", "(isPrimary=false and assocType='"+ASSOC_TYPE_CM_PREFERENCE_IMAGE+"')");
 
-            response = getAll(getNodeParentsUrl(o2Id), user1, paging, params, 200);
+            response = getAll(getNodeParentsUrl(o2Id), paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f1Id, nodes.get(0).getId());
@@ -894,13 +923,13 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             params = new HashMap<>(1);
             params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_CONTAINS);
 
-            delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, params, 204);
+            delete(getNodeSecondaryChildrenUrl(f1Id), o2Id, params, 204);
 
-            response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+            response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
 
-            response = getAll(getNodeParentsUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeParentsUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
@@ -908,41 +937,41 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_PREFERENCE_IMAGE);
 
             // remove other secondary child assoc
-            delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, params, 204);
+            delete(getNodeSecondaryChildrenUrl(f1Id), o2Id, params, 204);
 
-            response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+            response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeParentsUrl(o2Id), user1, paging, null, 200);
+            response = getAll(getNodeParentsUrl(o2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
 
             {
                 // test removal of multiple secondary child assocs (if assoc type is not specified)
 
-                response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+                response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(0, nodes.size());
 
                 // re-create secondary child assoc
                 secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS);
-                post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
+                post(getNodeSecondaryChildrenUrl(f1Id), toJsonAsStringNonNull(secChild), 201);
 
                 // re-create ano' secondary child assoc (different type) between the same two nodes
                 secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_PREFERENCE_IMAGE);
-                post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
+                post(getNodeSecondaryChildrenUrl(f1Id), toJsonAsStringNonNull(secChild), 201);
 
-                response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+                response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(2, nodes.size());
                 assertEquals(o2Id, nodes.get(0).getId());
                 assertEquals(o2Id, nodes.get(1).getId());
 
                 // now remove both secondary child assocs
-                delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, null, 204);
+                delete(getNodeSecondaryChildrenUrl(f1Id), o2Id, null, 204);
 
-                response = getAll(getNodeSecondaryChildrenUrl(f1Id), user1, paging, null, 200);
+                response = getAll(getNodeSecondaryChildrenUrl(f1Id), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(0, nodes.size());
             }
@@ -951,7 +980,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 // sanity check paging of list of secondary children
 
                 paging = getPaging(0, 100);
-                response = getAll(getNodeSecondaryChildrenUrl(f3Id), user1, paging, null, 200);
+                response = getAll(getNodeSecondaryChildrenUrl(f3Id), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(0, nodes.size());
 
@@ -964,18 +993,18 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                     n = new Node();
                     n.setName(childName);
                     n.setNodeType(TYPE_CM_CONTENT);
-                    response = post(getNodeChildrenUrl(f2Id), user1, toJsonAsStringNonNull(n), 201);
+                    response = post(getNodeChildrenUrl(f2Id), toJsonAsStringNonNull(n), 201);
 
                     childIds[j] = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
                     secChild = new AssocChild(childIds[j], ASSOC_TYPE_CM_CONTAINS);
-                    post(getNodeSecondaryChildrenUrl(f3Id), user1, toJsonAsStringNonNull(secChild), 201);
+                    post(getNodeSecondaryChildrenUrl(f3Id), toJsonAsStringNonNull(secChild), 201);
                 }
 
                 int skipCount = 0;
                 int maxItems = 100;
                 paging = getPaging(skipCount, maxItems);
-                response = getAll(getNodeSecondaryChildrenUrl(f3Id), user1, paging, null, 200);
+                response = getAll(getNodeSecondaryChildrenUrl(f3Id), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(childCnt, nodes.size());
 
@@ -988,7 +1017,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 skipCount = 1;
                 maxItems = 3;
                 paging = getPaging(skipCount, maxItems);
-                response = getAll(getNodeSecondaryChildrenUrl(f3Id), user1, paging, null, 200);
+                response = getAll(getNodeSecondaryChildrenUrl(f3Id), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(maxItems, nodes.size());
                 assertEquals(childIds[1], nodes.get(0).getId());
@@ -1008,12 +1037,12 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 n = new Node();
                 n.setName(childName);
                 n.setNodeType(TYPE_CM_CONTENT);
-                response = post(getNodeChildrenUrl(f4Id), user1, toJsonAsStringNonNull(n), 201);
+                response = post(getNodeChildrenUrl(f4Id), toJsonAsStringNonNull(n), 201);
 
                 String childId = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
                 paging = getPaging(0, 100);
-                response = getAll(getNodeParentsUrl(childId), user1, paging, null, 200);
+                response = getAll(getNodeParentsUrl(childId), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(1, nodes.size());
                 assertEquals(f4Id, nodes.get(0).getId());
@@ -1027,7 +1056,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                     parentIds[j] = createFolder(f4Id, parentName).getId();
 
                     secChild = new AssocChild(childId, ASSOC_TYPE_CM_CONTAINS);
-                    post(getNodeSecondaryChildrenUrl(parentIds[j]), user1, toJsonAsStringNonNull(secChild), 201);
+                    post(getNodeSecondaryChildrenUrl(parentIds[j]), toJsonAsStringNonNull(secChild), 201);
                 }
 
                 int skipCount = 0;
@@ -1035,7 +1064,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 int expectedCnt = parentCnt+1;
 
                 paging = getPaging(skipCount, maxItems);
-                response = getAll(getNodeParentsUrl(childId), user1, paging, null, 200);
+                response = getAll(getNodeParentsUrl(childId), paging, null, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(expectedCnt, nodes.size());
 
@@ -1056,7 +1085,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 skipCount=0;
                 maxItems=2;
                 paging = getPaging(skipCount, maxItems);
-                response = getAll(getNodeParentsUrl(childId), user1, paging, params, 200);
+                response = getAll(getNodeParentsUrl(childId), paging, params, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(maxItems, nodes.size());
                 for (Node node : nodes)
@@ -1073,7 +1102,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 skipCount=2;
                 maxItems=2;
                 paging = getPaging(skipCount, maxItems);
-                response = getAll(getNodeParentsUrl(childId), user1, paging, params, 200);
+                response = getAll(getNodeParentsUrl(childId), paging, params, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(maxItems, nodes.size());
                 for (Node node : nodes)
@@ -1090,7 +1119,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
                 skipCount=4;
                 maxItems=2;
                 paging = getPaging(skipCount, maxItems);
-                response = getAll(getNodeParentsUrl(childId), user1, paging, params, 200);
+                response = getAll(getNodeParentsUrl(childId), paging, params, 200);
                 nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
                 assertEquals(1, nodes.size());
                 for (Node node : nodes)
@@ -1110,22 +1139,26 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             //
 
             {
+                setRequestContext(null);
+                
                 // -ve test - unauthenticated - belts-and-braces ;-)
                 secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS);
-                post(getNodeSecondaryChildrenUrl(f1Id), null, toJsonAsStringNonNull(secChild), 401);
+                post(getNodeSecondaryChildrenUrl(f1Id), toJsonAsStringNonNull(secChild), 401);
+
+                setRequestContext(user1);
 
                 // -ve test - model integrity
                 secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS);
-                post(getNodeSecondaryChildrenUrl(o1Id), user1, toJsonAsStringNonNull(secChild), 422);
+                post(getNodeSecondaryChildrenUrl(o1Id), toJsonAsStringNonNull(secChild), 422);
 
                 // -ve test - duplicate assoc
                 secChild = new AssocChild(o2Id, ASSOC_TYPE_CM_CONTAINS);
-                post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 201);
-                post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 409);
-                delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, null, 204); // cleanup
+                post(getNodeSecondaryChildrenUrl(f1Id), toJsonAsStringNonNull(secChild), 201);
+                post(getNodeSecondaryChildrenUrl(f1Id), toJsonAsStringNonNull(secChild), 409);
+                delete(getNodeSecondaryChildrenUrl(f1Id), o2Id, null, 204); // cleanup
 
                 secChild = new AssocChild(o2Id, "cm:unknowntype");
-                post(getNodeSecondaryChildrenUrl(f1Id), user1, toJsonAsStringNonNull(secChild), 400);
+                post(getNodeSecondaryChildrenUrl(f1Id), toJsonAsStringNonNull(secChild), 400);
             }
 
             //
@@ -1133,18 +1166,22 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             //
 
             {
+                setRequestContext(null);
+                
                 // -ve test - unauthenticated - belts-and-braces ;-)
-                getAll(getNodeSecondaryChildrenUrl(f1Id), null, paging, null, 401);
-                getAll(getNodeParentsUrl(o2Id), null, paging, null, 401);
+                getAll(getNodeSecondaryChildrenUrl(f1Id), paging, null, 401);
+                getAll(getNodeParentsUrl(o2Id), paging, null, 401);
 
-                getAll(getNodeSecondaryChildrenUrl(UUID.randomUUID().toString()), user1, paging, null, 404);
-                getAll(getNodeParentsUrl(UUID.randomUUID().toString()), user1, paging, null, 404);
+                setRequestContext(user1);
+                
+                getAll(getNodeSecondaryChildrenUrl(UUID.randomUUID().toString()), paging, null, 404);
+                getAll(getNodeParentsUrl(UUID.randomUUID().toString()), paging, null, 404);
 
                 params = new HashMap<>(1);
                 params.put("where", "(assocType='cm:unknownassoctype')");
 
-                getAll(getNodeSecondaryChildrenUrl(o1Id), user1, paging, params, 400);
-                getAll(getNodeParentsUrl(o1Id), user1, paging, params, 400);
+                getAll(getNodeSecondaryChildrenUrl(o1Id), paging, params, 400);
+                getAll(getNodeParentsUrl(o1Id), paging, params, 400);
             }
 
             //
@@ -1152,29 +1189,33 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             //
 
             {
+                setRequestContext(null);
+                
                 // unauthenticated - belts-and-braces ;-)
-                delete(getNodeSecondaryChildrenUrl(f1Id), null, o2Id, null, 401);
+                delete(getNodeSecondaryChildrenUrl(f1Id), o2Id, null, 401);
 
-                delete(getNodeSecondaryChildrenUrl(UUID.randomUUID().toString()), user1, o2Id, null, 404);
-                delete(getNodeSecondaryChildrenUrl(f1Id), user1, UUID.randomUUID().toString(), null, 404);
+                setRequestContext(user1);
+
+                delete(getNodeSecondaryChildrenUrl(UUID.randomUUID().toString()), o2Id, null, 404);
+                delete(getNodeSecondaryChildrenUrl(f1Id), UUID.randomUUID().toString(), null, 404);
 
                 // nothing to remove - for any assoc type
-                delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, null, 404);
+                delete(getNodeSecondaryChildrenUrl(f1Id), o2Id, null, 404);
 
                 // nothing to remove - for given assoc type
                 params = new HashMap<>(1);
                 params.put(PARAM_ASSOC_TYPE, ASSOC_TYPE_CM_PREFERENCE_IMAGE);
-                delete(getNodeSecondaryChildrenUrl(f1Id), user1, o2Id, params, 404);
+                delete(getNodeSecondaryChildrenUrl(f1Id), o2Id, params, 404);
 
                 // unknown assoc type
                 params = new HashMap<>(1);
                 params.put(PARAM_ASSOC_TYPE, "cm:unknowntype");
-                delete(getNodeSecondaryChildrenUrl(o1Id), user1, o2Id, params, 400);
+                delete(getNodeSecondaryChildrenUrl(o1Id), o2Id, params, 400);
 
                 // do not allow delete of primary child (via secondary child removal)
                 params = new HashMap<>(1);
                 params.put(PARAM_ASSOC_TYPE, "cm:contains");
-                delete(getNodeSecondaryChildrenUrl(f1Id), user1, o1Id, params, 400);
+                delete(getNodeSecondaryChildrenUrl(f1Id), o1Id, params, 400);
             }
         }
         finally
@@ -1218,94 +1259,94 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             f2Id = createFolder(myFolderNodeId, "f2").getId();
             f3Id = createFolder(myFolderNodeId, "f3").getId();
 
-            HttpResponse response = getAll(getNodeParentsUrl(f1bId), user1, null, null, 200);
+            HttpResponse response = getAll(getNodeParentsUrl(f1bId), null, null, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f1Id, nodes.get(0).getId());
 
-            response = getAll(getNodeParentsUrl(f1dId), user1, null, null, 200);
+            response = getAll(getNodeParentsUrl(f1dId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f1cId, nodes.get(0).getId());
 
-            response = getAll(getNodeSourcesUrl(c1eId), user1, null, null, 200);
+            response = getAll(getNodeSourcesUrl(c1eId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             // add some secondary parent/child assocs outside of the hierarchy
 
             AssocChild secChild = new AssocChild(f1bId, ASSOC_TYPE_CM_CONTAINS);
-            post(getNodeSecondaryChildrenUrl(f2Id), user1, toJsonAsStringNonNull(secChild), 201);
+            post(getNodeSecondaryChildrenUrl(f2Id), toJsonAsStringNonNull(secChild), 201);
 
             secChild = new AssocChild(f1bId, ASSOC_TYPE_CM_CONTAINS);
-            post(getNodeSecondaryChildrenUrl(f3Id), user1, toJsonAsStringNonNull(secChild), 201);
+            post(getNodeSecondaryChildrenUrl(f3Id), toJsonAsStringNonNull(secChild), 201);
 
             secChild = new AssocChild(f1dId, ASSOC_TYPE_CM_CONTAINS);
-            post(getNodeSecondaryChildrenUrl(f2Id), user1, toJsonAsStringNonNull(secChild), 201);
+            post(getNodeSecondaryChildrenUrl(f2Id), toJsonAsStringNonNull(secChild), 201);
 
             secChild = new AssocChild(f1dId, ASSOC_TYPE_CM_CONTAINS);
-            post(getNodeSecondaryChildrenUrl(f3Id), user1, toJsonAsStringNonNull(secChild), 201);
+            post(getNodeSecondaryChildrenUrl(f3Id), toJsonAsStringNonNull(secChild), 201);
 
             // also add a secondary parent/child assoc within the hierarchy
             secChild = new AssocChild(f1dId, ASSOC_TYPE_CM_CONTAINS);
-            post(getNodeSecondaryChildrenUrl(f1bId), user1, toJsonAsStringNonNull(secChild), 201);
+            post(getNodeSecondaryChildrenUrl(f1bId), toJsonAsStringNonNull(secChild), 201);
 
             // add some peer assocs outside of the hierarchy
             AssocTarget tgt = new AssocTarget(c1eId, ASSOC_TYPE_CM_REFERENCES);
-            post(getNodeTargetsUrl(f2Id), user1, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(f2Id), toJsonAsStringNonNull(tgt), 201);
 
             tgt = new AssocTarget(c1eId, ASSOC_TYPE_CM_PARTS);
-            post(getNodeTargetsUrl(f3Id), user1, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(f3Id), toJsonAsStringNonNull(tgt), 201);
 
             // also add a peer assoc within the hierarchy
             tgt = new AssocTarget(c1eId, ASSOC_TYPE_CM_PARTS);
-            post(getNodeTargetsUrl(f1cId), user1, toJsonAsStringNonNull(tgt), 201);
+            post(getNodeTargetsUrl(f1cId), toJsonAsStringNonNull(tgt), 201);
 
             // double-check the secondary parent/child assocs
 
-            response = getAll(getNodeParentsUrl(f1bId), user1, null, null, 200);
+            response = getAll(getNodeParentsUrl(f1bId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(3, nodes.size());
 
-            response = getAll(getNodeParentsUrl(f1dId), user1, null, null, 200);
+            response = getAll(getNodeParentsUrl(f1dId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(4, nodes.size());
 
-            response = getAll(getNodeSecondaryChildrenUrl(f2Id), user1, null, null, 200);
+            response = getAll(getNodeSecondaryChildrenUrl(f2Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
             List<String> nodeIds = Arrays.asList(new String[]{nodes.get(0).getId(), nodes.get(1).getId()});
             assertTrue(nodeIds.contains(f1bId));
             assertTrue(nodeIds.contains(f1dId));
 
-            response = getAll(getNodeSecondaryChildrenUrl(f3Id), user1, null, null, 200);
+            response = getAll(getNodeSecondaryChildrenUrl(f3Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
             nodeIds = Arrays.asList(new String[]{nodes.get(0).getId(), nodes.get(1).getId()});
             assertTrue(nodeIds.contains(f1bId));
             assertTrue(nodeIds.contains(f1dId));
 
-            response = getAll(getNodeSecondaryChildrenUrl(f1bId), user1, null, null, 200);
+            response = getAll(getNodeSecondaryChildrenUrl(f1bId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f1dId, nodes.get(0).getId());
 
             // double-check the peer assocs
-            response = getAll(getNodeSourcesUrl(c1eId), user1, null, null, 200);
+            response = getAll(getNodeSourcesUrl(c1eId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(3, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(f2Id), user1, null, null, 200);
+            response = getAll(getNodeTargetsUrl(f2Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(c1eId, nodes.get(0).getId());
 
-            response = getAll(getNodeTargetsUrl(f3Id), user1, null, null, 200);
+            response = getAll(getNodeTargetsUrl(f3Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(c1eId, nodes.get(0).getId());
 
-            response = getAll(getNodeTargetsUrl(f1cId), user1, null, null, 200);
+            response = getAll(getNodeTargetsUrl(f1cId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(c1eId, nodes.get(0).getId());
@@ -1314,75 +1355,75 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             // ... delete to trashcan/archive ...
             deleteNode(f1bId);
 
-            getSingle(NodesEntityResource.class, user1, f1bId, null, 404);
+            getSingle(NodesEntityResource.class, f1bId, null, 404);
 
-            response = getAll(getNodeTargetsUrl(f2Id), user1, null, null, 200);
+            response = getAll(getNodeTargetsUrl(f2Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(f3Id), user1, null, null, 200);
+            response = getAll(getNodeTargetsUrl(f3Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
 
             // ... and then restore again ...
-            post(URL_DELETED_NODES+"/"+f1bId+"/restore", user1, null, null, 200);
+            post(URL_DELETED_NODES+"/"+f1bId+"/restore", null, null, 200);
 
             // check primary parent-child hierarchy is restored
             // but not the secondary parents or peer assocs of the deleted nodes (outside or within the hierarchy)
 
-            response = getSingle(NodesEntityResource.class, user1, f1bId, null, 200);
+            response = getSingle(NodesEntityResource.class, f1bId, null, 200);
             Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals(f1Id, nodeResp.getParentId());
 
-            response = getSingle(NodesEntityResource.class, user1, f1cId, null, 200);
+            response = getSingle(NodesEntityResource.class, f1cId, null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals(f1bId, nodeResp.getParentId());
 
-            response = getSingle(NodesEntityResource.class, user1, f1dId, null, 200);
+            response = getSingle(NodesEntityResource.class, f1dId, null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals(f1cId, nodeResp.getParentId());
 
             // secondary child assocs have not been restored
 
-            response = getAll(getNodeParentsUrl(f1bId), user1, null, null, 200);
+            response = getAll(getNodeParentsUrl(f1bId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f1Id, nodes.get(0).getId());
 
-            response = getAll(getNodeParentsUrl(f1cId), user1, null, null, 200);
+            response = getAll(getNodeParentsUrl(f1cId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f1bId, nodes.get(0).getId());
 
-            response = getAll(getNodeParentsUrl(f1dId), user1, null, null, 200);
+            response = getAll(getNodeParentsUrl(f1dId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(f1cId, nodes.get(0).getId());
 
-            response = getAll(getNodeSecondaryChildrenUrl(f2Id), user1, null, null, 200);
+            response = getAll(getNodeSecondaryChildrenUrl(f2Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeSecondaryChildrenUrl(f3Id), user1, null, null, 200);
+            response = getAll(getNodeSecondaryChildrenUrl(f3Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             // peer assocs have not been restored
 
-            response = getAll(getNodeSourcesUrl(c1eId), user1, null, null, 200);
+            response = getAll(getNodeSourcesUrl(c1eId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(f1cId), user1, null, null, 200);
+            response = getAll(getNodeTargetsUrl(f1cId), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(f2Id), user1, null, null, 200);
+            response = getAll(getNodeTargetsUrl(f2Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            response = getAll(getNodeTargetsUrl(f3Id), user1, null, null, 200);
+            response = getAll(getNodeTargetsUrl(f3Id), null, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
         }
@@ -1428,7 +1469,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n.setName("f1");
         n.setNodeType(TYPE_CM_FOLDER);
         n.setAspectNames(Arrays.asList(ASPECT_CM_PREFERENCES));
-        HttpResponse response = post(getNodeChildrenUrl(myFolderNodeId), user1, toJsonAsStringNonNull(n), 201);
+        HttpResponse response = post(getNodeChildrenUrl(myFolderNodeId), toJsonAsStringNonNull(n), 201);
         String f1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         // create content node
@@ -1436,14 +1477,14 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         n = new Node();
         n.setName(o1Name);
         n.setNodeType(TYPE_CM_CONTENT);
-        response = post(getNodeChildrenUrl(f1Id), user1, toJsonAsStringNonNull(n), 201);
+        response = post(getNodeChildrenUrl(f1Id), toJsonAsStringNonNull(n), 201);
         String o1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         String o2Name = "o2";
         n = new Node();
         n.setName(o2Name);
         n.setNodeType(TYPE_CM_CONTENT);
-        response = post(getNodeChildrenUrl(f1Id), user1, toJsonAsStringNonNull(n), 201);
+        response = post(getNodeChildrenUrl(f1Id), toJsonAsStringNonNull(n), 201);
         String o2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         // create folder node with some assocs
@@ -1458,7 +1499,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         AssocTarget tgt = new AssocTarget(o2Id, ASSOC_TYPE_CM_REFERENCES);
         n.setTargets(Collections.singletonList(tgt));
 
-        response = post(getNodeChildrenUrl(myFolderNodeId), user1, toJsonAsStringNonNull(n), 201);
+        response = post(getNodeChildrenUrl(myFolderNodeId), toJsonAsStringNonNull(n), 201);
         String f2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         String f3Id = createFolder(myFolderNodeId, "f3").getId();
@@ -1467,12 +1508,12 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
         {
             Paging paging = getPaging(0, 100);
 
-            response = getAll(getNodeSecondaryChildrenUrl(f2Id), user1, paging, null, 200);
+            response = getAll(getNodeSecondaryChildrenUrl(f2Id), paging, null, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o1Id, nodes.get(0).getId());
 
-            response = getAll(getNodeTargetsUrl(f2Id), user1, paging, null, 200);
+            response = getAll(getNodeTargetsUrl(f2Id), paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(o2Id, nodes.get(0).getId());
@@ -1486,7 +1527,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             n.setNodeType(TYPE_CM_FOLDER);
             AssocChild assocChild = new AssocChild(myFolderNodeId, "cm:contains");
             n.setSecondaryChildren(Collections.singletonList(assocChild));
-            post(getNodeChildrenUrl(myFolderNodeId), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
+            post(getNodeChildrenUrl(myFolderNodeId), RestApiUtil.toJsonAsStringNonNull(n), 400);
 
             // -ve tests - missing targetId / childId or assocType
 
@@ -1495,28 +1536,28 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             n.setNodeType(TYPE_CM_FOLDER);
             assocChild = new AssocChild(null, ASSOC_TYPE_CM_CONTAINS);
             n.setSecondaryChildren(Collections.singletonList(assocChild));
-            post(getNodeChildrenUrl(f3Id), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
+            post(getNodeChildrenUrl(f3Id), RestApiUtil.toJsonAsStringNonNull(n), 400);
 
             n = new Node();
             n.setName("my-folder");
             n.setNodeType(TYPE_CM_FOLDER);
             assocChild = new AssocChild(f2Id, null);
             n.setSecondaryChildren(Collections.singletonList(assocChild));
-            post(getNodeChildrenUrl(f3Id), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
+            post(getNodeChildrenUrl(f3Id), RestApiUtil.toJsonAsStringNonNull(n), 400);
 
             n = new Node();
             n.setName("my-folder");
             n.setNodeType(TYPE_CM_FOLDER);
             tgt = new AssocTarget(null, ASSOC_TYPE_CM_REFERENCES);
             n.setTargets(Collections.singletonList(tgt));
-            post(getNodeChildrenUrl(f3Id), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
+            post(getNodeChildrenUrl(f3Id), RestApiUtil.toJsonAsStringNonNull(n), 400);
 
             n = new Node();
             n.setName("my-folder");
             n.setNodeType(TYPE_CM_FOLDER);
             tgt = new AssocTarget(f2Id, null);
             n.setTargets(Collections.singletonList(tgt));
-            post(getNodeChildrenUrl(f3Id), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
+            post(getNodeChildrenUrl(f3Id), RestApiUtil.toJsonAsStringNonNull(n), 400);
         }
         finally
         {

@@ -45,6 +45,7 @@ import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
 import org.alfresco.rest.api.tests.client.RequestContext;
+import org.alfresco.rest.api.tests.client.data.Company;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
@@ -452,10 +453,15 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return createUser(username, "password", null);
     }
 
+    protected String createUser(String usernameIn, String password, TestNetwork network)
+    {
+        return createUser(new PersonInfo(usernameIn, usernameIn, usernameIn, password, null, null, null, null, null, null, null), network);
+    }
+
     /**
      * TODO implement as remote api call
      */
-    protected String createUser(final String usernameIn, final String password, final TestNetwork network)
+    protected String createUser(final PersonInfo personInfo, final TestNetwork network)
     {
         final String tenantDomain = (network != null ? network.getId() : TenantService.DEFAULT_DOMAIN);
         
@@ -468,8 +474,8 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
                 {
                     public String doWork() throws Exception
                     {
-                        String username = repoService.getPublicApiContext().createUserName(usernameIn, tenantDomain);
-                        PersonInfo personInfo = new PersonInfo(username, username, username, password, null, null, null, null, null, null, null);
+                        String username = repoService.getPublicApiContext().createUserName(personInfo.getUsername(), tenantDomain);
+                        personInfo.setUsername(username);
                         RepoService.TestPerson person = repoService.createUser(personInfo, username, network);
                         return person.getId();
 

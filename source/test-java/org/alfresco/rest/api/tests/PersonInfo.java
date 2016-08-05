@@ -48,15 +48,11 @@ public class PersonInfo
 			String google)
 	{
 		super();
-		if(username == null)
-		{
-			throw new IllegalArgumentException();
-		}
+		setUsername(username);
 		this.company = company;
 		this.networkAdmin = false;
 		this.firstName = firstName;
 		this.lastName = lastName;
-		this.username = username;
 		this.password = password;
 		this.skype = skype;
 		this.location = location;
@@ -65,6 +61,15 @@ public class PersonInfo
 		this.instantmsg = instantmsg;
 		this.google = google;
 	}
+
+    void setUsername(String username)
+    {
+        if (username == null)
+		{
+			throw new IllegalArgumentException();
+		}
+        this.username = username;
+    }
 	
 	public boolean isNetworkAdmin()
 	{

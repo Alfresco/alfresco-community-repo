@@ -95,6 +95,8 @@ public class TestUserPreferences extends EnterpriseTestApi
         expectedPreferences.add(new Preference("org.alfresco.share.documentList.testPreference1", String.valueOf(true)));
         expectedPreferences.add(new Preference("org.alfresco.share.documentList.sortAscending", String.valueOf(true)));
         expectedPreferences.add(new Preference("org.alfresco.share.documentList.testPreference3", String.valueOf(true)));
+		// new preference name for issue REPO-855
+		expectedPreferences.add(new Preference("org.alfresco.ext.folders.favourites.workspace://SpacesStore/4e3d0779-388a-4b94-91e1-eab588a7da3d.createdAt", String.valueOf(true)));
 
 		TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
 		{

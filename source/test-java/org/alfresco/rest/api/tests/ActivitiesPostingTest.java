@@ -60,8 +60,10 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testCreateUpdate() throws Exception
     {
+        setRequestContext(u1.getId());
+        
         String folder1 = "folder" + System.currentTimeMillis() + "_1";
-        Folder createdFolder = createFolder(u1.getId(), docLibNodeRef.getId(), folder1, null);
+        Folder createdFolder = createFolder(docLibNodeRef.getId(), folder1, null);
         assertNotNull(createdFolder);
 
         String docName = "d1.txt";
@@ -77,8 +79,8 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         String textContent = response.getResponse();
         assertNotNull(textContent);
 
-        delete(URL_NODES, u1.getId(), documentResp.getId(), 204);
-        delete(URL_NODES, u1.getId(), createdFolder.getId(), 204);
+        deleteNode(documentResp.getId());
+        deleteNode(createdFolder.getId());
 
         List<Activity> activities = getMyActivities();
         assertEquals(activities.size(),6);
@@ -107,16 +109,18 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testNonFileActivities() throws Exception
     {
+        setRequestContext(u1.getId());
+        
         String folder1 = "InSitefolder" + System.currentTimeMillis() + "_1";
-        Folder createdFolder = createFolder(u1.getId(), docLibNodeRef.getId(), folder1, null);
+        Folder createdFolder = createFolder(docLibNodeRef.getId(), folder1, null);
         assertNotNull(createdFolder);
 
         List<Activity> activities = getMyActivities();
 
-        Node aNode = createNode(u1.getId(), createdFolder.getId(), "mynode", "cm:failedThumbnail", null);
+        Node aNode = createNode(createdFolder.getId(), "mynode", "cm:failedThumbnail", null);
         assertNotNull(aNode);
 
-        delete(URL_NODES, u1.getId(), aNode.getId(), 204);
+        deleteNode(aNode.getId());
 
         List<Activity> activitiesAgain = getMyActivities();
         assertEquals("No activites should be created for non-file activities", activities, activitiesAgain);
@@ -128,10 +132,12 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testNonSite() throws Exception
     {
+        setRequestContext(u1.getId());
+        
         List<Activity> activities = getMyActivities();
         String folder1 = "nonSitefolder" + System.currentTimeMillis() + "_1";
         //Create a folder outside a site
-        Folder createdFolder = createFolder(u1.getId(),  Nodes.PATH_MY, folder1, null);
+        Folder createdFolder = createFolder(Nodes.PATH_MY, folder1, null);
         assertNotNull(createdFolder);
 
         String docName = "nonsite_d1.txt";
@@ -156,7 +162,8 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     {
         repoService.generateFeed();
 
-        publicApiClient.setRequestContext(new RequestContext(u1.getId()));
+        setRequestContext(u1.getId());
+        
         Map<String, String> meParams = new HashMap<>();
         meParams.put("who", String.valueOf(Activities.ActivityWho.me));
         return publicApiClient.people().getActivities(u1.getId(), meParams).getList();

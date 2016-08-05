@@ -31,9 +31,11 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
-import org.alfresco.repo.content.MimetypeMap;
+
+import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
+import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -53,9 +55,12 @@ import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.MutableAuthenticationService;
+import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.TempFileProvider;
+import org.junit.After;
+import org.junit.Before;
 import org.springframework.util.ResourceUtils;
 
 import java.io.ByteArrayInputStream;
@@ -63,7 +68,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -90,10 +97,89 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected static final String ASSOC_TYPE_CM_PREFERENCE_IMAGE = "cm:preferenceImage";
 
     protected static final String ASSOC_TYPE_CM_CONTAINS = "cm:contains";
+    
+    // TODO improve admin-related tests, including ability to override default admin un/pw
+    protected static final String DEFAULT_ADMIN = "admin";
+    private static final String DEFAULT_ADMIN_PWD = "admin";
 
+    protected TestNetwork networkOne;
+
+    /**
+     * User one from network one
+     */
+    protected TestPerson userOneN1;
+
+    /**
+     * User two from network one
+     */
+    protected TestPerson userTwoN1;
+    protected TestSite userOneN1Site;
+
+    protected String user1;
+    protected String user2;
+    
+    private List<String> users = new ArrayList<>();
+
+    protected MutableAuthenticationService authenticationService;
+    protected PersonService personService;
+
+    protected final String RUNID = System.currentTimeMillis()+"";
+
+
+    @Before
+    public void setup() throws Exception
+    {
+        authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
+        personService = applicationContext.getBean("personService", PersonService.class);
+
+        // note: createUser currently relies on repoService
+        user1 = createUser("user1-" + RUNID);
+        user2 = createUser("user2-" + RUNID);
+
+        // to enable admin access via test calls - eg. after clean/purge
+        getOrCreateUser("admin", "admin");
+
+        // We just need to clean the on-premise-users,
+        // so the tests for the specific network would work.
+        users.add(user1);
+        users.add(user2);
+
+        networkOne = getTestFixture().getRandomNetwork();
+        userOneN1 = networkOne.createUser();
+        userTwoN1 = networkOne.createUser();
+
+        userOneN1Site = createSite(networkOne, userOneN1, SiteVisibility.PRIVATE);
+    }
+
+    @After
+    public void tearDown() throws Exception
+    {
+        deleteSite(networkOne.getId(), userOneN1.getId(), userOneN1Site.getSiteId(), 204);
+
+        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
+        for (final String user : users)
+        {
+            transactionHelper.doInTransaction(new RetryingTransactionHelper.RetryingTransactionCallback<Void>()
+            {
+                @Override
+                public Void execute() throws Throwable
+                {
+                    if (personService.personExists(user))
+                    {
+                        authenticationService.deleteAuthentication(user);
+                        personService.deletePerson(user);
+                    }
+                    return null;
+                }
+            });
+        }
+        users.clear();
+        AuthenticationUtil.clearCurrentSecurityContext();
+    }
 
     /**
      * The api scope. either public or private
+     *
      * @return public or private
      */
     public abstract String getScope();
@@ -111,20 +197,20 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected HttpResponse post(String url, String runAsUser, String body, Map<String, String> params, Map<String, String> headers, String apiName, int expectedStatus) throws Exception
     {
         RequestBuilder requestBuilder = httpClient.new PostRequestBuilder()
-                    .setBodyAsString(body)
-                    .setRequestContext(new RequestContext(runAsUser))
-                    .setScope(getScope())
-                    .setApiName(apiName)
-                    .setEntityCollectionName(url)
-                    .setHeaders(headers)
-                    .setParams(params);
+                .setBodyAsString(body)
+                .setRequestContext(new RequestContext(runAsUser))
+                .setScope(getScope())
+                .setApiName(apiName)
+                .setEntityCollectionName(url)
+                .setHeaders(headers)
+                .setParams(params);
         HttpResponse response = publicApiClient.execute(requestBuilder);
         checkStatus(expectedStatus, response.getStatusCode());
 
         return response;
     }
 
-    protected HttpResponse post(String url, String runAsUser, String body,  String queryString, int expectedStatus) throws Exception
+    protected HttpResponse post(String url, String runAsUser, String body, String queryString, int expectedStatus) throws Exception
     {
         publicApiClient.setRequestContext(new RequestContext(runAsUser));
         if (queryString != null)
@@ -207,12 +293,12 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     {
         Map<String, String> params = createParams(paging, otherParams);
         RequestBuilder requestBuilder = httpClient.new GetRequestBuilder()
-                    .setRequestContext(new RequestContext(runAsUser))
-                    .setScope(getScope())
-                    .setApiName(apiName)
-                    .setEntityCollectionName(url)
-                    .setParams(params)
-                    .setHeaders(headers);
+                .setRequestContext(new RequestContext(runAsUser))
+                .setScope(getScope())
+                .setApiName(apiName)
+                .setEntityCollectionName(url)
+                .setParams(params)
+                .setHeaders(headers);
 
         HttpResponse response = publicApiClient.execute(requestBuilder);
         checkStatus(expectedStatus, response.getStatusCode());
@@ -253,13 +339,13 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected HttpResponse getSingle(String url, String runAsUser, String entityId, Map<String, String> params, Map<String, String> headers, String apiName, int expectedStatus) throws Exception
     {
         RequestBuilder requestBuilder = httpClient.new GetRequestBuilder()
-                    .setRequestContext(new RequestContext(runAsUser))
-                    .setScope(getScope())
-                    .setApiName(apiName)
-                    .setEntityCollectionName(url)
-                    .setEntityId(entityId)
-                    .setParams(params)
-                    .setHeaders(headers);
+                .setRequestContext(new RequestContext(runAsUser))
+                .setScope(getScope())
+                .setApiName(apiName)
+                .setEntityCollectionName(url)
+                .setEntityId(entityId)
+                .setParams(params)
+                .setHeaders(headers);
 
         HttpResponse response = publicApiClient.execute(requestBuilder);
         checkStatus(expectedStatus, response.getStatusCode());
@@ -268,7 +354,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     }
 
     protected HttpResponse getSingleWithDelayRetry(String url, String runAsUser, String entityId, Map<String, String> params,
-                Map<String, String> headers, int repeat, long pauseInMillisecond, int expectedStatus) throws Exception
+                                                   Map<String, String> headers, int repeat, long pauseInMillisecond, int expectedStatus) throws Exception
     {
         int retryCount = 0;
         while (retryCount < repeat)
@@ -276,7 +362,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
             try
             {
                 return getSingle(url, runAsUser, entityId, params, headers, expectedStatus);
-            }
+            } 
             catch (AssertionError ex)
             {
                 retryCount++;
@@ -300,7 +386,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     }
 
     protected HttpResponse putBinary(String url, int version, String runAsUser, BinaryPayload payload, String queryString, Map<String, String> params,
-                int expectedStatus) throws Exception
+                                     int expectedStatus) throws Exception
     {
         publicApiClient.setRequestContext(new RequestContext(runAsUser));
         if (queryString != null)
@@ -315,17 +401,17 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     }
 
     protected HttpResponse putBinary(String url, String runAsUser, BinaryPayload payload, String queryString, Map<String, String> params,
-                int expectedStatus) throws Exception
+                                     int expectedStatus) throws Exception
     {
         return putBinary(url, 1, runAsUser, payload, queryString, params, expectedStatus);
     }
 
     protected HttpResponse delete(String url, String runAsUser, String entityId, int expectedStatus) throws Exception
     {
-        return delete(url, runAsUser, entityId,  null, expectedStatus);
+        return delete(url, runAsUser, entityId, null, expectedStatus);
     }
 
-    protected HttpResponse delete(String url, String runAsUser, String entityId,  Map<String, String> params, int expectedStatus) throws Exception
+    protected HttpResponse delete(String url, String runAsUser, String entityId, Map<String, String> params, int expectedStatus) throws Exception
     {
         publicApiClient.setRequestContext(new RequestContext(runAsUser));
 
@@ -343,13 +429,13 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected HttpResponse delete(String url, String runAsUser, String entityId, Map<String, String> params, Map<String, String> headers, String apiName, int expectedStatus) throws Exception
     {
         RequestBuilder requestBuilder = httpClient.new DeleteRequestBuilder()
-                    .setRequestContext(new RequestContext(runAsUser))
-                    .setScope(getScope())
-                    .setApiName(apiName)
-                    .setEntityCollectionName(url)
-                    .setEntityId(entityId)
-                    .setParams(params)
-                    .setHeaders(headers);
+                .setRequestContext(new RequestContext(runAsUser))
+                .setScope(getScope())
+                .setApiName(apiName)
+                .setEntityCollectionName(url)
+                .setEntityId(entityId)
+                .setParams(params)
+                .setHeaders(headers);
 
         HttpResponse response = publicApiClient.execute(requestBuilder);
         checkStatus(expectedStatus, response.getStatusCode());
@@ -420,16 +506,16 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     /**
      * Helper: to get site container id (see also RepoService.getContainerNodeRef -> SiteService.getContainer)
-     *
-     *    GET /nodes/-root?relativePath=/Sites/siteId/documentLibrary
-     *
+     * <p>
+     * GET /nodes/-root?relativePath=/Sites/siteId/documentLibrary
+     * <p>
      * alternatively:
-     *
-     *    GET /nodes/siteNodeId?relativePath=documentLibrary
+     * <p>
+     * GET /nodes/siteNodeId?relativePath=documentLibrary
      */
     protected String getSiteContainerNodeId(String networkId, String runAsUserId, String siteId, String containerNameId) throws Exception
     {
-        Map<String, String> params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/Sites/"+siteId+"/"+containerNameId);
+        Map<String, String> params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/Sites/" + siteId + "/" + containerNameId);
 
         publicApiClient.setRequestContext(new RequestContext(networkId, runAsUserId));
 
@@ -447,12 +533,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
             return null;
         }, testSite.getNetworkId());
     }
-
-    protected NodeRef getSiteDocLib(final TestSite testSite)
-    {
-        return TenantUtil.runAsTenant(() -> testSite.getContainerNodeRef(("documentLibrary")), testSite.getNetworkId());
-    }
-
+    
     protected void checkStatus(int expectedStatus, int actualStatus)
     {
         if (expectedStatus > 0 && expectedStatus != actualStatus)
@@ -461,46 +542,60 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         }
     }
 
-    // -root- (eg. Company Home for on-prem)
-    protected String getRootNodeId(String runAsUserId) throws Exception
+    protected void setRequestContext(String runAsUser)
     {
-        HttpResponse response = getSingle(NodesEntityResource.class, runAsUserId, Nodes.PATH_ROOT, null, 200);
+        if ((runAsUser != null) && runAsUser.equals(DEFAULT_ADMIN))
+        {    
+            // TODO improve "admin" related tests
+            publicApiClient.setRequestContext(new RequestContext("-default-", DEFAULT_ADMIN, DEFAULT_ADMIN_PWD));
+            
+        }
+        else
+        {
+            publicApiClient.setRequestContext(new RequestContext(runAsUser));
+        }
+    }
+
+    // -root- (eg. Company Home for on-prem)
+    protected String getRootNodeId() throws Exception
+    {
+        HttpResponse response = getSingle(NodesEntityResource.class, publicApiClient.getRequestContext().getRunAsUser(), Nodes.PATH_ROOT, null, 200);
         Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         return node.getId();
     }
 
     // -my- (eg. User's Home for on-prem)
-    protected String getMyNodeId(String runAsUserId) throws Exception
+    protected String getMyNodeId() throws Exception
     {
-        HttpResponse response = getSingle(NodesEntityResource.class, runAsUserId, Nodes.PATH_MY, null, 200);
+        HttpResponse response = getSingle(NodesEntityResource.class, publicApiClient.getRequestContext().getRunAsUser(), Nodes.PATH_MY, null, 200);
         Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         return node.getId();
     }
 
     // -shared- (eg. "Shared" folder for on-prem)
-    protected String getSharedNodeId(String runAsUserId) throws Exception
+    protected String getSharedNodeId() throws Exception
     {
-        HttpResponse response = getSingle(NodesEntityResource.class, runAsUserId, Nodes.PATH_SHARED, null, 200);
+        HttpResponse response = getSingle(NodesEntityResource.class, publicApiClient.getRequestContext().getRunAsUser(), Nodes.PATH_SHARED, null, 200);
         Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         return node.getId();
     }
 
-    protected Folder createFolder(String runAsUserId, String parentId, String folderName) throws Exception
+    protected Folder createFolder(String parentId, String folderName) throws Exception
     {
-        return createFolder(runAsUserId, parentId, folderName, null);
+        return createFolder(parentId, folderName, null);
+    }
+    
+    protected Folder createFolder(String parentId, String folderName, Map<String, Object> props) throws Exception
+    {
+        return createNode(parentId, folderName, TYPE_CM_FOLDER, props, Folder.class);
     }
 
-    protected Folder createFolder(String runAsUserId, String parentId, String folderName, Map<String, Object> props) throws Exception
+    protected Node createNode(String parentId, String nodeName, String nodeType, Map<String, Object> props) throws Exception
     {
-        return createNode(runAsUserId, parentId, folderName, TYPE_CM_FOLDER, props, Folder.class);
+        return createNode(parentId, nodeName, nodeType, props, Node.class);
     }
 
-    protected Node createNode(String runAsUserId, String parentId, String nodeName, String nodeType, Map<String, Object> props) throws Exception
-    {
-        return createNode(runAsUserId, parentId, nodeName, nodeType, props, Node.class);
-    }
-
-    protected <T> T createNode(String runAsUserId, String parentId, String nodeName, String nodeType, Map<String, Object> props, Class<T> returnType)
+    protected <T> T createNode(String parentId, String nodeName, String nodeType, Map<String, Object> props, Class<T> returnType)
                 throws Exception
     {
         Node n = new Node();
@@ -509,22 +604,43 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         n.setProperties(props);
 
         // create node
-        HttpResponse response = post(getNodeChildrenUrl(parentId), runAsUserId, RestApiUtil.toJsonAsStringNonNull(n), 201);
+        HttpResponse response = post(getNodeChildrenUrl(parentId), publicApiClient.getRequestContext().getRunAsUser(), RestApiUtil.toJsonAsStringNonNull(n), 201);
 
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), returnType);
     }
-
-    protected Document createTextFile(String userId, String parentId, String fileName, String textContent) throws IOException, Exception
+    
+    protected void deleteNode(String nodeId) throws Exception
     {
-        return createTextFile(userId, parentId, fileName, textContent, "UTF-8", null);
+        deleteNode(nodeId, 204);
     }
 
-    protected Document createTextFile(String userId, String parentId, String fileName, String textContent, String encoding, Map<String,String> props) throws IOException, Exception
+    protected void deleteNode(String nodeId, int expectedStatus) throws Exception
     {
-        return createTextFile(userId, parentId, fileName, textContent, encoding, props, 201);
+        deleteNode(nodeId, false, expectedStatus);
     }
 
-    protected Document createTextFile(String userId, String parentId, String fileName, String textContent, String encoding, Map<String,String> props, int expectedStatus) throws IOException, Exception
+    protected void deleteNode(String nodeId, boolean permanent, int expectedStatus) throws Exception
+    {
+        Map params = null;
+        if (permanent == true)
+        {
+            params = Collections.singletonMap("permanent", "true");
+        }
+        
+        delete(URL_NODES, publicApiClient.getRequestContext().getRunAsUser(), nodeId, params, expectedStatus);
+    }
+
+    protected Document createTextFile(String parentId, String fileName, String textContent) throws IOException, Exception
+    {
+        return createTextFile(parentId, fileName, textContent, "UTF-8", null);
+    }
+
+    protected Document createTextFile(String parentId, String fileName, String textContent, String encoding, Map<String, String> props) throws IOException, Exception
+    {
+        return createTextFile(parentId, fileName, textContent, encoding, props, 201);
+    }
+
+    protected Document createTextFile(String parentId, String fileName, String textContent, String encoding, Map<String, String> props, int expectedStatus) throws IOException, Exception
     {
         if (props == null)
         {
@@ -540,7 +656,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
                 .setProperties(props)
                 .build();
 
-        HttpResponse response = post(getNodeChildrenUrl(parentId), userId, reqBody.getBody(), null, reqBody.getContentType(), expectedStatus);
+        HttpResponse response = post(getNodeChildrenUrl(parentId), publicApiClient.getRequestContext().getRunAsUser(), reqBody.getBody(), null, reqBody.getContentType(), expectedStatus);
 
         if (response.getJsonResponse().get("error") != null)
         {
@@ -550,13 +666,13 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 
-    protected Document updateTextFile(String userId, String contentId, String textContent, Map<String,String> parameters) throws IOException, Exception
+    protected Document updateTextFile(String contentId, String textContent, Map<String, String> parameters) throws IOException, Exception
     {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
         File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
         BinaryPayload payload = new BinaryPayload(txtFile);
 
-        HttpResponse response = putBinary(getNodeContentUrl(contentId), userId, payload, null, parameters, 200);
+        HttpResponse response = putBinary(getNodeContentUrl(contentId), publicApiClient.getRequestContext().getRunAsUser(), payload, null, parameters, 200);
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 
@@ -573,14 +689,14 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected static final long PAUSE_TIME = 5000; //millisecond
     protected static final int MAX_RETRY = 20;
 
-    protected Rendition waitAndGetRendition(String userId, String sourceNodeId, String renditionId) throws Exception
+    protected Rendition waitAndGetRendition(String sourceNodeId, String renditionId) throws Exception
     {
         int retryCount = 0;
         while (retryCount < MAX_RETRY)
         {
             try
             {
-                HttpResponse response = getSingle(getNodeRenditionsUrl(sourceNodeId), userId, renditionId, 200);
+                HttpResponse response = getSingle(getNodeRenditionsUrl(sourceNodeId), publicApiClient.getRequestContext().getRunAsUser(), renditionId, 200);
                 Rendition rendition = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Rendition.class);
                 assertNotNull(rendition);
                 assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
@@ -600,7 +716,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return null;
     }
 
-    protected Rendition createAndGetRendition(String userId, String sourceNodeId, String renditionId) throws Exception
+    protected Rendition createAndGetRendition(String sourceNodeId, String renditionId) throws Exception
     {
         Rendition renditionRequest = new Rendition();
         renditionRequest.setId(renditionId);
@@ -610,7 +726,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         {
             try
             {
-                HttpResponse res = post(getNodeRenditionsUrl(sourceNodeId), userId, toJsonAsString(renditionRequest), 202);
+                HttpResponse res = post(getNodeRenditionsUrl(sourceNodeId), publicApiClient.getRequestContext().getRunAsUser(), toJsonAsString(renditionRequest), 202);
                 assertNull(res.getJsonResponse());
                 break;
             }
@@ -625,7 +741,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
             }
         }
 
-        return waitAndGetRendition(userId, sourceNodeId, renditionId);
+        return waitAndGetRendition(sourceNodeId, renditionId);
     }
 
     protected String getNodeRenditionsUrl(String nodeId)

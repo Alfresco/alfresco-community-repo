@@ -114,6 +114,8 @@ public class RenditionsTest extends AbstractBaseApiTest
     @Test
     public void testListNodeRenditions() throws Exception
     {
+        setRequestContext(userOneN1.getId());
+        
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
         String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
@@ -185,7 +187,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertTrue(expectedPaging.getTotalItems() >= 5);
 
         // Create 'doclib' rendition
-        createAndGetRendition(userOneN1.getId(), contentNodeId, docLib.getId());
+        createAndGetRendition(contentNodeId, docLib.getId());
 
         // List all available renditions (includes those that have been created and those that are yet to be created)
         paging = getPaging(0, 50);
@@ -252,6 +254,8 @@ public class RenditionsTest extends AbstractBaseApiTest
     @Test
     public void testGetNodeRendition() throws Exception
     {
+        setRequestContext(userOneN1.getId());
+        
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
         String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
@@ -280,7 +284,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertNull("Shouldn't have returned the size, as the rendition hasn't been created yet.", contentInfo.getSizeInBytes());
 
         // Create and get 'doclib' rendition
-        rendition = createAndGetRendition(userOneN1.getId(), contentNodeId, "doclib");
+        rendition = createAndGetRendition(contentNodeId, "doclib");
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
         contentInfo = rendition.getContent();
@@ -334,6 +338,8 @@ public class RenditionsTest extends AbstractBaseApiTest
     @Test
     public void testCreateRendition() throws Exception
     {
+        setRequestContext(userOneN1.getId());
+        
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
         String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
@@ -356,7 +362,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         assertEquals(RenditionStatus.NOT_CREATED, rendition.getStatus());
 
         // Create and get 'imgpreview' rendition
-        rendition = createAndGetRendition(userOneN1.getId(), contentNodeId, "imgpreview");
+        rendition = createAndGetRendition(contentNodeId, "imgpreview");
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
         ContentInfo contentInfo = rendition.getContent();
@@ -466,6 +472,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     public void testCreateRenditionOnUpload() throws Exception
     {
         String userId = userOneN1.getId();
+        setRequestContext(userId);
 
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
@@ -486,7 +493,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         String contentNodeId = document.getId();
 
         // wait and check that rendition is created ...
-        Rendition rendition = waitAndGetRendition(userId, contentNodeId, renditionName);
+        Rendition rendition = waitAndGetRendition(contentNodeId, renditionName);
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
 
@@ -586,6 +593,8 @@ public class RenditionsTest extends AbstractBaseApiTest
     @Test
     public void testDownloadRendition() throws Exception
     {
+        setRequestContext(userOneN1.getId());
+        
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
         String folder_Id = addToDocumentLibrary(userOneN1Site, folderName, TYPE_CM_FOLDER, userOneN1.getId());
@@ -645,7 +654,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         getSingle(getNodeRenditionsUrl(contentNodeId), userOneN1.getId(), "doclib/content", params, headers, 200);
 
         // Create and get 'doclib' rendition
-        rendition = createAndGetRendition(userOneN1.getId(), contentNodeId, "doclib");
+        rendition = createAndGetRendition(contentNodeId, "doclib");
         assertNotNull(rendition);
         assertEquals(RenditionStatus.CREATED, rendition.getStatus());
 
@@ -761,7 +770,7 @@ public class RenditionsTest extends AbstractBaseApiTest
         String networkId = repoService.tenantService.getUserDomain(userId);
 
         String parentId = getSiteContainerNodeId(networkId, userId, testSite.getId(), "documentLibrary");
-        return createNode(userId, parentId, name, nodeType, null).getId();
+        return createNode(parentId, name, nodeType, null).getId();
     }
 
     private Rendition getRendition(List<Rendition> renditions, String renditionName)

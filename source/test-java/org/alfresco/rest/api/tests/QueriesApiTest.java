@@ -25,8 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.Queries;
 import org.alfresco.rest.api.tests.client.HttpResponse;
@@ -38,10 +36,6 @@ import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.Tag;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -66,56 +60,7 @@ import static org.junit.Assert.*;
 public class QueriesApiTest extends AbstractBaseApiTest
 {
     private static final String URL_QUERIES_LSN = "queries/live-search-nodes";
-
-    private String user1;
-    private String user2;
-    private List<String> users = new ArrayList<>();
-
-    protected MutableAuthenticationService authenticationService;
-    protected PersonService personService;
-
-    private final String RUNID = System.currentTimeMillis()+"";
-
-    @Before
-    public void setup() throws Exception
-    {
-        authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
-        personService = applicationContext.getBean("personService", PersonService.class);
-
-        // note: createUser currently relies on repoService
-        user1 = createUser("user1-" + RUNID);
-        user2 = createUser("user2-" + RUNID);
-
-        // We just need to clean the on-premise-users,
-        // so the tests for the specific network would work.
-        users.add(user1);
-        users.add(user2);
-    }
-
-    @After
-    public void tearDown() throws Exception
-    {
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        for (final String user : users)
-        {
-            transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    if (personService.personExists(user))
-                    {
-                        authenticationService.deleteAuthentication(user);
-                        personService.deletePerson(user);
-                    }
-                    return null;
-                }
-            });
-        }
-        users.clear();
-        AuthenticationUtil.clearCurrentSecurityContext();
-    }
-
+    
     public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue( Map<K, V> map )
     {
         List<Map.Entry<K, V>> list =
@@ -145,6 +90,8 @@ public class QueriesApiTest extends AbstractBaseApiTest
     @Test
     public void testLiveSearchNodes_FTS_and_Metadata() throws Exception
     {
+        setRequestContext(user1);
+        
         int f1Count = 5;
         List<String> f1NodeIds = new ArrayList<>(f1Count);
 
@@ -173,10 +120,10 @@ public class QueriesApiTest extends AbstractBaseApiTest
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
-            String myFolderNodeId = getMyNodeId(user1);
+            String myFolderNodeId = getMyNodeId();
 
-            String f1Id = createFolder(user1, myFolderNodeId, "folder 1").getId();
-            String f2Id = createFolder(user1, myFolderNodeId, "folder 2").getId();
+            String f1Id = createFolder(myFolderNodeId, "folder 1").getId();
+            String f2Id = createFolder(myFolderNodeId, "folder 2").getId();
 
             String name = "name";
             String title = "title";
@@ -200,7 +147,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 docProps.put("cm:title", title+num+title);
                 docProps.put("cm:description", descrip+num+descrip);
 
-                Document doc = createTextFile(user1, f1Id, docName, contentText, "UTF-8", docProps);
+                Document doc = createTextFile(f1Id, docName, contentText, "UTF-8", docProps);
 
                 f1NodeIds.add(doc.getId());
                 idNameMap.put(doc.getId(), docName);
@@ -221,7 +168,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 props.put("cm:title", title+num+title);
                 props.put("cm:description", descrip+num+descrip);
 
-                Document doc = createTextFile(user1, f2Id, docName, contentText, "UTF-8", props);
+                Document doc = createTextFile(f2Id, docName, contentText, "UTF-8", props);
 
                 f2NodeIds.add(doc.getId());
                 idNameMap.put(doc.getId(), docName);
@@ -240,7 +187,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 props.put("cm:title", title+num+title);
                 props.put("cm:description", descrip+num+descrip);
 
-                Node node = createFolder(user1, myFolderNodeId, folderName, props);
+                Node node = createFolder(myFolderNodeId, folderName, props);
 
                 f3NodeIds.add(node.getId());
                 idNameMap.put(node.getId(), folderName);
@@ -438,6 +385,8 @@ public class QueriesApiTest extends AbstractBaseApiTest
     @Test
     public void testLiveSearchNodes_SortPage() throws Exception
     {
+        setRequestContext(user1);
+        
         int f1Count = 5;
         List<String> f1NodeIds = new ArrayList<>(f1Count);
 
@@ -458,10 +407,10 @@ public class QueriesApiTest extends AbstractBaseApiTest
             Map<String, String> params = new HashMap<>(1);
             params.put(Queries.PARAM_TERM, testTerm);
 
-            String myFolderNodeId = getMyNodeId(user1);
+            String myFolderNodeId = getMyNodeId();
 
-            String f1Id = createFolder(user1, myFolderNodeId, "folder sort 1").getId();
-            String f2Id = createFolder(user1, myFolderNodeId, "folder sort 2").getId();
+            String f1Id = createFolder(myFolderNodeId, "folder sort 1").getId();
+            String f2Id = createFolder(myFolderNodeId, "folder sort 2").getId();
 
             String name = "name";
 
@@ -476,7 +425,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 String num = String.format("%05d", nameIdx);
                 String docName = name+num+name+".txt";
 
-                Document doc = createTextFile(user1, f1Id, docName, contentText, "UTF-8", null);
+                Document doc = createTextFile(f1Id, docName, contentText, "UTF-8", null);
 
                 f1NodeIds.add(doc.getId());
                 idNameMap.put(doc.getId(), docName);
@@ -493,7 +442,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 String num = String.format("%05d", nameIdx);
                 String docName = name+num+name+".txt";
 
-                Document doc = createTextFile(user1, f2Id, docName, contentText, "UTF-8", null);
+                Document doc = createTextFile(f2Id, docName, contentText, "UTF-8", null);
 
                 f2NodeIds.add(doc.getId());
                 idNameMap.put(doc.getId(), docName);
@@ -625,11 +574,13 @@ public class QueriesApiTest extends AbstractBaseApiTest
             getAll(URL_QUERIES_LSN, user1, paging, params, 400);
 
             // -ve test - unauthenticated - belts-and-braces ;-)
+            setRequestContext(null);
             getAll(URL_QUERIES_LSN, null, paging, params, 401);
         }
         finally
         {
             // some cleanup
+            setRequestContext(user1);
             for (String docId : allIds)
             {
                 delete(URL_NODES, user1, docId, 204);
@@ -640,6 +591,8 @@ public class QueriesApiTest extends AbstractBaseApiTest
     @Test
     public void testLiveSearchNodes_Tags() throws Exception
     {
+        setRequestContext(user1);
+        
         PublicApiClient.Nodes nodesProxy = publicApiClient.nodes();
 
         int f1Count = 5;
@@ -661,8 +614,8 @@ public class QueriesApiTest extends AbstractBaseApiTest
 
             Paging paging = getPaging(0, 100);
 
-            String f1Id = createFolder(user1, Nodes.PATH_MY, "folder tag 1").getId();
-            String f2Id = createFolder(user1, Nodes.PATH_MY, "folder tag 2").getId();
+            String f1Id = createFolder(Nodes.PATH_MY, "folder tag 1").getId();
+            String f2Id = createFolder(Nodes.PATH_MY, "folder tag 2").getId();
 
             String name = "name";
 
@@ -672,7 +625,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 String contentText = "f1 test document " + user1 + " document " + i;
                 String docName = name+i;
 
-                Document doc = createTextFile(user1, f1Id, docName, contentText, "UTF-8", null);
+                Document doc = createTextFile(f1Id, docName, contentText, "UTF-8", null);
 
                 publicApiClient.setRequestContext(new RequestContext("", user1));
 
@@ -687,7 +640,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
                 // create folder - in folder 2
                 String folderName = name+i;
 
-                Folder folder = createFolder(user1, f2Id, folderName, null);
+                Folder folder = createFolder(f2Id, folderName, null);
 
                 publicApiClient.setRequestContext(new RequestContext("", user1));
 
@@ -723,6 +676,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
         finally
         {
             // some cleanup
+            setRequestContext(user1);
             for (String nodeId : allIds)
             {
                 delete(URL_NODES, user1, nodeId, 204);

@@ -75,14 +75,15 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testCreateAndDelete() throws Exception
     {
-        publicApiClient.setRequestContext(new RequestContext(u1.getId()));
+        setRequestContext(u1.getId());
+        
         Date now = new Date();
         String folder1 = "folder" + now.getTime() + "_1";
-        Folder createdFolder = createFolder(u1.getId(), docLibNodeRef.getId(), folder1, null);
+        Folder createdFolder = createFolder(docLibNodeRef.getId(), folder1, null);
         assertNotNull(createdFolder);
 
         //Create a folder outside a site
-        Folder createdFolderNonSite = createFolder(u1.getId(),  Nodes.PATH_MY, folder1, null);
+        Folder createdFolderNonSite = createFolder(Nodes.PATH_MY, folder1, null);
         assertNotNull(createdFolderNonSite);
 
         Document document = createDocument(createdFolder, "d1.txt");
@@ -160,14 +161,15 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testCreateAndRestore() throws Exception
     {
-        publicApiClient.setRequestContext(new RequestContext(u1.getId()));
+        setRequestContext(u1.getId());
+        
         Date now = new Date();
         String folder1 = "folder" + now.getTime() + "_1";
-        Folder createdFolder = createFolder(u1.getId(), docLibNodeRef.getId(), folder1, null);
+        Folder createdFolder = createFolder(docLibNodeRef.getId(), folder1, null);
         assertNotNull(createdFolder);
 
         //Create a folder outside a site
-        Folder createdFolderNonSite = createFolder(u1.getId(), Nodes.PATH_MY, folder1, null);
+        Folder createdFolderNonSite = createFolder(Nodes.PATH_MY, folder1, null);
         assertNotNull(createdFolderNonSite);
 
         Document document = createDocument(createdFolder, "restoreme.txt");
@@ -204,10 +206,11 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
     @Test
     public void testCreateAndPurge() throws Exception
     {
-        publicApiClient.setRequestContext(new RequestContext(u1.getId()));
+        setRequestContext(u1.getId());
+        
         Date now = new Date();
         String folder1 = "folder" + now.getTime() + "_1";
-        Folder createdFolder = createFolder(u1.getId(), docLibNodeRef.getId(), folder1, null);
+        Folder createdFolder = createFolder(docLibNodeRef.getId(), folder1, null);
         assertNotNull(createdFolder);
 
         delete(URL_NODES, u1.getId(), createdFolder.getId(), 204);

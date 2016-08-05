@@ -25,8 +25,6 @@
  */
 package org.alfresco.rest.api.tests;
 
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.VersionOptions;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -36,20 +34,13 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
-import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.TempFileProvider;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -69,58 +60,6 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
 {
     private static final String URL_DELETED_NODES = "deleted-nodes";
     private static final String URL_VERSIONS = "versions";
-
-    private String user1;
-    private String user2;
-    private List<String> users = new ArrayList<>();
-
-    private final String RUNID = System.currentTimeMillis()+"";
-
-    protected MutableAuthenticationService authenticationService;
-    protected PermissionService permissionService;
-    protected PersonService personService;
-
-    @Before
-    public void setup() throws Exception
-    {
-        authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
-        permissionService = applicationContext.getBean("permissionService", PermissionService.class);
-        personService = applicationContext.getBean("personService", PersonService.class);
-
-        // note: createUser currently relies on repoService
-        user1 = createUser("user1-" + RUNID);
-        user2 = createUser("user2-" + RUNID);
-
-        // We just need to clean the on-premise-users,
-        // so the tests for the specific network would work.
-        users.add(user1);
-        users.add(user2);
-    }
-
-    @After
-    public void tearDown() throws Exception
-    {
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        for (final String user : users)
-        {
-            transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    if (personService.personExists(user))
-                    {
-                        authenticationService.deleteAuthentication(user);
-                        personService.deletePerson(user);
-                    }
-                    return null;
-                }
-            });
-        }
-        users.clear();
-        AuthenticationUtil.clearCurrentSecurityContext();
-    }
-
 
     protected String getNodeVersionRevertUrl(String nodeId, String versionId)
     {
@@ -146,10 +85,12 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
     @Test
     public void testUploadFileVersionCreateWithOverwrite() throws Exception
     {
-        String myFolderNodeId = getMyNodeId(user1);
+        setRequestContext(user1);
+        
+        String myFolderNodeId = getMyNodeId();
 
         // create folder
-        String f1Id = createFolder(user1, myFolderNodeId, "f1").getId();
+        String f1Id = createFolder(myFolderNodeId, "f1").getId();
 
         try
         {
@@ -164,7 +105,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             String content = textContentSuffix + verCnt;
 
             // create first version (ie. 1.0)
-            Document documentResp = createTextFile(user1, f1Id, contentName, content, "UTF-8", null);
+            Document documentResp = createTextFile(f1Id, contentName, content, "UTF-8", null);
             String docId = documentResp.getId();
             assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
             assertNotNull(documentResp.getProperties());
@@ -196,7 +137,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
                 params.put(Nodes.PARAM_OVERWRITE, "true");
                 params.put(Nodes.PARAM_AUTO_RENAME, "true");
 
-                createTextFile(user1, myFolderNodeId, contentName, content, "UTF-8", params, 400);
+                createTextFile(myFolderNodeId, contentName, content, "UTF-8", params, 400);
             }
 
             // remove versionable aspect
@@ -223,7 +164,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
                 params = new HashMap<>();
                 params.put(Nodes.PARAM_OVERWRITE, "true");
 
-                createTextFile(user1, f1Id, contentName, content, "UTF-8", params, 409);
+                createTextFile(f1Id, contentName, content, "UTF-8", params, 409);
             }
 
             // we do allow update of binary content with no versioning (after removing versionable)
@@ -260,10 +201,12 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
     @Test
     public void testUploadFileVersionAsMinor() throws Exception
     {
-        String myFolderNodeId = getMyNodeId(user1);
+        setRequestContext(user1);
+        
+        String myFolderNodeId = getMyNodeId();
 
         // create folder
-        String f1Id = createFolder(user1, myFolderNodeId, "f1").getId();
+        String f1Id = createFolder(myFolderNodeId, "f1").getId();
 
         try
         {
@@ -279,7 +222,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             params.put("majorVersion", "false");
 
             // create a new file with a minor version (ie. 0.1)
-            Document documentResp = createTextFile(user1, f1Id, contentName, content, "UTF-8", params);
+            Document documentResp = createTextFile(f1Id, contentName, content, "UTF-8", params);
             String docId = documentResp.getId();
             assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
             assertNotNull(documentResp.getProperties());
@@ -319,14 +262,16 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
     @Test
     public void testDeleteVersion() throws Exception
     {
-        String sharedFolderNodeId = getSharedNodeId(user1);
+        setRequestContext(user1);
+        
+        String sharedFolderNodeId = getSharedNodeId();
 
         // create folder
         String f1Id = null;
 
         try
         {
-            f1Id = createFolder(user1, sharedFolderNodeId, "testDeleteVersion-f1").getId();
+            f1Id = createFolder(sharedFolderNodeId, "testDeleteVersion-f1").getId();
 
             String textContentSuffix = "Amazingly few discotheques provide jukeboxes ";
             String contentName = "content-1";
@@ -511,7 +456,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             String textContent = textContentPrefix + currentVersionCounter;
 
             // uses upload with overwrite here ...
-            Document documentResp = createTextFile(userId, parentFolderNodeId, fileName, textContent, "UTF-8", params);
+            Document documentResp = createTextFile(parentFolderNodeId, fileName, textContent, "UTF-8", params);
             docId = documentResp.getId();
             assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
             assertNotNull(documentResp.getProperties());
@@ -628,10 +573,12 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
     public void testUploadFileVersionUpdate() throws Exception
     {
         // As user 1 ...
-        String myFolderNodeId = getMyNodeId(user1);
+        setRequestContext(user1);
+        
+        String myFolderNodeId = getMyNodeId();
 
         // create folder
-        String f1Id = createFolder(user1, myFolderNodeId, "f1").getId();
+        String f1Id = createFolder(myFolderNodeId, "f1").getId();
 
         try
         {
@@ -646,7 +593,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             String contentName = "content " + System.currentTimeMillis();
             String content = textContentSuffix+verCnt;
 
-            Document documentResp = createTextFile(user1, myFolderNodeId, contentName, content, "UTF-8", null);
+            Document documentResp = createTextFile(myFolderNodeId, contentName, content, "UTF-8", null);
             String d1Id = documentResp.getId();
 
             String versionId = majorVersion+"."+minorVersion;
@@ -762,14 +709,16 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
     public void testRevert() throws Exception
     {
         // As user 1 ...
-        String sharedFolderNodeId = getSharedNodeId(user1);
+        setRequestContext(user1);
+        
+        String sharedFolderNodeId = getSharedNodeId();
 
         // create folder
         String f1Id = null;
 
         try
         {
-            f1Id = createFolder(user1, sharedFolderNodeId, "testRevert-f1-"+System.currentTimeMillis()).getId();
+            f1Id = createFolder(sharedFolderNodeId, "testRevert-f1-"+System.currentTimeMillis()).getId();
 
             int majorVersion = 1;
             int minorVersion = 0;
@@ -784,7 +733,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             params.put(Nodes.PARAM_VERSION_COMMENT, updateVerCommentSuffix+verCnt);
 
             // Upload text file - versioning is currently auto enabled on upload (create file via multi-part/form-data)
-            Document documentResp = createTextFile(user1, f1Id, contentName, content, "UTF-8", params);
+            Document documentResp = createTextFile(f1Id, contentName, content, "UTF-8", params);
             String d1Id = documentResp.getId();
 
             // Update the content
@@ -946,10 +895,12 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
     public void testCreateEmptyFileVersionUpdate() throws Exception
     {
         // As user 1 ...
-        String myFolderNodeId = getMyNodeId(user1);
+        setRequestContext(user1);
+        
+        String myFolderNodeId = getMyNodeId();
 
         // create folder
-        String f1Id = createFolder(user1, myFolderNodeId, "f1").getId();
+        String f1Id = createFolder(myFolderNodeId, "f1").getId();
 
         try
         {
@@ -1111,7 +1062,9 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
     @Test
     public void testUpdateFileVersionCreate() throws Exception
     {
-        String myNodeId = getMyNodeId(user1);
+        setRequestContext(user1);
+        
+        String myNodeId = getMyNodeId();
 
         Document d1 = new Document();
         d1.setName("d1.txt");
@@ -1134,7 +1087,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
 
             // Update the empty node's content - no version created
             String content = "The quick brown fox jumps over the lazy dog " + cnt;
-            documentResp = updateTextFile(user1, docId, content, null);
+            documentResp = updateTextFile(docId, content, null);
             assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
             assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
         }
@@ -1150,7 +1103,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
         Map<String, String> params = new HashMap<>();
         params.put("comment", "my version "+cnt);
 
-        documentResp = updateTextFile(user1, docId, content, params);
+        documentResp = updateTextFile(docId, content, params);
         assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
         assertNotNull(documentResp.getProperties());
 
@@ -1164,7 +1117,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
         params = new HashMap<>();
         params.put("comment", "my version "+cnt);
 
-        documentResp = updateTextFile(user1, docId, content, params);
+        documentResp = updateTextFile(docId, content, params);
         assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
         assertNotNull(documentResp.getProperties());
         assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
@@ -1183,7 +1136,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             params.put("comment", "my version "+cnt);
             params.put("majorVersion", "true");
 
-            documentResp = updateTextFile(user1, docId, content, params);
+            documentResp = updateTextFile(docId, content, params);
             assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
             assertNotNull(documentResp.getProperties());
             assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
@@ -1201,7 +1154,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             params.put("comment", "my version "+cnt);
             params.put("majorVersion", "false");
 
-            documentResp = updateTextFile(user1, docId, content, params);
+            documentResp = updateTextFile(docId, content, params);
             assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
             assertNotNull(documentResp.getProperties());
             assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
@@ -1218,7 +1171,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
         params.put("comment", "my version "+cnt);
         params.put("majorVersion", "true");
 
-        documentResp = updateTextFile(user1, docId, content, params);
+        documentResp = updateTextFile(docId, content, params);
         assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
         assertNotNull(documentResp.getProperties());
         assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
@@ -1231,7 +1184,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
 
         content = "The quick brown fox jumps over the lazy dog "+cnt;
 
-        documentResp = updateTextFile(user1, docId, content, null);
+        documentResp = updateTextFile(docId, content, null);
         assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
         assertNotNull(documentResp.getProperties());
         assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
@@ -1254,7 +1207,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
 
             // Update the empty node's content - no version created
             content = "The quick brown fox jumps over the lazy dog " + cnt;
-            documentResp = updateTextFile(user1, docId, content, null);
+            documentResp = updateTextFile(docId, content, null);
             assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
             assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
         }
@@ -1272,11 +1225,13 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
     public void testVersionHistoryPaging() throws Exception
     {
         // create folder
+        setRequestContext(user1);
+        
         String f1Id = null;
 
         try
         {
-            f1Id = createFolder(user1, Nodes.PATH_MY, "testVersionHistoryPaging-f1").getId();
+            f1Id = createFolder(Nodes.PATH_MY, "testVersionHistoryPaging-f1").getId();
             
             String textContentSuffix = "Amazingly few discotheques provide jukeboxes ";
             String contentName = "content-1";

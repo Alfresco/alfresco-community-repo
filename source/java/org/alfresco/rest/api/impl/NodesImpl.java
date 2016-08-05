@@ -2254,7 +2254,17 @@ public class NodesImpl implements Nodes
         }
         String versionComment = parameters.getParameter(PARAM_VERSION_COMMENT);
 
-        final String fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        String fileName = parameters.getParameter(PARAM_NAME);
+        if (fileName != null)
+        {
+            // optionally rename, before updating the content
+            nodeService.setProperty(nodeRef, ContentModel.PROP_NAME, fileName);
+        }
+        else
+        {
+            fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        }
+        
         return updateExistingFile(null, nodeRef, fileName, contentInfo, stream, parameters, versionMajor, versionComment);
     }
 

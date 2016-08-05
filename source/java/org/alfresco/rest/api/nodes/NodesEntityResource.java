@@ -87,6 +87,14 @@ public class NodesEntityResource implements
     	return nodes.getFolderOrDocument(nodeId, parameters);
     }
 
+    /**
+     * Download content
+     * 
+     * @param fileNodeId
+     * @param parameters {@link Parameters}
+     * @return
+     * @throws EntityNotFoundException
+     */
     @Override
     @WebApiDescription(title = "Download content", description = "Download content")
     @BinaryProperties({"content"})
@@ -95,6 +103,19 @@ public class NodesEntityResource implements
         return nodes.getContent(fileNodeId, parameters, true);
     }
 
+    /**
+     * Upload new version of content
+     * 
+     * This allow binary content update of an existing file/content node.
+     * 
+     * Note: alternatively, can upload via POST (multipart/form-data) with existing file name and form "overwrite=true".
+     * 
+     * @param fileNodeId
+     * @param contentInfo Basic information about the content stream
+     * @param stream An inputstream
+     * @param parameters
+     * @return
+     */
     @Override
     @WebApiDescription(title = "Upload content", description = "Upload content")
     @BinaryProperties({"content"})

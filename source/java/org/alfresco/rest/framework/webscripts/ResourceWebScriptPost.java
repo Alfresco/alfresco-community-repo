@@ -148,8 +148,9 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
         {
             return null;
         }
-
+        
         Class<?> objType = resourceMeta.getObjectType(operation);
+        boolean isTypeOperation = resourceMeta.getType().equals(ResourceMetadata.RESOURCE_TYPE.OPERATION);
         List<ResourceParameter> params = operation.getParameters();
 
         if (!params.isEmpty())
@@ -157,7 +158,6 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
             for (ResourceParameter resourceParameter : params)
             {
                 // POST to collection may or may not support List as json body, Operations don't support a List as json body
-                boolean isTypeOperation = resourceMeta.getType().equals(ResourceMetadata.RESOURCE_TYPE.OPERATION);
                 boolean notMultiple = ((! resourceParameter.isAllowMultiple()) || isTypeOperation);
                 
                 if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(resourceParameter.getParamType()) && notMultiple)
@@ -168,7 +168,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                         Object jsonContent = null;
                         if (objType != null)
                         {
-                            jsonContent = ResourceWebScriptHelper.extractJsonContent(req,assistant.getJsonHelper(), objType);
+                            jsonContent = ResourceWebScriptHelper.extractJsonContent(req, assistant.getJsonHelper(), objType);
                         }
                         
                         if (isTypeOperation)
@@ -194,7 +194,21 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                }
             }
         }
-        return ResourceWebScriptHelper.extractJsonContentAsList(req, assistant.getJsonHelper(), objType);
+        
+        if (objType == null)
+        {
+            return null;
+        }
+        
+        if (isTypeOperation)
+        {
+            // Operations don't support a List as json body
+            return ResourceWebScriptHelper.extractJsonContent(req, assistant.getJsonHelper(), objType);
+        }
+        else
+        {
+            return ResourceWebScriptHelper.extractJsonContentAsList(req, assistant.getJsonHelper(), objType);
+        }
     }
 
 

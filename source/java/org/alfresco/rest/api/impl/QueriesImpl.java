@@ -610,40 +610,40 @@ public class QueriesImpl implements Queries, InitializingBean
             }
             return nodeRefs;
         }
-    }
 
-    // note: see also AbstractNodeRelation
-    protected static CollectionWithPagingInfo listPage(List result, Paging paging)
-    {
-        // return 'page' of results (based on full result set)
-        int skipCount = paging.getSkipCount();
-        int pageSize = paging.getMaxItems();
-        int pageEnd = skipCount + pageSize;
-
-        final List page = new ArrayList<>(pageSize);
-        if (result == null)
+        // note: see also AbstractNodeRelation
+        protected static <T> CollectionWithPagingInfo<T> listPage(List<T> result, Paging paging)
         {
-            result = Collections.emptyList();
-        }
+            // return 'page' of results (based on full result set)
+            int skipCount = paging.getSkipCount();
+            int pageSize = paging.getMaxItems();
+            int pageEnd = skipCount + pageSize;
 
-        Iterator it = result.iterator();
-        for (int counter = 0; counter < pageEnd && it.hasNext(); counter++)
-        {
-            Object element = it.next();
-            if (counter < skipCount)
+            final List<T> page = new ArrayList<>(pageSize);
+            if (result == null)
             {
-                continue;
+                result = Collections.emptyList();
             }
-            if (counter > pageEnd - 1)
+
+            Iterator<T> it = result.iterator();
+            for (int counter = 0; counter < pageEnd && it.hasNext(); counter++)
             {
-                break;
+                T element = it.next();
+                if (counter < skipCount)
+                {
+                    continue;
+                }
+                if (counter > pageEnd - 1)
+                {
+                    break;
+                }
+                page.add(element);
             }
-            page.add(element);
+
+            int totalCount = result.size();
+            boolean hasMoreItems = ((skipCount + page.size()) < totalCount);
+
+            return CollectionWithPagingInfo.asPaged(paging, page, hasMoreItems, totalCount);
         }
-
-        int totalCount = result.size();
-        boolean hasMoreItems = ((skipCount + page.size()) < totalCount);
-
-        return CollectionWithPagingInfo.asPaged(paging, page, hasMoreItems, totalCount);
     }
 }

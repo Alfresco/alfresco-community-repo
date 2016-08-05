@@ -409,9 +409,9 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         finally
         {
             // some cleanup
-            Map<String, String> params = Collections.singletonMap("permanent", "true");
-            delete(URL_NODES, user1, f1Id, params, 204);
-            delete(URL_NODES, user1, f2Id, params, 204);
+            setRequestContext(user1);
+            deleteNode(f1Id, true, 204);
+            deleteNode(f2Id, true, 204);
         }
     }
 
@@ -533,34 +533,38 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             // TODO refactor with remote permission api calls (use v0 until we have v1 ?) (RA-1085)
             AuthenticationUtil.setFullyAuthenticatedUser(user1);
             permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sf1Id), user2, PermissionService.EDITOR, true);
-
-            // TODO improve - admin-related tests (RA-1082)
-            publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
+            
+            setRequestContext(DEFAULT_ADMIN);
+            
             response = publicApiClient.get(getScope(), "nodes/"+sf1Id+"/targets", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             // user 1
+            setRequestContext(user1);
             tgt = new AssocTarget(u1o1Id, ASSOC_TYPE_CM_REFERENCES);
             post(getNodeTargetsUrl(sf1Id), user1, toJsonAsStringNonNull(tgt), 201);
 
             // user 2
+            setRequestContext(user2);
             tgt = new AssocTarget(u2o1Id, ASSOC_TYPE_CM_REFERENCES);
             post(getNodeTargetsUrl(sf1Id), user2, toJsonAsStringNonNull(tgt), 201);
 
-            // TODO improve - admin-related tests (RA-1082)
-            publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
+            setRequestContext(DEFAULT_ADMIN);
+            
             response = publicApiClient.get(getScope(), "nodes/"+sf1Id+"/targets", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
+            setRequestContext(user1);
             response = getAll(getNodeTargetsUrl(sf1Id), user1, paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(u1o1Id, nodes.get(0).getId());
 
+            setRequestContext(user2);
             response = getAll(getNodeTargetsUrl(sf1Id), user2, paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
@@ -574,33 +578,37 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             AuthenticationUtil.setFullyAuthenticatedUser(user1);
             permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sf1Id), user2, PermissionService.EDITOR, true);
 
-            // TODO improve - admin-related tests (RA-1082)
-            publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
+            setRequestContext(DEFAULT_ADMIN);
+            
             response = publicApiClient.get(getScope(), "nodes/"+so1Id+"/sources", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(0, nodes.size());
 
             // user 1
+            setRequestContext(user1);
             tgt = new AssocTarget(so1Id, ASSOC_TYPE_CM_REFERENCES);
             post(getNodeTargetsUrl(u1f1Id), user1, toJsonAsStringNonNull(tgt), 201);
 
             // user 2
+            setRequestContext(user2);
             tgt = new AssocTarget(so1Id, ASSOC_TYPE_CM_REFERENCES);
             post(getNodeTargetsUrl(u2f1Id), user2, toJsonAsStringNonNull(tgt), 201);
 
-            // TODO improve - admin-related tests (RA-1082)
-            publicApiClient.setRequestContext(new RequestContext("-default-", "admin", "admin"));
+            setRequestContext(DEFAULT_ADMIN);
+            
             response = publicApiClient.get(getScope(), "nodes/"+so1Id+"/sources", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(2, nodes.size());
 
+            setRequestContext(user1);
             response = getAll(getNodeSourcesUrl(so1Id), user1, paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
             assertEquals(u1f1Id, nodes.get(0).getId());
 
+            setRequestContext(user2);
             response = getAll(getNodeSourcesUrl(so1Id), user2, paging, null, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(1, nodes.size());
@@ -609,10 +617,13 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         finally
         {
             // some cleanup
-            Map<String, String> params = Collections.singletonMap("permanent", "true");
-            delete(URL_NODES, user1, u1f1Id, params, 204);
-            delete(URL_NODES, user2, u2f1Id, params, 204);
-            delete(URL_NODES, user1, sf1Id, params, 204);
+            
+            setRequestContext(user1);
+            deleteNode(u1f1Id, true, 204);
+            deleteNode(sf1Id, true, 204);
+            
+            setRequestContext(user2);
+            deleteNode(u2f1Id, true, 204);
         }
     }
 
@@ -1170,11 +1181,11 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         finally
         {
             // some cleanup
-            Map<String, String> params = Collections.singletonMap(Nodes.PARAM_PERMANENT, "true");
-            delete(URL_NODES, user1, f1Id, params, 204);
-            delete(URL_NODES, user1, f2Id, params, 204);
-            delete(URL_NODES, user1, f3Id, params, 204);
-            delete(URL_NODES, user1, f4Id, params, 204);
+            setRequestContext(user1);
+            deleteNode(f1Id, true, 204);
+            deleteNode(f2Id, true, 204);
+            deleteNode(f3Id, true, 204);
+            deleteNode(f4Id, true, 204);
         }
     }
 
@@ -1302,7 +1313,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
 
             // ... delete to trashcan/archive ...
-            delete(URL_NODES, user1, f1bId, null, 204);
+            deleteNode(f1bId);
 
             getSingle(NodesEntityResource.class, user1, f1bId, null, 404);
 
@@ -1379,24 +1390,23 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         finally
         {
             // some cleanup
-            Map<String, String> params = Collections.singletonMap(Nodes.PARAM_PERMANENT, "true");
+            setRequestContext(user1);
 
             if (f1Id != null)
             {
-                delete(URL_NODES, user1, f1Id, params, 204);
+                deleteNode(f1Id, true, 204);
             }
 
             if (f2Id != null)
             {
-                delete(URL_NODES, user1, f2Id, params, 204);
+                deleteNode(f2Id, true, 204);
             }
 
             if (f3Id != null)
             {
-                delete(URL_NODES, user1, f3Id, params, 204);
+                deleteNode(f3Id, true, 204);
             }
         }
-
     }
 
     /**
@@ -1512,10 +1522,10 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         finally
         {
             // some cleanup
-            Map<String, String> params = Collections.singletonMap(Nodes.PARAM_PERMANENT, "true");
-            delete(URL_NODES, user1, f1Id, params, 204);
-            delete(URL_NODES, user1, f2Id, params, 204);
-            delete(URL_NODES, user1, f3Id, params, 204);
+            setRequestContext(user1);
+            deleteNode(f1Id, true, 204);
+            deleteNode(f2Id, true, 204);
+            deleteNode(f3Id, true, 204);
         }
     }
 

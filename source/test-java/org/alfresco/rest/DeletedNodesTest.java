@@ -79,7 +79,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         
         Date now = new Date();
         String folder1 = "folder" + now.getTime() + "_1";
-        Folder createdFolder = createFolder(docLibNodeRef.getId(), folder1, null);
+        Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
 
         //Create a folder outside a site
@@ -95,9 +95,9 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNotNull(nodes);
         int numOfNodes = nodes.size();
 
-        delete(URL_NODES, u1.getId(), document.getId(), 204);
-        delete(URL_NODES, u1.getId(), createdFolder.getId(), 204);
-        delete(URL_NODES, u1.getId(), createdFolderNonSite.getId(), 204);
+        deleteNode(document.getId());
+        deleteNode(createdFolder.getId());
+        deleteNode(createdFolderNonSite.getId());
 
         response = getAll(URL_DELETED_NODES, u1.getId(), paging, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -121,7 +121,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertTrue(fNode.getArchivedAt().after(now));
         path = fNode.getPath();
         assertNotNull(path);
-        assertEquals("/Company Home/Sites/"+tSite.getSiteId()+"/documentLibrary", path.getName());
+        assertEquals("/Company Home/Sites/"+tSiteId+"/documentLibrary", path.getName());
         assertTrue(path.getIsComplete());
         assertNull("We don't show the parent id for a deleted node",fNode.getParentId());
 
@@ -165,7 +165,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         
         Date now = new Date();
         String folder1 = "folder" + now.getTime() + "_1";
-        Folder createdFolder = createFolder(docLibNodeRef.getId(), folder1, null);
+        Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
 
         //Create a folder outside a site
@@ -173,19 +173,20 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         assertNotNull(createdFolderNonSite);
 
         Document document = createDocument(createdFolder, "restoreme.txt");
-        delete(URL_NODES, u1.getId(), document.getId(), 204);
+        deleteNode(document.getId());
+        
         //Create another document with the same name
         Document documentSameName = createDocument(createdFolder, "restoreme.txt");
 
         //Can't restore a node of the same name
         post(URL_DELETED_NODES+"/"+document.getId()+"/restore", u1.getId(), null, null, Status.STATUS_CONFLICT);
 
-        delete(URL_NODES, u1.getId(), documentSameName.getId(), 204);
+        deleteNode(documentSameName.getId());
 
         //Now we can restore it.
         post(URL_DELETED_NODES+"/"+document.getId()+"/restore", u1.getId(), null, null, 200);
 
-        delete(URL_NODES, u1.getId(), createdFolder.getId(), 204);
+        deleteNode(createdFolder.getId());
 
         //We deleted the parent folder so lets see if we can restore a child doc, hopefully not.
         post(URL_DELETED_NODES+"/"+documentSameName.getId()+"/restore", u1.getId(), null, null, Status.STATUS_NOT_FOUND);
@@ -210,10 +211,10 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         
         Date now = new Date();
         String folder1 = "folder" + now.getTime() + "_1";
-        Folder createdFolder = createFolder(docLibNodeRef.getId(), folder1, null);
+        Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
 
-        delete(URL_NODES, u1.getId(), createdFolder.getId(), 204);
+        deleteNode(createdFolder.getId());
 
         HttpResponse response = getSingle(URL_DELETED_NODES, u1.getId(), createdFolder.getId(), 200);
         Folder fNode = jacksonUtil.parseEntry(response.getJsonResponse(), Folder.class);

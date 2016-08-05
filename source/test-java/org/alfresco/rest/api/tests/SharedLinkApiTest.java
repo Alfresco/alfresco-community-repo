@@ -668,9 +668,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
     public void testSharedLinkCreateGetDelete_MultiTenant() throws Exception
     {
         // As userOneN1
-        setRequestContext(userOneN1.getId());
+        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
 
-        String docLibNodeId = getSiteContainerNodeId(userOneN1Site.getNetworkId(), userOneN1.getId(), userOneN1Site.getSiteId(), "documentLibrary");
+        String docLibNodeId = getSiteContainerNodeId(userOneN1SiteId, "documentLibrary");
         
         String folderName = "folder" + System.currentTimeMillis() + "_1";
         String folderId = createFolder(docLibNodeId, folderName, null).getId();

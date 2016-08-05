@@ -375,9 +375,10 @@ public class QueriesApiTest extends AbstractBaseApiTest
         finally
         {
             // some cleanup
+            setRequestContext(user1);
             for (String docId : allIds)
             {
-                delete(URL_NODES, user1, docId, 204);
+                deleteNode(docId, true, 204);
             }
         }
     }
@@ -583,7 +584,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
             setRequestContext(user1);
             for (String docId : allIds)
             {
-                delete(URL_NODES, user1, docId, 204);
+                deleteNode(docId, true, 204);
             }
         }
     }
@@ -679,7 +680,7 @@ public class QueriesApiTest extends AbstractBaseApiTest
             setRequestContext(user1);
             for (String nodeId : allIds)
             {
-                delete(URL_NODES, user1, nodeId, 204);
+                deleteNode(nodeId, true, 204);
             }
         }
     }

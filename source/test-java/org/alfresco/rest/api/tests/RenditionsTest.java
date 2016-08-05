@@ -97,13 +97,17 @@ public class RenditionsTest extends AbstractBaseApiTest
         networkOne.create();
         userOneN1 = networkOne.createUser();
 
-        userOneN1Site = createSite(networkOne.getId(), userOneN1.getId(), SiteVisibility.PRIVATE);
+        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
+
+        String siteTitle = "RandomSite" + System.currentTimeMillis();
+        userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
     }
 
     @After
     public void tearDown() throws Exception
     {
-        deleteSite(networkOne.getId(), userOneN1.getId(), userOneN1Site.getId(), 204);
+        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
+        deleteSite(userOneN1Site.getId(), 204);
     }
 
     /**
@@ -114,7 +118,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     @Test
     public void testListNodeRenditions() throws Exception
     {
-        setRequestContext(userOneN1.getId());
+        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
         
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
@@ -765,11 +769,7 @@ public class RenditionsTest extends AbstractBaseApiTest
 
     private String addToDocumentLibrary(Site testSite, String name, String nodeType, String userId) throws Exception
     {
-        // TODO refactor to consistently handle user/network (with option to switch network in cloud test scenarios)
-        // eg. set request context (rather than explicitly passing userId/networkId) ?
-        String networkId = repoService.tenantService.getUserDomain(userId);
-
-        String parentId = getSiteContainerNodeId(networkId, userId, testSite.getId(), "documentLibrary");
+        String parentId = getSiteContainerNodeId(testSite.getId(), "documentLibrary");
         return createNode(parentId, name, nodeType, null).getId();
     }
 

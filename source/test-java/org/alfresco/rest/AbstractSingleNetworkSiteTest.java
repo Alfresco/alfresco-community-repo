@@ -31,7 +31,6 @@ import static org.alfresco.rest.api.tests.util.RestApiUtil.toJsonAsStringNonNull
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.rest.api.tests.AbstractBaseApiTest;
-import org.alfresco.rest.api.tests.NodeApiTest;
 import org.alfresco.rest.api.tests.RepoService;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
@@ -57,8 +56,8 @@ public class AbstractSingleNetworkSiteTest extends AbstractBaseApiTest
 
     protected RepoService.TestNetwork networkOne;
     protected RepoService.TestPerson u1;
-    protected RepoService.TestSite tSite;
-    protected NodeRef docLibNodeRef;
+    protected String tSiteId;
+    protected String tDocLibNodeId;
 
     protected JacksonUtil jacksonUtil;
 
@@ -80,11 +79,13 @@ public class AbstractSingleNetworkSiteTest extends AbstractBaseApiTest
         networkOne = getRepoService().createNetwork(this.getClass().getName().toLowerCase(), true);
         networkOne.create();
         u1 = networkOne.createUser();
-        tSite = createSite(networkOne, u1, SiteVisibility.PRIVATE);
+        
+        setRequestContext(networkOne.getId(), u1.getId(), null);
+        
+        tSiteId = createSite("Test Site - " + System.currentTimeMillis(), SiteVisibility.PRIVATE).getId();
+        tDocLibNodeId = getSiteContainerNodeId(tSiteId, "documentLibrary");
 
-        AuthenticationUtil.setFullyAuthenticatedUser(u1.getId());
-        docLibNodeRef = tSite.getContainerNodeRef("documentLibrary");
-        AuthenticationUtil.clearCurrentSecurityContext();
+        setRequestContext(null);
     }
 
     @After

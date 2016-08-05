@@ -189,8 +189,8 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
         finally
         {
             // some cleanup
-            Map<String, String> params = Collections.singletonMap("permanent", "true");
-            delete(URL_NODES, user1, f1Id, params, 204);
+            setRequestContext(user1);
+            deleteNode(f1Id, true, 204);
         }
     }
 
@@ -250,8 +250,8 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
         finally
         {
             // some cleanup
-            Map<String, String> params = Collections.singletonMap("permanent", "true");
-            delete(URL_NODES, user1, f1Id, params, 204);
+            setRequestContext(user1);
+            deleteNode(f1Id, true, 204);
         }
     }
 
@@ -449,8 +449,8 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             if (f1Id != null)
             {
                 // some cleanup
-                Map<String, String> params = Collections.singletonMap("permanent", "true");
-                delete(URL_NODES, user1, f1Id, params, 204);
+                setRequestContext(user1);
+                deleteNode(f1Id, true, 204);
             }
         }
     }
@@ -734,7 +734,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             checkVersionHistoryAndContent(d1Id, nodes, verCnt, textContentSuffix, null, majorVersion, minorVersion, false);
 
             // delete to trashcan/archive ...
-            delete(URL_NODES, user1, d1Id, null, 204);
+            deleteNode(d1Id);
 
             {
                 // -ve tests
@@ -760,8 +760,8 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
         finally
         {
             // some cleanup
-            Map<String, String> params = Collections.singletonMap("permanent", "true");
-            delete(URL_NODES, user1, f1Id, params, 204);
+            setRequestContext(user1);
+            deleteNode(f1Id, true, 204);
         }
     }
 
@@ -891,8 +891,8 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             if (f1Id != null)
             {
                 // some cleanup
-                Map<String, String> params = Collections.singletonMap("permanent", "true");
-                delete(URL_NODES, user1, f1Id, params, 204);
+                setRequestContext(user1);
+                deleteNode(f1Id, true, 204);
             }
         }
     }
@@ -1081,7 +1081,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             checkVersionHistoryAndContent(d1Id, nodes, verCnt, textContentSuffix, null, 1, minorVersion, false);
 
             // delete to trashcan/archive ...
-            delete(URL_NODES, user1, d1Id, null, 204);
+            deleteNode(d1Id);
 
             // -ve tests
             {
@@ -1111,8 +1111,8 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
         finally
         {
             // some cleanup
-            Map<String, String> params = Collections.singletonMap("permanent", "true");
-            delete(URL_NODES, user1, f1Id, params, 204);
+            setRequestContext(user1);
+            deleteNode(f1Id, true, 204);
         }
     }
 
@@ -1344,8 +1344,8 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             if (f1Id != null)
             {
                 // some cleanup
-                Map<String, String> params = Collections.singletonMap("permanent", "true");
-                delete(URL_NODES, user1, f1Id, params, 204);
+                setRequestContext(user1);
+                deleteNode(f1Id, true, 204);
             }
         }
     }

@@ -199,7 +199,7 @@ function main()
           * Site mode.
           * Need valid site and container. Try to create container if it doesn't exist.
           */
-         site = siteService.getSite(siteId);
+         site = siteService.getSiteInfo(siteId);
          if (site === null)
          {
             exitUpload(404, "Site (" + siteId + ") not found.");

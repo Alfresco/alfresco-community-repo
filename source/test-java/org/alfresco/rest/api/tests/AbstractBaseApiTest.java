@@ -34,12 +34,12 @@ import static org.junit.Assert.fail;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
+import org.alfresco.repo.tenant.TenantUtil;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
-import org.alfresco.rest.api.tests.RepoService.TestPerson;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
@@ -52,8 +52,10 @@ import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.client.data.SiteMember;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
+import org.alfresco.rest.api.tests.util.JacksonUtil;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
+import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
@@ -106,26 +108,24 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected static final String DEFAULT_ADMIN = "admin";
     private static final String DEFAULT_ADMIN_PWD = "admin";
 
-    protected TestNetwork networkOne;
-
-    /**
-     * User one from network one
-     */
-    protected TestPerson userOneN1;
-
-    /**
-     * User two from network one
-     */
-    protected TestPerson userTwoN1;
-    protected String userOneN1SiteId;
-
-    protected String user1;
-    protected String user2;
+    // network1 with user1, user2 and a testsite1
+    protected static TestNetwork networkOne;
     
-    protected List<String> users = new ArrayList<>();
+    protected static String user1; // user1 from network1
+    protected static String user2; // user2 from network1
 
-    protected MutableAuthenticationService authenticationService;
-    protected PersonService personService;
+    // network admin (or default super admin, if not running within a tenant/network)
+    protected static String networkAdmin = DEFAULT_ADMIN;
+
+    protected static String tSiteId;
+    protected static String tDocLibNodeId;
+    
+    
+    protected static List<String> users = new ArrayList<>();
+
+    protected static JacksonUtil jacksonUtil;
+    protected static MutableAuthenticationService authenticationService;
+    protected static PersonService personService;
 
     protected final String RUNID = System.currentTimeMillis()+"";
 
@@ -133,12 +133,32 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     @Before
     public void setup() throws Exception
     {
-        // note: createUser currently relies on repoService
-        user1 = createUser("user1-" + RUNID, "user1Password", null);
-        user2 = createUser("user2-" + RUNID, "user2Password", null);
+        jacksonUtil = new JacksonUtil(applicationContext.getBean("jsonHelper", JacksonHelper.class));
+
+        if (networkOne == null)
+        {
+            // note: populateTestData/createTestData will be called (which currently creates 2 tenants, 9 users per tenant, 10 sites per tenant, ...)
+            networkOne = getTestFixture().getRandomNetwork();
+        }
+        
+        //userOneN1 = networkOne.createUser();
+        //userTwoN1 = networkOne.createUser();
+
+        String tenantDomain = networkOne.getId();
+        
+        if (! TenantService.DEFAULT_DOMAIN.equals(tenantDomain))
+        {
+            networkAdmin = DEFAULT_ADMIN+"@"+tenantDomain;
+        }
 
         // to enable admin access via test calls - eg. via PublicApiClient -> AbstractTestApi -> findUserByUserName
-        getOrCreateUser("admin", "admin");
+        getOrCreateUser(networkAdmin, "admin", networkOne);
+        
+        setRequestContext(networkAdmin);
+        
+        // note: createUser currently relies on repoService
+        user1 = createUser("user1-" + RUNID, "user1Password", networkOne);
+        user2 = createUser("user2-" + RUNID, "user2Password", networkOne);
 
         // used-by teardown to cleanup
         authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
@@ -146,14 +166,10 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         users.add(user1);
         users.add(user2);
 
-        // TODO this causes createTestData to be called
-        networkOne = getTestFixture().getRandomNetwork();
-        userOneN1 = networkOne.createUser();
-        userTwoN1 = networkOne.createUser();
-
-        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
+        setRequestContext(networkOne.getId(), user1, null);
         
-        userOneN1SiteId = createSite("TestSite A - " + System.currentTimeMillis(), SiteVisibility.PRIVATE).getId();
+        tSiteId = createSite("TestSite A - " + RUNID, SiteVisibility.PRIVATE).getId();
+        tDocLibNodeId = getSiteContainerNodeId(tSiteId, "documentLibrary");
 
         setRequestContext(null);    
     }
@@ -161,10 +177,10 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     @After
     public void tearDown() throws Exception
     {
-        if ((networkOne != null) && (userOneN1 != null) && (userOneN1SiteId != null))
+        if ((networkOne != null) && (user1 != null) && (tSiteId != null))
         {
-            setRequestContext(networkOne.getId(), userOneN1.getId(), null);
-            deleteSite(userOneN1SiteId, 204);
+            setRequestContext(networkOne.getId(), user1, null);
+            deleteSite(tSiteId, true, 204);
         }
 
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
@@ -440,21 +456,54 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     /**
      * TODO implement as remote api call
      */
-    protected String createUser(String username, String password, TestNetwork network)
+    protected String createUser(final String usernameIn, final String password, final TestNetwork network)
     {
-        PersonInfo personInfo = new PersonInfo(username, username, username, password, null, null, null, null, null, null, null);
-        RepoService.TestPerson person = repoService.createUser(personInfo, username, network);
-        return person.getId();
+        final String tenantDomain = (network != null ? network.getId() : TenantService.DEFAULT_DOMAIN);
+        
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>()
+        {
+            @Override
+            public String doWork() throws Exception
+            {
+                return TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<String>()
+                {
+                    public String doWork() throws Exception
+                    {
+                        String username = repoService.getPublicApiContext().createUserName(usernameIn, tenantDomain);
+                        PersonInfo personInfo = new PersonInfo(username, username, username, password, null, null, null, null, null, null, null);
+                        RepoService.TestPerson person = repoService.createUser(personInfo, username, network);
+                        return person.getId();
+
+                    }
+                }, tenantDomain);
+            }
+        }, networkAdmin);
     }
 
     /**
      * TODO implement as remote api call
      */
-    protected String getOrCreateUser(String username, String password)
+    protected String getOrCreateUser(String usernameIn, String password, TestNetwork network)
     {
-        PersonInfo personInfo = new PersonInfo(username, username, username, password, null, null, null, null, null, null, null);
-        RepoService.TestPerson person = repoService.getOrCreateUser(personInfo, username, null);
-        return person.getId();
+        final String tenantDomain = (network != null ? network.getId() : TenantService.DEFAULT_DOMAIN);
+
+        return AuthenticationUtil.runAs(new AuthenticationUtil.RunAsWork<String>()
+        {
+            @Override
+            public String doWork() throws Exception
+            {
+                return TenantUtil.runAsTenant(new TenantUtil.TenantRunAsWork<String>()
+                {
+                    public String doWork() throws Exception
+                    {
+                        String username = repoService.getPublicApiContext().createUserName(usernameIn, tenantDomain);
+                        PersonInfo personInfo = new PersonInfo(username, username, username, password, null, null, null, null, null, null, null);
+                        RepoService.TestPerson person = repoService.getOrCreateUser(personInfo, username, network);
+                        return person.getId();
+                    }
+                }, tenantDomain);
+            }
+        }, networkAdmin);
     }
     
     protected SiteMember addSiteMember(String siteId, String userId, final SiteRole siteRole) throws Exception
@@ -481,9 +530,15 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Site.class);
     }
 
-    protected HttpResponse deleteSite(String siteId, int expectedStatus) throws Exception
+    protected HttpResponse deleteSite(String siteId, boolean permanent, int expectedStatus) throws Exception
     {
-        HttpResponse response = publicApiClient.delete(getScope(), "sites", siteId, null, null);
+        Map params = null;
+        if (permanent == true)
+        {
+            params = Collections.singletonMap("permanent", "true");
+        }
+
+        HttpResponse response = publicApiClient.delete(getScope(), 1, "sites", siteId, null, null, params);
         checkStatus(expectedStatus, response.getStatusCode());
         return response;
     }
@@ -525,7 +580,10 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
             password = DEFAULT_ADMIN_PWD;
         }
         
-        setRequestContext(null, runAsUser, password);
+        // Assume "networkOne" if set !
+        String runAsNetwork = (networkOne != null ? networkOne.getId() : null);
+        
+        setRequestContext(runAsNetwork, runAsUser, password);
     }
 
     protected void setRequestContext(String runAsNetwork, String runAsUser, String password)
@@ -534,7 +592,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         {
             runAsNetwork = "-default-";
         }
-        else if (runAsUser.equals(DEFAULT_ADMIN))
+        else if ((runAsUser != null) && runAsUser.equals(DEFAULT_ADMIN))
         {
             runAsUser = runAsUser+"@"+runAsNetwork;
         }

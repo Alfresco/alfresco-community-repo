@@ -667,13 +667,14 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/shared-links/<sharedId>/renditions/<renditionId>/content}
      *
      */
+    // TODO now covered by testSharedLinkCreateGetDelete ? (since base class now uses tenant context by default)
     @Test
     public void testSharedLinkCreateGetDelete_MultiTenant() throws Exception
     {
-        // As userOneN1
-        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
+        // As user1
+        setRequestContext(user1);
 
-        String docLibNodeId = getSiteContainerNodeId(userOneN1SiteId, "documentLibrary");
+        String docLibNodeId = getSiteContainerNodeId(tSiteId, "documentLibrary");
         
         String folderName = "folder" + System.currentTimeMillis() + "_1";
         String folderId = createFolder(docLibNodeId, folderName, null).getId();
@@ -705,7 +706,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(d1Id, resp.getNodeId());
         assertEquals(fileName1, resp.getName());
         assertEquals(file1_MimeType, resp.getContent().getMimeType());
-        assertEquals(userOneN1.getId(), resp.getSharedByUser().getId());
+        assertEquals(user1, resp.getSharedByUser().getId());
 
         // allowable operations not included - no params
         response = getSingle(QuickShareLinkEntityResource.class, shared1Id, null, 200);
@@ -764,7 +765,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(0, renditions.size());
 
         // create rendition of pdf doc - note: for some reason create rendition of txt doc fail on build m/c (TBC) ?
-        setRequestContext(userOneN1.getId());
+        setRequestContext(user1);
 
         Rendition rendition = createAndGetRendition(d1Id, "doclib");
         assertNotNull(rendition);
@@ -807,7 +808,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         getSingle(URL_SHARED_LINKS, shared1Id + "/renditions/doclib/content", null, headers, 304);
         
         // -ve test - userTwoN1 cannot delete shared link
-        setRequestContext(userTwoN1.getId());
+        setRequestContext(user2);
         deleteSharedLink(shared1Id, 403);
 
         // -ve test - unauthenticated
@@ -815,7 +816,7 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         deleteSharedLink(shared1Id, 401);
 
         // delete shared link
-        setRequestContext(userOneN1.getId());
+        setRequestContext(user1);
         deleteSharedLink(shared1Id);
     }
 

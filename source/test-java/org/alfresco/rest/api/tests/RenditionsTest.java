@@ -107,7 +107,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     public void tearDown() throws Exception
     {
         setRequestContext(networkOne.getId(), userOneN1.getId(), null);
-        deleteSite(userOneN1Site.getId(), 204);
+        deleteSite(userOneN1Site.getId(), true, 204);
     }
 
     /**

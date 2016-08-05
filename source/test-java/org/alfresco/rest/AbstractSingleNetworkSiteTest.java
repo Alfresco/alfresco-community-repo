@@ -27,27 +27,35 @@
 package org.alfresco.rest;
 
 import org.alfresco.rest.api.tests.AbstractBaseApiTest;
-import org.alfresco.rest.api.tests.util.JacksonUtil;
-import org.alfresco.rest.framework.jacksonextensions.JacksonHelper;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteVisibility;
 import org.junit.After;
 import org.junit.Before;
 
 /**
+ * Overrides AbstractBaseApiTest so that only a single network & site is created per test 
+ * (instead of pre-creating multiple networks & sites)
+ * 
+ * Can also be optionally tweaked locally to:
+ * 
+ * - use the default network (ie. super tenant) => instead of creating a new tenant
+ * 
+ * - re-use a single setup across test methods => although this does mean that each individual test method must either rely on uniquely created test data and/or cleanup
+ * 
+ * Note: For now, these can be explicitly tweaked by a dev (do not commit) 
+ * but in the future we could consider making these runtime options.
+ * 
  * @author Gethin James
  * @author janv
  */
 public class AbstractSingleNetworkSiteTest extends AbstractBaseApiTest
 {
-    protected String tSiteId;
-    protected String tDocLibNodeId;
-
-    protected JacksonUtil jacksonUtil;
-
-    // TODO make this a runtime option to allow creation of non-default network
-    protected final static boolean useDefaultNetwork = true;
+    // note: experimental - for local/dev-use only (YMMV) ;-)
+    // - setting both to true should make the related tests run faster
+    // - if singleSetupNoTearDown=true then each individual test method should create unique data (or cleanup) to avoid interdependent test/run failures
+    // - if useDefaultNetwork=true then no tenant will be created (ie. will use default/super tenant)
+    protected static boolean singleSetupNoTearDown = false;
+    protected static boolean useDefaultNetwork = false;
+    
+    private static boolean isSetup = false;
     
     @Override
     public String getScope()
@@ -59,49 +67,30 @@ public class AbstractSingleNetworkSiteTest extends AbstractBaseApiTest
     @Before
     public void setup() throws Exception
     {
-        jacksonUtil = new JacksonUtil(applicationContext.getBean("jsonHelper", JacksonHelper.class));
-
-        // createTestData=false
-        getTestFixture(false);
-        
-        if (! useDefaultNetwork)
+        if ((! isSetup) || (! singleSetupNoTearDown))
         {
-            networkOne = getRepoService().createNetwork(this.getClass().getName().toLowerCase(), true);
-            networkOne.create();
+            if (! useDefaultNetwork)
+            {
+                networkOne = getRepoService().createNetwork(this.getClass().getName().toLowerCase(), true);
+                networkOne.create();
+            }
+            else
+            {
+                networkOne = getRepoService().getSystemNetwork();
+            }
+            
+            super.setup();
+            isSetup = true;
         }
-        else 
-        {
-            networkOne = getRepoService().getSystemNetwork();
-        }
-        
-        user1 = createUser("user1-" + RUNID, "user1Password", networkOne);
-        user2 = createUser("user2-" + RUNID, "user2Password", networkOne);
-
-        // to enable admin access via test calls - eg. via PublicApiClient -> AbstractTestApi -> findUserByUserName
-        getOrCreateUser("admin", "admin");
-
-        // used-by teardown to cleanup
-        authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
-        personService = applicationContext.getBean("personService", PersonService.class);
-        
-        users.add(user1);
-        users.add(user2);
-        
-        setRequestContext(networkOne.getId(), user1, null);
-        
-        tSiteId = createSite("Test Site - " + System.currentTimeMillis(), SiteVisibility.PRIVATE).getId();
-        tDocLibNodeId = getSiteContainerNodeId(tSiteId, "documentLibrary");
-
-        setRequestContext(null);
     }
 
     @Override
     @After
     public void tearDown() throws Exception
     {
-        setRequestContext(networkOne.getId(), user1, null);
-        deleteSite(tSiteId, 204); // TODO permanent=true
-        
-        super.tearDown();
+        if (! singleSetupNoTearDown)
+        {
+            super.tearDown();
+        }
     }
 }

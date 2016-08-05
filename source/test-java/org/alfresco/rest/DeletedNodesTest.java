@@ -83,7 +83,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
         
         Date now = new Date();
-        String folder1 = "folder" + now.getTime() + "_1";
+        String folder1 = "folder-testCreateAndDelete-" + now.getTime() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
 
@@ -153,7 +153,7 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         getSingle(URL_DELETED_NODES, "iddontexist", 404);
 
         //Now as admin
-        setRequestContext("admin");
+        setRequestContext(networkAdmin);
         response = publicApiClient.get(getScope(), URL_DELETED_NODES, null, null, null, createParams(paging, null));
         checkStatus(200, response.getStatusCode());
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);

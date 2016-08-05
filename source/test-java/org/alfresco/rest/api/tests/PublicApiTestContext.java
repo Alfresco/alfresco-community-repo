@@ -90,9 +90,9 @@ public class PublicApiTestContext
     {
     	StringBuilder sb = new StringBuilder();
     	sb.append(alias);
-    	if(tenant != null && !tenant.equals(TenantService.DEFAULT_DOMAIN))
+    	if ((tenant != null) && (! tenant.equals(TenantService.DEFAULT_DOMAIN)) && (! alias.contains(TenantService.SEPARATOR)))
     	{
-    		sb.append("@");
+    		sb.append(TenantService.SEPARATOR);
     		sb.append(tenant);
     	}
     	return sb.toString();

@@ -94,7 +94,8 @@ public class ExtendedSecurityServiceImplUnitTest
     @Mock private TransactionService mockedTransactionService;
     @Mock private RetryingTransactionHelper mockedRetryingTransactionHelper;
     @Mock private NodeService mockedNodeService;
-    @Mock private PagingResults<String> mockedPagingResults;
+    @Mock private PagingResults<String> mockedReadPagingResults;
+    @Mock private PagingResults<String> mockedWritePagingResults;
     @Mock private ApplicationContext mockedApplicationContext;
     
     /** test component */
@@ -105,10 +106,10 @@ public class ExtendedSecurityServiceImplUnitTest
     private static final String WRITER_GROUP_FULL_PREFIX = GROUP_PREFIX + WRITER_GROUP_PREFIX;
     
     /** test authorities */
-    private static final String USER = AlfMock.generateText();
-    private static final String GROUP = GROUP_PREFIX + AlfMock.generateText();
-    private static final String USER_W = AlfMock.generateText();
-    private static final String GROUP_W = GROUP_PREFIX + AlfMock.generateText();
+    private static final String USER = "USER";
+    private static final String GROUP = GROUP_PREFIX + "GROUP";
+    private static final String USER_W = "USER_W";
+    private static final String GROUP_W = GROUP_PREFIX + "GROUP_W";
     private static final Set<String> READERS = Stream.of(USER, GROUP).collect(Collectors.toSet());
     private static final Set<String> WRITERS = Stream.of(USER_W, GROUP_W).collect(Collectors.toSet());
     
@@ -129,6 +130,8 @@ public class ExtendedSecurityServiceImplUnitTest
     /** test data */
     private NodeRef nodeRef;
     private NodeRef filePlan;
+    private String readGroupPrefix;
+    private String writeGroupPrefix;
     
     /**
      * Before tests
@@ -179,6 +182,10 @@ public class ExtendedSecurityServiceImplUnitTest
         };
         when(mockedAuthorityService.createAuthority(any(AuthorityType.class), anyString(), anyString(), anySet()))
             .thenAnswer(createAuthorityAnswer);
+        
+        // setup group prefixes
+        readGroupPrefix = extendedSecurityService.getIPRGroupPrefixShortName(READER_GROUP_PREFIX, READERS);
+        writeGroupPrefix = extendedSecurityService.getIPRGroupPrefixShortName(WRITER_GROUP_PREFIX, WRITERS);
     }
     
     /**
@@ -318,7 +325,7 @@ public class ExtendedSecurityServiceImplUnitTest
         
         when(mockedAuthorityService.getContainedAuthorities(null, READER_GROUP_FULL_PREFIX, true))
             .thenReturn(Stream
-               .of(USER, GROUP, WRITER_GROUP_FULL_PREFIX)
+               .of(USER, GROUP)
                .collect(Collectors.toSet()));
         
         // get extended readers
@@ -379,11 +386,11 @@ public class ExtendedSecurityServiceImplUnitTest
     @Test public void addExtendedSecurityForTheFirstTimeAndCreateGroups()
     {
         // group names
-        String readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_PREFIX, READERS, WRITERS, 0);
-        String writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_PREFIX, READERS, WRITERS, 0);
+        String readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_PREFIX, READERS, 0);
+        String writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_PREFIX, WRITERS, 0);
         
         // setup query results
-        when(mockedPagingResults.getPage())
+        when(mockedReadPagingResults.getPage())
             .thenReturn(Collections.emptyList());
         when(mockedAuthorityService.getAuthorities(
                     eq(AuthorityType.GROUP), 
@@ -392,7 +399,7 @@ public class ExtendedSecurityServiceImplUnitTest
                     eq(false), 
                     eq(false), 
                     any(PagingRequest.class)))
-            .thenReturn(mockedPagingResults);
+            .thenReturn(mockedReadPagingResults);
         
         // add extended security
         extendedSecurityService.addExtendedSecurity(nodeRef, READERS, WRITERS);
@@ -407,7 +414,7 @@ public class ExtendedSecurityServiceImplUnitTest
         // verify write group created correctly
         verify(mockedAuthorityService).createAuthority(AuthorityType.GROUP, writeGroup, writeGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
         writeGroup = GROUP_PREFIX + writeGroup;
-        verify(mockedAuthorityService).addAuthority(readGroup, writeGroup);
+        verify(mockedAuthorityService).addAuthority(GROUP_PREFIX + ROOT_IPR_GROUP, writeGroup);
         verify(mockedAuthorityService).addAuthority(writeGroup, USER_W);
         verify(mockedAuthorityService).addAuthority(writeGroup, GROUP_W);
 
@@ -430,28 +437,39 @@ public class ExtendedSecurityServiceImplUnitTest
      */
     @Test public void addExtendedSecurityForTheFirstTimeAndReuseGroups()
     {
-        // group names
-        String readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_PREFIX, READERS, WRITERS, 0);
-        String writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_PREFIX, READERS, WRITERS, 0);
+        // group names        
+        String readGroup = readGroupPrefix + "0";
+        String writeGroup = writeGroupPrefix + "0";
         
         // setup query results
-        when(mockedPagingResults.getPage())
+        when(mockedReadPagingResults.getPage())
             .thenReturn(Stream.of(GROUP_PREFIX + readGroup).collect(Collectors.toList()));
         when(mockedAuthorityService.getAuthorities(
                     eq(AuthorityType.GROUP), 
                     eq(RMAuthority.ZONE_APP_RM), 
-                    any(String.class),
+                    eq(readGroupPrefix),
                     eq(false), 
                     eq(false), 
                     any(PagingRequest.class)))
-            .thenReturn(mockedPagingResults);
+            .thenReturn(mockedReadPagingResults);
+        
+        when(mockedWritePagingResults.getPage())
+            .thenReturn(Stream.of(GROUP_PREFIX + writeGroup).collect(Collectors.toList()));
+        when(mockedAuthorityService.getAuthorities(
+                    eq(AuthorityType.GROUP), 
+                    eq(RMAuthority.ZONE_APP_RM), 
+                    eq(writeGroupPrefix),
+                    eq(false), 
+                    eq(false), 
+                    any(PagingRequest.class)))
+        .thenReturn(mockedWritePagingResults);
         
         // setup exact match
         when(mockedAuthorityService.authorityExists(GROUP_PREFIX + writeGroup))
             .thenReturn(true);
         when(mockedAuthorityService.getContainedAuthorities(null, GROUP_PREFIX + readGroup, true))
             .thenReturn(Stream
-                .of(GROUP_PREFIX + writeGroup, USER, GROUP)
+                .of(USER, GROUP)
                 .collect(Collectors.toSet()));
         when(mockedAuthorityService.getContainedAuthorities(null, GROUP_PREFIX + writeGroup, true))
             .thenReturn(Stream
@@ -495,28 +513,39 @@ public class ExtendedSecurityServiceImplUnitTest
      */
     @Test public void addExtendedSecurityForTheFirstTimeAndCreateGroupsAfterClash()
     {
-        // group names
-        String readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_PREFIX, READERS, WRITERS, 0);
-        String writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_PREFIX, READERS, WRITERS, 0);
+        // group names        
+        String readGroup = readGroupPrefix + "0";
+        String writeGroup = writeGroupPrefix + "0";
         
         // setup query results
-        when(mockedPagingResults.getPage())
+        when(mockedReadPagingResults.getPage())
             .thenReturn(Stream.of(GROUP_PREFIX + readGroup).collect(Collectors.toList()));
         when(mockedAuthorityService.getAuthorities(
                     eq(AuthorityType.GROUP), 
                     eq(RMAuthority.ZONE_APP_RM), 
-                    any(String.class),
+                    eq(readGroupPrefix),
                     eq(false), 
                     eq(false), 
                     any(PagingRequest.class)))
-            .thenReturn(mockedPagingResults);
+            .thenReturn(mockedReadPagingResults);
+        
+        when(mockedWritePagingResults.getPage())
+            .thenReturn(Stream.of(GROUP_PREFIX + writeGroup).collect(Collectors.toList()));
+        when(mockedAuthorityService.getAuthorities(
+                    eq(AuthorityType.GROUP), 
+                    eq(RMAuthority.ZONE_APP_RM), 
+                    eq(writeGroupPrefix),
+                    eq(false), 
+                    eq(false), 
+                    any(PagingRequest.class)))
+        .thenReturn(mockedWritePagingResults);
         
         // setup exact match
         when(mockedAuthorityService.authorityExists(GROUP_PREFIX + writeGroup))
             .thenReturn(true);
         when(mockedAuthorityService.getContainedAuthorities(null, GROUP_PREFIX + readGroup, true))
             .thenReturn(Stream
-                .of(GROUP_PREFIX + writeGroup, USER, GROUP)
+                .of(USER, GROUP, AlfMock.generateText())
                 .collect(Collectors.toSet()));
         when(mockedAuthorityService.getContainedAuthorities(null, GROUP_PREFIX + writeGroup, true))
             .thenReturn(Stream
@@ -527,8 +556,8 @@ public class ExtendedSecurityServiceImplUnitTest
         extendedSecurityService.addExtendedSecurity(nodeRef, READERS, WRITERS);
         
         // new group names
-        readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_PREFIX, READERS, WRITERS, 1);
-        writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_PREFIX, READERS, WRITERS, 1);
+        readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_PREFIX, READERS, 1);
+        writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_PREFIX, WRITERS, 1);
         
         // verify read group created correctly
         verify(mockedAuthorityService).createAuthority(AuthorityType.GROUP, readGroup, readGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
@@ -540,7 +569,7 @@ public class ExtendedSecurityServiceImplUnitTest
         // verify write group created correctly
         verify(mockedAuthorityService).createAuthority(AuthorityType.GROUP, writeGroup, writeGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
         writeGroup = GROUP_PREFIX + writeGroup;
-        verify(mockedAuthorityService).addAuthority(readGroup, writeGroup);
+        verify(mockedAuthorityService).addAuthority(GROUP_PREFIX + ROOT_IPR_GROUP, writeGroup);
         verify(mockedAuthorityService).addAuthority(writeGroup, USER_W);
         verify(mockedAuthorityService).addAuthority(writeGroup, GROUP_W);
 
@@ -563,35 +592,48 @@ public class ExtendedSecurityServiceImplUnitTest
      */
     @Test public void addExtendedSecurityWithResultPaging()
     {
-        // group names
-        String readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_PREFIX, READERS, WRITERS, 0);
-        String writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_PREFIX, READERS, WRITERS, 0);
+        // group names        
+        String readGroup = readGroupPrefix + "0";
+        String writeGroup = writeGroupPrefix + "0";
         
+        // create fity results
         List<String> fiftyResults = new ArrayList<String>(50);
         for (int i = 0; i < 50; i++)
         {
             fiftyResults.add(AlfMock.generateText());
-        }
+        }        
         
         // setup query results
-        when(mockedPagingResults.getPage())
+        when(mockedReadPagingResults.getPage())
             .thenReturn(fiftyResults)
             .thenReturn(Stream.of(GROUP_PREFIX + readGroup).collect(Collectors.toList()));
         when(mockedAuthorityService.getAuthorities(
                     eq(AuthorityType.GROUP), 
                     eq(RMAuthority.ZONE_APP_RM), 
-                    any(String.class),
+                    eq(readGroupPrefix),
                     eq(false), 
                     eq(false), 
                     any(PagingRequest.class)))
-            .thenReturn(mockedPagingResults);
+            .thenReturn(mockedReadPagingResults);
         
+        when(mockedWritePagingResults.getPage())
+            .thenReturn(fiftyResults)
+            .thenReturn(Stream.of(GROUP_PREFIX + writeGroup).collect(Collectors.toList()));
+        when(mockedAuthorityService.getAuthorities(
+                    eq(AuthorityType.GROUP), 
+                    eq(RMAuthority.ZONE_APP_RM), 
+                    eq(writeGroupPrefix),
+                    eq(false), 
+                    eq(false), 
+                    any(PagingRequest.class)))
+        .thenReturn(mockedWritePagingResults);
+
         // setup exact match
         when(mockedAuthorityService.authorityExists(GROUP_PREFIX + writeGroup))
             .thenReturn(true);
         when(mockedAuthorityService.getContainedAuthorities(null, GROUP_PREFIX + readGroup, true))
             .thenReturn(Stream
-                .of(GROUP_PREFIX + writeGroup, USER, GROUP)
+                .of(USER, GROUP)
                 .collect(Collectors.toSet()));
         when(mockedAuthorityService.getContainedAuthorities(null, GROUP_PREFIX + writeGroup, true))
             .thenReturn(Stream
@@ -647,8 +689,8 @@ public class ExtendedSecurityServiceImplUnitTest
     @Test public void removeAllExtendedSecurity()
     {
         // group names
-        String readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_FULL_PREFIX, READERS, WRITERS, 0);
-        String writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_FULL_PREFIX, READERS, WRITERS, 0);
+        String readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_FULL_PREFIX, READERS, 0);
+        String writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_FULL_PREFIX, WRITERS, 0);
         
         // setup permissions
         Set<AccessPermission> permissions = Stream

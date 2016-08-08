@@ -33,13 +33,11 @@ import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.model.ContentModel;
-import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.springframework.extensions.webscripts.WebScriptException;
@@ -161,21 +159,7 @@ public class ContentGet extends StreamContent implements ServletContextAware
         {
             String name = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
             
-            // IE use file extension to get mimetype
-            // So we set correct extension. see MNT-11246
-            if (userAgent.contains("msie") || userAgent.contains(" trident/"))
-            {
-                String mimeType = contentService.getReader(nodeRef, propertyQName).getMimetype();
-                    // If we have an unknown mime type (usually marked as binary)
-                    // it is better to stay with the file extension we currently have
-                    // see MNT-14412
-                    if (!mimeType.toLowerCase().equals(MimetypeMap.MIMETYPE_BINARY)
-                            && !mimetypeService.getMimetypes(FilenameUtils.getExtension(name)).contains(mimeType))
-                {
-                    name = FilenameUtils.removeExtension(name) + FilenameUtils.EXTENSION_SEPARATOR_STR + mimetypeService.getExtension(mimeType); 
-                }
-            }
-            
+            // maintain the original name of the node during the download - do not modify it - see MNT-16510
             streamContent(req, res, nodeRef, propertyQName, attach, name, model);
         }
         else

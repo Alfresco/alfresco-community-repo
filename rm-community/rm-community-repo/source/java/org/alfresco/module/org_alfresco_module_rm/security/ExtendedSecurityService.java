@@ -100,7 +100,7 @@ public interface ExtendedSecurityService
      * @param applyToParents true if extended security applied to parents (read only) false otherwise.
      * 
      * @deprecated as of 2.5, because extended security is no longer applied to parents.  Note that calling this method will
-     * only apply the exetended securiyt to the node and the applyToParents parameter value will be ignored.
+     * only apply the extended security to the node and the applyToParents parameter value will be ignored.
      * 
      * @see #addExtendedSecurity(NodeRef, Set, Set)
      */

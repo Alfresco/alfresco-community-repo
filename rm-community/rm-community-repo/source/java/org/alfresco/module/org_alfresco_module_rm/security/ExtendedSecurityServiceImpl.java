@@ -30,6 +30,7 @@ package org.alfresco.module.org_alfresco_module_rm.security;
 import static org.alfresco.service.cmr.security.PermissionService.GROUP_PREFIX;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -52,12 +53,11 @@ import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
+import org.alfresco.util.Pair;
 import org.alfresco.util.ParameterCheck;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.extensions.webscripts.ui.common.StringUtils;
-
-import com.google.gdata.util.common.base.Pair;
 
 /**
  * Extended security service implementation.
@@ -183,8 +183,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         Pair<String, String> iprGroups = getIPRGroups(nodeRef);
         if (iprGroups != null)
         {
-            result = authorityService.getContainedAuthorities(null, iprGroups.first, true);
-            result.remove(iprGroups.second);
+            result = new HashSet<String>(authorityService.getContainedAuthorities(null, iprGroups.getFirst(), true));
+            result.remove(iprGroups.getSecond());
         }
         else
         {
@@ -206,7 +206,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         Pair<String, String> iprGroups = getIPRGroups(nodeRef);
         if (iprGroups != null)
         {
-            result = authorityService.getContainedAuthorities(null, iprGroups.second, true);
+            result = authorityService.getContainedAuthorities(null, iprGroups.getSecond(), true);
         }
         else
         {
@@ -235,10 +235,9 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     /**
      * Add extended security implementation method
      *
-     * @param nodeRef
-     * @param readers
-     * @param writers
-     * @param applyToParents
+     * @param nodeRef           node reference
+     * @param readers           readers set
+     * @param writers           writers set
      */
     private void addExtendedSecurityImpl(final NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
@@ -249,8 +248,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         
         // assign groups to correct fileplan roles
         NodeRef filePlan = filePlanService.getFilePlan(nodeRef);
-        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_EXTENDED_READERS, iprGroups.first);
-        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_EXTENDED_WRITERS, iprGroups.second);
+        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_EXTENDED_READERS, iprGroups.getFirst());
+        filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_EXTENDED_WRITERS, iprGroups.getSecond());
         
         // assign groups to node
         assignIPRGroupsToNode(iprGroups, nodeRef);
@@ -273,7 +272,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * Return null if none found.
      * 
      * @param nodeRef                node reference
-     * @return Pair<String, String>  where first if the read group and second if the write group, null if none found
+     * @return Pair<String, String>  where first is the read group and second if the write group, null if none found
      */
     private Pair<String, String> getIPRGroups(NodeRef nodeRef)
     {
@@ -322,18 +321,18 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         Pair<String, String> result = null;
                     
         // find read group or determine what the next index is if no group exists or there is a clash            
-        Pair<String, Integer> readGroupResult = findIPRGoup(READER_GROUP_PREFIX, readers, writers); 
+        Pair<String, Integer> readGroupResult = findIPRGroup(READER_GROUP_PREFIX, readers, writers); 
         
-        if (readGroupResult.first == null)
+        if (readGroupResult.getFirst() == null)
         {
             // create inplace record reader and writer groups
-            result = createIPRGroups(readers, writers, readGroupResult.second);
+            result = createIPRGroups(readers, writers, readGroupResult.getSecond());
         }
         else
         {
             // set result
-            result = new Pair<String, String>(readGroupResult.first, 
-                                              getIRPWriteGroupNameFromReadGroupName(readGroupResult.first, readers, writers));
+            result = new Pair<String, String>(readGroupResult.getFirst(), 
+                                              getIRPWriteGroupNameFromReadGroupName(readGroupResult.getFirst(), readers, writers));
         }
  
         return result;
@@ -352,7 +351,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * @return Pair<String, Integer>  where first is the name of the found group, null if none found and second
      *                                if the next available create index
      */
-    private Pair<String, Integer> findIPRGoup(String groupPrefix, Set<String> readers, Set<String> writers)
+    private Pair<String, Integer> findIPRGroup(String groupPrefix, Set<String> readers, Set<String> writers)
     {
         String iprGroup = null;
         int nextGroupIndex = 0;
@@ -575,8 +574,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      */
     private void assignIPRGroupsToNode(Pair<String, String> iprGroups, NodeRef nodeRef)
     {
-        permissionService.setPermission(nodeRef, iprGroups.first, RMPermissionModel.READ_RECORDS, true);
-        permissionService.setPermission(nodeRef, iprGroups.second, RMPermissionModel.FILING, true);
+        permissionService.setPermission(nodeRef, iprGroups.getFirst(), RMPermissionModel.READ_RECORDS, true);
+        permissionService.setPermission(nodeRef, iprGroups.getSecond(), RMPermissionModel.FILING, true);
     }
     
     /**
@@ -615,8 +614,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         if (iprGroups != null)
         {
             // remove group permissions from node
-            permissionService.clearPermission(nodeRef, iprGroups.first);
-            permissionService.clearPermission(nodeRef, iprGroups.second);
+            permissionService.clearPermission(nodeRef, iprGroups.getFirst());
+            permissionService.clearPermission(nodeRef, iprGroups.getSecond());
             
             // TODO delete the groups if they are no longer in use (easier said than done perhaps!)
         }

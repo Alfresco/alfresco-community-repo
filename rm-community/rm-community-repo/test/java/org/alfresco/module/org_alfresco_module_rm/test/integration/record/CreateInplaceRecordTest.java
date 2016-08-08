@@ -61,7 +61,7 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
             public void given()
             {
                 // Check that the document is not a record
-                assertFalse(recordService.isRecord(dmDocument));            
+                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));            
             }
 
             public void when()
@@ -82,7 +82,7 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
             public void then()
             {
                 // Check that the document is a record now
-                assertTrue(recordService.isRecord(dmDocument));    
+                assertTrue("The document should now be a record", recordService.isRecord(dmDocument));    
                 
                 // Check that the record is in the unfiled container
                 
@@ -122,7 +122,7 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
             public void given()
             {
                 // Check that the document is not a record
-                assertFalse(recordService.isRecord(dmDocument));  
+                assertFalse("The document should not be a record", recordService.isRecord(dmDocument));  
                 
                 // Declare the document as a record
                 AuthenticationUtil.runAs(new RunAsWork<Void>()
@@ -137,8 +137,8 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
                  }, dmCollaborator);
                 
                 // Check that the document is a record
-                assertTrue(recordService.isRecord(dmDocument));
-                assertFalse(recordService.isFiled(dmDocument));
+                assertTrue("The document should be a record", recordService.isRecord(dmDocument));
+                assertFalse("The record should not be filed", recordService.isFiled(dmDocument));
             }
 
             public void when() throws FileExistsException, FileNotFoundException
@@ -150,12 +150,14 @@ public class CreateInplaceRecordTest extends BaseRMTestCase
             public void then()
             {
                 // Check that the document is a record now
-                assertTrue(recordService.isRecord(dmDocument));
-                assertTrue(recordService.isFiled(dmDocument));  
+                assertTrue("The document should be a record", recordService.isRecord(dmDocument));
+                assertTrue("The record hsould be filed", recordService.isFiled(dmDocument));  
                 
                 // Check that the record is in the unfiled container
+                // TODO
                 
                 // Check that the record is still a child of the collaboration folder
+                // TODO
                 
                 // Check that the collaborator has filling permissions on the record                
                 AuthenticationUtil.runAs(new RunAsWork<Void>()

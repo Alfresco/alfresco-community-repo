@@ -54,6 +54,7 @@ import org.alfresco.repo.web.scripts.replication.ReplicationRestApiTest;
 import org.alfresco.repo.web.scripts.rule.RuleServiceTest;
 import org.alfresco.repo.web.scripts.search.PersonSearchTest;
 import org.alfresco.repo.web.scripts.site.SiteServiceTest;
+import org.alfresco.repo.web.scripts.site.SurfConfigTest;
 import org.alfresco.repo.web.scripts.solr.SOLRWebScriptTest;
 import org.alfresco.repo.web.scripts.subscriptions.SubscriptionServiceRestApiTest;
 import org.alfresco.repo.web.scripts.tagging.TaggingServiceTest;
@@ -113,6 +114,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( RemoteFileFolderLoaderTest.class );
         suite.addTestSuite( ReadOnlyTransactionInGetRestApiTest.class );
         suite.addTestSuite( CustomModelImportTest.class );
+        suite.addTestSuite( SurfConfigTest.class );
         // This uses a slightly different context
         // As such, we can't run it in the same suite as the others,
         //  due to finalisers closing caches when we're not looking

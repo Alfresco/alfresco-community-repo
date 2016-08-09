@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.nodes;
 
 import org.alfresco.model.ContentModel;
+import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.version.Version2Model;
 import org.alfresco.repo.version.VersionModel;
 import org.alfresco.rest.api.Nodes;
@@ -37,6 +38,7 @@ import org.alfresco.rest.framework.BinaryProperties;
 import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
+import org.alfresco.rest.framework.core.exceptions.PermissionDeniedException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceAction;
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
@@ -48,10 +50,13 @@ import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
 import org.alfresco.service.cmr.version.VersionType;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
@@ -73,6 +78,7 @@ public class NodeVersionsRelation implements
         RelationshipResourceAction.Read<Node>,
         RelationshipResourceAction.ReadById<Node>,
         RelationshipResourceBinaryAction.Read,
+        RelationshipResourceAction.Delete,
         InitializingBean
 {
     protected ServiceRegistry sr;
@@ -233,6 +239,34 @@ public class NodeVersionsRelation implements
         }
 
         throw new EntityNotFoundException(nodeId+"-"+versionId);
+    }
+
+    @Override
+    @WebApiDescription(title = "Delete version")
+    public void delete(String nodeId, String versionId, Parameters parameters)
+    {
+        Version v = findVersion(nodeId, versionId);
+
+        NodeRef liveVersionedNodeRef = v.getVersionedNodeRef();
+
+        if (sr.getPermissionService().hasPermission(liveVersionedNodeRef, PermissionService.DELETE) != AccessStatus.ALLOWED)
+        {
+            throw new PermissionDeniedException("Cannot delete version");
+        }
+
+        versionService.deleteVersion(liveVersionedNodeRef, v);
+
+        Map<QName, Serializable> props = sr.getNodeService().getProperties(liveVersionedNodeRef);
+        if (props.get(ContentModel.PROP_VERSION_LABEL) == null)
+        {
+            // last version was deleted
+            if (props.get(ContentModel.PROP_VERSION_TYPE) != null)
+            {
+                // minor fix up to versionable aspect - ie. remove versionType
+                // TODO should we disable behaviours, eg. audit, versionable
+                sr.getNodeService().removeProperty(liveVersionedNodeRef, ContentModel.PROP_VERSION_TYPE);
+            }
+        }
     }
 
     private Version findVersion(String nodeId, String versionLabelId)

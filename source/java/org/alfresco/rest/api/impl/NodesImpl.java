@@ -2254,7 +2254,7 @@ public class NodesImpl implements Nodes
         }
         String versionComment = parameters.getParameter(PARAM_VERSION_COMMENT);
 
-        final String fileName = (String) nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+        final String fileName = (String)nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
         return updateExistingFile(null, nodeRef, fileName, contentInfo, stream, parameters, versionMajor, versionComment);
     }
 
@@ -2276,7 +2276,15 @@ public class NodesImpl implements Nodes
                 }
                 else
                 {
-                    versionType = (isVersioned ? versionType = VersionType.MINOR : VersionType.MAJOR);
+                    // note: it is possible to have versionable aspect but no versions (=> no version label)
+                    if ((! isVersioned) || (nodeService.getProperty(nodeRef, ContentModel.PROP_VERSION_LABEL) == null))
+                    {
+                        versionType = VersionType.MAJOR;
+                    }
+                    else
+                    {
+                        versionType = VersionType.MINOR;
+                    }
                 }
 
                 createVersion(nodeRef, isVersioned, versionType, versionComment);

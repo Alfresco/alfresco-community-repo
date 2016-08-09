@@ -30,7 +30,6 @@ package org.alfresco.module.org_alfresco_module_rm.record;
 import static org.alfresco.model.ContentModel.ASPECT_PENDING_DELETE;
 
 import java.util.List;
-import java.util.Set;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -173,18 +172,11 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
             {
                 try
                 {
-                    // Get the extended readers/writers
-                    Set<String> extendedReaders = extendedSecurityService.getExtendedReaders(nodeRef);
-                    Set<String> extendedWriters = extendedSecurityService.getExtendedWriters(nodeRef);
-
                     // Move the record
                     fileFolderService.moveFrom(nodeRef, source, targetNodeRef, null);
 
                     // Update the originating location property
                     nodeService.setProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION, targetNodeRef);
-
-                    // Set the extended readers/writers
-                    extendedSecurityService.addExtendedSecurity(nodeRef, extendedReaders, extendedWriters);
                 }
                 catch (FileExistsException | FileNotFoundException ex)
                 {

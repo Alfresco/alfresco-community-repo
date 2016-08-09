@@ -29,6 +29,7 @@ package org.alfresco.rest.api;
 import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.Person;
+import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
@@ -61,6 +62,9 @@ public interface Queries
     static String PARAM_LASTNAME  = ContentModel.PROP_LASTNAME.getLocalName();
     static int MIN_TERM_LENGTH_PEOPLE = 2;
     
+    // Sites query
+    static int MIN_TERM_LENGTH_SITES = 2;
+    
     /**
      * Find Nodes
      *
@@ -78,4 +82,13 @@ public interface Queries
      * @return the search query results
      */
     CollectionWithPagingInfo<Person> findPeople(Parameters parameters);
+
+    /**
+     * Find Sites
+     *
+     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     *
+     * @return the search query results
+     */
+    CollectionWithPagingInfo<Site> findSites(Parameters parameters);
 }

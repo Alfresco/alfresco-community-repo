@@ -30,6 +30,7 @@ import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecuri
 import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl.ROOT_IPR_GROUP;
 import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl.WRITER_GROUP_PREFIX;
 import static org.alfresco.service.cmr.security.PermissionService.GROUP_PREFIX;
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateText;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -404,6 +405,9 @@ public class ExtendedSecurityServiceImplUnitTest
         // add extended security
         extendedSecurityService.set(nodeRef, READERS, WRITERS);
         
+        // verify no old permissions needing to be cleared
+        verify(mockedPermissionService, never()).clearPermission(eq(nodeRef), anyString());
+        
         // verify read group created correctly
         verify(mockedAuthorityService).createAuthority(AuthorityType.GROUP, readGroup, readGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
         readGroup = GROUP_PREFIX + readGroup;
@@ -478,6 +482,9 @@ public class ExtendedSecurityServiceImplUnitTest
         
         // add extended security
         extendedSecurityService.set(nodeRef, READERS, WRITERS);
+        
+        // verify no old permissions needing to be cleared
+        verify(mockedPermissionService, never()).clearPermission(eq(nodeRef), anyString());
         
         // verify read group is not recreated
         verify(mockedAuthorityService, never()).createAuthority(AuthorityType.GROUP, readGroup, readGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
@@ -554,6 +561,9 @@ public class ExtendedSecurityServiceImplUnitTest
         
         // add extended security
         extendedSecurityService.set(nodeRef, READERS, WRITERS);
+        
+        // verify no old permissions needing to be cleared
+        verify(mockedPermissionService, never()).clearPermission(eq(nodeRef), anyString());
         
         // new group names
         readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_PREFIX, READERS, 1);
@@ -643,6 +653,9 @@ public class ExtendedSecurityServiceImplUnitTest
         // add extended security
         extendedSecurityService.set(nodeRef, READERS, WRITERS);
         
+        // verify no old permissions needing to be cleared
+        verify(mockedPermissionService, never()).clearPermission(eq(nodeRef), anyString());
+        
         // verify read group is not recreated
         verify(mockedAuthorityService, never()).createAuthority(AuthorityType.GROUP, readGroup, readGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
         readGroup = GROUP_PREFIX + readGroup;
@@ -672,12 +685,80 @@ public class ExtendedSecurityServiceImplUnitTest
      * When I add extended security
      * Then the existing extended security is replaced with the new extended security
      */
-    // TODO
+    @Test public void addExtendedSecurityToNodeWithExtendedSecurity()
+    {
+        // group names
+        String readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_FULL_PREFIX, READERS, 0);
+        String writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_FULL_PREFIX, WRITERS, 0);
+        
+        // setup permissions
+        Set<AccessPermission> permissions = Stream
+            .of(new AccessPermissionImpl(AlfMock.generateText(), AccessStatus.ALLOWED, readGroup, 0),
+                new AccessPermissionImpl(AlfMock.generateText(), AccessStatus.ALLOWED, AlfMock.generateText(), 1),
+                new AccessPermissionImpl(AlfMock.generateText(), AccessStatus.ALLOWED, writeGroup, 2))
+            .collect(Collectors.toSet());        
+        when(mockedPermissionService.getAllSetPermissions(nodeRef))
+            .thenReturn(permissions);
+        
+        // set revised reader and writers
+        String user = generateText();
+        String group = generateText();
+        String userW = generateText();
+        String groupW = generateText();
+        Set<String> newReaders = Stream.of(user, group).collect(Collectors.toSet());
+        Set<String> newWriters = Stream.of(userW, groupW).collect(Collectors.toSet());        
+        
+        // new group names
+        String newReadGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_PREFIX, newReaders, 0);
+        String newWriteGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_PREFIX, newWriters, 0);
+        
+        // setup query results for no group matches
+        when(mockedReadPagingResults.getPage())
+            .thenReturn(Collections.emptyList());
+        when(mockedAuthorityService.getAuthorities(
+                    eq(AuthorityType.GROUP), 
+                    eq(RMAuthority.ZONE_APP_RM), 
+                    any(String.class),
+                    eq(false), 
+                    eq(false), 
+                    any(PagingRequest.class)))
+            .thenReturn(mockedReadPagingResults);
+        
+        // set extended security
+        extendedSecurityService.set(nodeRef, newReaders, newWriters);
+        
+        // verify that the old permissions are cleared
+        verify(mockedPermissionService).clearPermission(nodeRef, readGroup);
+        verify(mockedPermissionService).clearPermission(nodeRef, writeGroup);
+        
+        // verify read group created correctly
+        verify(mockedAuthorityService).createAuthority(AuthorityType.GROUP, newReadGroup, newReadGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
+        newReadGroup = GROUP_PREFIX + newReadGroup;
+        verify(mockedAuthorityService).addAuthority(GROUP_PREFIX + ROOT_IPR_GROUP, newReadGroup);
+        verify(mockedAuthorityService).addAuthority(newReadGroup, user);
+        verify(mockedAuthorityService).addAuthority(newReadGroup, group);
+        
+        // verify write group created correctly
+        verify(mockedAuthorityService).createAuthority(AuthorityType.GROUP, newWriteGroup, newWriteGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
+        newWriteGroup = GROUP_PREFIX + newWriteGroup;
+        verify(mockedAuthorityService).addAuthority(GROUP_PREFIX + ROOT_IPR_GROUP, newWriteGroup);
+        verify(mockedAuthorityService).addAuthority(newWriteGroup, userW);
+        verify(mockedAuthorityService).addAuthority(newWriteGroup, groupW);
+
+        // verify groups assigned to RM roles
+        verify(mockedFilePlanRoleService).assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_EXTENDED_READERS, newReadGroup);
+        verify(mockedFilePlanRoleService).assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_EXTENDED_WRITERS, newWriteGroup);
+        
+        // verify permissions are assigned to node
+        verify(mockedPermissionService).setPermission(nodeRef, newReadGroup, RMPermissionModel.READ_RECORDS, true);
+        verify(mockedPermissionService).setPermission(nodeRef, newWriteGroup, RMPermissionModel.FILING, true);
+        
+    }
     
     /**
      * Given that a node has renditions
      * When I add extended security
-     * Then it applied to the renditions
+     * Then they are applied to the renditions
      */
     // TODO
     

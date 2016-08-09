@@ -97,10 +97,8 @@
             <props>
                 <prop key="get*">${server.transaction.mode.readOnly}</prop>
                 <prop key="query">${server.transaction.mode.readOnly}</prop>
-                <!-- 
-                <prop key="open">PROPAGATION_SUPPORTS, readOnly</prop>
-                <prop key="close">PROPAGATION_SUPPORTS, readOnly</prop>
-                 -->
+                <prop key="open">${server.transaction.mode.readOnly}</prop>
+                <prop key="close">${server.transaction.mode.readOnly}</prop>
                 <prop key="*">${server.transaction.mode.default}</prop>
             </props>
         </property>

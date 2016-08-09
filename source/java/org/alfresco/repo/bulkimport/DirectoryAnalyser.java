@@ -26,7 +26,8 @@
 
 package org.alfresco.repo.bulkimport;
 
-import java.io.FileFilter;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Path;
 
 
 /**
@@ -52,6 +53,6 @@ public interface DirectoryAnalyser
      * @param directory The directory to analyse (note: <u>must</u> be a directory) <i>(must not be null)</i>.
      * @return An <code>AnalysedDirectory</code> object <i>(will not be null)</i>.
      */
-    public AnalysedDirectory analyseDirectory(ImportableItem directory, FileFilter filter);
+    public AnalysedDirectory analyseDirectory(ImportableItem directory, DirectoryStream.Filter<Path> filter);
     
 }

@@ -26,9 +26,12 @@
 
 package org.alfresco.repo.bulkimport.impl;
 
-import java.io.File;
-import java.io.FileFilter;
+import java.io.IOException;
 import java.io.Serializable;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
@@ -37,7 +40,6 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.bulkimport.AnalysedDirectory;
 import org.alfresco.repo.bulkimport.DirectoryAnalyser;
 import org.alfresco.repo.bulkimport.ImportFilter;
@@ -141,21 +143,12 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
     }
 
     /**
-     * @see org.alfresco.repo.bulkimport.DirectoryAnalyser#analyseDirectory(ImportableItem, FileFilter)
+     * @see org.alfresco.repo.bulkimport.DirectoryAnalyser#analyseDirectory(org.alfresco.repo.bulkimport.ImportableItem, java.nio.file.DirectoryStream.Filter)
      */
-    public AnalysedDirectory analyseDirectory(ImportableItem directory, FileFilter filter)
+    public AnalysedDirectory analyseDirectory(ImportableItem directory, DirectoryStream.Filter<Path> filter)
     {
-    	File directoryFile = directory.getHeadRevision().getContentFile();
-    	AnalysedDirectory result = null;
-
-    	if(filter == null)
-    	{
-    		result = new AnalysedDirectory(directoryFile.listFiles());
-    	}
-    	else
-    	{
-    		result = new AnalysedDirectory(directoryFile.listFiles(filter));
-    	}
+    	Path directoryFile = directory.getHeadRevision().getContentFile();
+    	AnalysedDirectory result = new AnalysedDirectory(listFiles(directoryFile, filter));
         
         if (log.isDebugEnabled())
         {
@@ -163,18 +156,18 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
         }
 
         // Build up the list of ImportableItems from the directory listing
-        for (File file : result.getOriginalListing())
+        for (Path file : result.getOriginalPaths())
         {
             // MNT-9763 bulkimport fails when there is a very large LastModified timestamp.
             String isoDate = null;
             try
             {
-                isoDate = ISO8601DateFormat.format(new Date(file.lastModified()));
+                isoDate = ISO8601DateFormat.format(new Date(Files.getLastModifiedTime(file, LinkOption.NOFOLLOW_LINKS).toMillis()));
                 ISO8601DateFormat.parse(isoDate);
             }
-            catch (PlatformRuntimeException e)
+            catch (PlatformRuntimeException | IOException e)
             {
-                log.warn("Failed to convert date " + isoDate + " to string for " + file.getName(), e);
+                log.warn("Failed to convert date " + isoDate + " to string for " + file.getFileName(), e);
                 importStatus.incrementNumberOfUnreadableEntries();
                 continue;
             }
@@ -184,11 +177,11 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
             	log.trace("Scanning file " + FileUtils.getFileName(file) + "...");
             }
             
-            if (file.canRead())
+            if (Files.isReadable(file))
             {
                 try
                 {
-                    nameChecker.evaluate(file.getName());
+                    nameChecker.evaluate(file.getFileName().toString());
                 }
                 catch (ConstraintException e)
                 {
@@ -269,6 +262,23 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
 
         return result;
     }
+    
+    private List<Path> listFiles(Path sourceDirectory, DirectoryStream.Filter<Path> filter)
+    {
+        List<Path> files = new ArrayList<Path>();
+        try (DirectoryStream<Path> paths = (filter != null) ? Files.newDirectoryStream(sourceDirectory, filter) : Files.newDirectoryStream(sourceDirectory))
+        {
+            for (Iterator<Path> it = paths.iterator(); it.hasNext();) 
+            {
+               files.add(it.next());
+            }
+        }
+        catch (IOException e)
+        {
+            log.error(e.getMessage());
+        }
+        return files;
+    }
 
     private boolean isMetadataValid(ImportableItem importableItem)
     {
@@ -315,29 +325,30 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
         return true;
     }
 
-    private boolean isVersionFile(File file)
+    private boolean isVersionFile(Path file)
     {
-        Matcher matcher = VERSION_SUFFIX_PATTERN.matcher(file.getName());
+        Matcher matcher = VERSION_SUFFIX_PATTERN.matcher(file.getFileName().toString());
 
         return matcher.matches();
     }
 
 
-    private boolean isMetadataFile(File file)
+    private boolean isMetadataFile(Path file)
     {
         boolean result = false;
         
         if (metadataLoader != null)
         {
-            result = file.getName().endsWith(MetadataLoader.METADATA_SUFFIX + metadataLoader.getMetadataFileExtension());
+            String name = file.getFileName().toString();
+            result = name.endsWith(MetadataLoader.METADATA_SUFFIX + metadataLoader.getMetadataFileExtension());
         }
         
         return(result);
     }
 
-    private void addVersionFile(ImportableItem parent, AnalysedDirectory analysedDirectory, File versionFile)
+    private void addVersionFile(ImportableItem parent, AnalysedDirectory analysedDirectory, Path versionFile)
     {
-        File parentContentFile = getParentOfVersionFile(versionFile);
+        Path parentContentFile = getParentOfVersionFile(versionFile);
         boolean isContentVersion  = false;
 
         if (isMetadataFile(parentContentFile))
@@ -365,9 +376,9 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
     }
 
 
-    private void addMetadataFile(ImportableItem parent, AnalysedDirectory analysedDirectory, File metadataFile)
+    private void addMetadataFile(ImportableItem parent, AnalysedDirectory analysedDirectory, Path metadataFile)
     {
-        File parentContentfile = getParentOfMetadatafile(metadataFile);
+        Path parentContentfile = getParentOfMetadatafile(metadataFile);
 
         ImportableItem importableItem = findOrCreateImportableItem(parent, analysedDirectory, parentContentfile);
 
@@ -375,7 +386,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
     }
 
 
-    private boolean addParentFile(ImportableItem parent, AnalysedDirectory analysedDirectory, File contentFile)
+    private boolean addParentFile(ImportableItem parent, AnalysedDirectory analysedDirectory, Path contentFile)
     {
         ImportableItem importableItem = findOrCreateImportableItem(parent, analysedDirectory, contentFile);
 
@@ -384,7 +395,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
         return(importableItem.getHeadRevision().getContentFileType() == FileType.DIRECTORY);
     }
 
-    private ImportableItem findOrCreateImportableItem(ImportableItem parent, AnalysedDirectory analysedDirectory, File contentFile)
+    private ImportableItem findOrCreateImportableItem(ImportableItem parent, AnalysedDirectory analysedDirectory, Path contentFile)
     {
         ImportableItem result = findImportableItem(analysedDirectory, contentFile);
 
@@ -404,7 +415,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
     }
 
 
-    private ImportableItem findImportableItem(AnalysedDirectory analysedDirectory, File contentFile)
+    private ImportableItem findImportableItem(AnalysedDirectory analysedDirectory, Path contentFile)
     {
         ImportableItem result = null;
 
@@ -454,7 +465,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
     }
 
 
-    private int getVersionNumber(File versionFile)
+    private int getVersionNumber(Path versionFile)
     {
         int result = -1;
 
@@ -463,7 +474,7 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
             throw new IllegalStateException(FileUtils.getFileName(versionFile) + " is not a version file.");
         }
 
-        Matcher matcher = VERSION_SUFFIX_PATTERN.matcher(versionFile.getName());
+        Matcher matcher = VERSION_SUFFIX_PATTERN.matcher(versionFile.getFileName().toString());
         String versionStr = null;
 
         if (matcher.matches())
@@ -481,36 +492,36 @@ public class DirectoryAnalyserImpl implements DirectoryAnalyser
     }
 
 
-    private File getParentOfVersionFile(File versionFile)
+    private Path getParentOfVersionFile(Path versionFile)
     {
-        File result = null;
+        Path result = null;
 
         if (!isVersionFile(versionFile))
         {
             throw new IllegalStateException(FileUtils.getFileName(versionFile) + " is not a version file.");
         }
 
-        String parentFilename = versionFile.getName().replaceFirst(VERSION_SUFFIX_REGEX, "");
+        String parentFilename = versionFile.getFileName().toString().replaceFirst(VERSION_SUFFIX_REGEX, "");
 
-        result = new File(versionFile.getParent(), parentFilename);
+        result = versionFile.getParent().resolve(parentFilename);
         
         return(result);
     }
 
 
-    private File getParentOfMetadatafile(File metadataFile)
+    private Path getParentOfMetadatafile(Path metadataFile)
     {
-        File result = null;
+        Path result = null;
 
         if (!isMetadataFile(metadataFile))
         {
             throw new IllegalStateException(FileUtils.getFileName(metadataFile) + " is not a metadata file.");
         }
 
-        String name = metadataFile.getName();
+        String name = metadataFile.getFileName().toString();
         String contentName = name.substring(0, name.length() - (MetadataLoader.METADATA_SUFFIX + metadataLoader.getMetadataFileExtension()).length());
 
-        result = new File(metadataFile.getParent(), contentName);
+        result = metadataFile.getParent().resolve(contentName);
 
         return(result);
     }

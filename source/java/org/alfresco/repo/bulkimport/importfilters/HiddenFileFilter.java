@@ -26,6 +26,10 @@
 
 package org.alfresco.repo.bulkimport.importfilters;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 import org.alfresco.repo.bulkimport.ImportFilter;
 import org.alfresco.repo.bulkimport.ImportableItem;
 
@@ -49,7 +53,14 @@ public class HiddenFileFilter implements ImportFilter
         
         if (importableItem.getHeadRevision().contentFileExists())
         {
-            result = importableItem.getHeadRevision().getContentFile().isHidden();
+            Path file = importableItem.getHeadRevision().getContentFile();
+            try
+            {
+                result = Files.isHidden(file);
+            }
+            catch (IOException e)
+            {
+            }
         }
 
         return(result);

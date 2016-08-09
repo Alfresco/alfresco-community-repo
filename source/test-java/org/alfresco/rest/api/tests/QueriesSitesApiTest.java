@@ -77,12 +77,10 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
 
             Paging paging = getPaging(0, 100);
 
-            String term = "abcd";
-            
+            // Try to get sites with search term 'ab' - assume clean repo (ie. none to start with)
+            String term = "ab";
             Map<String, String> params = new HashMap<>(1);
             params.put(Queries.PARAM_TERM, term);
-
-            // Try to get sites with search term 'abc123' - assume clean repo (ie. none to start with)
             HttpResponse response = getAll(URL_QUERIES_LSS, paging, params, 200);
             List<Site> sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
             assertEquals(0, sites.size());
@@ -101,7 +99,7 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
                 charValue = charValue+1;
                 siteI = siteI + String.valueOf((char)charValue);
 
-                String siteId = siteI + num;
+                String siteId = siteI + num + RUNID;
                 String siteTitle = siteT + num + siteT;
                 String siteDescrip = siteD + num + siteD;
 
@@ -110,94 +108,100 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
                 siteIds.add(createdSiteId);
             }
             
-            // Search hits based on site id
-            term = "ab";
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "\""+term+"\"");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount, sites.size());
+            // basic search tests
+            {
+                // Search hits based on site id
+                term = "ab";
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "\"" + term + "\"");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount, sites.size());
 
-            term = "abc";
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "\""+term+"\"");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount-1, sites.size());
-            
-            term = "abcd";
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "\""+term+"\"");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount-2, sites.size());
+                term = "abc";
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "\"" + term + "\"");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount - 1, sites.size());
 
-            term = "abcde";
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "\""+term+"\"");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount-3, sites.size());
+                term = "abcd";
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "\"" + term + "\"");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount - 2, sites.size());
 
-            // Single search hit based on site id
-            term = "abcd00003";
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "\""+term+"\"");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(1, sites.size());
-            assertEquals(term, sites.get(0).getId());
+                term = "abcde";
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "\"" + term + "\"");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount - 3, sites.size());
 
-            // Search hits based on site title
-            term = siteT;
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "\""+term+"\"");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount, sites.size());
+                // Single search hit based on site id
+                term = "abcd00003";
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "\"" + term + "\"");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(1, sites.size());
+                assertEquals(term+RUNID, sites.get(0).getId());
 
-            // Single search hit based on site title
-            term = siteT+String.format("%05d", 2)+siteT;
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "\""+term+"\"");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(1, sites.size());
-            assertEquals(term, sites.get(0).getTitle());
+                // Search hits based on site title
+                term = siteT;
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "\"" + term + "\"");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount, sites.size());
 
-            // Search hits based on site description
-            term = siteD+"*"; // note: SiteService.findSites does not auto-add "*" when matching description
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "\""+term+"\"");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount, sites.size());
-            
-            // Single search hit based on site description
-            term = siteD+String.format("%05d", 3)+siteD;
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "\""+term+"\"");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(1, sites.size());
-            assertEquals(term, sites.get(0).getDescription());
+                // Single search hit based on site title
+                term = siteT + String.format("%05d", 2) + siteT;
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "\"" + term + "\"");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(1, sites.size());
+                assertEquals(term, sites.get(0).getTitle());
 
-            // -ve test - no params (ie. no term)
-            getAll(URL_QUERIES_LSS, paging, null, 400);
-            
-            // -ve test - term too short
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "a");
-            getAll(URL_QUERIES_LSS, paging, params, 400);
+                // Search hits based on site description
+                term = siteD + "*"; // note: SiteService.findSites does not auto-add "*" when matching description
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "\"" + term + "\"");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount, sites.size());
 
-            // -ve test - term is still too short
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "  \"a *\"  ");
-            getAll(URL_QUERIES_LSS, paging, params, 400);
+                // Single search hit based on site description
+                term = siteD + String.format("%05d", 3) + siteD;
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "\"" + term + "\"");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(1, sites.size());
+                assertEquals(term, sites.get(0).getDescription());
+            }
 
-            // -ve test - unauthenticated - belts-and-braces ;-)
-            setRequestContext(null);
-            getAll(URL_QUERIES_LSS, paging, params, 401);
+            // -ve tests
+            {
+                // -ve test - no params (ie. no term)
+                getAll(URL_QUERIES_LSS, paging, null, 400);
+
+                // -ve test - term too short
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "a");
+                getAll(URL_QUERIES_LSS, paging, params, 400);
+
+                // -ve test - term is still too short
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "  \"a *\"  ");
+                getAll(URL_QUERIES_LSS, paging, params, 400);
+
+                // -ve test - unauthenticated - belts-and-braces ;-)
+                setRequestContext(null);
+                getAll(URL_QUERIES_LSS, paging, params, 401);
+            }
         }
         finally
         {
@@ -225,177 +229,180 @@ public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
             Paging paging = getPaging(0, 100);
             
             // create site
-            String s1 = createSite("siABCDEF", "ABCDEF DEF", "sdABCDEF", SiteVisibility.PRIVATE, 201).getId();
-            String s2 = createSite("siABCD", "ABCD DEF", "sdABCD", SiteVisibility.PRIVATE, 201).getId();
-            String s3 = createSite("siABCDE", "ABCDE DEF", "sdABCDE", SiteVisibility.PRIVATE, 201).getId();
-            String s4 = createSite("siAB", "AB DEF", "sdAB", SiteVisibility.PRIVATE, 201).getId();
-            String s5 = createSite("siABC", "ABC DEF", "sdABC", SiteVisibility.PRIVATE, 201).getId();
+            String s1 = createSite("siABCDEF"+RUNID, "ABCDEF DEF", "sdABCDEF", SiteVisibility.PRIVATE, 201).getId();
+            String s2 = createSite("siABCD"+RUNID, "ABCD DEF", "sdABCD", SiteVisibility.PRIVATE, 201).getId();
+            String s3 = createSite("siABCDE"+RUNID, "ABCDE DEF", "sdABCDE", SiteVisibility.PRIVATE, 201).getId();
+            String s4 = createSite("siAB"+RUNID, "AB DEF", "sdAB", SiteVisibility.PRIVATE, 201).getId();
+            String s5 = createSite("siABC"+RUNID, "ABC DEF", "sdABC", SiteVisibility.PRIVATE, 201).getId();
             
             siteIds.addAll(Arrays.asList(new String[] {s1, s2, s3, s4, s5}));
             
             int sCount = siteIds.size();
 
             // test sort order
+            {
+                // default sort order - title asc (note: in-query - using search index, tokenized cm:title)
+                Map<String, String> params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                HttpResponse response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                List<Site> sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount, sites.size());
+                assertEquals(Arrays.asList(new String[]{s2, s3, s5, s1, s4}), getSiteIds(sites));
 
-            // default sort order - title asc (note: in-query - using search index, tokenized cm:title)
-            Map<String, String> params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            HttpResponse response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            List<Site> sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount, sites.size());
-            assertEquals(Arrays.asList(new String[] {s2, s3, s5, s1, s4}), getSiteIds(sites));
+                // sort order - id asc
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "id asc");
+                params.put("sortType", "in-query");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount, sites.size());
+                assertEquals(Arrays.asList(new String[]{s4, s5, s2, s3, s1}), getSiteIds(sites));
 
-            // sort order - id asc
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "id asc");
-            params.put("sortType", "in-query");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount, sites.size());
-            assertEquals(Arrays.asList(new String[] {s4, s5, s2, s3, s1}), getSiteIds(sites));
+                // sort order - id desc
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "id desc");
+                params.put("sortType", "in-query");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount, sites.size());
+                assertEquals(Arrays.asList(new String[]{s1, s3, s2, s5, s4}), getSiteIds(sites));
 
-            // sort order - id desc
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "id desc");
-            params.put("sortType", "in-query");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount, sites.size());
-            assertEquals(Arrays.asList(new String[] {s1, s3, s2, s5, s4}), getSiteIds(sites));
+                // sort order - title asc
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "title asc");
+                params.put("sortType", "in-query");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount, sites.size());
+                assertEquals(Arrays.asList(new String[]{s2, s3, s5, s1, s4}), getSiteIds(sites));
 
-            // sort order - title asc
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "title asc");
-            params.put("sortType", "in-query");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount, sites.size());
-            assertEquals(Arrays.asList(new String[] {s2, s3, s5, s1, s4}), getSiteIds(sites));
+                // sort order - title desc
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "title desc");
+                params.put("sortType", "in-query");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount, sites.size());
+                assertEquals(Arrays.asList(new String[]{s4, s1, s5, s3, s2}), getSiteIds(sites));
 
-            // sort order - title desc
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "title desc");
-            params.put("sortType", "in-query");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount, sites.size());
-            assertEquals(Arrays.asList(new String[] {s4, s1, s5, s3, s2}), getSiteIds(sites));
+                // sort order - title asc (post query - using Alfresco Collator which does not ignore spaces, unlike default RuleBasedCollator)
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "title asc");
+                params.put("sortType", "post-query");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount, sites.size());
+                assertEquals(Arrays.asList(new String[]{s4, s5, s2, s3, s1}), getSiteIds(sites));
 
-            // sort order - title asc (post query - using Alfresco Collator which does not ignore spaces, unlike default RuleBasedCollator)
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "title asc");
-            params.put("sortType", "post-query");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount, sites.size());
-            assertEquals(Arrays.asList(new String[] {s4, s5, s2, s3, s1}), getSiteIds(sites));
+                // sort order - title desc (post query - using Alfresco Collator which does not ignore spaces, unlike default RuleBasedCollator)
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "title desc");
+                params.put("sortType", "post-query");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount, sites.size());
+                assertEquals(Arrays.asList(new String[]{s1, s3, s2, s5, s4}), getSiteIds(sites));
 
-            // sort order - title desc (post query - using Alfresco Collator which does not ignore spaces, unlike default RuleBasedCollator)
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "title desc");
-            params.put("sortType", "post-query");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount, sites.size());
-            assertEquals(Arrays.asList(new String[] {s1, s3, s2, s5, s4}), getSiteIds(sites));
+                // sort order - description asc
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "description asc");
+                params.put("sortType", "in-query");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount, sites.size());
+                assertEquals(Arrays.asList(new String[]{s4, s5, s2, s3, s1}), getSiteIds(sites));
+
+                // sort order - description desc
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "description desc");
+                params.put("sortType", "in-query");
+                response = getAll(URL_QUERIES_LSS, paging, params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(sCount, sites.size());
+                assertEquals(Arrays.asList(new String[]{s1, s3, s2, s5, s4}), getSiteIds(sites));
+            }
+
+            // basic paging tests
+            {
+                // sort order - title desc (in query - using search index, tokenized cm:title)
+
+                Map<String, String> params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "title desc");
+                params.put("sortType", "in-query");
+                HttpResponse response = getAll(URL_QUERIES_LSS, getPaging(0, 2), params, 200);
+                List<Site> sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(2, sites.size());
+                assertEquals(Arrays.asList(new String[]{s4, s1}), getSiteIds(sites));
+
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "title desc");
+                params.put("sortType", "in-query");
+                response = getAll(URL_QUERIES_LSS, getPaging(2, 2), params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(2, sites.size());
+                assertEquals(Arrays.asList(new String[]{s5, s3}), getSiteIds(sites));
+
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "title desc");
+                params.put("sortType", "in-query");
+                response = getAll(URL_QUERIES_LSS, getPaging(4, 2), params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(1, sites.size());
+                assertEquals(Arrays.asList(new String[]{s2}), getSiteIds(sites));
+
+                // sort order - title desc (post query - using Alfresco Collator which does not ignore spaces, unlike default RuleBasedCollator)
+
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "title desc");
+                params.put("sortType", "post-query");
+                response = getAll(URL_QUERIES_LSS, getPaging(0, 2), params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(2, sites.size());
+                assertEquals(Arrays.asList(new String[]{s1, s3}), getSiteIds(sites));
+
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "title desc");
+                params.put("sortType", "post-query");
+                response = getAll(URL_QUERIES_LSS, getPaging(2, 2), params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(2, sites.size());
+                assertEquals(Arrays.asList(new String[]{s2, s5}), getSiteIds(sites));
+
+                params = new HashMap<>(1);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "title desc");
+                params.put("sortType", "post-query");
+                response = getAll(URL_QUERIES_LSS, getPaging(4, 2), params, 200);
+                sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
+                assertEquals(1, sites.size());
+                assertEquals(Arrays.asList(new String[]{s4}), getSiteIds(sites));
+            }
             
-            // sort order - description asc
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "description asc");
-            params.put("sortType", "in-query");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount, sites.size());
-            assertEquals(Arrays.asList(new String[] {s4, s5, s2, s3, s1}), getSiteIds(sites));
+            // -ve tests
+            {
+                // -ve test - invalid sort field
+                Map<String, String> params = new HashMap<>(2);
+                params.put(Queries.PARAM_TERM, "siAB");
+                params.put(Queries.PARAM_ORDERBY, "invalid asc");
+                getAll(URL_QUERIES_LSS, paging, params, 400);
 
-            // sort order - description desc
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "description desc");
-            params.put("sortType", "in-query");
-            response = getAll(URL_QUERIES_LSS, paging, params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(sCount, sites.size());
-            assertEquals(Arrays.asList(new String[] {s1, s3, s2, s5, s4}), getSiteIds(sites));
-
-            // basic paging test
-
-            // sort order - title desc (in query - using search index, tokenized cm:title)
-            
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "title desc");
-            params.put("sortType", "in-query");
-            response = getAll(URL_QUERIES_LSS, getPaging(0, 2), params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(2, sites.size());
-            assertEquals(Arrays.asList(new String[] {s4, s1}), getSiteIds(sites));
-
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "title desc");
-            params.put("sortType", "in-query");
-            response = getAll(URL_QUERIES_LSS, getPaging(2, 2), params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(2, sites.size());
-            assertEquals(Arrays.asList(new String[] {s5, s3}), getSiteIds(sites));
-
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "title desc");
-            params.put("sortType", "in-query");
-            response = getAll(URL_QUERIES_LSS, getPaging(4, 2), params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(1, sites.size());
-            assertEquals(Arrays.asList(new String[] {s2}), getSiteIds(sites));
-            
-            // sort order - title desc (post query - using Alfresco Collator which does not ignore spaces, unlike default RuleBasedCollator)
-            
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "title desc");
-            params.put("sortType", "post-query");
-            response = getAll(URL_QUERIES_LSS, getPaging(0, 2), params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(2, sites.size());
-            assertEquals(Arrays.asList(new String[] {s1, s3}), getSiteIds(sites));
-
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "title desc");
-            params.put("sortType", "post-query");
-            response = getAll(URL_QUERIES_LSS, getPaging(2, 2), params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(2, sites.size());
-            assertEquals(Arrays.asList(new String[] {s2, s5}), getSiteIds(sites));
-
-            params = new HashMap<>(1);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "title desc");
-            params.put("sortType", "post-query");
-            response = getAll(URL_QUERIES_LSS, getPaging(4, 2), params, 200);
-            sites = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Site.class);
-            assertEquals(1, sites.size());
-            assertEquals(Arrays.asList(new String[] {s4}), getSiteIds(sites));
-            
-            
-
-            // -ve test - invalid sort field
-            params = new HashMap<>(2);
-            params.put(Queries.PARAM_TERM, "siAB");
-            params.put(Queries.PARAM_ORDERBY, "invalid asc");
-            getAll(URL_QUERIES_LSS, paging, params, 400);
-
-            // -ve test - unauthenticated - belts-and-braces ;-)
-            setRequestContext(null);
-            getAll(URL_QUERIES_LSS, paging, params, 401);
+                // -ve test - unauthenticated - belts-and-braces ;-)
+                setRequestContext(null);
+                getAll(URL_QUERIES_LSS, paging, params, 401);
+            }
         }
         finally
         {

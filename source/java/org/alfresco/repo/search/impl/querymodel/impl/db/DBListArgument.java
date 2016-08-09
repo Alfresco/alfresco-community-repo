@@ -39,7 +39,6 @@ public class DBListArgument extends BaseListArgument
 
     /**
      * @param name String
-     * @param arguments List<Argument>
      */
     public DBListArgument(String name, List<Argument> arguments)
     {

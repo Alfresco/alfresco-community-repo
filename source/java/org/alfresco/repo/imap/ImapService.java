@@ -128,7 +128,7 @@ public interface ImapService
      * <br />
      * <code>mailbox</code> parameter may specify absolute or relative path to a folder. Absolute path uniquely identifies some directory, whereas relative path implies that root
      * folder should be <code>IMAP home</code> directory for the specified <code>user</code> rather than <code>IMAP root</code> (i.e. <code>IMAP mount point</code>). Mailbox will
-     * be found or created (<code>mayCreate=true<code>, <code>mayExist=false<code> or ) in <code>user<code>'s <code>IMAP home</code> directory if relative path is specified.<br />
+     * be found or created (<code>mayCreate=true</code>, <code>mayExist=false</code> or ) in <code>user</code>'s <code>IMAP home</code> directory if relative path is specified.<br />
      * <br />
      * <code>mayExist</code> and mayCreate parameters' combinations and results:
      * <ul>

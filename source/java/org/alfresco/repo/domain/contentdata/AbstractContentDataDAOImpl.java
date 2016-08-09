@@ -645,7 +645,7 @@ public abstract class AbstractContentDataDAOImpl implements ContentDataDAO
     protected abstract int updateContentUrlOrphanTime(Long id, Long orphanTime, Long oldOrphanTime);
     
     /**
-     * Create the row for the <b>alf_content_data<b>
+     * Create the row for the <b>alf_content_data</b>
      */
     protected abstract ContentDataEntity createContentDataEntity(
             Long contentUrlId,

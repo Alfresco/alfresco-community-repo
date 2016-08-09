@@ -48,7 +48,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 /**
- * </h1><u>Replicating Content Store</u></h1>
+ * <h1><u>Replicating Content Store</u></h1>
  * <p>
  * A content store implementation that is able to replicate content between stores.
  * Content is not persisted by this store, but rather it relies on any number of
@@ -63,7 +63,7 @@ import org.apache.commons.logging.LogFactory;
  * <p>
  * It supports outbound replication for duplication of data.
  * 
- * </h2><u>Outbound Replication</u></h2>
+ * <h2><u>Outbound Replication</u></h2>
  * <p>
  * When this is enabled, then the primary store is used for writes.  When the
  * content write completes (i.e. the write channel is closed) then the content
@@ -76,7 +76,7 @@ import org.apache.commons.logging.LogFactory;
  * occurs during the replication.  Depending on the configuration of the server,
  * further action may need to be taken to rectify the problem manually.
  *  
- * </h2><u>Inbound Replication</u> [DEPRECATED: Usage {@link CachingContentStore}]</h2>
+ * <h2><u>Inbound Replication</u> [DEPRECATED: Usage {@link CachingContentStore}]</h2>
  * <p>
  * This can be used to lazily replicate content onto the primary store.  When
  * content can't be found in the primary store, the other stores are checked

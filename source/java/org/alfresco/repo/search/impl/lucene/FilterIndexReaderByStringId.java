@@ -71,8 +71,6 @@ public class FilterIndexReaderByStringId extends FilterIndexReader
      * 
      * @param id String
      * @param reader IndexReader
-     * @param deletions Set<String>
-     * @param containerDeletions Set<String>
      * @param deleteNodesOnly boolean
      */
     public FilterIndexReaderByStringId(String id, IndexReader reader, Set<String> deletions, Set<String> containerDeletions, boolean deleteNodesOnly)

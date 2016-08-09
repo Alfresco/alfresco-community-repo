@@ -139,7 +139,6 @@ public class SearchServiceSubSystemDelegator implements SearchService
      * @param parameters QueryParameterDefinition[]
      * @param namespacePrefixResolver NamespacePrefixResolver
      * @param followAllParentLinks boolean
-     * @return List<NodeRef>
      * @throws InvalidNodeRefException
      * @throws XPathException
      * @see org.alfresco.service.cmr.search.SearchService#selectNodes(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[], org.alfresco.service.namespace.NamespacePrefixResolver, boolean)
@@ -157,7 +156,6 @@ public class SearchServiceSubSystemDelegator implements SearchService
      * @param namespacePrefixResolver NamespacePrefixResolver
      * @param followAllParentLinks boolean
      * @param language String
-     * @return List<NodeRef>
      * @throws InvalidNodeRefException
      * @throws XPathException
      * @see org.alfresco.service.cmr.search.SearchService#selectNodes(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[], org.alfresco.service.namespace.NamespacePrefixResolver, boolean, java.lang.String)
@@ -175,7 +173,6 @@ public class SearchServiceSubSystemDelegator implements SearchService
      * @param parameters QueryParameterDefinition[]
      * @param namespacePrefixResolver NamespacePrefixResolver
      * @param followAllParentLinks boolean
-     * @return List<Serializable>
      * @throws InvalidNodeRefException
      * @throws XPathException
      * @see org.alfresco.service.cmr.search.SearchService#selectProperties(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[], org.alfresco.service.namespace.NamespacePrefixResolver, boolean)
@@ -193,7 +190,6 @@ public class SearchServiceSubSystemDelegator implements SearchService
      * @param namespacePrefixResolver NamespacePrefixResolver
      * @param followAllParentLinks boolean
      * @param language String
-     * @return List<Serializable>
      * @throws InvalidNodeRefException
      * @throws XPathException
      * @see org.alfresco.service.cmr.search.SearchService#selectProperties(org.alfresco.service.cmr.repository.NodeRef, java.lang.String, org.alfresco.service.cmr.search.QueryParameterDefinition[], org.alfresco.service.namespace.NamespacePrefixResolver, boolean, java.lang.String)

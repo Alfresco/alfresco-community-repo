@@ -163,7 +163,6 @@ public class RenditionServiceImpl implements
     
     /**
      * Sets the list of known cancellable actions used by {@link #cancelRenditions(NodeRef)}.
-     * @param knownCancellableActionTypes List<String>
      * @since 4.1.6
      */
     public void setKnownCancellableActionTypes(List<String> knownCancellableActionTypes)

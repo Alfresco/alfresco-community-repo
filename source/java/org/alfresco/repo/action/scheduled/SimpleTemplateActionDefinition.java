@@ -151,7 +151,6 @@ public class SimpleTemplateActionDefinition extends AbstractTemplateActionDefini
      * Set the map of parameters used by the template.
      * These are processed via the template service to produce the actual poarameters.
      * 
-     * @param parameterTemplates Map<String, String>
      */
     public void setParameterTemplates(Map<String, String> parameterTemplates)
     {

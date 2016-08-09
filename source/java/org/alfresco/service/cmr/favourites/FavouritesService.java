@@ -118,10 +118,7 @@ public interface FavouritesService
      * A paged list of favourites for user "userName".
      * 
      * @param userName String
-     * @param types Set<Type>
-     * @param sortProps List<Pair<FavouritesService.SortFields, Boolean>>
      * @param pagingRequest PagingRequest
-     * @return PagingResults<PersonFavourite>
      */
     @Auditable(parameters = {"userName", "types", "pagingRequest"})
     PagingResults<PersonFavourite> getPagedFavourites(String userName, Set<Type> types,

@@ -143,7 +143,6 @@ public class PropertyAuditFilter implements AuditFilter
 
     /**
      * @param rootPath String
-     * @param auditMap Map<String, Serializable>
      * @return boolean
      */
     @Override

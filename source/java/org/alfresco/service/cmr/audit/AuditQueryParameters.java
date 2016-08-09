@@ -53,7 +53,7 @@ public class AuditQueryParameters
      * Defaults:<br/>
      * &nbsp;<code>forward = true;</code><br/>
      * &nbsp;<code>searchKeyValues = emptylist</code><br/>
-     * &nbsp:<code>others = null</code>
+     * &nbsp;<code>others = null</code>
      */
     public AuditQueryParameters()
     {

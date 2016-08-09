@@ -88,7 +88,7 @@ public interface WarHelper
      * Lists all the currently installed modules in the WAR
      * @since 5.1
      * @param war the war
-     * @return List<ModuleDetails> an unordered list of module details.
+     * @return an unordered list of module details.
      * @throws ModuleManagementToolException
      */
     List<ModuleDetails> listModules(TFile war);

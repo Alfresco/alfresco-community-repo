@@ -40,7 +40,7 @@ import org.springframework.extensions.surf.util.ParameterCheck;
  * key (perhaps a database ID) and a separate unique key that identifies the object.  If no cache
  * is given, then all calls are passed through to the backing DAO.
  * <p>
- * The keys must have good <code>equals</code> and </code>hashCode</code> implementations and
+ * The keys must have good <code>equals</code> and <code>hashCode</code> implementations and
  * must respect the case-sensitivity of the use-case.
  * <p>
  * All keys will be unique to the given cache region, allowing the cache to be shared

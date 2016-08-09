@@ -69,8 +69,6 @@ public interface ComparisonUtils
     /**
      * Compare collections of {@link DbObject}s using their {@link DbObject#diff(DbObject, DiffContext)} method.
      * 
-     * @param leftCollection Collection<? extends DbObject>
-     * @param rightCollection Collection<? extends DbObject>
      * @param ctx - context
      */
     void compareCollections(Collection<? extends DbObject> leftCollection,

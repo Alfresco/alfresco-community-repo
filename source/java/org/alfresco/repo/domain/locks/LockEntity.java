@@ -90,7 +90,7 @@ public class LockEntity
      * Determine if the lock is logically exclusive.  A lock is <b>exclusive</b> if the
      * shared lock resource matches the exclusive lock resource.
      * 
-     * @return      Returns <tt>true</tt> if the lock is exclusive or <tt>false<tt> if it is not
+     * @return      Returns <tt>true</tt> if the lock is exclusive or <tt>false</tt> if it is not
      */
     public boolean isExclusive()
     {

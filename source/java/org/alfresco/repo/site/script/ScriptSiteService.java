@@ -291,7 +291,6 @@ public class ScriptSiteService extends BaseScopableProcessorExtension
      * Converts the given List of SiteInfo objects to a JavaScript friendly array
      * of Site objects.
      * 
-     * @param siteInfos List<SiteInfo>
      * @return Array of Site objects
      */
     protected Site[] makeSitesArray(List<SiteInfo> siteInfos)

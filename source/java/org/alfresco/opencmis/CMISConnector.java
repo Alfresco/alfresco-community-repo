@@ -941,7 +941,6 @@ public class CMISConnector implements ApplicationContextAware, ApplicationListen
      * Asynchronously generates thumbnails for the given node.
      *  
      * @param nodeRef NodeRef
-     * @param thumbnailNames Set<String>
      */
     public void createThumbnails(NodeRef nodeRef, Set<String> thumbnailNames)
     {

@@ -163,7 +163,7 @@ public class AuditApplication
     /**
      * Get the property representing the set of disabled paths for the application
      * 
-     * @return          Returns an ID <code>Set<String></code> of disabled paths
+     * @return          Returns an ID of disabled paths
      */
     public Long getDisabledPathsId()
     {

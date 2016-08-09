@@ -233,7 +233,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * Set the mimetypes that are supported by the extracter.
      * 
-     * @param supportedMimetypes Collection<String>
      */
     public void setSupportedMimetypes(Collection<String> supportedMimetypes)
     {
@@ -244,7 +243,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * Set the mimetypes that are supported for embedding.
      *
-     * @param supportedEmbedMimetypes Collection<String>
      */
     public void setSupportedEmbedMimetypes(Collection<String> supportedEmbedMimetypes)
     {
@@ -336,7 +334,7 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * Set whether the extractor should discard metadata that fails to convert to the target type
      * defined in the data dictionary model.  This is <tt>true</tt> by default i.e. if the data
      * extracted is not compatible with the target model then the extraction will fail.  If this is
-     * <tt>false<tt> then any extracted data that fails to convert will be discarded.
+     * <tt>false</tt> then any extracted data that fails to convert will be discarded.
      * 
      * @param failOnTypeConversion      <tt>false</tt> to discard properties that can't get converted
      *                                  to the dictionary-defined type, or <tt>true</tt> (default)
@@ -462,7 +460,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
     /**
      * Sets the map of source mimetypes to metadata extracter limits.
      * 
-     * @param mimetypeLimits Map<String, MetadataExtracterLimits>
      */
     public void setMimetypeLimits(Map<String, MetadataExtracterLimits> mimetypeLimits)
     {
@@ -1819,7 +1816,6 @@ abstract public class AbstractMappingMetadataExtracter implements MetadataExtrac
      * the class, then the {@link #readMappingProperties(String)} method can be used to quickly
      * generate the return value:
      * <pre><code>
-     *      protected Map<<String, Set<QName>> getDefaultMapping()
      *      {
      *          return readMappingProperties(DEFAULT_MAPPING);
      *      }

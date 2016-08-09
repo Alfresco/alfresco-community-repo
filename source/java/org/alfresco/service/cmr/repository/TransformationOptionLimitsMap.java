@@ -41,21 +41,21 @@ import org.apache.commons.logging.LogFactory;
  * define transformation limits, without having to specify lots of spring XML. For example:
  * 
  * <pre>
- * &ltbean id="mimetypeLimits.OpenOffice" class="org.alfresco.service.cmr.repository.TransformationOptionLimitsMap"&gt;
- *    &ltconstructor-arg&gt;
- *       &ltvalue&gt;
+ * &lt;bean id="mimetypeLimits.OpenOffice" class="org.alfresco.service.cmr.repository.TransformationOptionLimitsMap"&gt;
+ *    &lt;constructor-arg&gt;
+ *       &lti;value&gt;
  *          *   txt maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.txt.pdf.maxSourceSizeKBytes} ;
  *          doc pdf maxSourceSizeKBytes ${content.transformer.OpenOffice.mimeTypeLimits.doc.pdf.maxSourceSizeKBytes}
- *       &lt/value&gt;
- *    &lt/constructor-arg&gt;
- *    &ltconstructor-arg&gt;
- *       &ltref bean="mimetypeService" /&gt;
- *    &lt/constructor-arg&gt;
- * &lt/bean&gt;
- * <pre>
+ *       &lt;/value&gt;
+ *    &lt;/constructor-arg&gt;
+ *    &lt;constructor-arg&gt;
+ *       &lt;ref bean="mimetypeService" /&gt;
+ *    &lt;/constructor-arg&gt;
+ * &lt;/bean&gt;
+ * </pre>
  * The first constructor argument is a space separated list of values:
  * <pre>
- * configuration ::= [ &ltsource extension&gt; &lttarget extension&gt; &ltproperty name&gt; &lt;value&gt; ]* ";" ]*
+ * configuration ::= [ &lt;source extension&gt; &lt;target extension&gt; &lt;property name&gt; &lt;value&gt; ]* ";" ]*
  * property name ::= "maxSourceSizeKBytes" | "readLimitKBytes" | "readLimitTimeMs" | "timeoutMs" | "maxPages" | "pageLimit"
  * </pre>
  * 

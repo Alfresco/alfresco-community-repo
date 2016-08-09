@@ -537,7 +537,6 @@ public abstract class AbstractServerConfigurationBean extends ServerConfiguratio
      * Parse the platforms attribute returning the set of platform ids
      * 
      * @param platformStr String
-     * @return EnumSet<PlatformType>
      */
     protected final EnumSet<Platform.Type> parsePlatformString(String platformStr)
     {

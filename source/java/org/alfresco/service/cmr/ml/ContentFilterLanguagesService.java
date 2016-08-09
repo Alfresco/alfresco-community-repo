@@ -80,7 +80,6 @@ public interface ContentFilterLanguagesService
      * Get the the odered filter which results form an extract of availableLanguages on the filterLanguages 
      * 
      * @param availableLanguages the languages list whose will be removed from the filterLanguages
-     * @return List<String>
      */
     @Auditable
     public List<String> getMissingLanguages(List<String> availableLanguages);

@@ -200,7 +200,6 @@ public class ACLEntryVoter implements AccessDecisionVoter, InitializingBean
     
     /**
      * Types and aspects for which we will abstain on voting if they are present.
-     * @param abstainFor Set<String>
      */
     public void setAbstainFor(Set<String> abstainFor)
     {

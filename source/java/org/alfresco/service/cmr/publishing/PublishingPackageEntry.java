@@ -52,7 +52,7 @@ public interface PublishingPackageEntry
      * 
      * @return The snapshot of the node that this publishing package entry
      *         relates to if this is a "publish" entry (
-     *         <code>null</node> if this is an "unpublish" entry). The snapshot is taken when
+     *         <code>null</code> if this is an "unpublish" entry). The snapshot is taken when
      * the containing publishing package is placed on the publishing queue, so if this operation is called before that point
      * then it will return <code>null</code>.
      */

@@ -441,7 +441,6 @@ public class TransferServiceImpl2 implements TransferService2
      * 
      * @param targetName String
      * @param definition TransferDefinition
-     * @param callbacks Collection<TransferCallback>
      * 
      */
     public void transferAsync(String targetName, TransferDefinition definition, Collection<TransferCallback> callbacks)
@@ -526,7 +525,6 @@ public class TransferServiceImpl2 implements TransferService2
      * 
      * @param targetName String
      * @param definition TransferDefinition
-     * @param callbacks Collection<TransferCallback>
      */
     public TransferEndEvent transfer(String targetName, TransferDefinition definition, Collection<TransferCallback> callbacks)
         throws TransferFailureException

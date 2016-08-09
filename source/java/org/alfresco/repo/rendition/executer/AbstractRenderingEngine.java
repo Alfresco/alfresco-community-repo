@@ -627,7 +627,6 @@ public abstract class AbstractRenderingEngine extends ActionExecuterAbstractBase
     /**
      * Supplies the list of parameters required by this rendering engine.
      * 
-     * @return Collection<ParameterDefinition>
      */
     protected Collection<ParameterDefinition> getParameterDefinitions()
     {

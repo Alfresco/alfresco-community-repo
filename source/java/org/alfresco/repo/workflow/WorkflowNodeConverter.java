@@ -59,7 +59,6 @@ public interface WorkflowNodeConverter
 
     /**
      * Converts a {@link Collection} of {@link NodeRef}s into a {@link List} of the appropriate Node type.
-     * @param values Collection<NodeRef>
      * @return List
      */
     List<? extends Object> convertNodes(Collection<NodeRef> values);
@@ -70,7 +69,6 @@ public interface WorkflowNodeConverter
      * a {@link List} of the appropriate Node type is returned. Otherwise a
      * single instance of the appropriate Node type is returned.
      * 
-     * @param values Collection<NodeRef>
      * @param isMany boolean
      * @return Object
      */

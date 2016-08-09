@@ -55,10 +55,7 @@ public interface SerializedTransformationOptionsAccessor
      * throws a {@link RenditionServiceException} if it isn't. Returns
      * <code>defaultValue</code> if the parameter value is <code>null</code>
      * 
-     * @param <T> <T>
      * @param paramName String
-     * @param defaultValue <T>
-     * @return <T>
      */
     public <T> T getParamWithDefault(String paramName, T defaultValue);
     

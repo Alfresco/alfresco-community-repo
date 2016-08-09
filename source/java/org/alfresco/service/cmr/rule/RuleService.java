@@ -325,7 +325,7 @@ public interface RuleService
      * Returns an empty list if none link.
      * 
      * @param nodeRef           node reference of a rule node
-     * @return List<NodeRef>    list of rule nodes that link to this passed rule node, empty if none
+     * @return list of rule nodes that link to this passed rule node, empty if none
      */
     @Auditable(parameters = {"nodeRef"})
     public List<NodeRef> getLinkedFromRuleNodes(NodeRef nodeRef);

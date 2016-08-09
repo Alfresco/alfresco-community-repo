@@ -3712,7 +3712,6 @@ public class JBPMEngine extends AlfrescoBpmEngine implements WorkflowEngine
      *            JBoss JBPM Process Instance
      * @param definition WorkflowDefinition
      * @param endDate Date
-     * @param variables Map<String, Object>
      * @return  Workflow instance
      */
     protected WorkflowInstance createWorkflowInstance(ProcessInstance instance, WorkflowDefinition definition, Date endDate, Map<String, Object> variables)

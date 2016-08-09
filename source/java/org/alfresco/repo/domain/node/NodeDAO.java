@@ -447,7 +447,7 @@ public interface NodeDAO extends NodeBulkLoader
 
     /**
      * @param nodeId            the source or target of the associations
-     * @return                  Returns all the node associations where the node is the <b>source</b> or </b>target</b>
+     * @return                  Returns all the node associations where the node is the <b>source</b> or <b>target</b>
      */
     public Collection<Pair<Long, AssociationRef>> getNodeAssocsToAndFrom(Long nodeId);
 
@@ -604,7 +604,7 @@ public interface NodeDAO extends NodeBulkLoader
      * 
      * @param parentNodeId          the parent node ID
      * @param childNodeId           the child node ID to filter on; <tt>null</tt> for no filtering
-     * @param assocTypeQName        the association type qname to filter on; <tt>null<tt> for no filtering
+     * @param assocTypeQName        the association type qname to filter on; <tt>null</tt> for no filtering
      * @param assocQName            the association qname to filter on; <tt>null</tt> for no filtering
      * @param isPrimary             filter for primary (<tt>true</tt>) or secondary associations;
      *                              <tt>null</tt> for no filtering.
@@ -629,7 +629,7 @@ public interface NodeDAO extends NodeBulkLoader
      * This is an efficient query for node paths.
      * 
      * @param parentNodeId          the parent node ID
-     * @param assocTypeQName        the association type qname to filter on; <tt>null<tt> for no filtering
+     * @param assocTypeQName        the association type qname to filter on; <tt>null</tt> for no filtering
      * @param assocQName            the association qname to filter on; <tt>null</tt> for no filtering
      * @param maxResults            the maximum number of results to return. The query will be terminated efficiently
      *                              after that number of results                             
@@ -646,7 +646,7 @@ public interface NodeDAO extends NodeBulkLoader
      * Get the child associations of a given parent node, optionally filtering on type <tt>QName</tt>.
      * 
      * @param parentNodeId          the parent node ID
-     * @param assocTypeQNames       the association type qnames to filter on; <tt>null<tt> for no filtering
+     * @param assocTypeQNames       the association type qnames to filter on; <tt>null</tt> for no filtering
      * @param resultsCallback       the callback that will be called with the results
      */
     public void getChildAssocs(
@@ -730,7 +730,7 @@ public interface NodeDAO extends NodeBulkLoader
      * This is an efficient query for node paths.
      * 
      * @param childNodeId           the child node ID
-     * @param assocTypeQName        the association type qname to filter on; <tt>null<tt> for no filtering
+     * @param assocTypeQName        the association type qname to filter on; <tt>null</tt> for no filtering
      * @param assocQName            the association qname to filter on; <tt>null</tt> for no filtering
      * @param isPrimary             filter for primary (<tt>true</tt>) or secondary associations;
      *                              <tt>null</tt> for no filtering.

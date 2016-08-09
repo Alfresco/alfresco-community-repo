@@ -167,7 +167,6 @@ public class TagScopePropertyMethodInterceptor implements MethodInterceptor
      * @param nodeRef NodeRef
      * @param allNodeProperties Optional. If the caller has a current property map for the node being queried
      * then supplying it here saves a little time. This argument is allowed to be null.
-     * @return List<String>
      */
     protected List<String> getTagSummary(NodeRef nodeRef, Map<QName, Serializable> allNodeProperties)
     {

@@ -59,7 +59,7 @@ public interface TaggingService
     /**
      * Get all the tags currently available
      * 
-     * @return List<String> list of tags
+     * @return list of tags
      */
     @NotAuditable
     List<String> getTags(StoreRef storeRef);
@@ -79,7 +79,7 @@ public interface TaggingService
      * 
      * @param storeRef      store reference
      * @param filter        tag filter
-     * @return List<String> list of tags
+     * @return list of tags
      */
     @NotAuditable
     List<String> getTags(StoreRef storeRef, String filter);
@@ -169,7 +169,7 @@ public interface TaggingService
      * Get all the tags on a node
      * 
      * @param nodeRef           node reference
-     * @return List<String>     list of tags on the node
+     * @return list of tags on the node
      */
     @NotAuditable
     List<String> getTags(NodeRef nodeRef);
@@ -178,7 +178,7 @@ public interface TaggingService
      * Get a paged list of all the tags on a node
      * 
      * @param nodeRef                    node reference
-     * @return PagingResults<String>     list of tags on the node
+     * @return list of tags on the node
      */
     @NotAuditable
     PagingResults<Pair<NodeRef, String>> getTags(NodeRef nodeRef, PagingRequest pagingRequest);
@@ -260,7 +260,7 @@ public interface TaggingService
      * If no tag scopes are found an empty list is returned.
      * 
      * @param nodeRef           node reference
-     * @return List<TagScope>   list of tag scopes
+     * @return list of tag scopes
      */
     @NotAuditable
     List<TagScope> findAllTagScopes(NodeRef nodeRef);
@@ -269,7 +269,7 @@ public interface TaggingService
      * Find all nodes that have been tagged with the specified tag.
      * 
      * @param  tag              tag name
-     * @return List<NodeRef>    list of nodes tagged with specified tag, empty of none found
+     * @return list of nodes tagged with specified tag, empty of none found
      */
     @NotAuditable
     List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag);
@@ -280,7 +280,7 @@ public interface TaggingService
      * 
      * @param tag               tag name
      * @param nodeRef           node providing context for the search
-     * @return List<NodeRef>    list of nodes tagged in the context specified, empty if none found
+     * @return list of nodes tagged in the context specified, empty if none found
      */
     @NotAuditable
     List<NodeRef> findTaggedNodes(StoreRef storeRef, String tag, NodeRef nodeRef);

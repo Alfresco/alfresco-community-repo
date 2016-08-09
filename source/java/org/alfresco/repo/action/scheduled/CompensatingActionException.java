@@ -62,7 +62,6 @@ public class CompensatingActionException extends AlfrescoRuntimeException
      * 
      * @param msgId String
      * @param cause Throwable
-     * @param compensatingActions List<Pair<Action, NodeRef>>
      */
     public CompensatingActionException(String msgId, Throwable cause, List<Pair<Action, NodeRef>> compensatingActions)
     {

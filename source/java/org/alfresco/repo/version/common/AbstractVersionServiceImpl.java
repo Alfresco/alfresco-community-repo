@@ -292,7 +292,6 @@ public abstract class AbstractVersionServiceImpl
 	 * 
 	 * @param classRef QName
 	 * @param nodeRef NodeRef
-	 * @param versionProperties Map<String, Serializable>
 	 * @param nodeDetails PolicyScope
 	 */
 	abstract protected void defaultOnCreateVersion(
@@ -307,7 +306,6 @@ public abstract class AbstractVersionServiceImpl
 	 * @param classRef QName
 	 * @param preceedingVersion Version
 	 * @param versionNumber int
-	 * @param versionProperties Map<String, Serializable>
 	 * @return String
 	 */
 	protected String invokeCalculateVersionLabel(

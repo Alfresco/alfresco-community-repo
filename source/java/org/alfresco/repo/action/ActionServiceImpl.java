@@ -226,7 +226,7 @@ public class ActionServiceImpl implements ActionService, RuntimeActionService, A
      * 
      * @param asynchronousActionExecutionQueues the asynchronous action execution
      *            queues
-     * @deprecated Rather than inject a Map<String, AsynchronousActionExecutionQueue>, it is
+     * @deprecated Rather than inject a map, it is
      *             preferable to inject individual {@link AsynchronousActionExecutionQueue} instances
      *             during bean initialisation in a spring init-method.
      */

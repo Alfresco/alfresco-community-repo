@@ -44,7 +44,6 @@ public interface ModelDAO
      * Get the permissions that can be set for the given type.
      * 
      * @param type - the type in the data dictionary.
-     * @return Set<PermissionReference>
      */
     public Set<PermissionReference> getAllPermissions(QName type);
     
@@ -52,8 +51,6 @@ public interface ModelDAO
      * Get the permissions that can be set for the given type.
      * 
      * @param type - the type in the data dictionary.
-     * @param aspects Set<QName>
-     * @return Set<PermissionReference>
      */
     public Set<PermissionReference> getAllPermissions(QName type, Set<QName> aspects);
 
@@ -62,7 +59,6 @@ public interface ModelDAO
      * This is determined by the node type.
      * 
      * @param nodeRef NodeRef
-     * @return Set<PermissionReference>
      */
     public Set<PermissionReference> getAllPermissions(NodeRef nodeRef);
     
@@ -70,7 +66,6 @@ public interface ModelDAO
      *Get the permissions that are exposed to be set for the given type.
      * 
      * @param type - the type in the data dictionary.
-     * @return Set<PermissionReference>
      */
     public Set<PermissionReference> getExposedPermissions(QName type);
 
@@ -79,7 +74,6 @@ public interface ModelDAO
      * This is determined by the node type.
      * 
      * @param nodeRef NodeRef
-     * @return Set<PermissionReference>
      */
     public Set<PermissionReference> getExposedPermissions(NodeRef nodeRef);
 
@@ -87,7 +81,6 @@ public interface ModelDAO
      * Get all the permissions that grant this permission.
      * 
      * @param perm PermissionReference
-     * @return Set<PermissionReference>
      */
     public Set<PermissionReference> getGrantingPermissions(PermissionReference perm);
 
@@ -96,9 +89,7 @@ public interface ModelDAO
      *  
      * @param required PermissionReference
      * @param qName QName
-     * @param aspectQNames Set<QName>
      * @param on RequiredPermission.On
-     * @return Set<PermissionReference>
      */
     public Set<PermissionReference> getRequiredPermissions(PermissionReference required, QName qName, Set<QName> aspectQNames, RequiredPermission.On on);
 
@@ -108,7 +99,6 @@ public interface ModelDAO
      * Get the permissions which are granted by the supplied permission.
      * 
      * @param permissionReference PermissionReference
-     * @return Set<PermissionReference>
      */
     public Set<PermissionReference> getGranteePermissions(PermissionReference permissionReference);
     
@@ -116,7 +106,6 @@ public interface ModelDAO
      * Get the permissions which are granted by the supplied permission.
      * 
      * @param permissionReference PermissionReference
-     * @return Set<PermissionReference>
      */
     public Set<PermissionReference> getImmediateGranteePermissions(PermissionReference permissionReference);
 
@@ -157,13 +146,11 @@ public interface ModelDAO
 
     /**
      * Get all exposed permissions (regardless of type exposure)
-     * @return Set<PermissionReference>
      */
     public Set<PermissionReference> getAllExposedPermissions();
     
     /**
      * Get all exposed permissions (regardless of type exposure)
-     * @return Set<PermissionReference>
      */
     public Set<PermissionReference> getAllPermissions();
     

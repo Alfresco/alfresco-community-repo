@@ -265,7 +265,6 @@ public class PermissionServiceImpl extends AbstractLifecycleBean implements Perm
     /**
      * Set the dynamic authorities
      * 
-     * @param dynamicAuthorities List<DynamicAuthority>
      */
     public void setDynamicAuthorities(List<DynamicAuthority> dynamicAuthorities)
     {

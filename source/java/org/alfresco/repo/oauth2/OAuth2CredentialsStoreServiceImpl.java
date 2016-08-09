@@ -231,7 +231,6 @@ public class OAuth2CredentialsStoreServiceImpl implements OAuth2CredentialsStore
 
     /**
      * @param remoteSystemId String
-     * @return List<OAuth2CredentialInfo>
      */
     @Override
     public List<OAuth2CredentialsInfo> listSharedOAuth2Credentials(String remoteSystemId)

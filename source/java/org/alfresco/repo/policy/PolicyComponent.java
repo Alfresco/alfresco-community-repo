@@ -218,7 +218,6 @@ public interface PolicyComponent
     /**
      * Unbind behaviour 
      * 
-     * @param definition BehaviourDefinition<ClassBehaviourBinding>
      */
     public void removeClassDefinition(BehaviourDefinition<ClassBehaviourBinding> definition);
     

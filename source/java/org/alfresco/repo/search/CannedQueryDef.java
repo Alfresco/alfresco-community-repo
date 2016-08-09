@@ -57,7 +57,6 @@ public interface CannedQueryDef
     /**
      * Get the definitions for any query parameters.
      * 
-     * @return Collection<QueryParameterDefinition>
      */
     public Collection<QueryParameterDefinition> getQueryParameterDefs();
 

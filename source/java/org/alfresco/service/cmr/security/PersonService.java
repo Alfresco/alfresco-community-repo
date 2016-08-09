@@ -201,7 +201,6 @@ public interface PersonService
      * Create a new person with the given properties. The userName is one of the
      * properties. Users with duplicate userNames are not allowed.
      * 
-     * @param properties Map<QName, Serializable>
      * @return NodeRef
      */
     @Auditable(parameters = {"properties"})
@@ -325,7 +324,6 @@ public interface PersonService
      * @param filterProps     list of filter properties (these are OR'ed)
      * @param sortProps       sort property, eg. cm:username ascending
      * @param pagingRequest   skip, max + optional query execution id
-     * @return PagingResults<PersonInfo>
      * 
      * <br/><br/>author janv
      * @since 4.1.2

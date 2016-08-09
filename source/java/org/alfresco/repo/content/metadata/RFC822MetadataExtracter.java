@@ -58,7 +58,7 @@ import org.alfresco.service.namespace.QName;
  *   <b>messageSubject:</b>           --      imap:messageSubject, cm:title, cm:description, cm:subjectline
  *   <b>messageSent:</b>              --      imap:dateSent, cm:sentdate
  *   <b>messageReceived:</b>          --      imap:dateReceived
- *   <b>All <code>{@link Header#getName() header names}:</b>
+ *   <b>All {@link Header#getName() header names}:</b>
  *      <b>Thread-Index:</b>          --      imap:threadIndex
  *      <b>Message-ID:</b>            --      imap:messageId
  * </pre>

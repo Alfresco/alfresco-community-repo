@@ -79,7 +79,6 @@ public class TransferDefinition implements Serializable
 
     /**
      * Set which nodes to transfer
-     * @param nodes Collection<NodeRef>
      */
     public void setNodes(Collection<NodeRef> nodes)
     {
@@ -93,7 +92,6 @@ public class TransferDefinition implements Serializable
 
     /**
      * Set nodes that are to be explicitly removed from the the target repository
-     * @param nodes Collection<NodeRef>
      */
     public void setNodesToRemove(Collection<NodeRef> nodes)
     {
@@ -111,7 +109,6 @@ public class TransferDefinition implements Serializable
 
     /**
      * Get which nodes to transfer
-     * @return Set<NodeRef>
      */
     public Set<NodeRef> getNodes()
     {
@@ -120,7 +117,6 @@ public class TransferDefinition implements Serializable
 
     /**
      * Get the list of nodes that are to be explicitly removed from the target repository
-     * @return Set<NodeRef>
      */
     public Set<NodeRef> getNodesToRemove()
     {

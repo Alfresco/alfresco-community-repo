@@ -141,7 +141,6 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     
     /**
      * This method is used to inject the thumbnail definitions.
-     * @param thumbnailDefinitions List<ThumbnailDefinition>
      */
     public void setThumbnailDefinitions(final List<ThumbnailDefinition> thumbnailDefinitions)
     {
@@ -187,7 +186,7 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     /**
      * Get a list of all the thumbnail definitions
      * 
-     * @return Collection<ThumbnailDefinition>  collection of thumbnail definitions
+     * @return collection of thumbnail definitions
      */
     public List<ThumbnailDefinition> getThumbnailDefinitions()
     {
@@ -306,7 +305,6 @@ public class ThumbnailRegistry implements ApplicationContextAware, ApplicationLi
     /**
      * 
      * @param mimetype String
-     * @return List<ThumbnailDefinition>
      * @deprecated Use {@link #getThumbnailDefinitions(String)} instead.
      */
     @Deprecated

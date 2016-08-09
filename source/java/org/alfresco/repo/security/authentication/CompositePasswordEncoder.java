@@ -71,7 +71,7 @@ public class CompositePasswordEncoder
 
     /**
      * Is the preferred encoding the last encoding to be used.
-     * @param hashIndicator a List<String></String> representing the encoding
+     * @param hashIndicator representing the encoding
      * @return true if is correct
      */
     public boolean lastEncodingIsPreferred(List<String> hashIndicator)

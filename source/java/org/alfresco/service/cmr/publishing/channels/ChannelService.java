@@ -127,7 +127,6 @@ public interface ChannelService
     /**
      * Returns a list of all the channels that are capable of publishing the specified NodeRef.
      * @param nodeToPublish NodeRef
-     * @return List<Channel>
      */
     @NotAuditable
     List<Channel> getRelevantPublishingChannels(NodeRef nodeToPublish);
@@ -136,7 +135,6 @@ public interface ChannelService
      * Returns a list of all the channels that are capable of publishing in the specified Share site.
      * @param filterByPublishPermission If true then the returned channels are filtered to include only those
      * to which the authenticated user can publish
-     * @return List<Channel>
      */
     @NotAuditable
     List<Channel> getPublishingChannels(boolean filterByPublishPermission);
@@ -145,7 +143,6 @@ public interface ChannelService
      * Returns all {@link Channel}s cpaable of performing a status update for the given Share Site.
      * @param filterByPublishPermission If true then the returned channels are filtered to include only those
      * to which the authenticated user can post status updates
-     * @return List<Channel>
      */
     @NotAuditable
     List<Channel> getStatusUpdateChannels(boolean filterByPublishPermission);

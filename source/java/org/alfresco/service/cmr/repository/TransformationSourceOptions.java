@@ -104,7 +104,6 @@ public interface TransformationSourceOptions
          * Serializes the given transformation source options into the given parameter map.
          * 
          * @param transformationSourceOptions TransformationSourceOptions
-         * @param parameters Map<String, Serializable>
          */
         public void serialize(TransformationSourceOptions transformationSourceOptions, Map<String, Serializable> parameters);
         

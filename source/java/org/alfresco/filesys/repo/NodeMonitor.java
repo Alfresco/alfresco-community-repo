@@ -263,8 +263,6 @@ public class NodeMonitor extends TransactionListenerAdapter
      * Update properties event
      * 
      * @param nodeRef NodeRef
-     * @param before Map<QName, Serializable>
-     * @param after Map<QName, Serializable>
      */
     public void onUpdateProperties( NodeRef nodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after) {
     	

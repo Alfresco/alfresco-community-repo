@@ -149,7 +149,6 @@ public class DesktopResponse extends ScriptableObject {
 	/**
 	 * Get the response value list
 	 * 
-	 * @return List<Object>
 	 */
 	public final List<Object> getResponseValues()
 	{

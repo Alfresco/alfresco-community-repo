@@ -52,7 +52,6 @@ public class Index extends AbstractDbObject
     
     /**
      * @param table the parent table
-     * @param columnNames List<String>
      */
     public Index(Table table, String name, List<String> columnNames)
     {

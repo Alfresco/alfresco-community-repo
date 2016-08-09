@@ -136,7 +136,6 @@ public class AclDAOImpl implements AclDAO
     /**
      * Set the ACL cache
      * 
-     * @param aclCache SimpleCache<Serializable, AccessControlList>
      */
     public void setAclCache(SimpleCache<Serializable, AccessControlList> aclCache)
     {

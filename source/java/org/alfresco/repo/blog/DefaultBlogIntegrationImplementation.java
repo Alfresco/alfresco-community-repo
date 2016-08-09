@@ -181,7 +181,6 @@ public abstract class DefaultBlogIntegrationImplementation extends BaseBlogInteg
      * 
      * @param url String
      * @param method String
-     * @param params List<Object>
      * @return Object
      */
     protected Object execute(String url, String method, List<Object> params)

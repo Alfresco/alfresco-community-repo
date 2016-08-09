@@ -108,7 +108,6 @@ public class CompositeRenditionDefinitionImpl extends RenditionDefinitionImpl im
     }
 
     /**
-     * @return List<RenditionDefinition>
      * @see org.alfresco.service.cmr.action.ActionList#getActions()
      */
     public List<RenditionDefinition> getActions()

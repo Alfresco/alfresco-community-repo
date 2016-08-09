@@ -312,7 +312,6 @@ public class ActivityServiceImpl implements ActivityService, InitializingBean
      * A cache should be passed in from which to retrieve previously fetched {@link NodeRef}s for efficiency.
      * 
      * @param activityFeed ActivityFeedEntity
-     * @param userIdToAvatarNodeRefCache Map<String, NodeRef>
      * @return NodeRef
      */
     protected NodeRef getUserAvatarNodeRef(ActivityFeedEntity activityFeed, Map<String, NodeRef> userIdToAvatarNodeRefCache) 

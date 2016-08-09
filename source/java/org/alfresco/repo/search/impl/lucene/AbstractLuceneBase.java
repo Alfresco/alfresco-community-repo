@@ -338,8 +338,6 @@ public abstract class AbstractLuceneBase
     /**
      * Execute actions against a read only index (all write ops will block)
      *
-     * @param lockWork LockWork<R>
-     * @param <R> R
      * @return - the result returned by the action.
      */
     public <R> R doReadOnly(LockWork<R> lockWork)

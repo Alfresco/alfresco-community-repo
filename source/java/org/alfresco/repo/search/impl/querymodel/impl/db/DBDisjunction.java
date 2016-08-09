@@ -49,7 +49,6 @@ public class DBDisjunction extends BaseDisjunction implements DBQueryBuilderComp
 {
 
     /**
-     * @param constraints List<Constraint>
      */
     public DBDisjunction(List<Constraint> constraints)
     {

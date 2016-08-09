@@ -189,7 +189,7 @@ public interface SubscriptionService extends ActivateableBean
      *            the id of the user
      * @param isPrivate
      *            <code>true</code> - set list private,
-     *            <code>false<code> - set list public
+     *            <code>false</code> - set list public
      * 
      */
     @Auditable(parameters = { "userId", "isPrivate" })

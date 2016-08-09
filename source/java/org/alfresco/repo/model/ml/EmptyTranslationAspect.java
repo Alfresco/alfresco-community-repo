@@ -97,7 +97,7 @@ public class EmptyTranslationAspect implements
     }   
 
     /**
-     * Copy a <b>cm:mlEmptyTranslation<b> is not permit.
+     * Copy a <b>cm:mlEmptyTranslation</b> is not permit.
      */
     public void onCopyNode(QName classRef, NodeRef sourceNodeRef, StoreRef destinationStoreRef, boolean copyToNewNode, PolicyScope copyDetails) 
     {
@@ -105,7 +105,7 @@ public class EmptyTranslationAspect implements
     }
 
     /** 
-      * If a content is added to a <b>cm:mlEmptyTranslation<b>, remove this aspect. 
+      * If a content is added to a <b>cm:mlEmptyTranslation</b>, remove this aspect. 
       */
     public void onContentUpdate(NodeRef nodeRef, boolean newContent) 
     {

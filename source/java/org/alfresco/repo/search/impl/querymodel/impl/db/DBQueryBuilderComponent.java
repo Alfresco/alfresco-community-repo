@@ -61,8 +61,6 @@ public interface DBQueryBuilderComponent
      * @param qnameDAO QNameDAO
      * @param nodeDAO NodeDAO
      * @param tenantService TenantService
-     * @param selectors Set<String>
-     * @param functionArgs Map<String, Argument>
      * @param functionContext FunctionEvaluationContext
      */
     public void prepare(NamespaceService namespaceService, DictionaryService dictionaryService, QNameDAO qnameDAO, NodeDAO nodeDAO, TenantService tenantService, Set<String> selectors, Map<String, Argument> functionArgs,  FunctionEvaluationContext functionContext, boolean supportBooleanFloatAndDouble);

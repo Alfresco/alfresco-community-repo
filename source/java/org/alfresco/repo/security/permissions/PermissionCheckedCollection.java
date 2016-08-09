@@ -51,7 +51,7 @@ public interface PermissionCheckedCollection<T>
     
     /**
      * Get the number of objects in the original (unfiltered) collection that did
-     * <b>not<b/> have any permission checks.
+     * <b>not</b> have any permission checks.
      * 
      * @return              number of entries from the original collection that were not checked
      */

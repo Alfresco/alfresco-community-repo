@@ -1662,7 +1662,6 @@ public class PermissionModel implements ModelDAO
          * 
          * @param required PermissionReference
          * @param qName QName
-         * @param aspectQNames Set<QName>
          * @param on RequiredPermission.On
          * @return the key
          */

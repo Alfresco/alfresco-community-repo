@@ -361,7 +361,6 @@ public class PublishingEventHelper
      * Returns a {@link List} of the {@link NodeRef}s representing PublishingEvents that were scheduled to publish at least one of the specified <code>publishedNodes</code>. 
      * @param queue NodeRef
      * @param publishedNodes NodeRef..
-     * @return List<NodeRef>
      */
     public List<NodeRef> getEventNodesForPublishedNodes(final NodeRef queue, NodeRef... publishedNodes)
     {
@@ -371,8 +370,6 @@ public class PublishingEventHelper
     /**
      * Returns a {@link List} of the {@link NodeRef}s representing PublishingEvents that were scheduled to publish at least one of the specified <code>publishedNodes</code>. 
      * @param queue NodeRef
-     * @param publishedNodes Collection<NodeRef>
-     * @return List<NodeRef>
      */
     public List<NodeRef> getEventNodesForPublishedNodes(final NodeRef queue, Collection<NodeRef> publishedNodes)
     {
@@ -382,8 +379,6 @@ public class PublishingEventHelper
     /**
      * Returns a {@link List} of the {@link NodeRef}s representing PublishingEvents that were scheduled to unpublish at least one of the specified <code>unpublishedNodes</code>. 
      * @param queue NodeRef
-     * @param unpublishedNodes Collection<NodeRef>
-     * @return List<NodeRef>
      */
     public List<NodeRef> getEventNodesForUnpublishedNodes(final NodeRef queue, Collection<NodeRef> unpublishedNodes)
     {
@@ -394,7 +389,6 @@ public class PublishingEventHelper
      * Returns a {@link List} of the {@link NodeRef}s representing PublishingEvents that were scheduled to publish the specified <code>publishedNode</code>. 
      * @param queue NodeRef
      * @param publishedNode NodeRef
-     * @return List<NodeRef>
      */
     public List<NodeRef> getEventNodesForPublishedNode(final NodeRef queue, NodeRef publishedNode)
     {
@@ -406,7 +400,6 @@ public class PublishingEventHelper
      * Returns a {@link List} of the {@link NodeRef}s representing PublishingEvents that were scheduled to unpublish the specified <code>unpublishedNode</code>. 
      * @param queue NodeRef
      * @param unpublishedNode NodeRef
-     * @return List<NodeRef>
      */
     public List<NodeRef> getEventNodesForUnpublishedNode(final NodeRef queue, NodeRef unpublishedNode)
     {
@@ -686,7 +679,6 @@ public class PublishingEventHelper
 
     /**
      * Sets a list of excluded aspects, assumes the fully qualified name.  Replaces any exising excluded aspects.
-     * @param excludedAspects Collection<String>
      */
     public void setExcludedAspects(Collection<String> excludedAspects)
     {

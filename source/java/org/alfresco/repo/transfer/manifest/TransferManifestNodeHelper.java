@@ -63,7 +63,6 @@ public class TransferManifestNodeHelper
      /**
       * Gets the content properties for a node
       * @param node the node to process
-      * @return Set<ContentData>
       */
      public static Set<ContentData> getContentData(TransferManifestNormalNode node)
      {

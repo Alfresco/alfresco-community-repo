@@ -64,7 +64,6 @@ public class ActionConditionImpl extends ParameterizedItemImpl implements Serial
      *
      * @param id String
      * @param actionConditionDefinitionName String
-     * @param parameterValues Map<String, Serializable>
      */
     public ActionConditionImpl(
             String id,

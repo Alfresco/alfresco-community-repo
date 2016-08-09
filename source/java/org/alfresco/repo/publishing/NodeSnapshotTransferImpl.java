@@ -92,7 +92,6 @@ public class NodeSnapshotTransferImpl implements NodeSnapshot
     }
 
     /**
-     * @return List<AssociationRef>
      */
     public List<AssociationRef> getOutboundPeerAssociations()
     {

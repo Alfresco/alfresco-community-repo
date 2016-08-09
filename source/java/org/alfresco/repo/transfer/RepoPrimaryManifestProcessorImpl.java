@@ -929,7 +929,6 @@ public class RepoPrimaryManifestProcessorImpl extends AbstractManifestProcessorB
     }
 
     /**
-     * @return Set<QName>
      */
     protected Set<QName> getLocalProperties()
     {

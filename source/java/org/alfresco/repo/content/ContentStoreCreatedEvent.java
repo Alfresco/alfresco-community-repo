@@ -48,7 +48,6 @@ public class ContentStoreCreatedEvent extends ApplicationEvent
      * 
      * @param source
      *            the source content store
-     * @param extendedEventParams Map<String, Serializable>
      */
     public ContentStoreCreatedEvent(ContentStore source, Map<String, Serializable> extendedEventParams)
     {

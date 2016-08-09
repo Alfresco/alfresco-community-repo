@@ -227,7 +227,6 @@ public abstract class AbstractWorkflowFormProcessor<ItemType, PersistType> exten
      * used to accumulate all the changes specified in the {@link Form} and then persist them.
      * 
      * @param item ItemType
-     * @return ContentModelFormPersister<PersistType>
      */
     protected abstract ContentModelFormPersister<PersistType> makeFormPersister(ItemType item);
 

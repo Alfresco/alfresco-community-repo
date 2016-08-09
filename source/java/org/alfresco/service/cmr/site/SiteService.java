@@ -184,7 +184,7 @@ public interface SiteService
      * @param filter                filter (sites whose cm:name, cm:title or cm:description START WITH filter)
      * @param sitePresetFilter      site preset filter (sites whose preset EQUALS sitePresetFilter)
      * @param size                  list maximum size or zero for all
-     * @return List<SiteInfo>       list of site information
+     * @return list of site information
      */
     @NotAuditable
     List<SiteInfo> listSites(String filter, String sitePresetFilter, int size);
@@ -200,7 +200,7 @@ public interface SiteService
      * 
      * @param filter                filter
      * @param sitePresetFilter      site preset filter
-     * @return List<SiteInfo>       list of site information
+     * @return list of site information
      */
     @NotAuditable
     List<SiteInfo> listSites(String filter, String sitePresetFilter);
@@ -209,7 +209,7 @@ public interface SiteService
      * List all the sites that the specified user has a explicit membership to.
      *
      * @param userName          user name
-     * @return List<SiteInfo>   list of site information
+     * @return list of site information
      */
     @NotAuditable
     List<SiteInfo> listSites(String userName);
@@ -244,7 +244,7 @@ public interface SiteService
      *
      * @param userName          user name
      * @param size              list maximum size or zero for all
-     * @return List<SiteInfo>   list of site information
+     * @return list of site information
      */
     @NotAuditable
     List<SiteInfo> listSites(String userName, int size);
@@ -472,7 +472,7 @@ public interface SiteService
      * Gets a list of all the currently available roles that a user can perform on 
      *  all sites
      * 
-     * @return  List<String>    list of available roles
+     * @return list of available roles
      */
     @NotAuditable
     List<String> getSiteRoles();
@@ -482,7 +482,7 @@ public interface SiteService
      *  a specific site. This will generally only differ from {@link #getSiteRoles()}
      *  if your site is of a custom type.
      * 
-     * @return  List<String>    list of available roles
+     * @return list of available roles
      */
     @NotAuditable
     List<String> getSiteRoles(String shortName);
@@ -530,7 +530,7 @@ public interface SiteService
      * List all the sites that the specified user has a explicit membership to.
      *
      * @param userName          		 user name
-     * @return PagingResults<SiteInfo>   paged list of site information
+     * @return paged list of site information
      */
     @NotAuditable
 	PagingResults<SiteMembership> listSitesPaged(final String userName, List<Pair<SiteService.SortFields, Boolean>> sortProps, final PagingRequest pagingRequest);

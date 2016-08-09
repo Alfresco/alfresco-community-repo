@@ -117,7 +117,6 @@ public abstract class AbstractTransformationSourceOptions implements Transformat
      * 
      * @param paramName String
      * @param paramValue Serializable
-     * @param params Map<String, Serializable>
      */
     protected void putParameterIfNotNull(String paramName, Serializable paramValue, Map<String, Serializable> params)
     {

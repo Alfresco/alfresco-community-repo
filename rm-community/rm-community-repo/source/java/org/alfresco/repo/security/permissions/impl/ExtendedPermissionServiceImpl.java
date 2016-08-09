@@ -35,6 +35,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -48,7 +49,9 @@ import org.alfresco.repo.security.permissions.processor.PermissionProcessorRegis
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityType;
+import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.context.ApplicationEvent;
 
@@ -340,6 +343,12 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         super.setInheritParentPermissions(nodeRef, inheritParentPermissions);
     }
 
+    /**
+     * Helper method to the RM admin role scoped by the correct file plan.
+     * 
+     * @param nodeRef   node reference
+     * @return String   RM admin role
+     */
     private String getAdminRole(NodeRef nodeRef)
     {
         String adminRole = null;
@@ -350,5 +359,30 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
                         FilePlanRoleService.ROLE_ADMIN + filePlan.getId());
         }
         return adminRole;
+    }
+    
+    /**
+     * @see org.alfresco.repo.security.permissions.impl.ExtendedPermissionService#getReadersAndWriters(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override
+    public Pair<Set<String>, Set<String>> getReadersAndWriters(NodeRef nodeRef)
+    {
+        // get the documents readers
+        Long aclId = nodeService.getNodeAclId(nodeRef);
+        Set<String> readers = getReaders(aclId);
+        Set<String> writers = getWriters(aclId);
+
+        // add the current owner to the list of extended writers
+        Set<String> modifiedWrtiers = new HashSet<String>(writers);
+        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
+        {
+            String owner = ownableService.getOwner(nodeRef);
+            if (owner != null && !owner.isEmpty() && !owner.equals(OwnableService.NO_OWNER))
+            {
+                modifiedWrtiers.add(owner);
+            }
+        }
+        
+        return new Pair<Set<String>, Set<String>> (readers, modifiedWrtiers);
     }
 }

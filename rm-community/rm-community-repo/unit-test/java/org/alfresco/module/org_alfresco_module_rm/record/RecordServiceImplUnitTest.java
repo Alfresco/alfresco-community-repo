@@ -285,7 +285,6 @@ public class RecordServiceImplUnitTest extends BaseUnitTest
         
         // expect exception
         exception.expect(RecordLinkRuntimeException.class);
-        exception.expectMessage("incompatible disposition schedule");
         
         // link
         recordService.link(record, recordFolder);

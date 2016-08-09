@@ -29,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -47,6 +48,7 @@ import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
 import org.apache.commons.httpclient.HttpStatus;
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -310,6 +312,15 @@ public class TestSites extends EnterpriseTestApi
             }
 
             sitesProxy.removeSite(siteId); // cleanup
+        }
+        
+        // -ve test - cannot create multiple sites in single POST call (unsupported)
+        {
+            List<Site> sites = new ArrayList<>(2);
+            sites.add(new SiteImpl(null, "siteA1", null, "siteA1", null, SiteVisibility.PRIVATE.toString(), null, null));
+            sites.add(new SiteImpl(null, "siteB1", null, "siteB1", null, SiteVisibility.PRIVATE.toString(), null, null));
+            
+            sitesProxy.create("sites", null, null, null, JSONArray.toJSONString(sites), null, 405);
         }
 
         // -ve tests - belts-and-braces for unsupported methods

@@ -103,14 +103,8 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
 
                 if (StringUtils.isNotBlank(entityId) && StringUtils.isNotBlank(operationName))
                 {
-                    Class objectType = resourceMeta.getObjectType(operation);
-                    Object postedObj =  null;
-                    if (objectType!= null)
-                    {
-                        //Operations don't support a List as json body
-                        postedObj = ResourceWebScriptHelper.extractJsonContent(req, assistant.getJsonHelper(), objectType);
-                    }
-
+                    Object postedObj = processRequest(resourceMeta, operation, req);
+                    
                     if (StringUtils.isNotBlank(propertyName))
                     {
                         return Params.valueOf(entityId, relationshipId, params, postedObj, req);
@@ -150,20 +144,41 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
      */
     private Object extractObjFromJson(ResourceMetadata resourceMeta, ResourceOperation operation, WebScriptRequest req)
     {
-        List<ResourceParameter> params = operation.getParameters();
+        if (operation == null)
+        {
+            return null;
+        }
+
         Class<?> objType = resourceMeta.getObjectType(operation);
+        List<ResourceParameter> params = operation.getParameters();
 
         if (!params.isEmpty())
         {
             for (ResourceParameter resourceParameter : params)
             {
-               if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(resourceParameter.getParamType()) && !resourceParameter.isAllowMultiple())
-               {
+                // POST to collection may or may not support List as json body, Operations don't support a List as json body
+                boolean isTypeOperation = resourceMeta.getType().equals(ResourceMetadata.RESOURCE_TYPE.OPERATION);
+                boolean notMultiple = ((! resourceParameter.isAllowMultiple()) || isTypeOperation);
+                
+                if (ResourceParameter.KIND.HTTP_BODY_OBJECT.equals(resourceParameter.getParamType()) && notMultiple)
+                {
                     // Only allow 1 value.
                     try
                     {
-                        Object content = ResourceWebScriptHelper.extractJsonContent(req,assistant.getJsonHelper(), objType);
-                        return Arrays.asList(content);
+                        Object jsonContent = null;
+                        if (objType != null)
+                        {
+                            jsonContent = ResourceWebScriptHelper.extractJsonContent(req,assistant.getJsonHelper(), objType);
+                        }
+                        
+                        if (isTypeOperation)
+                        {
+                            return jsonContent;
+                        }
+                        else
+                        {
+                            return Arrays.asList(jsonContent);
+                        }
                     }
                     catch (InvalidArgumentException iae)
                     {

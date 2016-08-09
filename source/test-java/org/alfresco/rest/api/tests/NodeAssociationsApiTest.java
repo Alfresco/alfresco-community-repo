@@ -562,7 +562,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             AuthenticationUtil.setFullyAuthenticatedUser(user1);
             permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sf1Id), user2, PermissionService.EDITOR, true);
             
-            setRequestContext(DEFAULT_ADMIN);
+            setRequestContext(networkAdmin);
             
             response = publicApiClient.get(getScope(), "nodes/"+sf1Id+"/targets", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
@@ -579,7 +579,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             tgt = new AssocTarget(u2o1Id, ASSOC_TYPE_CM_REFERENCES);
             post(getNodeTargetsUrl(sf1Id), toJsonAsStringNonNull(tgt), 201);
 
-            setRequestContext(DEFAULT_ADMIN);
+            setRequestContext(networkAdmin);
             
             response = publicApiClient.get(getScope(), "nodes/"+sf1Id+"/targets", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
@@ -606,7 +606,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             AuthenticationUtil.setFullyAuthenticatedUser(user1);
             permissionService.setPermission(new NodeRef(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, sf1Id), user2, PermissionService.EDITOR, true);
 
-            setRequestContext(DEFAULT_ADMIN);
+            setRequestContext(networkAdmin);
             
             response = publicApiClient.get(getScope(), "nodes/"+so1Id+"/sources", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());
@@ -623,7 +623,7 @@ public class NodeAssociationsApiTest extends AbstractSingleNetworkSiteTest
             tgt = new AssocTarget(so1Id, ASSOC_TYPE_CM_REFERENCES);
             post(getNodeTargetsUrl(u2f1Id), toJsonAsStringNonNull(tgt), 201);
 
-            setRequestContext(DEFAULT_ADMIN);
+            setRequestContext(networkAdmin);
             
             response = publicApiClient.get(getScope(), "nodes/"+so1Id+"/sources", null, null, null, createParams(paging, null));
             checkStatus(200, response.getStatusCode());

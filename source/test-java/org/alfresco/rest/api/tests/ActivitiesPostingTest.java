@@ -62,6 +62,9 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
     public void testCreateUpdate() throws Exception
     {
         setRequestContext(user1);
+
+        List<Activity> activities = getMyActivities();
+        int beforeCount = activities.size();
         
         String folder1 = "folder" + System.currentTimeMillis() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
@@ -83,8 +86,9 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         deleteNode(documentResp.getId());
         deleteNode(createdFolder.getId());
 
-        List<Activity> activities = getMyActivities();
-        assertEquals(activities.size(),6);
+        activities = getMyActivities();
+        assertEquals(beforeCount+6, activities.size());
+        
         Activity act = matchActivity(activities, ActivityType.FOLDER_ADDED, user1, tSiteId, tDocLibNodeId, folder1);
         assertNotNull(act);
 

@@ -27,6 +27,8 @@ package org.alfresco.rest.api.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+
+import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.LoginTicket;
@@ -49,7 +51,7 @@ import java.util.Map;
  *
  * @author Jamal Kaabi-Mofrad
  */
-public class AuthenticationsTest extends AbstractBaseApiTest
+public class AuthenticationsTest extends AbstractSingleNetworkSiteTest
 {
     private static final String TICKETS_URL = "tickets";
     private static final String TICKETS_API_NAME = "authentication";

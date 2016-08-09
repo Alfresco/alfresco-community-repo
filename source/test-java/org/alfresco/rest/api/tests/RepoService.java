@@ -407,8 +407,24 @@ public class RepoService
     {
         return getOrCreateUser(personInfo, username, network, false);
     }
+	
+	public final static String DEFAULT_ADMIN = "admin";
+	public final static String DEFAULT_ADMIN_PWD = "admin";
+	
+	// TODO improve admin-related API tests (including ST vs MT)
+	private boolean isDefaultAdmin(String username, TestNetwork network)
+	{
+		if ((network == null) || (TenantService.DEFAULT_DOMAIN.equals(network.getId())))
+		{
+			return (DEFAULT_ADMIN.equalsIgnoreCase(username));
+		}
+		else
+		{
+			return ((DEFAULT_ADMIN+"@"+network.getId()).equalsIgnoreCase(username));
+		}
+	}
 
-    // TODO review delete person
+	// TODO review delete person
 	public TestPerson getOrCreateUser(final PersonInfo personInfo, final String username, final TestNetwork network, final boolean deletePerson)
 	{
 		return AuthenticationUtil.runAsSystem(new RunAsWork<TestPerson>()
@@ -423,8 +439,8 @@ public class RepoService
 
 				final Map<QName, Serializable> props = testPerson.getProperties();
 
-                // short-circuit for default "admin"
-                if (! username.equalsIgnoreCase("admin"))
+                // short-circuit for default/tenant "admin"
+                if (! isDefaultAdmin(username, network))
                 {
                     NodeRef personNodeRef = personService.getPersonOrNull(username);
 
@@ -1331,7 +1347,7 @@ public class RepoService
 		{
 			if(!getId().equals(TenantService.DEFAULT_DOMAIN) && !tenantAdminService.existsTenant(getId()))
 			{
-				tenantAdminService.createTenant(getId(), "admin".toCharArray());
+				tenantAdminService.createTenant(getId(), DEFAULT_ADMIN_PWD.toCharArray());
 				numNetworks++;
 				log("Created network " + getId());
 			}

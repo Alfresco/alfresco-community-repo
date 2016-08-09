@@ -35,6 +35,7 @@ import java.util.Map;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.content.filestore.FileContentReader;
 import org.alfresco.repo.content.filestore.FileContentWriter;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -260,6 +261,22 @@ public class DifferrentMimeTypeTest extends TestCase
 
         contentNodeRef = AuthenticationUtil.runAs(createTargetWork, AuthenticationUtil.getSystemUserName());
         this.nodesToDeleteAfterTest.add(contentNodeRef);
+    }
+    
+    //MNT-16381 related: make sure we match a mime-type with known type aliases and don't dismiss documents as having non-matching type<->actual content
+    public void testTypeAliasesMatch() throws Exception
+    {
+        File testFile = AbstractContentTransformerTest.loadNamedQuickTestFile("quick.xml");
+        ContentReader sourceReader = new FileContentReader(testFile);
+        sourceReader.setMimetype(MimetypeMap.MIMETYPE_XML); // "text/xml"
+        // Detected mimetype is "application/xml"
+        assertNull(mimetypeService.getMimetypeIfNotMatches(sourceReader));
+       
+        testFile = AbstractContentTransformerTest.loadNamedQuickTestFile("quick.bmp");
+        sourceReader = new FileContentReader(testFile);
+        sourceReader.setMimetype("image/bmp");
+        // Detected mimetype is "image/x-ms-bmp"
+        assertNull(mimetypeService.getMimetypeIfNotMatches(sourceReader));
     }
 
     @After

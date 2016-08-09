@@ -463,7 +463,7 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
      * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/nodes/<nodeId>/versions/<versionId>/content}
      */
     @Test
-    public void testCreateEmtpyFileVersionUpdate() throws Exception
+    public void testCreateEmptyFileVersionUpdate() throws Exception
     {
         // As user 1 ...
         String myFolderNodeId = getMyNodeId(user1);
@@ -521,7 +521,8 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
                 assertEquals(0, nodes.size());
             }
 
-            // Enable versioning
+            // Enable versioning - done here by adding versionable aspect
+            // note: alternatively can use version params ("comment" &/or "majorVersion") on update (see separate test below)
             Node nodeUpdate = new Node();
             nodeUpdate.setAspectNames(Collections.singletonList("cm:versionable"));
             put(URL_NODES, user1, d1Id, toJsonAsStringNonNull(nodeUpdate), null, 200);
@@ -615,6 +616,171 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             delete(URL_NODES, user1, f1Id, params, 204);
         }
     }
+
+    /**
+     * Test version creation when updating file binary content.
+     *
+     * <p>PUT:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/content}
+     *
+     * <p>POST:</p>
+     * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/children}
+     */
+    @Test
+    public void testUpdateFileVersionCreate() throws Exception
+    {
+        String myNodeId = getMyNodeId(user1);
+
+        Document d1 = new Document();
+        d1.setName("d1.txt");
+        d1.setNodeType(TYPE_CM_CONTENT);
+
+        // create *empty* text file - as of now, versioning is not enabled by default
+        HttpResponse response = post(getNodeChildrenUrl(myNodeId), user1, toJsonAsStringNonNull(d1), 201);
+        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+
+        String docId = documentResp.getId();
+        assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
+        assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
+
+        int cnt = 0;
+
+        // updates - no versions
+        for (int i = 1; i <= 3; i++)
+        {
+            cnt++;
+
+            // Update the empty node's content - no version created
+            String content = "The quick brown fox jumps over the lazy dog " + cnt;
+            documentResp = updateTextFile(user1, docId, content, null);
+            assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
+            assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
+        }
+
+        // Update again - with version comment - versioning is enabled here by using version params ("comment" &/or "majorVersion")
+        // note: alternatively could add versionable aspect before doing the update (see separate test above)
+        cnt++;
+        int majorVersion = 1;
+        int minorVersion = 0;
+
+        String content = "The quick brown fox jumps over the lazy dog "+cnt;
+
+        Map<String, String> params = new HashMap<>();
+        params.put("comment", "my version "+cnt);
+
+        documentResp = updateTextFile(user1, docId, content, params);
+        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+        assertNotNull(documentResp.getProperties());
+
+        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+
+        // Update again - with another version comment
+        cnt++;
+        minorVersion++;
+
+        content = "The quick brown fox jumps over the lazy dog "+cnt;
+        params = new HashMap<>();
+        params.put("comment", "my version "+cnt);
+
+        documentResp = updateTextFile(user1, docId, content, params);
+        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+        assertNotNull(documentResp.getProperties());
+        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+
+        minorVersion = 0;
+
+        // Updates - major versions
+        for (int i = 1; i <= 3; i++)
+        {
+            cnt++;
+            majorVersion++;
+
+            content = "The quick brown fox jumps over the lazy dog "+cnt;
+
+            params = new HashMap<>();
+            params.put("comment", "my version "+cnt);
+            params.put("majorVersion", "true");
+
+            documentResp = updateTextFile(user1, docId, content, params);
+            assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+            assertNotNull(documentResp.getProperties());
+            assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+        }
+
+        // Updates - minor versions
+        for (int i = 1; i <= 3; i++)
+        {
+            cnt++;
+            minorVersion++;
+
+            content = "The quick brown fox jumps over the lazy dog "+cnt;
+
+            params = new HashMap<>();
+            params.put("comment", "my version "+cnt);
+            params.put("majorVersion", "false");
+
+            documentResp = updateTextFile(user1, docId, content, params);
+            assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+            assertNotNull(documentResp.getProperties());
+            assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+        }
+
+        // Update again - as another major version
+        cnt++;
+        majorVersion++;
+        minorVersion = 0;
+
+        content = "The quick brown fox jumps over the lazy dog "+cnt;
+
+        params = new HashMap<>();
+        params.put("comment", "my version "+cnt);
+        params.put("majorVersion", "true");
+
+        documentResp = updateTextFile(user1, docId, content, params);
+        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+        assertNotNull(documentResp.getProperties());
+        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+
+        // Update again - as another (minor) version
+        // note: no version params (comment &/or majorVersion) needed since versioning is enabled on this content
+
+        cnt++;
+        minorVersion++;
+
+        content = "The quick brown fox jumps over the lazy dog "+cnt;
+
+        documentResp = updateTextFile(user1, docId, content, null);
+        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+        assertNotNull(documentResp.getProperties());
+        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+
+        // Remove versionable aspect
+        List<String> aspectNames = documentResp.getAspectNames();
+        aspectNames.remove("cm:versionable");
+        Document dUpdate = new Document();
+        dUpdate.setAspectNames(aspectNames);
+
+        response = put(URL_NODES, user1, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
+        assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
+
+        // Updates - no versions
+        for (int i = 1; i <= 3; i++)
+        {
+            cnt++;
+
+            // Update the empty node's content - no version created
+            content = "The quick brown fox jumps over the lazy dog " + cnt;
+            documentResp = updateTextFile(user1, docId, content, null);
+            assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
+            assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
+        }
+
+        // TODO add tests to also check version comment (when we can list version history)
+    }
+
+
 
     @Override
     public String getScope()

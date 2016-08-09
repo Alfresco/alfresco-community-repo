@@ -1488,6 +1488,8 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         response = post(getNodeChildrenUrl(myFolderNodeId), user1, toJsonAsStringNonNull(n), 201);
         String f2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
+        String f3Id = createFolder(user1, myFolderNodeId, "f3").getId();
+
         try
         {
             Paging paging = getPaging(0, 100);
@@ -1506,13 +1508,42 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
 
             // -ve test -  minor: error code if creating a cyclic child assoc (REPO-475)
-            String myNodeId = getMyNodeId(user1);
             n = new Node();
-            n.setName("my-folder-1");
+            n.setName("my-folder");
             n.setNodeType(TYPE_CM_FOLDER);
-            AssocChild assocChild = new AssocChild(myNodeId, "cm:contains");
+            AssocChild assocChild = new AssocChild(myFolderNodeId, "cm:contains");
             n.setSecondaryChildren(Collections.singletonList(assocChild));
-            post(getNodeChildrenUrl(myNodeId), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
+            post(getNodeChildrenUrl(myFolderNodeId), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
+
+            // -ve tests - missing targetId / childId or assocType
+
+            n = new Node();
+            n.setName("my-folder");
+            n.setNodeType(TYPE_CM_FOLDER);
+            assocChild = new AssocChild(null, ASSOC_TYPE_CM_CONTAINS);
+            n.setSecondaryChildren(Collections.singletonList(assocChild));
+            post(getNodeChildrenUrl(f3Id), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
+
+            n = new Node();
+            n.setName("my-folder");
+            n.setNodeType(TYPE_CM_FOLDER);
+            assocChild = new AssocChild(f2Id, null);
+            n.setSecondaryChildren(Collections.singletonList(assocChild));
+            post(getNodeChildrenUrl(f3Id), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
+
+            n = new Node();
+            n.setName("my-folder");
+            n.setNodeType(TYPE_CM_FOLDER);
+            tgt = new AssocTarget(null, ASSOC_TYPE_CM_REFERENCES);
+            n.setTargets(Collections.singletonList(tgt));
+            post(getNodeChildrenUrl(f3Id), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
+
+            n = new Node();
+            n.setName("my-folder");
+            n.setNodeType(TYPE_CM_FOLDER);
+            tgt = new AssocTarget(f2Id, null);
+            n.setTargets(Collections.singletonList(tgt));
+            post(getNodeChildrenUrl(f3Id), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
         }
         finally
         {
@@ -1520,6 +1551,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             Map<String, String> params = Collections.singletonMap(Nodes.PARAM_PERMANENT, "true");
             delete(URL_NODES, user1, f1Id, params, 204);
             delete(URL_NODES, user1, f2Id, params, 204);
+            delete(URL_NODES, user1, f3Id, params, 204);
         }
     }
 

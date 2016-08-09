@@ -57,7 +57,6 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
-import org.alfresco.rest.api.model.ContentInfo;
 import org.alfresco.rest.api.model.Document;
 import org.alfresco.rest.api.model.Folder;
 import org.alfresco.rest.api.model.Node;
@@ -136,8 +135,6 @@ import org.apache.commons.logging.LogFactory;
 import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.extensions.surf.util.Content;
 import org.springframework.extensions.webscripts.servlet.FormData;
-import org.springframework.http.InvalidMediaTypeException;
-import org.springframework.http.MediaType;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
@@ -361,6 +358,12 @@ public class NodesImpl implements Nodes
     @Override
     public NodeRef validateNode(String nodeId)
     {
+        //belts-and-braces
+        if (nodeId == null)
+        {
+            throw new InvalidArgumentException("Missing nodeId");
+        }
+
         return validateNode(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE, nodeId);
     }
 
@@ -1678,11 +1681,17 @@ public class NodesImpl implements Nodes
 
         for (AssocChild assoc : entities)
         {
+            String childId = assoc.getChildId();
+            if (childId == null)
+            {
+                throw new InvalidArgumentException("Missing childId");
+            }
+
             QName assocTypeQName = getAssocType(assoc.getAssocType());
 
             try
             {
-                NodeRef childNodeRef = validateNode(assoc.getChildId());
+                NodeRef childNodeRef = validateNode(childId);
 
                 String nodeName = (String)nodeService.getProperty(childNodeRef, ContentModel.PROP_NAME);
                 QName assocChildQName = QName.createQName(NamespaceService.CONTENT_MODEL_1_0_URI, QName.createValidLocalName(nodeName));
@@ -1712,11 +1721,14 @@ public class NodesImpl implements Nodes
 
         for (AssocTarget assoc : entities)
         {
+            String targetNodeId = assoc.getTargetId();
+            if (targetNodeId == null)
+            {
+                throw new InvalidArgumentException("Missing targetId");
+            }
+
             String assocTypeStr = assoc.getAssocType();
             QName assocTypeQName = getAssocType(assocTypeStr);
-
-            String targetNodeId = assoc.getTargetId();
-
             try
             {
                 NodeRef tgtNodeRef = validateNode(targetNodeId);

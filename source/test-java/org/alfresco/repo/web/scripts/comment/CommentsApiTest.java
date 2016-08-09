@@ -714,7 +714,7 @@ public class CommentsApiTest extends BaseWebScriptTest
         if (authenticationService.authenticationExists(user))
         {
            authenticationService.deleteAuthentication(user);
-        }        
+        }
     }
     
     /**

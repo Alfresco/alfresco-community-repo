@@ -93,7 +93,8 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
 
         Document document = createEmptyTextFile(createdFolder, "d1.txt");
 
-        PublicApiClient.Paging paging = getPaging(0, 5);
+        PublicApiClient.Paging paging = getPaging(0, 100);
+        
         //First get any deleted nodes
         HttpResponse response = getAll(URL_DELETED_NODES, paging, 200);
         List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);

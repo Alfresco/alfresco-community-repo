@@ -140,7 +140,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user1);
 
         // create folder f0
-        String folder0Name = "f0-testUpdateNodeInfo-"+RUNID;
+        String folder0Name = "f0-testListChildrenWithinSiteDocLib-"+RUNID;
         String f0Id = createFolder(tDocLibNodeId, folder0Name).getId();
         
         String folder1 = "folder" + RUNID + "_1";
@@ -265,10 +265,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
 
         setRequestContext(user2);
 
-        // user2 tries to access user1's (private) docLib
+        // user2 tries to access user1's folder in a private docLib
         paging = getPaging(0, Integer.MAX_VALUE);
-        getAll(getNodeChildrenUrl(tDocLibNodeId), paging, 403);
-        //getAll(getNodeChildrenUrl(f0Id), paging, 403);
+        getAll(getNodeChildrenUrl(f0Id), paging, 403);
 
         setRequestContext(user1);
 
@@ -527,13 +526,17 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
     public void testGetPathElements_DocLib() throws Exception
     {
         setRequestContext(user1);
+
+        // user1 creates a private site and adds user2 as a site consumer
+        String site1Title = "site-testGetPathElements_DocLib-" + RUNID;
+        String site1Id = createSite(site1Title, SiteVisibility.PRIVATE).getId();
+        addSiteMember(site1Id, user2, SiteRole.SiteConsumer);
         
-        PublicApiClient.Sites sitesProxy = publicApiClient.sites();
-        sitesProxy.createSiteMember(tSiteId, new SiteMember(user2, SiteRole.SiteConsumer.toString()));
+        String site1DocLibNodeId = getSiteContainerNodeId(site1Id, "documentLibrary");
         
         // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A
         String folderA = "folder" + RUNID + "_A";
-        String folderA_Id = createFolder(tDocLibNodeId, folderA).getId();
+        String folderA_Id = createFolder(site1DocLibNodeId, folderA).getId();
 
         // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A/folder<timestamp>_B
         String folderB = "folder" + RUNID + "_B";
@@ -587,7 +590,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(7, pathElements.size());
         assertEquals("Company Home", pathElements.get(0).getName());
         assertEquals("Sites", pathElements.get(1).getName());
-        assertEquals(tSiteId, pathElements.get(2).getName());
+        assertEquals(site1Id, pathElements.get(2).getName());
         assertEquals("documentLibrary", pathElements.get(3).getName());
         assertEquals(folderA, pathElements.get(4).getName());
         assertEquals(folderB, pathElements.get(5).getName());
@@ -610,6 +613,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         pathElements = path.getElements();
         assertEquals(1, pathElements.size());
         assertEquals(folderC, pathElements.get(0).getName());
+
+        // cleanup
+        setRequestContext(user1);
+        deleteSite(site1Id, true, 204);
     }
 
     /**
@@ -1440,11 +1447,11 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(user2, ((Map)nodeResp.getProperties().get(PROP_OWNER)).get("id"));
 
         // TODO apparently returns 204 here in tenant context ?? (eg. if useDefaultNetwork=false)
-        if (useDefaultNetwork != false)
-        {
+        //if (useDefaultNetwork)
+        //{
             // -ve test - user1 can no longer delete
             deleteNode(folder5Id, 403); 
-        }
+        //}
 
         // TODO refactor with remote permission api calls (maybe use v0 until we have v1 ?)
         final String tenantDomain = (networkOne != null ? networkOne.getId() : TenantService.DEFAULT_DOMAIN);
@@ -1804,7 +1811,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
          */
         
         // user1 creates a public site and adds user2 as a site collaborator
-        String site1Title = "RandomSite1-" + RUNID;
+        String site1Title = "site-testMoveCopyBetweenSites1-" + RUNID;
         final String site1Id = createSite(site1Title, SiteVisibility.PUBLIC).getId();
         addSiteMember(site1Id, user2, SiteRole.SiteCollaborator);
 
@@ -1818,7 +1825,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         setRequestContext(user2);
         
         // user2 creates a public site and adds user1 as a site collaborator
-        String site2Title = "RandomSite2-" + RUNID;
+        String site2Title = "site-testMoveCopyBetweenSites2--" + RUNID;
         final String site2Id = createSite(site2Title, SiteVisibility.PUBLIC).getId();
         addSiteMember(site2Id, user1, SiteRole.SiteCollaborator);
         
@@ -1882,6 +1889,15 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         
         // Check it's deleted
         getSingle("nodes", copyFolderResp.getId(), 404);
+        
+        
+        // cleanup
+        
+        setRequestContext(user1);
+        deleteSite(site1Id, true, 204);
+        
+        setRequestContext(user2);
+        deleteSite(site2Id, true, 204);
     }
 
     /**

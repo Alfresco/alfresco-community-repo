@@ -168,7 +168,7 @@ public class TransformerConfigImpl extends AbstractLifecycleBean implements Tran
         transformerProperties = new TransformerProperties(subsystem, globalProperties);
         
         dynamicTransformers = new TransformerConfigDynamicTransformers(this, transformerProperties, mimetypeService,
-                contentService, transformerRegistry, transformerDebug, moduleService, descriptorService);
+                contentService, transformerRegistry, transformerDebug, moduleService, descriptorService, globalProperties);
         statistics= new TransformerConfigStatistics(this, mimetypeService);
         limits = new TransformerConfigLimits(transformerProperties, mimetypeService);
         supported = new TransformerConfigSupported(transformerProperties, mimetypeService);

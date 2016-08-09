@@ -657,6 +657,11 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
         }
     }
 
+    public Object getRetryTransformOnDifferentMimeType()
+    {
+        return retryTransformOnDifferentMimeType;
+    }
+    
     public void setRetryTransformOnDifferentMimeType(boolean retryTransformOnDifferentMimeType)
     {
         this.retryTransformOnDifferentMimeType = retryTransformOnDifferentMimeType;

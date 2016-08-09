@@ -46,6 +46,7 @@ import org.junit.runners.Suite;
     NodeAssociationsApiTest.class,
     NodeVersionsApiTest.class,
     QueriesNodesApiTest.class,
+    QueriesPeopleApiTest.class,
     RenditionsTest.class,
     SharedLinkApiTest.class,
     ActivitiesPostingTest.class,

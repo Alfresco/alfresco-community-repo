@@ -38,6 +38,7 @@ import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.QuickShareLinkEmailRequest;
 import org.alfresco.rest.api.tests.client.data.Rendition;
+import org.alfresco.rest.api.tests.client.data.UserInfo;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.junit.Test;
@@ -153,10 +154,10 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
 
         assertEquals(docModifiedAt.getTime(), resp.getModifiedAt().getTime()); // not changed
         assertEquals(docModifiedBy, resp.getModifiedByUser().getId()); // not changed (ie. not user2)
-        assertEquals(docModifiedBy+" "+docModifiedBy, resp.getModifiedByUser().getDisplayName());
+        assertEquals(UserInfo.getTestDisplayName(docModifiedBy), resp.getModifiedByUser().getDisplayName());
 
         assertEquals(user2, resp.getSharedByUser().getId());
-        assertEquals(user2+" "+user2, resp.getSharedByUser().getDisplayName());
+        assertEquals(UserInfo.getTestDisplayName(user2), resp.getSharedByUser().getDisplayName());
 
         // -ve test - try to create again (same user) - already exists
         post(URL_SHARED_LINKS, toJsonAsStringNonNull(body), 409);
@@ -187,9 +188,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertNull(resp.getAllowableOperations()); // include is ignored
 
         assertNull(resp.getModifiedByUser().getId()); // userId not returned
-        assertEquals(user1+" "+user1, resp.getModifiedByUser().getDisplayName());
+        assertEquals(UserInfo.getTestDisplayName(user1), resp.getModifiedByUser().getDisplayName());
         assertNull(resp.getSharedByUser().getId()); // userId not returned
-        assertEquals(user2+" "+user2, resp.getSharedByUser().getDisplayName());
+        assertEquals(UserInfo.getTestDisplayName(user2), resp.getSharedByUser().getDisplayName());
 
         // access to get shared link info - pass user2 (but ignore in non-MT)
         params = Collections.singletonMap("include", "allowableOperations");
@@ -202,9 +203,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertNull(resp.getAllowableOperations()); // include is ignored
 
         assertNull(resp.getModifiedByUser().getId()); // userId not returned
-        assertEquals(user1+" "+user1, resp.getModifiedByUser().getDisplayName());
+        assertEquals(UserInfo.getTestDisplayName(user1), resp.getModifiedByUser().getDisplayName());
         assertNull(resp.getSharedByUser().getId()); // userId not returned
-        assertEquals(user2+" "+user2, resp.getSharedByUser().getDisplayName());
+        assertEquals(UserInfo.getTestDisplayName(user2), resp.getSharedByUser().getDisplayName());
 
 
         // allowable operations not included - no params
@@ -225,9 +226,9 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertNull(resp.getAllowableOperations()); // include is ignored
 
         assertNull(resp.getModifiedByUser().getId()); // userId not returned
-        assertEquals(user1+" "+user1, resp.getModifiedByUser().getDisplayName());
+        assertEquals(UserInfo.getTestDisplayName(user1), resp.getModifiedByUser().getDisplayName());
         assertNull(resp.getSharedByUser().getId()); // userId not returned
-        assertEquals(user2+" "+user2, resp.getSharedByUser().getDisplayName());
+        assertEquals(UserInfo.getTestDisplayName(user2), resp.getSharedByUser().getDisplayName());
 
         // unauth access to file 1 content (via shared link)
         response = getSingle(QuickShareLinkEntityResource.class, shared1Id + "/content", null, 200);

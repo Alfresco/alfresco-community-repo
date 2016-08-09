@@ -42,10 +42,33 @@ public class UserInfo
     {
     }
 
+    public UserInfo(String id)
+    {
+        this(id, getTestDisplayName(id));
+    }
+
     public UserInfo(String id, String displayName)
     {
         this.id = id;
         this.displayName = displayName;
+    }
+
+    /*
+     * Builds a test display name from a test user id. The display name is normally
+     * make up of the first and last name and in the case of test users the user id
+     * is also used for both first and last name. With the addition of a network to
+     * the user id, the display name looks rather strange. This method simply strips
+     * the network (if it exists) from the user id and uses that for both first and
+     * last names.
+     */
+    public static String getTestDisplayName(String id)
+    {
+        int i = id.lastIndexOf('@');
+        if (i != -1)
+        {
+            id = id.substring(0, i);
+        }
+        return id+' '+id;
     }
 
     public String getDisplayName()

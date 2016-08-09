@@ -27,8 +27,6 @@ package org.alfresco.rest.api.tests;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.model.LoginTicket;
@@ -39,14 +37,9 @@ import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
 import org.apache.commons.codec.binary.Base64;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -60,51 +53,8 @@ public class AuthenticationsTest extends AbstractBaseApiTest
 {
     private static final String TICKETS_URL = "tickets";
     private static final String TICKETS_API_NAME = "authentication";
-
-    private String user1;
-    private String user2;
-    private List<String> users = new ArrayList<>();
-    private MutableAuthenticationService authenticationService;
-    private PersonService personService;
-
-    @Before
-    public void setup() throws Exception
-    {
-        authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
-        personService = applicationContext.getBean("personService", PersonService.class);
-
-        user1 = createUser("user1" + System.currentTimeMillis(), "user1Password");
-        user2 = createUser("user2" + System.currentTimeMillis(), "user2Password");
-
-        users.add(user1);
-        users.add(user2);
-        AuthenticationUtil.clearCurrentSecurityContext();
-    }
-
-    @After
-    public void tearDown() throws Exception
-    {
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        for (final String user : users)
-        {
-            transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    if (personService.personExists(user))
-                    {
-                        authenticationService.deleteAuthentication(user);
-                        personService.deletePerson(user);
-                    }
-                    return null;
-                }
-            });
-        }
-        users.clear();
-        AuthenticationUtil.clearCurrentSecurityContext();
-    }
-
+    
+    
     /**
      * Tests login (create ticket), logout (delete ticket), and validate (get ticket).
      *
@@ -121,6 +71,7 @@ public class AuthenticationsTest extends AbstractBaseApiTest
     public void testCreateValidateDeleteTicket() throws Exception
     {
         Paging paging = getPaging(0, 100);
+        
         // Unauthorized call
         getAll(SiteEntityResource.class, null, paging, null, 401);
 
@@ -188,9 +139,11 @@ public class AuthenticationsTest extends AbstractBaseApiTest
         /*
          *  user2 login - Via Authorization header
          */
+        
+        setRequestContext(user2);
 
         // User2 create a folder within his home folder (-my-)
-        Folder folderResp = createFolder(user2, Nodes.PATH_MY, "F2", null);
+        Folder folderResp = createFolder(Nodes.PATH_MY, "F2", null);
         assertNotNull(folderResp.getId());
 
         getAll(getNodeChildrenUrl(Nodes.PATH_MY), null, paging, 401);

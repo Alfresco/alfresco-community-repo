@@ -26,7 +26,6 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.AssocChild;
 import org.alfresco.rest.api.model.AssocTarget;
@@ -40,10 +39,7 @@ import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.StoreRef;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -100,61 +96,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
     private static final String URL_SECONDARY_CHILDREN = "secondary-children";
     private static final String URL_PARENTS = "parents";
-
-
-
-    private String user1;
-    private String user2;
-    private List<String> users = new ArrayList<>();
-
-    protected MutableAuthenticationService authenticationService;
-    protected PermissionService permissionService;
-    protected PersonService personService;
-
-    private final String RUNID = System.currentTimeMillis()+"";
-
-
-    @Before
-    public void setup() throws Exception
-    {
-        authenticationService = applicationContext.getBean("authenticationService", MutableAuthenticationService.class);
-        permissionService = applicationContext.getBean("permissionService", PermissionService.class);
-        personService = applicationContext.getBean("personService", PersonService.class);
-
-        // note: createUser currently relies on repoService
-        user1 = createUser("user1-" + RUNID);
-        user2 = createUser("user2-" + RUNID);
-
-        // We just need to clean the on-premise-users,
-        // so the tests for the specific network would work.
-        users.add(user1);
-        users.add(user2);
-    }
-
-    @After
-    public void tearDown() throws Exception
-    {
-        AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
-        for (final String user : users)
-        {
-            transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
-            {
-                @Override
-                public Void execute() throws Throwable
-                {
-                    if (personService.personExists(user))
-                    {
-                        authenticationService.deleteAuthentication(user);
-                        personService.deletePerson(user);
-                    }
-                    return null;
-                }
-            });
-        }
-        users.clear();
-        AuthenticationUtil.clearCurrentSecurityContext();
-    }
-
+    
     protected String getNodeTargetsUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_TARGETS;
@@ -175,6 +117,16 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         return URL_NODES + "/" + nodeId + "/" + URL_PARENTS;
     }
 
+    private PermissionService permissionService;
+
+    @Before
+    public void setup() throws Exception
+    {
+        super.setup();
+
+        permissionService = applicationContext.getBean("permissionService", PermissionService.class);
+    }
+
     /**
      * Tests basic api to manage (add, list, remove) node peer associations (ie. source node -> target node)
      *
@@ -191,10 +143,12 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
     @Test
     public void testNodePeerAssocs() throws Exception
     {
-        String myFolderNodeId = getMyNodeId(user1);
+        setRequestContext(user1);
+                
+        String myFolderNodeId = getMyNodeId();
 
         // create folder
-        String f1Id = createFolder(user1, myFolderNodeId, "f1").getId();
+        String f1Id = createFolder(myFolderNodeId, "f1").getId();
 
         // create content node
         Node n = new Node();
@@ -205,7 +159,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         String o1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         // create ano' folder
-        String f2Id = createFolder(user1, myFolderNodeId, "f2").getId();
+        String f2Id = createFolder(myFolderNodeId, "f2").getId();
 
         // create ano' content node
         n = new Node();
@@ -477,11 +431,12 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
     @Test
     public void testNodePeerAssocsPermissions() throws Exception
     {
+        setRequestContext(user1);
+        
         // as user 1 - create folder in "Shared Files" area and content within the folder
+        String sharedFolderNodeId = getSharedNodeId();
 
-        String sharedFolderNodeId = getSharedNodeId(user1);
-
-        String sf1Id = createFolder(user1, sharedFolderNodeId, "shared folder "+RUNID).getId();
+        String sf1Id = createFolder(sharedFolderNodeId, "shared folder "+RUNID).getId();
 
         Node n = new Node();
         n.setName("shared content "+RUNID);
@@ -493,9 +448,9 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
         // as user 1 - create folder in user's home (My Files) area and content within the folder
 
-        String u1myNodeId = getMyNodeId(user1);
+        String u1myNodeId = getMyNodeId();
 
-        String u1f1Id = createFolder(user1, u1myNodeId, "f1").getId();
+        String u1f1Id = createFolder(u1myNodeId, "f1").getId();
 
         n = new Node();
         n.setName("o1");
@@ -506,9 +461,11 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
         // as user 2 - create folder in user's home (My Files) area and content within the folder
 
-        String u2myNodeId = getMyNodeId(user2);
+        setRequestContext(user2);
+        
+        String u2myNodeId = getMyNodeId();
 
-        String u2f1Id = createFolder(user2, u2myNodeId, "f1").getId();
+        String u2f1Id = createFolder(u2myNodeId, "f1").getId();
 
         n = new Node();
         n.setName("o1");
@@ -519,6 +476,8 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
 
         try
         {
+            setRequestContext(user1);
+            
             Paging paging = getPaging(0, 100);
 
             // empty lists - before
@@ -675,7 +634,9 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
     @Test
     public void testNodeSecondaryChildAssocs() throws Exception
     {
-        String myFolderNodeId = getMyNodeId(user1);
+        setRequestContext(user1);
+        
+        String myFolderNodeId = getMyNodeId();
 
         // create folder
         Node n = new Node();
@@ -694,7 +655,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         String o1Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
         // create ano' folder
-        String f2Id = createFolder(user1, myFolderNodeId, "f2").getId();
+        String f2Id = createFolder(myFolderNodeId, "f2").getId();
 
         // create ano' content node
         String o2Name = "o2";
@@ -705,9 +666,9 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         String o2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
 
-        String f3Id = createFolder(user1, myFolderNodeId, "f3").getId();
+        String f3Id = createFolder(myFolderNodeId, "f3").getId();
 
-        String f4Id = createFolder(user1, myFolderNodeId, "f4").getId();
+        String f4Id = createFolder(myFolderNodeId, "f4").getId();
 
 
         try
@@ -1053,7 +1014,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
                 for (int j = 0; j < parentCnt; j++)
                 {
                     String parentName = "parent "+j;
-                    parentIds[j] = createFolder(user1, f4Id, parentName).getId();
+                    parentIds[j] = createFolder(f4Id, parentName).getId();
 
                     secChild = new AssocChild(childId, ASSOC_TYPE_CM_CONTAINS);
                     post(getNodeSecondaryChildrenUrl(parentIds[j]), user1, toJsonAsStringNonNull(secChild), 201);
@@ -1227,24 +1188,25 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
     public void testDeleteAndRestoreNodeWithAssocs() throws Exception
     {
         // as user 1 ...
-
+        setRequestContext(user1);
+        
         String f1Id = null;
         String f2Id = null;
         String f3Id = null;
 
         try
         {
-            String myFolderNodeId = getMyNodeId(user1);
+            String myFolderNodeId = getMyNodeId();
 
             // create primary parent-child hierarchy
-            f1Id = createFolder(user1, myFolderNodeId, "f1").getId();
-            String f1bId = createFolder(user1, f1Id, "f1b").getId();
-            String f1cId = createFolder(user1, f1bId, "f1c").getId();
-            String f1dId = createFolder(user1, f1cId, "f1d").getId();
-            String c1eId = createTextFile(user1, f1dId, "c1e", "some text content").getId();
+            f1Id = createFolder(myFolderNodeId, "f1").getId();
+            String f1bId = createFolder(f1Id, "f1b").getId();
+            String f1cId = createFolder(f1bId, "f1c").getId();
+            String f1dId = createFolder(f1cId, "f1d").getId();
+            String c1eId = createTextFile(f1dId, "c1e", "some text content").getId();
 
-            f2Id = createFolder(user1, myFolderNodeId, "f2").getId();
-            f3Id = createFolder(user1, myFolderNodeId, "f3").getId();
+            f2Id = createFolder(myFolderNodeId, "f2").getId();
+            f3Id = createFolder(myFolderNodeId, "f3").getId();
 
             HttpResponse response = getAll(getNodeParentsUrl(f1bId), user1, null, null, 200);
             List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
@@ -1446,7 +1408,9 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
     public void testCreateNodeWithAssocs() throws Exception
     {
         // as user 1
-        String myFolderNodeId = getMyNodeId(user1);
+        setRequestContext(user1);
+        
+        String myFolderNodeId = getMyNodeId();
 
         // create node with some assocs in a single call
 
@@ -1488,7 +1452,7 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
         response = post(getNodeChildrenUrl(myFolderNodeId), user1, toJsonAsStringNonNull(n), 201);
         String f2Id = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class).getId();
 
-        String f3Id = createFolder(user1, myFolderNodeId, "f3").getId();
+        String f3Id = createFolder(myFolderNodeId, "f3").getId();
 
         try
         {

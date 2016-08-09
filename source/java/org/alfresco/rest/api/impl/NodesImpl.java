@@ -1589,6 +1589,10 @@ public class NodesImpl implements Nodes
             props = mapToNodeProperties(nodeInfo.getProperties());
         }
 
+        // Optionally, lookup by relative path
+        String relativePath = nodeInfo.getRelativePath();
+        parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
+
         // Existing file/folder name handling
         boolean autoRename = Boolean.valueOf(parameters.getParameter(PARAM_AUTO_RENAME));
         if (autoRename && (isContent || isSubClass(nodeTypeQName, ContentModel.TYPE_FOLDER)))
@@ -1600,9 +1604,6 @@ public class NodesImpl implements Nodes
                 nodeName = findUniqueName(parentNodeRef, nodeName);
             }
         }
-
-        String relativePath = nodeInfo.getRelativePath();
-        parentNodeRef = getOrCreatePath(parentNodeRef, relativePath);
 
         QName assocTypeQName = ContentModel.ASSOC_CONTAINS;
         if ((nodeInfo.getAssociation() != null) && (nodeInfo.getAssociation().getAssocType() != null))

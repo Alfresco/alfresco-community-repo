@@ -3600,8 +3600,23 @@ public class NodeApiTest extends AbstractBaseApiTest
         // -ve
         delete(URL_NODES, userId, siteNodeId, 403);
 
-        // cleanup
-        delete(URL_NODES, user1, folderId, 204);
+        // fix for REPO-514 (NPE for a node that was neither a file/document nor a folder)
+        Node n = new Node();
+        n.setName("o1");
+        n.setNodeType(TYPE_CM_OBJECT);
+        response = post(getNodeChildrenUrl(folderId), user1, toJsonAsStringNonNull(n), 201);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        String o1Id = nodeResp.getId();
+
+        params = new HashMap<>();
+        params.put("include", "allowableOperations");
+        response = getSingle(NodesEntityResource.class, user1, o1Id, params, 200);
+        nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertNotNull(nodeResp.getAllowableOperations());
+
+        // some cleanup
+        params = Collections.singletonMap("permanent", "true");
+        delete(URL_NODES, user1, folderId, params, 204);
     }
 
     @Override

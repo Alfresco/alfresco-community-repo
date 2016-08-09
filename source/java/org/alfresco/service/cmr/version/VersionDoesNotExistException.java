@@ -36,7 +36,7 @@ import java.text.MessageFormat;
 public class VersionDoesNotExistException extends VersionServiceException
 {
     private static final long serialVersionUID = 3258133548417233463L;
-    private static final String ERROR_MESSAGE = "The version with label {0} does not exisit in the version store.";
+    private static final String ERROR_MESSAGE = "The version with label {0} does not exist in the version store.";
 
     /**
      * Constructor

@@ -157,9 +157,8 @@ public class AbstractNodeRelation implements InitializingBean
                 collection.add(node);
             }
         }
-
-        Paging paging = parameters.getPaging();
-        return CollectionWithPagingInfo.asPaged(paging, collection, false, collection.size());
+        
+        return listPage(collection, parameters.getPaging());
     }
 
     protected CollectionWithPagingInfo<Node> listNodeChildAssocs(List<ChildAssociationRef> childAssocRefs, Parameters parameters, Boolean isPrimary, boolean returnChild)
@@ -170,7 +169,7 @@ public class AbstractNodeRelation implements InitializingBean
 
         List<String> includeParam = parameters.getInclude();
 
-        List<Node> result = new ArrayList<Node>(childAssocRefs.size());
+        List<Node> collection = new ArrayList<Node>(childAssocRefs.size());
         for (ChildAssociationRef childAssocRef : childAssocRefs)
         {
             if (isPrimary == null || (isPrimary == childAssocRef.isPrimary()))
@@ -192,25 +191,27 @@ public class AbstractNodeRelation implements InitializingBean
                     }
 
                     node.setAssociation(new AssocChild(assocType, childAssocRef.isPrimary()));
-
-
-                    result.add(node);
+                    
+                    collection.add(node);
                 }
             }
         }
-
-        Paging paging = parameters.getPaging();
-
+        
+        return listPage(collection, parameters.getPaging());
+    }
+    
+    protected CollectionWithPagingInfo listPage(List result, Paging paging)
+    {
         // return 'page' of results (note: depends on in-built/natural sort order of results)
         int skipCount = paging.getSkipCount();
         int pageSize = paging.getMaxItems();
         int pageEnd = skipCount + pageSize;
 
-        final List<Node> page = new ArrayList<>(pageSize);
-        Iterator<Node> it = result.iterator();
+        final List page = new ArrayList<>(pageSize);
+        Iterator it = result.iterator();
         for (int counter = 0; counter < pageEnd && it.hasNext(); counter++)
         {
-            Node element = it.next();
+            Object element = it.next();
             if (counter < skipCount)
             {
                 continue;

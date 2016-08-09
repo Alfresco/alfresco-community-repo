@@ -136,6 +136,11 @@
        <property name="exceptionMappings">
             <map>
                 <entry key="org.alfresco.rest.framework.core.exceptions.ApiException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_INTERNAL_SERVER_ERROR}" />
+                <entry key="java.lang.NullPointerException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_INTERNAL_SERVER_ERROR}" />
+                <entry key="java.lang.IndexOutOfBoundsException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_INTERNAL_SERVER_ERROR}" />
+                <entry key="java.lang.OutOfMemoryError" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_INTERNAL_SERVER_ERROR}" />
+                <entry key="java.lang.IllegalArgumentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
+                <entry key="org.alfresco.service.cmr.repository.CyclicChildRelationshipException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.InvalidArgumentException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_BAD_REQUEST}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.NotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.EntityNotFoundException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_FOUND}" />
@@ -153,6 +158,7 @@
                 <entry key="org.alfresco.repo.node.integrity.IntegrityException" value="422" />
                 <entry key="org.alfresco.repo.site.SiteServiceException" value="422" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.UnsupportedMediaTypeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_UNSUPPORTED_MEDIA_TYPE}" />
+                <entry key="org.springframework.http.InvalidMediaTypeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_UNSUPPORTED_MEDIA_TYPE}" />
             </map>
         </property>
     </bean>

@@ -1503,6 +1503,16 @@ public class NodeAssociationsApiTest extends AbstractBaseApiTest
             assertEquals(o2Id, nodes.get(0).getId());
 
             // TODO test model with mandatory aspect
+
+
+            // -ve test -  minor: error code if creating a cyclic child assoc (REPO-475)
+            String myNodeId = getMyNodeId(user1);
+            n = new Node();
+            n.setName("my-folder-1");
+            n.setNodeType(TYPE_CM_FOLDER);
+            AssocChild assocChild = new AssocChild(myNodeId, "cm:contains");
+            n.setSecondaryChildren(Collections.singletonList(assocChild));
+            post(getNodeChildrenUrl(myNodeId), user1, RestApiUtil.toJsonAsStringNonNull(n), 400);
         }
         finally
         {

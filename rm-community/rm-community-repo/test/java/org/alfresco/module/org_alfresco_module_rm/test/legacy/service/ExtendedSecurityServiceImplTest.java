@@ -106,18 +106,18 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 extendedReaders.add(monkey);
                 extendedReaders.add(elephant);
 
-                extendedSecurityService.addExtendedSecurity(record, extendedReaders, null);
+                extendedSecurityService.set(record, extendedReaders, null);
                 checkExtendedReaders(record, extendedReaders);
 
                 Set<String> extendedReadersToo = new HashSet<String>(2);
                 extendedReadersToo.add(monkey);
                 extendedReadersToo.add(snake);
 
-                extendedSecurityService.addExtendedSecurity(recordToo, extendedReadersToo, null);
+                extendedSecurityService.set(recordToo, extendedReadersToo, null);
                 checkExtendedReaders(recordToo, extendedReadersToo);
 
                 // test remove
-                extendedSecurityService.removeAllExtendedSecurity(recordToo);
+                extendedSecurityService.remove(recordToo);
                 
                 assertFalse(extendedSecurityService.hasExtendedSecurity(recordToo));
                 assertTrue(extendedSecurityService.getExtendedReaders(recordToo).isEmpty());
@@ -151,7 +151,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
 
                 assertTrue(extendedSecurityService.getExtendedReaders(record).isEmpty());
 
-                extendedSecurityService.addExtendedSecurity(record, extendedReaders, null);
+                extendedSecurityService.set(record, extendedReaders, null);
 
                 checkExtendedReaders(record, extendedReaders);
                 assertFalse(extendedSecurityService.hasExtendedSecurity(moveRecordCategory));

@@ -215,12 +215,21 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         return result;
         
     }
-
+    
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#addExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#set(org.alfresco.service.cmr.repository.NodeRef, org.alfresco.util.Pair)
      */
     @Override
-    public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
+    public void set(NodeRef nodeRef, Pair<Set<String>, Set<String>> readersAndWriters)
+    {
+        set(nodeRef, readersAndWriters.getFirst(), readersAndWriters.getSecond());
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#set(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set)
+     */
+    @Override
+    public void set(NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
@@ -228,7 +237,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         // TODO need to clear existing groups and add new ones
         
         // add extended security impl
-        addExtendedSecurityImpl(nodeRef, readers, writers);     
+        setImpl(nodeRef, readers, writers);  
     }
 
     /**
@@ -238,7 +247,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * @param readers           readers set
      * @param writers           writers set
      */
-    private void addExtendedSecurityImpl(final NodeRef nodeRef, Set<String> readers, Set<String> writers)
+    private void setImpl(final NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
@@ -540,14 +549,14 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeAllExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#remove(org.alfresco.service.cmr.repository.NodeRef)
      */
     @Override
-    public void removeAllExtendedSecurity(NodeRef nodeRef)
+    public void remove(NodeRef nodeRef)
     {
         if (hasExtendedSecurity(nodeRef))
         {
-            removeExtendedSecurityImpl(nodeRef);
+            removeImpl(nodeRef);
 
             // remove the readers from any renditions of the content
             if (isRecord(nodeRef))
@@ -556,7 +565,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 for (ChildAssociationRef assoc : assocs)
                 {
                     NodeRef child = assoc.getChildRef();
-                    removeExtendedSecurityImpl(child);
+                    removeImpl(child);
                 }
             }
         }
@@ -567,7 +576,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * 
      * @param nodeRef   node reference
      */
-    private void removeExtendedSecurityImpl(NodeRef nodeRef)
+    private void removeImpl(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
@@ -580,37 +589,53 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
             
             // TODO delete the groups if they are no longer in use (easier said than done perhaps!)
         }
-    }        
+    }    
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#addExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set, boolean)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#addExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set)
+     */
+    @Override @Deprecated public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
+    {
+        set(nodeRef, readers, writers);      
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#addExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set, boolean)
      */
     @Override @Deprecated public void addExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers, boolean applyToParents)
     {
-        addExtendedSecurity(nodeRef, readers, writers);
+        set(nodeRef, readers, writers);
     }
     
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#removeAllExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override @Deprecated public void removeAllExtendedSecurity(NodeRef nodeRef)
+    {
+        remove(nodeRef);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#removeExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set)
      */
     @Override @Deprecated public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String> writers)
     {
-        removeAllExtendedSecurity(nodeRef);
+        remove(nodeRef);
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set, boolean)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#removeExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set, boolean)
      */
     @Override @Deprecated public void removeExtendedSecurity(NodeRef nodeRef, Set<String> readers, Set<String>writers, boolean applyToParents)
     {
-        removeAllExtendedSecurity(nodeRef);        
+        remove(nodeRef);        
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#removeAllExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, boolean)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#removeAllExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, boolean)
      */
     @Override @Deprecated public void removeAllExtendedSecurity(NodeRef nodeRef, boolean applyToParents)
     {
-        removeAllExtendedSecurity(nodeRef); 
+        remove(nodeRef); 
     }
 }

@@ -285,8 +285,22 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // Order by folders and modified date first
         orderBy = Collections.singletonMap("orderBy", "isFolder DESC,modifiedAt DESC");
+
         // SkipCount=0,MaxItems=2
         paging = getPaging(0, 2);
+        response = getAll(getNodeChildrenUrl(docLibNodeId), userOneId, paging, orderBy, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        assertEquals(2, nodes.size());
+        assertEquals(folder2, nodes.get(0).getName());
+        assertEquals(folder1, nodes.get(1).getName());
+        expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+        assertEquals(2, expectedPaging.getCount().intValue());
+        assertEquals(0, expectedPaging.getSkipCount().intValue());
+        assertEquals(2, expectedPaging.getMaxItems().intValue());
+        assertTrue(expectedPaging.getHasMoreItems().booleanValue());
+
+        // SkipCount=null,MaxItems=2
+        paging = getPaging(null, 2);
         response = getAll(getNodeChildrenUrl(docLibNodeId), userOneId, paging, orderBy, 200);
         nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
         assertEquals(2, nodes.size());
@@ -311,10 +325,34 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(4, expectedPaging.getMaxItems().intValue());
         assertFalse(expectedPaging.getHasMoreItems().booleanValue());
 
+
+        // SkipCount=2,MaxItems=null
+        paging = getPaging(2, null);
+        response = getAll(getNodeChildrenUrl(docLibNodeId), userOneId, paging, orderBy, 200);
+        nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+        assertEquals(2, nodes.size());
+        assertEquals(content2, nodes.get(0).getName());
+        assertEquals(content1, nodes.get(1).getName());
+        expectedPaging = RestApiUtil.parsePaging(response.getJsonResponse());
+        assertEquals(2, expectedPaging.getCount().intValue());
+        assertEquals(2, expectedPaging.getSkipCount().intValue());
+        assertEquals(100, expectedPaging.getMaxItems().intValue());
+        assertFalse(expectedPaging.getHasMoreItems().booleanValue());
+
+
         // userTwoN1 tries to access userOneN1's docLib
         AuthenticationUtil.setFullyAuthenticatedUser(userTwoId);
         paging = getPaging(0, Integer.MAX_VALUE);
         getAll(getNodeChildrenUrl(docLibNodeId), userTwoId, paging, 403);
+
+        // -ve test - paging (via list children) cannot have skipCount < 0
+        paging = getPaging(-1, 4);
+        getAll(getNodeChildrenUrl(docLibNodeId), userOneId, paging, orderBy, 400);
+
+
+        // -ve test - paging (via list children) cannot have maxItems < 1
+        paging = getPaging(0, 0);
+        getAll(getNodeChildrenUrl(docLibNodeId), userOneId, paging, orderBy, 400);
     }
 
     /**

@@ -46,20 +46,20 @@ import static org.junit.Assert.*;
 * V1 REST API tests for pre-defined 'live' search Queries on Sites
  * 
  * <ul>
- * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/live-search-sites} </li>
+ * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/sites} </li>
  * </ul>
  *
  * @author janv
  */
 public class QueriesSitesApiTest extends AbstractSingleNetworkSiteTest
 {
-    private static final String URL_QUERIES_LSS = "queries/live-search-sites";
+    private static final String URL_QUERIES_LSS = "queries/sites";
     
     /**
      * Tests basic api for nodes live search sites - metadata (id, title, description)
      *
      * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/live-search-sites}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/sites}
      */
     @Test
     public void testLiveSearchSites() throws Exception

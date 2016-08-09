@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.tests;
 
+import org.alfresco.rest.AbstractSingleNetworkSiteTest;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.VersionOptions;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
@@ -57,7 +58,7 @@ import static org.junit.Assert.*;
  *
  * @author janv
  */
-public class NodeVersionsApiTest extends AbstractBaseApiTest
+public class NodeVersionsApiTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_DELETED_NODES = "deleted-nodes";
     private static final String URL_VERSIONS = "versions";

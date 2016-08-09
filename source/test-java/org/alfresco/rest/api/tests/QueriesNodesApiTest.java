@@ -51,15 +51,15 @@ import java.util.Map;
 import static org.junit.Assert.*;
 
 /**
-* V1 REST API tests for pre-defined 'live' search Queries
+* V1 REST API tests for pre-defined 'live' search Queries on Nodes
  * 
  * <ul>
- * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries} </li>
+ * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/live-search-nodes} </li>
  * </ul>
  *
  * @author janv
  */
-public class QueriesApiTest extends AbstractSingleNetworkSiteTest
+public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_QUERIES_LSN = "queries/live-search-nodes";
     
@@ -220,7 +220,7 @@ public class QueriesApiTest extends AbstractSingleNetworkSiteTest
             // Search - include optional fields - eg. aspectNames, properties, path, isLink
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);
-            params.put("include", "aspectNames,properties,path,isLink");
+            params.put(Queries.PARAM_INCLUDE, "aspectNames,properties,path,isLink");
             response = getAll(URL_QUERIES_LSN, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, allIds, null);
@@ -319,7 +319,7 @@ public class QueriesApiTest extends AbstractSingleNetworkSiteTest
             term = title+String.format("%05d", 2)+title;
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, "\""+term+"\"");
-            params.put("include", "properties");
+            params.put(Queries.PARAM_INCLUDE, "properties");
             response = getAll(URL_QUERIES_LSN, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(3, nodes.size());
@@ -331,7 +331,7 @@ public class QueriesApiTest extends AbstractSingleNetworkSiteTest
             term = descrip+String.format("%05d", 3)+descrip;
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, "\""+term+"\"");
-            params.put("include", "properties");
+            params.put(Queries.PARAM_INCLUDE, "properties");
             response = getAll(URL_QUERIES_LSN, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             assertEquals(3, nodes.size());
@@ -483,7 +483,7 @@ public class QueriesApiTest extends AbstractSingleNetworkSiteTest
             // sort order - modifiedAt asc
             params = new HashMap<>(1);
             params.put(Queries.PARAM_TERM, testTerm);
-            params.put("orderBy", "modifiedAt asc");
+            params.put(Queries.PARAM_ORDERBY, "modifiedAt asc");
             response = getAll(URL_QUERIES_LSN, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, allIds, false);
@@ -491,7 +491,7 @@ public class QueriesApiTest extends AbstractSingleNetworkSiteTest
             // sort order - modifiedAt desc
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);
-            params.put("orderBy", "modifiedAt desc");
+            params.put(Queries.PARAM_ORDERBY, "modifiedAt desc");
             response = getAll(URL_QUERIES_LSN, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, allIds, true);
@@ -499,7 +499,7 @@ public class QueriesApiTest extends AbstractSingleNetworkSiteTest
             // sort order - createdAt asc
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);
-            params.put("orderBy", "createdAt asc");
+            params.put(Queries.PARAM_ORDERBY, "createdAt asc");
             response = getAll(URL_QUERIES_LSN, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, allIds, true);
@@ -507,7 +507,7 @@ public class QueriesApiTest extends AbstractSingleNetworkSiteTest
             // sort order - createdAt desc
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);
-            params.put("orderBy", "createdAt desc");
+            params.put(Queries.PARAM_ORDERBY, "createdAt desc");
             response = getAll(URL_QUERIES_LSN, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, allIds, false);
@@ -515,7 +515,7 @@ public class QueriesApiTest extends AbstractSingleNetworkSiteTest
             // sort order - name asc
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);
-            params.put("orderBy", "name asc");
+            params.put(Queries.PARAM_ORDERBY, "name asc");
             response = getAll(URL_QUERIES_LSN, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, idsSortedByNameAsc, true);
@@ -523,7 +523,7 @@ public class QueriesApiTest extends AbstractSingleNetworkSiteTest
             // sort order - name desc
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);
-            params.put("orderBy", "name desc");
+            params.put(Queries.PARAM_ORDERBY, "name desc");
             response = getAll(URL_QUERIES_LSN, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, idsSortedByNameAsc, false);
@@ -531,7 +531,7 @@ public class QueriesApiTest extends AbstractSingleNetworkSiteTest
             // sort order - name desc, createdAt asc
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);
-            params.put("orderBy", "name desc, createdAt asc");
+            params.put(Queries.PARAM_ORDERBY, "name desc, createdAt asc");
             response = getAll(URL_QUERIES_LSN, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, idsSortedByNameDescCreatedAtAsc, false);
@@ -539,7 +539,7 @@ public class QueriesApiTest extends AbstractSingleNetworkSiteTest
             // sort order - name asc, createdAt asc
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);
-            params.put("orderBy", "name asc, createdAt desc");
+            params.put(Queries.PARAM_ORDERBY, "name asc, createdAt desc");
             response = getAll(URL_QUERIES_LSN, paging, params, 200);
             nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
             checkNodeIds(nodes, idsSortedByNameDescCreatedAtAsc, true);
@@ -574,7 +574,7 @@ public class QueriesApiTest extends AbstractSingleNetworkSiteTest
             // -ve test - invalid sort field
             params = new HashMap<>(2);
             params.put(Queries.PARAM_TERM, testTerm);
-            params.put("orderBy", "invalid asc");
+            params.put(Queries.PARAM_ORDERBY, "invalid asc");
             getAll(URL_QUERIES_LSN, paging, params, 400);
 
             // -ve test - unauthenticated - belts-and-braces ;-)

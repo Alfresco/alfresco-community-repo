@@ -26,31 +26,56 @@
 
 package org.alfresco.rest.api;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
 
 /**
  * Queries API
  *
  * @author janv
+ * @author Alan Davis
  */
 public interface Queries
 {
+    // General
+    static String PARAM_TERM    = "term";
+    static String PARAM_ORDERBY = ResourceWebScriptHelper.PARAM_ORDERBY;
+    static String PARAM_FIELDS = ResourceWebScriptHelper.PARAM_FILTER_FIELDS;
+    static String PARAM_INCLUDE = ResourceWebScriptHelper.PARAM_INCLUDE;
+    
+    // Node query
+    static String PARAM_ROOT_NODE_ID = "rootNodeId";
+    static String PARAM_NODE_TYPE    = "nodeType";
+    static String PARAM_NAME         = "name";
+    static String PARAM_CREATEDAT    = "createdAt";
+    static String PARAM_MODIFIEDAT   = "modifiedAt";
+    static int MIN_TERM_LENGTH_NODES = 3;
+    
+    // People query
+    static String PARAM_USERNAME  = ContentModel.PROP_USERNAME.getLocalName();
+    static String PARAM_FIRSTNAME = ContentModel.PROP_FIRSTNAME.getLocalName();
+    static String PARAM_LASTNAME  = ContentModel.PROP_LASTNAME.getLocalName();
+    static int MIN_TERM_LENGTH_PEOPLE = 2;
+    
     /**
      * Find Nodes
      *
-     * @param queryId currently expects "live-search-nodes"
      * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     *
      * @return the search query results
      */
-    CollectionWithPagingInfo<Node> findNodes(String queryId, Parameters parameters);
+    CollectionWithPagingInfo<Node> findNodes(Parameters parameters);
 
-    String PARAM_TERM = "term";
-    String PARAM_ROOT_NODE_ID = "rootNodeId";
-    String PARAM_NODE_TYPE = "nodeType";
-
-    String PARAM_NAME = "name";
-    String PARAM_CREATEDAT = "createdAt";
-    String PARAM_MODIFIEDAT = "modifiedAt";
+    /**
+     * Find People
+     * 
+     * @param parameters the {@link Parameters} object to get the parameters passed into the request
+     *
+     * @return the search query results
+     */
+    CollectionWithPagingInfo<Person> findPeople(Parameters parameters);
 }

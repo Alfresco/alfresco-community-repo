@@ -43,8 +43,6 @@ import org.alfresco.service.namespace.QName;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import com.sun.star.uno.RuntimeException;
-
 public class Person implements Serializable, Comparable<Person>, ExpectedComparison
 {
 	private static final long serialVersionUID = 3185698391792389751L;
@@ -107,7 +105,7 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
 		this.enabled = enabled;
 	}
 
-	public String getEmail() {
+	public String getUsername() {
 		return username;
 	}
 
@@ -203,7 +201,7 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
 	{
 		return "Person [" + (id != null ? "id=" + id + ", " : "")
 				+ (enabled != null ? "enabled=" + enabled + ", " : "")
-				+ (username != null ? "email=" + username + ", " : "")
+				+ (username != null ? "username=" + username + ", " : "")
 				+ (firstName != null ? "firstName=" + firstName + ", " : "")
 				+ (lastName != null ? "lastName=" + lastName + ", " : "")
 				+ (company != null ? "company=" + company + ", " : "")
@@ -246,7 +244,7 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
 		String instantMessageId = (String)jsonObject.get("instantMessageId");
 		String googleId = (String)jsonObject.get("googleId");
 		String skypeId = (String)jsonObject.get("skypeId");
-		String email = (String)jsonObject.get("email");
+                String username = (String)jsonObject.get("username");
 		String telephone = (String)jsonObject.get("telephone");
 		String mobile = (String)jsonObject.get("mobile");
 		String userId = (String)jsonObject.get("id");
@@ -266,15 +264,24 @@ public class Person implements Serializable, Comparable<Person>, ExpectedCompari
 			String companyTelephone = (String)companyJSON.get("telephone");
 			String fax = (String)companyJSON.get("fax");
 			String companyEmail = (String)companyJSON.get("email");
-			company = new Company(organization, address1, address2, address3, postcode, companyTelephone, fax, companyEmail);
+			if (organization != null ||
+                            address2 != null ||
+                            address3 != null ||
+                            postcode != null ||
+                            companyTelephone != null ||
+                            fax != null ||
+                            companyEmail != null)
+			{
+	                        company = new Company(organization, address1, address2, address3, postcode, companyTelephone, fax, companyEmail);
+			}
 		}
-		Person person = new Person(userId, email, enabled, firstName, lastName, company, skypeId, location, telephone, mobile, instantMessageId, googleId, description);
+		Person person = new Person(userId, username, enabled, firstName, lastName, company, skypeId, location, telephone, mobile, instantMessageId, googleId, description);
 		return person;
 	}
 	
 	public Person restriced()
 	{
-		Person p = new Person(getId(), getEmail(), getEnabled(), getFirstName(), getLastName(), null, null, null, null, null, null, null, null);
+		Person p = new Person(getId(), getUsername(), getEnabled(), getFirstName(), getLastName(), null, null, null, null, null, null, null, null);
 		return p;
 	}
 

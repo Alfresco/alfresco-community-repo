@@ -56,14 +56,15 @@ import com.sun.star.lang.IllegalArgumentException;
  */
 public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
 {
-    private static final String URL_QUERIES_LSN = "queries/live-search-people";
+    private static final String URL_QUERIES_LSP = "queries/live-search-people";
     
     private static String TEST_TERM_PREFIX = Long.toString(System.currentTimeMillis()/1000);
     
     // TODO Yuck: Would like to use @BeforeClass and @AfterClass. But creating and
     //      deleting users is hard from from static methods. For the moment do it
     //      in the first and last tests, but we have to get the TEST count right!
-    private static int TEST_COUNT = 6;
+    //      If we don't, a test fails or the users get left behind (not too bad).
+    private static int TEST_COUNT = 12;
     private static int testCounter = 0;
 
     // Test usernames
@@ -103,6 +104,7 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     
     @Before
     @Override
+    @SuppressWarnings("deprecation")
     public void setup() throws Exception
     {
         super.setup();
@@ -239,9 +241,9 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         createParamIdNotNull(Queries.PARAM_ORDERBY, orderBy);
         createParamIdNotNull(Queries.PARAM_FIELDS, fields);
 
-        response = getAll(URL_QUERIES_LSN, paging, params, expectedStatus);
+        response = getAll(URL_QUERIES_LSP, paging, params, expectedStatus);
         
-        if (expectedPeople != null)
+        if (expectedPeople != null && expectedStatus == 200)
         {
             people = Person.parsePeople(response.getJsonResponse()).getList();
             
@@ -254,17 +256,13 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
             }
             String exp = expected.toString().replaceAll(TEST_TERM_PREFIX, "");
             String act = actual.toString().replaceAll(TEST_TERM_PREFIX, "");
-            if (!exp.equals(act))
-            {
-                
-            }
             assertEquals(exp, act);
         }
     }
     
     private void createParamIdNotNull(String param, String value)
     {
-        if (value != null)
+        if (value != null && params != null)
         {
             params.put(param, value);
         }
@@ -283,10 +281,27 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     }
 
     @Test
+    @SuppressWarnings("deprecation")
+    public void testUnauthenticated() throws Exception
+    {
+        setRequestContext(null);
+        expectedStatus = 401;
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
+
+    @Test
     public void testOnlyTestUsersAndDefaultOrder() throws Exception
     {
         // Checks only test users are found as a result of using TEST_TERM_PREFIX.
-        // Also checks the default sort order.
+        
+        // Also checks the default sort order (firstname lastname):
+        //  5   A
+        //  6   C
+        //  1 A A
+        //  2 A B
+        //  3 B A
+        //  4 C
         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
     }
 
@@ -316,13 +331,21 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
         
         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
     }
+    
+    @Test
+    public void testNoParams() throws Exception
+    {
+        params = null;
+        expectedStatus = 400;
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
 
     @Test
     public void testNoTerm() throws Exception
     {
         term = null;
         expectedStatus = 400;
-        expectedPeople = null;
         
         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
     }
@@ -332,26 +355,60 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
     {
         term = "X";
         expectedStatus = 400;
-        expectedPeople = null;
+       
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
+
+    @Test
+    public void testOrderbySameAsDefault() throws Exception
+    {
+        orderBy = "firstName asc, lastName"; // same as default (asc is default order)
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
+    
+    @Test
+    public void testOrderbyDescAndAsc() throws Exception
+    {
+        //  4 C
+        //  3 B A
+        //  1 A A
+        //  2 A B
+        //  5   A
+        //  6   C
+        orderBy = "firstName desc, lastName";
+        expectedPeople = expectedPeople(USER4, USER3, USER1, USER2, USER5, USER6);
         
         checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
     }
 
-// TODO commented out tests:
-    
-// Returns 500 rather than 400
-//    @Test
-//    public void testUnknownOrderByField() throws Exception
-//    {
-//        orderBy = "rubbish";
-//        expectedStatus = 400;
-//        
-//        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
-//    }
+    @Test
+    public void testBadOrderByField() throws Exception
+    {
+        orderBy = "rubbish";
+        expectedStatus = 400;
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
 
-// Rubbish is taken to be "asc" - is this a bug?
+    @Test
+    public void testFieldsFirstLast() throws Exception
+    {
+        fields = PARAM_FIRSTNAME+","+PARAM_LASTNAME;
+        term = LAST_A;
+        expectedPeople = new String[]
+        {
+            "Person ["+                  "lastName=LastA, ]", // USER5
+            "Person ["+"firstName=FirstA, lastName=LastA, ]", // USER1
+            "Person ["+"firstName=FirstB, lastName=LastA, ]", // USER3
+        };
+        
+        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
+    }
+    
+//    // TODO Rubbish is taken to be "asc" so returns 200 rather than 400 - is this a framework bug?
 //    @Test
-//    public void testOrderByDirection() throws Exception
+//    public void testBadOrderByDirection() throws Exception
 //    {
 //        orderBy = "firstName rubbish, lastName asc"; 
 //        expectedStatus = 400;
@@ -359,45 +416,21 @@ public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
 //        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
 //    }
 
-//    Server response is 500 from the first call.
+//    // TODO Having a space in the list discards everything after the space - found in manual testing - is this a framework bug?
 //    @Test
-//    public void testOrderby() throws Exception
-//    {
-//        //  {USER_1, FIRST_A, LAST_A},
-//        //  {USER_2, FIRST_A, LAST_B},
-//        //  {USER_3, FIRST_B, LAST_A},
-//        //  {USER_4, FIRST_C,       },
-//        //  {USER_5,    null, LAST_A},
-//        //  {USER_6,    null, LAST_C},
-//        
-//        orderBy = "firstName asc, lastName"; // same as default (asc is default order)
-//        
-//        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);
-//        
-//        orderBy = "firstName desc, lastName"; // with desc and asc
-//        
-//        expectedPeople = new String[] {"TODO"};
-//        expectedPeople = expectedPeople(USER4, USER3, USER1, USER2, USER5, USER6);
-//    }
-
-//    This test causes the following exception because we did not request the id field! 
-//    testFields(org.alfresco.rest.api.tests.QueriesPeopleApiTest)  Time elapsed: 6.21 sec  <<< ERROR!
-//    java.lang.IllegalArgumentException: null
-//            at org.alfresco.rest.api.tests.client.data.Person.<init>(Person.java:73)
-//            at org.alfresco.rest.api.tests.client.data.Person.parsePerson(Person.java:278)
-//            at org.alfresco.rest.api.tests.client.data.Person.parsePeople(Person.java:503)
-//            at org.alfresco.rest.api.tests.QueriesPeopleApiTest.checkApiCall(QueriesPeopleApiTest.java:246)
-//            at org.alfresco.rest.api.tests.QueriesPeopleApiTest.testFields(QueriesPeopleApiTest.java:353)
-//    @Test
-//    public void testFields() throws Exception
+//    public void testFieldsWithSpace() throws Exception
 //    {
 //        fields = PARAM_FIRSTNAME+", "+PARAM_LASTNAME;
 //        term = LAST_A;
 //        expectedPeople = new String[]
 //        {
-//                              "lastName=LastA,", // USER5
-//            "firstName=FirstA, lastName=LastA,", // USER1
-//            "firstName=FirstB, lastName=LastA,", // USER3
+//            "Person ["+                  "lastName=LastA, ]", // USER5
+//            "Person ["+"firstName=FirstA, lastName=LastA, ]", // USER1
+//            "Person ["+"firstName=FirstB, lastName=LastA, ]", // USER3
+//            // But is the following:
+////          "Person ["+                  "]",
+////          "Person ["+"firstName=FirstA, ]",
+////          "Person ["+"firstName=FirstB, ]",
 //        };
 //        
 //        checkApiCall(term, orderBy, fields, paging, expectedStatus, expectedPeople);

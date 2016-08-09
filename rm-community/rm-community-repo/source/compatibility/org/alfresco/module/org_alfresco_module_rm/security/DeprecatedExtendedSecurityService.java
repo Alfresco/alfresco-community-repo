@@ -39,6 +39,26 @@ import org.alfresco.service.cmr.repository.NodeRef;
 public interface DeprecatedExtendedSecurityService
 {
     /**
+     * Gets the set of authorities that are extended readers for the given node.
+     *
+     * @param nodeRef   node reference
+     * @return {@link Set}<{@link String}>  set of extended readers
+     * 
+     * @deprecated as of 2.5, use {@link ExtendedSecurityService#getReaders(NodeRef)}
+     */
+    Set<String> getExtendedReaders(NodeRef nodeRef);
+
+    /**
+     * Get the set of authorities that are extended writers for the given node.
+     *
+     * @param nodeRef   node reference
+     * @return {@link Set}<{@link String}>  set of extended writers
+     * 
+     * @deprecated as of 2.5, use {@link ExtendedSecurityService#getWriters(NodeRef)}
+     */
+    Set<String> getExtendedWriters(NodeRef nodeRef);
+    
+    /**
      * Add extended security for the specified authorities to a node.
      * 
      * As of, 2.5 this method no longer applies the extended security to parents.

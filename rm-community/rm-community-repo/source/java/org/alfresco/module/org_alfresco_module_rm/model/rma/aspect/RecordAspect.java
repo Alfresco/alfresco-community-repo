@@ -132,8 +132,8 @@ public class RecordAspect extends    AbstractDisposableItem
 
                     // manage any extended readers
                     NodeRef parent = childAssocRef.getParentRef();
-                    Set<String> readers = extendedSecurityService.getExtendedReaders(parent);
-                    Set<String> writers = extendedSecurityService.getExtendedWriters(parent);
+                    Set<String> readers = extendedSecurityService.getReaders(parent);
+                    Set<String> writers = extendedSecurityService.getWriters(parent);
                     if (readers != null && readers.size() != 0)
                     {
                         extendedSecurityService.set(thumbnail, readers, writers);

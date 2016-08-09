@@ -59,7 +59,7 @@ public interface ExtendedSecurityService extends DeprecatedExtendedSecurityServi
      * @param nodeRef   node reference
      * @return {@link Set}<{@link String}>  set of extended readers
      */
-    Set<String> getExtendedReaders(NodeRef nodeRef);
+    Set<String> getReaders(NodeRef nodeRef);
 
     /**
      * Get the set of authorities that are extended writers for the given node.
@@ -67,26 +67,39 @@ public interface ExtendedSecurityService extends DeprecatedExtendedSecurityServi
      * @param nodeRef   node reference
      * @return {@link Set}<{@link String}>  set of extended writers
      */
-    Set<String> getExtendedWriters(NodeRef nodeRef);
+    Set<String> getWriters(NodeRef nodeRef);
     
     /**
+     * Helper to allow caller to provide authority sets as a pair where the
+     * first is the readers and the second is the writers.
      * 
-     * @param nodeRef
-     * @param readersAndWriters
+     * @see #set(NodeRef, Set, Set)
+     * 
+     * @param nodeRef               node reference
+     * @param readersAndWriters     pair where first is the set of readers and the
+     *                              second is the set of writers
      */
     void set(NodeRef nodeRef, Pair<Set<String>, Set<String>> readersAndWriters);
     
     /**
+     * Set extended security for a node, where the readers will be granted ReadRecord
+     * permission and ViewRecord capability to the node and where the writers will be 
+     * granted Filling permission and Filling capability to the node.
+     * <p>
+     * Note it is vaild to provide 'null' values for readers and/or writers.
      * 
-     * @param nodeRef
-     * @param readers
-     * @param writers
+     * @param nodeRef   node reference
+     * @param readers   set of readers
+     * @param writers   set of writers
+     * 
+     * @since 2.5
      */
     void set(NodeRef nodeRef, Set<String> readers, Set<String> writers);
     
     /**
+     * Removes all extended security from a node.
      * 
-     * @param nodeRef
+     * @param nodeRef   node reference
      */
     void remove(NodeRef nodeRef);
 }

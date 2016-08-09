@@ -99,8 +99,8 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 assertFalse(extendedSecurityService.hasExtendedSecurity(rmFolder));
                 assertFalse(extendedSecurityService.hasExtendedSecurity(record));
 
-                assertTrue(extendedSecurityService.getExtendedReaders(record).isEmpty());
-                assertTrue(extendedSecurityService.getExtendedWriters(record).isEmpty());
+                assertTrue(extendedSecurityService.getReaders(record).isEmpty());
+                assertTrue(extendedSecurityService.getWriters(record).isEmpty());
 
                 Set<String> extendedReaders = new HashSet<String>(2);
                 extendedReaders.add(monkey);
@@ -120,8 +120,8 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 extendedSecurityService.remove(recordToo);
                 
                 assertFalse(extendedSecurityService.hasExtendedSecurity(recordToo));
-                assertTrue(extendedSecurityService.getExtendedReaders(recordToo).isEmpty());
-                assertTrue(extendedSecurityService.getExtendedWriters(recordToo).isEmpty());
+                assertTrue(extendedSecurityService.getReaders(recordToo).isEmpty());
+                assertTrue(extendedSecurityService.getWriters(recordToo).isEmpty());
 
                 return null;
             }
@@ -149,7 +149,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
                 assertFalse(extendedSecurityService.hasExtendedSecurity(moveRecordCategory));
                 assertFalse(extendedSecurityService.hasExtendedSecurity(moveRecordFolder));
 
-                assertTrue(extendedSecurityService.getExtendedReaders(record).isEmpty());
+                assertTrue(extendedSecurityService.getReaders(record).isEmpty());
 
                 extendedSecurityService.set(record, extendedReaders, null);
 
@@ -177,7 +177,7 @@ public class ExtendedSecurityServiceImplTest extends BaseRMTestCase
     {
         assertTrue(extendedSecurityService.hasExtendedSecurity(nodeRef));
 
-        Set<String> readers = extendedSecurityService.getExtendedReaders(nodeRef);
+        Set<String> readers = extendedSecurityService.getReaders(nodeRef);
         assertNotNull(readers);
         assertEquals(testReaders, readers);
     }

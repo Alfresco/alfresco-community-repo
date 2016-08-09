@@ -184,8 +184,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
             @Override
             public Void run()
             {
-                assertTrue(extendedSecurityService.getExtendedReaders(recordOne).isEmpty());
-                assertTrue(extendedSecurityService.getExtendedWriters(recordOne).isEmpty());
+                assertTrue(extendedSecurityService.getReaders(recordOne).isEmpty());
+                assertTrue(extendedSecurityService.getWriters(recordOne).isEmpty());
 
                 return null;
             }
@@ -214,8 +214,8 @@ public class RecordServiceImplTest extends BaseRMTestCase
                 writers.add(dmCollaborator);
                 extendedSecurityService.set(recordOne, null, writers);
 
-                assertTrue(extendedSecurityService.getExtendedReaders(recordOne).isEmpty());
-                assertFalse(extendedSecurityService.getExtendedWriters(recordOne).isEmpty());
+                assertTrue(extendedSecurityService.getReaders(recordOne).isEmpty());
+                assertFalse(extendedSecurityService.getWriters(recordOne).isEmpty());
 
                 return null;
             }

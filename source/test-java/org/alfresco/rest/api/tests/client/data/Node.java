@@ -54,8 +54,12 @@ public class Node
     protected UserInfo createdByUser;
     protected UserInfo modifiedByUser;
 
+    // Archived info - specifically for archive (deleted) node - see Trashcan API
     protected Date archivedAt;
     protected UserInfo archivedByUser;
+
+    // Version info - specifically for version node - see Version History API
+    protected String versionComment;
 
     protected Boolean isFolder;
     protected Boolean isFile;
@@ -150,6 +154,16 @@ public class Node
     public void setArchivedByUser(UserInfo archivedByUser)
     {
         this.archivedByUser = archivedByUser;
+    }
+
+    public String getVersionComment()
+    {
+        return versionComment;
+    }
+
+    public void setVersionComment(String versionComment)
+    {
+        this.versionComment = versionComment;
     }
 
     public Boolean getIsFolder()

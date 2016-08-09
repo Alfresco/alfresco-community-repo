@@ -25,11 +25,16 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.repo.version.Version2Model;
+import org.alfresco.repo.version.VersionModel;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
+import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.UserInfo;
+import org.alfresco.rest.api.model.VersionOptions;
 import org.alfresco.rest.framework.BinaryProperties;
+import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.resource.RelationshipResource;
@@ -39,15 +44,20 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.service.ServiceRegistry;
+import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.version.Version;
 import org.alfresco.service.cmr.version.VersionHistory;
 import org.alfresco.service.cmr.version.VersionService;
+import org.alfresco.service.cmr.version.VersionType;
 import org.alfresco.util.ParameterCheck;
 import org.alfresco.util.PropertyCheck;
 import org.springframework.beans.factory.InitializingBean;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -171,21 +181,63 @@ public class NodeVersionsRelation implements
         throw new EntityNotFoundException(nodeId+"-"+versionId);
     }
 
-    private Version findVersion(String nodeId, String versionLabelId)
-     {
-        // note: sub-optimal
-        NodeRef nodeRef = nodes.validateOrLookupNode(nodeId, null);
-        VersionHistory vh = versionService.getVersionHistory(nodeRef);
-        if (vh != null)
+    @Operation("revert")
+    @WebApiDescription(title = "Revert Version",
+            description="Reverts (ie. promotes) specified version to become a new, most recent, version",
+            successStatus = HttpServletResponse.SC_OK)
+    public Node revertById(String nodeId, String versionId, VersionOptions versionOptions, Parameters parameters, WithResponse withResponse)
+    {
+        Version v = findVersion(nodeId, versionId);
+
+        if (v != null)
         {
-            for (Version v : vh.getAllVersions())
+            CheckOutCheckInService cociService = sr.getCheckOutCheckInService();
+
+            NodeRef nodeRef = v.getVersionedNodeRef();
+
+            String versionComment = versionOptions.getComment();
+
+            VersionType versionType = VersionType.MINOR;
+            Boolean versionMajor = versionOptions.getMajorVersion();
+            if ((versionMajor != null) && (versionMajor))
             {
-                if (v.getVersionLabel().equals(versionLabelId))
-                {
-                    return v;
-                }
+                versionType = VersionType.MAJOR;
             }
+
+            Map<String, Serializable> versionProperties = new HashMap<>(2);
+            versionProperties.put(VersionModel.PROP_VERSION_TYPE, versionType);
+            if (versionComment != null)
+            {
+                versionProperties.put(VersionModel.PROP_DESCRIPTION, versionComment);
+            }
+
+            //cancel editing if we want to revert
+            if (sr.getNodeService().hasAspect(nodeRef, ContentModel.ASPECT_WORKING_COPY))
+            {
+                nodeRef = cociService.cancelCheckout(nodeRef);
+            }
+
+            // TODO review default for deep and/or whether we should make it an option
+            versionService.revert(nodeRef, v, false);
+
+            // Checkout/Checkin the node - to store the new version in version history
+            NodeRef wcNodeRef = cociService.checkout(nodeRef);
+            cociService.checkin(wcNodeRef, versionProperties);
+
+            // get latest version
+            v = versionService.getVersionHistory(nodeRef).getHeadVersion();
+
+            Node node = nodes.getFolderOrDocumentFullInfo(v.getFrozenStateNodeRef(), null, null, parameters, null);
+            mapVersionInfo(v, node);
+            return node;
         }
-        return null;
+
+        throw new EntityNotFoundException(nodeId+"-"+versionId);
+    }
+
+    private Version findVersion(String nodeId, String versionLabelId)
+    {
+        NodeRef nodeRef = nodes.validateOrLookupNode(nodeId, null);
+        return versionService.getVersionHistory(nodeRef).getVersion(versionLabelId);
     }
 }

@@ -2675,45 +2675,14 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         final NodeRef sourceNodeRef = nodeRef;
         
         // the delegate definition for transforming a document
-        Transformer transformer = new Transformer()
+        Transformer transformer = new AbstractTransformer()
         {
-            public ScriptNode transform(ContentService contentService, NodeRef nodeRef, ContentReader reader,
-                    ContentWriter writer)
+            protected void doTransform(ContentService contentService,
+                ContentReader reader, ContentWriter writer)
             {
-                ScriptNode transformedNode = null;
                 TransformationOptions options = new TransformationOptions();
                 options.setSourceNodeRef(sourceNodeRef);
-
-                try
-                {
-                    contentService.transform(reader, writer, options);
-                    transformedNode = newInstance(nodeRef, services, scope);
-                }
-                catch (NoTransformerException e)
-                {
-                    // ignore
-                }
-                catch (AlfrescoRuntimeException e)
-                {
-                    Throwable rootCause = ((AlfrescoRuntimeException)e).getRootCause();
-                    String message = rootCause.getMessage();
-                    message = message == null ? "" : message;
-                    if (rootCause instanceof UnimportantTransformException)
-                    {
-                        logger.debug(message);
-                        // ignore
-                    }
-                    else if (rootCause instanceof UnsupportedTransformationException)
-                    {
-                        logger.error(message);
-                        // ignore
-                    }
-                    else
-                    {
-                        throw e;
-                    }
-                }
-                return transformedNode;
+                contentService.transform(reader, writer, options);
             }
         };
         
@@ -2828,10 +2797,10 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
         final NodeRef sourceNodeRef = nodeRef;
         
         // the delegate definition for transforming an image
-        Transformer transformer = new Transformer()
+        Transformer transformer = new AbstractTransformer()
         {
-            public ScriptNode transform(ContentService contentService, NodeRef nodeRef, ContentReader reader,
-                    ContentWriter writer)
+            protected void doTransform(ContentService contentService,
+                ContentReader reader, ContentWriter writer)
             {
                 ImageTransformationOptions imageOptions = new ImageTransformationOptions();
                 imageOptions.setSourceNodeRef(sourceNodeRef);
@@ -2841,8 +2810,6 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
                     imageOptions.setCommandOptions(options);
                 }
                 contentService.getImageTransformer().transform(reader, writer, imageOptions);
-
-                return newInstance(nodeRef, services, scope);
             }
         };
         
@@ -4114,10 +4081,53 @@ public class ScriptNode implements Scopeable, NamespacePrefixResolverProvider
          * 
          * @return Node representing the transformed entity
          */
-        ScriptNode transform(ContentService contentService, NodeRef noderef, ContentReader reader, ContentWriter writer);
+        ScriptNode transform(ContentService contentService, NodeRef noderef,
+            ContentReader reader, ContentWriter writer);
     }
     
-    
+    private abstract class AbstractTransformer implements Transformer
+    {
+        public ScriptNode transform(ContentService contentService, NodeRef nodeRef,
+            ContentReader reader, ContentWriter writer)
+        {
+            ScriptNode transformedNode = null;
+
+            try
+            {
+                doTransform(contentService, reader, writer);
+                transformedNode = newInstance(nodeRef, services, scope);
+            }
+            catch (NoTransformerException e)
+            {
+                // ignore
+            }
+            catch (AlfrescoRuntimeException e)
+            {
+                Throwable rootCause = ((AlfrescoRuntimeException)e).getRootCause();
+                String message = rootCause.getMessage();
+                message = message == null ? "" : message;
+                if (rootCause instanceof UnimportantTransformException)
+                {
+                    logger.debug(message);
+                    // ignore
+                }
+                else if (rootCause instanceof UnsupportedTransformationException)
+                {
+                    logger.error(message);
+                    // ignore
+                }
+                else
+                {
+                    throw e;
+                }
+            }
+            return transformedNode;
+        }
+
+        protected abstract void doTransform(ContentService contentService,
+            ContentReader reader, ContentWriter writer);
+    };
+
     /**
      * NamespacePrefixResolverProvider getter implementation
      */

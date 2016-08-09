@@ -39,6 +39,7 @@ import org.alfresco.repo.action.ParameterDefinitionImpl;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.TransformerConfig;
 import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.service.cmr.action.ActionServiceException;
 import org.alfresco.service.cmr.action.ActionTrackingService;
@@ -446,7 +447,7 @@ public abstract class AbstractTransformationRenderingEngine extends AbstractRend
                         contentService.transform(contentReader, tempContentWriter, options);
                         return tempContentWriter;
                     }
-                    catch (NoTransformerException ntx)
+                    catch (NoTransformerException|UnsupportedTransformationException ntx)
                     {
                         {
                             logger.debug("No transformer found to execute rule: \n" + "   reader: " + contentReader + "\n"

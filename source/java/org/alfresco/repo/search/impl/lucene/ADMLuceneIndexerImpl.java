@@ -54,6 +54,7 @@ import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.transform.ContentTransformer;
 import org.alfresco.repo.content.transform.TransformerDebug;
+import org.alfresco.repo.content.transform.UnsupportedTransformationException;
 import org.alfresco.repo.dictionary.IndexTokenisationMode;
 import org.alfresco.repo.search.AspectIndexFilter;
 import org.alfresco.repo.search.IndexerException;
@@ -83,6 +84,7 @@ import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.InvalidNodeRefException;
 import org.alfresco.service.cmr.repository.MLText;
+import org.alfresco.service.cmr.repository.NoTransformerException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.repository.Path;
@@ -1573,7 +1575,7 @@ public class ADMLuceneIndexerImpl extends AbstractLuceneIndexerImpl<NodeRef> imp
                                                     + "   transformer:     " + transformer + "\n" + "   temp writer:     " + writer);
                                         }
                                     }
-                                    catch (ContentIOException e)
+                                    catch (ContentIOException|NoTransformerException|UnsupportedTransformationException e)
                                     {
                                         // log it
                                         if (s_logger.isInfoEnabled())

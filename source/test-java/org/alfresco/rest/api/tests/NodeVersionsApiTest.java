@@ -41,6 +41,7 @@ import org.junit.Test;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -338,12 +339,10 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertEquals("1.2", nodeResp.getProperties().get("cm:versionLabel"));
 
-            delete(getNodeVersionsUrl(docId), user1, "1.2", null, 204);
+            // -ve test - cannot delete last version (via delete version api call) (see REPO-835 & REPO-834)
+            delete(getNodeVersionsUrl(docId), user1, "1.2", null, 422);
 
-            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
-            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-            assertEquals(0, nodes.size());
-
+            /* note: currently we cannot delete last version so this is not applicable
             // check live node - removing last version does not (currently) remove versionable aspect
             response = getSingle(URL_NODES, user1, docId, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
@@ -354,9 +353,15 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
                 assertNull(props.get("cm:versionLabel"));
                 assertNull(props.get("cm:versionType")); // note: see special fix in delete version API (at least for now)
             }
+            */
+
+            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+            assertEquals("1.2", nodes.get(0).getId());
 
             // Update again ..
-            String textContent = "more changes 1";
+            String textContent = "more changes 0";
             ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
             File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
             PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
@@ -364,9 +369,65 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             response = putBinary(getNodeContentUrl(docId), user1, payload, null,  null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
-            assertEquals("1.0", nodeResp.getProperties().get("cm:versionLabel"));
-            assertEquals("MAJOR", nodeResp.getProperties().get("cm:versionType"));
+            assertEquals("1.3", nodeResp.getProperties().get("cm:versionLabel"));
+            assertEquals("MINOR", nodeResp.getProperties().get("cm:versionType"));
+            
+            // remove versionable aspect (this will clear the history and disable versioning)
+            response = getSingle(URL_NODES, user1, docId, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
 
+            List<String> aspectNamesToKeep = new ArrayList<>();
+            aspectNamesToKeep.addAll(nodeResp.getAspectNames());
+            aspectNamesToKeep.remove("cm:versionable");
+
+            Node nUpdate = new Node();
+            nUpdate.setAspectNames(aspectNamesToKeep);
+
+            response = put(URL_NODES, user1, docId, toJsonAsStringNonNull(nUpdate), null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertFalse(nodeResp.getAspectNames().contains("cm:versionable"));
+            Map<String, Object> props = nodeResp.getProperties();
+            if (props != null)
+            {
+                assertNull(props.get("cm:versionLabel"));
+                assertNull(props.get("cm:versionType"));
+            }
+            
+            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+            
+            // Update again ..
+            textContent = "more changes 1";
+            inputStream = new ByteArrayInputStream(textContent.getBytes());
+            txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+            payload = new PublicApiHttpClient.BinaryPayload(txtFile);
+            response = putBinary(getNodeContentUrl(docId), user1, payload, null,  null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertFalse(nodeResp.getAspectNames().contains("cm:versionable"));
+            
+            // re-enable versioning (default model properties should cause initial version to be created as 1.0)
+            response = getSingle(URL_NODES, user1, docId, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            aspectNamesToKeep = new ArrayList<>();
+            aspectNamesToKeep.addAll(nodeResp.getAspectNames());
+            aspectNamesToKeep.add("cm:versionable");
+
+            nUpdate = new Node();
+            nUpdate.setAspectNames(aspectNamesToKeep);
+
+            response = put(URL_NODES, user1, docId, toJsonAsStringNonNull(nUpdate), null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
+            props = nodeResp.getProperties();
+            assertEquals("1.0", props.get("cm:versionLabel"));
+            assertEquals("MAJOR", props.get("cm:versionType"));
+
+            // double-check content
+            response = getSingle(getNodeVersionsUrl(docId), user1, "1.0/content", null, 200);
+            assertEquals(textContent, response.getResponse());
+
+            // Update again ..
             textContent = "more changes 2";
             inputStream = new ByteArrayInputStream(textContent.getBytes());
             txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
@@ -375,8 +436,13 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
             response = putBinary(getNodeContentUrl(docId), user1, payload, null,  null, 200);
             nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
             assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
-            assertEquals("1.1", nodeResp.getProperties().get("cm:versionLabel"));
-            assertEquals("MINOR", nodeResp.getProperties().get("cm:versionType"));
+            props = nodeResp.getProperties();
+            assertEquals("1.1", props.get("cm:versionLabel"));
+            assertEquals("MINOR", props.get("cm:versionType"));
+
+            // double-check content
+            response = getSingle(getNodeVersionsUrl(docId), user1, "1.1/content", null, 200);
+            assertEquals(textContent, response.getResponse());
         }
         finally
         {

@@ -2424,9 +2424,10 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                 }
                 else if (authorityType == AuthorityType.GROUP)
                 {
+                    String authorityDisplayName = authorityService.getAuthorityDisplayName(authorityName);
                     activityService.postActivity(
                             ActivityType.SITE_GROUP_REMOVED, shortName,
-                            ACTIVITY_TOOL, getActivityGroupData(authorityName, ""));
+                            ACTIVITY_TOOL, getActivityGroupData(authorityDisplayName, ""));
                 }
             }
             else
@@ -2533,10 +2534,11 @@ public class SiteServiceImpl extends AbstractLifecycleBean implements SiteServic
                                 ACTIVITY_TOOL, getActivityUserData(authorityName, role), authorityName);
                     } 
                     else if (authorityType == AuthorityType.GROUP)
-                    {
+                    { 
+                        String authorityDisplayName = authorityService.getAuthorityDisplayName(authorityName);
                         activityService.postActivity(
                                 ActivityType.SITE_GROUP_ADDED, shortName,
-                                ACTIVITY_TOOL, getActivityGroupData(authorityName, role));                   
+                                ACTIVITY_TOOL, getActivityGroupData(authorityDisplayName, role));                   
                     }
                 } 
                 else

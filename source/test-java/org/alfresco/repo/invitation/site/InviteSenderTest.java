@@ -115,7 +115,7 @@ public class InviteSenderTest extends TestCase
     private final MessageService messageService = mock(MessageService.class);
     private Action mailAction;
     private SiteInfo siteInfo = mock(SiteInfo.class);
-    private InviteSender sender;
+    private InviteNominatedSender sender;
     private Map<String,Serializable> lastSetMailModel;
 
     protected void testSendMailWorkingPath(
@@ -355,8 +355,8 @@ public class InviteSenderTest extends TestCase
         properties.put(wfVarInviteeGenPassword, password);
         properties.put(wfVarInviteTicket, ticket);
         properties.put(wfVarServerPath, path);
-        properties.put(InviteSender.WF_PACKAGE, packageId);
-        properties.put(InviteSender.WF_INSTANCE_ID, instanceId);
+        properties.put(InviteNominatedSender.WF_PACKAGE, packageId);
+        properties.put(InviteNominatedSender.WF_INSTANCE_ID, instanceId);
         return properties;
     }
 
@@ -366,7 +366,7 @@ public class InviteSenderTest extends TestCase
         super.setUp();
         ServiceRegistry services = mockServices();
         Repository repository = mockRepository();
-        sender = new InviteSender(services, repository, messageService);
+        sender = new InviteNominatedSender(services, repository, messageService);
         lastSetMailModel = null;
     }
 

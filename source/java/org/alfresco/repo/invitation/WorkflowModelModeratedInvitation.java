@@ -76,4 +76,5 @@ public interface WorkflowModelModeratedInvitation
     public static final String wfVarResourceType = "imwf_resourceType";
     public static final String wfVarReviewer = "imwf_reviewer";
     public static final String wfVarReviewComments = "imwf_reviewComments";
+    public static final String bpmGroupAssignee = "bpm_groupAssignee";
 }

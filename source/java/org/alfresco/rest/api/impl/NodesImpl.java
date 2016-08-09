@@ -2295,7 +2295,16 @@ public class NodesImpl implements Nodes
         ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
 
         String mimeType = mimetypeService.guessMimetype(fileName);
-        writer.setMimetype(mimeType);
+        if ((mimeType != null) && (! mimeType.equals(MimetypeMap.MIMETYPE_BINARY)))
+        {
+            // quick/weak guess based on file extension
+            writer.setMimetype(mimeType);
+        }
+        else
+        {
+            // stronger guess based on file stream
+            writer.guessMimetype(fileName);
+        }
 
         InputStream is = null;
 

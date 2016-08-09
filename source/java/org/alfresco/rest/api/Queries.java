@@ -67,7 +67,6 @@ public interface Queries
     static String PARAM_SITE_TITLE       = "title";
     static String PARAM_SITE_DESCRIPTION = "description";
     static int MIN_TERM_LENGTH_SITES     = 2;
-    static String PARAM_SORT_TYPE        = "sortType"; // TODO review
     
     /**
      * Find Nodes

@@ -324,24 +324,6 @@ public class QueriesImpl implements Queries, InitializingBean
     @Override
     public CollectionWithPagingInfo<Site> findSites(Parameters parameters)
     {
-        // TODO review
-        AbstractQuery.Sort sortType = IN_QUERY_SORT;
-        String sortTypeStr = parameters.getParameter(PARAM_SORT_TYPE);
-        if (sortTypeStr != null) {
-            if (sortTypeStr.equalsIgnoreCase("in-query"))
-            {
-                sortType = IN_QUERY_SORT;
-            }
-            else if (sortTypeStr.equalsIgnoreCase("post-query"))
-            {
-                sortType = POST_QUERY_SORT;
-            }
-            else
-            {
-               throw new IllegalArgumentException("Unexpected sortType: "+sortTypeStr+" (expected in-query or post-query)");
-            }
-        }
-        
         return new AbstractQuery<Site>(nodeService, searchService)
         {
             @Override
@@ -380,7 +362,7 @@ public class QueriesImpl implements Queries, InitializingBean
                 }
                 return new Site(siteInfo, role);
             }
-        }.find(parameters, PARAM_TERM, MIN_TERM_LENGTH_SITES, "_SITE", sortType, SITE_SORT_PARAMS_TO_QNAMES, new SortColumn(PARAM_SITE_TITLE, true));
+        }.find(parameters, PARAM_TERM, MIN_TERM_LENGTH_SITES, "_SITE", POST_QUERY_SORT, SITE_SORT_PARAMS_TO_QNAMES, new SortColumn(PARAM_SITE_TITLE, true));
     }
     
     public abstract static class AbstractQuery<T>

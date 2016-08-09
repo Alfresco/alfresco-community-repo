@@ -118,7 +118,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected String user1;
     protected String user2;
     
-    private List<String> users = new ArrayList<>();
+    protected List<String> users = new ArrayList<>();
 
     protected MutableAuthenticationService authenticationService;
     protected PersonService personService;
@@ -133,8 +133,8 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         personService = applicationContext.getBean("personService", PersonService.class);
 
         // note: createUser currently relies on repoService
-        user1 = createUser("user1-" + RUNID);
-        user2 = createUser("user2-" + RUNID);
+        user1 = createUser("user1-" + RUNID, "user1Password");
+        user2 = createUser("user2-" + RUNID, "user2Password");
 
         // to enable admin access via test calls - eg. after clean/purge
         getOrCreateUser("admin", "admin");
@@ -154,7 +154,10 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     @After
     public void tearDown() throws Exception
     {
-        deleteSite(networkOne.getId(), userOneN1.getId(), userOneN1Site.getSiteId(), 204);
+        if ((networkOne != null) && (userOneN1 != null) && (userOneN1Site != null))
+        {
+            deleteSite(networkOne.getId(), userOneN1.getId(), userOneN1Site.getSiteId(), 204);
+        }
 
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
         for (final String user : users)

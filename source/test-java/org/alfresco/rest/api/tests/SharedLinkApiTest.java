@@ -26,17 +26,12 @@
 package org.alfresco.rest.api.tests;
 
 import org.alfresco.repo.content.MimetypeMap;
-import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.rest.api.People;
 import org.alfresco.rest.api.QuickShareLinks;
 import org.alfresco.rest.api.impl.QuickShareLinksImpl;
 import org.alfresco.rest.api.model.QuickShareLink;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.quicksharelinks.QuickShareLinkEntityResource;
-import org.alfresco.rest.api.tests.RepoService.TestNetwork;
-import org.alfresco.rest.api.tests.RepoService.TestPerson;
-import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient.Paging;
 import org.alfresco.rest.api.tests.client.data.Document;
@@ -45,11 +40,6 @@ import org.alfresco.rest.api.tests.client.data.QuickShareLinkEmailRequest;
 import org.alfresco.rest.api.tests.client.data.Rendition;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
-import org.alfresco.service.cmr.security.MutableAuthenticationService;
-import org.alfresco.service.cmr.security.PersonService;
-import org.alfresco.service.cmr.site.SiteVisibility;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 
 import java.io.File;
@@ -296,9 +286,14 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(0, renditions.size());
 
         // create rendition of pdf doc - note: for some reason create rendition of txt doc fail on build m/c (TBC) ?
+        setRequestContext(user2);
+        
         Rendition rendition = createAndGetRendition(d1Id, "doclib");
         assertNotNull(rendition);
         assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+
+        setRequestContext(null);
+
 
         // unauth access to get shared link renditions info (available => CREATED renditions only)
         response = getAll(URL_SHARED_LINKS + "/" + shared1Id + "/renditions", null, null, 200);
@@ -429,8 +424,11 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
             body.put("nodeId", "dummy");
             post(URL_SHARED_LINKS, user1, toJsonAsStringNonNull(body), 501);
 
+            setRequestContext(null);
             getSingle(QuickShareLinkEntityResource.class, null, "dummy", null, 501);
             getSingle(QuickShareLinkEntityResource.class, null, "dummy/content", null, 501);
+
+            setRequestContext(user1);
             deleteSharedLink("dummy", 501);
         }
         finally
@@ -763,9 +761,13 @@ public class SharedLinkApiTest extends AbstractBaseApiTest
         assertEquals(0, renditions.size());
 
         // create rendition of pdf doc - note: for some reason create rendition of txt doc fail on build m/c (TBC) ?
+        setRequestContext(userOneN1.getId());
+
         Rendition rendition = createAndGetRendition(d1Id, "doclib");
         assertNotNull(rendition);
         assertEquals(Rendition.RenditionStatus.CREATED, rendition.getStatus());
+
+        setRequestContext(null);
 
         // unauth access to get shared link renditions info (available => CREATED renditions only)
         response = getAll(URL_SHARED_LINKS + "/" + shared1Id + "/renditions", null, null, 200);

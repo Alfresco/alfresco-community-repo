@@ -63,9 +63,12 @@ public class Node implements Comparable<Node>
     protected UserInfo createdByUser;
     protected UserInfo modifiedByUser;
 
-    //Archived info, explicitly setting to NULL because NULLS don't get shown in the JSON.
-    protected Date archivedAt = null;
-    protected UserInfo archivedByUser = null;
+    // Archived info - specifically for archive (deleted) node - see Trashcan API
+    protected Date archivedAt;
+    protected UserInfo archivedByUser;
+
+    // Version info - specifically for version node - see Version History API
+    protected String versionComment;
 
     protected Boolean isFolder;
     protected Boolean isFile;
@@ -211,6 +214,11 @@ public class Node implements Comparable<Node>
         return createdByUser;
     }
 
+    public void setCreatedByUser(UserInfo createdByUser)
+    {
+        this.createdByUser = createdByUser;
+    }
+
     public String getName()
     {
         return this.name;
@@ -335,6 +343,16 @@ public class Node implements Comparable<Node>
     public void setArchivedByUser(UserInfo archivedByUser)
     {
         this.archivedByUser = archivedByUser;
+    }
+
+    public String getVersionComment()
+    {
+        return versionComment;
+    }
+
+    public void setVersionComment(String versionComment)
+    {
+        this.versionComment = versionComment;
     }
 
     public boolean equals(Object other)

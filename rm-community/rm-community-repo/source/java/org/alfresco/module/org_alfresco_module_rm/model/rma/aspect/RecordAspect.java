@@ -136,7 +136,7 @@ public class RecordAspect extends    AbstractDisposableItem
                     Set<String> writers = extendedSecurityService.getExtendedWriters(parent);
                     if (readers != null && readers.size() != 0)
                     {
-                        extendedSecurityService.addExtendedSecurity(thumbnail, readers, writers, false);
+                        extendedSecurityService.addExtendedSecurity(thumbnail, readers, writers);
                     }
                 }
 

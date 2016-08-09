@@ -742,7 +742,12 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 
-    protected Document createEmptyTextFile(Folder parentFolder, String docName) throws Exception
+    protected Document createEmptyTextFile(String parentFolderId, String docName) throws Exception
+    {
+        return createEmptyTextFile(parentFolderId, docName, null, 201);
+    }
+    
+    protected Document createEmptyTextFile(String parentFolderId, String docName, Map<String, String> params, int expectedStatus) throws Exception
     {
         Document d1 = new Document();
         d1.setName(docName);
@@ -752,17 +757,17 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         d1.setContent(ci);
 
         // create empty file
-        HttpResponse response = post(getNodeChildrenUrl(parentFolder.getId()), toJsonAsStringNonNull(d1), 201);
+        HttpResponse response = post(getNodeChildrenUrl(parentFolderId), toJsonAsStringNonNull(d1), params, null, "alfresco", expectedStatus);
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 
-    protected Document updateTextFile(String contentId, String textContent, Map<String, String> parameters) throws IOException, Exception
+    protected Document updateTextFile(String contentId, String textContent, Map<String, String> params) throws IOException, Exception
     {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
         File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
         BinaryPayload payload = new BinaryPayload(txtFile);
 
-        HttpResponse response = putBinary(getNodeContentUrl(contentId), payload, null, parameters, 200);
+        HttpResponse response = putBinary(getNodeContentUrl(contentId), payload, null, params, 200);
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 

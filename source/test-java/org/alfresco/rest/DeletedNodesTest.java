@@ -86,12 +86,13 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         String folder1 = "folder-testCreateAndDelete-" + now.getTime() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
+        String f1Id = createdFolder.getId();
 
         //Create a folder outside a site
         Folder createdFolderNonSite = createFolder(Nodes.PATH_MY, folder1, null);
         assertNotNull(createdFolderNonSite);
 
-        Document document = createEmptyTextFile(createdFolder, "d1.txt");
+        Document document = createEmptyTextFile(f1Id, "d1.txt");
 
         PublicApiClient.Paging paging = getPaging(0, 100);
         
@@ -176,16 +177,17 @@ public class DeletedNodesTest extends AbstractSingleNetworkSiteTest
         String folder1 = "folder" + now.getTime() + "_1";
         Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
+        String f1Id = createdFolder.getId();
 
         //Create a folder outside a site
         Folder createdFolderNonSite = createFolder(Nodes.PATH_MY, folder1, null);
         assertNotNull(createdFolderNonSite);
 
-        Document document = createEmptyTextFile(createdFolder, "restoreme.txt");
+        Document document = createEmptyTextFile(f1Id, "restoreme.txt");
         deleteNode(document.getId());
         
         //Create another document with the same name
-        Document documentSameName = createEmptyTextFile(createdFolder, "restoreme.txt");
+        Document documentSameName = createEmptyTextFile(f1Id, "restoreme.txt");
 
         //Can't restore a node of the same name
         post(URL_DELETED_NODES+"/"+document.getId()+"/restore", null, null, Status.STATUS_CONFLICT);

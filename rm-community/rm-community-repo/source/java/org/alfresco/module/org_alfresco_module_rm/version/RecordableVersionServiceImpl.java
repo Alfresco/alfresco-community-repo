@@ -735,7 +735,7 @@ public class RecordableVersionServiceImpl extends    Version2ServiceImpl
                         linkToPreviousVersionRecord(nodeRef, record);
                         
                         // set the extended security
-                        extendedSecurityService.addExtendedSecurity(record, readersAndWriters.getFirst(), readersAndWriters.getSecond());
+                        extendedSecurityService.set(record, readersAndWriters);
                         
                         return record;
                     }

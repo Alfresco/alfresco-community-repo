@@ -117,7 +117,7 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
 
                 // remove the extended security from the node
                 // this prevents the users from continuing to see the record in searchs and other linked locations
-                extendedSecurityService.removeAllExtendedSecurity(nodeRef);
+                extendedSecurityService.remove(nodeRef);
 
                 return null;
             }

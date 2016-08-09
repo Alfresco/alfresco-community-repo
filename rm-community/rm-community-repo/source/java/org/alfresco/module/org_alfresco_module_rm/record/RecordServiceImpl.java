@@ -940,7 +940,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                                 nodeService.addChild(parentAssoc.getParentRef(), nodeRef, parentAssoc.getTypeQName(), parentAssoc.getQName());
 
                                 // set the extended security
-                                extendedSecurityService.addExtendedSecurity(nodeRef, readersAndWriters.getFirst(), readersAndWriters.getSecond());
+                                extendedSecurityService.set(nodeRef, readersAndWriters);
                             }
                             finally
                             {
@@ -1042,7 +1042,7 @@ public class RecordServiceImpl extends BaseBehaviourBean
                 }
 
                 // set extended security on record
-                extendedSecurityService.addExtendedSecurity(record, readersAndWriters.getFirst(), readersAndWriters.getSecond());
+                extendedSecurityService.set(record, readersAndWriters);
 
                 return record;
             }

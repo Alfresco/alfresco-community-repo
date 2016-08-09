@@ -212,7 +212,7 @@ public class RecordServiceImplTest extends BaseRMTestCase
             {
                 Set<String> writers = new HashSet<String>(1);
                 writers.add(dmCollaborator);
-                extendedSecurityService.addExtendedSecurity(recordOne, null, writers);
+                extendedSecurityService.set(recordOne, null, writers);
 
                 assertTrue(extendedSecurityService.getExtendedReaders(recordOne).isEmpty());
                 assertFalse(extendedSecurityService.getExtendedWriters(recordOne).isEmpty());

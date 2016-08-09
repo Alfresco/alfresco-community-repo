@@ -402,7 +402,7 @@ public class ExtendedSecurityServiceImplUnitTest
             .thenReturn(mockedReadPagingResults);
         
         // add extended security
-        extendedSecurityService.addExtendedSecurity(nodeRef, READERS, WRITERS);
+        extendedSecurityService.set(nodeRef, READERS, WRITERS);
         
         // verify read group created correctly
         verify(mockedAuthorityService).createAuthority(AuthorityType.GROUP, readGroup, readGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
@@ -477,7 +477,7 @@ public class ExtendedSecurityServiceImplUnitTest
                 .collect(Collectors.toSet()));
         
         // add extended security
-        extendedSecurityService.addExtendedSecurity(nodeRef, READERS, WRITERS);
+        extendedSecurityService.set(nodeRef, READERS, WRITERS);
         
         // verify read group is not recreated
         verify(mockedAuthorityService, never()).createAuthority(AuthorityType.GROUP, readGroup, readGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
@@ -553,7 +553,7 @@ public class ExtendedSecurityServiceImplUnitTest
                 .collect(Collectors.toSet()));
         
         // add extended security
-        extendedSecurityService.addExtendedSecurity(nodeRef, READERS, WRITERS);
+        extendedSecurityService.set(nodeRef, READERS, WRITERS);
         
         // new group names
         readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_PREFIX, READERS, 1);
@@ -641,7 +641,7 @@ public class ExtendedSecurityServiceImplUnitTest
                 .collect(Collectors.toSet()));
         
         // add extended security
-        extendedSecurityService.addExtendedSecurity(nodeRef, READERS, WRITERS);
+        extendedSecurityService.set(nodeRef, READERS, WRITERS);
         
         // verify read group is not recreated
         verify(mockedAuthorityService, never()).createAuthority(AuthorityType.GROUP, readGroup, readGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
@@ -702,7 +702,7 @@ public class ExtendedSecurityServiceImplUnitTest
             .thenReturn(permissions);
         
         // remove extended security
-        extendedSecurityService.removeAllExtendedSecurity(nodeRef);
+        extendedSecurityService.remove(nodeRef);
         
         // verify that the groups permissions have been removed
         verify(mockedPermissionService).clearPermission(nodeRef, readGroup);
@@ -720,7 +720,7 @@ public class ExtendedSecurityServiceImplUnitTest
             .thenReturn(HAS_NO_EXTENDED_SECURITY);
         
         // remove extended security
-        extendedSecurityService.removeAllExtendedSecurity(nodeRef);
+        extendedSecurityService.remove(nodeRef);
         
         // verify that the groups permissions have been removed
         verify(mockedPermissionService, never()).clearPermission(eq(nodeRef), anyString());

@@ -62,7 +62,7 @@ import com.sun.star.lang.IllegalArgumentException;
  */
 public class QueriesPeopleApiTest extends AbstractSingleNetworkSiteTest
 {
-    private static final String URL_QUERIES_LSP = "queries/live-search-people";
+    private static final String URL_QUERIES_LSP = "queries/people";
     
     private static String TEST_TERM_PREFIX = Long.toString(System.currentTimeMillis()/1000);
     

@@ -46,9 +46,9 @@ public class QueriesEntityResource implements
         EntityResourceAction.ReadById<CollectionWithPagingInfo<? extends Object>>,
         InitializingBean
 {
-    private final static String QUERY_LIVE_SEARCH_NODES = "live-search-nodes";
-    private final static String QUERY_LIVE_SEARCH_PEOPLE = "live-search-people";
-    private final static String QUERY_LIVE_SEARCH_SITES = "live-search-sites";
+    private final static String QUERY_NODES = "nodes";
+    private final static String QUERY_PEOPLE = "people";
+    private final static String QUERY_SITES = "sites";
 
     private Queries queries;
 
@@ -70,11 +70,11 @@ public class QueriesEntityResource implements
     {
         switch (queryId)
         {
-        case QUERY_LIVE_SEARCH_NODES:
+        case QUERY_NODES:
             return queries.findNodes(parameters);
-        case QUERY_LIVE_SEARCH_PEOPLE:
+        case QUERY_PEOPLE:
             return queries.findPeople(parameters);
-        case QUERY_LIVE_SEARCH_SITES:
+        case QUERY_SITES:
             return queries.findSites(parameters);
         default:
             throw new NotFoundException(queryId);

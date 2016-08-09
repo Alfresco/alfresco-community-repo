@@ -54,14 +54,14 @@ import static org.junit.Assert.*;
 * V1 REST API tests for pre-defined 'live' search Queries on Nodes
  * 
  * <ul>
- * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/live-search-nodes} </li>
+ * <li> {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/nodes} </li>
  * </ul>
  *
  * @author janv
  */
 public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
 {
-    private static final String URL_QUERIES_LSN = "queries/live-search-nodes";
+    private static final String URL_QUERIES_LSN = "queries/nodes";
     
     public static <K, V extends Comparable<? super V>> Map<K, V> sortByValue( Map<K, V> map )
     {
@@ -87,7 +87,7 @@ public class QueriesNodesApiTest extends AbstractSingleNetworkSiteTest
      * Tests basic api for nodes live search - metadata (name, title, description) &/or full text search of file/content
      *
      * <p>GET:</p>
-     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/live-search-nodes}
+     * {@literal <host>:<port>/alfresco/api/<networkId>/public/alfresco/versions/1/queries/nodes}
      */
     @Test
     public void testLiveSearchNodes_FTS_and_Metadata() throws Exception

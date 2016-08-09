@@ -74,7 +74,7 @@ public class SolrQueryHTTPClientTest
         SolrQueryHTTPClient client = new SolrQueryHTTPClient();
         client.setLanguageMappings(languageMappings);
         StatsParameters params = getParameters();
-        String url = client.buildStatsUrl(params, "http://localhost:8080/solr/alfresco/select", Locale.CANADA_FRENCH);
+        String url = client.buildStatsUrl(params, "http://localhost:8080/solr/alfresco/select", Locale.CANADA_FRENCH, null);
         assertNotNull(url);
         assertTrue(url.contains("locale=fr_CA"));
         assertTrue(url.contains("sort=contentsize"));

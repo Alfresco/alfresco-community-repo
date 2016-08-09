@@ -71,6 +71,8 @@ public class TestCustomModelExport extends BaseCustomModelApiTest
     @Test
     public void testCreateDownload() throws Exception
     {
+        setRequestContext(customModelAdmin);
+        
         final String modelName = "testModel" + System.currentTimeMillis();
         final String modelExportFileName = modelName + ".xml";
         final String shareExtExportFileName = "CMM_" + modelName + "_module.xml";
@@ -86,11 +88,15 @@ public class TestCustomModelExport extends BaseCustomModelApiTest
         // Create Share extension module
         downloadTestUtil.createShareExtModule(modelName);
 
-        // Try to create download the model as a non Admin user
-        post("cmm/" + modelName + "/download", nonAdminUserName, RestApiUtil.toJsonAsString(new CustomModelDownload()), getExtModuleQS(false), 403);
+        setRequestContext(nonAdminUserName);
 
+        // Try to create download the model as a non Admin user
+        post("cmm/" + modelName + "/download", RestApiUtil.toJsonAsString(new CustomModelDownload()), getExtModuleQS(false), 403);
+
+        setRequestContext(customModelAdmin);
+        
         // Create download for custom model only
-        HttpResponse response = post("cmm/" + modelName + "/download", customModelAdmin, RestApiUtil.toJsonAsString(new CustomModelDownload()), getExtModuleQS(false), 201);
+        HttpResponse response = post("cmm/" + modelName + "/download", RestApiUtil.toJsonAsString(new CustomModelDownload()), getExtModuleQS(false), 201);
         CustomModelDownload returnedDownload = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModelDownload.class);
         assertNotNull(returnedDownload);
         assertNotNull(returnedDownload.getNodeRef());
@@ -111,7 +117,7 @@ public class TestCustomModelExport extends BaseCustomModelApiTest
         assertEquals(modelEntry, modelExportFileName);
 
         // Create download for custom model and its share extension module
-        response = post("cmm/" + modelName + "/download", customModelAdmin, RestApiUtil.toJsonAsString(new CustomModelDownload()), getExtModuleQS(true), 201);
+        response = post("cmm/" + modelName + "/download", RestApiUtil.toJsonAsString(new CustomModelDownload()), getExtModuleQS(true), 201);
         returnedDownload = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModelDownload.class);
         assertNotNull(returnedDownload);
         assertNotNull(returnedDownload.getNodeRef());

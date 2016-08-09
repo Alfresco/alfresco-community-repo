@@ -36,7 +36,6 @@ import static org.junit.Assert.assertTrue;
 import org.alfresco.rest.api.model.ModulePackage;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
-import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
@@ -50,6 +49,7 @@ import java.util.Map;
 
 /**
  * Basic modulepackages api calls
+ * 
  * @author Gethin James.
  */
 public class ModulePackagesApiTest extends AbstractBaseApiTest
@@ -78,7 +78,9 @@ public class ModulePackagesApiTest extends AbstractBaseApiTest
     @Test
     public void testAllModulePackages() throws Exception
     {
-        HttpResponse response = getAll(MODULEPACKAGES, nonAdminUserName, null, HttpStatus.SC_OK);
+        setRequestContext(nonAdminUserName);
+        
+        HttpResponse response = getAll(MODULEPACKAGES, null, HttpStatus.SC_OK);
         assertNotNull(response);
 
         PublicApiClient.ExpectedPaging paging = parsePaging(response.getJsonResponse());
@@ -96,10 +98,12 @@ public class ModulePackagesApiTest extends AbstractBaseApiTest
     @Test
     public void testSingleModulePackage() throws Exception
     {
-        HttpResponse response = getSingle(MODULEPACKAGES, nonAdminUserName, "NonSENSE_NOTFOUND", HttpStatus.SC_NOT_FOUND);
+        setRequestContext(nonAdminUserName);
+        
+        HttpResponse response = getSingle(MODULEPACKAGES, "NonSENSE_NOTFOUND", HttpStatus.SC_NOT_FOUND);
         assertNotNull(response);
 
-        response = getSingle(MODULEPACKAGES, nonAdminUserName, "alfresco-simple-module", HttpStatus.SC_OK);
+        response = getSingle(MODULEPACKAGES, "alfresco-simple-module", HttpStatus.SC_OK);
         assertNotNull(response);
 
         ModulePackage simpleModule = parseRestApiEntry(response.getJsonResponse(),ModulePackage.class);
@@ -111,7 +115,8 @@ public class ModulePackagesApiTest extends AbstractBaseApiTest
     @Test
     public void testErrorUrls() throws Exception
     {
-        publicApiClient.setRequestContext(new RequestContext(null));
+        setRequestContext(null);
+        
         Map<String, String> params = createParams(null, null);
 
         //Call an endpoint that doesn't exist

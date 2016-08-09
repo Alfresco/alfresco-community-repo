@@ -46,6 +46,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
+ * V1 REST API test for posting Activities
+ * 
  * Tests posting activities from the public api.
  *
  * @author gethin
@@ -71,10 +73,10 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         //Update the file
         Document dUpdate = new Document();
         dUpdate.setName("d1b.txt");
-        put(URL_NODES, user1, documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
+        put(URL_NODES, documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
 
         //Now download it
-        HttpResponse response = getSingle(NodesEntityResource.class, user1, documentResp.getId()+"/content", null, 200);
+        HttpResponse response = getSingle(NodesEntityResource.class, documentResp.getId()+"/content", null, 200);
         String textContent = response.getResponse();
         assertNotNull(textContent);
 
@@ -146,7 +148,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         //Update the file
         Document dUpdate = new Document();
         dUpdate.setName("nonsite_d2.txt");
-        put(URL_NODES, user1, documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
+        put(URL_NODES, documentResp.getId(), toJsonAsStringNonNull(dUpdate), null, 200);
 
         List<Activity> activitiesAgain = getMyActivities();
         assertEquals("No activites should be created for non-site nodes", activities, activitiesAgain);

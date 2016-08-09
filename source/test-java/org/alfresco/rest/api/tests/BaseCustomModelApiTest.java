@@ -142,9 +142,9 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
         customModel.setDescription(desc);
         customModel.setStatus(status);
         customModel.setAuthor(author);
-
+        
         // Create the model as a Model Administrator
-        HttpResponse response = post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 201);
+        HttpResponse response = post("cmm", RestApiUtil.toJsonAsString(customModel), 201);
         CustomModel returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         if (author == null)
         {
@@ -181,7 +181,7 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
         classModel.setParentName(parent);
 
         // Create type as a Model Administrator
-        HttpResponse response = post(uri, customModelAdmin, RestApiUtil.toJsonAsString(classModel), 201);
+        HttpResponse response = post(uri, RestApiUtil.toJsonAsString(classModel), 201);
         T returnedClassModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), glazz);
 
         compareCustomTypesAspects(classModel, returnedClassModel, "prefixedName");

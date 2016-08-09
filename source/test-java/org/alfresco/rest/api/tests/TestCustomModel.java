@@ -64,14 +64,18 @@ public class TestCustomModel extends BaseCustomModelApiTest
         customModel.setDescription("Test model description");
         customModel.setStatus(CustomModel.ModelStatus.DRAFT);
 
+        setRequestContext(nonAdminUserName);
+
         // Try to create the model as a non Admin user
-        post("cmm", nonAdminUserName, RestApiUtil.toJsonAsString(customModel), 403);
+        post("cmm", RestApiUtil.toJsonAsString(customModel), 403);
+
+        setRequestContext(customModelAdmin);
 
         // Create the model as a Model Administrator
-        post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 201);
+        post("cmm", RestApiUtil.toJsonAsString(customModel), 201);
 
         // Retrieve the created model
-        HttpResponse response = getSingle("cmm", customModelAdmin, modelName, 200);
+        HttpResponse response = getSingle("cmm", modelName, 200);
         CustomModel returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         // Check the retrieved model is the expected model.
         // Note: since we didn't specify the Author when created the Model,
@@ -92,30 +96,32 @@ public class TestCustomModel extends BaseCustomModelApiTest
         customModel.setNamespaceUri(namespacePair.getFirst());
         customModel.setNamespacePrefix(namespacePair.getSecond());
 
+        setRequestContext(customModelAdmin);
+
         // Test invalid inputs
         {
             customModel.setName(modelName + "<script>alert('oops')</script>");
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 400);
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 400);
 
             customModel.setName("prefix:" + modelName);
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 400); // Invalid name. Contains ':'
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 400); // Invalid name. Contains ':'
 
             customModel.setName("prefix " + modelName);
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 400); // Invalid name. Contains space
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 400); // Invalid name. Contains space
 
             customModel.setName(modelName);
             customModel.setNamespacePrefix(namespacePair.getSecond()+" space");
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 400); // Invalid prefix. Contains space
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 400); // Invalid prefix. Contains space
 
             customModel.setNamespacePrefix(namespacePair.getSecond()+"invalid/");
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 400); // Invalid prefix. Contains '/'
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 400); // Invalid prefix. Contains '/'
 
             customModel.setNamespacePrefix(namespacePair.getSecond());
             customModel.setNamespaceUri(namespacePair.getFirst()+" space");
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 400); // Invalid URI. Contains space
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 400); // Invalid URI. Contains space
 
             customModel.setNamespaceUri(namespacePair.getFirst()+"\\");
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 400); // Invalid URI. Contains '\'
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 400); // Invalid URI. Contains '\'
         }
 
         // Test mandatory properties of the model
@@ -123,16 +129,16 @@ public class TestCustomModel extends BaseCustomModelApiTest
             customModel.setName("");
             customModel.setNamespacePrefix(namespacePair.getSecond());
             customModel.setNamespaceUri(namespacePair.getFirst());
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 400); // name is mandatory
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 400); // name is mandatory
 
             customModel.setName(modelName);
             customModel.setNamespaceUri(null);
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 400); // namespaceUri is mandatory
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 400); // namespaceUri is mandatory
 
             customModel.setName(modelName);
             customModel.setNamespaceUri(namespacePair.getFirst());
             customModel.setNamespacePrefix(null);
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 400); // namespacePrefix is mandatory
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 400); // namespacePrefix is mandatory
         }
 
         // Test duplicate model name
@@ -141,11 +147,11 @@ public class TestCustomModel extends BaseCustomModelApiTest
             customModel.setName("contentmodel");
             customModel.setNamespaceUri(namespacePair.getFirst());
             customModel.setNamespacePrefix(namespacePair.getSecond());
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 409);
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 409);
 
             // Create the model
             customModel.setName(modelName);
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 201);
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 201);
 
             // Create a duplicate model
             // Set a new namespace to make sure the 409 status code is returned
@@ -153,7 +159,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
             namespacePair = getTestNamespaceUriPrefixPair();
             customModel.setNamespaceUri(namespacePair.getFirst());
             customModel.setNamespacePrefix(namespacePair.getSecond());
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 409);
+            post("cmm", RestApiUtil.toJsonAsString(customModel), 409);
         }
 
         // Test duplicate namespaceUri
@@ -165,7 +171,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
             customModelTwo.setName(modelNameTwo);
             customModelTwo.setNamespaceUri(namespacePairTwo.getFirst());
             customModelTwo.setNamespacePrefix(namespacePairTwo.getSecond());
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModelTwo), 201);
+            post("cmm", RestApiUtil.toJsonAsString(customModelTwo), 201);
 
             String modelNameThree = "testModelThree" + System.currentTimeMillis();
             Pair<String, String> namespacePairThree = getTestNamespaceUriPrefixPair();
@@ -175,19 +181,21 @@ public class TestCustomModel extends BaseCustomModelApiTest
             customModelThree.setNamespacePrefix(namespacePairThree.getSecond());
 
             // Try to create a model with a namespace uri which has already been used.
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModelThree), 409);
+            post("cmm", RestApiUtil.toJsonAsString(customModelThree), 409);
             
             customModelThree.setNamespaceUri(namespacePairThree.getFirst());
             customModelThree.setNamespacePrefix(namespacePairTwo.getSecond()); // duplicate prefix
 
             // Try to create a model with a namespace prefix which has already been used.
-            post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModelThree), 409);
+            post("cmm", RestApiUtil.toJsonAsString(customModelThree), 409);
         }
     }
 
     @Test
     public void testListBasicModels() throws Exception
     {
+        setRequestContext(customModelAdmin);
+        
         String modelName_1 = "testModel1" + System.currentTimeMillis();
         // Create the model as a Model Administrator
         CustomModel customModel_1 = createCustomModel(modelName_1, getTestNamespaceUriPrefixPair(), ModelStatus.DRAFT);
@@ -199,7 +207,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
         CustomModel customModel_3 = createCustomModel(modelName_3, getTestNamespaceUriPrefixPair(), ModelStatus.DRAFT);
  
         Paging paging = getPaging(0, Integer.MAX_VALUE);
-        HttpResponse response = getAll("cmm", customModelAdmin, paging, 200);
+        HttpResponse response = getAll("cmm", paging, 200);
         List<CustomModel> models = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), CustomModel.class);
 
         assertTrue(models.size() >= 3);
@@ -211,13 +219,15 @@ public class TestCustomModel extends BaseCustomModelApiTest
     @Test
     public void testActivateCustomModel() throws Exception
     {
+        setRequestContext(customModelAdmin);
+        
         String modelNameOne = "testActivateModelOne" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
         CustomModel customModelOne = createCustomModel(modelNameOne, namespacePair, ModelStatus.DRAFT, "Test model description", "Jane Doe");
 
         // Retrieve the created model and check its status (the default is DRAFT)
-        HttpResponse response = getSingle("cmm", customModelAdmin, modelNameOne, 200);
+        HttpResponse response = getSingle("cmm", modelNameOne, 200);
         CustomModel returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertEquals(ModelStatus.DRAFT, returnedModel.getStatus());
 
@@ -225,20 +235,24 @@ public class TestCustomModel extends BaseCustomModelApiTest
         CustomModel updatePayload = new CustomModel();
         updatePayload.setStatus(ModelStatus.ACTIVE);
 
+        setRequestContext(nonAdminUserName);
+
         // Try to activate the model as a non Admin user
-        put("cmm", nonAdminUserName, modelNameOne, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 403);
+        put("cmm", modelNameOne, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 403);
 
+        setRequestContext(customModelAdmin);
+        
         // Activate the model as a Model Administrator
-        put("cmm", customModelAdmin, modelNameOne, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 200);
+        put("cmm", modelNameOne, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 200);
 
-        response = getSingle("cmm", customModelAdmin, modelNameOne, 200);
+        response = getSingle("cmm", modelNameOne, 200);
         returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertEquals(ModelStatus.ACTIVE, returnedModel.getStatus());
         // Check other properties have not been modified
         compareCustomModels(customModelOne, returnedModel, "status");
 
         // Try to activate the already activated model as a Model Administrator
-        put("cmm", customModelAdmin, modelNameOne, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 500);
+        put("cmm", modelNameOne, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 500);
 
         // Create another Model
         String modelNameTwo = "testActivateModelTwo" + System.currentTimeMillis();
@@ -247,9 +261,9 @@ public class TestCustomModel extends BaseCustomModelApiTest
 
         // Activate the model as a Model Administrator
         customModelTwo.setStatus(ModelStatus.ACTIVE);
-        put("cmm", customModelAdmin, modelNameTwo, RestApiUtil.toJsonAsString(customModelTwo), SELECT_STATUS_QS, 200);
+        put("cmm", modelNameTwo, RestApiUtil.toJsonAsString(customModelTwo), SELECT_STATUS_QS, 200);
 
-        response = getSingle("cmm", customModelAdmin, modelNameTwo, 200);
+        response = getSingle("cmm", modelNameTwo, 200);
         returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertEquals(ModelStatus.ACTIVE, returnedModel.getStatus());
         // Check other properties have not been modified
@@ -259,13 +273,15 @@ public class TestCustomModel extends BaseCustomModelApiTest
     @Test
     public void testDeactivateCustomModel() throws Exception
     {
+        setRequestContext(customModelAdmin);
+        
         String modelNameOne = "testDeactivateModelOne" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
          // Create the model as a Model Administrator
         CustomModel customModelOne =  createCustomModel(modelNameOne, namespacePair, ModelStatus.ACTIVE, null, "Mark Moe");
 
         // Retrieve the created model and check its status
-        HttpResponse response = getSingle("cmm", customModelAdmin, modelNameOne, 200);
+        HttpResponse response = getSingle("cmm", modelNameOne, 200);
         CustomModel returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertEquals(ModelStatus.ACTIVE, returnedModel.getStatus());
 
@@ -273,20 +289,24 @@ public class TestCustomModel extends BaseCustomModelApiTest
         CustomModel updatePayload = new CustomModel();
         updatePayload.setStatus(ModelStatus.DRAFT);
 
+        setRequestContext(nonAdminUserName);
+
         // Try to deactivate the model as a non Admin user
-        put("cmm", nonAdminUserName, modelNameOne, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 403);
+        put("cmm", modelNameOne, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 403);
 
+        setRequestContext(customModelAdmin);
+        
         // Deactivate the model as a Model Administrator
-        put("cmm", customModelAdmin, modelNameOne, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 200);
+        put("cmm", modelNameOne, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 200);
 
-        response = getSingle("cmm", customModelAdmin, modelNameOne, 200);
+        response = getSingle("cmm", modelNameOne, 200);
         returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertEquals(ModelStatus.DRAFT, returnedModel.getStatus());
         // Check other properties have not been modified
         compareCustomModels(customModelOne, returnedModel, "status");
 
         // Try to deactivate the already deactivated model as a Model Administrator
-        put("cmm", customModelAdmin, modelNameOne, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 500);
+        put("cmm", modelNameOne, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 500);
 
         // Activate/Deactivate a model with an aspect 
         {
@@ -298,24 +318,24 @@ public class TestCustomModel extends BaseCustomModelApiTest
             // Aspect
             CustomAspect aspect = new CustomAspect();
             aspect.setName("testMarkerAspect");
-            post("cmm/" + modelNameTwo + "/aspects", customModelAdmin, RestApiUtil.toJsonAsString(aspect), 201);
+            post("cmm/" + modelNameTwo + "/aspects", RestApiUtil.toJsonAsString(aspect), 201);
             // Retrieve the created aspect
-            getSingle("cmm/" + modelNameTwo + "/aspects", customModelAdmin, aspect.getName(), 200);
+            getSingle("cmm/" + modelNameTwo + "/aspects", aspect.getName(), 200);
 
             // Activate the model as a Model Administrator
             customModelTwo.setStatus(ModelStatus.ACTIVE);
-            put("cmm", customModelAdmin, modelNameTwo, RestApiUtil.toJsonAsString(customModelTwo), SELECT_STATUS_QS, 200);
+            put("cmm", modelNameTwo, RestApiUtil.toJsonAsString(customModelTwo), SELECT_STATUS_QS, 200);
 
-            response = getSingle("cmm", customModelAdmin, modelNameTwo, 200);
+            response = getSingle("cmm", modelNameTwo, 200);
             returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
             assertEquals(ModelStatus.ACTIVE, returnedModel.getStatus());
 
             updatePayload = new CustomModel();
             updatePayload.setStatus(ModelStatus.DRAFT);
             // Deactivate the model as a Model Administrator
-            put("cmm", customModelAdmin, modelNameTwo, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 200);
+            put("cmm", modelNameTwo, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 200);
 
-            response = getSingle("cmm", customModelAdmin, modelNameTwo, 200);
+            response = getSingle("cmm", modelNameTwo, 200);
             returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
             assertEquals(ModelStatus.DRAFT, returnedModel.getStatus());
         }
@@ -324,43 +344,51 @@ public class TestCustomModel extends BaseCustomModelApiTest
     @Test
     public void testDeleteCustomModel() throws Exception
     {
+        setRequestContext(customModelAdmin);
+        
         String modelName = "testDeleteModel" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
         CustomModel customModel = createCustomModel(modelName, namespacePair, ModelStatus.DRAFT, null, "Joe Bloggs");
 
         // Retrieve the created model
-        HttpResponse response = getSingle("cmm", customModelAdmin, modelName, 200);
+        HttpResponse response = getSingle("cmm", modelName, 200);
         CustomModel returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         compareCustomModels(customModel, returnedModel);
 
+        setRequestContext(nonAdminUserName);
+        
         // Try to delete the model as a non Admin user
-        delete("cmm", nonAdminUserName, modelName, 403);
+        delete("cmm", modelName, 403);
+
+        setRequestContext(customModelAdmin);
 
         // Delete the model as a Model Administrator
-        delete("cmm", customModelAdmin, modelName, 204);
+        delete("cmm", modelName, 204);
 
         // Create the model again
-        post("cmm", customModelAdmin, RestApiUtil.toJsonAsString(customModel), 201);
+        post("cmm", RestApiUtil.toJsonAsString(customModel), 201);
         
         // Activated the model
         CustomModel updatePayload = new CustomModel();
         updatePayload.setStatus(ModelStatus.ACTIVE);
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 200);
+        put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 200);
         
         // Try to delete the active model
-        delete("cmm", customModelAdmin, modelName, 409);
+        delete("cmm", modelName, 409);
         
         // Deactivate and then delete the model
         updatePayload = new CustomModel();
         updatePayload.setStatus(ModelStatus.DRAFT);
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 200);
-        delete("cmm", customModelAdmin, modelName, 204);
+        put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 200);
+        delete("cmm", modelName, 204);
     }
 
     @Test
     public void testUpdateBasicModel() throws Exception
     {
+        setRequestContext(customModelAdmin);
+        
         String modelName = "testModel" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
@@ -370,31 +398,31 @@ public class TestCustomModel extends BaseCustomModelApiTest
         CustomModel updatePayload = new CustomModel();
         String newName = modelName + "Modified";
         updatePayload.setName(newName);
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 400); // Cannot update the model name
+        put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 400); // Cannot update the model name
 
         // Test update the namespace URI (already in-use)
         updatePayload = new CustomModel();
         updatePayload.setNamespaceUri("http://www.alfresco.org/model/content/1.0");
         updatePayload.setNamespacePrefix("newPrefix");
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 409); // The namespace uri has already been used
+        put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 409); // The namespace uri has already been used
 
         // Test update the namespace Prefix (already in-use)
         updatePayload = new CustomModel();
         updatePayload.setNamespaceUri(getTestNamespaceUriPrefixPair().getFirst());
         updatePayload.setNamespacePrefix("cm");
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 409); // The namespace prefix has already been used
+        put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 409); // The namespace prefix has already been used
 
         // Test update the namespace URI (without sending the namespace prefix)
         updatePayload = new CustomModel();
         updatePayload.setNamespaceUri(getTestNamespaceUriPrefixPair().getFirst());
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 400); // The namespace prefix is mandatory
+        put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 400); // The namespace prefix is mandatory
 
         // Test update the namespace URI only
         updatePayload = new CustomModel();
         updatePayload.setNamespacePrefix( namespacePair.getSecond());
         Pair<String, String> newURI = getTestNamespaceUriPrefixPair();
         updatePayload.setNamespaceUri(newURI.getFirst());
-        HttpResponse response = put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 200);
+        HttpResponse response = put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 200);
         CustomModel returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertEquals(newURI.getFirst(), returnedModel.getNamespaceUri());
         assertEquals("The namespace prefix shouldn't have changed.", namespacePair.getSecond(), returnedModel.getNamespacePrefix());
@@ -402,14 +430,14 @@ public class TestCustomModel extends BaseCustomModelApiTest
         // Test update the namespace prefix (without sending the namespace URI)
         updatePayload = new CustomModel();
         updatePayload.setNamespacePrefix("newPrefix");
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 400); // The namespce uri is mandatory
+        put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 400); // The namespce uri is mandatory
         
         // Test update the namespace prefix only
         updatePayload = new CustomModel();
         updatePayload.setNamespaceUri(namespacePair.getFirst());
         Pair<String, String> newPrefix = getTestNamespaceUriPrefixPair();
         updatePayload.setNamespacePrefix( newPrefix.getSecond());
-        response = put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 200);
+        response = put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 200);
         returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertEquals(newPrefix.getSecond(), returnedModel.getNamespacePrefix());
         assertEquals("The namespace URI shouldn't have changed.", namespacePair.getFirst(), returnedModel.getNamespaceUri());
@@ -423,13 +451,18 @@ public class TestCustomModel extends BaseCustomModelApiTest
         updatePayload.setAuthor("John Moe");
         updatePayload.setStatus(ModelStatus.ACTIVE); // This should be ignored
 
+        setRequestContext(nonAdminUserName);
+        
         // Try to update the model as a non Admin user
-        put("cmm", nonAdminUserName, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 403);
+        put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 403);
+
+        setRequestContext(customModelAdmin);
+        
         // Update the model as a Model Administrator
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 200);
+        put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 200);
 
         // Retrieve the updated model
-        response = getSingle("cmm", customModelAdmin, modelName, 200);
+        response = getSingle("cmm", modelName, 200);
         returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         compareCustomModels(updatePayload, returnedModel, "name", "status");
         assertEquals("The model status should only be updated via '?select=status' request.", ModelStatus.DRAFT, returnedModel.getStatus());
@@ -437,7 +470,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
         // Activate the model as a Model Administrator
         updatePayload = new CustomModel();
         updatePayload.setStatus(ModelStatus.ACTIVE);
-        response = put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 200);
+        response = put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), SELECT_STATUS_QS, 200);
         returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertEquals(ModelStatus.ACTIVE, returnedModel.getStatus());
 
@@ -447,14 +480,14 @@ public class TestCustomModel extends BaseCustomModelApiTest
         updatePayload.setNamespaceUri(newNamespacePair.getFirst());
         updatePayload.setNamespacePrefix(returnedModel.getNamespacePrefix());
         // Cannot update the namespace uri and/or namespace prefix when the model is Active.
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 409);
+        put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 409);
 
         // Try to update the ACTIVE model's namespace Prefix
         updatePayload = new CustomModel();
         updatePayload.setNamespaceUri(returnedModel.getNamespaceUri());
         updatePayload.setNamespacePrefix("myNewPrefix");
         // Cannot update the namespace uri and/or namespace prefix when the model is Active.
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 409);
+        put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 409);
 
         // Test a valid update of an Active model (you can only update desc and author)
         updatePayload = new CustomModel();
@@ -462,10 +495,10 @@ public class TestCustomModel extends BaseCustomModelApiTest
         updatePayload.setNamespacePrefix(returnedModel.getNamespacePrefix());
         updatePayload.setDescription("Test modifying active model description");
         updatePayload.setAuthor("Mark Miller");
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 200);
+        put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 200);
 
         // Retrieve the updated active model
-        response = getSingle("cmm", customModelAdmin, modelName, 200);
+        response = getSingle("cmm", modelName, 200);
         returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         compareCustomModels(updatePayload, returnedModel, "name", "status");
     }
@@ -474,6 +507,8 @@ public class TestCustomModel extends BaseCustomModelApiTest
     //SHA-726
     public void testUpdateModel_WithAspectsAndTypes() throws Exception
     {
+        setRequestContext(customModelAdmin);
+        
         String modelName = "testModel" + System.currentTimeMillis();
         Pair<String, String> namespacePair = getTestNamespaceUriPrefixPair();
         // Create the model as a Model Administrator
@@ -492,7 +527,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
         // Activate the model
         CustomModel modelOneStatusPayload = new CustomModel();
         modelOneStatusPayload.setStatus(ModelStatus.ACTIVE);
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(modelOneStatusPayload), SELECT_STATUS_QS, 200);
+        put("cmm", modelName, RestApiUtil.toJsonAsString(modelOneStatusPayload), SELECT_STATUS_QS, 200);
 
         // Add another type with 'typeBaseName' as its parent
         String childTypeName = "testTypeChild" + System.currentTimeMillis();
@@ -505,14 +540,14 @@ public class TestCustomModel extends BaseCustomModelApiTest
          // Deactivate the model
         modelOneStatusPayload = new CustomModel();
         modelOneStatusPayload.setStatus(ModelStatus.DRAFT);
-        put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(modelOneStatusPayload), SELECT_STATUS_QS, 200);
+        put("cmm", modelName, RestApiUtil.toJsonAsString(modelOneStatusPayload), SELECT_STATUS_QS, 200);
 
         // Test update the namespace prefix
         CustomModel updatePayload = new CustomModel();
         String modifiedPrefix = namespacePair.getSecond() + "Modified";
         updatePayload.setNamespacePrefix(modifiedPrefix);
         updatePayload.setNamespaceUri(namespacePair.getFirst());
-        HttpResponse response = put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 200);
+        HttpResponse response = put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 200);
         CustomModel returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertEquals(modifiedPrefix, returnedModel.getNamespacePrefix());
         assertEquals("The namespace URI shouldn't have changed.", namespacePair.getFirst(), returnedModel.getNamespaceUri());
@@ -522,19 +557,19 @@ public class TestCustomModel extends BaseCustomModelApiTest
         updatePayload.setNamespacePrefix(modifiedPrefix);
         String modifiedURI = namespacePair.getFirst() + "Modified";
         updatePayload.setNamespaceUri(modifiedURI);
-        response = put("cmm", customModelAdmin, modelName, RestApiUtil.toJsonAsString(updatePayload), null, 200);
+        response = put("cmm", modelName, RestApiUtil.toJsonAsString(updatePayload), null, 200);
         returnedModel = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomModel.class);
         assertEquals(modifiedURI, returnedModel.getNamespaceUri());
         assertEquals("The namespace prefix shouldn't have changed.", modifiedPrefix, returnedModel.getNamespacePrefix());
 
         // Retrieve the child type
-        response = getSingle("cmm/" + modelName + "/types", customModelAdmin, childTypeName,  200);
+        response = getSingle("cmm/" + modelName + "/types", childTypeName,  200);
         CustomType returnedChildType = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomType.class);
         final String newTypeParentName = modifiedPrefix + QName.NAMESPACE_PREFIX + typeBaseName;
         assertEquals("The parent name prefix should have been updated.", newTypeParentName, returnedChildType.getParentName());
 
         // Retrieve the child aspect
-        response = getSingle("cmm/" + modelName + "/aspects", customModelAdmin, childAspectName,  200);
+        response = getSingle("cmm/" + modelName + "/aspects", childAspectName,  200);
         CustomAspect returnedChildAspect = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), CustomAspect.class);
         final String newAspectParentName = modifiedPrefix + QName.NAMESPACE_PREFIX + aspectName;
         assertEquals("The parent name prefix should have been updated.", newAspectParentName, returnedChildAspect.getParentName());
@@ -544,6 +579,8 @@ public class TestCustomModel extends BaseCustomModelApiTest
     @Test
     public void testModelsCircularDependency() throws Exception
     {
+        setRequestContext(customModelAdmin);
+        
         // Model One
         String modelNameOne = "testModelOne" + System.currentTimeMillis();
         Pair<String, String> namespacePairOne = getTestNamespaceUriPrefixPair();
@@ -558,7 +595,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
         // Activate modelOne
         CustomModel modelOneStatusPayload = new CustomModel();
         modelOneStatusPayload.setStatus(ModelStatus.ACTIVE);
-        put("cmm", customModelAdmin, modelNameOne, RestApiUtil.toJsonAsString(modelOneStatusPayload), SELECT_STATUS_QS, 200);
+        put("cmm", modelNameOne, RestApiUtil.toJsonAsString(modelOneStatusPayload), SELECT_STATUS_QS, 200);
 
         // Add another type into modelOne with 'typeA_M1' as its parent
         String typeB_M1 = "testTypeB_M1" + System.currentTimeMillis();
@@ -579,7 +616,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
         // Activate modelTwo
         CustomModel modelTwoStatusPayload = new CustomModel();
         modelTwoStatusPayload.setStatus(ModelStatus.ACTIVE);
-        put("cmm", customModelAdmin, modelNameTwo, RestApiUtil.toJsonAsString(modelTwoStatusPayload), SELECT_STATUS_QS, 200);
+        put("cmm", modelNameTwo, RestApiUtil.toJsonAsString(modelTwoStatusPayload), SELECT_STATUS_QS, 200);
 
         // Test that the API can handle "circular dependency" - (modelOne depends on modelTwo)
         {
@@ -591,7 +628,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
             typeC_M1_Payload.setParentName(type1_M2_WithPrefix); // => 'type1_M2' (from modelTwo)
 
             // Try to create typeC_M1 which has 'circular dependency'
-            post("cmm/" + modelNameOne + "/types", customModelAdmin, RestApiUtil.toJsonAsString(typeC_M1_Payload), 409); //Constraint violation 
+            post("cmm/" + modelNameOne + "/types", RestApiUtil.toJsonAsString(typeC_M1_Payload), 409); //Constraint violation 
         }
 
         // Model Three
@@ -608,7 +645,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
         // Activate modelThree
         CustomModel modelThreeStatusPayload = new CustomModel();
         modelThreeStatusPayload.setStatus(ModelStatus.ACTIVE);
-        put("cmm", customModelAdmin, modelNameThree, RestApiUtil.toJsonAsString(modelThreeStatusPayload), SELECT_STATUS_QS, 200);
+        put("cmm", modelNameThree, RestApiUtil.toJsonAsString(modelThreeStatusPayload), SELECT_STATUS_QS, 200);
 
         // Test that the API can handle "circular dependency" - (modelOne depends on modelThree)
         {
@@ -620,7 +657,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
             typeC_M1_Payload.setParentName(type1_M3_WithPrefix); // => 'type1_M3' (from modelThree)
 
             // Try to create typeC_M1 which has 'circular dependency'
-            post("cmm/" + modelNameOne + "/types", customModelAdmin, RestApiUtil.toJsonAsString(typeC_M1_Payload), 409); //Constraint violation 
+            post("cmm/" + modelNameOne + "/types", RestApiUtil.toJsonAsString(typeC_M1_Payload), 409); //Constraint violation 
         }
 
         // Model Three
@@ -637,7 +674,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
         // Activate modelFour
         CustomModel modelFourStatusPayload = new CustomModel();
         modelFourStatusPayload.setStatus(ModelStatus.ACTIVE);
-        put("cmm", customModelAdmin, modelNameFour, RestApiUtil.toJsonAsString(modelFourStatusPayload), SELECT_STATUS_QS, 200);
+        put("cmm", modelNameFour, RestApiUtil.toJsonAsString(modelFourStatusPayload), SELECT_STATUS_QS, 200);
 
         // Test that the API can handle "circular dependency" - (modelOne depends on modelFour)
         {
@@ -649,7 +686,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
             typeC_M1_Payload.setParentName(type1_M4_WithPrefix); // => 'type1_M4' (from modelFour)
 
             // Try to create typeC_M1 which has 'circular dependency'
-            post("cmm/" + modelNameOne + "/types", customModelAdmin, RestApiUtil.toJsonAsString(typeC_M1_Payload), 409); //Constraint violation 
+            post("cmm/" + modelNameOne + "/types", RestApiUtil.toJsonAsString(typeC_M1_Payload), 409); //Constraint violation 
         }
 
         // Test that the API can handle "circular dependency" - (modelTwo depends on modelFour)
@@ -662,7 +699,7 @@ public class TestCustomModel extends BaseCustomModelApiTest
             type2_M2_Payload.setParentName(type1_M4_WithPrefix); // => 'type1_M4' (from modelFour)
 
             // Try to create type2_M2 which has 'circular dependency'
-            post("cmm/" + modelNameTwo + "/types", customModelAdmin, RestApiUtil.toJsonAsString(type2_M2_Payload), 409); //Constraint violation 
+            post("cmm/" + modelNameTwo + "/types", RestApiUtil.toJsonAsString(type2_M2_Payload), 409); //Constraint violation 
         }
     }
 }

@@ -37,6 +37,7 @@ import java.util.concurrent.TimeoutException;
 import org.alfresco.api.AlfrescoPublicApi;   
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.AbstractStreamAwareProxy;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.content.StreamAwareContentReaderProxy;
 import org.alfresco.repo.content.StreamAwareContentWriterProxy;
 import org.alfresco.repo.content.metadata.AbstractMappingMetadataExtracter;
@@ -252,7 +253,7 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
                 // MNT-16381: check the mimetype of the file supplied by the user
                 // matches the sourceMimetype of the reader. Intermediate files are
                 // not checked.
-                strictMimeTypeCheck(reader, options);
+                strictMimeTypeCheck(reader, options, sourceMimetype);
 
                 // Check the transformability
                 checkTransformable(reader, writer, options);
@@ -438,13 +439,17 @@ public abstract class AbstractContentTransformer2 extends AbstractContentTransfo
         }
     }
 
-    private void strictMimeTypeCheck(ContentReader reader, TransformationOptions options)
+    private void strictMimeTypeCheck(ContentReader reader, TransformationOptions options, String sourceMimetype)
         throws UnsupportedTransformationException
     {
         if (strictMimeTypeCheck && depth.get() == 1)
         {
             String differentType = getMimetypeService().getMimetypeIfNotMatches(reader.getReader());
-            if (differentType != null)
+            if (differentType != null &&
+                // Known problematic mimetypes for Tika to identify
+                !(MimetypeMap.MIMETYPE_APPLICATION_EPS.equals(sourceMimetype) &&
+                  MimetypeMap.MIMETYPE_APPLICATION_PS.equals(differentType))
+                )
             {
                 String fileName = transformerDebug.getFileName(options, true, 0);
                 String readerSourceMimetype = reader.getMimetype();

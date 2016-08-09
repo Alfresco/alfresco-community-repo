@@ -12,6 +12,7 @@ function main()
    {
       type: "documents",
       term: args.t,
+      siteId: args.s,
       rootNode: (args.rootNode !== null) ? args.rootNode : null,
       maxResults: (args.maxResults !== null) ? parseInt(args.maxResults, 10) : DEFAULT_MAX_RESULTS,
       startIndex: (args.startIndex !== null) ? parseInt(args.startIndex, 10) : 0

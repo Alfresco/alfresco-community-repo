@@ -180,11 +180,20 @@ function getDocResults(params)
    // ensure a TYPE is specified
    var ftsQuery = params.term + ' AND +TYPE:"cm:content"';
    
+   // site constraint
+   if (params.siteId !== null)
+   {
+      // use SITE syntax to restrict to specific site
+      ftsQuery += ' AND SITE:"' + params.siteId + '"';
+   }
+   
    // root node - generally used for overridden Repository root in Share
    if (params.rootNode !== null)
    {
       ftsQuery = 'PATH:"' + rootNode.qnamePath + '//*" AND (' + ftsQuery + ')';
    }
+   
+   // main query construction
    ftsQuery = '(' + ftsQuery + ') AND -TYPE:"cm:thumbnail" AND -TYPE:"cm:failedThumbnail" AND -TYPE:"cm:rating" AND -TYPE:"fm:post" AND -ASPECT:"sys:hidden" AND -cm:creator:system';
    
    if (logger.isLoggingEnabled())

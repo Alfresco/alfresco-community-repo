@@ -66,6 +66,7 @@ import org.alfresco.jlan.server.filesys.TreeConnection;
 import org.alfresco.model.ContentModel;
 import org.alfresco.model.ForumModel;
 import org.alfresco.repo.action.evaluator.NoConditionEvaluator;
+import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.management.subsystems.ApplicationContextFactory;
 import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
@@ -7948,15 +7949,15 @@ public class ContentDiskDriverTest extends TestCase
     
     
     /**
-     * Guess mimetype with insufficient data for ACE-4523
+     * Guess mimetype with sufficient data - originally related to ACE-4523
      * Simulate creating a plain text document via Alfresco Share
      * then updating it via CIFS/FTP
      * 
-     * 1. create a document called "foo" with just a little data with an explicit mimetype set.
+     * 1. create a document called "foo" with just a little data with an explicit (incorrect) mimetype set.
      * 2. update the document with different text
-     * 3. check the mimetype of the test doc has not changed
+     * 3. check the mimetype of the test doc has changed (since it can be guessed)
      */
-    public void testMimetypeWithInsufficiantData() throws Exception
+    public void testMimetypeWithSufficientData() throws Exception
     {
         logger.debug("testMimetypeWithInsufficiantData");
 
@@ -7970,7 +7971,7 @@ public class ContentDiskDriverTest extends TestCase
         };
         final TestContext testContext = new TestContext();
 
-        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testMimetypeWithInsufficiantData";
+        final String TEST_DIR = TEST_ROOT_DOS_PATH + "\\testMimetypeWithSufficientData";
         
         // this is a made up mimetype - so there is no way that it could be guessed.
         final String TEST_MIMETYPE = "text\bar";
@@ -8075,17 +8076,17 @@ public class ContentDiskDriverTest extends TestCase
               
                
                /**
-                * Validate mimetype has not changed
+                * Validate mimetype has changed - we can guess that it is text !
                 */
-               assertEquals("mimeType is wrong", TEST_MIMETYPE, data.getMimetype());
+               assertEquals("mimeType is wrong", MimetypeMap.MIMETYPE_TEXT_PLAIN, data.getMimetype());
     
            
                return null;
             }
         };
         tran.doInTransaction(validateCB, true, true);
-        logger.debug("end testMimetypeWithInsufficiantData");
-    } // testMimetypeWithInsufficiantData"
+        logger.debug("end testMimetypeWithSufficientData");
+    } // testMimetypeWithSufficientData"
     
     
     

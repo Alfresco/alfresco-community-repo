@@ -74,7 +74,14 @@
                                     ( 
                                     </when>
                                 	<otherwise>
-                                 	node.id IN (
+                                	    <choose>
+                                	         <when test="item.type == 'NOTEXISTS'">
+                                	             node.id NOT IN (
+                                	         </when>
+                                	         <otherwise>
+                                	             node.id IN (
+                                	         </otherwise>
+                                	    </choose>
                                 	</otherwise>
                             	</choose>
                            
@@ -108,7 +115,7 @@
                                     	${item.alias}.${item.fieldName} IS NOT NULL
                                 	</when>
                                 	<when test="item.type == 'NOTEXISTS'">
-                                    	${item.alias}.${item.fieldName} IS NULL
+                                    	${item.alias}.${item.fieldName} IS NOT NULL
                                 	</when>
                                 	<when test="item.type == 'GT'">
                                     	${item.fieldAndFunction} &gt; #{item.value}

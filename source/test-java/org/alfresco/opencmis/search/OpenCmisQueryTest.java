@@ -5739,6 +5739,21 @@ public class OpenCmisQueryTest extends BaseCMISTest
         testExtendedQuery("SELECT * FROM cm:ownable ", 1, false, "cmis:name", new String(), false);
     }
     
+    public void testTitled() throws Exception
+    {
+    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is null ", 0, false, "cmis:name", new String(), false);
+    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is not null ", 11, false, "cmis:name", new String(), false);
+    	 nodeService.setProperty(c10, ContentModel.PROP_TITLE, null);
+    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is null ", 1, false, "cmis:name", new String(), false);
+    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is not null ", 10, false, "cmis:name", new String(), false);
+    	 nodeService.setProperty(c10, ContentModel.PROP_TITLE, "meep");
+    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is null ", 0, false, "cmis:name", new String(), false);
+    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is not null ", 11, false, "cmis:name", new String(), false);
+    	 nodeService.removeProperty(c10, ContentModel.PROP_TITLE);
+    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is null ", 1, false, "cmis:name", new String(), false);
+    	 testExtendedQuery("SELECT * FROM cm:titled where cm:title is not null ", 10, false, "cmis:name", new String(), false);
+    }
+    
     public void testNotKeyword() throws Exception
     {
     	final String folderName = "testfolder" + GUID.generate();

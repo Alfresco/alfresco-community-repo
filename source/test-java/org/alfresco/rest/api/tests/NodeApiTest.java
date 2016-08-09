@@ -1446,12 +1446,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         assertEquals(user2, ((Map)nodeResp.getProperties().get(PROP_OWNER)).get("id"));
 
-        // TODO apparently returns 204 here in tenant context ?? (eg. if useDefaultNetwork=false)
-        //if (useDefaultNetwork)
-        //{
+        // TODO see REPO-907. Apparently returns 204 here in tenant context ?? (eg. if useDefaultNetwork=false)
+        if (useDefaultNetwork)
+        {
             // -ve test - user1 can no longer delete
             deleteNode(folder5Id, 403); 
-        //}
+        }
 
         // TODO refactor with remote permission api calls (maybe use v0 until we have v1 ?)
         final String tenantDomain = (networkOne != null ? networkOne.getId() : TenantService.DEFAULT_DOMAIN);

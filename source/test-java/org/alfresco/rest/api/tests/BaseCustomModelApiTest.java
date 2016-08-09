@@ -90,10 +90,11 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
 
         final AuthorityService authorityService = applicationContext.getBean("authorityService", AuthorityService.class);
 
-        this.nonAdminUserName = createUser("nonAdminUser" + System.currentTimeMillis());
-        this.customModelAdmin = createUser("customModelAdmin" + System.currentTimeMillis());
+        this.nonAdminUserName = createUser("nonAdminUser" + System.currentTimeMillis(), "password", null);
+        this.customModelAdmin = createUser("customModelAdmin" + System.currentTimeMillis(), "password", null);
         users.add(nonAdminUserName);
         users.add(customModelAdmin);
+        
         // Add 'customModelAdmin' user into 'ALFRESCO_MODEL_ADMINISTRATORS' group
         transactionHelper.doInTransaction(new RetryingTransactionCallback<Void>()
         {
@@ -117,8 +118,7 @@ public class BaseCustomModelApiTest extends AbstractBaseApiTest
                 @Override
                 public Void execute() throws Throwable
                 {
-                    authenticationService.deleteAuthentication(user);
-                    personService.deletePerson(user);
+                    deleteUser(user, null);
                     return null;
                 }
             });

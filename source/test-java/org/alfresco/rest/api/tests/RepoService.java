@@ -481,6 +481,23 @@ public class RepoService
 		});
 	}
 
+	protected void deleteUser(final String username, final TestNetwork network)
+	{
+		AuthenticationUtil.runAsSystem(new RunAsWork<TestPerson>()
+		{
+			@Override
+			public TestPerson doWork() throws Exception
+			{
+				if (personService.personExists(username))
+				{
+					authenticationService.deleteAuthentication(username);
+					personService.deletePerson(username);
+				}
+				return null;
+			}
+		});
+	}
+
 	public TestSite createSite(TestNetwork network, final SiteInformation site)
     {
 		SiteInfo siteInfo = null;

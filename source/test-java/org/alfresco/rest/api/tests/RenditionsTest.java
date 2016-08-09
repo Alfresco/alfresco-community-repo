@@ -78,7 +78,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     /**
      * Test network one
      */
-    TestNetwork networkOne;
+    TestNetwork networkN1;
 
     /**
      * User one from network one
@@ -93,11 +93,11 @@ public class RenditionsTest extends AbstractBaseApiTest
     @Before
     public void setup() throws Exception
     {
-        networkOne = repoService.createNetworkWithAlias("ping", true);
-        networkOne.create();
-        userOneN1 = networkOne.createUser();
+        networkN1 = repoService.createNetworkWithAlias("ping", true);
+        networkN1.create();
+        userOneN1 = networkN1.createUser();
 
-        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
 
         String siteTitle = "RandomSite" + System.currentTimeMillis();
         userOneN1Site = createSite(siteTitle, SiteVisibility.PRIVATE);
@@ -106,7 +106,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     @After
     public void tearDown() throws Exception
     {
-        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
         deleteSite(userOneN1Site.getId(), true, 204);
     }
 
@@ -118,7 +118,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     @Test
     public void testListNodeRenditions() throws Exception
     {
-        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
         
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
@@ -258,7 +258,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     @Test
     public void testGetNodeRendition() throws Exception
     {
-        setRequestContext(userOneN1.getId());
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
         
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
@@ -342,7 +342,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     @Test
     public void testCreateRendition() throws Exception
     {
-        setRequestContext(userOneN1.getId());
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
         
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
@@ -476,7 +476,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     public void testCreateRenditionOnUpload() throws Exception
     {
         String userId = userOneN1.getId();
-        setRequestContext(userId);
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
 
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();
@@ -597,7 +597,7 @@ public class RenditionsTest extends AbstractBaseApiTest
     @Test
     public void testDownloadRendition() throws Exception
     {
-        setRequestContext(userOneN1.getId());
+        setRequestContext(networkN1.getId(), userOneN1.getId(), null);
         
         // Create a folder within the site document's library
         String folderName = "folder" + System.currentTimeMillis();

@@ -45,6 +45,8 @@ public class AuthorityInfoEntity
     // Supplemental query-related parameters
     private Long parentNodeId;
     private Long authorityDisplayNameQNameId;
+    // Authority type
+    private Long typeQNameId;
     
     /**
      * Default constructor
@@ -53,10 +55,11 @@ public class AuthorityInfoEntity
     {
     }
     
-    public AuthorityInfoEntity(Long parentNodeId, Long authorityDisplayNameQNameId)
+    public AuthorityInfoEntity(Long parentNodeId, Long authorityDisplayNameQNameId, Long typeQNameId)
     {
         this.parentNodeId = parentNodeId;
         this.authorityDisplayNameQNameId = authorityDisplayNameQNameId;
+        this.typeQNameId = typeQNameId;
     }
     
     public Long getId()
@@ -109,5 +112,10 @@ public class AuthorityInfoEntity
     public Long getAuthorityDisplayNameQNameId()
     {
         return authorityDisplayNameQNameId;
+    }
+    
+    public Long getTypeQNameId()
+    {
+        return typeQNameId;
     }
 }

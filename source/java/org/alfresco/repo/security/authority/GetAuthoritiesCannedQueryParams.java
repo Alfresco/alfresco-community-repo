@@ -39,9 +39,9 @@ public class GetAuthoritiesCannedQueryParams extends AuthorityInfoEntity
     private String displayNameFilter; // startsWith / ignoreCase (note: trailing * is implied)
     private AuthorityType type;
     
-    public GetAuthoritiesCannedQueryParams(AuthorityType type, Long parentNodeId, Long authorityDisplayNameQNameId, String displayNameFilter)
+    public GetAuthoritiesCannedQueryParams(AuthorityType type, Long typeQNameId, Long parentNodeId, Long authorityDisplayNameQNameId, String displayNameFilter)
     {
-        super(parentNodeId, authorityDisplayNameQNameId);
+        super(parentNodeId, authorityDisplayNameQNameId, typeQNameId);
         
         if ((displayNameFilter == null) || (displayNameFilter.equals("")) || (displayNameFilter.equals("*")))
         {

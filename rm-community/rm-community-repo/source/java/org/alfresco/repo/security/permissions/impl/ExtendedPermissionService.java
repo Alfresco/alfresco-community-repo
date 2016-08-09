@@ -29,7 +29,9 @@ package org.alfresco.repo.security.permissions.impl;
 
 import java.util.Set;
 
+import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.Pair;
 
 /**
  * Extended Permission Service Interface used in RM.
@@ -46,4 +48,18 @@ public interface ExtendedPermissionService extends PermissionService
 	 * @return {@link Set}<{@link String}>		set of authorities with write access
 	 */
     Set<String> getWriters(Long aclId);
+    
+    /**
+     * Get the readers and writers for a given node.
+     * <p>
+     * The writers list includes the owner for the node.
+     * 
+     * @param nodeRef                           node reference
+     * @return Pair<Set<String>, Set<String>>   first is a set containing all the authorities that have read permission on the 
+     *                                          document and second is a set containing all the authorities that have write
+     *                                          permission on the document, including the owner.
+     *                                          
+     * @since 2.5
+     */
+    Pair<Set<String>, Set<String>> getReadersAndWriters(NodeRef nodeRef);
 }

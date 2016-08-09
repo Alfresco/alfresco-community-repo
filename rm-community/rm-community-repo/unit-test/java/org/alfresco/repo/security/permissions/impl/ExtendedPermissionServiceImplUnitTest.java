@@ -28,12 +28,18 @@
 package org.alfresco.repo.security.permissions.impl;
 
 import static java.util.Arrays.asList;
-
+import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateText;
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseUnitTest;
 import org.alfresco.repo.security.permissions.processor.PermissionPostProcessor;
@@ -41,6 +47,9 @@ import org.alfresco.repo.security.permissions.processor.PermissionPreProcessor;
 import org.alfresco.repo.security.permissions.processor.PermissionProcessorRegistry;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
+import org.alfresco.service.cmr.security.OwnableService;
+import org.alfresco.util.Pair;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -54,11 +63,27 @@ import org.mockito.Spy;
  */
 public class ExtendedPermissionServiceImplUnitTest extends BaseUnitTest 
 {
+    /** test data */
+    private static final Long NODE_ACL_ID = 100l;
+    private static final Set<String> READERS = Stream.of(generateText(), generateText()).collect(Collectors.toSet());
+    private static final Set<String> WRITERS = Stream.of(generateText(), generateText()).collect(Collectors.toSet());
+    private static final String OWNER = generateText();
+    
+    /** permission service impl, default */
 	private @InjectMocks @Spy ExtendedPermissionServiceImpl extendedPermissionServiceImpl = new ExtendedPermissionServiceImpl()
 	{
 		protected AccessStatus hasPermissionImpl(NodeRef nodeRef, String perm) { return AccessStatus.UNDETERMINED; };
 	};
 	
+	/** permission service impl instance extended for reader/writer tests */
+    private @InjectMocks ExtendedPermissionServiceImpl extendedPermissionServiceImplWithReaderWritersSet = new ExtendedPermissionServiceImpl()
+    {
+        protected AccessStatus hasPermissionImpl(NodeRef nodeRef, String perm) { return AccessStatus.UNDETERMINED; };        
+        public java.util.Set<String> getReaders(Long aclId) { return READERS; };
+        public java.util.Set<String> getWriters(Long aclId) { return WRITERS; };        
+    };
+	
+    /** mocks */
 	private @Mock PermissionProcessorRegistry mockedPermissionProcessorRegistry;
 	private @Mock PermissionPreProcessor mockedPermissionPreProcessor;
 	private @Mock PermissionPostProcessor mockedPermissionPostProcessor;
@@ -132,4 +157,112 @@ public class ExtendedPermissionServiceImplUnitTest extends BaseUnitTest
 		verify(mockedPermissionPostProcessor).process(AccessStatus.UNDETERMINED, nodeRef, perm);
 		verify(extendedPermissionServiceImpl).hasPermissionImpl(nodeRef, perm);
 	}
+	
+	/**
+	 * Given a node with no owner aspect
+	 * When we ask for the readers and writers
+	 * Then the owner isn't included in the result
+	 */
+	@Test
+	public void getReadersAndWritersForNodeWithNoOwnerAspect()
+	{
+	    // setup node acl
+	    NodeRef nodeRef = generateNodeRef();
+	    when(mockedNodeService.getNodeAclId(nodeRef))
+	        .thenReturn(NODE_ACL_ID);
+	    
+	    // setup owner
+	    when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
+	        .thenReturn(false);
+	    
+	    // when
+	    Pair<Set<String>, Set<String>> result = extendedPermissionServiceImplWithReaderWritersSet.getReadersAndWriters(nodeRef);
+	    
+	    // then
+	    assertEquals(READERS, result.getFirst());
+	    assertEquals(WRITERS, result.getSecond());	    
+	}
+	
+	/**
+     * Given a node with no owner set
+     * When we ask for the readers and writers
+     * Then the owner isn't included in the result
+     */
+    @Test
+    public void getReadersAndWritersForNodeWithNoOwnerSet()
+    {
+        // setup node acl
+        NodeRef nodeRef = generateNodeRef();
+        when(mockedNodeService.getNodeAclId(nodeRef))
+            .thenReturn(NODE_ACL_ID);
+        
+        // setup owner
+        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
+            .thenReturn(true);
+        when(mockedOwnableService.getOwner(nodeRef))
+            .thenReturn(StringUtils.EMPTY);
+        
+        // when
+        Pair<Set<String>, Set<String>> result = extendedPermissionServiceImplWithReaderWritersSet.getReadersAndWriters(nodeRef);
+        
+        // then
+        assertEquals(READERS, result.getFirst());
+        assertEquals(WRITERS, result.getSecond());      
+    }
+    
+    /**
+     * Given a node with NO_OWNER value set
+     * When we ask for the readers and writers
+     * Then the owner isn't included in the result
+     */
+    @Test
+    public void getReadersAndWritersForNodeWithNoOwnerValueSet()
+    {
+        // setup node acl
+        NodeRef nodeRef = generateNodeRef();
+        when(mockedNodeService.getNodeAclId(nodeRef))
+            .thenReturn(NODE_ACL_ID);
+        
+        // setup owner
+        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
+            .thenReturn(false);
+        when(mockedOwnableService.getOwner(nodeRef))
+        .thenReturn(OwnableService.NO_OWNER);
+        
+        // when
+        Pair<Set<String>, Set<String>> result = extendedPermissionServiceImplWithReaderWritersSet.getReadersAndWriters(nodeRef);
+        
+        // then
+        assertEquals(READERS, result.getFirst());
+        assertEquals(WRITERS, result.getSecond());      
+    }
+	
+	/**
+	 * Given a node with an owner
+	 * When we ask for the readers and writers
+	 * Then the owner is included in the writers set
+	 */
+	@Test
+    public void getReadersAndWritersForNodeWithOwner()
+    {
+        // setup node acl
+        NodeRef nodeRef = generateNodeRef();
+        when(mockedNodeService.getNodeAclId(nodeRef))
+            .thenReturn(NODE_ACL_ID);
+        
+        // setup owner
+        when(mockedNodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
+            .thenReturn(true);
+        when(mockedOwnableService.getOwner(nodeRef))
+            .thenReturn(OWNER);
+        
+        // when
+        Pair<Set<String>, Set<String>> result = extendedPermissionServiceImplWithReaderWritersSet.getReadersAndWriters(nodeRef);
+        
+        // then
+        assertEquals(READERS, result.getFirst());
+        Set<String> writersWithOwner = new HashSet<String>(WRITERS);
+        writersWithOwner.add(OWNER);
+        assertEquals(writersWithOwner, result.getSecond());      
+    }
 }

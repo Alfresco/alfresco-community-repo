@@ -41,8 +41,8 @@ import org.alfresco.repo.node.archive.NodeArchiveService;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.NodeTarget;
+import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
-import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiClient.ExpectedPaging;
@@ -143,9 +143,9 @@ public class NodeApiTest extends AbstractBaseApiTest
         String userOneId = userOneN1.getId();
         String userTwoId = userTwoN1.getId();
 
-        setRequestContext(userOneId);
-
-        String docLibNodeId = getSiteContainerNodeId(networkOne.getId(), userOneId, userOneN1Site.getSiteId(), "documentLibrary");
+        setRequestContext(networkOne.getId(), userOneId, null);
+        
+        String docLibNodeId = getSiteContainerNodeId(userOneN1SiteId, "documentLibrary");
 
         String folder1 = "folder" + System.currentTimeMillis() + "_1";
         createFolder(docLibNodeId, folder1, null).getId();
@@ -526,13 +526,13 @@ public class NodeApiTest extends AbstractBaseApiTest
     public void testGetPathElements_DocLib() throws Exception
     {
         String userId = userOneN1.getId();
-
-        setRequestContext(userId);
+        
+        setRequestContext(networkOne.getId(), userId, null);
         
         PublicApiClient.Sites sitesProxy = publicApiClient.sites();
-        sitesProxy.createSiteMember(userOneN1Site.getSiteId(), new SiteMember(userTwoN1.getId(), SiteRole.SiteConsumer.toString()));
+        sitesProxy.createSiteMember(userOneN1SiteId, new SiteMember(userTwoN1.getId(), SiteRole.SiteConsumer.toString()));
 
-        String docLibNodeId = getSiteContainerNodeId(networkOne.getId(), userOneN1.getId(), userOneN1Site.getSiteId(), "documentLibrary");
+        String docLibNodeId = getSiteContainerNodeId(userOneN1SiteId, "documentLibrary");
 
         // /Company Home/Sites/RandomSite<timestamp>/documentLibrary/folder<timestamp>_A
         String folderA = "folder" + System.currentTimeMillis() + "_A";
@@ -575,7 +575,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertEquals(7, pathElements.size());
         assertEquals("Company Home", pathElements.get(0).getName());
         assertEquals("Sites", pathElements.get(1).getName());
-        assertEquals(userOneN1Site.getSiteId(), pathElements.get(2).getName());
+        assertEquals(userOneN1SiteId, pathElements.get(2).getName());
         assertEquals("documentLibrary", pathElements.get(3).getName());
         assertEquals(folderA, pathElements.get(4).getName());
         assertEquals(folderB, pathElements.get(5).getName());
@@ -1163,12 +1163,12 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testUploadToSite() throws Exception
     {
-        setRequestContext(userOneN1.getId());
+        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
         
         final String fileName = "quick-1.txt";
         final File file = getResourceFile(fileName);
 
-        String docLibNodeId = getSiteContainerNodeId(networkOne.getId(), userOneN1.getId(), userOneN1Site.getSiteId(), "documentLibrary");
+        String docLibNodeId = getSiteContainerNodeId(userOneN1SiteId, "documentLibrary");
 
         String folderA = "folder" + System.currentTimeMillis() + "_A";
         String folderA_id = createFolder(docLibNodeId, folderA).getId();
@@ -1713,7 +1713,7 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testCopySite() throws Exception
     {
-        setRequestContext(userOneN1.getId());
+        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
         
         // create folder
         Folder folderResp = createFolder(Nodes.PATH_MY, "siteCopytarget");
@@ -1723,11 +1723,13 @@ public class NodeApiTest extends AbstractBaseApiTest
         body.put("targetParentId", targetId);
 
         //test that you can't copy a site
-        post("nodes/"+userOneN1Site.getGuid()+"/copy", userOneN1.getId(), toJsonAsStringNonNull(body), null, 422);
-
-        String docLibNodeId = getSiteContainerNodeId(networkOne.getId(), userOneN1.getId(), userOneN1Site.getSiteId(), "documentLibrary");
-
+        HttpResponse response = getSingle("sites", userOneN1.getId(), userOneN1SiteId, null, null, 200);
+        Site siteResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Site.class);
+        String siteNodeId = siteResp.getGuid();
+        post("nodes/"+siteNodeId+"/copy", userOneN1.getId(), toJsonAsStringNonNull(body), null, 422);
+        
         //test that you can't copy a site doclib
+        String docLibNodeId = getSiteContainerNodeId(userOneN1SiteId, "documentLibrary");
         post("nodes/"+docLibNodeId+"/copy", userOneN1.getId(), toJsonAsStringNonNull(body), null, 422);
 
     }
@@ -1744,32 +1746,33 @@ public class NodeApiTest extends AbstractBaseApiTest
     @Test
     public void testMoveCopyBetweenSites() throws Exception
     {
-        setRequestContext(userOneN1.getId());
+        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
         
         /*
          * Precondition - create two sites, invite users, create folders
          */
-        AuthenticationUtil.setFullyAuthenticatedUser(userOneN1.getId());
+        
         // userOneN1 creates a public site and adds userTwoN1 as a site collaborator
-        TestSite user1Site = createSite(userOneN1.getDefaultAccount(), userOneN1, SiteVisibility.PUBLIC);
-        inviteToSite(user1Site, userTwoN1, SiteRole.SiteCollaborator);
+        String site1Title = "RandomSite1-" + System.currentTimeMillis();
+        final String site1Id = createSite(site1Title, SiteVisibility.PUBLIC).getId();
+        addSiteMember(site1Id, userTwoN1.getId(), SiteRole.SiteCollaborator);
 
         // Get user1Site's docLib node id
-        final String user1SiteDocLibNodeId = getSiteContainerNodeId(user1Site.getNetworkId(), userOneN1.getId(), user1Site.getSiteId(), "documentLibrary");
+        final String user1SiteDocLibNodeId = getSiteContainerNodeId(site1Id, "documentLibrary");
 
         // userOneN1 creates a folder in the docLib of his site (user1Site)
         String user1Folder = "folder" + System.currentTimeMillis() + "_user1";
         String user1FolderNodeId = createFolder(user1SiteDocLibNodeId, user1Folder, null).getId();
-
-        AuthenticationUtil.setFullyAuthenticatedUser(userTwoN1.getId());
+        
+        setRequestContext(userTwoN1.getDefaultAccount().getId(), userTwoN1.getId(), null);
+        
         // userTwoN1 creates a public site and adds userOneN1 as a site collaborator
-        TestSite user2Site = createSite(userTwoN1.getDefaultAccount(), userTwoN1, SiteVisibility.PUBLIC);
-        inviteToSite(user2Site, userOneN1, SiteRole.SiteCollaborator);
-
+        String site2Title = "RandomSite2-" + System.currentTimeMillis();
+        final String site2Id = createSite(site2Title, SiteVisibility.PUBLIC).getId();
+        addSiteMember(site2Id, userOneN1.getId(), SiteRole.SiteCollaborator);
+        
         // Get user2Site's docLib node id
-        final String user2SiteDocLibNodeId = getSiteContainerNodeId(user2Site.getNetworkId(), userTwoN1.getId(), user2Site.getSiteId(), "documentLibrary");
-
-        setRequestContext(userTwoN1.getId());
+        final String user2SiteDocLibNodeId = getSiteContainerNodeId(site2Id, "documentLibrary");
 
         // userTwoN1 creates 2 folders within the docLib of the user1Site
         String user2Folder1 = "folder1" + System.currentTimeMillis() + "_user2";
@@ -1782,8 +1785,8 @@ public class NodeApiTest extends AbstractBaseApiTest
          * Test move between sites
          */
         // userOneN1 moves the folder created by userTwoN1 to the user2Site's docLib
-        
-        setRequestContext(userTwoN1.getId());
+
+        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
         
         NodeTarget target = new NodeTarget();
         target.setTargetParentId(user2SiteDocLibNodeId);
@@ -3378,11 +3381,11 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         // as userOneN1 ...
         String userId = userOneN1.getId();
-        AuthenticationUtil.setFullyAuthenticatedUser(userId);
-        String siteNodeId = userOneN1Site.getGuid();
-        AuthenticationUtil.clearCurrentSecurityContext();
-
         setRequestContext(userId);
+
+        response = getSingle("sites", userId, userOneN1SiteId, null, null, 200);
+        Site siteResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Site.class);
+        String siteNodeId = siteResp.getGuid();
 
         response = getSingle(NodesEntityResource.class, userId, siteNodeId, params, 200);
         nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);

@@ -33,16 +33,12 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.fail;
 
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
-import org.alfresco.repo.tenant.TenantUtil;
-import org.alfresco.repo.tenant.TenantUtil.TenantRunAsWork;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
-import org.alfresco.rest.api.tests.RepoService.SiteInformation;
 import org.alfresco.rest.api.tests.RepoService.TestNetwork;
 import org.alfresco.rest.api.tests.RepoService.TestPerson;
-import org.alfresco.rest.api.tests.RepoService.TestSite;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
@@ -52,6 +48,7 @@ import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
 import org.alfresco.rest.api.tests.client.data.Node;
 import org.alfresco.rest.api.tests.client.data.Rendition;
+import org.alfresco.rest.api.tests.client.data.SiteMember;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.util.MultiPartBuilder;
 import org.alfresco.rest.api.tests.util.RestApiUtil;
@@ -59,6 +56,7 @@ import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.TempFileProvider;
+import org.json.simple.JSONObject;
 import org.junit.After;
 import org.junit.Before;
 import org.springframework.util.ResourceUtils;
@@ -113,7 +111,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
      * User two from network one
      */
     protected TestPerson userTwoN1;
-    protected TestSite userOneN1Site;
+    protected String userOneN1SiteId;
 
     protected String user1;
     protected String user2;
@@ -148,15 +146,20 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         userOneN1 = networkOne.createUser();
         userTwoN1 = networkOne.createUser();
 
-        userOneN1Site = createSite(networkOne, userOneN1, SiteVisibility.PRIVATE);
+        setRequestContext(networkOne.getId(), userOneN1.getId(), null);
+        
+        userOneN1SiteId = createSite("TestSite A - " + System.currentTimeMillis(), SiteVisibility.PRIVATE).getId();
+
+        setRequestContext(null);    
     }
 
     @After
     public void tearDown() throws Exception
     {
-        if ((networkOne != null) && (userOneN1 != null) && (userOneN1Site != null))
+        if ((networkOne != null) && (userOneN1 != null) && (userOneN1SiteId != null))
         {
-            deleteSite(networkOne.getId(), userOneN1.getId(), userOneN1Site.getSiteId(), 204);
+            setRequestContext(networkOne.getId(), userOneN1.getId(), null);
+            deleteSite(userOneN1SiteId, 204);
         }
 
         AuthenticationUtil.setAdminUserAsFullyAuthenticatedUser();
@@ -423,12 +426,7 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
         return response;
     }
-
-    protected HttpResponse delete(String url, String runAsUser, String entityId, Map<String, String> params, Map<String, String> headers, int expectedStatus) throws Exception
-    {
-        return delete(url, runAsUser, entityId, params, headers, null, expectedStatus);
-    }
-
+    
     protected HttpResponse delete(String url, String runAsUser, String entityId, Map<String, String> params, Map<String, String> headers, String apiName, int expectedStatus) throws Exception
     {
         RequestBuilder requestBuilder = httpClient.new DeleteRequestBuilder()
@@ -451,6 +449,9 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return createUser(username, "password");
     }
 
+    /**
+     * TODO implement as remote api call
+     */
     protected String createUser(String username, String password)
     {
         PersonInfo personInfo = new PersonInfo(username, username, username, password, null, null, null, null, null, null, null);
@@ -458,36 +459,31 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return person.getId();
     }
 
+    /**
+     * TODO implement as remote api call
+     */
     protected String getOrCreateUser(String username, String password)
     {
         PersonInfo personInfo = new PersonInfo(username, username, username, password, null, null, null, null, null, null, null);
         RepoService.TestPerson person = repoService.getOrCreateUser(personInfo, username, null);
         return person.getId();
     }
-
-    // @deprecated
-    protected TestSite createSite(final TestNetwork testNetwork, TestPerson user, final SiteVisibility siteVisibility)
+    
+    protected SiteMember addSiteMember(String siteId, String userId, final SiteRole siteRole) throws Exception
     {
-        final String siteName = "RandomSite" + System.currentTimeMillis();
-
-        final TestSite site = TenantUtil.runAsUserTenant(() -> {
-            SiteInformation siteInfo = new SiteInformation(siteName, siteName, siteName, siteVisibility);
-            return repoService.createSite(testNetwork, siteInfo);
-        }, user.getId(), testNetwork.getId());
-
-        return site;
+        SiteMember siteMember = new SiteMember(userId, siteRole.name());
+        HttpResponse response = publicApiClient.post(getScope(), "sites", siteId, "members", null, siteMember.postJSON().toString());
+        checkStatus(201, response.getStatusCode());
+        return SiteMember.parseSiteMember(siteMember.getSiteId(), (JSONObject)response.getJsonResponse().get("entry"));
     }
 
-    protected Site createSite(String networkId, String userId, SiteVisibility siteVisibility) throws Exception
+    protected Site createSite(String siteTitle, SiteVisibility siteVisibility) throws Exception
     {
-        String siteTitle = "RandomSite" + System.currentTimeMillis();
-        return createSite(networkId, userId, null, siteTitle, siteVisibility);
+        return createSite(null, siteTitle, siteVisibility);
     }
 
-    protected Site createSite(String networkId, String userId, String siteId, String siteTitle, SiteVisibility siteVisibility) throws Exception
+    protected Site createSite(String siteId, String siteTitle, SiteVisibility siteVisibility) throws Exception
     {
-        publicApiClient.setRequestContext(new RequestContext(networkId, userId));
-
         Site site = new Site();
         site.setId(siteId);
         site.setTitle(siteTitle);
@@ -497,13 +493,10 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Site.class);
     }
 
-    protected HttpResponse deleteSite(String networkId, String userId, String siteId, int expectedStatus) throws Exception
+    protected HttpResponse deleteSite(String siteId, int expectedStatus) throws Exception
     {
-        publicApiClient.setRequestContext(new RequestContext(networkId, userId));
-
         HttpResponse response = publicApiClient.delete(getScope(), "sites", siteId, null, null);
         checkStatus(expectedStatus, response.getStatusCode());
-
         return response;
     }
 
@@ -516,25 +509,15 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
      * <p>
      * GET /nodes/siteNodeId?relativePath=documentLibrary
      */
-    protected String getSiteContainerNodeId(String networkId, String runAsUserId, String siteId, String containerNameId) throws Exception
+    protected String getSiteContainerNodeId(String siteId, String containerNameId) throws Exception
     {
         Map<String, String> params = Collections.singletonMap(Nodes.PARAM_RELATIVE_PATH, "/Sites/" + siteId + "/" + containerNameId);
-
-        publicApiClient.setRequestContext(new RequestContext(networkId, runAsUserId));
-
+        
         HttpResponse response = publicApiClient.get(NodesEntityResource.class, Nodes.PATH_ROOT, null, params);
         checkStatus(200, response.getStatusCode());
 
         Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
         return node.getId();
-    }
-
-    protected void inviteToSite(final TestSite testSite, final TestPerson invitee, final SiteRole siteRole)
-    {
-        TenantUtil.runAsTenant((TenantRunAsWork<Void>) () -> {
-            testSite.inviteToSite(invitee.getId(), siteRole);
-            return null;
-        }, testSite.getNetworkId());
     }
     
     protected void checkStatus(int expectedStatus, int actualStatus)
@@ -547,16 +530,19 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected void setRequestContext(String runAsUser)
     {
+        String password = null;
         if ((runAsUser != null) && runAsUser.equals(DEFAULT_ADMIN))
-        {    
-            // TODO improve "admin" related tests
-            publicApiClient.setRequestContext(new RequestContext("-default-", DEFAULT_ADMIN, DEFAULT_ADMIN_PWD));
-            
-        }
-        else
         {
-            publicApiClient.setRequestContext(new RequestContext(runAsUser));
+            // TODO improve "admin" related tests
+            password = DEFAULT_ADMIN_PWD;
         }
+        
+        setRequestContext("-default-", runAsUser, password);
+    }
+
+    protected void setRequestContext(String runAsNetwork, String runAsUser, String password)
+    {
+        publicApiClient.setRequestContext(new RequestContext(runAsNetwork, runAsUser, password));
     }
 
     // -root- (eg. Company Home for on-prem)

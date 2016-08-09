@@ -34,7 +34,6 @@ import org.alfresco.rest.api.Activities;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
-import org.alfresco.rest.api.tests.client.RequestContext;
 import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
@@ -63,7 +62,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         setRequestContext(u1.getId());
         
         String folder1 = "folder" + System.currentTimeMillis() + "_1";
-        Folder createdFolder = createFolder(docLibNodeRef.getId(), folder1, null);
+        Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
 
         String docName = "d1.txt";
@@ -84,22 +83,22 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
 
         List<Activity> activities = getMyActivities();
         assertEquals(activities.size(),6);
-        Activity act = matchActivity(activities, ActivityType.FOLDER_ADDED, u1.getId(), tSite.getSiteId(), docLibNodeRef.getId(), folder1);
+        Activity act = matchActivity(activities, ActivityType.FOLDER_ADDED, u1.getId(), tSiteId, tDocLibNodeId, folder1);
         assertNotNull(act);
 
-        act = matchActivity(activities, ActivityType.FILE_ADDED, u1.getId(), tSite.getSiteId(), createdFolder.getId(), docName);
+        act = matchActivity(activities, ActivityType.FILE_ADDED, u1.getId(), tSiteId, createdFolder.getId(), docName);
         assertNotNull(act);
 
-        act = matchActivity(activities, ActivityType.FILE_UPDATED, u1.getId(), tSite.getSiteId(), createdFolder.getId(), dUpdate.getName());
+        act = matchActivity(activities, ActivityType.FILE_UPDATED, u1.getId(), tSiteId, createdFolder.getId(), dUpdate.getName());
         assertNotNull(act);
 
-        act = matchActivity(activities, ActivityType.FOLDER_DELETED, u1.getId(), tSite.getSiteId(), docLibNodeRef.getId(), folder1);
+        act = matchActivity(activities, ActivityType.FOLDER_DELETED, u1.getId(), tSiteId, tDocLibNodeId, folder1);
         assertNotNull(act);
 
-        act = matchActivity(activities, ActivityType.FILE_DELETED, u1.getId(), tSite.getSiteId(), createdFolder.getId(), dUpdate.getName());
+        act = matchActivity(activities, ActivityType.FILE_DELETED, u1.getId(), tSiteId, createdFolder.getId(), dUpdate.getName());
         assertNotNull(act);
 
-        act = matchActivity(activities, ActivityPoster.DOWNLOADED, u1.getId(), tSite.getSiteId(), createdFolder.getId(), dUpdate.getName());
+        act = matchActivity(activities, ActivityPoster.DOWNLOADED, u1.getId(), tSiteId, createdFolder.getId(), dUpdate.getName());
         assertNotNull(act);
     }
 
@@ -112,7 +111,7 @@ public class ActivitiesPostingTest extends AbstractSingleNetworkSiteTest
         setRequestContext(u1.getId());
         
         String folder1 = "InSitefolder" + System.currentTimeMillis() + "_1";
-        Folder createdFolder = createFolder(docLibNodeRef.getId(), folder1, null);
+        Folder createdFolder = createFolder(tDocLibNodeId, folder1, null);
         assertNotNull(createdFolder);
 
         List<Activity> activities = getMyActivities();

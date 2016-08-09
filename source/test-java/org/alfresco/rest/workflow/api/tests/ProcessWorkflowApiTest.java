@@ -1974,7 +1974,7 @@ public class ProcessWorkflowApiTest extends EnterpriseWorkflowTestApi
             }
             catch (PublicApiException e)
             {
-                assertEquals(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getHttpResponse().getStatusCode());
+                assertEquals(HttpStatus.BAD_REQUEST.value(), e.getHttpResponse().getStatusCode());
             }
             
             // Update an unexisting variable with no variable data

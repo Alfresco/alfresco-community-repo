@@ -96,8 +96,8 @@ public class MoveInplaceRecordTest extends BaseRMTestCase
                 // Check that the document is a record now
                 assertTrue(recordService.isRecord(dmDocument));
 
-                extendedReadersBeforeMove = extendedSecurityService.getExtendedReaders(dmDocument);
-                extendedWritersBeforeMove = extendedSecurityService.getExtendedWriters(dmDocument);
+                extendedReadersBeforeMove = extendedSecurityService.getReaders(dmDocument);
+                extendedWritersBeforeMove = extendedSecurityService.getWriters(dmDocument);
                 
                 // get the primary parent and assert that it's a record management artifact
                 primaryParentBeforeMove = nodeService.getPrimaryParent(dmDocument).getParentRef();
@@ -142,8 +142,8 @@ public class MoveInplaceRecordTest extends BaseRMTestCase
                              primaryParentAfterMove);                
                 
                 // Check extended readers/writers
-                Set<String> extendedReadersAfterMove = extendedSecurityService.getExtendedReaders(dmDocument);
-                Set<String> extendedWritersAfterMove = extendedSecurityService.getExtendedWriters(dmDocument);
+                Set<String> extendedReadersAfterMove = extendedSecurityService.getReaders(dmDocument);
+                Set<String> extendedWritersAfterMove = extendedSecurityService.getWriters(dmDocument);
 
                 assertEquals(extendedReadersBeforeMove.size(), extendedReadersAfterMove.size());
                 assertEquals(extendedWritersBeforeMove.size(), extendedWritersAfterMove.size());

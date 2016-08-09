@@ -310,7 +310,7 @@ public class ExtendedSecurityServiceImplUnitTest
             .thenReturn(HAS_NO_EXTENDED_SECURITY);
         
         // get extended readers
-        assertTrue(extendedSecurityService.getExtendedReaders(nodeRef).isEmpty());
+        assertTrue(extendedSecurityService.getReaders(nodeRef).isEmpty());
     }
     
     /**
@@ -330,7 +330,7 @@ public class ExtendedSecurityServiceImplUnitTest
                .collect(Collectors.toSet()));
         
         // get extended readers
-        Set<String> extendedReaders = extendedSecurityService.getExtendedReaders(nodeRef);        
+        Set<String> extendedReaders = extendedSecurityService.getReaders(nodeRef);        
         assertEquals(Stream
                        .of(USER, GROUP)
                        .collect(Collectors.toSet()),
@@ -349,7 +349,7 @@ public class ExtendedSecurityServiceImplUnitTest
             .thenReturn(HAS_NO_EXTENDED_SECURITY);
         
         // get extended writers
-        assertTrue(extendedSecurityService.getExtendedWriters(nodeRef).isEmpty());
+        assertTrue(extendedSecurityService.getWriters(nodeRef).isEmpty());
     }
     
     /**
@@ -369,7 +369,7 @@ public class ExtendedSecurityServiceImplUnitTest
                .collect(Collectors.toSet()));
         
         // get extended writers
-        Set<String> extendedWriters = extendedSecurityService.getExtendedWriters(nodeRef);        
+        Set<String> extendedWriters = extendedSecurityService.getWriters(nodeRef);        
         assertEquals(Stream
                        .of(USER, GROUP)
                        .collect(Collectors.toSet()),

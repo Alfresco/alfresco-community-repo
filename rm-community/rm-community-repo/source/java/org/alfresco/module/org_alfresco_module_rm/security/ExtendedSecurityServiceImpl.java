@@ -171,11 +171,11 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getExtendedReaders(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.RecordsManagementSecurityService#getReaders(org.alfresco.service.cmr.repository.NodeRef)
      */
     @SuppressWarnings("unchecked")
     @Override
-    public Set<String> getExtendedReaders(NodeRef nodeRef)
+    public Set<String> getReaders(NodeRef nodeRef)
     {
         Set<String> result = null;
         
@@ -194,11 +194,11 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     }
 
     /**
-     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#getExtendedWriters(org.alfresco.service.cmr.repository.NodeRef)
+     * @see org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityService#getWriters(org.alfresco.service.cmr.repository.NodeRef)
      */
     @SuppressWarnings("unchecked")
     @Override
-    public Set<String> getExtendedWriters(NodeRef nodeRef)
+    public Set<String> getWriters(NodeRef nodeRef)
     {
         Set<String> result = null;
         
@@ -233,23 +233,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
-        // TODO what happens if the node already has some extended permissions assigned?!
-        // TODO need to clear existing groups and add new ones
-        
-        // add extended security impl
-        setImpl(nodeRef, readers, writers);  
-    }
-
-    /**
-     * Add extended security implementation method
-     *
-     * @param nodeRef           node reference
-     * @param readers           readers set
-     * @param writers           writers set
-     */
-    private void setImpl(final NodeRef nodeRef, Set<String> readers, Set<String> writers)
-    {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
+        // remove existing extended security, assuming there is any
+        remove(nodeRef);
         
         // find groups
         Pair<String, String> iprGroups = createOrFindIPRGroups(readers, writers);
@@ -271,7 +256,7 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
                 NodeRef child = assoc.getChildRef();
                 assignIPRGroupsToNode(iprGroups, child);
             }
-        }
+        }  
     }
     
     /**
@@ -554,29 +539,27 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     @Override
     public void remove(NodeRef nodeRef)
     {
-        if (hasExtendedSecurity(nodeRef))
-        {
-            removeImpl(nodeRef);
+        // remove any extended security that might be present
+        clearPermissions(nodeRef);
 
-            // remove the readers from any renditions of the content
-            if (isRecord(nodeRef))
+        // remove the readers from any renditions of the content
+        if (isRecord(nodeRef))
+        {
+            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
+            for (ChildAssociationRef assoc : assocs)
             {
-                List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
-                for (ChildAssociationRef assoc : assocs)
-                {
-                    NodeRef child = assoc.getChildRef();
-                    removeImpl(child);
-                }
+                NodeRef child = assoc.getChildRef();
+                clearPermissions(child);
             }
         }
     }
 
     /**
-     * Remove all extended security from node.
+     * Clear the nodes IPR permissions
      * 
      * @param nodeRef   node reference
      */
-    private void removeImpl(NodeRef nodeRef)
+    private void clearPermissions(NodeRef nodeRef)
     {
         ParameterCheck.mandatory("nodeRef", nodeRef);
         
@@ -585,11 +568,25 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         {
             // remove group permissions from node
             permissionService.clearPermission(nodeRef, iprGroups.getFirst());
-            permissionService.clearPermission(nodeRef, iprGroups.getSecond());
-            
-            // TODO delete the groups if they are no longer in use (easier said than done perhaps!)
+            permissionService.clearPermission(nodeRef, iprGroups.getSecond());            
         }
     }    
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#getExtendedReaders(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override @Deprecated public Set<String> getExtendedReaders(NodeRef nodeRef)
+    {
+        return getReaders(nodeRef);
+    }
+    
+    /**
+     * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#getExtendedWriters(org.alfresco.service.cmr.repository.NodeRef)
+     */
+    @Override @Deprecated public Set<String> getExtendedWriters(NodeRef nodeRef)
+    {
+        return getWriters(nodeRef);
+    }
     
     /**
      * @see org.alfresco.module.org_alfresco_module_rm.security.DeprecatedExtendedSecurityService#addExtendedSecurity(org.alfresco.service.cmr.repository.NodeRef, java.util.Set, java.util.Set)

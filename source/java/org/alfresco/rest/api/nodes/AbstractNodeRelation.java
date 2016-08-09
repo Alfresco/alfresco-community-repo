@@ -53,6 +53,7 @@ import org.springframework.beans.factory.InitializingBean;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -208,6 +209,11 @@ public class AbstractNodeRelation implements InitializingBean
         int pageEnd = skipCount + pageSize;
 
         final List page = new ArrayList<>(pageSize);
+        if (result == null) 
+        {
+            result = Collections.emptyList();
+        }
+        
         Iterator it = result.iterator();
         for (int counter = 0; counter < pageEnd && it.hasNext(); counter++)
         {

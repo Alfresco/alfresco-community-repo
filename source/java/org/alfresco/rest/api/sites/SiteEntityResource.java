@@ -28,6 +28,8 @@ package org.alfresco.rest.api.sites;
 import org.alfresco.rest.api.Sites;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.framework.WebApiDescription;
+import org.alfresco.rest.framework.WebApiParam;
+import org.alfresco.rest.framework.core.ResourceParameter;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.actions.interfaces.EntityResourceAction;
@@ -107,13 +109,10 @@ public class SiteEntityResource implements EntityResourceAction.Read<Site>,
      */
     @Override
     @WebApiDescription(title="Create site", description="Create the default/functional Share site")
+    @WebApiParam(name="entity", title="A single site", description="A single site, multiple sites are not supported.",
+            kind= ResourceParameter.KIND.HTTP_BODY_OBJECT, allowMultiple=false)
     public List<Site> create(List<Site> entity, Parameters parameters)
     {
-        if (entity.size() != 1)
-        {
-            throw new InvalidArgumentException("Please specify one site entity only");
-        }
-
         List<Site> result = new ArrayList<>(1);
         result.add(sites.createSite(entity.get(0), parameters));
         return result;

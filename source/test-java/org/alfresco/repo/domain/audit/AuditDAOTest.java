@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -37,8 +38,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.transaction.UserTransaction;
-
-import junit.framework.TestCase;
 
 import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.repo.content.transform.AbstractContentTransformerTest;
@@ -62,6 +61,8 @@ import org.apache.commons.lang.mutable.MutableInt;
 import org.hibernate.dialect.Dialect;
 import org.junit.experimental.categories.Category;
 import org.springframework.context.ConfigurableApplicationContext;
+
+import junit.framework.TestCase;
 
 /**
  * @see ContentDataDAO
@@ -89,7 +90,7 @@ public class AuditDAOTest extends TestCase
         auditDAO = (AuditDAO) ctx.getBean("auditDAO");
         propertyValueDAO = ctx.getBean(PropertyValueDAO.class);
     }
-    
+
     public void testAuditModel() throws Exception
     {
         final File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
@@ -110,7 +111,7 @@ public class AuditDAOTest extends TestCase
         assertNotNull(configPairCheck);
         assertEquals(configPair, configPairCheck);
     }
-    
+
     public void testAuditApplication() throws Exception
     {
         final File file = AbstractContentTransformerTest.loadQuickTestFile("pdf");
@@ -149,11 +150,12 @@ public class AuditDAOTest extends TestCase
                 "Time for " + count + " application creations was " +
                 ((double)(after - before)/(10E6)) + "ms");
     }
-    
+
     public void testAuditEntry() throws Exception
     {
         doAuditEntryImpl(1000);
     }
+
     /**
      * @return              Returns the name of the application
      */
@@ -202,7 +204,7 @@ public class AuditDAOTest extends TestCase
         // Done
         return appName;
     }
-    
+
     public synchronized void testAuditQuery() throws Exception
     {
         // Some entries
@@ -280,7 +282,172 @@ public class AuditDAOTest extends TestCase
 //        secondLastTimeStamp = timestamps.removeLast();
 //        assertTrue("The timestamps should be in descending order", lastTimestamp.compareTo(secondLastTimeStamp) < 0);
     }
-    
+
+    /*
+     * Test combinations of fromId, toId, fromTime, toTime and maxResults
+     */
+    public synchronized void testAuditQueryCombos() throws Exception
+    {
+        // Some entries
+        doAuditEntryImpl(10);
+
+        final MutableInt count = new MutableInt(0);
+        final LinkedList<Long> timestamps = new LinkedList<Long>();
+        final List<Long> entryIds = new LinkedList<>();
+        // Find everything
+        final AuditQueryCallback callback = new AuditQueryCallback()
+        {            
+            public boolean valuesRequired()
+            {
+                return false;
+            }
+
+            public boolean handleAuditEntry(
+                    Long entryId,
+                    String applicationName,
+                    String user,
+                    long time,
+                    Map<String, Serializable> values)
+            {
+                count.setValue(count.intValue() + 1);
+                timestamps.add(time);
+                entryIds.add(entryId);
+                return true;
+            }
+
+            public boolean handleAuditEntryError(Long entryId, String errorMsg, Throwable error)
+            {
+                throw new AlfrescoRuntimeException(errorMsg, error);
+            }
+        };
+        
+        final AuditQueryParameters params = new AuditQueryParameters();
+        params.addSearchKey("/a/b/c", null);
+
+        //. get them all
+        RetryingTransactionCallback<Void> findCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                auditDAO.findAuditEntries(callback, params, 10);
+                return null;
+            }
+        };
+        count.setValue(0);
+        timestamps.clear();
+        txnHelper.doInTransaction(findCallback);
+        assertEquals(10, count.intValue());
+
+        // copy what we found so that we can compare subsequent audit queries
+        List<Long> allEntryIds = new ArrayList<>(entryIds);
+        List<Long> allTimestamps = new ArrayList<>(timestamps);
+
+        // test fromId and maxResults
+        entryIds.clear();
+        timestamps.clear();
+        params.setFromId(allEntryIds.get(2));
+        findCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                auditDAO.findAuditEntries(callback, params, 2);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(findCallback);
+        assertTrue(allEntryIds.subList(2, 2 + 2).equals(entryIds));
+
+        // test toId and maxResults
+        entryIds.clear();
+        timestamps.clear();
+        params.setFromId(null);
+        params.setFromTime(null);
+        params.setToTime(null);
+        params.setToId(allEntryIds.get(2));
+        findCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                auditDAO.findAuditEntries(callback, params, 2);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(findCallback);
+        assertTrue(allEntryIds.subList(0, 2).equals(entryIds));
+
+        // test fromId and toId and maxResults
+        entryIds.clear();
+        timestamps.clear();
+        params.setFromId(allEntryIds.get(2));
+        params.setToId(allEntryIds.get(5));
+        params.setFromTime(null);
+        params.setToTime(null);
+        findCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                auditDAO.findAuditEntries(callback, params, 1);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(findCallback);
+        assertTrue(allEntryIds.subList(2, 3).equals(entryIds));
+
+        // test fromTime and maxResults
+        entryIds.clear();
+        timestamps.clear();
+        params.setFromTime(allTimestamps.get(2));
+        params.setFromId(null);
+        params.setToTime(null);
+        params.setToId(null);
+        findCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                auditDAO.findAuditEntries(callback, params, 2);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(findCallback);
+        assertTrue(allTimestamps.subList(2, 4).equals(timestamps));
+
+        // test toTime and maxResults
+        entryIds.clear();
+        timestamps.clear();
+        params.setFromTime(null);
+        params.setFromId(null);
+        params.setToTime(allTimestamps.get(4));
+        params.setToId(null);
+        findCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                auditDAO.findAuditEntries(callback, params, 2);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(findCallback);
+        assertTrue(allTimestamps.subList(0, 2).equals(timestamps));
+
+        // test fromTime and toTime and maxResults
+        entryIds.clear();
+        timestamps.clear();
+        params.setFromTime(allTimestamps.get(2));
+        params.setFromId(null);
+        params.setToTime(allTimestamps.get(5));
+        params.setToId(null);
+        findCallback = new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                auditDAO.findAuditEntries(callback, params, 2);
+                return null;
+            }
+        };
+        txnHelper.doInTransaction(findCallback);
+        assertTrue(allTimestamps.subList(2, 4).equals(timestamps));
+    }
+
     public void testAuditDeleteEntries() throws Exception
     {
         final AuditQueryCallback noResultsCallback = new AuditQueryCallback()
@@ -306,7 +473,7 @@ public class AuditDAOTest extends TestCase
                 throw new AlfrescoRuntimeException(errorMsg, error);
             }
         };
-        
+
         // Some entries
         final String appName = doAuditEntryImpl(1);
 
@@ -320,13 +487,12 @@ public class AuditDAOTest extends TestCase
                 Long appId = auditDAO.getAuditApplication(appName).getId();
                 auditDAO.deleteAuditEntries(appId, null, null);
                 // There should be no entries
-                auditDAO.findAuditEntries(noResultsCallback, params, -1);
+                auditDAO.findAuditEntries(noResultsCallback, params, Integer.MAX_VALUE);
                 return null;
             }
         };
         txnHelper.doInTransaction(deletedCallback);
     }
-    
 
     /**
      * Ensure that only the correct application's audit entries are deleted.
@@ -347,7 +513,7 @@ public class AuditDAOTest extends TestCase
                 auditDAO.deleteAuditEntries(app1Id, null, null);
                 // There should be no entries for app1
                 // but still entries for app2
-                auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), -1);
+                auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
                 assertEquals("All entries should have been deleted from app1", 0, resultsCallback.numEntries(app1));
                 assertEquals("No entries should have been deleted from app2", 18, resultsCallback.numEntries(app2));
                 return null;
@@ -412,8 +578,7 @@ public class AuditDAOTest extends TestCase
         };
         txnHelper.doInTransaction(deletedCallback);
     }
-    
-    
+
     /**
      * Ensure audit entries can be deleted between two times - for all applications.
      * @throws Exception
@@ -452,16 +617,15 @@ public class AuditDAOTest extends TestCase
                 Thread.sleep(10);
                 createItem(info2, 22);
                 createItem(info1, 14);
-                
-                
-                auditDAO.findAuditEntries(preDeleteCallback, new AuditQueryParameters(), -1);
+
+                auditDAO.findAuditEntries(preDeleteCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
                 assertEquals(5, preDeleteCallback.numEntries(app1));
                 assertEquals(2, preDeleteCallback.numEntries(app2));
                 
                 // Delete audit entries between times - for all applications.
                 auditDAO.deleteAuditEntries(null, t1, t2);
                 
-                auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), -1);
+                auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
                 assertEquals("Two entries should have been deleted from app1", 3, resultsCallback.numEntries(app1));
                 assertEquals("One entry should have been deleted from app2", 1, resultsCallback.numEntries(app2));
                 return null;
@@ -560,7 +724,21 @@ public class AuditDAOTest extends TestCase
         // single test
         scriptCanDeleteOrphanedPropsWork(false);
     }
-    
+
+    public void testMaxResults() throws Exception
+    {
+        try
+        {
+            AuditQueryCallbackImpl callback = new AuditQueryCallbackImpl();
+            auditDAO.findAuditEntries(callback, new AuditQueryParameters(), -1);
+            fail("maxResults == -1 should be disallowed");
+        }
+        catch(IllegalArgumentException e)
+        {
+            // ok
+        }
+    }
+
     private void scriptCanDeleteOrphanedPropsWork(final boolean performance) throws Exception
     {
         final int iterationStep, maxIterations;
@@ -610,8 +788,8 @@ public class AuditDAOTest extends TestCase
                 // TODO: how to deal with Serializable values which cannot be retrieved later in test by value alone?
                 long now = System.currentTimeMillis();
                 auditDAO.createAuditEntry(info1.getId(), now, username, values);
-                
-                auditDAO.findAuditEntries(preDeleteCallback, new AuditQueryParameters(), -1);
+
+                auditDAO.findAuditEntries(preDeleteCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
                 assertEquals(1, preDeleteCallback.numEntries(app1));
                 
                 // Delete audit entries between times - for all applications.
@@ -619,7 +797,7 @@ public class AuditDAOTest extends TestCase
                 
                 if (!performance)
                 {
-                    auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), -1);
+                    auditDAO.findAuditEntries(resultsCallback, new AuditQueryParameters(), Integer.MAX_VALUE);
                     assertEquals("All entries should have been deleted from app1", 0, resultsCallback.numEntries(app1));
                 }
             }

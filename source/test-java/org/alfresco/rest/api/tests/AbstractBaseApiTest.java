@@ -545,15 +545,16 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
     protected Site createSite(String siteTitle, SiteVisibility siteVisibility) throws Exception
     {
-        return createSite(null, siteTitle, siteVisibility, 201);
+        return createSite(null, siteTitle, null, siteVisibility, 201);
     }
 
-    protected Site createSite(String siteId, String siteTitle, SiteVisibility siteVisibility, int expectedStatus) throws Exception
+    protected Site createSite(String siteId, String siteTitle, String siteDescription, SiteVisibility siteVisibility, int expectedStatus) throws Exception
     {
         Site site = new Site();
         site.setId(siteId);
         site.setTitle(siteTitle);
         site.setVisibility(siteVisibility);
+        site.setDescription(siteDescription);
 
         HttpResponse response = publicApiClient.post(getScope(), "sites", null, null, null, toJsonAsStringNonNull(site));
         checkStatus(expectedStatus, response.getStatusCode());

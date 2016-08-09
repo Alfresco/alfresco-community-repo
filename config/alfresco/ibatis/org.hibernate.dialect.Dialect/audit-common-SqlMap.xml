@@ -205,9 +205,8 @@
             entry.id desc
         </if>
     </sql>
-    
-    <!-- Get audit entries -->
-    <select id="select_AuditEntriesWithValues" parameterType="AuditQueryParameters" resultMap="result_AuditQueryAllValues">
+
+    <sql id="select_AuditEntriesWithValuesCommon">
         select
             app.app_name_id             as audit_app_name_id,
             entry.id                    as audit_entry_id,
@@ -241,10 +240,9 @@
             left join alf_prop_serializable_value serv on (serv.id = pv.long_value and pv.persisted_type = 4)
         <include refid="select_AuditEntriesWhereSnippet"/>
         <include refid="select_AuditEntriesOrderBySnippet"/>
-    </select>
+    </sql>
 
-    <!-- Get audit entries -->
-    <select id="select_AuditEntriesWithoutValues" parameterType="AuditQueryParameters" resultMap="result_AuditQueryNoValues">
+    <sql id="select_AuditEntriesWithoutValuesCommon">
         select
             app.app_name_id             as audit_app_name_id,
             entry.id                    as audit_entry_id,
@@ -261,6 +259,6 @@
         
         <include refid="select_AuditEntriesWhereSnippet"/>
         <include refid="select_AuditEntriesOrderBySnippet"/>
-    </select>
+    </sql>
 
 </mapper>

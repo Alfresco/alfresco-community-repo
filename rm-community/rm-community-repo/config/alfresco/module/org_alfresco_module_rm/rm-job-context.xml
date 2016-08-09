@@ -85,7 +85,7 @@
 
       <property name="nodeService" ref="nodeService" />
       <property name="searchService" ref="searchService" />
-      <property name="authenticationService" ref="authenticationService" />
+      <property name="personService" ref="personService" />
       <property name="recordsManagementActionService" ref="recordsManagementActionService" />
    </bean>
 

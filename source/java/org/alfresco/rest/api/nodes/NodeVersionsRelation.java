@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import org.alfresco.repo.version.Version2Model;
 import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.UserInfo;
@@ -125,6 +126,13 @@ public class NodeVersionsRelation implements
         
         aNode.setVersionComment(v.getDescription());
 
+        Map<String, Object> props = aNode.getProperties();
+        if (props != null)
+        {
+            // special case (as per Version2Service)
+            props.put("cm:"+Version2Model.PROP_VERSION_TYPE, v.getVersionProperty(Version2Model.PROP_VERSION_TYPE));
+        }
+
         //Don't show parentId, createdAt, createdByUser
         aNode.setParentId(null);
         aNode.setCreated(null);
@@ -139,8 +147,7 @@ public class NodeVersionsRelation implements
 
         if (v != null)
         {
-            List<String> includeParam = parameters.getInclude();
-            Node node = nodes.getFolderOrDocument(v.getFrozenStateNodeRef(), null, null, includeParam, null);
+            Node node = nodes.getFolderOrDocumentFullInfo(v.getFrozenStateNodeRef(), null, null, parameters, null);
             mapVersionInfo(v, node);
             return node;
         }

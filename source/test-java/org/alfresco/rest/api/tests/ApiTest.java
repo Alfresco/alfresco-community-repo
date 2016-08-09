@@ -43,6 +43,7 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
     NodeApiTest.class,
     NodeAssociationsApiTest.class,
+    NodeVersionsApiTest.class,
     QueriesApiTest.class,
     RenditionsTest.class,
     SharedLinkApiTest.class,

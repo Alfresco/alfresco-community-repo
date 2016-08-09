@@ -80,6 +80,13 @@ public class PersonPreferencesRelation implements RelationshipResourceAction.Rea
     @WebApiDescription(title = "Preference value for preference 'preferenceName' for person 'personId'.")
     public Preference readById(String personId, String preferenceName, Parameters parameters)
 	{
+        // fix for REPO-855
+		String url = parameters.getRequest().getURL();
+		if(url.matches(".*workspace://SpacesStore/.*")){
+            preferenceName += url.substring(url.indexOf("//SpacesStore/"));
+        }
+		//
+
     	return preferences.getPreference(personId, preferenceName);
 	}
 

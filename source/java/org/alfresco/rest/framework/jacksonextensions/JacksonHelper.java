@@ -123,7 +123,6 @@ public class JacksonHelper implements InitializingBean
     /**
      * Constructs the object based on the content.
      * @param content Reader
-     * @param requiredType Class<T>
      * @return T
      * @throws IOException
      */
@@ -143,7 +142,6 @@ public class JacksonHelper implements InitializingBean
     /**
      * Constructs the object based on the content as a List, the JSON can be an array or just a single value without the [] symbols
      * @param content Reader
-     * @param requiredType Class<T>
      * @return A collection of the specified type
      * @throws IOException
      */

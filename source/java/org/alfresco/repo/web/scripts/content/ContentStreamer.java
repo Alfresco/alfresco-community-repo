@@ -507,7 +507,6 @@ public class ContentStreamer implements ResourceLoaderAware
      * @param res WebScriptResponse
      * @param modified Date
      * @param eTag String
-     * @param model Map<String, Object>
      */
     protected void setResponseCache(WebScriptResponse res, Date modified, String eTag, Map<String, Object> model)
     {

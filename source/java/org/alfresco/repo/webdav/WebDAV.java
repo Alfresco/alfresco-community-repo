@@ -329,7 +329,6 @@ public class WebDAV
     /**
      * Return the Alfresco property value for the specified WebDAV property
      * 
-     * @param props Map<QName, Serializable>
      * @param davPropName String
      * @return Object
      */

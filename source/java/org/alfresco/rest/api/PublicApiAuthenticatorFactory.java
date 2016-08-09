@@ -76,7 +76,6 @@ public class PublicApiAuthenticatorFactory extends RemoteUserAuthenticatorFactor
     /**
      * Set the headers passed to the gateway for authentication.
      * 
-     * @param outboundHeaders Set<String>
      */
     public void setOutboundHeaders(Set<String> outboundHeaders)
     {

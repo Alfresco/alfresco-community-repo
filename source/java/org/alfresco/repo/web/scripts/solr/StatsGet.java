@@ -174,7 +174,6 @@ public class StatsGet extends DeclarativeWebScript
      * Parses ISO8601 formatted Date Strings.
      * @param start If start is null then defaults to 1 month
      * @param end If end is null then it defaults to now();
-     * @return Pair <Start,End>
      */
     public static Pair<LocalDate, LocalDate> getStartAndEndDates(String start, String end)
     {

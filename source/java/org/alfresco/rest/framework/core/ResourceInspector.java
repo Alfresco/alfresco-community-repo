@@ -183,9 +183,7 @@ public class ResourceInspector
     /**
      * Inspects the entity resource and returns meta data about any addresssed/binary properties
      * @param api Api
-     * @param resource Class<?>
      * @param entityPath String
-     * @param metainfo List<ResourceMetadata>
      */
     public static void inspectAddressedProperties(Api api, Class<?> resource, final String entityPath, List<ResourceMetadata> metainfo)
     {
@@ -320,7 +318,6 @@ public class ResourceInspector
 
     /**
      * Inspects the method and returns meta data about its operations
-     * @param resource Class<?>
      * @param aMethod Method
      * @param httpMethod HttpMethod
      * @return ResourceOperation
@@ -548,8 +545,6 @@ public class ResourceInspector
     
     /**
      * Returns the method for the interface
-     * @param resourceInterfaceWithOneMethod Class<? extends ResourceAction>
-     * @param resource Class<?>
      * @return null or a Method
      */
     public static Method findMethod(Class<? extends ResourceAction> resourceInterfaceWithOneMethod, Class<?> resource)
@@ -566,7 +561,6 @@ public class ResourceInspector
     
     /**
      * Finds the name of the entity using its annotation.
-     * @param annotAttribs Map<String, Object>
      * @return the entity name/path
      */
     protected static String findEntityNameByAnnotationAttributes(Map<String, Object> annotAttribs)
@@ -616,7 +610,6 @@ public class ResourceInspector
     /**
      * For a given class, looks for @EmbeddedEntityResource annotations, using the annotation produce
      * a Map of the property name key and the entity key
-     * @param anyClass Class<?>
      * @return A map of property key name and a value of the entity path name
      */
     public static Map<String,Pair<String,Method>> findEmbeddedResources(Class<?> anyClass)
@@ -644,9 +637,7 @@ public class ResourceInspector
     /**
      * Inspect a resource to find operations on it.
      * @param api Api
-     * @param resource Class<?>
      * @param entityPath String
-     * @param metainfo List<ResourceMetadata>
      */
     public static void inspectOperations(Api api, Class<?> resource, final String entityPath, List<ResourceMetadata> metainfo)
     {
@@ -698,7 +689,6 @@ public class ResourceInspector
      * Inspects the resource to determine what api it belongs to.
      * It does this by looking for the WebApi package annotation.
      * 
-     * @param resource Class<?>
      * @return Api
      */
     public static Api inspectApi(Class<?> resource)

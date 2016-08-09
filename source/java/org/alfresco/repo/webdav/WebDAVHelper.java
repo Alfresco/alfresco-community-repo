@@ -160,7 +160,7 @@ public class WebDAVHelper
      * to detect whether clients are performing a renaming shuffle - common during
      * file saving on various clients.
      * <p/>
-     * <bALF-3856, ALF-7079, MNT-181</b>
+     * <b>ALF-3856, ALF-7079, MNT-181</b>
      * 
      * @param renameShufflePattern      a regular expression filename match
      */

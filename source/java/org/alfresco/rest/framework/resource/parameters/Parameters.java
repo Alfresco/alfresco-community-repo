@@ -116,7 +116,6 @@ public interface Parameters
     /**
      * A list of property names passed in the request using the json pointer syntax
      * Specified by the "SELECT" request parameter.
-     * @return List<String> the propertyNames
      */
     @Deprecated
     List<String> getSelectedProperties();
@@ -124,7 +123,7 @@ public interface Parameters
     /**
      * A list of property names passed in the request using the json pointer syntax
      * Specified by the "INCLUDE" request parameter.
-     * @return List<String> the propertyNames
+     * @return the propertyNames
      */
     List<String> getInclude();
 

@@ -68,6 +68,24 @@ public class CommentDelete extends AbstractCommentsWebScript
             parentNodeRef = new NodeRef((String) getOrNull(jsonPageParams, JSON_KEY_NODEREF));
         }
 
+        if (parentNodeRef == null)
+        {
+            // find the parent content node for the comment
+            // Example would be a blog post which will have the following structure:
+            // blog post -> forum node -> topic node -> the actual comment node
+            NodeRef topicNodeRef = nodeService.getPrimaryParent(nodeRef).getParentRef();
+            if (topicNodeRef == null || !nodeService.getType(topicNodeRef).equals(ForumModel.TYPE_TOPIC))
+            {
+                throw new IllegalArgumentException("The NodeRef specified is not a child of the topic.");
+            }
+            NodeRef forumNodeRef = nodeService.getPrimaryParent(topicNodeRef).getParentRef();
+            if (forumNodeRef == null || !nodeService.getType(forumNodeRef).equals(ForumModel.TYPE_FORUM))
+            {
+                throw new IllegalArgumentException("The NodeRef specified doesn't belong to a correct structure of forums.");
+            }
+            parentNodeRef = nodeService.getPrimaryParent(forumNodeRef).getParentRef();
+        }
+
         if (parentNodeRef != null)
         {
             this.behaviourFilter.disableBehaviour(parentNodeRef, ContentModel.ASPECT_AUDITABLE);

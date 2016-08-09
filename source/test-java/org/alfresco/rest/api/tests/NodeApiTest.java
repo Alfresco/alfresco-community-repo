@@ -2962,15 +2962,12 @@ public class NodeApiTest extends AbstractBaseApiTest
 
         String myNodeId = getMyNodeId(user1);
 
-        Folder f1 = new Folder();
-        f1.setName("F1");
-        f1.setNodeType(TYPE_CM_FOLDER);
-
-        HttpResponse response = post(getNodeChildrenUrl(myNodeId), user1, toJsonAsStringNonNull(f1), 201);
-        Folder folderResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Folder.class);
-        assertEquals(f1.getName(), folderResp.getName());
-        final String f1_nodeId = folderResp.getId();
-        assertNotNull(f1_nodeId);
+        String folderName = "f1 "+System.currentTimeMillis();
+        Folder folderResp = createFolder(user1, myNodeId, folderName);
+        String f1_nodeId = folderResp.getId();
+        
+        String anoNodeName = "another";
+        createFolder(user1, f1_nodeId, anoNodeName);
 
         Document doc = new Document();
         final String docName = "testdoc.txt";
@@ -2981,7 +2978,7 @@ public class NodeApiTest extends AbstractBaseApiTest
         doc.setContent(contentInfo);
 
         // create an empty file within F1 folder
-        response = post(getNodeChildrenUrl(f1_nodeId), user1, toJsonAsStringNonNull(doc), 201);
+        HttpResponse response = post(getNodeChildrenUrl(f1_nodeId), user1, toJsonAsStringNonNull(doc), 201);
         Document docResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
         assertEquals(docName, docResp.getName());
@@ -3056,11 +3053,40 @@ public class NodeApiTest extends AbstractBaseApiTest
         assertNotNull(pathElements);
         assertTrue(pathElements.size() > 0);
         // check the last element is F1
-        assertEquals(f1.getName(), pathElements.get(pathElements.size() - 1).getName());
+        assertEquals(folderResp.getName(), pathElements.get(pathElements.size() - 1).getName());
 
         // Download the file
         response = getSingle(url, user1, null, 200);
-        assertNotNull(content, response.getResponse());
+        assertEquals(content, response.getResponse());
+        
+        // Update the node's content again. Also rename the file !
+        content = "The quick brown fox jumps over the lazy dog updated again !";
+        inputStream = new ByteArrayInputStream(content.getBytes());
+        txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+        payload = new BinaryPayload(txtFile);
+
+        String docName2 = "hello-world.txt";
+        Map params = new HashMap<>();
+        params.put(Nodes.PARAM_NAME, docName2);
+        response = putBinary(url, user1, payload, null, params, 200);
+        docResp = jacksonUtil.parseEntry(response.getJsonResponse(), Document.class);
+        assertEquals(docName2, docResp.getName());
+        
+        // Download the file
+        response = getSingle(url, user1, null, 200);
+        assertEquals(content, response.getResponse());
+
+        // -ve - optional "name" is invalid
+        params = new HashMap<>();
+        params.put(Nodes.PARAM_NAME, "hello/world.txt");
+        payload = new BinaryPayload(txtFile);
+        putBinary(url, user1, payload, null, params, 422);
+        
+        // -ve - optional "name" already exists ...
+        params = new HashMap<>();
+        params.put(Nodes.PARAM_NAME, anoNodeName);
+        payload = new BinaryPayload(txtFile);
+        putBinary(url, user1, payload, null, params, 409);
 
         // -ve - try to  update content using multi-part form data
         payload = new BinaryPayload(txtFile, "multipart/form-data", null);

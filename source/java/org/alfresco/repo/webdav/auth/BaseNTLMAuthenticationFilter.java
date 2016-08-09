@@ -193,11 +193,11 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         
         // Check if an NTLM authorization header was received
         
-        if ( authHdr != null)
+        if (authHdr != null)
         {
             // Check for an NTLM authorization header
             
-            if ( authHdr.startsWith(AUTH_NTLM))
+            if (authHdr.startsWith(AUTH_NTLM))
                 reqAuth = true;
             else if ( authHdr.startsWith( "Negotiate"))
             {
@@ -252,7 +252,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
 
             // If there is no login page configured (WebDAV) then just keep requesting the user details from the client
             
-            if ( hasLoginPage())
+            if (hasLoginPage())
                 redirectToLoginPage(sreq, sresp);
             else
                 restartLoginChallenge(context, sreq, sresp);
@@ -264,7 +264,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         {
             // Check for a ticket based logon, if enabled
             
-            if ( allowsTicketLogons())
+            if (allowsTicketLogons())
             {
                 // Check if the request includes an authentication ticket
                 
@@ -288,6 +288,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         }
         else
         {
+            HttpSession session = sreq.getSession();
             // Decode the received NTLM blob and validate
             final byte[] ntlmByts = Base64.decodeBase64(authHdr.substring(5).getBytes());
             int ntlmTyp = NTLMMessage.isNTLMType(ntlmByts);
@@ -295,21 +296,27 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             {
                 // Process the type 1 NTLM message
                 Type1NTLMMessage type1Msg = new Type1NTLMMessage(ntlmByts);
-                processType1(type1Msg, sreq, sresp);
+                synchronized (session)
+                {
+                    processType1(type1Msg, sreq, sresp);
+                }
                 return false;
             }
             else if (ntlmTyp == NTLM.Type3)
             {
                 // Process the type 3 NTLM message
                 Type3NTLMMessage type3Msg = new Type3NTLMMessage(ntlmByts);
-                return processType3(type3Msg, context, sreq, sresp);
+                synchronized (session)
+                {
+                    return processType3(type3Msg, context, sreq, sresp);
+                }
             }
             else
             {
                 if (getLogger().isDebugEnabled())
                     getLogger().debug("NTLM blob not handled, redirecting to login page.");
                 
-                if ( hasLoginPage())
+                if (hasLoginPage())
                     redirectToLoginPage(sreq, sresp);
                 else
                     restartLoginChallenge(context, sreq, sresp);
@@ -339,8 +346,9 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         ntlmDetails = (NTLMLogonDetails)session.getAttribute(NTLM_AUTH_DETAILS);
         
         // Check if cached logon details are available
-        if (ntlmDetails != null && ntlmDetails.hasType2Message() &&
-            ntlmDetails.hasNTLMHashedPassword() && ntlmDetails.hasAuthenticationToken())
+        if (ntlmDetails != null &&
+            ntlmDetails.hasType2Message() &&
+            ((nltmAuthenticator.getNTLMMode() == NTLMMode.PASS_THROUGH && ntlmDetails.hasAuthenticationToken()) || !ntlmDetails.hasAuthenticationToken()))
         {
             // Get the authentication server type2 response
             Type2NTLMMessage cachedType2 = ntlmDetails.getType2Message();

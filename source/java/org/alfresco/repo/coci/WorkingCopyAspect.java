@@ -27,7 +27,11 @@
 package org.alfresco.repo.coci;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import org.alfresco.model.ContentModel;
@@ -35,22 +39,28 @@ import org.alfresco.repo.copy.CopyBehaviourCallback;
 import org.alfresco.repo.copy.CopyDetails;
 import org.alfresco.repo.copy.CopyServicePolicies;
 import org.alfresco.repo.copy.DefaultCopyBehaviourCallback;
+import org.alfresco.repo.domain.node.NodeDAO;
+import org.alfresco.repo.lock.mem.Lifetime;
 import org.alfresco.repo.node.NodeServicePolicies;
 import org.alfresco.repo.policy.BehaviourFilter;
 import org.alfresco.repo.policy.JavaBehaviour;
 import org.alfresco.repo.policy.PolicyComponent;
 import org.alfresco.service.cmr.coci.CheckOutCheckInService;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.AssociationRef;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
+import org.alfresco.util.Pair;
 
-public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, NodeServicePolicies.OnRemoveAspectPolicy
+public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, NodeServicePolicies.OnRemoveAspectPolicy, NodeServicePolicies.BeforeArchiveNodePolicy, NodeServicePolicies.OnRestoreNodePolicy
 {    
     private PolicyComponent policyComponent;
     private NodeService nodeService;
+    private NodeDAO nodeDAO;
     private LockService lockService;
     private CheckOutCheckInService checkOutCheckInService;
     private BehaviourFilter policyBehaviourFilter;
@@ -76,7 +86,15 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
     {
         this.nodeService = nodeService;
     }
-    
+
+    /**
+     * Set the node dao
+     */
+    public void setNodeDAO(NodeDAO nodeDAO)
+    {
+        this.nodeDAO = nodeDAO;
+    }
+
     /**
      * Set the lock service
      */
@@ -120,12 +138,24 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
                 ContentModel.ASPECT_CHECKED_OUT,
                 new JavaBehaviour(this, "getCopyCallback"));
         
+        // register beforeArchiveNode class behaviour for the working copy aspect
+        this.policyComponent.bindClassBehaviour(
+                NodeServicePolicies.BeforeArchiveNodePolicy.QNAME,
+                ContentModel.ASPECT_WORKING_COPY,
+                new JavaBehaviour(this, "beforeArchiveNode"));
+
         // register onBeforeDelete class behaviour for the working copy aspect
         this.policyComponent.bindClassBehaviour(
                 NodeServicePolicies.BeforeDeleteNodePolicy.QNAME,
                 ContentModel.ASPECT_WORKING_COPY,
                 new JavaBehaviour(this, "beforeDeleteWorkingCopy"));
-        
+
+        // register onRestoreNode class behaviour for archived Lockable aspect
+        this.policyComponent.bindClassBehaviour(
+                NodeServicePolicies.OnRestoreNodePolicy.QNAME,
+                ContentModel.ASPECT_ARCHIVE_LOCKABLE,
+                new JavaBehaviour(this, "onRestoreNode"));
+
         // Watch for removal of the aspect and ensure that the cm:workingcopylink assoc is removed
         this.policyComponent.bindClassBehaviour(
                 NodeServicePolicies.OnRemoveAspectPolicy.QNAME,
@@ -184,6 +214,163 @@ public class WorkingCopyAspect implements CopyServicePolicies.OnCopyNodePolicy, 
 
     }
     
+    /**
+     * beforeArchiveNode policy behaviour
+     * 
+     * @param nodeRef
+     *            the node reference about to be archived
+     */
+    @Override
+    public void beforeArchiveNode(NodeRef workingCopyNodeRef)
+    {
+        NodeRef checkedOutNodeRef = checkOutCheckInService.getCheckedOut(workingCopyNodeRef);
+
+        if (checkedOutNodeRef != null)
+        {
+            try
+            {
+                policyBehaviourFilter.disableBehaviour(workingCopyNodeRef, ContentModel.ASPECT_AUDITABLE);
+
+                if (nodeService.hasAspect(checkedOutNodeRef, ContentModel.ASPECT_LOCKABLE))
+                {
+
+                    Map<QName, Serializable> checkedOutNodeProperties = nodeService.getProperties(checkedOutNodeRef);
+                    Map<QName, Serializable> workingCopyProperties = nodeService.getProperties(workingCopyNodeRef);
+
+                    Long nodeId = nodeDAO.getNodePair(workingCopyNodeRef).getFirst();
+
+                    //get lock properties from checked out node and set them on working copy node in order to be available for restore
+                    String lockOwner = (String) checkedOutNodeProperties.get(ContentModel.PROP_LOCK_OWNER);
+                    Date expiryDate = (Date) checkedOutNodeProperties.get(ContentModel.PROP_EXPIRY_DATE);
+                    String lockTypeStr = (String) checkedOutNodeProperties.get(ContentModel.PROP_LOCK_TYPE);
+                    LockType lockType = lockTypeStr != null ? LockType.valueOf(lockTypeStr) : null;
+                    String lifetimeStr = (String) checkedOutNodeProperties.get(ContentModel.PROP_LOCK_LIFETIME);
+                    Lifetime lifetime = lifetimeStr != null ? Lifetime.valueOf(lifetimeStr) : null;
+                    String additionalInfo = (String) checkedOutNodeProperties.get(ContentModel.PROP_LOCK_ADDITIONAL_INFO);
+
+                    nodeService.addAspect(workingCopyNodeRef, ContentModel.ASPECT_ARCHIVE_LOCKABLE, null);
+
+                    workingCopyProperties.put(ContentModel.PROP_ARCHIVED_LOCK_OWNER, lockOwner);
+                    workingCopyProperties.put(ContentModel.PROP_ARCHIVED_LOCK_TYPE, lockType);
+                    workingCopyProperties.put(ContentModel.PROP_ARCHIVED_LOCK_LIFETIME, lifetime);
+                    workingCopyProperties.put(ContentModel.PROP_ARCHIVED_EXPIRY_DATE, expiryDate);
+                    workingCopyProperties.put(ContentModel.PROP_ARCHIVED_LOCK_ADDITIONAL_INFO, additionalInfo);
+
+                    // Target associations
+                    Collection<Pair<Long, AssociationRef>> targetAssocs = nodeDAO.getTargetNodeAssocs(nodeId, null);
+                    for (Pair<Long, AssociationRef> targetAssocPair : targetAssocs)
+                    {
+                        if (ContentModel.ASSOC_ORIGINAL.equals(targetAssocPair.getSecond().getTypeQName()))
+                        {
+                            workingCopyProperties.put(ContentModel.PROP_ARCHIVED_TARGET_ASSOCS, targetAssocPair.getSecond());
+                        }
+                    }
+                    // Source associations
+                    Collection<Pair<Long, AssociationRef>> sourceAssocs = nodeDAO.getSourceNodeAssocs(nodeId, null);
+                    for (Pair<Long, AssociationRef> sourceAssocPair : sourceAssocs)
+                    {
+                        if (ContentModel.ASSOC_WORKING_COPY_LINK.equals(sourceAssocPair.getSecond().getTypeQName()))
+                        {
+                            workingCopyProperties.put(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS, sourceAssocPair.getSecond());
+                        }
+                    }
+
+                    //update working copy node properties
+                    nodeService.setProperties(workingCopyNodeRef, workingCopyProperties);
+                }
+            }
+            finally
+            {
+                policyBehaviourFilter.enableBehaviour(checkedOutNodeRef, ContentModel.ASPECT_AUDITABLE);
+            }
+
+        }
+        
+    }
+    
+    /**
+     * onRestoreNode policy behaviour
+     * 
+     * @param nodeRef
+     *            the node reference that was restored
+     */
+    @SuppressWarnings("unchecked")
+    @Override
+    public void onRestoreNode(ChildAssociationRef childAssocRef)
+    {
+        NodeRef workingCopyNodeRef = childAssocRef.getChildRef();
+
+        //check that node is working copy 
+        if (nodeService.hasAspect(workingCopyNodeRef, ContentModel.ASPECT_WORKING_COPY))
+        {
+            try
+            {
+
+                NodeRef checkedOutNodeRef = null;
+                policyBehaviourFilter.disableBehaviour(workingCopyNodeRef, ContentModel.ASPECT_AUDITABLE);
+
+                Map<QName, Serializable> workingCopyProperties = nodeService.getProperties(workingCopyNodeRef);
+
+                //get archived lock properties in order to be restored on the original node
+                String lockOwner = (String) workingCopyProperties.get(ContentModel.PROP_ARCHIVED_LOCK_OWNER);
+                workingCopyProperties.remove(ContentModel.PROP_ARCHIVED_LOCK_OWNER);
+                Date expiryDate = (Date) workingCopyProperties.get(ContentModel.PROP_ARCHIVED_EXPIRY_DATE);
+                workingCopyProperties.remove(ContentModel.PROP_ARCHIVED_EXPIRY_DATE);
+                String lockTypeStr = (String) workingCopyProperties.get(ContentModel.PROP_ARCHIVED_LOCK_TYPE);
+                workingCopyProperties.remove(ContentModel.PROP_ARCHIVED_LOCK_TYPE);
+                LockType lockType = lockTypeStr != null ? LockType.valueOf(lockTypeStr) : null;
+                String lifetimeStr = (String) workingCopyProperties.get(ContentModel.PROP_ARCHIVED_LOCK_LIFETIME);
+                workingCopyProperties.remove(ContentModel.PROP_ARCHIVED_LOCK_LIFETIME);
+                Lifetime lifetime = lifetimeStr != null ? Lifetime.valueOf(lifetimeStr) : null;
+                String additionalInfo = (String) workingCopyProperties.get(ContentModel.PROP_ARCHIVED_LOCK_ADDITIONAL_INFO);
+                workingCopyProperties.remove(ContentModel.PROP_ARCHIVED_LOCK_ADDITIONAL_INFO);
+
+                List<AssociationRef> targetAssocList = (ArrayList<AssociationRef>) workingCopyProperties
+                        .get(ContentModel.PROP_ARCHIVED_TARGET_ASSOCS);
+                if (targetAssocList != null && targetAssocList.get(0) != null)
+                {
+                    AssociationRef targetAssoc = (AssociationRef) targetAssocList.get(0);
+                    checkedOutNodeRef = targetAssoc.getSourceRef();
+                    nodeService.createAssociation( targetAssoc.getSourceRef(),targetAssoc.getTargetRef(), ContentModel.ASSOC_ORIGINAL);
+
+                }
+                workingCopyProperties.remove( ContentModel.PROP_ARCHIVED_TARGET_ASSOCS);
+
+                ArrayList<AssociationRef> sourceAssocList = (ArrayList<AssociationRef>) workingCopyProperties
+                        .get(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS);
+                if (sourceAssocList != null && sourceAssocList.get(0) != null)
+                {
+                    AssociationRef sourceAssoc = (AssociationRef) sourceAssocList.get(0);
+                    checkedOutNodeRef = sourceAssoc.getSourceRef();
+                    nodeService.createAssociation(sourceAssoc.getSourceRef(), sourceAssoc.getTargetRef(),
+                            ContentModel.ASSOC_WORKING_COPY_LINK);
+                }
+                workingCopyProperties.remove(ContentModel.PROP_ARCHIVED_SOURCE_ASSOCS);
+
+                //clean up the archived aspect and properties for working copy node
+                nodeService.removeAspect(workingCopyNodeRef, ContentModel.ASPECT_ARCHIVE_LOCKABLE);
+                nodeService.setProperties(workingCopyNodeRef, workingCopyProperties);
+
+                //restore properties on original node
+                nodeService.addAspect(checkedOutNodeRef, ContentModel.ASPECT_LOCKABLE, null);
+                Map<QName, Serializable> checkedOutNodeProperties = nodeService.getProperties(checkedOutNodeRef);
+
+                checkedOutNodeProperties.put(ContentModel.PROP_LOCK_OWNER, lockOwner);
+                checkedOutNodeProperties.put(ContentModel.PROP_LOCK_TYPE, lockType);
+                checkedOutNodeProperties.put(ContentModel.PROP_LOCK_LIFETIME, lifetime);
+                checkedOutNodeProperties.put(ContentModel.PROP_EXPIRY_DATE, expiryDate);
+                checkedOutNodeProperties.put(ContentModel.PROP_LOCK_ADDITIONAL_INFO, additionalInfo);
+
+                nodeService.setProperties(checkedOutNodeRef, checkedOutNodeProperties);
+            }
+            finally
+            {
+                policyBehaviourFilter.enableBehaviour(workingCopyNodeRef, ContentModel.ASPECT_AUDITABLE);
+            }
+
+        }
+    }
+
     @Override
     public void onRemoveAspect(NodeRef nodeRef, QName aspectTypeQName)
     {

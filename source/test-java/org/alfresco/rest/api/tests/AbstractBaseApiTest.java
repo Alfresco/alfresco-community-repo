@@ -128,8 +128,8 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected static PersonService personService;
 
     protected final String RUNID = System.currentTimeMillis()+"";
-
-
+    
+    @Override
     @Before
     public void setup() throws Exception
     {

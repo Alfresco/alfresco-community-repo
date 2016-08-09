@@ -67,6 +67,8 @@ public class TestPublicApi128 extends EnterpriseTestApi
 	@Before
 	public void setup()
 	{
+		// note: we don't call super.setup() since we create our own test data here !
+		
 		// mixed case network
 		this.time = System.currentTimeMillis();
 		this.networkId = getNetworkId(networkPrefix, networkDomain);

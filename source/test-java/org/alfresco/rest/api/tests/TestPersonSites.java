@@ -87,65 +87,13 @@ public class TestPersonSites extends EnterpriseTestApi
     private String site3_title = "b_" + GUID.generate();
     private SiteRole site3_role = SiteRole.SiteConsumer;
 
-
-    public void initializeSites() throws Exception
-    {
-        /*
-         * Create data for testing the site sorting. We create the sites as
-         * person31 and assign roles to person32. The list requests will be
-         * performed as person32.
-         */
-        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
-        {
-            @Override
-            public Void doWork() throws Exception
-            {
-                person31 = network1.createUser();
-                person32 = network1.createUser();
-                return null;
-            }
-        }, network1.getId());
-
-        this.site1 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-        {
-            @Override
-            public TestSite doWork() throws Exception
-            {
-                SiteInformation siteInfo = new SiteInformation(site1_name, site1_title, site1_title, SiteVisibility.PRIVATE);
-                TestSite site = network1.createSite(siteInfo);
-                site.inviteToSite(person32.getId(), site1_role);
-                return site;
-            }
-        }, person31.getId(), network1.getId());
-
-        this.site2 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-        {
-            @Override
-            public TestSite doWork() throws Exception
-            {
-                SiteInformation siteInfo = new SiteInformation(site2_name, site2_title, site2_title, SiteVisibility.PRIVATE);
-                TestSite site = network1.createSite(siteInfo);
-                site.inviteToSite(person32.getId(), site2_role);
-                return site;
-            }
-        }, person31.getId(), network1.getId());
-
-        this.site3 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
-        {
-            @Override
-            public TestSite doWork() throws Exception
-            {
-                SiteInformation siteInfo = new SiteInformation(site3_name, site3_title, site3_title, SiteVisibility.PRIVATE);
-                TestSite site = network1.createSite(siteInfo);
-                site.inviteToSite(person32.getId(), site3_role);
-                return site;
-            }
-        }, person31.getId(), network1.getId());
-    }
-
+    @Override
     @Before
     public void setup() throws Exception
     {
+        // init networks
+        super.setup();
+
         Iterator<TestNetwork> networksIt = getTestFixture().getNetworksIt();
 
         assertTrue(networksIt.hasNext());
@@ -224,6 +172,61 @@ public class TestPersonSites extends EnterpriseTestApi
         }, person12.getId(), network1.getId());
     }
 
+    public void initializeSites() throws Exception
+    {
+        /*
+         * Create data for testing the site sorting. We create the sites as
+         * person31 and assign roles to person32. The list requests will be
+         * performed as person32.
+         */
+        TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
+        {
+            @Override
+            public Void doWork() throws Exception
+            {
+                person31 = network1.createUser();
+                person32 = network1.createUser();
+                return null;
+            }
+        }, network1.getId());
+
+        this.site1 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
+        {
+            @Override
+            public TestSite doWork() throws Exception
+            {
+                SiteInformation siteInfo = new SiteInformation(site1_name, site1_title, site1_title, SiteVisibility.PRIVATE);
+                TestSite site = network1.createSite(siteInfo);
+                site.inviteToSite(person32.getId(), site1_role);
+                return site;
+            }
+        }, person31.getId(), network1.getId());
+
+        this.site2 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
+        {
+            @Override
+            public TestSite doWork() throws Exception
+            {
+                SiteInformation siteInfo = new SiteInformation(site2_name, site2_title, site2_title, SiteVisibility.PRIVATE);
+                TestSite site = network1.createSite(siteInfo);
+                site.inviteToSite(person32.getId(), site2_role);
+                return site;
+            }
+        }, person31.getId(), network1.getId());
+
+        this.site3 = TenantUtil.runAsUserTenant(new TenantRunAsWork<TestSite>()
+        {
+            @Override
+            public TestSite doWork() throws Exception
+            {
+                SiteInformation siteInfo = new SiteInformation(site3_name, site3_title, site3_title, SiteVisibility.PRIVATE);
+                TestSite site = network1.createSite(siteInfo);
+                site.inviteToSite(person32.getId(), site3_role);
+                return site;
+            }
+        }, person31.getId(), network1.getId());
+    }
+    
     @Test
     public void testPersonSites() throws Exception
     {

@@ -69,6 +69,8 @@ public class TestNetworks extends EnterpriseTestApi
 	@Before
 	public void setup()
 	{
+		// note: we don't call super.setup() since we create our own test data here !
+		
 		// create some networks
 		for(int i = 0; i < 2; i++)
 		{

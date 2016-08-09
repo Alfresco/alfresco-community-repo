@@ -143,141 +143,296 @@ public class NodeVersionsApiTest extends AbstractBaseApiTest
     @Test
     public void testUploadFileVersionCreateWithOverwrite() throws Exception
     {
-        String myNodeId = getMyNodeId(user1);
+        String myFolderNodeId = getMyNodeId(user1);
 
-        int cnt = 1;
+        // create folder
+        String f1Id = createFolder(user1, myFolderNodeId, "f1").getId();
 
-        int majorVersion = 1;
-        int minorVersion = 0;
-
-        // Upload text file - versioning is currently auto enabled on upload (create file via multi-part/form-data)
-
-        String contentName = "content " + System.currentTimeMillis();
-        String content = "The quick brown fox jumps over the lazy dog "+cnt;
-
-        Document documentResp = createTextFile(user1, myNodeId, contentName, content, "UTF-8", null);
-        String docId = documentResp.getId();
-        assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
-        assertNotNull(documentResp.getProperties());
-        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
-
-        Map<String, String> params = null;
-
-        // Upload text file with same name - with overwrite=true
-        for (int i = 1; i <= 3; i++)
+        try
         {
-            cnt++;
-            minorVersion++;
+            int verCnt = 1;
 
-            content = "The quick brown fox jumps over the lazy dog " + cnt;
+            String versionLabel = "1.0";
 
-            params = new HashMap<>();
-            params.put("overwrite", "true");
+            // upload text file - versioning is currently auto enabled on upload (create file via multi-part/form-data)
 
-            documentResp = createTextFile(user1, myNodeId, contentName, content, "UTF-8", params);
+            String textContentSuffix = "The quick brown fox jumps over the lazy dog ";
+            String contentName = "content-1-" + System.currentTimeMillis();
+            String content = textContentSuffix + verCnt;
+
+            Document documentResp = createTextFile(user1, f1Id, contentName, content, "UTF-8", null);
+            String docId = documentResp.getId();
             assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
             assertNotNull(documentResp.getProperties());
-            assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+            assertEquals(versionLabel, documentResp.getProperties().get("cm:versionLabel"));
+
+            Map<String, String> params = null;
+
+            // create some minor versions (note: majorVersion=null)
+            int cnt = 3;
+            versionLabel = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, verCnt, null, versionLabel);
+            verCnt = verCnt+cnt;
+
+            // create some major versions
+            cnt = 2;
+            versionLabel = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, verCnt, true, versionLabel);
+            verCnt = verCnt+cnt;
+
+            // create some more minor versions
+            cnt = 3;
+            versionLabel = uploadTextFileVersions(user1, f1Id, contentName, cnt, textContentSuffix, verCnt, false, versionLabel);
+            verCnt = verCnt+cnt;
+
+            assertEquals("3.3", versionLabel);
+            assertEquals(9, verCnt);
+
+            {
+                // -ve test
+                params = new HashMap<>();
+                params.put(Nodes.PARAM_OVERWRITE, "true");
+                params.put(Nodes.PARAM_AUTO_RENAME, "true");
+
+                createTextFile(user1, myFolderNodeId, contentName, content, "UTF-8", params, 400);
+            }
+
+            // remove versionable aspect
+            List<String> aspectNames = documentResp.getAspectNames();
+            aspectNames.remove("cm:versionable");
+            Document dUpdate = new Document();
+            dUpdate.setAspectNames(aspectNames);
+
+            HttpResponse response = put(URL_NODES, user1, docId, toJsonAsStringNonNull(dUpdate), null, 200);
+            documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+            assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
+            assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
+
+            // check no version history
+            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
+
+            {
+                // -ve test - do not allow overwrite (using POST upload) if the file is not versionable
+                cnt++;
+                content = textContentSuffix + cnt;
+
+                params = new HashMap<>();
+                params.put(Nodes.PARAM_OVERWRITE, "true");
+
+                createTextFile(user1, f1Id, contentName, content, "UTF-8", params, 409);
+            }
+
+            // we do allow update of binary content with no versioning (after removing versionable)
+            textContentSuffix = "Amazingly few discotheques provide jukeboxes ";
+
+            for (int i = 1; i <= 4; i++)
+            {
+                content = textContentSuffix + i;
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(content.getBytes());
+                File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+                PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
+
+                putBinary(getNodeContentUrl(docId), user1, payload, null, null, 200);
+            }
+
+            // check no version history
+            response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(0, nodes.size());
         }
-
-        minorVersion = 0;
-
-        // Updates - major versions
-        for (int i = 1; i <= 3; i++)
+        finally
         {
-            cnt++;
-            majorVersion++;
-
-            content = "The quick brown fox jumps over the lazy dog "+cnt;
-
-            params = new HashMap<>();
-            params.put("overwrite", "true");
-            params.put("comment", "my version "+cnt);
-            params.put("majorVersion", "true");
-
-            documentResp = createTextFile(user1, myNodeId, contentName, content, "UTF-8", params);
-            assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
-            assertNotNull(documentResp.getProperties());
-            assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+            // some cleanup
+            Map<String, String> params = Collections.singletonMap("permanent", "true");
+            delete(URL_NODES, user1, f1Id, params, 204);
         }
+    }
 
-        // Updates - minor versions
-        for (int i = 1; i <= 3; i++)
+    @Test
+    public void testUpdateFileVersionStartWithMinor() throws Exception
+    {
+        String myFolderNodeId = getMyNodeId(user1);
+
+        // create folder
+        String f1Id = createFolder(user1, myFolderNodeId, "f1").getId();
+
+        try
         {
-            cnt++;
-            minorVersion++;
+            int verCnt = 1;
+            int cnt = 1;
+            String versionLabel = "0.1";
 
-            content = "The quick brown fox jumps over the lazy dog "+cnt;
+            String textContentSuffix = "Amazingly few discotheques provide jukeboxes ";
+            String contentName = "content-2-" + System.currentTimeMillis();
+            String content = textContentSuffix + cnt;
 
-            params = new HashMap<>();
-            params.put("overwrite", "true");
-            params.put("comment", "my version "+cnt);
+            Map<String, String> params = new HashMap<>();
             params.put("majorVersion", "false");
 
-            documentResp = createTextFile(user1, myNodeId, contentName, content, "UTF-8", params);
+            // create a new file with a minor version (ie. 0.1)
+            Document documentResp = createTextFile(user1, f1Id, contentName, content, "UTF-8", params);
+            String docId = documentResp.getId();
             assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
             assertNotNull(documentResp.getProperties());
-            assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+            assertEquals(versionLabel, documentResp.getProperties().get("cm:versionLabel"));
+
+            // also show that we continue with minor versions
+            cnt = 2;
+            versionLabel = updateFileVersions(user1, docId, cnt, textContentSuffix, verCnt, null, versionLabel);
+            verCnt = verCnt+cnt;
+
+            // now create some major versions
+            cnt = 3;
+            versionLabel = updateFileVersions(user1, docId, cnt, textContentSuffix, verCnt, true, versionLabel);
+            verCnt = verCnt+cnt;
+
+            assertEquals("3.0", versionLabel);
+            assertEquals(6, verCnt);
+
+            // check version history count
+            HttpResponse response = getAll(getNodeVersionsUrl(docId), user1, null, null, 200);
+            List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(verCnt, nodes.size());
+        }
+        finally
+        {
+            // some cleanup
+            Map<String, String> params = Collections.singletonMap("permanent", "true");
+            delete(URL_NODES, user1, f1Id, params, 204);
+        }
+    }
+
+    // create new versions - using upload by name (with overwrite)
+    private String uploadTextFileVersions(String userId, String parentFolderNodeId, String fileName, int cnt,
+                                          String textContentPrefix, int verCnt,
+                                          Boolean majorVersion, String currentVersionLabel) throws Exception
+    {
+        String[] parts = currentVersionLabel.split("\\.");
+
+        int majorVer = new Integer(parts[0]).intValue();
+        int minorVer = new Integer(parts[1]).intValue();
+        Map<String, String> params = new HashMap<>();
+        params.put(Nodes.PARAM_OVERWRITE, "true");
+
+        if (majorVersion != null)
+        {
+            params.put(Nodes.PARAM_VERSION_MAJOR, majorVersion.toString());
+        }
+        else
+        {
+            majorVersion = false;
         }
 
-        // Update again - as another major version
-        cnt++;
-        majorVersion++;
-        minorVersion = 0;
 
-        content = "The quick brown fox jumps over the lazy dog "+cnt;
+        if (majorVersion)
+        {
+            minorVer = 0;
+        }
 
-        params = new HashMap<>();
-        params.put("overwrite", "true");
-        params.put("majorVersion", "true");
+        for (int i = 1; i <= cnt; i++)
+        {
+            if (majorVersion)
+            {
+                majorVer++;
+            }
+            else
+            {
+                minorVer++;
+            }
 
-        documentResp = createTextFile(user1, myNodeId, contentName, content, "UTF-8", params);
-        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+            verCnt++;
 
-        // Update again - as another (minor) version
-        cnt++;
-        minorVersion++;
+            params.put("comment", "my version " + verCnt);
 
-        content = "The quick brown fox jumps over the lazy dog "+cnt;
+            String textContent = textContentPrefix + verCnt;
 
-        params = new HashMap<>();
-        params.put("overwrite", "true");
+            String versionId = majorVer + "." + minorVer;
 
-        documentResp = createTextFile(user1, myNodeId, contentName, content, "UTF-8", params);
-        assertEquals(majorVersion+"."+minorVersion, documentResp.getProperties().get("cm:versionLabel"));
+            // uses upload with overwrite here ...
+            Document documentResp = createTextFile(userId, parentFolderNodeId, fileName, textContent, "UTF-8", params);
+            String docId = documentResp.getId();
+            assertTrue(documentResp.getAspectNames().contains("cm:versionable"));
+            assertNotNull(documentResp.getProperties());
+            assertEquals(versionId, documentResp.getProperties().get("cm:versionLabel"));
+
+            // double-check - get version node info
+            HttpResponse response = getSingle(getNodeVersionsUrl(docId), userId, versionId, null, 200);
+            Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals(versionId, nodeResp.getProperties().get("cm:versionLabel"));
+            assertEquals((majorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
+        }
+
+        return majorVer + "." + minorVer;
+    }
+
+    // create new versions - using update binary content
+    private String updateFileVersions(String userId, String contentNodeId, int cnt,
+                                      String textContentPrefix, int verCnt,
+                                      Boolean majorVersion, String currentVersionLabel) throws Exception
+    {
+        String[] parts = currentVersionLabel.split("\\.");
+
+        int majorVer = new Integer(parts[0]).intValue();
+        int minorVer = new Integer(parts[1]).intValue();
+
+        Map<String, String> params = new HashMap<>();
+        params.put(Nodes.PARAM_OVERWRITE, "true");
+
+        if (majorVersion != null)
+        {
+            params.put(Nodes.PARAM_VERSION_MAJOR, majorVersion.toString());
+        }
+        else
+        {
+            majorVersion = false;
+        }
 
 
-        // -ve test
-        params = new HashMap<>();
-        params.put("overwrite", "true");
-        params.put("autorename", "true");
+        if (majorVersion)
+        {
+            minorVer = 0;
+        }
 
-        createTextFile(user1, myNodeId, contentName, content, "UTF-8", params, 400);
+        for (int i = 1; i <= cnt; i++)
+        {
+            if (majorVersion)
+            {
+                majorVer++;
+            }
+            else
+            {
+                minorVer++;
+            }
 
+            verCnt++;
 
-        // Remove versionable aspect
-        List<String> aspectNames = documentResp.getAspectNames();
-        aspectNames.remove("cm:versionable");
-        Document dUpdate = new Document();
-        dUpdate.setAspectNames(aspectNames);
+            params.put("comment", "my version " + verCnt);
 
-        HttpResponse response = put(URL_NODES, user1, docId, toJsonAsStringNonNull(dUpdate), null, 200);
-        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-        assertFalse(documentResp.getAspectNames().contains("cm:versionable"));
-        assertNull(documentResp.getProperties()); // no properties (ie. no "cm:versionLabel")
+            String textContent = textContentPrefix + verCnt;
 
-        // TODO review consistency - for example, we do allow update binary content (after removing versionable)
+            String versionId = majorVer + "." + minorVer;
 
-        // -ve test - do not allow overwrite (using POST upload) if the file is not versionable
-        cnt++;
-        content = "The quick brown fox jumps over the lazy dog "+cnt;
+            // Update
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
+            File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
+            PublicApiHttpClient.BinaryPayload payload = new PublicApiHttpClient.BinaryPayload(txtFile);
 
-        params = new HashMap<>();
-        params.put("overwrite", "true");
+            HttpResponse response = putBinary(getNodeContentUrl(contentNodeId), userId, payload, null, params, 200);
+            Node nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
 
-        createTextFile(user1, myNodeId, contentName, content, "UTF-8", params, 409);
+            assertTrue(nodeResp.getAspectNames().contains("cm:versionable"));
+            assertNotNull(nodeResp.getProperties());
+            assertEquals(versionId, nodeResp.getProperties().get("cm:versionLabel"));
+            assertEquals((majorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
 
-        // TODO add checks for version comment (eg. when we can list version history)
+            // double-check - get version node info
+            response = getSingle(getNodeVersionsUrl(contentNodeId), userId, versionId, null, 200);
+            nodeResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+            assertEquals(versionId, nodeResp.getProperties().get("cm:versionLabel"));
+            assertEquals((majorVersion ? "MAJOR" : "MINOR"), nodeResp.getProperties().get("cm:versionType"));
+        }
+
+        return majorVer + "." + minorVer;
     }
 
 

@@ -258,7 +258,6 @@ public interface Nodes
     String OP_UPDATE = "update";
 
     String PARAM_RELATIVE_PATH = "relativePath";
-    String PARAM_AUTO_RENAME = "autoRename";
     String PARAM_PERMANENT = "permanent";
 
     String PARAM_INCLUDE_PROPERTIES = "properties";
@@ -285,6 +284,9 @@ public interface Nodes
 
     String PARAM_VERSION_MAJOR = "majorVersion"; // true if major, false if minor
     String PARAM_VERSION_COMMENT = "comment";
+
+    String PARAM_OVERWRITE = "overwrite";
+    String PARAM_AUTO_RENAME = "autoRename";
 
     String PARAM_ISPRIMARY = "isPrimary";
     String PARAM_ASSOC_TYPE = "assocType";

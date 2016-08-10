@@ -126,9 +126,9 @@ var Common =
          }
          else if ((qnamePaths.length > 4) && (qnamePaths[2] == TYPE_SITES))
          {
-               siteId = displayPaths[3];
-            var siteNode = Common.getSite(siteId),
-               containerId = qnamePaths[4].substr(3);
+            siteId = displayPaths[3];
+            var siteNode = siteService.getSiteInfo(siteId),
+            containerId = qnamePaths[4].substr(3);
 
             if (siteNode != null)
             {
@@ -253,7 +253,7 @@ var ParseArgs =
           */
          var siteId = url.templateArgs.site,
             containerId = url.templateArgs.container,
-            siteNode = siteService.getSite(siteId);
+            siteNode = siteService.getSiteInfo(siteId);
 
          if (siteNode === null)
          {

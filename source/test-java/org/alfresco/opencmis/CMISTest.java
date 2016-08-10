@@ -1,3 +1,4 @@
+
 /*
  * #%L
  * Alfresco Repository
@@ -57,9 +58,12 @@ import org.alfresco.opencmis.search.CMISQueryOptions.CMISQueryMode;
 import org.alfresco.repo.action.evaluator.ComparePropertyValueEvaluator;
 import org.alfresco.repo.action.executer.AddFeaturesActionExecuter;
 import org.alfresco.repo.audit.AuditComponent;
+import org.alfresco.repo.audit.AuditComponentImpl;
 import org.alfresco.repo.audit.AuditServiceImpl;
 import org.alfresco.repo.audit.UserAuditFilter;
 import org.alfresco.repo.audit.model.AuditModelRegistryImpl;
+import org.alfresco.repo.batch.BatchProcessWorkProvider;
+import org.alfresco.repo.batch.BatchProcessor;
 import org.alfresco.repo.content.MimetypeMap;
 import org.alfresco.repo.dictionary.DictionaryDAO;
 import org.alfresco.repo.dictionary.M2Model;
@@ -151,6 +155,8 @@ import org.apache.chemistry.opencmis.commons.impl.server.AbstractServiceFactory;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.server.CmisService;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -165,6 +171,8 @@ import org.springframework.extensions.webscripts.GUID;
  */
 public class CMISTest
 {
+    private static Log logger = LogFactory.getLog(CMISTest.class);
+
     private static final QName TEST_START_TASK = QName.createQName("http://www.alfresco.org/model/workflow/test/1.0", "startTaskVarScriptAssign");
     private static final QName TEST_WORKFLOW_TASK = QName.createQName("http://www.alfresco.org/model/workflow/test/1.0", "assignVarTask");
     
@@ -196,6 +204,7 @@ public class CMISTest
     private TenantService tenantService;
     private SearchService searchService;
     private java.util.Properties globalProperties;
+    private AuditComponentImpl auditComponent;
 
     private AlfrescoCmisServiceFactory factory;
 	
@@ -374,7 +383,8 @@ public class CMISTest
         this.tenantAdminService = (TenantAdminService) ctx.getBean("tenantAdminService");
         this.tenantService = (TenantService) ctx.getBean("tenantService");
         this.searchService = (SearchService) ctx.getBean("SearchService");
-        
+        this.auditComponent = (AuditComponentImpl) ctx.getBean("auditComponent");
+
         this.globalProperties = (java.util.Properties) ctx.getBean("global-properties");
         this.globalProperties.setProperty(VersionableAspectTest.AUTO_VERSION_PROPS_KEY, "true");
     }
@@ -2649,7 +2659,7 @@ public class CMISTest
 
             Holder<String> changeLogToken = new Holder<String>();
             changeLogToken.setValue(actualToken);
-            ObjectList changeLog = CMISTest.this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("0"));
+            ObjectList changeLog = CMISTest.this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("10"));
             List<ObjectData> events = changeLog.getObjects();
             int count = events.size();
             // it should be 3 entries: 1 for previous folder create, 1 new CREATE (for document create)
@@ -2677,7 +2687,7 @@ public class CMISTest
 
             changeLogToken = new Holder<String>();
             changeLogToken.setValue(actualToken2);
-            changeLog = CMISTest.this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("0"));
+            changeLog = CMISTest.this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("10"));
             events = changeLog.getObjects();
             count = events.size();
             assertEquals(2, count);
@@ -2698,7 +2708,7 @@ public class CMISTest
 
             changeLogToken = new Holder<String>();
             changeLogToken.setValue(actualToken3);
-            changeLog = CMISTest.this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("0"));
+            changeLog = CMISTest.this.cmisConnector.getContentChanges(changeLogToken, new BigInteger("10"));
             events = changeLog.getObjects();
             count = events.size();
             assertEquals(2, count);
@@ -3578,5 +3588,127 @@ public class CMISTest
             auditSubsystem.destroy();
             AuthenticationUtil.popAuthentication();
         }
+    }
+
+    @Test
+    public void testMNT16375() throws Exception
+    {
+        setupAudit();
+
+        AuthenticationUtil.pushAuthentication();
+        AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+
+        withCmisService(new CmisServiceCallback<Void>()
+        {
+            @Override
+            public Void execute(CmisService cmisService)
+            {
+                long start = System.currentTimeMillis();
+
+                List<RepositoryInfo> repositories = cmisService.getRepositoryInfos(null);
+
+                long end = System.currentTimeMillis();
+
+                logger.info("time = " + (end - start) + "ms");
+
+                assertNotNull(repositories);
+                assertTrue(repositories.size() > 0);
+
+                return null;
+            }
+        }, CmisVersion.CMIS_1_1);
+    }
+
+    //@Test
+    public void populate() throws Exception
+    {
+        setupAudit();
+
+        final NodeRef companyHomeNodeRef = repositoryHelper.getCompanyHome();
+        final int batchSize = 100;
+        final int totalWork = 500000;
+
+        BatchProcessor.BatchProcessWorker<String> worker = new BatchProcessor.BatchProcessWorker<String>()
+        {
+            public String getIdentifier(String folder)
+            {
+                return folder;
+            }
+
+            public void beforeProcess() throws Throwable
+            {
+                AuthenticationUtil.pushAuthentication();
+                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
+            }
+
+            public void afterProcess() throws Throwable
+            {
+                AuthenticationUtil.popAuthentication();
+            }
+
+            public void process(final String guid) throws Throwable
+            {
+                Map<String, Serializable> auditData = new HashMap<>();
+                HashMap<String, Serializable> data = new HashMap<>();
+                data.put("nodeRef", "workspace://SpacesStore/" + guid);
+                data.put("objectId", guid);
+                auditData.put("/CMISChangeLog/CREATED/result/value", data);
+                auditDAO.createAuditEntry(2l, System.currentTimeMillis(), "admin", auditData);
+
+                // perform CREATED, UPDATED, SECURITY, DELETED CMIS change type actions
+//                FileInfo folderInfo = fileFolderService.create(companyHomeNodeRef, folder, ContentModel.TYPE_FOLDER);
+//                nodeService.setProperty(folderInfo.getNodeRef(), ContentModel.PROP_NAME, folder);
+//                assertNotNull(folderInfo);
+//
+//                String content = GUID.generate();
+//                FileInfo document = fileFolderService.create(folderInfo.getNodeRef(), content, ContentModel.TYPE_CONTENT);
+//                assertNotNull(document);
+//                nodeService.setProperty(document.getNodeRef(), ContentModel.PROP_NAME, content);
+//
+//                permissionService.setPermission(document.getNodeRef(), "SomeAuthority", PermissionService.EXECUTE_CONTENT, true);
+//
+//                fileFolderService.delete(document.getNodeRef());
+//                fileFolderService.delete(folderInfo.getNodeRef());
+            }
+        };
+
+        BatchProcessWorkProvider<String> provider = new BatchProcessWorkProvider<String>()
+        {
+            private int counter = 0;
+
+            @Override
+            public int getTotalEstimatedWorkSize()
+            {
+                return totalWork;
+            }
+
+            @Override
+            public Collection<String> getNextWork()
+            {
+                if(counter < totalWork)
+                {
+                    counter += batchSize;
+                    List<String> guids = new ArrayList<>(batchSize);
+                    for(int i = 0; i < batchSize; i++)
+                    {
+                        guids.add(GUID.generate());
+                    }
+
+                    return guids;
+                }
+                else
+                {
+                    return Collections.emptyList();
+                }
+            }
+        };
+
+        new BatchProcessor<String>(
+                "CMISTest.createAuditEntries",
+                transactionService.getRetryingTransactionHelper(),
+                provider,
+                4, batchSize,
+                ctx,
+                logger, 100).process(worker, true);
     }
 }

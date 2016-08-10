@@ -451,14 +451,17 @@ public abstract class AbstractWritableContentStoreTest extends AbstractReadOnlyC
                 writer.getContentUrl(), reader.getContentUrl());
         
         // open the stream onto the content
-        InputStream is = reader.getContentInputStream();
+        InputStream is = reader.exists() ? reader.getContentInputStream() : null;
         
         // attempt to delete the content
         boolean deleted = store.delete(contentUrl);
 
         // close the reader stream
-        is.close();
-        
+        if(is != null)
+        {
+            is.close();
+        }
+
         // get a fresh reader
         reader = store.getReader(contentUrl);
         assertNotNull(reader);

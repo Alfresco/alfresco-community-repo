@@ -674,6 +674,7 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
         }
         Map<QName, Serializable> properties = new HashMap<QName, Serializable>();
         properties.put(ContentModel.PROP_USERNAME, userName);
+        properties.put(ContentModel.PROP_FIRSTNAME, userName);
         return personService.createPerson(properties);
     }
 

@@ -68,7 +68,7 @@ public class RecordsManagementPermissionPostProcessor extends PermissionPostProc
 	            result = permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS);
 	        }
 	        // if write deinied on rm artificat
-	        else if (PermissionService.WRITE.equals(perm))
+	        else if (PermissionService.WRITE.equals(perm) || PermissionService.ADD_CHILDREN.equals(perm))
 	        {
 	        	// check for file record
 	        	result = permissionService.hasPermission(nodeRef, RMPermissionModel.FILE_RECORDS);

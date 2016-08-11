@@ -44,4 +44,19 @@ Updating License Headers:
 
 In order to refesh out of date license source headers run the following command:
 
+
 mvn clean install -Dlicense.update.dryrun=false
+
+
+Configuring Outlook Integration:
+-------------------------------
+
+To download and run RM with the Outlook Integration AMPs installed on the repo and Share use the following commands:
+
+  mvn clean install -Pstart-repo,outlook-integration
+  mvn clean install -Pstart-share,outlook-integration
+
+Follow these instructions install licence and Outlook plugin:
+  
+  - http://docs.alfresco.com/outlook2.1/tasks/Outlook-license.html
+  - http://docs.alfresco.com/outlook2.1/tasks/Outlook-install_v2.html 

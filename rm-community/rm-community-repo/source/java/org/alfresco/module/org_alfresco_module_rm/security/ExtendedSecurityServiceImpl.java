@@ -539,17 +539,23 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     @Override
     public void remove(NodeRef nodeRef)
     {
-        // remove any extended security that might be present
-        clearPermissions(nodeRef);
-
-        // remove the readers from any renditions of the content
-        if (isRecord(nodeRef))
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
+        Pair<String, String> iprGroups = getIPRGroups(nodeRef);
+        if (iprGroups != null)
         {
-            List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
-            for (ChildAssociationRef assoc : assocs)
+            // remove any extended security that might be present
+            clearPermissions(nodeRef, iprGroups);
+    
+            // remove the readers from any renditions of the content
+            if (isRecord(nodeRef))
             {
-                NodeRef child = assoc.getChildRef();
-                clearPermissions(child);
+                List<ChildAssociationRef> assocs = nodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL);
+                for (ChildAssociationRef assoc : assocs)
+                {
+                    NodeRef child = assoc.getChildRef();
+                    clearPermissions(child, iprGroups);
+                }
             }
         }
     }
@@ -559,17 +565,11 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
      * 
      * @param nodeRef   node reference
      */
-    private void clearPermissions(NodeRef nodeRef)
+    private void clearPermissions(NodeRef nodeRef, Pair<String, String> iprGroups)
     {
-        ParameterCheck.mandatory("nodeRef", nodeRef);
-        
-        Pair<String, String> iprGroups = getIPRGroups(nodeRef);
-        if (iprGroups != null)
-        {
-            // remove group permissions from node
-            permissionService.clearPermission(nodeRef, iprGroups.getFirst());
-            permissionService.clearPermission(nodeRef, iprGroups.getSecond());            
-        }
+        // remove group permissions from node
+        permissionService.clearPermission(nodeRef, iprGroups.getFirst());
+        permissionService.clearPermission(nodeRef, iprGroups.getSecond());            
     }    
     
     /**

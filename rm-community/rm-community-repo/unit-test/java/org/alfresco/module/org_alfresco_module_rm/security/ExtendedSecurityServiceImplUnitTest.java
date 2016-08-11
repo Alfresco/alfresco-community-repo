@@ -29,8 +29,8 @@ package org.alfresco.module.org_alfresco_module_rm.security;
 import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl.READER_GROUP_PREFIX;
 import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl.ROOT_IPR_GROUP;
 import static org.alfresco.module.org_alfresco_module_rm.security.ExtendedSecurityServiceImpl.WRITER_GROUP_PREFIX;
-import static org.alfresco.service.cmr.security.PermissionService.GROUP_PREFIX;
 import static org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock.generateText;
+import static org.alfresco.service.cmr.security.PermissionService.GROUP_PREFIX;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -51,8 +51,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.alfresco.model.RenditionModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
+import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
 import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.AlfMock;
 import org.alfresco.query.PagingRequest;
@@ -61,6 +63,7 @@ import org.alfresco.repo.security.authority.RMAuthority;
 import org.alfresco.repo.security.permissions.impl.AccessPermissionImpl;
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
 import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
+import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessPermission;
@@ -68,6 +71,7 @@ import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.AuthorityService;
 import org.alfresco.service.cmr.security.AuthorityType;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.RegexQNamePattern;
 import org.alfresco.service.transaction.TransactionService;
 import org.junit.Before;
 import org.junit.Test;
@@ -98,6 +102,7 @@ public class ExtendedSecurityServiceImplUnitTest
     @Mock private PagingResults<String> mockedReadPagingResults;
     @Mock private PagingResults<String> mockedWritePagingResults;
     @Mock private ApplicationContext mockedApplicationContext;
+    @Mock private ChildAssociationRef mockedChildAssociationRef;
     
     /** test component */
     @InjectMocks private ExtendedSecurityServiceImpl extendedSecurityService;
@@ -760,7 +765,65 @@ public class ExtendedSecurityServiceImplUnitTest
      * When I add extended security
      * Then they are applied to the renditions
      */
-    // TODO
+    @Test public void extendedSecurityAddedToRenditions()
+    {
+        // group names
+        String readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_PREFIX, READERS, 0);
+        String writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_PREFIX, WRITERS, 0);
+        
+        // setup query results
+        when(mockedReadPagingResults.getPage())
+            .thenReturn(Collections.emptyList());
+        when(mockedAuthorityService.getAuthorities(
+                    eq(AuthorityType.GROUP), 
+                    eq(RMAuthority.ZONE_APP_RM), 
+                    any(String.class),
+                    eq(false), 
+                    eq(false), 
+                    any(PagingRequest.class)))
+            .thenReturn(mockedReadPagingResults);
+        
+        // setup renditions
+        NodeRef renditionNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        when(mockedNodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD))
+            .thenReturn(true);
+        when(mockedChildAssociationRef.getChildRef())
+            .thenReturn(renditionNodeRef);
+        when(mockedNodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL))
+            .thenReturn(Collections.singletonList(mockedChildAssociationRef));
+        
+        // add extended security
+        extendedSecurityService.set(nodeRef, READERS, WRITERS);
+        
+        // verify no old permissions needing to be cleared
+        verify(mockedPermissionService, never()).clearPermission(eq(nodeRef), anyString());
+        
+        // verify read group created correctly
+        verify(mockedAuthorityService).createAuthority(AuthorityType.GROUP, readGroup, readGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
+        readGroup = GROUP_PREFIX + readGroup;
+        verify(mockedAuthorityService).addAuthority(GROUP_PREFIX + ROOT_IPR_GROUP, readGroup);
+        verify(mockedAuthorityService).addAuthority(readGroup, USER);
+        verify(mockedAuthorityService).addAuthority(readGroup, GROUP);
+        
+        // verify write group created correctly
+        verify(mockedAuthorityService).createAuthority(AuthorityType.GROUP, writeGroup, writeGroup, Collections.singleton(RMAuthority.ZONE_APP_RM));
+        writeGroup = GROUP_PREFIX + writeGroup;
+        verify(mockedAuthorityService).addAuthority(GROUP_PREFIX + ROOT_IPR_GROUP, writeGroup);
+        verify(mockedAuthorityService).addAuthority(writeGroup, USER_W);
+        verify(mockedAuthorityService).addAuthority(writeGroup, GROUP_W);
+
+        // verify groups assigned to RM roles
+        verify(mockedFilePlanRoleService).assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_EXTENDED_READERS, readGroup);
+        verify(mockedFilePlanRoleService).assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_EXTENDED_WRITERS, writeGroup);
+        
+        // verify permissions are assigned to node
+        verify(mockedPermissionService).setPermission(nodeRef, readGroup, RMPermissionModel.READ_RECORDS, true);
+        verify(mockedPermissionService).setPermission(nodeRef, writeGroup, RMPermissionModel.FILING, true);
+        
+        // verify permissions are assigned to the rendition
+        verify(mockedPermissionService).setPermission(renditionNodeRef, readGroup, RMPermissionModel.READ_RECORDS, true);
+        verify(mockedPermissionService).setPermission(renditionNodeRef, writeGroup, RMPermissionModel.FILING, true);
+    }
     
     /**
      * Given that a node has extended security
@@ -812,5 +875,40 @@ public class ExtendedSecurityServiceImplUnitTest
      * When I remove the extended security for a node
      * Then the extended security is also removed from the renditions
      */
-    // TODO
+    @Test public void removeExtendedSecurityFromRenditions()
+    {
+        // group names
+        String readGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_FULL_PREFIX, READERS, 0);
+        String writeGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_FULL_PREFIX, WRITERS, 0);
+        
+        // setup renditions
+        NodeRef renditionNodeRef = AlfMock.generateNodeRef(mockedNodeService);
+        when(mockedNodeService.hasAspect(nodeRef, RecordsManagementModel.ASPECT_RECORD))
+            .thenReturn(true);
+        when(mockedChildAssociationRef.getChildRef())
+            .thenReturn(renditionNodeRef);
+        when(mockedNodeService.getChildAssocs(nodeRef, RenditionModel.ASSOC_RENDITION, RegexQNamePattern.MATCH_ALL))
+            .thenReturn(Collections.singletonList(mockedChildAssociationRef));        
+        
+        // setup permissions
+        Set<AccessPermission> permissions = Stream
+            .of(new AccessPermissionImpl(AlfMock.generateText(), AccessStatus.ALLOWED, readGroup, 0),
+                new AccessPermissionImpl(AlfMock.generateText(), AccessStatus.ALLOWED, AlfMock.generateText(), 1),
+                new AccessPermissionImpl(AlfMock.generateText(), AccessStatus.ALLOWED, writeGroup, 2))
+            .collect(Collectors.toSet());        
+        when(mockedPermissionService.getAllSetPermissions(nodeRef))
+            .thenReturn(permissions);      
+        
+        // remove extended security
+        extendedSecurityService.remove(nodeRef);
+        
+        // verify that the groups permissions have been removed
+        verify(mockedPermissionService).clearPermission(nodeRef, readGroup);
+        verify(mockedPermissionService).clearPermission(nodeRef, writeGroup);
+        
+        // verify that the groups permissions have been removed from the rendition
+        verify(mockedPermissionService).clearPermission(renditionNodeRef, readGroup);
+        verify(mockedPermissionService).clearPermission(renditionNodeRef, writeGroup);
+        
+    }
 }

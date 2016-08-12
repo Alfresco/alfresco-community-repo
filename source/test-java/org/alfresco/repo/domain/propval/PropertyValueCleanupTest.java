@@ -34,6 +34,7 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.alfresco.repo.transaction.RetryingTransactionHelper;
+import org.alfresco.repo.transaction.RetryingTransactionHelper.RetryingTransactionCallback;
 import org.alfresco.service.cmr.attributes.AttributeService;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.OwnJVMTestsCategory;
@@ -60,15 +61,12 @@ public class PropertyValueCleanupTest
 
     private TransactionService transactionService;
     private AttributeService attributeService;
-    private RetryingTransactionHelper txnHelper;
     private PropertyValueDAO propertyValueDAO;
     
     @Before
     public void setUp() throws Exception
     {
         transactionService = (TransactionService) ctx.getBean("TransactionService");
-        txnHelper = transactionService.getRetryingTransactionHelper();
-        txnHelper.setMaxRetries(0);
         
         attributeService = (AttributeService) ctx.getBean("AttributeService");
         propertyValueDAO = (PropertyValueDAO) ctx.getBean("propertyValueDAO");
@@ -103,31 +101,48 @@ public class PropertyValueCleanupTest
         // Start threads that throw stuff into the AttributeService
         ThreadGroup threadGroup = new ThreadGroup("testRapidCreationDuringCleanup");
         InsertSerializableAttributes[] runnables = new InsertSerializableAttributes[2];
-        for (int i = 0; i < runnables.length; i++)
+
+        try
         {
-            // Runnable
-            runnables[i] = new InsertSerializableAttributes();
-            // Put it in a thread
-            String threadName = "" + i;
-            Thread thread = new Thread(threadGroup, runnables[i], threadName);
-            thread.setDaemon(true);         // Precautionary
-            // Start it
-            thread.start();
+            for (int i = 0; i < runnables.length; i++)
+            {
+                // Runnable
+                runnables[i] = new InsertSerializableAttributes();
+                // Put it in a thread
+                String threadName = "" + i;
+                Thread thread = new Thread(threadGroup, runnables[i], threadName);
+                thread.setDaemon(true); // Precautionary
+                // Start it
+                thread.start();
+            }
+
+            // Wait a bit for data to really get in there
+            wait(1000L);
+            
+            RetryingTransactionHelper txnHelper = transactionService.getRetryingTransactionHelper();
+            // do it in a retrying transaction because there may be other threads modifying
+            // the alf_prop_* and therefore the cleanup may fail sometimes
+            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    // Now run the cleanup script
+                    propertyValueDAO.cleanupUnusedValues();
+
+                    return null;
+                }
+            };
+            txnHelper.doInTransaction(callback);
         }
-        
-        // Wait a bit for data to really get in there
-        wait(1000L);
-        
-        // Now run the cleanup script
-        propertyValueDAO.cleanupUnusedValues();
-        
-        // Stop the threads
-        for (int i = 0; i < runnables.length; i++)
+        finally
         {
-            // Runnable
-            runnables[i].running.set(false);
+            // Make sure we stop the Daemons
+            for (int i = 0; i < runnables.length; i++)
+            {
+                // Runnable
+                runnables[i].running.set(false);
+            }
         }
-        
         // Clear any caches
         clearCaches();
         

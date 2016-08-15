@@ -34,15 +34,20 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DeclareRecordAction;
+import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
 import org.alfresco.module.org_alfresco_module_rm.capability.Capability;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
+import org.alfresco.module.org_alfresco_module_rm.role.FilePlanRoleService;
 import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
+import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.module.org_alfresco_module_rm.test.util.bdt.BehaviourTest;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.util.GUID;
 
 /**
  * In-place record permission integration test.
@@ -322,26 +327,253 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
     }
     
     /**
-     * Given a record
+     * Given an inplace record ready for destruction
      * When it is destroyed
      * And it's metadata is maintained
-     * Then the inplace users still have access to the meta-data stub
+     * Then the inplace users will no longer see the record
      */
-    // TODO
+    public void testDestroyedRecordInplacePermissions()
+    {
+        test()
+            .given()
+            
+                // Given that a record is declared by a collaborator
+                .as(dmCollaborator)
+                    .perform(() -> recordService.createRecord(filePlan, dmDocument))
+                    .expect(true)
+                        .from(() -> recordService.isRecord(dmDocument))
+                        .because("Document is a record.")
+            
+               // And it is filed into the file plan
+               // And eligible for destruction
+               .asAdmin()
+                   .perform(() ->
+                   {
+                       // create record category and disposition schedule
+                       NodeRef recordCategory = filePlanService.createRecordCategory(filePlan, GUID.generate());
+                       utils.createBasicDispositionSchedule(recordCategory, GUID.generate(), GUID.generate(), true, true);
+                       
+                       // create record folder and file record 
+                       NodeRef recordFolder = recordFolderService.createRecordFolder(recordCategory, GUID.generate());
+                       fileFolderService.move(dmDocument, recordFolder, null);
+                       
+                       // cut off record
+                       rmActionService.executeRecordsManagementAction(dmDocument, DeclareRecordAction.NAME);
+                       utils.completeEvent(dmDocument, CommonRMTestUtils.DEFAULT_EVENT_NAME);
+                       rmActionService.executeRecordsManagementAction(dmDocument, CutOffAction.NAME);                                              
+                   })
+                   .expect("destroy")
+                       .from(() -> dispositionService.getNextDispositionAction(dmDocument).getName())
+                       .because("The next action is destroy.")
+                   .expect(true)
+                       .from(() -> dispositionService.isNextDispositionActionEligible(dmDocument))
+                       .because("The next action is eligible.")
+             
+            // When the record is destroyed           
+            .when(() -> rmActionService.executeRecordsManagementAction(dmDocument, DestroyAction.NAME))                                
+            
+            .then()
+                .expect(true)
+                    .from(() -> recordService.isMetadataStub(dmDocument))
+                    .because("The record has been destroyed and the meta-stub remains.")    
+            
+                // Then the collaborator has no permissions or capabilities        
+                .as(dmCollaborator)
+                    .perform(() -> 
+                        checkInPlaceAccess(dmDocument, 
+                            AccessStatus.DENIED,  // read record permission 
+                            AccessStatus.DENIED,  // filing permission
+                            AccessStatus.DENIED,  // view record capability 
+                            AccessStatus.DENIED,  // edit non record metadata capability
+                            AccessStatus.DENIED))  // edit record metadata capability
+            
+                // And the consumer has no permissions or capabilities   
+                .as(dmConsumer)
+                    .perform(() -> 
+                        checkInPlaceAccess(dmDocument, 
+                            AccessStatus.DENIED,  // read record permission 
+                            AccessStatus.DENIED,   // filing permission
+                            AccessStatus.DENIED,  // view record capability 
+                            AccessStatus.DENIED,   // edit non record metadata capability
+                            AccessStatus.DENIED))  // edit record metadata capability     
+                
+                // And a user that is not in the site has no permissions or capabilities
+                .as(userName)
+                    .perform(() -> 
+                        checkInPlaceAccess(dmDocument, 
+                            AccessStatus.DENIED,   // read record permission 
+                            AccessStatus.DENIED,   // filing permission
+                            AccessStatus.DENIED,   // view record capability 
+                            AccessStatus.DENIED,   // edit non record metadata capability
+                            AccessStatus.DENIED));  // edit record metadata capability                 
+    }
     
     /**
-     * Given an inplace user with write access
-     * When a role is added to the inplace writers role
-     * Then then they receive that additional capability on the inplace record
+     * Given an inplace record
+     * And the collaborator has view and edit non-record capability
+     * And doesn't have edit record capability
+     * When we add edit record metadata capability to the extended writer role
+     * Then the collaborator now has edit record metadata capability
      */
-    // TODO
+    public void testAddUserToRole()
+    {
+        test()
+            .given()
+                .as(dmCollaborator)
+                    
+                    // Given an inplace record
+                    .perform(() -> recordService.createRecord(filePlan, dmDocument))
+                    .expect(true)
+                        .from(() -> recordService.isRecord(dmDocument))
+                        .because("Document is a record.")
+                        
+                    // And the collaborator has view and edit non-record capability
+                    // And doesn't have edit record capability
+                    .perform(() -> 
+                        checkInPlaceAccess(dmDocument, 
+                            AccessStatus.ALLOWED,  // read record permission 
+                            AccessStatus.ALLOWED,  // filing permission
+                            AccessStatus.ALLOWED,  // view record capability 
+                            AccessStatus.ALLOWED,  // edit non record metadata capability
+                            AccessStatus.DENIED))  // edit record metadata capability
+            .when()
+                .asAdmin()
+                
+                     // When we add edit record metadata capability to the extended writer role
+                    .perform(() -> filePlanRoleService.updateRole(filePlan, 
+                                                                  FilePlanRoleService.ROLE_EXTENDED_WRITERS, 
+                                                                  "", 
+                                                                  Stream
+                                                                      .of(viewRecordsCapability, editNonRecordMetadataCapability, editRecordMetadataCapability)
+                                                                      .collect(Collectors.toSet())))
+            
+            .then()
+                .as(dmCollaborator)
+                
+                    // Then the collaborator now has edit record metadata capability
+                    .perform(() -> 
+                    checkInPlaceAccess(dmDocument, 
+                           AccessStatus.ALLOWED,  // read record permission 
+                           AccessStatus.ALLOWED,  // filing permission
+                           AccessStatus.ALLOWED,  // view record capability 
+                           AccessStatus.ALLOWED,  // edit non record metadata capability
+                           AccessStatus.ALLOWED)) // edit record metadata capability            
+        ;    
+    }
     
-    // hide?
-    // TODO
+    /**
+     * Given an inplace record
+     * When the record is hidden
+     * Then the collaborator has no access to the record 
+     * And the consumer has no access to the record
+     * And a user that is not in the site has no permissions or capabilities
+     */
+    public void testNoPermissionsAfterHide()
+    {
+        test()
+            .given()
+                .as(dmCollaborator)
+                
+                    // Given an inplace record
+                    .perform(() -> recordService.createRecord(filePlan, dmDocument))
+                    .expect(true)
+                        .from(() -> recordService.isRecord(dmDocument))
+                        .because("Document is a record.")
+             .when()
+                 .asAdmin()
+                 
+                     // When the record is hidden
+                     .perform(() -> inplaceRecordService.hideRecord(dmDocument))
+                     
+             .then()
+             
+                 // Then the collaborator has no access to the record       
+                 .as(dmCollaborator)
+                     .perform(() -> 
+                         checkInPlaceAccess(dmDocument, 
+                             AccessStatus.DENIED,  // read record permission 
+                             AccessStatus.DENIED,  // filing permission
+                             AccessStatus.DENIED,  // view record capability 
+                             AccessStatus.DENIED,  // edit non record metadata capability
+                             AccessStatus.DENIED))  // edit record metadata capability
+             
+                 // And the consumer has no access to the record   
+                 .as(dmConsumer)
+                     .perform(() -> 
+                         checkInPlaceAccess(dmDocument, 
+                             AccessStatus.DENIED,  // read record permission 
+                             AccessStatus.DENIED,   // filing permission
+                             AccessStatus.DENIED,  // view record capability 
+                             AccessStatus.DENIED,   // edit non record metadata capability
+                             AccessStatus.DENIED))  // edit record metadata capability     
+                 
+                 // And a user that is not in the site has no permissions or capabilities
+                 .as(userName)
+                     .perform(() -> 
+                         checkInPlaceAccess(dmDocument, 
+                             AccessStatus.DENIED,   // read record permission 
+                             AccessStatus.DENIED,   // filing permission
+                             AccessStatus.DENIED,   // view record capability 
+                             AccessStatus.DENIED,   // edit non record metadata capability
+                             AccessStatus.DENIED));  // edit record metadata capability                      
+        ;
+    }
     
-    // reject?
-    // TODO
-    
-    // user added to group ?
-    // TODO
+    /**
+     * Given an inplace record
+     * When the record is rejected
+     * Then the collaborator has no access to the record 
+     * And the consumer has no access to the record
+     * And a user that is not in the site has no permissions or capabilities
+     */
+    public void testNoPermissionsAfterReject()
+    {
+        test()
+            .given()
+                .as(dmCollaborator)
+                
+                    // Given an inplace record
+                    .perform(() -> recordService.createRecord(filePlan, dmDocument))
+                    .expect(true)
+                        .from(() -> recordService.isRecord(dmDocument))
+                        .because("Document is a record.")
+             .when()
+                 .asAdmin()
+                 
+                     // When the record is rejected
+                     .perform(() -> recordService.rejectRecord(dmDocument, GUID.generate()))
+                     
+             .then()
+             
+                 // Then the collaborator has no access to the record       
+                 .as(dmCollaborator)
+                     .perform(() -> 
+                         checkInPlaceAccess(dmDocument, 
+                             AccessStatus.DENIED,  // read record permission 
+                             AccessStatus.DENIED,  // filing permission
+                             AccessStatus.DENIED,  // view record capability 
+                             AccessStatus.DENIED,  // edit non record metadata capability
+                             AccessStatus.DENIED))  // edit record metadata capability
+             
+                 // And the consumer has no access to the record   
+                 .as(dmConsumer)
+                     .perform(() -> 
+                         checkInPlaceAccess(dmDocument, 
+                             AccessStatus.DENIED,  // read record permission 
+                             AccessStatus.DENIED,   // filing permission
+                             AccessStatus.DENIED,  // view record capability 
+                             AccessStatus.DENIED,   // edit non record metadata capability
+                             AccessStatus.DENIED))  // edit record metadata capability     
+                 
+                 // And a user that is not in the site has no permissions or capabilities
+                 .as(userName)
+                     .perform(() -> 
+                         checkInPlaceAccess(dmDocument, 
+                             AccessStatus.DENIED,   // read record permission 
+                             AccessStatus.DENIED,   // filing permission
+                             AccessStatus.DENIED,   // view record capability 
+                             AccessStatus.DENIED,   // edit non record metadata capability
+                             AccessStatus.DENIED));  // edit record metadata capability                      
+        ;
+    }
 }

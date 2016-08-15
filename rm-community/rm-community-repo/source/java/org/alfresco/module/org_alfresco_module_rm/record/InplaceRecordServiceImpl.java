@@ -103,21 +103,25 @@ public class InplaceRecordServiceImpl extends ServiceBaseImpl implements Inplace
             {
                 // remove the child association
                 NodeRef originatingLocation = (NodeRef) nodeService.getProperty(nodeRef, PROP_RECORD_ORIGINATING_LOCATION);
-                List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
-                for (ChildAssociationRef childAssociationRef : parentAssocs)
+                
+                if (originatingLocation != null)
                 {
-                    if (!childAssociationRef.isPrimary() &&
-                            childAssociationRef.getParentRef().equals(originatingLocation) &&
-                            !nodeService.hasAspect(childAssociationRef.getChildRef(), ASPECT_PENDING_DELETE))
+                    List<ChildAssociationRef> parentAssocs = nodeService.getParentAssocs(nodeRef);
+                    for (ChildAssociationRef childAssociationRef : parentAssocs)
                     {
-                        nodeService.removeChildAssociation(childAssociationRef);
-                        break;
+                        if (!childAssociationRef.isPrimary() &&
+                                childAssociationRef.getParentRef().equals(originatingLocation) &&
+                                !nodeService.hasAspect(childAssociationRef.getChildRef(), ASPECT_PENDING_DELETE))
+                        {
+                            nodeService.removeChildAssociation(childAssociationRef);
+                            break;
+                        }
                     }
+    
+                    // remove the extended security from the node
+                    // this prevents the users from continuing to see the record in searchs and other linked locations
+                    extendedSecurityService.remove(nodeRef);
                 }
-
-                // remove the extended security from the node
-                // this prevents the users from continuing to see the record in searchs and other linked locations
-                extendedSecurityService.remove(nodeRef);
 
                 return null;
             }

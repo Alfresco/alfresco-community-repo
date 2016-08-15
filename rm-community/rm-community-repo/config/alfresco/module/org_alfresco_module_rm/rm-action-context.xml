@@ -260,7 +260,8 @@
          depends-on="rmDestroyRecordsScheduledForDestructionCapability">
       <property name="capabilityService" ref="CapabilityService" />
       <property name="recordableVersionService" ref="RecordableVersionService" />
-      <property name="contentDestructionComponent" ref="contentDestructionComponent"/>
+      <property name="contentDestructionComponent" ref="contentDestructionComponent"/>      
+      <property name="inplaceRecordService" ref="InplaceRecordService"/>
       <property name="ghostingEnabled">
          <value>${rm.ghosting.enabled}</value>
       </property>

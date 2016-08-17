@@ -62,6 +62,7 @@ import org.alfresco.repo.web.scripts.thumbnail.ThumbnailServiceTest;
 import org.alfresco.repo.web.scripts.transfer.TransferWebScriptTest;
 import org.alfresco.repo.web.scripts.workflow.ActivitiWorkflowRestApiTest;
 import org.alfresco.repo.web.scripts.workflow.WorkflowModelBuilderTest;
+import org.alfresco.repo.web.scripts.content.ContentGetTest;
 
 /**
  * Web Scripts test suite
@@ -109,6 +110,7 @@ public class WebScriptTestSuite extends TestSuite
         suite.addTestSuite( FacetRestApiTest.class );
         suite.addTestSuite( CommentsApiTest.class );
         suite.addTestSuite( DeclarativeSpreadsheetWebScriptTest.class );
+        suite.addTestSuite( ContentGetTest.class);
         suite.addTestSuite( XssVulnerabilityTest.class );
         suite.addTestSuite( LinksRestApiTest.class );
         suite.addTestSuite( RemoteFileFolderLoaderTest.class );

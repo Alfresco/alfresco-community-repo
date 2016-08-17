@@ -177,20 +177,16 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     @Override
     public Set<String> getReaders(NodeRef nodeRef)
     {
-        Set<String> result = null;
+        ParameterCheck.mandatory("nodeRef", nodeRef);
         
+        Set<String> result = Collections.EMPTY_SET;
         Pair<String, String> iprGroups = getIPRGroups(nodeRef);
         if (iprGroups != null)
         {
-            result = new HashSet<String>(authorityService.getContainedAuthorities(null, iprGroups.getFirst(), true));
-            result.remove(iprGroups.getSecond());
-        }
-        else
-        {
-            result = Collections.EMPTY_SET;
+            result = getAuthorities(iprGroups.getFirst());
         }
         
-        return result;
+        return result; 
     }
 
     /**
@@ -200,20 +196,29 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     @Override
     public Set<String> getWriters(NodeRef nodeRef)
     {
-        Set<String> result = null;
+        ParameterCheck.mandatory("nodeRef", nodeRef);
         
+        Set<String> result = Collections.EMPTY_SET;
         Pair<String, String> iprGroups = getIPRGroups(nodeRef);
         if (iprGroups != null)
         {
-            result = authorityService.getContainedAuthorities(null, iprGroups.getSecond(), true);
-        }
-        else
-        {
-            result = Collections.EMPTY_SET;
+            result = getAuthorities(iprGroups.getSecond());
         }
         
+        return result;        
+    }
+    
+    /**
+     * Helper to get authorities for a given group
+     * 
+     * @param group         group name
+     * @return Set<String>  immediate authorities
+     */
+    private Set<String> getAuthorities(String group)
+    {
+        Set<String> result = new HashSet<String>();
+        result.addAll(authorityService.getContainedAuthorities(null, group, true));
         return result;
-        
     }
     
     /**
@@ -222,6 +227,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
     @Override
     public void set(NodeRef nodeRef, Pair<Set<String>, Set<String>> readersAndWriters)
     {
+        ParameterCheck.mandatory("nodeRef", nodeRef);
+        
         set(nodeRef, readersAndWriters.getFirst(), readersAndWriters.getSecond());
     }
     

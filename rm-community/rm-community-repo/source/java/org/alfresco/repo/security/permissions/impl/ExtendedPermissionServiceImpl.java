@@ -147,7 +147,6 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         AccessStatus result = AccessStatus.UNDETERMINED;
         if (nodeService.exists(nodeRef))
         {
-
             // permission pre-processors
             List<PermissionPreProcessor> preProcessors = permissionProcessorRegistry.getPermissionPreProcessors();
             for (PermissionPreProcessor preProcessor : preProcessors)

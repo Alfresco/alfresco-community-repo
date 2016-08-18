@@ -25,11 +25,16 @@
  */
 package org.alfresco.rest.api.nodes;
 
+import java.io.InputStream;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.alfresco.rest.api.Nodes;
+import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.model.NodeTarget;
-import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.BinaryProperties;
+import org.alfresco.rest.framework.Operation;
 import org.alfresco.rest.framework.WebApiDescription;
 import org.alfresco.rest.framework.WebApiParam;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
@@ -41,11 +46,7 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.ParameterCheck;
-import org.apache.lucene.store.Lock;
 import org.springframework.beans.factory.InitializingBean;
-
-import javax.servlet.http.HttpServletResponse;
-import java.io.InputStream;
 
 /**
  * An implementation of an Entity Resource for a Node (file or folder)
@@ -168,6 +169,15 @@ public class NodesEntityResource implements
     public Node moveById(String nodeId, NodeTarget target, Parameters parameters, WithResponse withResponse)
     {
         return nodes.moveOrCopyNode(nodeId, target.getTargetParentId(), target.getName(), parameters, false);
+    }
+    
+    @Operation("lock")
+    @WebApiDescription(title = "Lock Node",
+            description="Places a lock on a node.",
+            successStatus = HttpServletResponse.SC_OK)
+    public Node lock(String nodeId, LockInfo lockInfo, Parameters parameters, WithResponse withResponse)
+    {
+        return nodes.lock(nodeId, lockInfo, parameters);
     }
 
 }

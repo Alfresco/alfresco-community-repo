@@ -143,13 +143,13 @@ public interface LockService
    /**
     * Places a lock on a node and optionally on all its children.  
     * <p>
-    * The lock prevents any other user or process from comitting updates 
+    * The lock prevents any other user or process from committing updates 
     * to the node until the lock is released.  
     * <p>
     * The lock will be owned by the current user.
     * <p>  
     * If any one of the child locks can not be taken then an exception will 
-    * be raised and all locks canceled.
+    * be raised and all locks cancelled.
     * <p>
     * If the time to expire is 0 then the lock will never expire.  Otherwise the
     * timeToExpire indicates the number of seconds before the lock expires.  When
@@ -171,6 +171,35 @@ public interface LockService
    @Auditable(parameters = {"nodeRef", "lockType", "timeToExpire", "lockChildren"})
    public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, boolean lockChildren)
        throws UnableToAquireLockException;
+   
+   /**
+    * Places a lock on a node and optionally on all its children.  
+    * <p>
+    * The lock prevents any other user or process from committing updates 
+    * to the node until the lock is released.  
+    * <p>
+    * The lock will be owned by the current user.
+    * <p>
+    * If the time to expire is 0 then the lock will never expire.  Otherwise the
+    * timeToExpire indicates the number of seconds before the lock expires.  When
+    * a lock expires the lock is considered to have been released.
+    * <p>
+    * If the node is already locked and the user is the lock owner then the lock will
+    * be renewed with the passed timeToExpire.
+    * 
+    * @param  nodeRef         a reference to a node 
+    * @param  lockType        the lock type
+    * @param  timeToExpire    the number of seconds before the locks expires.
+    * @param  lifetime        allows persistent or ephemeral locks to be specified.
+    * @param  lockChildren    if true indicates that all the children (and 
+    *                           grandchildren, etc) of the node will also be locked, 
+    *                           false otherwise
+    * @throws UnableToAquireLockException
+    *                       thrown if the lock could not be obtained
+    */
+   @Auditable(parameters = {"nodeRef", "lockType", "timeToExpire", "lifetime", "lockChildren"})
+   public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, Lifetime lifetime, boolean lockChildren)
+               throws UnableToAquireLockException;
    
    /**
     * Places a lock on all the nodes referenced in the passed list.  

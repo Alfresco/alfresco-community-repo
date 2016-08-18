@@ -626,8 +626,6 @@ public class AuditDAOTest extends TestCase
             txn.commit();
             System.out.println("Created values for " + i + " entries in " + (System.currentTimeMillis() - startCreate) + " ms.");
             
-            txn  = transactionService.getUserTransaction();
-            txn.begin();
             if (!performance)
             {
                 // Check there are some persisted values to delete.
@@ -649,8 +647,18 @@ public class AuditDAOTest extends TestCase
                 }
             }
             long startDelete = System.currentTimeMillis();
-            propertyValueDAO.cleanupUnusedValues();
-            txn.commit();
+            RetryingTransactionCallback<Void> callback = new RetryingTransactionCallback<Void>()
+            {
+                public Void execute() throws Throwable
+                {
+                    propertyValueDAO.cleanupUnusedValues();
+
+                    return null;
+                }
+            };
+            // use a new transaction so it will retry in that transaction
+            txnHelper.doInTransaction(callback,false,true);
+
             System.out.println("Cleaned values for " + i + " entries in " + (System.currentTimeMillis() - startDelete) + " ms.");
             
             if (!performance)

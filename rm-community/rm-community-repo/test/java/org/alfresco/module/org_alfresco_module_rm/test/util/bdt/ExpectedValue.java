@@ -60,13 +60,14 @@ public class ExpectedValue<T>
     
     public BehaviourTest because(String message)
     {
-        T actualValue = (T)test.getRetryingTransactionHelper().doInTransaction(() -> 
+        T actualValue = (T)AuthenticationUtil.runAs(() -> 
         {
-            return AuthenticationUtil.runAs(() -> 
+            return test.getRetryingTransactionHelper().doInTransaction(() -> 
             {
                 return evaluation.eval();
-            }, test.getAsUser());
-        });        
+            });
+        }, 
+        test.getAsUser());        
         
         if (message != null)
         {

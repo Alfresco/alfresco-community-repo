@@ -235,14 +235,15 @@ public class BehaviourTest
      */
     public BehaviourTest perform(Work work)
     {
-        return retryingTransactionHelper.doInTransaction(() -> 
+        return AuthenticationUtil.runAs(() -> 
         {
-            return AuthenticationUtil.runAs(() -> 
+            return retryingTransactionHelper.doInTransaction(() -> 
             {
                 work.doIt();                
                 return this;
-            }, this.asUser);
-        });        
+            });
+        },
+        this.asUser);  
     }
     
     /**

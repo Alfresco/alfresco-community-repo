@@ -80,8 +80,17 @@ public class RM1727Test extends BaseRMTestCase
 
     public void testRM1727()
     {
-        //set read and file permissions for folder
-        filePlanPermissionService.setPermission(folder, myUser, RMPermissionModel.FILING);
+        doTestInTransaction(new Test<Void>()
+        {
+            @Override
+            public Void run()
+            {
+                //set read and file permissions for folder
+                filePlanPermissionService.setPermission(folder, myUser, RMPermissionModel.FILING);
+                return null;
+            }
+        });
+        
         doTestInTransaction(new Test<Void>()
         {
             @Override

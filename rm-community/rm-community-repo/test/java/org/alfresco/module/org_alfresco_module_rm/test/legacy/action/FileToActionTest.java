@@ -245,8 +245,15 @@ public class FileToActionTest extends BaseRMTestCase
             }
         }, ADMIN_USER);
 
-        // execute file-to action
-        rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+        doTestInTransaction(new Test<Void>()
+        {
+            public Void run() throws Exception
+            {
+                // execute file-to action
+                rmActionService.executeRecordsManagementAction(dmDocument, FileToAction.NAME, params);
+                return null;
+            }
+        });
 
         doTestInTransaction(new Test<Void>()
         {

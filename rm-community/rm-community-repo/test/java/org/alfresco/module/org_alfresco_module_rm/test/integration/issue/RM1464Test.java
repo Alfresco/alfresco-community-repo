@@ -44,14 +44,14 @@ public class RM1464Test extends DeleteHoldTest
 {
     public void testAddRecordFolderToHoldWithoutFilingPermissionOnHold()
     {
-        // Create hold
-        final NodeRef hold = createAndCheckHold();
-
-        doTestInTransaction(new Test<Void>()
+        final NodeRef hold =  doTestInTransaction(new Test<NodeRef>()
         {
            @Override
-           public Void run()
+           public NodeRef run()
            {
+               // Create hold
+               NodeRef hold = createAndCheckHold();
+               
                // Add the user to the RM Manager role
                filePlanRoleService.assignRoleToAuthority(filePlan, FilePlanRoleService.ROLE_RECORDS_MANAGER, userName);
 
@@ -61,7 +61,7 @@ public class RM1464Test extends DeleteHoldTest
                // Give the user filing permissions on the record folder
                permissionService.setPermission(rmFolder, userName, RMPermissionModel.FILING, true);
 
-               return null;
+               return hold;
            }
         });
 

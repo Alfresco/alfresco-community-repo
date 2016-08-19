@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.CutOffAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DeclareRecordAction;
 import org.alfresco.module.org_alfresco_module_rm.action.impl.DestroyAction;
@@ -45,6 +46,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.module.org_alfresco_module_rm.test.util.bdt.BehaviourTest;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.service.cmr.repository.NodeRef;
+import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.GUID;
@@ -63,6 +65,12 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
             RMPermissionModel.EDIT_NON_RECORD_METADATA,
             RMPermissionModel.EDIT_RECORD_METADATA)
         .collect(Collectors.toList());
+    
+    /** test data */
+    NodeRef contribDoc;    
+    
+    /** services */
+    private NodeService dbNodeService;
     
     /** capabilities */
     private Capability viewRecordsCapability;
@@ -83,6 +91,9 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
         
         // initialise behaviour tests
         BehaviourTest.initBehaviourTests(retryingTransactionHelper);
+        
+        // get services
+        dbNodeService = (NodeService)applicationContext.getBean("dbNodeService");
         
         // get capability references
         viewRecordsCapability = capabilityService.getCapability(RMPermissionModel.VIEW_RECORDS);
@@ -121,6 +132,36 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                         .because("The user does not have write permission on the document.");
     }
     
+    /**
+     * Given a document in a collaboration site that is not a record
+     * And a contributor the didn't create the document
+     * When the contributor tries to declare the document as a record
+     * Then the document does not become a record
+     */
+    public void testContributorThatIsntOwnerDeclareInPlaceRecord()
+    {
+        test()
+            .given()
+            
+                // Given a document in a collaboration site that is not a record            
+                .expect(false)
+                    .from(() -> recordService.isRecord(dmDocument))
+                    .because("The document is not a record.")
+            
+                // And a contributor the didn't create the document
+                .as(dmContributor)
+                    .expect(AccessStatus.DENIED.toString())
+                        .from(() -> permissionService.hasPermission(dmDocument, PermissionService.WRITE).toString())
+                        .because("Contributor does not have write access to document.")
+            
+            // When the user tries to declare the record
+            // When the contributor tries to declare the document as a record
+            .when()
+                .as(dmContributor)
+                    .expectException(AccessDeniedException.class)
+                        .from(() -> recordService.createRecord(filePlan, dmDocument))
+                        .because("The contributor does not have write permission on the document.");        
+    }    
 
     /**
      * Given a document in a collaboration site is not a record
@@ -166,6 +207,16 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                                 AccessStatus.ALLOWED,  // edit non record metadata capability
                                 AccessStatus.DENIED))  // edit record metadata capability
                 
+                // And a site contributor has read and view    
+                .as(dmContributor)
+                    .perform(() ->               
+                        checkInPlaceAccess(dmDocument, 
+                                AccessStatus.ALLOWED,  // read record permission 
+                                AccessStatus.DENIED,  // filing permission
+                                AccessStatus.ALLOWED,  // view record capability 
+                                AccessStatus.DENIED,  // edit non record metadata capability
+                                AccessStatus.DENIED))  // edit record metadata capability
+                    
                 // And a site consumer has read permissions and view record capability on the record
                 .as(dmConsumer)
                     .perform(() -> 
@@ -201,6 +252,91 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
         assertEquals(accessStatus[2], access.get(viewRecordsCapability));
         assertEquals(accessStatus[3], access.get(editNonRecordMetadataCapability));
         assertEquals(accessStatus[4], access.get(editRecordMetadataCapability));        
+    }
+    
+    /**
+     * 
+     */
+    public void testCreateInplaceRecordFromCollabSiteWhenContribIsCreatorOfDocument()
+    {
+        test()
+        
+            // Given that a document is created by contributor        
+            .given()                
+                .as(dmContributor)
+                    .perform(() -> 
+                    {   
+                        contribDoc = fileFolderService.create(dmFolder, "contrib.txt" , ContentModel.TYPE_CONTENT).getNodeRef();
+                        dbNodeService.addAspect(contribDoc, ContentModel.ASPECT_AUDITABLE, null);
+                    })
+                    .expect(false)
+                        .from(() -> recordService.isRecord(contribDoc))
+                        .because("It is not a record.")
+                .asAdmin()
+                    .expect(dmContributor)
+                        .from(() -> ownableService.getOwner(contribDoc))
+                        .because("As the creator of the document the contributor is also the owner")
+                .as(dmContributor)
+                    .expect(AccessStatus.ALLOWED.toString())
+                        .from(() -> permissionService.hasPermission(contribDoc, PermissionService.WRITE).toString())
+                        .because("Contrib user has write permissions on created document as the owner.")
+                        
+            // When it is declared as an inplace record            
+            .when()        
+                .as(dmContributor)
+                    .perform(() -> recordService.createRecord(filePlan, contribDoc))
+            
+            .then()        
+                .asAdmin()
+                    // Then it becomes a record
+                    .expect(true)
+                        .from(() -> recordService.isRecord(contribDoc))
+                        .because("The document is a record")
+                    
+                    // And it isn't filed
+                    .expect(false)
+                        .from(() -> recordService.isFiled(contribDoc))
+                        .because("The record is not filed")
+                
+                // And a site collaborator has filling permissions and filling capability on the record     
+                .as(dmCollaborator)
+                    .perform(() ->               
+                        checkInPlaceAccess(contribDoc, 
+                                AccessStatus.ALLOWED,  // read record permission 
+                                AccessStatus.ALLOWED,  // filing permission
+                                AccessStatus.ALLOWED,  // view record capability 
+                                AccessStatus.ALLOWED,  // edit non record metadata capability
+                                AccessStatus.DENIED))  // edit record metadata capability
+                
+                // And a site contributor has filling capability and permissions  
+                .as(dmContributor)
+                    .perform(() ->               
+                        checkInPlaceAccess(contribDoc, 
+                                AccessStatus.ALLOWED,  // read record permission 
+                                AccessStatus.ALLOWED,  // filing permission
+                                AccessStatus.ALLOWED,  // view record capability 
+                                AccessStatus.ALLOWED,  // edit non record metadata capability
+                                AccessStatus.DENIED))  // edit record metadata capability
+                    
+                // And a site consumer has read permissions and view record capability on the record
+                .as(dmConsumer)
+                    .perform(() -> 
+                        checkInPlaceAccess(contribDoc, 
+                                AccessStatus.ALLOWED,  // read record permission 
+                                AccessStatus.DENIED,   // filing permission
+                                AccessStatus.ALLOWED,  // view record capability 
+                                AccessStatus.DENIED,   // edit non record metadata capability
+                                AccessStatus.DENIED))  // edit record metadata capability   
+            
+                // And a user that is not a member of the site has no access to the inplace record     
+                .as(userName)
+                    .perform(() ->    
+                        checkInPlaceAccess(contribDoc, 
+                                AccessStatus.DENIED,   // read record permission 
+                                AccessStatus.DENIED,   // filing permission
+                                AccessStatus.DENIED,   // view record capability 
+                                AccessStatus.DENIED,   // edit non record metadata capability
+                                AccessStatus.DENIED));  // edit record metadata capability   
     }
     
     /**
@@ -245,6 +381,16 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                             AccessStatus.ALLOWED,  // view record capability 
                             AccessStatus.ALLOWED,  // edit non record metadata capability
                             AccessStatus.DENIED))  // edit record metadata capability
+                    
+                 // And a site contributor has read and view    
+                .as(dmContributor)
+                    .perform(() ->               
+                        checkInPlaceAccess(dmDocument, 
+                            AccessStatus.ALLOWED,  // read record permission 
+                            AccessStatus.DENIED,  // filing permission
+                            AccessStatus.ALLOWED,  // view record capability 
+                            AccessStatus.DENIED,  // edit non record metadata capability
+                            AccessStatus.DENIED))  // edit record metadata capability    
             
                 // And the consumer has read permissions and view record capability on the record       
                 .as(dmConsumer)
@@ -304,6 +450,16 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                             AccessStatus.ALLOWED,  // view record capability 
                             AccessStatus.DENIED,  // edit non record metadata capability
                             AccessStatus.DENIED))  // edit record metadata capability
+                    
+                // And a site contributor has read and view    
+                .as(dmContributor)
+                    .perform(() ->               
+                        checkInPlaceAccess(dmDocument, 
+                            AccessStatus.ALLOWED,  // read record permission 
+                            AccessStatus.DENIED,  // filing permission
+                            AccessStatus.ALLOWED,  // view record capability 
+                            AccessStatus.DENIED,  // edit non record metadata capability
+                            AccessStatus.DENIED))  // edit record metadata capability    
             
                 // And the consumer has read permissions and view record capability on the record       
                 .as(dmConsumer)
@@ -380,6 +536,16 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                 // Then the collaborator has no permissions or capabilities        
                 .as(dmCollaborator)
                     .perform(() -> 
+                        checkInPlaceAccess(dmDocument, 
+                            AccessStatus.DENIED,  // read record permission 
+                            AccessStatus.DENIED,  // filing permission
+                            AccessStatus.DENIED,  // view record capability 
+                            AccessStatus.DENIED,  // edit non record metadata capability
+                            AccessStatus.DENIED))  // edit record metadata capability
+                    
+                // And a site contributor has no permissions or capabilities
+                .as(dmContributor)
+                    .perform(() ->               
                         checkInPlaceAccess(dmDocument, 
                             AccessStatus.DENIED,  // read record permission 
                             AccessStatus.DENIED,  // filing permission
@@ -496,6 +662,16 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                              AccessStatus.DENIED,  // view record capability 
                              AccessStatus.DENIED,  // edit non record metadata capability
                              AccessStatus.DENIED))  // edit record metadata capability
+                     
+                 // And a site contributor has read and view    
+                 .as(dmContributor)
+                     .perform(() ->               
+                         checkInPlaceAccess(dmDocument, 
+                             AccessStatus.DENIED,  // read record permission 
+                             AccessStatus.DENIED,  // filing permission
+                             AccessStatus.DENIED,  // view record capability 
+                             AccessStatus.DENIED,  // edit non record metadata capability
+                             AccessStatus.DENIED))  // edit record metadata capability
              
                  // And the consumer has no access to the record   
                  .as(dmConsumer)
@@ -548,6 +724,16 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                  // Then the collaborator has no access to the record       
                  .as(dmCollaborator)
                      .perform(() -> 
+                         checkInPlaceAccess(dmDocument, 
+                             AccessStatus.DENIED,  // read record permission 
+                             AccessStatus.DENIED,  // filing permission
+                             AccessStatus.DENIED,  // view record capability 
+                             AccessStatus.DENIED,  // edit non record metadata capability
+                             AccessStatus.DENIED))  // edit record metadata capability
+                     
+                 // And a site contributor has read and view    
+                 .as(dmContributor)
+                     .perform(() ->               
                          checkInPlaceAccess(dmDocument, 
                              AccessStatus.DENIED,  // read record permission 
                              AccessStatus.DENIED,  // filing permission

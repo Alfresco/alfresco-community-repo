@@ -423,11 +423,12 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             @Override
             public Object execute() throws Throwable
             {
-                // As system user
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-
                 // Do the tear down
-                tearDownImpl();
+                AuthenticationUtil.runAsSystem(() -> 
+                {
+                    tearDownImpl();
+                    return null;
+                });
 
                 return null;
             }
@@ -607,8 +608,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             @Override
             public Object execute() throws Throwable
             {
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getAdminUserName());
-                setupTestUsersImpl(filePlan);
+                AuthenticationUtil.runAs(() -> 
+                {
+                    setupTestUsersImpl(filePlan);
+                    return null;
+                }, 
+                AuthenticationUtil.getAdminUserName());
+                
                 return null;
             }
         });
@@ -693,13 +699,13 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
             @Override
             public Object execute() throws Throwable
             {
-                // As system user
-                AuthenticationUtil.setFullyAuthenticatedUser(AuthenticationUtil.getSystemUserName());
-
-                // Do setup
-                setupMultiHierarchyTestDataImpl();
-
-                return null;
+                return AuthenticationUtil.runAsSystem(() ->
+                {
+                    // Do setup
+                    setupMultiHierarchyTestDataImpl();
+                    
+                    return null;
+                });
             }
         });
     }

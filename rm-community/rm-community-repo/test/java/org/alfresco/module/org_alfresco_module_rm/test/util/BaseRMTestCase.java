@@ -603,21 +603,21 @@ public abstract class BaseRMTestCase extends RetryingTransactionHelperTestCase
 
     protected void setupTestUsers(final NodeRef filePlan)
     {
-        retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
+        AuthenticationUtil.runAs(() -> 
         {
-            @Override
-            public Object execute() throws Throwable
+            retryingTransactionHelper.doInTransaction(new RetryingTransactionCallback<Object>()
             {
-                AuthenticationUtil.runAs(() -> 
-                {
+                @Override
+                public Object execute() throws Throwable
+                {                    
                     setupTestUsersImpl(filePlan);
-                    return null;
-                }, 
-                AuthenticationUtil.getAdminUserName());
-                
-                return null;
-            }
-        });
+                    return null;                    
+                }
+            });
+            
+            return null;
+        }, 
+        AuthenticationUtil.getAdminUserName());
     }
 
     /**

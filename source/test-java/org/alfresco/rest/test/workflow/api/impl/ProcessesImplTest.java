@@ -34,8 +34,7 @@ import java.util.Map;
 import javax.transaction.Status;
 import javax.transaction.UserTransaction;
 
-import junit.framework.TestCase;
-
+import org.alfresco.repo.domain.hibernate.dialect.AlfrescoSQLServerDialect;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.workflow.WorkflowModel;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -55,10 +54,13 @@ import org.alfresco.service.cmr.workflow.WorkflowDefinition;
 import org.alfresco.service.cmr.workflow.WorkflowService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.ApplicationContextHelper;
+import org.hibernate.dialect.Dialect;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
+
+import junit.framework.TestCase;
 
 /**
  * Test for {@link ProcessesImpl} class
@@ -205,6 +207,14 @@ public class ProcessesImplTest extends TestCase
     @Test
     public void testGetProcessesMatchesIgnoreCaseNoResults()
     {       
+        Dialect dialect = (Dialect) applicationContext.getBean("dialect");
+        if (dialect instanceof AlfrescoSQLServerDialect)
+        {
+            // REPO-1104: we do not run this test on MS SQL server because it will fail 
+            // until the Activiti defect related to REPO-1104 will be fixed
+            // this test could fail on other DBs where the LIKE operator behaves as case insensitive
+            return;
+        }
         CollectionWithPagingInfo<ProcessInfo> result = queryMatchesProcesses("test workflow api calls review and approve");
 
         assertNotNull(result);

@@ -274,6 +274,7 @@ public interface Nodes
     String PARAM_INCLUDE_PATH = "path";
     String PARAM_INCLUDE_ASPECTNAMES = "aspectNames";
     String PARAM_INCLUDE_ISLINK = "isLink";
+    String PARAM_INCLUDE_ISLOCKED = "isLocked";
     String PARAM_INCLUDE_ALLOWABLEOPERATIONS = "allowableOperations";
 
     String PARAM_INCLUDE_ASSOCIATION = "association";

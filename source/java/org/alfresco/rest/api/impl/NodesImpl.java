@@ -122,6 +122,7 @@ import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
 import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.lock.LockService;
+import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -881,15 +882,23 @@ public class NodesImpl implements Nodes
             node.setProperties(mapFromNodeProperties(properties, includeParam, mapUserInfo));
         }
 
+        Set<QName> aspects = null;
         if (includeParam.contains(PARAM_INCLUDE_ASPECTNAMES))
         {
-            node.setAspectNames(mapFromNodeAspects(nodeService.getAspects(nodeRef)));
+            aspects = nodeService.getAspects(nodeRef);
+            node.setAspectNames(mapFromNodeAspects(aspects));
         }
 
         if (includeParam.contains(PARAM_INCLUDE_ISLINK))
         {
             boolean isLink = isSubClass(nodeTypeQName, ContentModel.TYPE_LINK);
             node.setIsLink(isLink);
+        }
+
+        if (includeParam.contains(PARAM_INCLUDE_ISLOCKED))
+        {
+            boolean isLocked = isLocked(nodeRef, aspects);
+            node.setIsLocked(isLocked);
         }
 
         if (includeParam.contains(PARAM_INCLUDE_ALLOWABLEOPERATIONS))
@@ -1969,6 +1978,22 @@ public class NodesImpl implements Nodes
         }
 
         return false;
+    }
+    
+    private boolean isLocked(NodeRef nodeRef, Set<QName> aspects)
+    {
+        boolean locked = false;
+        if (((aspects != null) && aspects.contains(ContentModel.ASPECT_LOCKABLE)) 
+           || nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE))
+        {
+            LockStatus status = lockService.getLockStatus(nodeRef);
+            if (status == LockStatus.LOCKED || status == LockStatus.LOCK_OWNER)
+            {
+                locked = true;
+            }
+        }
+
+        return locked;
     }
 
     @Override

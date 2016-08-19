@@ -64,6 +64,7 @@ public class Node
     protected Boolean isFolder;
     protected Boolean isFile;
     protected Boolean isLink;
+    protected Boolean isLocked;
 
     protected String parentId;
     protected PathInfo path;
@@ -194,6 +195,16 @@ public class Node
     public void setIsLink(Boolean link)
     {
         isLink = link;
+    }
+
+    public Boolean getIsLocked()
+    {
+        return isLocked;
+    }
+
+    public void setIsLocked(Boolean locked)
+    {
+        isLocked = locked;
     }
 
     public String getParentId()
@@ -396,6 +407,7 @@ public class Node
         AssertUtil.assertEquals("isFolder", isFolder, other.getIsFolder());
         AssertUtil.assertEquals("isFile", isFile, other.getIsFile());
         AssertUtil.assertEquals("isLink", isLink, other.getIsLink());
+        AssertUtil.assertEquals("isLocked", isLocked, other.getIsLocked());
 
         if (path != null)
         {

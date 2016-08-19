@@ -32,7 +32,7 @@ import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
  * skipCount - How many entries exist in the entire collection before those included in the list<br/>
  * maxItems - The maximum number of items the client requires. Defaults to 100.
  * 
- * @author Gethin James
+ * @author Gethin James, Martin Muller (mmuller)
  */
 public class Paging
 {
@@ -49,11 +49,11 @@ public class Paging
         super();
         if(skipCount < 0)
         {
-        	throw new InvalidArgumentException();
+        	throw new InvalidArgumentException("Negative values not supported for skipCount.");
         }
         if(maxItems < 1)
         {
-        	throw new InvalidArgumentException();
+        	throw new InvalidArgumentException("Only positive values supported for maxItems.");
         }
         this.skipCount = skipCount;
         this.maxItems = maxItems;

@@ -787,9 +787,13 @@ public class ResourceWebScriptHelper
         {
             if (skip != null) { skipped = Integer.parseInt(skip);}
             if (maxItems != null) { max = Integer.parseInt(maxItems); }
-            if (max < 0 || skipped < 0)
+            if (skipped < 0)
             {
-                throw new InvalidArgumentException("Negative values not supported.");  
+                throw new InvalidArgumentException("Negative values not supported for skipCount.");
+            }
+            if (max < 1)
+            {
+                throw new InvalidArgumentException("Only positive values supported for maxItems.");
             }
         }
         catch (NumberFormatException error)

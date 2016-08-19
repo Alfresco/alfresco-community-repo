@@ -35,7 +35,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.alfresco.model.ContentModel;
 import org.alfresco.module.org_alfresco_module_rm.capability.RMPermissionModel;
 import org.alfresco.module.org_alfresco_module_rm.fileplan.FilePlanService;
 import org.alfresco.module.org_alfresco_module_rm.model.RecordsManagementModel;
@@ -53,6 +52,7 @@ import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.context.ApplicationEvent;
 
 /**
@@ -372,15 +372,12 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         Set<String> writers = getWriters(aclId);
 
         // add the current owner to the list of extended writers
-        Set<String> modifiedWrtiers = new HashSet<String>(writers);
-        if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_OWNABLE))
+        Set<String> modifiedWrtiers = new HashSet<String>(writers);    
+        String owner = ownableService.getOwner(nodeRef);
+        if (StringUtils.isNotBlank(owner) && !owner.equals(OwnableService.NO_OWNER))
         {
-            String owner = ownableService.getOwner(nodeRef);
-            if (owner != null && !owner.isEmpty() && !owner.equals(OwnableService.NO_OWNER))
-            {
-                modifiedWrtiers.add(owner);
-            }
-        }
+            modifiedWrtiers.add(owner);
+        }        
         
         return new Pair<Set<String>, Set<String>> (readers, modifiedWrtiers);
     }

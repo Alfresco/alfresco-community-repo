@@ -70,6 +70,8 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
     /** test data */
     private NodeRef contribDoc;    
     private NodeRef deleteUserDoc;
+    private NodeRef copiedDoc;
+    private NodeRef copyDoc;
     private String deletedUser;
     
     /** services */
@@ -247,14 +249,14 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
     private void checkInPlaceAccess(NodeRef nodeRef, AccessStatus ... accessStatus)
     {
         // check permission access
-        assertEquals(accessStatus[0], permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS));
-        assertEquals(accessStatus[1], permissionService.hasPermission(nodeRef, RMPermissionModel.FILING));
+        assertEquals("Incorrect read record permission access.", accessStatus[0], permissionService.hasPermission(nodeRef, RMPermissionModel.READ_RECORDS));
+        assertEquals("Incorrect filling permission access.", accessStatus[1], permissionService.hasPermission(nodeRef, RMPermissionModel.FILING));
         
         // check capability access
         Map<Capability, AccessStatus> access = capabilityService.getCapabilitiesAccessState(nodeRef, CAPABILITIES);                        
-        assertEquals(accessStatus[2], access.get(viewRecordsCapability));
-        assertEquals(accessStatus[3], access.get(editNonRecordMetadataCapability));
-        assertEquals(accessStatus[4], access.get(editRecordMetadataCapability));        
+        assertEquals("Incorrect view records capability access", accessStatus[2], access.get(viewRecordsCapability));
+        assertEquals("Incorrect edit non record metadata capability access", accessStatus[3], access.get(editNonRecordMetadataCapability));
+        assertEquals("Incorrect edit record metadata capability access", accessStatus[4], access.get(editRecordMetadataCapability));        
     }
     
     /**
@@ -777,7 +779,7 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
      * Given a user is the cm:creator of a document
      * And the user is deleted
      * When the document is declared as a record by a manager
-     * Then it succesfully becomes a record
+     * Then it successfully becomes a record
      */
     public void testCmCreatorDeletedBeforeRecordDeclaration()
     {
@@ -806,6 +808,101 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                     .from(() -> recordService.isRecord(deleteUserDoc))
                     .because("The document is now a record.")
         ;
+    }
+    
+    /**
+     * Given a document created by the collaborator
+     * And declared as a record by the collaborator
+     * And filed by the records manager
+     * When the records manager copies the record
+     * Then the collaborator has no access to the record copy 
+     * And a site contributor has no access to the record copy
+     * And the consumer has no access to the record copy
+     * And a user that is not in the site has no access to the record copy
+     */
+    public void testNoPermissionsOnCopy()
+    {
+        test()
+            .given()
+               .as(dmCollaborator)
+                   .perform(() ->
+                   {
+                       // Given a document created by the collaborator
+                       copiedDoc = fileFolderService.create(dmFolder, "copiedDoc.txt" , ContentModel.TYPE_CONTENT).getNodeRef();
+                       dbNodeService.addAspect(copiedDoc, ContentModel.ASPECT_AUDITABLE, null);
+                       
+                       // And declared as a record by the collaborator
+                       recordService.createRecord(filePlan, copiedDoc);
+                   })  
+               .asAdmin()
+               
+                    // And filed by the records manager
+                   .perform(() -> fileFolderService.move(copiedDoc, rmFolder, null))
+                   
+               .as(dmCollaborator)
+                   .perform(() -> 
+                       checkInPlaceAccess(copiedDoc, 
+                           AccessStatus.ALLOWED,  // read record permission 
+                           AccessStatus.ALLOWED,  // filing permission
+                           AccessStatus.ALLOWED,  // view record capability 
+                           AccessStatus.ALLOWED,  // edit non record metadata capability
+                           AccessStatus.DENIED))  // edit record metadata capability    
+                   
+            .when()
+                .asAdmin()
+                
+                    // When the records manager copies the record
+                    .perform(() -> copyDoc = fileFolderService.copy(copiedDoc, rmFolder, "newRecord.txt").getNodeRef())
+                   
+            .then()
+
+                // Then the collaborator has no access to the record copy     
+                .as(dmCollaborator)
+                    .perform(() -> 
+                        checkInPlaceAccess(copyDoc, 
+                            AccessStatus.DENIED,  // read record permission 
+                            AccessStatus.DENIED,  // filing permission
+                            AccessStatus.DENIED,  // view record capability 
+                            AccessStatus.DENIED,  // edit non record metadata capability
+                            AccessStatus.DENIED))  // edit record metadata capability
+                    .perform(() -> 
+                        checkInPlaceAccess(copiedDoc, 
+                            AccessStatus.ALLOWED,  // read record permission 
+                            AccessStatus.ALLOWED,  // filing permission
+                            AccessStatus.ALLOWED,  // view record capability 
+                            AccessStatus.ALLOWED,  // edit non record metadata capability
+                            AccessStatus.DENIED))  // edit record metadata capability
+                    
+                // And a site contributor has no access to the record copy     
+                .as(dmContributor)
+                    .perform(() ->               
+                        checkInPlaceAccess(copyDoc, 
+                            AccessStatus.DENIED,  // read record permission 
+                            AccessStatus.DENIED,  // filing permission
+                            AccessStatus.DENIED,  // view record capability 
+                            AccessStatus.DENIED,  // edit non record metadata capability
+                            AccessStatus.DENIED))  // edit record metadata capability
+            
+                // And the consumer has no access to the record copy   
+                .as(dmConsumer)
+                    .perform(() -> 
+                        checkInPlaceAccess(copyDoc, 
+                            AccessStatus.DENIED,  // read record permission 
+                            AccessStatus.DENIED,   // filing permission
+                            AccessStatus.DENIED,  // view record capability 
+                            AccessStatus.DENIED,   // edit non record metadata capability
+                            AccessStatus.DENIED))  // edit record metadata capability     
+                
+                // And a user that is not in the site has no access to the record copy 
+                .as(userName)
+                    .perform(() -> 
+                        checkInPlaceAccess(copyDoc, 
+                            AccessStatus.DENIED,   // read record permission 
+                            AccessStatus.DENIED,   // filing permission
+                            AccessStatus.DENIED,   // view record capability 
+                            AccessStatus.DENIED,   // edit non record metadata capability
+                            AccessStatus.DENIED));  // edit record metadata capability 
+        ;        
     }
     
     /**

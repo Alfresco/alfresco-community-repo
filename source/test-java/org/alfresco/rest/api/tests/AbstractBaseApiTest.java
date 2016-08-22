@@ -45,7 +45,6 @@ import org.alfresco.rest.api.tests.client.PublicApiClient;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.BinaryPayload;
 import org.alfresco.rest.api.tests.client.PublicApiHttpClient.RequestBuilder;
 import org.alfresco.rest.api.tests.client.RequestContext;
-import org.alfresco.rest.api.tests.client.data.Company;
 import org.alfresco.rest.api.tests.client.data.ContentInfo;
 import org.alfresco.rest.api.tests.client.data.Document;
 import org.alfresco.rest.api.tests.client.data.Folder;
@@ -790,13 +789,13 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     
     protected Document lock(String nodeId, String body) throws Exception
     {
-        HttpResponse response = post("nodes/" + nodeId + "/lock", body, null, 200);
+        HttpResponse response = post(getNodeOperationUrl(nodeId, "lock"), body, null, 200);
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
     
     protected Document unlock(String nodeId, String body) throws Exception
     {
-        HttpResponse response = post("nodes/" + nodeId + "/unlock", body, null, 200);
+        HttpResponse response = post(getNodeOperationUrl(nodeId, "unlock"), body, null, 200);
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 
@@ -871,6 +870,11 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
     protected String getNodeContentUrl(String nodeId)
     {
         return URL_NODES + "/" + nodeId + "/" + URL_CONTENT;
+    }
+    
+    protected String getNodeOperationUrl(String nodeId, String operation)
+    {
+        return URL_NODES + "/" + nodeId + "/" + operation;
     }
 }
 

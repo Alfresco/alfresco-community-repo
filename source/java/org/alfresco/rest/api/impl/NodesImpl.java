@@ -2944,7 +2944,7 @@ public class NodesImpl implements Nodes
         }
 
         lockInfo = validateLockInformation(lockInfo);
-        lockService.lock(nodeRef, lockInfo.getType(), lockInfo.getTimeToExpire(), lockInfo.getLifetime(), lockInfo.getIncludeChildren());
+        lockService.lock(nodeRef, lockInfo.getMappedType(), lockInfo.getTimeToExpire(), lockInfo.getLifetime(), lockInfo.getIncludeChildren());
         
         return getFolderOrDocument(nodeId, parameters);
     }

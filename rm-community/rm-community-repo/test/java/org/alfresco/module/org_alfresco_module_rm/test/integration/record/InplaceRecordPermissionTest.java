@@ -255,7 +255,14 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
     }
     
     /**
-     * 
+     * Given that a document is created by contributor 
+     * When it is declared as an inplace record
+     * Then it becomes a record 
+     * And it isn't filed
+     * And a site collaborator has filling permissions and filling capability on the record
+     * And a site contributor has filling capability and permissions
+     * And a site consumer has read permissions and view record capability on the record
+     * And a user that is not a member of the site has no access to the inplace record  
      */
     public void testCreateInplaceRecordFromCollabSiteWhenContribIsCreatorOfDocument()
     {
@@ -761,5 +768,55 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
                              AccessStatus.DENIED,   // edit non record metadata capability
                              AccessStatus.DENIED));  // edit record metadata capability                      
         ;
+    }
+    
+    /**
+     * Test group reuse
+     */
+    public void testGroupReuse()
+    {
+        test()
+            .when()
+                .as(dmCollaborator)
+                    .perform(() ->
+                    {
+                        for (int i = 0; i < 50; i++)
+                        {
+                            NodeRef newDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                            recordService.createRecord(filePlan, newDocument);
+                        }
+                    })
+                .as(dmContributor)
+                    .perform(() ->
+                    {
+                        for (int i = 0; i < 50; i++)
+                        {
+                            NodeRef newDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                            recordService.createRecord(filePlan, newDocument);
+                        }
+                    })
+            .then()
+                .asAdmin()
+                    .expect(101)
+                        .from(() -> nodeService.getChildAssocs(dmFolder).size())
+                        .because("One hundred inplace records have been created.")
+                    .expect(3)
+                        .from(() -> authorityService.getContainedAuthorities(null, "GROUP_INPLACE_RECORD_MANAGEMENT", true).size())
+                        .because("The read and write groups are reused.");
+        ;                
+    }
+    
+    /**
+     * Test tear down
+     */
+    @Override
+    protected void tearDownImpl()
+    {
+        super.tearDownImpl();
+        
+        // clear up groups
+        authorityService.getContainedAuthorities(null, "GROUP_INPLACE_RECORD_MANAGEMENT", true)
+            .stream()
+            .forEach((group) -> authorityService.deleteAuthority(group));
     }
 }

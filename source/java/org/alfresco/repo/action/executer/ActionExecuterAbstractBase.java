@@ -265,7 +265,7 @@ public abstract class ActionExecuterAbstractBase extends ParameterizedItemAbstra
             actionedUponNodeRef != null &&
             mlAwareNodeService.exists(actionedUponNodeRef))
         {
-            nodeIsLockedForThisUser = LockUtils.isLockedAndReadOnly(actionedUponNodeRef, lockService);
+            nodeIsLockedForThisUser = lockService.isLockedAndReadOnly(actionedUponNodeRef);
         }
         
         if ( !nodeIsLockedForThisUser)

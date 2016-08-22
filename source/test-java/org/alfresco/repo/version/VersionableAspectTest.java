@@ -242,9 +242,9 @@ public class VersionableAspectTest extends TestCase
                 lockService.lock(document, LockType.WRITE_LOCK);
 
                 LockStatus lockStatus = lockService.getLockStatus(document);
-                assertFalse(
-                        ("Node with NodeRef = '" + document.toString() + "' must not be locked for " + AuthenticationUtil.getFullyAuthenticatedUser() + " user! The user is lock owner"),
-                        isLocked(document));
+                assertTrue(
+                        ("Node with NodeRef = '" + document.toString() + "' should be locked for " + AuthenticationUtil.getFullyAuthenticatedUser() + " user! The user is lock owner"),
+                        lockService.isLocked(document));
                 assertEquals(LockStatus.LOCK_OWNER, lockService.getLockStatus(document));
 
                 nodeService.setProperty(document, ContentModel.PROP_NAME, name);
@@ -256,14 +256,6 @@ public class VersionableAspectTest extends TestCase
         assertDocumentVersionAndName("0.2", name);
     }
     
-    // Copy of code from VersionableAspect which really should be in LockService
-    private boolean isLocked(NodeRef nodeRef)
-    {
-        LockStatus lockStatus = lockService.getLockStatus(nodeRef);
-
-        return (LockStatus.NO_LOCK != lockStatus) && (LockStatus.LOCK_OWNER != lockStatus);
-    }
-
     private void assertDocumentVersionAndName(final String versionLabel, final String name)
     {
         assertDocumentVersionAndName(versionLabel, name, null);

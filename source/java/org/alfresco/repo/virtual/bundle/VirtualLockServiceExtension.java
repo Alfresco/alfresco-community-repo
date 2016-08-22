@@ -204,4 +204,15 @@ public class VirtualLockServiceExtension extends SpringBeanExtension<LockService
         getTrait().setEphemeralExpiryThreshold(threshSecs);
     }
 
+    @Override
+    public boolean isLocked(NodeRef nodeRef)
+    {
+        return getTrait().isLocked(smartStore.materializeIfPossible(nodeRef));
+    }
+
+    @Override
+    public boolean isLockedAndReadOnly(NodeRef nodeRef)
+    {
+        return getTrait().isLockedAndReadOnly(smartStore.materializeIfPossible(nodeRef));
+    }
 }

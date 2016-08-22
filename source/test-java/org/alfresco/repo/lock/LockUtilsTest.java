@@ -41,6 +41,7 @@ import org.mockito.runners.MockitoJUnitRunner;
  * Tests for the {@link LockUtils} class.
  * 
  * @author Matt Ward
+ * @deprecated essentially obsolete (isLockedAndReadOnly is now part of LockService)
  */
 @RunWith(MockitoJUnitRunner.class)
 public class LockUtilsTest
@@ -53,6 +54,7 @@ public class LockUtilsTest
     {
         when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCK_OWNER);
         when(lockService.getLockType(nodeRef)).thenReturn(null);
+        when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(true);
         
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
         assertEquals(true, returnedVal);
@@ -63,6 +65,7 @@ public class LockUtilsTest
     {
         when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCK_OWNER);
         when(lockService.getLockType(nodeRef)).thenReturn(LockType.WRITE_LOCK);
+        when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(false);
         
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
         assertEquals(false, returnedVal);
@@ -73,6 +76,7 @@ public class LockUtilsTest
     {
         when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCK_OWNER);
         when(lockService.getLockType(nodeRef)).thenReturn(LockType.NODE_LOCK);
+        when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(true);
         
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
         assertEquals(true, returnedVal);
@@ -83,6 +87,7 @@ public class LockUtilsTest
     {
         when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCK_OWNER);
         when(lockService.getLockType(nodeRef)).thenReturn(LockType.READ_ONLY_LOCK);
+        when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(true);
         
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
         assertEquals(true, returnedVal);
@@ -92,6 +97,7 @@ public class LockUtilsTest
     public void testIsLockedAndReadOnly_ForNoLock()
     {
         when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.NO_LOCK);
+        when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(false);
         
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
         assertEquals(false, returnedVal);
@@ -101,6 +107,7 @@ public class LockUtilsTest
     public void testIsLockedAndReadOnly_ForExpiredLock()
     {
         when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCK_EXPIRED);
+        when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(false);
         
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
         assertEquals(false, returnedVal);
@@ -110,6 +117,7 @@ public class LockUtilsTest
     public void testIsLockedAndReadOnly_ForLock()
     {
         when(lockService.getLockStatus(nodeRef)).thenReturn(LockStatus.LOCKED);
+        when(lockService.isLockedAndReadOnly(nodeRef)).thenReturn(true);
         
         boolean returnedVal = LockUtils.isLockedAndReadOnly(nodeRef, lockService);
         assertEquals(true, returnedVal);

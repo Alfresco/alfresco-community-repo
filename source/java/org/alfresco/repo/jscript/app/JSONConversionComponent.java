@@ -510,11 +510,7 @@ public class JSONConversionComponent
         
         if (nodeService.hasAspect(nodeRef, ContentModel.ASPECT_LOCKABLE) == true)
         {
-            LockStatus lockStatus = lockService.getLockStatus(nodeRef);
-            if (lockStatus == LockStatus.LOCKED || lockStatus == LockStatus.LOCK_OWNER)
-            {
-                locked = true;
-            }
+            locked = lockService.isLocked(nodeRef);
         }
         
         return locked;

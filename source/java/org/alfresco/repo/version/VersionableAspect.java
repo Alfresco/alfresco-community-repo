@@ -442,7 +442,7 @@ public class VersionableAspect implements ContentServicePolicies.OnContentUpdate
             Map<QName, Serializable> after)
     {
         if ((this.nodeService.exists(nodeRef) == true) &&
-            !LockUtils.isLockedAndReadOnly(nodeRef, lockService) &&
+            !lockService.isLockedAndReadOnly(nodeRef) &&
             (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_VERSIONABLE) == true) && 
             (this.nodeService.hasAspect(nodeRef, ContentModel.ASPECT_TEMPORARY) == false))
         {

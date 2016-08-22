@@ -374,7 +374,9 @@ public class ExtendedPermissionServiceImpl extends PermissionServiceImpl impleme
         // add the current owner to the list of extended writers
         Set<String> modifiedWrtiers = new HashSet<String>(writers);    
         String owner = ownableService.getOwner(nodeRef);
-        if (StringUtils.isNotBlank(owner) && !owner.equals(OwnableService.NO_OWNER))
+        if (StringUtils.isNotBlank(owner) && 
+            !owner.equals(OwnableService.NO_OWNER) &&
+            authorityService.authorityExists(owner))
         {
             modifiedWrtiers.add(owner);
         }        

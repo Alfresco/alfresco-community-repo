@@ -255,6 +255,8 @@ public class ExtendedPermissionServiceImplUnitTest extends BaseUnitTest
             .thenReturn(true);
         when(mockedOwnableService.getOwner(nodeRef))
             .thenReturn(OWNER);
+        when(mockedAuthorityService.authorityExists(OWNER))
+            .thenReturn(true);
         
         // when
         Pair<Set<String>, Set<String>> result = extendedPermissionServiceImplWithReaderWritersSet.getReadersAndWriters(nodeRef);

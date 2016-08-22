@@ -518,7 +518,8 @@ public class ExtendedSecurityServiceImpl extends ServiceBaseImpl
         {
             for (String child : children)
             {
-                if (!PermissionService.ALL_AUTHORITIES.equals(child))
+                if (authorityService.authorityExists(child) &&
+                    !PermissionService.ALL_AUTHORITIES.equals(child))
                 {
                     authorityService.addAuthority(group, child);
                 }

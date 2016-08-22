@@ -228,6 +228,23 @@ public class BehaviourTest
     }
     
     /**
+     * Perform work a number of times
+     * 
+     * @param count           number of times to perform the work
+     * @param work            work to perform
+     * @return BehaviourTest  test instance  
+     */
+    public BehaviourTest perform(int count, Work work)
+    {
+        for (int i = 0; i < count; i++)
+        {
+            perform(work);
+        }
+        
+        return this;
+    }
+    
+    /**
      * Perform work
      * 
      * @param work            work to perform

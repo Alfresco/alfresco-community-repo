@@ -45,6 +45,7 @@ import org.alfresco.module.org_alfresco_module_rm.test.util.BaseRMTestCase;
 import org.alfresco.module.org_alfresco_module_rm.test.util.CommonRMTestUtils;
 import org.alfresco.module.org_alfresco_module_rm.test.util.bdt.BehaviourTest;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
+import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.repository.NodeService;
 import org.alfresco.service.cmr.security.AccessStatus;
@@ -67,7 +68,9 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
         .collect(Collectors.toList());
     
     /** test data */
-    NodeRef contribDoc;    
+    private NodeRef contribDoc;    
+    private NodeRef deleteUserDoc;
+    private String deletedUser;
     
     /** services */
     private NodeService dbNodeService;
@@ -771,6 +774,41 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
     }
     
     /**
+     * Given a user is the cm:creator of a document
+     * And the user is deleted
+     * When the document is declared as a record by a manager
+     * Then it succesfully becomes a record
+     */
+    public void testCmCreatorDeletedBeforeRecordDeclaration()
+    {
+        test()
+            .given()
+                .asAdmin()
+                    .perform(() -> 
+                    {
+                        deletedUser = GUID.generate();
+                        createPerson(deletedUser);
+                        siteService.setMembership(collabSiteId, deletedUser, SiteModel.SITE_CONTRIBUTOR);
+                    })
+               .as(deletedUser)
+                   .perform(() ->
+                   {
+                        deleteUserDoc = fileFolderService.create(dmFolder, "deleteUserDoc.txt" , ContentModel.TYPE_CONTENT).getNodeRef();
+                        dbNodeService.addAspect(deleteUserDoc, ContentModel.ASPECT_AUDITABLE, null);
+                    })  
+               .asAdmin()
+                   .perform(() -> personService.deletePerson(deletedUser))              
+            .when()
+                .as(dmCollaborator)
+                    .perform(() -> recordService.createRecord(filePlan, deleteUserDoc))
+            .then()
+                .expect(true)
+                    .from(() -> recordService.isRecord(deleteUserDoc))
+                    .because("The document is now a record.")
+        ;
+    }
+    
+    /**
      * Test group reuse
      */
     public void testGroupReuse()
@@ -778,22 +816,16 @@ public class InplaceRecordPermissionTest extends BaseRMTestCase
         test()
             .when()
                 .as(dmCollaborator)
-                    .perform(() ->
+                    .perform(50, () ->
                     {
-                        for (int i = 0; i < 50; i++)
-                        {
-                            NodeRef newDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
-                            recordService.createRecord(filePlan, newDocument);
-                        }
+                        NodeRef newDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                        recordService.createRecord(filePlan, newDocument);
                     })
                 .as(dmContributor)
-                    .perform(() ->
+                    .perform(50, () ->
                     {
-                        for (int i = 0; i < 50; i++)
-                        {
-                            NodeRef newDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
-                            recordService.createRecord(filePlan, newDocument);
-                        }
+                        NodeRef newDocument = fileFolderService.create(dmFolder, GUID.generate(), ContentModel.TYPE_CONTENT).getNodeRef();
+                        recordService.createRecord(filePlan, newDocument);
                     })
             .then()
                 .asAdmin()

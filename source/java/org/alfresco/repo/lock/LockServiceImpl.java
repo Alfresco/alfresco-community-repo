@@ -465,16 +465,7 @@ public class LockServiceImpl implements LockService,
     public void lock(NodeRef nodeRef, LockType lockType, int timeToExpire, boolean lockChildren)
             throws UnableToAquireLockException
     {
-        lock(nodeRef, lockType, timeToExpire);
-
-        if (lockChildren == true)
-        {
-            Collection<ChildAssociationRef> childAssocRefs = this.nodeService.getChildAssocs(nodeRef);
-            for (ChildAssociationRef childAssocRef : childAssocRefs)
-            {
-                lock(childAssocRef.getChildRef(), lockType, timeToExpire, lockChildren);
-            }
-        }
+        lock(nodeRef, lockType, timeToExpire, lockChildren);
     }
 
     /**

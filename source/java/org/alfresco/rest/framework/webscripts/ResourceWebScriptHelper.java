@@ -798,11 +798,11 @@ public class ResourceWebScriptHelper
         }
         catch (NumberFormatException error)
         {
+            String errorMsg = "Invalid paging parameters skipCount: " + skip + ", maxItems:" + maxItems;
             if (logger.isDebugEnabled())
             {
-                logger.debug("Invalid paging parameters skipCount: " + skip + ", maxItems:" + maxItems);
+                logger.debug(errorMsg);
             }
-            String errorMsg = "Invalid paging parameters skipCount: " + skip + ", maxItems:" + maxItems;
             if (skip == null)
             {
                 errorMsg = "Invalid paging parameter maxItems:" + maxItems;

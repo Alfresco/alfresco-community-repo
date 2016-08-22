@@ -192,6 +192,13 @@ public class ExtendedSecurityServiceImplUnitTest
         // setup group prefixes
         readGroupPrefix = extendedSecurityService.getIPRGroupPrefixShortName(READER_GROUP_PREFIX, READERS);
         writeGroupPrefix = extendedSecurityService.getIPRGroupPrefixShortName(WRITER_GROUP_PREFIX, WRITERS);
+        
+        // make sure the users and groups exist
+        Stream
+            .of(USER, USER_W, GROUP, GROUP_W)
+            .forEach((a) -> 
+               when(mockedAuthorityService.authorityExists(a))
+                   .thenReturn(true));
     }
     
     /**
@@ -716,6 +723,13 @@ public class ExtendedSecurityServiceImplUnitTest
         // new group names
         String newReadGroup = extendedSecurityService.getIPRGroupShortName(READER_GROUP_PREFIX, newReaders, 0);
         String newWriteGroup = extendedSecurityService.getIPRGroupShortName(WRITER_GROUP_PREFIX, newWriters, 0);
+        
+        // make sure users and groups exist
+        Stream
+            .of(user, group, userW, groupW)
+            .forEach((a) -> 
+               when(mockedAuthorityService.authorityExists(a))
+                   .thenReturn(true));
         
         // setup query results for no group matches
         when(mockedReadPagingResults.getPage())

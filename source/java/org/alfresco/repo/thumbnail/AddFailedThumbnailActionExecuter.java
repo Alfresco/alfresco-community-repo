@@ -211,6 +211,11 @@ public class AddFailedThumbnailActionExecuter extends ActionExecuterAbstractBase
                         // Does the actionedUponNodeRef already have a child for this thumbnail definition?
                         if (childNode == null)
                         {
+                        	if(log.isDebugEnabled())
+                        	{
+                        		log.debug("childNode is null " + actionedUponNodeRef);
+                        	}
+
                             // No existing failedThumbnail child, so this is a first time failure to render this source node with the current
                             // thumbnail definition.
                             // We'll create a new failedThumbnail child under the source node.
@@ -222,8 +227,14 @@ public class AddFailedThumbnailActionExecuter extends ActionExecuterAbstractBase
                             try
                             {
                                 // The association is named after the failed thumbnail definition.
-                                nodeService.createNode(actionedUponNodeRef, ContentModel.ASSOC_FAILED_THUMBNAIL,
-                                        thumbDefQName, ContentModel.TYPE_FAILED_THUMBNAIL, props);
+                                NodeRef thumbnailNodeRef = nodeService.createNode(actionedUponNodeRef, ContentModel.ASSOC_FAILED_THUMBNAIL,
+                                        thumbDefQName, ContentModel.TYPE_FAILED_THUMBNAIL, props).getChildRef();
+
+                            	if(log.isDebugEnabled())
+                            	{
+                            		log.debug("Create failed thumbnail " + thumbnailNodeRef + " (" + thumbDefQName + ") for "
+                            				+ actionedUponNodeRef + ", props " + props);
+                            	}
                             }
                             finally
                             {
@@ -232,6 +243,11 @@ public class AddFailedThumbnailActionExecuter extends ActionExecuterAbstractBase
                         }
                         else
                         {
+                        	if(log.isDebugEnabled())
+                        	{
+                        		log.debug("Already a failed thumbnail " + thumbDefQName + " for " + actionedUponNodeRef);
+                        	}
+
                             // There is already an existing failedThumbnail child, so this is a repeat failure to perform the same
                             // thumbnail definition.
                             // Therefore we don't need to create a new failedThumbnail child.

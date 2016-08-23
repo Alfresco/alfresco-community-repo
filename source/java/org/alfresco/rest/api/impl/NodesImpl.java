@@ -2996,18 +2996,7 @@ public class NodesImpl implements Nodes
             unlockInfo.setAllowCheckedOut(false);
         }
         
-        // If there is no lock placed on the node skip the operation.
-        if (lockService.getLockStatus(nodeRef) != LockStatus.NO_LOCK)
-        {
-            if (permissionService.hasPermission(nodeRef, PermissionService.UNLOCK).equals(AccessStatus.ALLOWED))
-            {
-                lockService.unlock(nodeRef, unlockInfo.getIncludeChildren(), unlockInfo.getAllowCheckedOut());
-            }
-            else
-            {
-                throw new PermissionDeniedException("Current user doesn't have permission to unlock node " + nodeId);
-            }
-        }
+        lockService.unlock(nodeRef, unlockInfo.getIncludeChildren(), unlockInfo.getAllowCheckedOut());
         return getFolderOrDocument(nodeId, parameters);
     }
 

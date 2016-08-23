@@ -124,6 +124,7 @@ import org.alfresco.service.cmr.dictionary.DictionaryService;
 import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
+import org.alfresco.service.cmr.lock.NodeLockedException;
 import org.alfresco.service.cmr.model.FileExistsException;
 import org.alfresco.service.cmr.model.FileFolderService;
 import org.alfresco.service.cmr.model.FileInfo;
@@ -131,6 +132,7 @@ import org.alfresco.service.cmr.model.FileNotFoundException;
 import org.alfresco.service.cmr.repository.AssociationExistsException;
 import org.alfresco.service.cmr.repository.ChildAssociationRef;
 import org.alfresco.service.cmr.repository.ContentData;
+import org.alfresco.service.cmr.repository.ContentIOException;
 import org.alfresco.service.cmr.repository.ContentService;
 import org.alfresco.service.cmr.repository.ContentWriter;
 import org.alfresco.service.cmr.repository.DuplicateChildNodeNameException;
@@ -2376,45 +2378,61 @@ public class NodesImpl implements Nodes
 
     private void writeContent(NodeRef nodeRef, String fileName, InputStream stream, boolean guessEncoding)
     {
-        ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
-
-        String mimeType = mimetypeService.guessMimetype(fileName);
-        if ((mimeType != null) && (! mimeType.equals(MimetypeMap.MIMETYPE_BINARY)))
+        try
         {
-            // quick/weak guess based on file extension
-            writer.setMimetype(mimeType);
-        }
-        else
-        {
-            // stronger guess based on file stream
-            writer.guessMimetype(fileName);
-        }
+            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
 
-        InputStream is = null;
-
-        if (guessEncoding)
-        {
-            is = new BufferedInputStream(stream);
-            is.mark(1024);
-            writer.setEncoding(guessEncoding(is, mimeType, false));
-            try
+            String mimeType = mimetypeService.guessMimetype(fileName);
+            if ((mimeType != null) && (!mimeType.equals(MimetypeMap.MIMETYPE_BINARY)))
             {
-                is.reset();
+                // quick/weak guess based on file extension
+                writer.setMimetype(mimeType);
+            } else
+            {
+                // stronger guess based on file stream
+                writer.guessMimetype(fileName);
             }
-            catch (IOException ioe)
+
+            InputStream is = null;
+
+            if (guessEncoding)
             {
-                if (logger.isWarnEnabled())
+                is = new BufferedInputStream(stream);
+                is.mark(1024);
+                writer.setEncoding(guessEncoding(is, mimeType, false));
+                try
                 {
-                    logger.warn("Failed to reset stream after trying to guess encoding: " + ioe.getMessage());
+                    is.reset();
+                } catch (IOException ioe)
+                {
+                    if (logger.isWarnEnabled())
+                    {
+                        logger.warn("Failed to reset stream after trying to guess encoding: " + ioe.getMessage());
+                    }
                 }
+            } else
+            {
+                is = stream;
             }
-        }
-        else
-        {
-            is = stream;
-        }
 
-        writer.putContent(is);
+            writer.putContent(is);
+        }
+        catch (ContentQuotaException cqe)
+        {
+            throw new InsufficientStorageException();
+        }
+        catch (ContentLimitViolationException clv)
+        {
+            throw new RequestEntityTooLargeException(clv.getMessage());
+        }
+        catch (ContentIOException cioe)
+        {
+            if (cioe.getCause() instanceof NodeLockedException)
+            {
+                throw (NodeLockedException)cioe.getCause();
+            }
+            throw cioe;
+        }
     }
 
     private String guessEncoding(InputStream in, String mimeType, boolean close)
@@ -2659,14 +2677,6 @@ public class NodesImpl implements Nodes
         catch (AccessDeniedException ade)
         {
             throw new PermissionDeniedException(ade.getMessage());
-        }
-        catch (ContentQuotaException cqe)
-        {
-            throw new InsufficientStorageException();
-        }
-        catch (ContentLimitViolationException clv)
-        {
-            throw new RequestEntityTooLargeException(clv.getMessage());
         }
         catch (Exception ex)
         {

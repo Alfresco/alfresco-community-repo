@@ -1198,7 +1198,7 @@ public class ThumbnailServiceImplTest extends BaseAlfrescoSpringTest
         List<ExpectedAssoc> expectedAssocs = new ArrayList<>(5);
         expectedAssocs.add(new ExpectedAssoc(RenditionModel.ASSOC_RENDITION, "imgpreview", 1));
         expectedAssocs.add(new ExpectedAssoc(RenditionModel.ASSOC_RENDITION, "avatar", 1));
-        expectedAssocs.add(new ExpectedAssoc(ContentModel.ASSOC_FAILED_THUMBNAIL, null, 1));
+//        expectedAssocs.add(new ExpectedAssoc(ContentModel.ASSOC_FAILED_THUMBNAIL, null, 1));
 
         performLongRunningThumbnailTest(expectedThumbnails, expectedAssocs, new EmptyLongRunningConcurrentWork(), 1, 1);
     }

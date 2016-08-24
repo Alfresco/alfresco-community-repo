@@ -47,7 +47,7 @@
                                                 </td>
                                                 <td>
                                                    <div style="font-size: 22px; padding-bottom: 4px;">
-                                                      ${message("templates.invite-email-add-direct.html.header", args["siteName"])}
+                                                      ${message("templates.invite-email-add-direct.html.header", args["siteName"])?html}
                                                    </div>
                                                    <div style="font-size: 13px;">
                                                       ${date?datetime?string.full}
@@ -56,11 +56,11 @@
                                              </tr>
                                           </table>
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
-                                             <p>${message("templates.invite-email-add-direct.html.salutation", inviteePerson.properties["cm:firstName"]!"")}</p>
+                                             <p>${message("templates.invite-email-add-direct.html.salutation", inviteePerson.properties["cm:firstName"]!"")?html}</p>
       
-                                             <p>${message("templates.invite-email-add-direct.html.detail", inviterPerson.properties["cm:firstName"]!"", inviterPerson.properties["cm:lastName"]!"", args["siteName"], args["inviteeSiteRole"])}</p>
+                                             <p>${message("templates.invite-email-add-direct.html.detail", inviterPerson.properties["cm:firstName"]!"", inviterPerson.properties["cm:lastName"]!"", args["siteName"], args["inviteeSiteRole"])?html}</p>
                                              
-                                             <p><a href="${args["siteDashboardLink"]}">${message("templates.invite-email-add-direct.html.navigate", args["siteName"])}</a></p>
+                                             <p><a href="${args["siteDashboardLink"]}">${message("templates.invite-email-add-direct.html.navigate", args["siteName"])?html}</a></p>
                                              
                                              <p>${message("templates.invite-email-add-direct.html.closing", productName!"")}</p>
                                              

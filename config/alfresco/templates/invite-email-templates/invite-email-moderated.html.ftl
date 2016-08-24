@@ -22,7 +22,7 @@
                                                 </td>
                                                 <td>
                                                    <div style="font-size: 22px; padding-bottom: 4px;">
-                                                      ${message("templates.invite-email-moderated.html.header", siteName)}
+                                                      ${message("templates.invite-email-moderated.html.header", siteName)?html}
                                                    </div>
                                                    <div style="font-size: 13px;">
                                                       ${date?datetime?string.full}
@@ -33,7 +33,7 @@
                                           <div style="font-size: 14px; margin: 12px 0px 24px 0px; padding-top: 10px; border-top: 1px solid #aaaaaa;">
                                              <p>${message("templates.invite-email.html.salutation_generic")}</p>
       
-                                             <p>${message("templates.invite-email-moderated.html.info", inviteeName, siteName, date?string["dd MMM yyyy"])}</p>
+                                             <p>${message("templates.invite-email-moderated.html.info", inviteeName, siteName, date?string["dd MMM yyyy"])?html}</p>
                                           
                                              <a href="${shareUrl}/${sharePendingInvitesLink}" target="_parent">
                                                    <div style="background-color: #008CBA; border: none; color: white; padding: 10px 15px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px;">

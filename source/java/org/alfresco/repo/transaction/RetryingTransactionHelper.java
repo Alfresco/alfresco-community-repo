@@ -407,7 +407,7 @@ public class RetryingTransactionHelper
 
         // If we are time limiting, set ourselves a time limit and maintain the count of concurrent transactions
         long startTime = 0;
-		Throwable stackTrace = null;
+        Throwable stackTrace = null;
         if (requiresNew && maxExecutionMs > 0)
         {
             startTime = System.currentTimeMillis();
@@ -423,21 +423,21 @@ public class RetryingTransactionHelper
                         throw new TooBusyException("Too busy: " + txnCount + " transactions. Oldest " + oldestDuration + " milliseconds", txnsInProgress.get(oldestStart).get(0));
                     }
                 }
-				// Record the start time and stack trace of the starting thread
+                // Record the start time and stack trace of the starting thread
                 List<Throwable> traces = txnsInProgress.get(startTime);
                 if (traces == null)
                 {
                     traces = new LinkedList<Throwable>();
                     txnsInProgress.put(startTime, traces);
                 }
-				stackTrace = new Exception("Stack trace");
+                stackTrace = new Exception("Stack trace");
                 traces.add(stackTrace);
                 ++txnCount;
             }
         }
 
         try
-        {        
+        {
             // Track the last exception caught, so that we
             // can throw it if we run out of retries.
             RuntimeException lastException = null;

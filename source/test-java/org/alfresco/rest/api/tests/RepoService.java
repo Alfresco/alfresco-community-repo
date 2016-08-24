@@ -365,14 +365,27 @@ public class RepoService
 		nodeService.deleteNode(nodeRef);
 	}
 	
+	//
+	// TODO replace with V1 REST API to Lock/Unlock - except calls to includeChildren (which may not be exposed, initially
+	//
 	public void lockNode(NodeRef nodeRef)
 	{
-		lockService.lock(nodeRef, LockType.NODE_LOCK);
+		lockNode(nodeRef, LockType.NODE_LOCK, 0, false);
+	}
+
+	public void lockNode(NodeRef nodeRef, LockType lockType, int timeToExpire, boolean includeChildren)
+	{
+		lockService.lock(nodeRef, lockType, timeToExpire, includeChildren);
 	}
 	
 	public void unlockNode(NodeRef nodeRef)
 	{
-		lockService.unlock(nodeRef);
+		unlockNode(nodeRef, false);
+	}
+
+	public void unlockNode(NodeRef nodeRef, boolean includeChildren)
+	{
+		lockService.unlock(nodeRef, true, false);
 	}
 
 	public NodeRef addUserDescription(final String personId, final TestNetwork network, final String personDescription)

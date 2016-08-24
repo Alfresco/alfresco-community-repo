@@ -57,6 +57,7 @@ import org.alfresco.rest.api.tests.client.data.Activity;
 import org.alfresco.rest.api.tests.client.data.Comment;
 import org.alfresco.rest.api.tests.client.data.SiteRole;
 import org.alfresco.rest.api.tests.client.data.Tag;
+import org.alfresco.service.cmr.lock.LockType;
 import org.alfresco.service.cmr.repository.NodeRef;
 import org.alfresco.service.cmr.site.SiteVisibility;
 import org.alfresco.util.GUID;
@@ -91,6 +92,7 @@ public class TestNodeComments extends EnterpriseTestApi
 	private NodeRef nodeRef4;
 	private NodeRef cmObjectNodeRef;
 	private NodeRef customTypeObject;
+	private NodeRef nodeRef5;
 	
 	@Override
 	@Before
@@ -170,7 +172,8 @@ public class TestNodeComments extends EnterpriseTestApi
 			{
 				NodeRef nodeRef = repoService.createDocument(site1.getContainerNodeRef("documentLibrary"), "Test Doc", "Test Content");
 				nodes.add(nodeRef);
-				nodeRef = repoService.createFolder(site1.getContainerNodeRef("documentLibrary"), "Test Folder");
+				NodeRef folderNodeRef = repoService.createFolder(site1.getContainerNodeRef("documentLibrary"), "Test Folder");
+				nodeRef = folderNodeRef;
 				nodes.add(nodeRef);
 				nodeRef = repoService.createDocument(site1.getContainerNodeRef("documentLibrary"), "Test Doc 1", "Test Content 1");
 				nodes.add(nodeRef);
@@ -181,6 +184,8 @@ public class TestNodeComments extends EnterpriseTestApi
 				nodeRef = repoService.createCmObject(site1.getContainerNodeRef("documentLibrary"), "CM Object");
 				nodes.add(nodeRef);
 				nodeRef = repoService.createObjectOfCustomType(site1.getContainerNodeRef("documentLibrary"), "Custom type object", "{custom.model}sop");
+				nodes.add(nodeRef);
+				nodeRef = repoService.createDocument(folderNodeRef, "Test Doc 4", "Test Content 4 - in Test Folder");
 				nodes.add(nodeRef);
 
 				return null;
@@ -194,6 +199,7 @@ public class TestNodeComments extends EnterpriseTestApi
 		this.nodeRef4 = nodes.get(4);
 		this.cmObjectNodeRef = nodes.get(5);
 		this.customTypeObject = nodes.get(6);
+		this.nodeRef5 = nodes.get(7);
 	}
 
 	@Test
@@ -771,16 +777,23 @@ public class TestNodeComments extends EnterpriseTestApi
 		{
 			assertEquals(HttpStatus.SC_BAD_REQUEST, e.getHttpResponse().getStatusCode());
 		}
+	}
+	
+	@Test
+	public void testNodeCommentsAndLocking() throws Exception
+	{
+		Comments commentsProxy = publicApiClient.comments();
 
 		// locked node - cannot add/edit/delete comments (MNT-14945, MNT-16446)
+
 		try
 		{
 			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
-			
+
 			Comment comment = new Comment();
 			comment.setContent("my comment");
 			Comment createdComment = commentsProxy.createNodeComment(nodeRef1.getId(), comment);
-			
+
 			TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
 			{
 				@Override
@@ -797,7 +810,7 @@ public class TestNodeComments extends EnterpriseTestApi
 
 			int skipCount = 0;
 			int maxItems = Integer.MAX_VALUE;
-			Paging paging = getPaging(skipCount, maxItems, expectedComments.size(), expectedComments.size());
+			Paging paging = getPaging(skipCount, maxItems);
 			commentsProxy.getNodeComments(nodeRef1.getId(), createParams(paging, null));
 
 			// test POST for a locked node
@@ -809,7 +822,7 @@ public class TestNodeComments extends EnterpriseTestApi
 
 				fail("");
 			}
-			catch(PublicApiException e)
+			catch (PublicApiException e)
 			{
 				assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
 			}
@@ -820,10 +833,10 @@ public class TestNodeComments extends EnterpriseTestApi
 				Comment updatedComment = new Comment();
 				updatedComment.setContent("my comment");
 				commentsProxy.updateNodeComment(nodeRef1.getId(), createdComment.getId(), updatedComment);
-				
+
 				fail("");
 			}
-			catch(PublicApiException e)
+			catch (PublicApiException e)
 			{
 				assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
 			}
@@ -835,7 +848,7 @@ public class TestNodeComments extends EnterpriseTestApi
 
 				fail("");
 			}
-			catch(PublicApiException e)
+			catch (PublicApiException e)
 			{
 				assertEquals(HttpStatus.SC_CONFLICT, e.getHttpResponse().getStatusCode());
 			}
@@ -853,7 +866,49 @@ public class TestNodeComments extends EnterpriseTestApi
 			}, person11.getId(), network1.getId());
 		}
 	}
-	
+
+	// lock recursively (MNT-14945, MNT-16446, REPO-1150)
+	@Test
+	public void testNodeCommentsAndLockingIncludingChildren() throws Exception
+	{
+		Comments commentsProxy = publicApiClient.comments();
+
+		// TODO push-down to future CommentServiceImplTest (see ACE-5437) - since includeChildren is via LockService api only
+
+		try
+		{
+			publicApiClient.setRequestContext(new RequestContext(network1.getId(), person11.getId()));
+
+			Comment comment = new Comment();
+			comment.setContent("my comment");
+			Comment createdComment = commentsProxy.createNodeComment(nodeRef5.getId(), comment);
+
+			// recursive lock (folderRef1, nodeRef5)
+			TenantUtil.runAsUserTenant(new TenantRunAsWork<Void>()
+			{
+				@Override
+				public Void doWork() throws Exception
+				{
+					repoService.lockNode(folderNodeRef1, LockType.WRITE_LOCK, 0, true);
+					return null;
+				}
+			}, person11.getId(), network1.getId());
+
+		}
+		finally
+		{
+			TenantUtil.runAsSystemTenant(new TenantRunAsWork<Void>()
+			{
+				@Override
+				public Void doWork() throws Exception
+				{
+					repoService.unlockNode(folderNodeRef1, true);
+					return null;
+				}
+			}, network1.getId());
+		}
+	}
+
 	@Test
 	public void test_MNT_16446() throws Exception
 	{

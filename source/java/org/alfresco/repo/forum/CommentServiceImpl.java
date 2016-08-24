@@ -54,6 +54,8 @@ import org.alfresco.repo.security.authentication.AuthenticationUtil.RunAsWork;
 import org.alfresco.repo.security.permissions.AccessDeniedException;
 import org.alfresco.repo.site.SiteModel;
 import org.alfresco.service.cmr.activities.ActivityService;
+import org.alfresco.service.cmr.dictionary.DictionaryService;
+import org.alfresco.service.cmr.dictionary.PropertyDefinition;
 import org.alfresco.service.cmr.lock.LockService;
 import org.alfresco.service.cmr.lock.LockStatus;
 import org.alfresco.service.cmr.lock.NodeLockedException;
@@ -69,6 +71,7 @@ import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
+import org.alfresco.util.EqualsHelper;
 import org.alfresco.util.Pair;
 import org.alfresco.util.registry.NamedObjectRegistry;
 import org.apache.commons.logging.Log;
@@ -83,8 +86,9 @@ import org.springframework.extensions.surf.util.AbstractLifecycleBean;
  * @since 4.0
  */
 // TODO consolidate this and ScriptCommentService and the implementations of comments.* web scripts.
-public class CommentServiceImpl extends AbstractLifecycleBean 
-        implements CommentService, NodeServicePolicies.BeforeDeleteNodePolicy, NodeServicePolicies.BeforeUpdateNodePolicy
+public class CommentServiceImpl extends AbstractLifecycleBean implements CommentService, 
+        NodeServicePolicies.BeforeDeleteNodePolicy, 
+        NodeServicePolicies.OnUpdatePropertiesPolicy
 {
     private static Log logger = LogFactory.getLog(CommentServiceImpl.class);  
 
@@ -105,6 +109,7 @@ public class CommentServiceImpl extends AbstractLifecycleBean
     private BehaviourFilter behaviourFilter;
     private PermissionService permissionService;
     private LockService lockService;
+    private DictionaryService dictionaryService;
     
     private NamedObjectRegistry<CannedQueryFactory<? extends Object>> cannedQueryRegistry;
 
@@ -153,6 +158,11 @@ public class CommentServiceImpl extends AbstractLifecycleBean
         this.lockService = lockService;
     }
 
+    public void setDictionaryService(DictionaryService dictionaryService)
+    {
+        this.dictionaryService = dictionaryService;
+    }
+
     @Override
     protected void onBootstrap(ApplicationEvent event)
     {
@@ -196,12 +206,16 @@ public class CommentServiceImpl extends AbstractLifecycleBean
             {
                 this.lockService = (LockService)ctx.getBean("LockService");
             }
+            if (this.dictionaryService == null)
+            {
+                this.dictionaryService = (DictionaryService)ctx.getBean("DictionaryService");
+            }
         }
         
         this.policyComponent.bindClassBehaviour(
-                NodeServicePolicies.BeforeUpdateNodePolicy.QNAME,
+                NodeServicePolicies.OnUpdatePropertiesPolicy.QNAME,
                 ForumModel.TYPE_POST,
-                new JavaBehaviour(this, "beforeUpdateNode"));
+                new JavaBehaviour(this, "onUpdateProperties"));
         this.policyComponent.bindClassBehaviour(
                 NodeServicePolicies.BeforeDeleteNodePolicy.QNAME,
                 ForumModel.TYPE_POST,
@@ -601,27 +615,79 @@ public class CommentServiceImpl extends AbstractLifecycleBean
         }
         return (isWorkingCopy || isLocked);
     }
-
+    
     @Override
-    public void beforeUpdateNode(NodeRef commentNodeRef)
+    public void onUpdateProperties(NodeRef commentNodeRef, Map<QName, Serializable> before, Map<QName, Serializable> after)
     {
         NodeRef discussableNodeRef = getDiscussableAncestor(commentNodeRef);
         if (discussableNodeRef != null)
         {
-            if (behaviourFilter.isEnabled(ContentModel.ASPECT_LOCKABLE) 
+            if (behaviourFilter.isEnabled(ContentModel.ASPECT_LOCKABLE)
                     && isWorkingCopyOrLocked(discussableNodeRef))
             {
-                throw new NodeLockedException(discussableNodeRef);
+                List<QName> changedProperties = getChangedProperties(before, after);
+                
+                // check if comment updated (rather than some other change, eg. addition of lockable aspect only)
+                boolean commentUpdated = false;
+                for (QName changedProperty : changedProperties)
+                {
+                    PropertyDefinition propertyDef = dictionaryService.getProperty(changedProperty);
+                    if (propertyDef != null)
+                    {
+                        if (propertyDef.getContainerClass().getName().equals(ContentModel.TYPE_CONTENT))
+                        {
+                            commentUpdated = true;
+                            break;
+                        }
+                    }
+                }
+                
+                if (commentUpdated)
+                {
+                    throw new NodeLockedException(discussableNodeRef);
+                }
+            }
+
+            boolean canEdit = canEditPermission(commentNodeRef);
+            if (! canEdit)
+            {
+                throw new AccessDeniedException("Cannot edit comment");
+            }
+        }
+    }
+
+    // see also RenditionedAspect
+    private List<QName> getChangedProperties(Map<QName, Serializable> before, Map<QName, Serializable> after)
+    {
+        List<QName> results = new ArrayList<QName>();
+        for (QName propQName : before.keySet())
+        {
+            if (after.keySet().contains(propQName) == false)
+            {
+                // property was deleted
+                results.add(propQName);
             }
             else
             {
-                boolean canEdit = canEditPermission(commentNodeRef);
-                if (! canEdit)
+                Serializable beforeValue = before.get(propQName);
+                Serializable afterValue = after.get(propQName);
+                if (EqualsHelper.nullSafeEquals(beforeValue, afterValue) == false)
                 {
-                    throw new AccessDeniedException("Cannot edit comment");
+                    // Property was changed
+                    results.add(propQName);
                 }
             }
         }
+        for (QName propQName : after.keySet())
+        {
+            if (before.containsKey(propQName) == false)
+            {
+                // property was added
+                results.add(propQName);
+            }
+        }
+
+        return results;
     }
     
     @Override
@@ -635,13 +701,11 @@ public class CommentServiceImpl extends AbstractLifecycleBean
             {
                 throw new NodeLockedException(discussableNodeRef);
             }
-            else
+
+            boolean canDelete = canDeletePermission(commentNodeRef);
+            if (! canDelete)
             {
-                boolean canDelete = canDeletePermission(commentNodeRef);
-                if (! canDelete)
-                {
-                    throw new AccessDeniedException("Cannot delete comment");
-                }
+                throw new AccessDeniedException("Cannot delete comment");
             }
         }
     }

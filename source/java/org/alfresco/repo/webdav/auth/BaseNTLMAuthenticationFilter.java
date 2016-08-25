@@ -71,6 +71,7 @@ import org.alfresco.repo.web.auth.UnknownCredentials;
 import org.alfresco.repo.web.auth.WebCredentials;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
+import org.springframework.web.util.WebUtils;
 
 /**
  * Base class with common code and initialisation for NTLM authentication filters.
@@ -289,6 +290,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
         else
         {
             HttpSession session = sreq.getSession();
+            Object sessionMutex = WebUtils.getSessionMutex(session);
             // Decode the received NTLM blob and validate
             final byte[] ntlmByts = Base64.decodeBase64(authHdr.substring(5).getBytes());
             int ntlmTyp = NTLMMessage.isNTLMType(ntlmByts);
@@ -296,7 +298,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             {
                 // Process the type 1 NTLM message
                 Type1NTLMMessage type1Msg = new Type1NTLMMessage(ntlmByts);
-                synchronized (session)
+                synchronized (sessionMutex)
                 {
                     processType1(type1Msg, sreq, sresp);
                 }
@@ -306,7 +308,7 @@ public abstract class BaseNTLMAuthenticationFilter extends BaseSSOAuthentication
             {
                 // Process the type 3 NTLM message
                 Type3NTLMMessage type3Msg = new Type3NTLMMessage(ntlmByts);
-                synchronized (session)
+                synchronized (sessionMutex)
                 {
                     return processType3(type3Msg, context, sreq, sresp);
                 }

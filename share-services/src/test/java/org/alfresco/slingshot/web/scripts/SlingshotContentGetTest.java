@@ -27,27 +27,30 @@ package org.alfresco.slingshot.web.scripts;
 
 import org.alfresco.model.ContentModel;
 import org.alfresco.repo.content.MimetypeMap;
+import org.alfresco.repo.model.Repository;
 import org.alfresco.repo.security.authentication.AuthenticationComponent;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.web.scripts.BaseWebScriptTest;
-import org.alfresco.service.cmr.repository.ContentData;
-import org.alfresco.service.cmr.repository.ContentService;
-import org.alfresco.service.cmr.repository.ContentWriter;
-import org.alfresco.service.cmr.repository.NodeRef;
-import org.alfresco.service.cmr.repository.NodeService;
+import org.alfresco.service.cmr.repository.*;
 import org.alfresco.service.cmr.security.MutableAuthenticationService;
 import org.alfresco.service.cmr.security.PermissionService;
 import org.alfresco.service.cmr.security.PersonService;
 import org.alfresco.service.cmr.site.SiteService;
 import org.alfresco.service.cmr.site.SiteVisibility;
+import org.alfresco.service.namespace.NamespaceService;
+import org.alfresco.service.namespace.QName;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
 import org.json.JSONObject;
+import org.junit.Assert;
 import org.springframework.extensions.webscripts.TestWebScriptServer;
 import org.springframework.extensions.webscripts.TestWebScriptServer.GetRequest;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Test for SlingshotContentGet web script
@@ -184,5 +187,60 @@ public class SlingshotContentGetTest extends BaseWebScriptTest
 
         String uri = URL_CONTENT_DOWNLOAD + doc.getId() + "?a=true";
         sendRequest(new GetRequest(uri), 200);
+    }
+
+    /**
+     * MNT-16380
+     */
+    public void testRelativePath() throws Exception
+    {
+        Repository repositoryHelper = (Repository) getServer().getApplicationContext().getBean("repositoryHelper");
+        NodeRef companyHome = repositoryHelper.getCompanyHome();
+
+        NodeRef rootFolder = createNode(companyHome, "rootFolder", ContentModel.TYPE_FOLDER);
+
+        NodeRef doc1 = createNodeWithTextContent(rootFolder, "doc1", ContentModel.TYPE_CONTENT, "doc1 file content");
+
+        NodeRef folderX = createNode(rootFolder, "X", ContentModel.TYPE_FOLDER);
+        NodeRef folderY = createNode(folderX, "Y", ContentModel.TYPE_FOLDER);
+        NodeRef folderZ = createNode(folderY, "Z", ContentModel.TYPE_FOLDER);
+
+        NodeRef doc2 = createNodeWithTextContent(folderZ, "doc2", ContentModel.TYPE_CONTENT, "doc2 file content");
+
+        // uri with relative path at the end
+        String uri = URL_CONTENT_DOWNLOAD + doc1.getId() + "/X/Y/Z/doc2";
+        TestWebScriptServer.Response resp = sendRequest(new GetRequest(uri), 200);
+
+        // check if we really have doc2 as target
+        Assert.assertEquals("doc2 file content", resp.getContentAsString());
+
+        nodeService.deleteNode(rootFolder);
+    }
+
+    public NodeRef createNodeWithTextContent(NodeRef parentNode, String nodeCmName, QName nodeType, String content)
+    {
+        NodeRef nodeRef = createNode(parentNode, nodeCmName, nodeType);
+
+        // If there is any content, add it.
+        if (content != null)
+        {
+            ContentWriter writer = contentService.getWriter(nodeRef, ContentModel.PROP_CONTENT, true);
+            writer.setMimetype(MimetypeMap.MIMETYPE_TEXT_PLAIN);
+            writer.setEncoding("UTF-8");
+            writer.putContent(content);
+        }
+        return nodeRef;
+
+    }
+
+    private NodeRef createNode(NodeRef parentNode, String nodeCmName, QName nodeType)
+    {
+        QName childName = QName.createQName(NamespaceService.APP_MODEL_1_0_URI, nodeCmName);
+
+        Map<QName, Serializable> props = new HashMap<QName, Serializable>();
+        props.put(ContentModel.PROP_NAME, nodeCmName);
+        ChildAssociationRef childAssoc = nodeService
+                .createNode(parentNode, ContentModel.ASSOC_CONTAINS, childName, nodeType, props);
+        return childAssoc.getChildRef();
     }
 }

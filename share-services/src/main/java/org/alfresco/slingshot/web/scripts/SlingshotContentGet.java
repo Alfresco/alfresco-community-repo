@@ -51,7 +51,7 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  * <p>
  * If both tests are true then generates an Activity feed item to record the Download request.
  * All other requests and any further processing is performed by the super class.
- * 
+ *
  * @author Kevin Roast
  */
 public class SlingshotContentGet extends ContentGet
@@ -59,17 +59,17 @@ public class SlingshotContentGet extends ContentGet
     protected SiteService siteService;
     private ActivityPoster poster;
     private RetryingTransactionHelper transactionHelper;
-    
+
     public void setSiteService(SiteService siteService)
     {
         this.siteService = siteService;
     }
-    
+
     public void setPoster(ActivityPoster poster)
     {
         this.poster = poster;
     }
-    
+
     public void setTransactionHelper(RetryingTransactionHelper transactionHelper)
     {
         this.transactionHelper = transactionHelper;
@@ -87,11 +87,17 @@ public class SlingshotContentGet extends ContentGet
             String storeType = templateVars.get("store_type");
             String storeId = templateVars.get("store_id");
             String nodeId = templateVars.get("id");
-            
+
             // create the NodeRef and ensure it is valid
             if (storeType != null && storeId != null && nodeId != null)
             {
-                final NodeRef nodeRef = new NodeRef(storeType, storeId, nodeId);
+                // MNT-16380
+                String nodeIdTmp = nodeId;
+                if (nodeId.contains("/"))
+                {
+                    nodeIdTmp = nodeId.substring(0, nodeId.indexOf('/'));
+                }
+                final NodeRef nodeRef = new NodeRef(storeType, storeId, nodeIdTmp);
                 SiteInfo site = null;
                 try
                 {
@@ -108,6 +114,10 @@ public class SlingshotContentGet extends ContentGet
                     if (filename == null || filename.length() == 0)
                     {
                         filename = (String)this.nodeService.getProperty(nodeRef, ContentModel.PROP_NAME);
+                        if (nodeId.contains("/"))
+                        {
+                            filename = nodeId.substring(nodeId.lastIndexOf("/") + 1);
+                        }
                     }
                     final String strFilename = filename;
                     final String siteName = site.getShortName();

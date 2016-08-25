@@ -2124,6 +2124,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             String c1Id = nodeResp.getId();
             assertEquals(fId, nodeResp.getParentId());
 
+            response = getAll(getNodeChildrenUrl(fId), null, null, 200);
+            nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
+            assertEquals(1, nodes.size());
+
             obj = new Node();
             obj.setName("c2");
             obj.setNodeType(TYPE_CM_CONTENT);

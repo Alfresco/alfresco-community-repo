@@ -428,14 +428,30 @@ public class StreamContent extends AbstractWebScript
         {
             this.ref = new NodeRef(nodeRef);
         }
-        
+
         ObjectReference(StoreRef ref, String id)
         {
-            if (id.indexOf('/') != -1)
+            String[] relativePath = id.split("/");
+
+            // bug fix MNT-16380
+            // for using a relative path to a node id eg. 18cc-.../folder1/.../folderN/fileA.txt
+            // if only one slash we don't have a relative path
+            if (relativePath.length <= 2)
             {
-                id = id.substring(0, id.indexOf('/'));
+                if (id.indexOf('/') != -1)
+                {
+                    id = id.substring(0, id.indexOf('/'));
+                }
+                this.ref = new NodeRef(ref, id);
             }
-            this.ref = new NodeRef(ref, id);
+            else
+            {
+                String[] reference = new String[relativePath.length + 2];
+                reference[0] = ref.getProtocol();
+                reference[1] = ref.getIdentifier();
+                System.arraycopy(relativePath, 0, reference, 2, relativePath.length);
+                this.ref = repository.findNodeRef("node", reference);
+            }
         }
         
         ObjectReference(StoreRef ref, String[] path)

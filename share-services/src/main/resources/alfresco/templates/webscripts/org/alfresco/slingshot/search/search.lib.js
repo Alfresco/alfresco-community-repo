@@ -979,7 +979,7 @@ function getSearchResults(params)
                      else
                      {
                         var index = propValue.lastIndexOf(" ");
-                        formQuery += (first ? '' : ' AND ') + escapeQName(propName)
+                        formQuery += (first ? '' : ' AND ') + escapeQName(propName);
                         if (index > 0 && index < propValue.length - 1)
                         {
                            formQuery += ':(' + propValue + ')';

@@ -806,9 +806,9 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
     
-    protected Document unlock(String nodeId, String body) throws Exception
+    protected Document unlock(String nodeId) throws Exception
     {
-        HttpResponse response = post(getNodeOperationUrl(nodeId, "unlock"), body, null, 200);
+        HttpResponse response = post(getNodeOperationUrl(nodeId, "unlock"), null, null, 200);
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 

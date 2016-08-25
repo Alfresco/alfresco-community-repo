@@ -60,7 +60,6 @@ import org.alfresco.rest.api.Nodes;
 import org.alfresco.rest.api.model.LockInfo;
 import org.alfresco.rest.api.model.NodeTarget;
 import org.alfresco.rest.api.model.Site;
-import org.alfresco.rest.api.model.UnlockInfo;
 import org.alfresco.rest.api.nodes.NodesEntityResource;
 import org.alfresco.rest.api.tests.client.HttpResponse;
 import org.alfresco.rest.api.tests.client.PublicApiClient;
@@ -3610,7 +3609,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertFalse(node.getIsLocked());
 
         LockInfo lockInfo = new LockInfo();
-        lockInfo.setIncludeChildren(true);
         lockInfo.setTimeToExpire(60);
         lockInfo.setType("FULL");
         lockInfo.setLifetime("PERSISTENT");
@@ -3635,40 +3633,32 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         
         // Content update on a locked node
         updateTextFile(d1Id, "Updated text", null, 409);
+        unlock(d1Id);
         
-        // Test lock children
+        // Test lock file
         // create folder
         String folderAName = "folder" + RUNID + "_A";
         Folder folderA = createFolder(Nodes.PATH_MY, folderAName);
         String folderAId = folderA.getId();
 
-        // create 2 files in the folderA
-        createTextFile(folderAId, "content" + RUNID + "_A1", "A1 content");
-        createTextFile(folderAId, "content" + RUNID + "_A2", "A2 content");
-
+        // create a file in the folderA
+        Document dA1 = createTextFile(folderAId, "content" + RUNID + "_A1", "A1 content");
+        String dA1Id = dA1.getId();
+        
         lockInfo = new LockInfo();
-        lockInfo.setIncludeChildren(true);
         lockInfo.setTimeToExpire(60);
         lockInfo.setType("ALLOW_OWNER_CHANGES");
         lockInfo.setLifetime("EPHEMERAL");
 
-        // lock the folder
-        response = post(getNodeOperationUrl(folderAId, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
-        documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
+        // lock the file
+        post(getNodeOperationUrl(dA1Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
        
         params = Collections.singletonMap("include", "aspectNames,properties,isLocked");
-        response = getAll(getNodeChildrenUrl(folderAId), null, params, 200);
-        List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-        // test if children nodes are locked as well.
-        for (Node child : nodes)
-        {
-            assertNotNull(child.getProperties().get("cm:lockType"));
-            assertNotNull(child.getProperties().get("cm:lockOwner"));
-            assertTrue(child.getIsLocked());
-            
-            // note: these can be updated by the owner since the lock type is "ALLOW_OWNER_CHANGES"
-            updateTextFile(child.getId(), "Updated text", null, 200);
-        }
+        response = getSingle(URL_NODES, dA1Id, params, null, 200);
+        node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
+        assertTrue(node.getIsLocked());
+        // note: this can be updated by the owner since the lock type is "ALLOW_OWNER_CHANGES"
+        updateTextFile(node.getId(), "Updated text", null, 200);
         
         // Lock body properties - boundary values
         Folder folderB = createFolder(Nodes.PATH_MY, "folder" + RUNID + "_B");
@@ -3689,7 +3679,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // use admin for now (might be better to use a user with given WRITE permission)
         setRequestContext(networkAdmin);
         post(getNodeOperationUrl(f1d1Id, "lock"), EMPTY_BODY, null, 200);
-        unlock(f1d1Id, EMPTY_BODY);
+        unlock(f1d1Id);
         // -ve tests
 
         // Missing target node
@@ -3727,10 +3717,6 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Folder folderC = createFolder(Nodes.PATH_MY, "folder" + RUNID + "_C");
         String folderCId = folderC.getId();
         Map<String, String> body = new HashMap<>();
-        body.put("includeChildren", "true123");
-        post(getNodeOperationUrl(folderCId, "lock"), toJsonAsStringNonNull(body), null, 400);
-        
-        body = new HashMap<>();
         body.put("type", "FULL123");
         post(getNodeOperationUrl(folderCId, "lock"), toJsonAsStringNonNull(body), null, 400);
         
@@ -3748,13 +3734,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         
         //cleanup
         setRequestContext(user1); // all locks were made by user1
-        UnlockInfo unlockInfo = new UnlockInfo();
-        unlockInfo.setIncludeChildren(true);
-        unlock(folderId, toJsonAsStringNonNull(unlockInfo));
+        unlock(folderId);
         deleteNode(folderId);
-        unlock(folderAId, toJsonAsStringNonNull(unlockInfo));
         deleteNode(folderAId);
-        unlock(folderBId, EMPTY_BODY);
+        unlock(folderBId);
         deleteNode(folderBId);
         deleteNode(folderCId);
         deleteNode(folder1Id);
@@ -3783,10 +3766,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
        
        lock(d1Id, EMPTY_BODY);
 
-       UnlockInfo unlockInfo = new UnlockInfo();
-       unlockInfo.setIncludeChildren(true);
-
-       HttpResponse response = post(getNodeOperationUrl(d1Id, "unlock"), toJsonAsStringNonNull(unlockInfo), null, 200);
+       HttpResponse response = post(getNodeOperationUrl(d1Id, "unlock"), null, null, 200);
        Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
 
        assertEquals(d1Name, documentResp.getName());
@@ -3797,153 +3777,28 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
        lock(d1Id, EMPTY_BODY);
        // Users with admin rights can unlock nodes locked by other users.
        setRequestContext(networkAdmin);
-       post(getNodeOperationUrl(d1Id, "unlock"), EMPTY_BODY, null, 200);
+       post(getNodeOperationUrl(d1Id, "unlock"), null, null, 200);
        
        // -ve
        // Missing target node
-       post(getNodeOperationUrl("fakeId", "unlock"), EMPTY_BODY, null, 404);
+       post(getNodeOperationUrl("fakeId", "unlock"), null, null, 404);
        
        // Unlock by a user without permission
        lock(d1Id, EMPTY_BODY);
        setRequestContext(user2);
-       post(getNodeOperationUrl(d1Id, "unlock"), EMPTY_BODY, null, 403);
+       post(getNodeOperationUrl(d1Id, "unlock"), null, null, 403);
        
        setRequestContext(user1);
        //Unlock on a not locked node
-       post(getNodeOperationUrl(folderId, "unlock"), EMPTY_BODY, null, 403);
+       post(getNodeOperationUrl(folderId, "unlock"), null, null, 403);
        
-       // Invalid lock body values
-       setRequestContext(user1);
-       Folder folderC = createFolder(Nodes.PATH_MY, "folder" + RUNID + "_C");
-       String folderCId = folderC.getId();
-       lock(folderCId, EMPTY_BODY);
-       Map<String, String> body = new HashMap<>();
-       body.put("includeChildren", "true123");
-       post(getNodeOperationUrl(folderCId, "unlock"), toJsonAsStringNonNull(body), null, 400);
-       
-       body = new HashMap<>();
-       body.put("allowCheckedOut", "false123");
-       post(getNodeOperationUrl(folderCId, "unlock"), toJsonAsStringNonNull(body), null, 400);
-       
-       body = new HashMap<>();
-       body.put("invalid_property", "true");
-       post(getNodeOperationUrl(folderCId, "unlock"), toJsonAsStringNonNull(body), null, 400);
-
        // clean up
        setRequestContext(user1); // all locks were made by user1
        
-       unlockInfo = new UnlockInfo();
-       unlockInfo.setIncludeChildren(true);
-       unlock(d1Id, toJsonAsStringNonNull(unlockInfo));
+       unlock(d1Id);
        deleteNode(folderId);
-       unlock(folderCId, EMPTY_BODY);
-       deleteNode(folderCId);
    }
   
-   /**
-    * Tests lock and unlock with children
-    * <p>POST:</p>
-    * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/lock}</p>
-    * {@literal <host>:<port>/alfresco/api/-default-/public/alfresco/versions/1/nodes/<nodeId>/unlock}
-    */
-   @Test
-   public void testLockUnlockWithChildren() throws Exception
-   {
-       setRequestContext(user1);
-
-       // Test unlock children
-       // create folder
-       Folder folderA = createFolder(Nodes.PATH_MY, "folder" + RUNID + "_A");
-       String folderAId = folderA.getId();
-
-       // create 2 files in the folderA
-       String dA1Name = "content" + RUNID + "_A1";
-       Document dA1 = createTextFile(folderAId, dA1Name, "A1 content");
-       String dA1Id = dA1.getId();
-
-       String dA2Name = "content" + RUNID + "_A2";
-       Document dA2 = createTextFile(folderAId, dA2Name, "A2 content");
-       String dA2Id = dA2.getId();
-       
-       Map<String, String> params = Collections.singletonMap("include", "isLocked");
-       HttpResponse response = getSingle(URL_NODES, folderAId, params, null, 200);
-       Node node = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Node.class);
-       assertNull(node.getProperties());
-       assertFalse(node.getIsLocked());
-
-       params = Collections.singletonMap("include", "aspectNames,properties,isLocked");
-       response = getAll(getNodeChildrenUrl(folderAId), null, params, 200);
-       List<Node> nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-       // Check children nodes are not locked.
-       for (Node child : nodes)
-       {
-           assertNull(child.getProperties().get("cm:lockType"));
-           assertNull(child.getProperties().get("cm:lockOwner"));
-           assertFalse(child.getIsLocked());
-       }
-
-       // Lock the folder and children
-       LockInfo lockInfo = new LockInfo();
-       lockInfo.setIncludeChildren(true);
-       
-       response = post(getNodeOperationUrl(folderAId, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
-       Document documentResp = RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
-
-       assertEquals(folderAId, documentResp.getId());
-       assertNotNull(documentResp.getProperties().get("cm:lockType"));
-       assertNotNull(documentResp.getProperties().get("cm:lockOwner"));
-       assertNull(documentResp.getIsLocked());
-       
-       params = Collections.singletonMap("include", "aspectNames,properties,isLocked");
-       response = getAll(getNodeChildrenUrl(folderAId), null, params, 200);
-       nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-       // Check if children nodes are locked as well.
-       for (Node child : nodes)
-       {
-           assertNotNull(child.getProperties().get("cm:lockType"));
-           assertNotNull(child.getProperties().get("cm:lockOwner"));
-           assertTrue(child.getIsLocked());
-       }
-       
-       // Unlock folder and children
-       UnlockInfo unlockInfo = new UnlockInfo();
-       unlockInfo.setIncludeChildren(true);
-       post(getNodeOperationUrl(folderAId, "unlock"), toJsonAsStringNonNull(unlockInfo), null, 200);
-
-       params = Collections.singletonMap("include", "aspectNames,properties,isLocked");
-       response = getAll(getNodeChildrenUrl(folderAId), null, params, 200);
-       nodes = RestApiUtil.parseRestApiEntries(response.getJsonResponse(), Node.class);
-       // Check if children nodes are unlocked as well.
-       for (Node child : nodes)
-       {
-           assertNull(child.getProperties().get("cm:lockType"));
-           assertNull(child.getProperties().get("cm:lockOwner"));
-           assertFalse(child.getIsLocked());
-       }
-       
-       // One of the children is not locked
-       // FolderA   locked
-       //     - dA1 locked
-       //     - dA2 unlocked
-       lock(folderAId, EMPTY_BODY);
-       lock(dA1Id, EMPTY_BODY);
-       post(getNodeOperationUrl(folderAId, "unlock"), toJsonAsStringNonNull(unlockInfo), null, 200);
-       
-       // Parent unlocked, children locked
-       // FolderA   unlocked
-       //     - dA1 locked
-       //     - dA2 locked
-       lock(dA2Id, EMPTY_BODY);
-       lock(dA1Id, EMPTY_BODY);
-       // Unlock on not locked parent
-       post(getNodeOperationUrl(folderAId, "unlock"), toJsonAsStringNonNull(unlockInfo), null, 403);
-       
-       // Clean up
-       unlock(dA1Id, EMPTY_BODY);
-       unlock(dA2Id, EMPTY_BODY);
-       deleteNode(folderAId);
-   }
-
    @Override
    public String getScope()
    {

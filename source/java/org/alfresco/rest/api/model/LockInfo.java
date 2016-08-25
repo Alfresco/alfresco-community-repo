@@ -38,7 +38,6 @@ import org.codehaus.jackson.annotate.JsonIgnoreProperties;
 public class LockInfo
 {
     private Integer timeToExpire;
-    private Boolean includeChildren;
     private LockType2 type;
     private Lifetime lifetime;
     
@@ -77,16 +76,6 @@ public class LockInfo
         return timeToExpire;
     }
 
-    public void setIncludeChildren(Boolean includeChildren)
-    {
-        this.includeChildren = includeChildren;
-    }
-    
-    public Boolean getIncludeChildren()
-    {
-        return includeChildren;
-    }
-    
     public LockType getMappedType()
     {
         return type != null ? type.getType() : null;
@@ -116,7 +105,6 @@ public class LockInfo
     public String toString()
     {
         final StringBuilder sb = new StringBuilder("LockInfo{");
-        sb.append("includeChildren='").append(includeChildren).append('\'');
         sb.append(", timeToExpire='").append(timeToExpire).append('\'');
         sb.append(", type='").append(type).append('\'');
         sb.append(", lifetime='").append(lifetime).append('\'');

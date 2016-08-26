@@ -2963,6 +2963,11 @@ public class NodesImpl implements Nodes
             throw new PermissionDeniedException("Current user doesn't have permission to lock node " + nodeId);
         }
 
+        if (!nodeMatches(nodeRef, Collections.singleton(ContentModel.TYPE_CONTENT), null, false))
+        {
+            throw new InvalidArgumentException("NodeId of content is expected: " + nodeRef.getId());
+        }
+
         lockInfo = validateLockInformation(lockInfo);
         lockService.lock(nodeRef, lockInfo.getMappedType(), lockInfo.getTimeToExpire(), lockInfo.getLifetime());
         

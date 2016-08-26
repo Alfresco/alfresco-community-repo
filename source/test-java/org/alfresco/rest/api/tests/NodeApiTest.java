@@ -3625,12 +3625,13 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         assertEquals(LockType.READ_ONLY_LOCK.toString(), documentResp.getProperties().get("cm:lockType"));
         assertNotNull(documentResp.getProperties().get("cm:lockOwner"));
         assertNull(documentResp.getIsLocked());
-        
+
+        unlock(d1Id);
         // Empty lock body, the default values are used
-        post(getNodeOperationUrl(folderId, "lock"), EMPTY_BODY, null, 200);
-        
+        post(getNodeOperationUrl(d1Id, "lock"), EMPTY_BODY, null, 200);
+
         // Lock on already locked node
-        post(getNodeOperationUrl(folderId, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
+        post(getNodeOperationUrl(d1Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
         
         // Test delete on a folder which contains a locked node - NodeLockedException
         deleteNode(folderId, true, 409);
@@ -3665,12 +3666,12 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         updateTextFile(node.getId(), "Updated text", null, 200);
         
         // Lock body properties - boundary values
-        Folder folderB = createFolder(Nodes.PATH_MY, "folder" + RUNID + "_B");
-        String folderBId = folderB.getId();
+        Document dB1 = createTextFile(folderAId, "content" + RUNID + "_dB1", "dB1 content");
+        String dB1Id = dB1.getId();
         
         lockInfo = new LockInfo();
         lockInfo.setTimeToExpire(-100); // values lower than 0 are considered as no expiry time
-        post(getNodeOperationUrl(folderBId, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
+        post(getNodeOperationUrl(dB1Id, "lock"), toJsonAsStringNonNull(lockInfo), null, 200);
         
         // Lock node by a different user than the owner
         setRequestContext(user1);
@@ -3701,7 +3702,7 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         post(getNodeOperationUrl(ddNodeId, "lock"), toJsonAsStringNonNull(lockInfo), null, 403);
 
         // Lock node already locked by another user - UnableToAquireLockException
-        post(getNodeOperationUrl(folderId, "lock"), EMPTY_BODY, null, 422);
+        post(getNodeOperationUrl(dB1Id, "lock"), EMPTY_BODY, null, 422);
         
         // Lock node without permission (node created by user 1 in the Home folder)
         setRequestContext(user1);
@@ -3720,29 +3721,35 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         
         Folder folderC = createFolder(Nodes.PATH_MY, "folder" + RUNID + "_C");
         String folderCId = folderC.getId();
+
+        Document dC1 = createTextFile(folderCId, "content" + RUNID + "_dC1", "dC1 content");
+        String dC1Id = dC1.getId();
+
         Map<String, String> body = new HashMap<>();
         body.put("type", "FULL123");
-        post(getNodeOperationUrl(folderCId, "lock"), toJsonAsStringNonNull(body), null, 400);
+        post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
         
         body = new HashMap<>();
         body.put("lifetime", "PERSISTENT123");
-        post(getNodeOperationUrl(folderCId, "lock"), toJsonAsStringNonNull(body), null, 400);
+        post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
         
         body = new HashMap<>();
         body.put("timeToExpire", "NaN");
-        post(getNodeOperationUrl(folderCId, "lock"), toJsonAsStringNonNull(body), null, 400);
+        post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
         
         body = new HashMap<>();
         body.put("invalid_property", "true");
-        post(getNodeOperationUrl(folderCId, "lock"), toJsonAsStringNonNull(body), null, 400);
+        post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
+
+        // Invalid lock of a folder
+        post(getNodeOperationUrl(folderId, "lock"), toJsonAsStringNonNull(lockInfo), null, 400);
         
         //cleanup
         setRequestContext(user1); // all locks were made by user1
-        unlock(folderId);
+        unlock(dB1Id);
+        deleteNode(dB1Id);
         deleteNode(folderId);
         deleteNode(folderAId);
-        unlock(folderBId);
-        deleteNode(folderBId);
         deleteNode(folderCId);
         deleteNode(folder1Id);
         deleteNode(folder2Id);

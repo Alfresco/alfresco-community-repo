@@ -70,7 +70,6 @@ import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.service.transaction.TransactionService;
 import org.alfresco.test_category.BaseSpringTestsCategory;
-import org.alfresco.test_category.OwnJVMTestsCategory;
 import org.alfresco.util.BaseSpringTest;
 import org.alfresco.util.GUID;
 import org.alfresco.util.PropertyMap;
@@ -1212,7 +1211,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
     }
 
     /**
-     * MNT-2641 
+     * MNT-2641 (however, see also REPO-1108)
      */
     public void testDeleteUpdateOriginalOfCheckedOutDocument()
     {
@@ -1226,28 +1225,15 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         NodeRef workingCopy = this.cociService.checkout(orig);
         assertNotNull(workingCopy);
         
-        boolean thrown = false;
-        
-        // try to delete original, that has working copy - must be denied
-        try
-        {
-            fileFolderService.delete(orig);
-        }
-        catch (NodeLockedException e)
-        {
-            thrown = true;
-        }
-        assertTrue("No one should be able to delete the original", thrown);
-        
         // creating a properties
-        final Map<QName, Serializable> propsToPersist = new HashMap<QName, Serializable>(3);
+        final Map<QName, Serializable> propsToPersist = new HashMap<>(3);
         MLText value = new MLText(Locale.ENGLISH, GUID.generate() + "");
         propsToPersist.put(ContentModel.PROP_DESCRIPTION, value);
         value = new MLText(Locale.ENGLISH, null);
         propsToPersist.put(ContentModel.PROP_TITLE, value);
         
         // try to modify properties of original, that has working copy - must be denied
-        thrown = false;
+        boolean thrown = false;
         try
         {
             nodeService.addProperties(orig, propsToPersist);
@@ -1290,7 +1276,7 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         }
         assertTrue(thrown);
 
-        // try to delete original, that has working copy - must be denied
+        // try to modify properties of original, that has working copy - must be denied
         thrown = false;
         try
         {
@@ -1316,10 +1302,13 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
             thrown = true;
         }
         assertTrue(thrown);
+        
+        // if user has permission, they can delete (see also testDeleteAndRestore)
+        fileFolderService.delete(orig);
     }
 
     /**
-     * MNT-2641 
+     * MNT-2641
      * The working copy delete is equivalent to "cancelCheckout". This should fail for everyone except the lock owner.
      */
     public void testDeleteOfWorkingCopy()
@@ -1473,6 +1462,84 @@ public class CheckOutCheckInServiceImplTest extends BaseSpringTest
         lockService.lock(wc, LockType.WRITE_LOCK, 60*60);
         lockService.unlock(wc);
         securityCOCIService.cancelCheckout(wc);
+    }
+
+    // REPO-1108 / ALF-21645 (see also MNT-15855)
+    public void testDeleteAndRestore()
+    {
+        authenticationComponent.setSystemUserAsCurrentUser();
+
+        StoreRef spacesStoreRef = StoreRef.STORE_REF_WORKSPACE_SPACESSTORE;
+        NodeRef spacesRootNodeRef = nodeService.getRootNode(spacesStoreRef);
+        NodeRef archiveRootNodeRef = nodeService.getStoreArchiveNode(spacesStoreRef);
+
+        permissionService.setPermission(spacesRootNodeRef, userName, PermissionService.ALL_PERMISSIONS, true);
+
+        authenticationComponent.setCurrentUser(userName);
+
+        // create folder and some content within the the folder
+        NodeRef folderRef = createFolder(spacesRootNodeRef, "testDeleteAndRestore-folder-"+System.currentTimeMillis());
+        NodeRef contentRef = createContent("testDeleteAndRestore-content", folderRef);
+        
+        String initialText = "initial text";
+        ContentWriter contentWriter = contentService.getWriter(contentRef, ContentModel.PROP_CONTENT, true);
+        contentWriter.setMimetype("text/plain");
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.putContent(initialText);
+
+        assertFalse(nodeService.hasAspect(contentRef, ContentModel.ASPECT_CHECKED_OUT));
+
+        // checkout content node
+        NodeRef workingCopyRef = cociService.checkout(contentRef, folderRef, ContentModel.ASSOC_CHILDREN, QName.createQName("workingCopy"));
+    
+        assertNotNull(workingCopyRef);
+        assertTrue(nodeService.hasAspect(workingCopyRef, ContentModel.ASPECT_WORKING_COPY));
+        assertTrue(nodeService.hasAspect(workingCopyRef, ContentModel.ASPECT_COPIEDFROM));
+        assertTrue(nodeService.hasAspect(contentRef, ContentModel.ASPECT_CHECKED_OUT));
+
+        String updatedText = "updated text";
+        contentWriter = contentService.getWriter(workingCopyRef, ContentModel.PROP_CONTENT, true);
+        contentWriter.setMimetype("text/plain");
+        contentWriter.setEncoding("UTF-8");
+        contentWriter.putContent(updatedText);
+
+        assertTrue(nodeService.exists(folderRef));
+        assertTrue(nodeService.exists(contentRef));
+        assertTrue(nodeService.exists(workingCopyRef));
+    
+        // delete folder
+        nodeService.deleteNode(folderRef);
+
+        assertFalse(nodeService.exists(folderRef));
+        assertFalse(nodeService.exists(contentRef));
+        assertFalse(nodeService.exists(workingCopyRef));
+
+        // restore folder
+        NodeRef archiveNodeRef = new NodeRef(archiveRootNodeRef.getStoreRef(), folderRef.getId());
+        nodeService.restoreNode(archiveNodeRef, null, null, null);
+
+        assertTrue(nodeService.exists(folderRef));
+        assertTrue(nodeService.exists(contentRef));
+        assertTrue(nodeService.exists(workingCopyRef));
+
+        assertTrue(nodeService.hasAspect(workingCopyRef, ContentModel.ASPECT_WORKING_COPY));
+        assertTrue(nodeService.hasAspect(workingCopyRef, ContentModel.ASPECT_COPIEDFROM));
+        assertTrue(nodeService.hasAspect(contentRef, ContentModel.ASPECT_CHECKED_OUT));
+
+        assertEquals(initialText, contentService.getReader(contentRef, ContentModel.PROP_CONTENT).getContentString());
+        assertEquals(updatedText, contentService.getReader(workingCopyRef, ContentModel.PROP_CONTENT).getContentString());
+        
+        // belts-and-braces - also show that we can move a folder with checked-out item
+        NodeRef folderRef2 = createFolder(spacesRootNodeRef, "testDeleteAndRestore-folder2-"+System.currentTimeMillis());
+        
+        nodeService.moveNode(folderRef, folderRef2, ContentModel.ASSOC_CONTAINS, ContentModel.ASSOC_CONTAINS);
+
+        // checkin content node (working copy)
+        cociService.checkin(workingCopyRef, null);
+
+        assertFalse(nodeService.exists(workingCopyRef));
+
+        assertEquals(updatedText, contentService.getReader(contentRef, ContentModel.PROP_CONTENT).getContentString());
     }
     
     private NodeRef createFolder(NodeRef rootNodeRef, String fName)

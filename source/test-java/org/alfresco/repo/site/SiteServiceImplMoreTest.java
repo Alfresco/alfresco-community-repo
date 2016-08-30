@@ -883,18 +883,17 @@ public class SiteServiceImplMoreTest
     }
 
     /**
-     * MNT-16043: Site Owner and Site Manager can delete working copy, 
-     * Site Collaborator cannot
-     * 
+     * MNT-16043: Site Owner and Site Manager can delete working copy, Site Collaborator cannot
+     *
      * @throws Exception
      */
     @Test
-    public void testSiteRolesPersmissionsToDeleteWorkingCopy() throws Exception
+    public void testSiteRolesPermissionsToDeleteWorkingCopy() throws Exception
     {
         final String userSiteOwner = "UserSiteOwner";
         final String userSiteManager = "UserSiteManager";
         final String userSiteCollaborator = "UserSiteCollaborator";
-        final String userPrefix = "delete-locked-file";
+        final String userPrefix = "delete-working-copy-file";
 
         // create the users
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
@@ -929,71 +928,13 @@ public class SiteServiceImplMoreTest
         final FileInfo fileInfo3 = FILE_FOLDER_SERVICE.create(siteContainer, "fileInfo3.txt", ContentModel.TYPE_CONTENT);
         ContentWriter writer3 = FILE_FOLDER_SERVICE.getWriter(fileInfo2.getNodeRef());
         writer3.putContent(dummyContent);
-
-        // Site Manager - can delete working copy but cannot delete the original
-        // locked file
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                // lock a file as userOwner
-                NodeRef workingCopy = COCI_SERVICE.checkout(fileInfo1.getNodeRef());
-                assertNotNull(workingCopy);
-
-                // make userSiteManager a member of the site
-                SITE_SERVICE.setMembership(siteShortName, userSiteManager, SiteModel.SITE_MANAGER);
-
-                // make sure we are running as userSiteManager
-                AUTHENTICATION_COMPONENT.setCurrentUser(userSiteManager);
-
-                // try delete locked file by owner
-                try
-                {
-                    NODE_SERVICE.deleteNode(fileInfo1.getNodeRef());
-                    fail("Cannot perform operation since the node" + fileInfo1.getNodeRef() + " is locked");
-                }
-                catch (NodeLockedException ex)
-                {
-                    // do nothing - is expected
-                }
-
-                // simulate delete from Share - delete the working copy
-                NODE_SERVICE.deleteNode(workingCopy);
-
-                return null;
-            }
-        });
-
-        // Site Owner - can delete working copy but cannot delete the original
-        // locked file
-        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
-        {
-            public Void execute() throws Throwable
-            {
-                AUTHENTICATION_COMPONENT.setCurrentUser(userSiteOwner);
-                // lock a file as userOwner
-                NodeRef workingCopy = COCI_SERVICE.checkout(fileInfo2.getNodeRef());
-                assertNotNull(workingCopy);
-                try
-                {
-                    NODE_SERVICE.deleteNode(fileInfo2.getNodeRef());
-                    fail("Cannot perform operation since the node" + fileInfo1.getNodeRef() + " is locked");
-                }
-                catch (NodeLockedException ex)
-                {
-                    // do nothing- expected
-                }
-                NODE_SERVICE.deleteNode(workingCopy);
-                return null;
-            }
-        });
-
+        
         // Site COLLABORATOR - cannot delete working copy or original file
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {
             public Void execute() throws Throwable
             {
-                // lock a file as userOwner
+                // checkout file again as userOwner
                 AUTHENTICATION_COMPONENT.setCurrentUser(userSiteOwner);
                 NodeRef workingCopy = COCI_SERVICE.checkout(fileInfo3.getNodeRef());
                 assertNotNull(workingCopy);
@@ -1001,20 +942,10 @@ public class SiteServiceImplMoreTest
                 // make userSiteCollaborator a member of the site
                 SITE_SERVICE.setMembership(siteShortName, userSiteCollaborator, SiteModel.SITE_COLLABORATOR);
 
-                // make sure we are running as userSiteManager
+                // make sure we are running as userSiteCollaborator
                 AUTHENTICATION_COMPONENT.setCurrentUser(userSiteCollaborator);
-
-                try
-                {
-                    NODE_SERVICE.deleteNode(fileInfo3.getNodeRef());
-                    fail("You do not have the appropriate permissions to perform this operation");
-                }
-                catch (AccessDeniedException ex)
-                {
-                    // do nothing - is expected
-                }
-
-                // try delete locked file by owner
+                
+                // try to delete working copy file
                 try
                 {
                     NODE_SERVICE.deleteNode(workingCopy);
@@ -1025,11 +956,77 @@ public class SiteServiceImplMoreTest
                     // do nothing - is expected
                 }
 
+                // try to delete original checked-out
+                try
+                {
+                    NODE_SERVICE.deleteNode(fileInfo3.getNodeRef());
+                    fail("You do not have the appropriate permissions to perform this operation");
+                }
+                catch (AccessDeniedException ex)
+                {
+                    // do nothing - is expected
+                }
+
+                return null;
+            }
+        });
+        
+        // Site Owner - can delete working copy (or original)
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // checkout a file as userOwner
+                AUTHENTICATION_COMPONENT.setCurrentUser(userSiteOwner);
+                NodeRef workingCopy = COCI_SERVICE.checkout(fileInfo2.getNodeRef());
+                assertNotNull(workingCopy);
+                
+                NODE_SERVICE.deleteNode(workingCopy);
+
+                // checkout file again as userOwner
+                workingCopy = COCI_SERVICE.checkout(fileInfo2.getNodeRef());
+                assertNotNull(workingCopy);
+
+                NODE_SERVICE.deleteNode(fileInfo2.getNodeRef());
+                
+                return null;
+            }
+        });
+
+        // Site Manager - can delete working copy (or original)
+        TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
+        {
+            public Void execute() throws Throwable
+            {
+                // checkout a file as userOwner
+                AUTHENTICATION_COMPONENT.setCurrentUser(userSiteOwner);
+                NodeRef workingCopy = COCI_SERVICE.checkout(fileInfo1.getNodeRef());
+                assertNotNull(workingCopy);
+
+                // make userSiteManager a member of the site
+                SITE_SERVICE.setMembership(siteShortName, userSiteManager, SiteModel.SITE_MANAGER);
+
+                // make sure we are running as userSiteManager
+                AUTHENTICATION_COMPONENT.setCurrentUser(userSiteManager);
+                
+                NODE_SERVICE.deleteNode(workingCopy);
+
+                // checkout file again as userOwner
+                AUTHENTICATION_COMPONENT.setCurrentUser(userSiteOwner);
+                workingCopy = COCI_SERVICE.checkout(fileInfo1.getNodeRef());
+                assertNotNull(workingCopy);
+
+                // make sure we are running as userSiteManager
+                AUTHENTICATION_COMPONENT.setCurrentUser(userSiteManager);
+
+                NODE_SERVICE.deleteNode(fileInfo1.getNodeRef());
+
                 return null;
             }
         });
 
         AUTHENTICATION_COMPONENT.setCurrentUser(userSiteOwner);
+        
         // Delete the site
         TRANSACTION_HELPER.doInTransaction(new RetryingTransactionCallback<Void>()
         {
@@ -1041,7 +1038,6 @@ public class SiteServiceImplMoreTest
                 return null;
             }
         });
-
     }
 
     private void assertThatArchivedNodeExists(NodeRef originalNodeRef, String failureMsg)

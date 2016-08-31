@@ -1,0 +1,225 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE beans PUBLIC '-//SPRING//DTD BEAN//EN' 'http://www.springframework.org/dtd/spring-beans.dtd'>
+
+<beans>
+
+   <bean id="commandListRootDir" class="org.alfresco.util.exec.RuntimeExec" >
+      <property name="commandsAndArguments">
+          <map>
+              <entry key="Windows.*">
+                  <list>
+                      <value>dir</value>
+                  </list>
+              </entry>
+              <entry key=".*">
+                  <list>
+                      <value>ls</value>
+                  </list>
+              </entry>
+          </map>
+      </property>
+      <property name="processProperties">
+          <map>
+              <entry key="env.prop1">
+                  <value>value1</value>
+              </entry>
+              <entry key="env.prop2">
+                  <value>null</value>
+              </entry>
+              <entry key="env.prop3">
+                  <value>${env.prop3.unsubstituted}</value>
+              </entry>
+          </map>
+      </property>
+      <property name="processDirectory">
+          <value>.</value>
+      </property>
+      <property name="waitForCompletion">
+          <value>true</value>
+      </property>
+      <property name="errorCodes">
+          <value>1, 2</value>
+      </property>
+   </bean>
+
+   <bean id="commandSplitArguments" class="org.alfresco.util.exec.RuntimeExec" >
+      <property name="commandsAndArguments">
+          <map>
+              <entry key=".*">
+                  <list>
+                      <value>dir</value>
+                      <value>SPLIT:${paths}</value>
+                  </list>
+              </entry>
+          </map>
+      </property>
+      <property name="defaultProperties">
+          <props>
+              <prop key="paths">. ..</prop>
+          </props>
+      </property>
+      <property name="errorCodes">
+          <value>1, 2</value>
+      </property>
+   </bean>
+
+   <bean id="commandSplitArgumentsAsSingleValue" class="org.alfresco.util.exec.RuntimeExec" >
+      <property name="commandsAndArguments">
+          <map>
+              <entry key=".*">
+                  <list>
+                      <value>SPLIT: dir . ..</value>
+                  </list>
+              </entry>
+          </map>
+      </property>
+      <property name="errorCodes">
+          <value>1, 2</value>
+      </property>
+   </bean>
+
+   <!-- Checks that the deprecated setCommandMap gives an appropriate warning.  It should still work. -->
+   <bean id="commandCheckDeprecatedSetCommandMap" class="org.alfresco.util.exec.RuntimeExec" >
+      <property name="commandMap">
+          <map>
+              <entry key="Windows.*">
+                  <value>dir c:</value>
+              </entry>
+              <entry key=".*">
+                  <value>ls /</value>
+              </entry>
+          </map>
+      </property>
+      <property name="waitForCompletion">
+          <value>true</value>
+      </property>
+      <property name="errorCodes">
+          <value>1</value>
+      </property>
+   </bean>
+
+   <bean id="commandRemoveDirectory" class="org.alfresco.util.exec.RuntimeExec" >
+      <property name="commandsAndArguments">
+          <map>
+              <entry key="Windows.*">
+                  <list>
+                      <value>cmd</value>
+                      <value>/C</value>
+                      <value>rmdir</value>
+                      <value>${dir}</value>
+                  </list>
+              </entry>
+              <entry key="Linux">
+                  <list>
+                      <value>rm</value>
+                      <value>-rf</value>
+                      <value>${dir}</value>
+                  </list>
+              </entry>
+              <entry key="Mac OS X">
+                  <list>
+                      <value>rm</value>
+                      <value>-rf</value>
+                      <value>${dir}</value>
+                  </list>
+              </entry>
+              <entry key=".*">
+                  <list>
+                      <value>wibble</value>
+                  </list>
+              </entry>
+          </map>
+      </property>
+      <property name="defaultProperties">
+          <props>
+              <prop key="dir">dir RuntimeExecBootstrapBeanTest</prop>
+          </props>
+      </property>
+      <property name="errorCodes">
+          <value>1, 2</value>
+      </property>
+   </bean>
+
+   <!-- A bean to make sure that the startup doesn't fall over -->
+   <bean id="commandFailureGuaranteed" class="org.alfresco.util.exec.RuntimeExec" >
+      <property name="commandsAndArguments">
+          <map>
+              <entry key=".*">
+                  <list>
+                      <value>wibble</value>
+                  </list>
+              </entry>
+          </map>
+      </property>
+      <property name="errorCodes">
+          <value>666</value>
+      </property>
+   </bean>
+
+   <bean id="testBootstrapCommands" class="org.alfresco.util.exec.RuntimeExecBootstrapBean" >
+      <property name="startupCommands">
+          <list>
+              <ref bean="commandRemoveDirectory" />
+          </list>
+      </property>
+   </bean>
+	
+   <bean id="testShutdownCommands" class="org.alfresco.util.exec.RuntimeExecShutdownBean" >
+      <property name="shutdownCommands">
+          <list>
+              <ref bean="commandRemoveDirectory" />
+          </list>
+      </property>
+   </bean>
+	
+   <!-- A bean to make sure that never-ending processes can be handled -->
+   <bean id="commandNeverEnding" class="org.alfresco.util.exec.RuntimeExec" >
+      <property name="commandsAndArguments">
+          <map>
+              <entry key="Windows.*">
+                  <list>
+                      <value>cmd</value>
+                  </list>
+              </entry>
+              <entry key=".*">
+                  <list>
+                      <value>ls</value>
+                  </list>
+              </entry>
+          </map>
+      </property>
+      <property name="waitForCompletion">
+          <value>false</value>
+      </property>
+      <property name="errorCodes">
+          <value>1</value>
+      </property>
+   </bean>
+
+   <!-- A bean to do a simple directory listing, but against a directory containing a space -->
+   <bean id="commandListGivenDirectory" class="org.alfresco.util.exec.RuntimeExec" >
+      <property name="commandsAndArguments">
+          <map>
+              <entry key="Windows.*">
+                  <list>
+                      <value>dir</value>
+                      <value>${dir}</value>
+                  </list>
+              </entry>
+              <entry key=".*">
+                  <list>
+                      <value>ls</value>
+                      <value>${dir}</value>
+                  </list>
+              </entry>
+          </map>
+      </property>
+      <property name="waitForCompletion">
+          <value>true</value>
+      </property>
+      <property name="errorCodes">
+          <value>1</value>
+      </property>
+   </bean>
+
+</beans>

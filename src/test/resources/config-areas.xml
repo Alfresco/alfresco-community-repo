@@ -1,0 +1,13 @@
+<alfresco-config area="test-area">
+   
+   <config evaluator="string-compare" condition="Area Specific Config">
+      <parent-item>
+         <child-item>value</child-item>
+      </parent-item>
+   </config>
+   
+   <config evaluator="string-compare" condition="Restricted Area Test">
+      <restricted>A value</restricted>
+   </config>
+   
+</alfresco-config>

@@ -1,0 +1,140 @@
+<alfresco-config>
+   <plug-ins>
+      <element-readers>
+         <element-reader element-name="forms" class="org.alfresco.web.config.forms.FormsElementReader"/>
+      </element-readers>
+   </plug-ins>
+
+   <config>
+      <forms>
+	      <default-controls>
+	         <type name="d:text" template="org/alfresco/forms/controls/textfield.ftl">
+	            <control-param name="size">50</control-param>
+	         </type>
+	         <type name="d:boolean" template="org/alfresco/forms/controls/checkbox.ftl" />
+	         <type name="association" template="org/alfresco/forms/controls/association-picker.ftl" />
+	         <type name="abc" template="org/alfresco/abc.ftl">
+	            <control-param name="a">1</control-param>
+	            <control-param name="b">Hello</control-param>
+	            <control-param name="c">Greetings</control-param>
+	            <control-param name="d"></control-param>
+	         </type>
+	      </default-controls>
+	      <constraint-handlers>
+	         <constraint type="MANDATORY" validation-handler="Alfresco.forms.validation.mandatory" event="blur" />
+	         <constraint type="REGEX" validation-handler="Alfresco.forms.validation.regexMatch" />
+	         <constraint type="NUMERIC" validation-handler="Alfresco.forms.validation.numericMatch"
+	                     message="Test Message" message-id="regex_error" />
+	      </constraint-handlers>
+      </forms>
+   </config>
+   
+   <config evaluator="string-compare" condition="content">
+      <forms>
+	      <form submission-url="submission/url">
+	         <view-form template="/view/template" />
+	         <edit-form template="/edit/template" />
+	         <create-form template="/create/template"/>
+	         <field-visibility>
+	            <show id="name" />
+                <show id="title" for-mode="view, create" />
+	         </field-visibility>
+	         <appearance>
+	            <set id="details" appearance="fieldset" />
+	            <set id="user" parent="details" appearance="panel" template="custom-layout.ftl" />
+	            
+	            <field id="name" label="Name" label-id="field_label_name" read-only="true" set="details"
+	                     help="This is the name of the node" help-id="field_help_name" >
+	               <control template="alfresco/extension/formcontrols/my-name.ftl">
+	                  <control-param name="foo">bar</control-param>
+	               </control>
+	               <constraint-handlers>
+		               <constraint type="REGEX" message="The name can not contain the character '{0}'"
+		                                                    message-id="field_error_name" />
+		               <constraint type="LIMIT" message="limit exceeded" message-id="" />
+	               </constraint-handlers>
+	            </field>
+	            <field id="title" label="My Title" set="details" />
+	            <field id="username" set="user" />
+	            <field id="quota" set="user" /> 
+	            <field id="fieldWithMixedCtrlParams" >
+	               <control template="test.ftl">
+	                  <control-param name="one">un</control-param>
+	                  <control-param name="two">deux</control-param>
+	                  <!-- This third param intentionally has no value -->
+	                  <control-param name="three"></control-param>
+	                  <control-param name="four">quatre</control-param>
+	               </control>
+	            </field>
+	         </appearance>
+	      </form>
+      </forms>
+   </config>
+
+   <config evaluator="string-compare" condition="set_membership">
+      <forms>
+          <form>
+             <field-visibility>
+                <!-- These fields are in the default set -->
+                <show id="all" />
+                <show id="c" for-mode="create" />
+                <show id="e" for-mode="edit" />
+                <show id="v" for-mode="view" />
+                <show id="ce" for-mode="create, edit" />
+                <show id="cev" for-mode="create, edit, view" />
+                <!-- These fields are in a non-default set -->
+                <show id="all_set" />
+                <show id="c_set" for-mode="create" />
+                <show id="e_set" for-mode="edit" />
+                <show id="v_set" for-mode="view" />
+                <show id="ce_set" for-mode="create, edit" />
+                <show id="cev_set" for-mode="create, edit, view" />
+             </field-visibility>
+             <appearance>
+                <set id="user" appearance="tabX" label="User Details" label-id="user-details" />
+                <!-- Implicit default set -->
+                <field id="all" />
+                <field id="c" />
+                <field id="e" />
+                <field id="v" />
+                <field id="ce" />
+                <!-- Explicit default set - this assumes default set has an ID of "" -->
+                <field id="cev" set="" />
+                
+                <!-- Non-default set -->
+                <field id="all_set" set="user" />
+                <field id="c_set" set="user" />
+                <field id="e_set" set="user" />
+                <field id="v_set" set="user" />
+                <field id="ce_set" set="user" />
+                <field id="cev_set" set="user" />
+             </appearance>
+          </form>
+      </forms>
+   </config>
+   
+   <config evaluator="string-compare" condition="form_without_sets">
+      <!-- This form has no explicit sets declared. Therefore all fields
+           are members of the default set. -->
+      <forms>
+          <form>
+             <field-visibility>
+                <show id="all" />
+                <show id="c" for-mode="create" />
+                <show id="e" for-mode="edit" />
+                <show id="v" for-mode="view" />
+                <show id="ce" for-mode="create, edit" />
+                <show id="cev" for-mode="create, edit, view" />
+             </field-visibility>
+             <appearance>
+                <field id="all" />
+                <field id="c" />
+                <field id="e" />
+                <field id="v" />
+                <field id="ce" />
+                <field id="cev" set="" />
+             </appearance>
+          </form>
+      </forms>
+   </config>
+</alfresco-config>

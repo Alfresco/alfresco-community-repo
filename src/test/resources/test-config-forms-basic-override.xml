@@ -1,0 +1,99 @@
+<alfresco-config>
+   <config>
+      <forms>
+	      <default-controls>
+	         <type name="d:long" template="/form-controls/mytextfield.ftl" />
+	         <type name="d:text" template="/form-controls/mytextfield.ftl">
+	            <control-param name="size">999</control-param>
+	         </type>
+	         <type name="d:test" template="/form-controls/test.ftl">
+	            <control-param name="a">Goodbye</control-param>
+	            <control-param name="b"></control-param>
+	            <control-param name="c">This is new</control-param>
+	         </type>
+	      </default-controls>
+	      <constraint-handlers>
+	         <constraint type="MANDATORY" validation-handler="Alfresco.forms.validation.mandatory" event="blur" />
+	         <constraint type="REGEX" validation-handler="Alfresco.forms.validation.regexMatch" />
+	         <constraint type="NUMERIC" validation-handler="Alfresco.forms.validation.numericMatch"
+	                     message="Test Message override" message-id="regex_error" />
+	      </constraint-handlers>
+         <!-- Add more dependencies -->
+         <dependencies>
+            <css src="/css/path/3" />
+            <js src="/js/path/3" />
+         </dependencies>
+      </forms>
+   </config>
+   
+   <config evaluator="string-compare" condition="my:example">
+      <forms>
+	      <form submission-url="submit/default/form">
+	         <field-visibility>
+	            <show id="cm:name" force="true"/>
+	            <show id="my:text" />
+	            <show id="my:mltext" />
+	         </field-visibility>
+	         <appearance>
+	            <field id="cm:name">
+	               <control template="/form-controls/mytextfield.ftl" />
+	            </field>
+	            <field id="my:text" label="Custom Text" description="This is a custom model text field">
+	               <control>
+	                  <control-param name="width">500px</control-param>
+	                  <control-param name="foo">bar</control-param>
+	               </control>
+	            </field>
+	            <field id="my:duplicate" label="Duplicate" read-only="false" help="This is a test for duplicate props and assocs" />
+	            <field id="my:date" label="Custom Date" description-id="form.field.dateformat" />
+	            <field id="my:dateTime" label="Custom Date Time" description-id="form.field.dateformat" />
+	         </appearance>
+	      </form>
+	  </forms>
+   </config>
+   
+    <config evaluator="string-compare" condition="no-appearance">
+      <forms>
+          <form submission-url="submission/url">
+              <!-- Override the templates -->
+             <view-form template="/view/template/override"/>
+             <edit-form template="/edit/template/override" />
+             <create-form template="/create/template/override" />
+             <field-visibility>
+                <show id="cm:name" force="true"/>
+                <show id="cm:title" for-mode="view, create"/>
+                <!-- Add a second 'forced' field -->
+                <show id="cm:description" force="true"/>
+                <show id="cm:content" />
+                <show id="my:text" />
+                <show id="my:mltext" />
+                <show id="my:date" />
+             </field-visibility>
+          </form>
+      </forms>
+   </config>
+
+   <config evaluator="string-compare" condition="combiningFormsAcrossXmlFiles">
+      <forms>
+         <form id="testing">
+            <field-visibility>
+               <show id="cm:name" />
+               <show id="cm:title" force="true" />
+               <show id="cm:description" force="true" />
+            </field-visibility>
+         </form>
+      </forms>
+   </config>
+   
+   <config evaluator="string-compare" condition="custom-form-templates">
+      <forms>
+         <form>
+            <field-visibility>
+               <hide id="cm:title" />
+            </field-visibility>
+         </form>
+      </forms>
+   </config>
+   
+</alfresco-config>
+     

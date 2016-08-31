@@ -1,0 +1,19 @@
+<alfresco-config>
+   
+   <config>
+      <global-item>The global value</global-item>
+      <global-item-prop>${globalValue}</global-item-prop>
+      <global-item-missing-prop>${missingGlobalValue}</global-item-missing-prop>
+      <override>false</override>
+   </config>
+   
+   <config evaluator="string-compare" condition="Unit Test">
+      <item>The value</item>
+      <item-prop item-attr="${theAttr}">${theValue}</item-prop>
+      <item-missing-prop>${missingTheValue}</item-missing-prop>
+      <override>true</override>
+      <override-prop>${true}</override-prop>
+      <override-missing-prop>${missingTrue}</override-missing-prop>
+   </config>
+      
+</alfresco-config>

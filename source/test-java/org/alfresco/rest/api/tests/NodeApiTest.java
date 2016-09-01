@@ -3728,6 +3728,10 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         Map<String, String> body = new HashMap<>();
         body.put("type", "FULL123");
         post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
+
+        body = new HashMap<>();
+        body.put("type", "ALLOW_ADD_CHILDREN");
+        post(getNodeOperationUrl(dC1Id, "lock"), toJsonAsStringNonNull(body), null, 400);
         
         body = new HashMap<>();
         body.put("lifetime", "PERSISTENT123");

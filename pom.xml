@@ -13,6 +13,9 @@
         <build-number>0</build-number>
         <scm-revision>123456</scm-revision>
         <repositoryTestIncludes>**/org/alfresco/Repository*TestSuite.java</repositoryTestIncludes>
+        
+        <dependency.alfresco-core.version>6.5</dependency.alfresco-core.version>
+        
     </properties>
     
     <dependencies>
@@ -35,6 +38,11 @@
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-mbeans</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.alfresco</groupId>
+            <artifactId>alfresco-core</artifactId>
+            <version>${dependency.alfresco-core.version}</version><!--$NO-MVN-MAN-VER$-->
         </dependency>
         <dependency>
             <groupId>org.alfresco</groupId>
@@ -765,6 +773,7 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
+            <version>${dependency.alfresco-core.version}</version><!--$NO-MVN-MAN-VER$-->
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>

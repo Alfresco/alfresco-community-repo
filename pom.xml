@@ -12,8 +12,9 @@
    <description>Alfresco core libraries and utils</description>
 
    <scm>
-      <connection>scm:git:https://gitlab.alfresco.com/platform/alfresco-core</connection>
-      <developerConnection>scm:git:https://gitlab.alfresco.com/platform/alfresco-core</developerConnection>
+      <connection>scm:git:https://gitlab.alfresco.com/platform/alfresco-core.git</connection>
+      <developerConnection>scm:git:https://gitlab.alfresco.com/platform/alfresco-core.git</developerConnection>
+      <url>https://gitlab.alfresco.com/platform/alfresco-core</url>
    </scm>
 
    <distributionManagement>

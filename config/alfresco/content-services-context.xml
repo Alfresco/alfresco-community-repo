@@ -475,7 +475,7 @@
       <property name="registerTransformer">
          <value>true</value>
       </property>
-      <property name="strictMimeTypeCheck" value="${content.transformer.strict.mimetype.check}"/>
+      <property name="strictMimeTypeCheck" value="${transformer.strict.mimetype.check}"/>
       <property name="retryTransformOnDifferentMimeType" value="${content.transformer.retryOn.different.mimetype}"/>
       <property name="metadataExtracterConfig">
          <ref bean="metadataExtracterConfig" />

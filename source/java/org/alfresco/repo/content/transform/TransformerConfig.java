@@ -260,6 +260,12 @@ public interface TransformerConfig
     public static final String LOG_ENTRIES = TRANSFORMER+"log."+ENTRIES;
 
     /**
+     * A white list of declared and detected mimetypes, that don't match, but should still be transformed.
+     */
+    // Has ".mimetypes" on the end as we might one day wish to use extensions too (to simplify the entry).
+    static final String STRICT_MIMETYPE_CHECK_WHITELIST_MIMETYPES = TRANSFORMER+"strict.mimetype.check.whitelist"+MIMETYPES.substring(0, MIMETYPES.length()-1);
+    
+    /**
      * Returns a transformer property value. 
      * @param name of the property.
      * @return a transformer property or {@code null} if not set.
@@ -354,6 +360,20 @@ public interface TransformerConfig
      */
     List<NodeRef> getBlacklist(ContentTransformer transformer, String sourceMimetype,
             String targetMimetype);
+    
+    /**
+     * When strict mimetype checking is performed before a transformation, this method is called.
+     * There are a few issues with the Tika mimetype detection. As a result we still allow some
+     * transformations to take place even if there is a discrepancy between the detected and
+     * declared mimetypes.
+     * @param declaredMimetype the mimetype on the source node
+     * @param detectedMimetype returned by Tika having looked at the content.
+     * @return true if the transformation should take place. This includes the case where the
+     *         detectedMimetype is null (returned by Tika when the mimetypes are the same), or
+     *         the supplied pair of mimetypes have been added to the
+     *         {@code}transformer.strict.mimetype.check.whitelist{@code}.
+     */
+    boolean strictMimetypeCheck(String declaredMimetype, String detectedMimetype);
     
     /**
      * Returns the threshold of the transformer. It is only after this number of transformation attempts

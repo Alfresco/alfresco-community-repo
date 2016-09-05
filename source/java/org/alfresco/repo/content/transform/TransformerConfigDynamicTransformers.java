@@ -318,7 +318,7 @@ public class TransformerConfigDynamicTransformers extends TransformerPropertyNam
         // AbstractContentTransformer2
         transformer.setBeanName(property.transformerName);
         transformer.setRegisterTransformer(available);
-        transformer.setStrictMimeTypeCheck(getBoolean(globalProperties, "content.transformer.strict.mimetype.check"));
+        transformer.setStrictMimeTypeCheck(getBoolean(globalProperties, "transformer.strict.mimetype.check"));
         transformer.setRetryTransformOnDifferentMimeType(getBoolean(globalProperties, "content.transformer.retryOn.different.mimetype"));
     }
 

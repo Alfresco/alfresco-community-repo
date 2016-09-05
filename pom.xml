@@ -17,8 +17,6 @@
         <maven.tomcat.port>${tomcat.default.alfresco.port}</maven.tomcat.port>
         <maven.tomcat.httpsPort>${tomcat.default.alfresco.ssl.port}</maven.tomcat.httpsPort>
         
-        <dependency.alfresco-core.version>6.5</dependency.alfresco-core.version>
-        
     </properties>
 
     <dependencies>
@@ -131,7 +129,6 @@
         <dependency>
             <groupId>org.alfresco</groupId>
             <artifactId>alfresco-core</artifactId>
-            <version>${dependency.alfresco-core.version}</version>
             <classifier>tests</classifier>
             <scope>test</scope>
         </dependency>
@@ -220,7 +217,6 @@
                                 <artifactItem>
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>alfresco-core</artifactId>
-                                    <version>${dependency.alfresco-core.version}</version>
                                 </artifactItem>
                             </artifactItems>
                             <includes>log*.properties</includes>

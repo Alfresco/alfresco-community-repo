@@ -26,6 +26,7 @@
 package org.alfresco.rest.api.search;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.SearchQuery;
@@ -99,6 +100,11 @@ public class SearchQuerySerializerTests
         assertTrue("There must 'facetQueries' json output", out.contains("\"facetQueries\":"));
         assertTrue("There must 'facetQueries f1' json output", out.contains("{\"label\":\"f1\",\"count\":15}"));
         assertTrue("There must 'facetQueries f2' json output", out.contains("{\"label\":\"f2\",\"count\":20}"));
+
+        searchContext = new SearchContext(-1, null);
+        coll = CollectionWithPagingInfo.asPaged(null, Arrays.asList(exec1), false, 2, null, searchContext);
+        out = helper.writeResponse(coll);
+        assertTrue("There must NOT BE a 'context' json output", out.contains("\"context\":{}"));
 
     }
 

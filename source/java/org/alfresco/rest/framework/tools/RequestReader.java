@@ -23,6 +23,7 @@
  * along with Alfresco. If not, see <http://www.gnu.org/licenses/>.
  * #L%
  */
+
 package org.alfresco.rest.framework.tools;
 
 import org.alfresco.rest.framework.core.exceptions.ApiException;
@@ -47,8 +48,8 @@ public interface RequestReader
     /**
      * Extracts the body contents from the request
      *
-     * @param req the request
-     * @param jsonHelper Jackson Helper
+     * @param req          the request
+     * @param jsonHelper   Jackson Helper
      * @param requiredType the type to return
      * @return the Object in the required type
      */
@@ -74,8 +75,8 @@ public interface RequestReader
     /**
      * Extracts the body contents from the request as a List, the JSON can be an array or just a single value without the [] symbols
      *
-     * @param req the request
-     * @param jsonHelper Jackson Helper
+     * @param req          the request
+     * @param jsonHelper   Jackson Helper
      * @param requiredType the type to return (without the List param)
      * @return A List of "Object" as the required type
      */
@@ -93,10 +94,9 @@ public interface RequestReader
         }
     }
 
-    default Log rrLogger() {
+    default Log rrLogger()
+    {
         return LogFactory.getLog(this.getClass());
     }
-
-
 
 }

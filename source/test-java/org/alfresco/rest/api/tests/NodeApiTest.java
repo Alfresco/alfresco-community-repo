@@ -3631,6 +3631,8 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
         // Test delete on a folder which contains a locked node - NodeLockedException
         deleteNode(folderId, true, HttpStatus.SC_CONFLICT);
         
+        updateTextFile(d1Id, "Updated text", null, 409);
+        
         // Test lock children
         // create folder
         String folderAName = "folder" + RUNID + "_A";
@@ -3683,6 +3685,9 @@ public class NodeApiTest extends AbstractSingleNetworkSiteTest
             assertNotNull(child.getProperties().get("cm:lockType"));
             assertNotNull(child.getProperties().get("cm:lockOwner"));
             assertTrue(child.getIsLocked());
+            
+            // note: these can be updated by the owner since the lock type is "ALLOW_OWNER_CHANGES"
+            updateTextFile(child.getId(), "Updated text", null, 200);
         }
         
         // Lock body properties - boundary values

@@ -764,16 +764,29 @@ public abstract class AbstractBaseApiTest extends EnterpriseTestApi
 
         // create empty file
         HttpResponse response = post(getNodeChildrenUrl(parentFolderId), toJsonAsStringNonNull(d1), params, null, "alfresco", expectedStatus);
+        if (expectedStatus != 201)
+        {
+            return null;
+        }
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 
-    protected Document updateTextFile(String contentId, String textContent, Map<String, String> params) throws IOException, Exception
+    protected Document updateTextFile(String contentId, String textContent, Map<String, String> params) throws Exception
+    {
+        return updateTextFile(contentId, textContent, params, 200);
+    }
+
+    protected Document updateTextFile(String contentId, String textContent, Map<String, String> params, int expectedStatus) throws Exception
     {
         ByteArrayInputStream inputStream = new ByteArrayInputStream(textContent.getBytes());
         File txtFile = TempFileProvider.createTempFile(inputStream, getClass().getSimpleName(), ".txt");
         BinaryPayload payload = new BinaryPayload(txtFile);
 
-        HttpResponse response = putBinary(getNodeContentUrl(contentId), payload, null, params, 200);
+        HttpResponse response = putBinary(getNodeContentUrl(contentId), payload, null, params, expectedStatus);
+        if (expectedStatus != 200)
+        {
+            return null;
+        }
         return RestApiUtil.parseRestApiEntry(response.getJsonResponse(), Document.class);
     }
 

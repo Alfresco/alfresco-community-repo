@@ -157,8 +157,10 @@
                 <entry key="org.alfresco.service.cmr.lock.UnableToReleaseLockException" value="422" />
                 <entry key="org.alfresco.service.cmr.repository.DuplicateChildNodeNameException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.StaleEntityException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_CONFLICT}" />
+                <entry key="org.alfresco.repo.content.ContentLimitViolationException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_REQUEST_ENTITY_TOO_LARGE}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.RequestEntityTooLargeException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_REQUEST_ENTITY_TOO_LARGE}" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.DisabledServiceException" value="#{T(org.springframework.extensions.webscripts.Status).STATUS_NOT_IMPLEMENTED}" />
+                <entry key="org.alfresco.service.cmr.usage.ContentQuotaException" value="507" />
                 <entry key="org.alfresco.rest.framework.core.exceptions.InsufficientStorageException" value="507" />
                 <entry key="org.alfresco.repo.node.integrity.IntegrityException" value="422" />
                 <entry key="org.alfresco.repo.site.SiteServiceException" value="422" />

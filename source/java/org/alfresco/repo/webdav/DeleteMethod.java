@@ -190,7 +190,12 @@ public class DeleteMethod extends WebDAVMethod implements ActivityPostProducer
                     // Schedule a real delete 5 seconds after the current time
                     deleteDelayTimer.schedule(deleteDelayTask, 5000L);
                 }
-                getDAVLockService().unlock(nodeRef);
+                //MNT-16454: It should be possible to delete files with versionable aspects using webdav; check that 
+                //node is is actually locked before unlocking to avoid access denied
+                if(getDAVLockService().getLockInfo(nodeRef).isLocked())
+                {
+                    getDAVLockService().unlock(nodeRef);
+                }
             }
             // We just ensure already-hidden nodes are left unlocked
             else if (fileFolderService.isHidden(nodeRef))

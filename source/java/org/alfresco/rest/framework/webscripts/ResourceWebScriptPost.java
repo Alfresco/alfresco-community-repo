@@ -45,6 +45,8 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
+import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
+import org.alfresco.rest.framework.tools.RequestReader;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptRequestImpl;
@@ -56,7 +58,8 @@ import org.springframework.http.HttpMethod;
  * 
  * @author Gethin James
  */
-public class ResourceWebScriptPost extends AbstractResourceWebScript implements ParamsExtractor
+public class ResourceWebScriptPost extends AbstractResourceWebScript implements ParamsExtractor,
+                                                                                RecognizedParamsExtractor, RequestReader
 {
 
     public ResourceWebScriptPost()
@@ -69,7 +72,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
     @Override
     public Params extractParams(ResourceMetadata resourceMeta, WebScriptRequest req)
     {
-        final RecognizedParams params = ResourceWebScriptHelper.getRecognizedParams(req);
+        final RecognizedParams params = getRecognizedParams(req);
         final String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
         final String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
         final ResourceOperation operation = resourceMeta.getOperation(HttpMethod.POST);
@@ -168,7 +171,7 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
                         Object jsonContent = null;
                         if (objType != null)
                         {
-                            jsonContent = ResourceWebScriptHelper.extractJsonContent(req, assistant.getJsonHelper(), objType);
+                            jsonContent = extractJsonContent(req, assistant.getJsonHelper(), objType);
                         }
                         
                         if (isTypeOperation)
@@ -203,11 +206,11 @@ public class ResourceWebScriptPost extends AbstractResourceWebScript implements 
         if (isTypeOperation)
         {
             // Operations don't support a List as json body
-            return ResourceWebScriptHelper.extractJsonContent(req, assistant.getJsonHelper(), objType);
+            return extractJsonContent(req, assistant.getJsonHelper(), objType);
         }
         else
         {
-            return ResourceWebScriptHelper.extractJsonContentAsList(req, assistant.getJsonHelper(), objType);
+            return extractJsonContentAsList(req, assistant.getJsonHelper(), objType);
         }
     }
 

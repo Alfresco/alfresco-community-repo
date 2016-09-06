@@ -57,7 +57,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
 import org.alfresco.rest.framework.resource.parameters.where.QueryHelper;
-import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
+import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.alfresco.rest.workflow.api.impl.MapBasedQueryWalker;
 import org.alfresco.service.ServiceRegistry;
 import org.alfresco.service.cmr.dictionary.DataTypeDefinition;
@@ -107,7 +107,7 @@ import java.util.Set;
  *
  * @since publicapi1.0
  */
-public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
+public class QuickShareLinksImpl implements QuickShareLinks, RecognizedParamsExtractor, InitializingBean
 {
     private static final Log logger = LogFactory.getLog(QuickShareLinksImpl.class);
 
@@ -404,7 +404,7 @@ public class QuickShareLinksImpl implements QuickShareLinks, InitializingBean
 
                 // hmm ... can we simplify ?
                 String filterStatusCreated = "(" + Renditions.PARAM_STATUS + "='" + Rendition.RenditionStatus.CREATED + "')";
-                Query whereQuery = ResourceWebScriptHelper.getWhereClause(filterStatusCreated);
+                Query whereQuery = getWhereClause(filterStatusCreated);
                 Params.RecognizedParams recParams = new Params.RecognizedParams(null, null, null, null, null, null, whereQuery, null, false);
                 Parameters params = Params.valueOf(recParams, null, null, null);
 

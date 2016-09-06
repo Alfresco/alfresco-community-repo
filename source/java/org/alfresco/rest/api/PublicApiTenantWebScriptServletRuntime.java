@@ -33,12 +33,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.alfresco.repo.web.scripts.TenantWebScriptServletRuntime;
 import org.alfresco.rest.framework.tools.ApiAssistant;
+import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.springframework.extensions.config.ServerProperties;
 import org.springframework.extensions.surf.util.URLDecoder;
 import org.springframework.extensions.webscripts.*;
 import org.springframework.extensions.webscripts.servlet.ServletAuthenticatorFactory;
 
-public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServletRuntime
+public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServletRuntime implements ResponseWriter
 {
     private static final Pattern CMIS_URI_PATTERN = Pattern.compile(".*/cmis/versions/[0-9]+\\.[0-9]+/.*");
     private ApiAssistant apiAssistant;
@@ -142,7 +143,7 @@ public class PublicApiTenantWebScriptServletRuntime extends TenantWebScriptServl
         else
         {
             try {
-                apiAssistant.renderException((Exception)exception, response);
+                renderException((Exception)exception, response, apiAssistant);
             } catch (IOException e) {
                 logger.error("Internal error", e);
                 throw new WebScriptException("Internal error", e);

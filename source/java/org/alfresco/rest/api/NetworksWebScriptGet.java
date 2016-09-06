@@ -39,6 +39,8 @@ import org.alfresco.rest.framework.jacksonextensions.JacksonHelper.Writer;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
+import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
 import org.codehaus.jackson.JsonGenerationException;
@@ -56,7 +58,7 @@ import org.springframework.extensions.webscripts.WebScriptResponse;
  * @author steveglover
  *
  */
-public class NetworksWebScriptGet extends ApiWebScript
+public class NetworksWebScriptGet extends ApiWebScript implements RecognizedParamsExtractor, ResponseWriter
 {
 	private Networks networks;
     private ResourceWebScriptHelper helper;
@@ -82,7 +84,7 @@ public class NetworksWebScriptGet extends ApiWebScript
                 @Override
                 public Void execute() throws Throwable
                 {
-                    final Paging paging = ResourceWebScriptHelper.findPaging(req);
+                    final Paging paging = findPaging(req);
             
                     // apply content type
                     res.setContentType(Format.JSON.mimetype() + ";charset=UTF-8");
@@ -116,11 +118,11 @@ public class NetworksWebScriptGet extends ApiWebScript
         }
         catch (ApiException | WebScriptException apiException)
         {
-            assistant.renderException(apiException, res);
+            renderException(apiException, res, assistant);
         }
         catch (RuntimeException runtimeException)
         {
-            assistant.renderException(runtimeException, res);
+            renderException(runtimeException, res, assistant);
         }
     }
 }

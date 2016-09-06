@@ -38,6 +38,7 @@ import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResou
 import org.alfresco.rest.framework.resource.actions.interfaces.RelationshipResourceBinaryAction;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tools.ApiAssistant;
+import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
@@ -48,7 +49,7 @@ import org.springframework.http.HttpMethod;
  * 
  * @author Gethin James
  */
-public class ResourceWebScriptDelete extends AbstractResourceWebScript implements ParamsExtractor
+public class ResourceWebScriptDelete extends AbstractResourceWebScript implements ParamsExtractor, RecognizedParamsExtractor
 {
 
     public ResourceWebScriptDelete()
@@ -63,7 +64,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
     {
         String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
         String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
-        final Params.RecognizedParams params = ResourceWebScriptHelper.getRecognizedParams(req);
+        final Params.RecognizedParams params = getRecognizedParams(req);
         
         switch (resourceMeta.getType())
         {
@@ -215,7 +216,7 @@ public class ResourceWebScriptDelete extends AbstractResourceWebScript implement
     public Void execute(final ResourceWithMetadata resource, final Params params, final WebScriptResponse res, boolean isReadOnly)
     {
         final ResourceOperation operation = resource.getMetaData().getOperation(HttpMethod.DELETE);
-        final WithResponse callBack = new WithResponse(operation.getSuccessStatus(), ApiAssistant.DEFAULT_JSON_CONTENT,ApiAssistant.CACHE_NEVER);
+        final WithResponse callBack = new WithResponse(operation.getSuccessStatus(), DEFAULT_JSON_CONTENT,CACHE_NEVER);
         transactionService.getRetryingTransactionHelper().doInTransaction(
             new RetryingTransactionCallback<Void>()
             {

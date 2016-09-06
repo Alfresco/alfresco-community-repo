@@ -37,6 +37,7 @@ import org.alfresco.rest.framework.core.exceptions.ApiException;
 import org.alfresco.rest.framework.core.exceptions.EntityNotFoundException;
 import org.alfresco.rest.framework.jacksonextensions.JacksonHelper.Writer;
 import org.alfresco.rest.framework.resource.parameters.Params;
+import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
 import org.codehaus.jackson.JsonGenerationException;
@@ -48,7 +49,7 @@ import org.springframework.extensions.webscripts.WebScriptException;
 import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
-public class NetworkWebScriptGet extends ApiWebScript
+public class NetworkWebScriptGet extends ApiWebScript implements ResponseWriter
 {
 	private Networks networks;
     private ResourceWebScriptHelper helper;
@@ -108,11 +109,11 @@ public class NetworkWebScriptGet extends ApiWebScript
         }
         catch (ApiException | WebScriptException apiException)
         {
-            assistant.renderException(apiException, res);
+            renderException(apiException, res, assistant);
         }
         catch (RuntimeException runtimeException)
         {
-            assistant.renderException(runtimeException, res);
+            renderException(runtimeException, res, assistant);
         }
     }
 }

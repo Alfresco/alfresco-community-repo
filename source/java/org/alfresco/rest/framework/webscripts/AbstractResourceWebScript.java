@@ -53,6 +53,7 @@ import org.alfresco.rest.framework.resource.content.FileBinaryResource;
 import org.alfresco.rest.framework.resource.content.NodeBinaryResource;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tools.ApiAssistant;
+import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -80,7 +81,7 @@ import org.springframework.http.HttpMethod;
  */
 // TODO for requests that pass in input streams e.g. binary content for workflow, this is going to need a way to re-read the input stream a la
 // code in RepositoryContainer due to retrying transaction logic
-public abstract class AbstractResourceWebScript extends ApiWebScript implements HttpMethodSupport, ActionExecutor
+public abstract class AbstractResourceWebScript extends ApiWebScript implements HttpMethodSupport, ActionExecutor, ResponseWriter
 {
     private static Log logger = LogFactory.getLog(AbstractResourceWebScript.class);
 
@@ -146,18 +147,18 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
                 }
                 else
                 {
-                    renderJsonResponse(res, toSerialize);
+                    renderJsonResponse(res, toSerialize, assistant.getJsonHelper());
                 }
             }
 
         }
         catch (AlfrescoRuntimeException | ApiException | WebScriptException xception )
         {
-            assistant.renderException(xception, res);
+            renderException(xception, res, assistant);
         }
         catch (RuntimeException runtimeException)
         {
-            assistant.renderException(runtimeException, res);
+            renderException(runtimeException, res, assistant);
         }
     }
 
@@ -165,7 +166,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
     {
         final String entityCollectionName = ResourceInspector.findEntityCollectionNameName(resource.getMetaData());
         final ResourceOperation operation = resource.getMetaData().getOperation(getHttpMethod());
-        final WithResponse callBack = new WithResponse(operation.getSuccessStatus(), ApiAssistant.DEFAULT_JSON_CONTENT,ApiAssistant.CACHE_NEVER);
+        final WithResponse callBack = new WithResponse(operation.getSuccessStatus(), DEFAULT_JSON_CONTENT,CACHE_NEVER);
         Object toReturn = transactionService.getRetryingTransactionHelper().doInTransaction(
                 new RetryingTransactionHelper.RetryingTransactionCallback<Object>()
                 {
@@ -199,7 +200,7 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
         {
             NodeBinaryResource nodeResource = (NodeBinaryResource) resource;
             ContentInfo contentInfo = nodeResource.getContentInfo();
-            assistant.setContentInfoOnResponse(res, contentInfo);
+            setContentInfoOnResponse(res, contentInfo);
             // if requested, set attachment
             boolean attach = StringUtils.isNotEmpty(nodeResource.getAttachFileName());
             Map<String, Object> model = getModelForCacheDirective(nodeResource.getCacheDirective());
@@ -215,70 +216,6 @@ public abstract class AbstractResourceWebScript extends ApiWebScript implements 
             return Collections.singletonMap(ContentStreamer.KEY_CACHE_DIRECTIVE, (Object) cacheDirective);
         }
         return null;
-    }
-
-    /**
-     * The response status must be set before the response is written by Jackson (which will by default close and commit the response).
-     * In a r/w txn, web script buffered responses ensure that it doesn't really matter but for r/o txns this is important.
-     *
-     * If you set content information via the contentInfo object and ALSO the headers then "headers" will win because they are
-     * set last.
-     *
-     * @param res
-     * @param status
-     * @param cache
-     * @param contentInfo
-     * @param headers
-     */
-    public void setResponse(final WebScriptResponse res, int status, Cache cache, ContentInfo contentInfo,  Map<String, List<String>> headers)
-    {
-        res.setStatus(status);
-        if (cache != null) res.setCache(cache);
-        assistant.setContentInfoOnResponse(res,contentInfo);
-        if (headers != null && !headers.isEmpty())
-        {
-            for (Map.Entry<String, List<String>> header:headers.entrySet())
-            {
-                for (int i=0; i < header.getValue().size(); i++) {
-                    if (i==0)
-                    {
-                        //If its the first one then set the header overwriting.
-                        res.setHeader(header.getKey(), header.getValue().get(i));
-                    }
-                    else
-                    {
-                        //If its not the first one than update the header
-                        res.addHeader(header.getKey(), header.getValue().get(i));
-                    }
-                }
-            }
-        }
-    }
-
-    protected void setResponse(final WebScriptResponse res, WithResponse withResponse)
-    {
-        setResponse(res, withResponse.getStatus(), withResponse.getCache(), withResponse.getContentInfo(), withResponse.getHeaders());
-    }
-
-    /**
-     * Renders the result of an execution.
-     * 
-     * @param res WebScriptResponse
-     * @param toSerialize result of an execution
-     * @throws IOException
-     */
-    protected void renderJsonResponse(final WebScriptResponse res, final Object toSerialize)
-                throws IOException
-    {
-        assistant.getJsonHelper().withWriter(res.getOutputStream(), new JacksonHelper.Writer()
-        {
-            @Override
-            public void writeContents(JsonGenerator generator, ObjectMapper objectMapper)
-                        throws JsonGenerationException, JsonMappingException, IOException
-            {
-                objectMapper.writeValue(generator, toSerialize);
-            }
-        });
     }
 
     public void setLocator(ResourceLocator locator)

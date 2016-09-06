@@ -51,6 +51,7 @@ import org.alfresco.rest.framework.tests.api.mocks.Grass;
 import org.alfresco.rest.framework.tests.api.mocks.Sheep;
 import org.alfresco.rest.framework.tests.api.mocks3.FlockEntityResource;
 import org.alfresco.rest.framework.tools.ApiAssistant;
+import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
 import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.junit.Test;
@@ -80,7 +81,7 @@ import java.util.Map;
  * Tests the execution of resources
  */
 
-public class ExecutionTests extends AbstractContextTest
+public class ExecutionTests extends AbstractContextTest implements ResponseWriter
 {
     static final Api api3 = Api.valueOf("alfrescomock", "private", "3");
 
@@ -99,7 +100,7 @@ public class ExecutionTests extends AbstractContextTest
         entityResource = locator.locateEntityResource(api,"cow", HttpMethod.GET);
         result = executor.execute(entityResource, Params.valueOf((String)null, null, mock(WebScriptRequest.class)), response, true);
         assertNotNull(result);
-        verify(response, times(1)).setCache((Cache) ApiAssistant.CACHE_NEVER);
+        verify(response, times(1)).setCache((Cache) ResponseWriter.CACHE_NEVER);
 
         response = mock(WebScriptResponse.class);
         result = executor.execute(entityResource, Params.valueOf("543", null, mock(WebScriptRequest.class)),  response, true);
@@ -305,7 +306,7 @@ public class ExecutionTests extends AbstractContextTest
 
         ErrorResponse defaultError = new DefaultExceptionResolver().resolveException(new NullPointerException());
         ByteArrayOutputStream out = new ByteArrayOutputStream();
-        apiAssistant.renderErrorResponse(defaultError, mockResponse(out));
+        renderErrorResponse(defaultError, mockResponse(out), apiAssistant.getJsonHelper());
         String errorMessage = out.toString();
 //        System.out.println(errorMessage);
         assertTrue(errorMessage.contains("\"errorKey\":\"framework.exception.ApiDefault\""));
@@ -316,7 +317,7 @@ public class ExecutionTests extends AbstractContextTest
 
         ErrorResponse anError = simpleMappingExceptionResolver.resolveException(new ApiException("nothing"));
         out = new ByteArrayOutputStream();
-        apiAssistant.renderErrorResponse(anError, mockResponse(out));
+        renderErrorResponse(anError, mockResponse(out),apiAssistant.getJsonHelper());
         errorMessage = out.toString();
  //       System.out.println(errorMessage);
         assertTrue(errorMessage.contains("\"errorKey\":\"nothing\""));
@@ -326,7 +327,7 @@ public class ExecutionTests extends AbstractContextTest
 
         anError = simpleMappingExceptionResolver.resolveException(new EntityNotFoundException("2"));
         out = new ByteArrayOutputStream();
-        apiAssistant.renderErrorResponse(anError, mockResponse(out));
+        renderErrorResponse(anError, mockResponse(out),apiAssistant.getJsonHelper());
         errorMessage = out.toString();
         System.out.println(errorMessage);
         assertTrue(errorMessage.contains("\"errorKey\":\"framework.exception.EntityNotFound\""));

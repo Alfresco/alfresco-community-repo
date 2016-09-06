@@ -40,6 +40,7 @@ import org.alfresco.rest.framework.resource.content.BinaryResource;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
+import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -51,7 +52,7 @@ import org.springframework.http.HttpMethod;
  * 
  * @author Gethin James
  */
-public class ResourceWebScriptGet extends AbstractResourceWebScript implements ParamsExtractor
+public class ResourceWebScriptGet extends AbstractResourceWebScript implements ParamsExtractor, RecognizedParamsExtractor
 {
     private static Log logger = LogFactory.getLog(ResourceWebScriptGet.class);
     
@@ -67,7 +68,7 @@ public class ResourceWebScriptGet extends AbstractResourceWebScript implements P
     {
         final String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
         final String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
-        final RecognizedParams params = ResourceWebScriptHelper.getRecognizedParams(req);
+        final RecognizedParams params = getRecognizedParams(req);
         
         switch (resourceMeta.getType())
         {

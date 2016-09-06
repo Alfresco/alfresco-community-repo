@@ -38,6 +38,8 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.Default;
+import org.alfresco.rest.api.search.model.FacetField;
+import org.alfresco.rest.api.search.model.FacetFields;
 import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Query;
@@ -51,7 +53,9 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchParameters.FieldFacet;
 import org.alfresco.service.cmr.search.SearchService;
+import org.codehaus.jackson.annotate.JsonProperty;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -396,11 +400,84 @@ public class SearchMapperTests
         assertEquals("deleted://SpacesStore",searchParameters.getStores().get(1).toString());
     }
 
+    @Test
+    public void fromFacetFields() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        //Doesn't error
+        searchMapper.fromFacetFields(searchParameters, null);
+
+        try
+        {
+            searchMapper.fromFacetFields(searchParameters, new FacetFields(null));
+            fail();
+        } catch (IllegalArgumentException iae)
+        {
+            assertTrue(iae.getLocalizedMessage().contains("facetFields facets is a mandatory parameter"));
+        }
+
+        try
+        {
+            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField(null,null,null,null,null,null,null,null,null,null))));
+            fail();
+        } catch (IllegalArgumentException iae)
+        {
+            assertTrue(iae.getLocalizedMessage().contains("facetFields facet field is a mandatory parameter"));
+        }
+
+        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,null,null,null,null,null,null,null))));
+        assertEquals(1 ,searchParameters.getFieldFacets().size());
+        FieldFacet ff = searchParameters.getFieldFacets().get(0);
+
+        //Check defaults
+        //assertEquals(true, ff.getMissing());
+        assertNull(ff.getLimitOrNull());
+        assertEquals(0, ff.getOffset());
+        assertEquals(0, ff.getMinCount());
+        assertEquals(0, ff.getEnumMethodCacheMinDF());
+
+        assertEquals("{key='myfield'}myfield" ,ff.getField());
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield","mylabel","myprefix",null,null,null,null,null,null,null))));
+
+        ff = searchParameters.getFieldFacets().get(0);
+        assertEquals("{key='mylabel'}myfield" ,ff.getField());
+        assertEquals("myprefix" ,ff.getPrefix());
+
+        try
+        {
+            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,"badsort",null,null,null,null,null,null))));
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //Sort is an enum
+            assertNotNull(iae);
+        }
+
+        try
+        {
+            searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null, null,"badmethod",null,null,null,null,null))));
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //Method is an enum
+            assertNotNull(iae);
+        }
+
+        searchParameters = new SearchParameters();
+        searchMapper.fromFacetFields(searchParameters, new FacetFields(Arrays.asList(new FacetField("myfield",null,null,"INDEX","ENUM",null,null,null,null,null))));
+        ff = searchParameters.getFieldFacets().get(0);
+        assertEquals("INDEX" ,ff.getSort().toString());
+        assertEquals("ENUM" ,ff.getMethod().toString());
+    }
 
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null, null, null);
+        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null, null, null, null);
         return sq;
     }
 }

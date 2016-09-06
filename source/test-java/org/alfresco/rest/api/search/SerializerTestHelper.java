@@ -60,6 +60,7 @@ public class SerializerTestHelper implements RequestReader
                 + "\"templates\": [{\"name\": \"mytemp\",\"template\": \"ATEMP\"}, {\"name\": \"yourtemp\",\"template\": \"%cm:content\"}],"
                 + "\"defaults\": {\"namespace\": \"namesp\",\"defaultFieldName\": \"myfield\",\"defaultFTSOperator\": \"AND\", \"textAttributes\": [\"roy\", \"king\"]},"
                 + "\"filterQueries\": [{\"query\": \"myquery\",\"tags\": [\"tag1\", \"tag2\"]},{\"query\": \"myquery2\"}],"
+                + "\"facetFields\": {\"facets\": [{\"field\": \"aField\",\"prefix\": \"myquery2\",\"sort\": \"COUNT\",\"missing\": \"false\"}, {\"field\": \"anotherField\",\"label\": \"mylabel\",\"method\": \"FC\",\"mincount\": \"5\"}]},"
                 + "\"facetQueries\": [{\"query\": \"facquery\",\"label\": \"facnoused\"}],"
                 + "\"spellcheck\": {\"query\": \"alfrezco\"},"
                 + "\"scope\": { \"stores\": [\"test://SpacesStore\"]},"

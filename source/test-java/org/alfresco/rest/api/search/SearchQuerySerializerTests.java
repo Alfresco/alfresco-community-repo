@@ -30,6 +30,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.alfresco.rest.api.search.context.SpellCheckContext;
 import org.alfresco.rest.api.search.model.Default;
+import org.alfresco.rest.api.search.model.FacetField;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.jacksonextensions.ExecutionResult;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -90,7 +91,17 @@ public class SearchQuerySerializerTests
         assertEquals("alfrezco", searchQuery.getSpellcheck().getQuery());
         assertEquals(1, searchQuery.getScope().getStores().size());
         assertEquals("test://SpacesStore", searchQuery.getScope().getStores().get(0));
-
+        assertEquals(2, searchQuery.getFacetFields().getFacets().size());
+        FacetField ff = searchQuery.getFacetFields().getFacets().get(0);
+        assertEquals("aField", ff.getField());
+        assertEquals("myquery2", ff.getPrefix());
+        assertEquals("COUNT", ff.getSort());
+        assertEquals(false, ff.getMissing());
+        ff = searchQuery.getFacetFields().getFacets().get(1);
+        assertEquals("anotherField", ff.getField());
+        assertEquals("mylabel", ff.getLabel());
+        assertEquals("FC", ff.getMethod());
+        assertEquals(Integer.valueOf(5), ff.getMincount());
     }
 
 

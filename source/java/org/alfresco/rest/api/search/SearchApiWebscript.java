@@ -30,6 +30,7 @@ import org.alfresco.rest.api.model.Node;
 import org.alfresco.rest.api.search.impl.ResultMapper;
 import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.SearchQuery;
+import org.alfresco.rest.framework.jacksonextensions.BeanPropertiesFilter;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tools.ApiAssistant;
@@ -50,6 +51,7 @@ import org.springframework.extensions.webscripts.WebScriptRequest;
 import org.springframework.extensions.webscripts.WebScriptResponse;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 /**
  * An implementation of the {{baseUrl}}/{{networkId}}/public/search/versions/1/search endpoint
@@ -118,7 +120,12 @@ public class SearchApiWebscript extends AbstractWebScript implements RecognizedP
      */
     protected Params getParams(WebScriptRequest webScriptRequest, SearchQuery searchQuery)
     {
-        Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, null, null, null, null, null, null, null, false);
+        BeanPropertiesFilter filter = null;
+        if (searchQuery.getFields()!= null && !searchQuery.getFields().isEmpty())
+        {
+          filter = getFilter("", searchQuery.getFields());
+        }
+        Params.RecognizedParams recognizedParams = new Params.RecognizedParams(null, null, filter, null, null, null, null, null, false);
         return Params.valueOf(null, recognizedParams, searchQuery, webScriptRequest);
     }
 

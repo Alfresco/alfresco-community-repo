@@ -106,6 +106,9 @@ public class SearchQuerySerializerTests
         assertEquals(Integer.valueOf(5), ff.getMincount());
         assertEquals(2000, searchQuery.getLimits().getPermissionEvaluationCount().intValue());
         assertEquals(5000, searchQuery.getLimits().getPermissionEvaluationTime().intValue());
+        assertEquals(2, searchQuery.getFields().size());
+        assertTrue(searchQuery.getFields().contains("id"));
+        assertTrue(searchQuery.getFields().contains("name"));
     }
 
     @Test

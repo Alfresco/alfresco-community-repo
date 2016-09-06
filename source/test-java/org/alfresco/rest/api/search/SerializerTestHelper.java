@@ -65,6 +65,7 @@ public class SerializerTestHelper implements RequestReader
                 + "\"spellcheck\": {\"query\": \"alfrezco\"},"
                 + "\"limits\": {\"permissionEvaluationCount\": \"2000\",\"permissionEvaluationTime\": \"5000\"},"
                 + "\"scope\": { \"stores\": [\"workspace://SpacesStore\"]},"
+                + "\"fields\": [\"id\", \"name\"],"
                 + "\"include\": [\"aspectNames\", \"properties\"]}";
 
     public SerializerTestHelper()

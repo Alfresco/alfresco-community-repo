@@ -43,6 +43,7 @@ public class SearchQuery
     private final Query query;
     private final Paging paging;
     private final List<String> include;
+    private final List<String> fields;
     private final List<SortDef> sort;
     private final List<Template> templates;
     private final Default defaults;
@@ -53,12 +54,13 @@ public class SearchQuery
     private final Scope scope;
     private final Limits limits;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null,null, null, null, null);
+    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null,null, null, null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
                 @JsonProperty("paging") Paging paging,
                 @JsonProperty("include") List<String> include,
+                @JsonProperty("fields") List<String> fields,
                 @JsonProperty("sort") List<SortDef> sort,
                 @JsonProperty("templates") List<Template> templates,
                 @JsonProperty("defaults") Default defaults,
@@ -72,6 +74,7 @@ public class SearchQuery
         this.query = query;
         this.paging = paging;
         this.include = include;
+        this.fields = fields;
         this.sort = sort;
         this.templates = templates;
         this.defaults = defaults;
@@ -97,6 +100,12 @@ public class SearchQuery
     {
         return include;
     }
+
+    public List<String> getFields()
+    {
+        return fields;
+    }
+
     public List<SortDef> getSort()
     {
         return sort;

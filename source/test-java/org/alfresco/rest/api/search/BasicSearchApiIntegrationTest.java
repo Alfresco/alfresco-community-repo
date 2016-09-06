@@ -54,7 +54,7 @@ public class BasicSearchApiIntegrationTest extends AbstractSingleNetworkSiteTest
 {
     private static final String URL_SEARCH = "search";
     private static final String SEARCH_API_NAME = "search";
-    private static final String  json = "{ \"query\": {\"query\": \"cm:name:king\",\"userQuery\": \"great\",\"language\": \"afts\"}}";
+    private static final String  json = "{ \"query\": {\"query\": \"cm:name:king\",\"userQuery\": \"great\",\"language\": \"afts\"}, \"fields\" : [\"id\",\"name\", \"search\"]}";
     private static final String  bad_json = "{ \"query\": {\"qu\": \"cm:some nonsense \",\"userQuery\": \"great\",\"language\": \"afts\"}}";
 
     /**

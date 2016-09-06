@@ -62,6 +62,7 @@ public class SerializerTestHelper implements RequestReader
                 + "\"filterQueries\": [{\"query\": \"myquery\",\"tags\": [\"tag1\", \"tag2\"]},{\"query\": \"myquery2\"}],"
                 + "\"facetQueries\": [{\"query\": \"facquery\",\"label\": \"facnoused\"}],"
                 + "\"spellcheck\": {\"query\": \"alfrezco\"},"
+                + "\"scope\": { \"stores\": [\"test://SpacesStore\"]},"
                 + "\"include\": [\"aspectNames\", \"properties\"]}";
 
     public SerializerTestHelper()

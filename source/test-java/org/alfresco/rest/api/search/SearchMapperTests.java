@@ -29,6 +29,8 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
+import static org.alfresco.service.cmr.repository.StoreRef.PROTOCOL_DELETED;
+import static org.alfresco.service.cmr.repository.StoreRef.PROTOCOL_TEST;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_CMIS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESCO;
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
@@ -39,6 +41,7 @@ import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Query;
+import org.alfresco.rest.api.search.model.Scope;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
 import org.alfresco.rest.api.search.model.Spelling;
@@ -361,10 +364,43 @@ public class SearchMapperTests
         assertTrue(searchParameters.isSpellCheck());
     }
 
+    @Test
+    public void fromScope() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        searchMapper.setDefaults(searchParameters);
+
+        //Doesn't error, has default store
+        searchMapper.fromScope(searchParameters, null);
+        assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,searchParameters.getStores().get(0));
+
+        searchMapper.fromScope(searchParameters, new Scope(null));
+        assertEquals(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE,searchParameters.getStores().get(0));
+
+        try
+        {
+            searchMapper.fromScope(searchParameters, new Scope(Arrays.asList("nonsense")));
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //Must be a valid store ref
+            assertNotNull(iae);
+        }
+
+        searchMapper.fromScope(searchParameters, new Scope(Arrays.asList(
+                    new StoreRef(PROTOCOL_TEST, "SpacesStore").toString(),
+                    new StoreRef(PROTOCOL_DELETED, "SpacesStore").toString())));
+        assertEquals(2 ,searchParameters.getStores().size());
+        assertEquals("test://SpacesStore",searchParameters.getStores().get(0).toString());
+        assertEquals("deleted://SpacesStore",searchParameters.getStores().get(1).toString());
+    }
+
+
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null, null);
+        SearchQuery sq = new SearchQuery(query,null, null, null, null, null, null, null, null, null);
         return sq;
     }
 }

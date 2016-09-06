@@ -49,8 +49,9 @@ public class SearchQuery
     private final List<FilterQuery> filterQueries;
     private final List<FacetQuery> facetQueries;
     private final Spelling spellcheck;
+    private final Scope scope;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null, null);
+    public static final SearchQuery EMPTY = new SearchQuery(null, null, null, null, null,null, null, null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
@@ -61,7 +62,8 @@ public class SearchQuery
                 @JsonProperty("defaults") Default defaults,
                 @JsonProperty("filterQueries")  List<FilterQuery> filterQueries,
                 @JsonProperty("facetQueries")  List<FacetQuery> facetQueries,
-                @JsonProperty("spellcheck") Spelling spellcheck)
+                @JsonProperty("spellcheck") Spelling spellcheck,
+                @JsonProperty("scope") Scope scope)
     {
         this.query = query;
         this.paging = paging;
@@ -72,6 +74,7 @@ public class SearchQuery
         this.filterQueries = filterQueries;
         this.facetQueries = facetQueries;
         this.spellcheck = spellcheck;
+        this.scope = scope;
     }
 
     public Query getQuery()
@@ -115,5 +118,10 @@ public class SearchQuery
     public Spelling getSpellcheck()
     {
         return spellcheck;
+    }
+
+    public Scope getScope()
+    {
+        return scope;
     }
 }

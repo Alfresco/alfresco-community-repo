@@ -26,10 +26,12 @@
 
 package org.alfresco.rest.api.search.impl;
 
+import org.alfresco.error.AlfrescoRuntimeException;
 import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.FacetQuery;
 import org.alfresco.rest.api.search.model.FilterQuery;
 import org.alfresco.rest.api.search.model.Query;
+import org.alfresco.rest.api.search.model.Scope;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
 import org.alfresco.rest.api.search.model.Spelling;
@@ -103,6 +105,7 @@ public class SearchMapper
         fromFilterQuery(sp, searchQuery.getFilterQueries());
         fromFacetQuery(sp, searchQuery.getFacetQueries());
         fromSpellCheck(sp, searchQuery.getSpellcheck());
+        fromScope(sp, searchQuery.getScope());
 
         return sp;
     }
@@ -111,7 +114,7 @@ public class SearchMapper
      * Sets the API defaults
      * @param sp
      */
-    protected void setDefaults(SearchParameters sp)
+    public void setDefaults(SearchParameters sp)
     {
         //Hardcode workspace store
         sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -329,6 +332,36 @@ public class SearchMapper
                 }
             }
             sp.setSpellCheck(true);
+        }
+    }
+
+    /**
+     * SearchParameters from Scope object
+     * @param sp SearchParameters
+     * @param Scope scope
+     */
+    public void fromScope(SearchParameters sp, Scope scope)
+    {
+        if (scope != null)
+        {
+            List<String> stores = scope.getStores();
+            if (stores!= null && !stores.isEmpty())
+            {
+                //First reset the stores then add them.
+                sp.getStores().clear();
+                for (String aStore:stores)
+                {
+                    try
+                    {
+                        sp.addStore(new StoreRef(aStore));
+                    }
+                    catch (AlfrescoRuntimeException are)
+                    {
+                        throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                    new Object[] { aStore });
+                    }
+                }
+            }
         }
     }
 }

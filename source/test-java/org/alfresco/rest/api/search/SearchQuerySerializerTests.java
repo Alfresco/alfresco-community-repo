@@ -88,6 +88,9 @@ public class SearchQuerySerializerTests
         assertEquals("facquery",searchQuery.getFacetQueries().get(0).getQuery());
         assertEquals("facnoused",searchQuery.getFacetQueries().get(0).getLabel());
         assertEquals("alfrezco", searchQuery.getSpellcheck().getQuery());
+        assertEquals(1, searchQuery.getScope().getStores().size());
+        assertEquals("test://SpacesStore", searchQuery.getScope().getStores().get(0));
+
     }
 
 

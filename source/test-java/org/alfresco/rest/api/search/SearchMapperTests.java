@@ -46,6 +46,7 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.LimitBy;
 import org.alfresco.service.cmr.search.SearchParameters;
+import org.alfresco.service.cmr.search.SearchService;
 import org.junit.Test;
 
 import java.util.Arrays;
@@ -211,7 +212,7 @@ public class SearchMapperTests
         assertEquals("{}TYPE", searchParameters.getSortDefinitions().get(0).getField());
 
         searchParameters = new SearchParameters();
-        searchParameters.setLanguage(SearchMapper.CMIS);
+        searchParameters.setLanguage(SearchService.LANGUAGE_CMIS_ALFRESCO);
         try
         {
             searchMapper.fromSort(searchParameters, Arrays.asList(new SortDef("FIELD", null, false)));

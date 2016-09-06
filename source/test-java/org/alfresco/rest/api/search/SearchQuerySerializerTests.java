@@ -72,6 +72,8 @@ public class SearchQuerySerializerTests
         assertEquals(2, searchQuery.getInclude().size());
         assertTrue(searchQuery.getInclude().contains("aspectNames"));
         assertTrue(searchQuery.getInclude().contains("properties"));
+        assertEquals(1, searchQuery.getSort().size());
+        assertEquals(2, searchQuery.getTemplates().size());
     }
 
 }

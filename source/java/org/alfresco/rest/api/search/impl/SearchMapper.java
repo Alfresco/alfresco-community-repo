@@ -29,6 +29,7 @@ package org.alfresco.rest.api.search.impl;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
+import org.alfresco.rest.api.search.model.Template;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
@@ -84,6 +85,7 @@ public class SearchMapper
         fromQuery(sp,  searchQuery.getQuery());
         fromPaging(sp, searchQuery.getPaging());
         fromSort(sp, searchQuery.getSort());
+        fromTemplate(sp, searchQuery.getTemplates());
         validateInclude(searchQuery.getInclude());
 
         return sp;
@@ -153,6 +155,17 @@ public class SearchMapper
                 {
                     throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID, new Object[] { sortDef.getType() });
                 }
+            }
+        }
+    }
+
+    public void fromTemplate(SearchParameters sp, List<Template> templates)
+    {
+        if (templates != null && !templates.isEmpty())
+        {
+            for (Template aTemplate:templates)
+            {
+                sp.addQueryTemplate(aTemplate.getName(), aTemplate.getTemplate());
             }
         }
     }

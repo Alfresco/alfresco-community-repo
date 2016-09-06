@@ -37,6 +37,7 @@ import org.alfresco.rest.api.search.impl.SearchMapper;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
+import org.alfresco.rest.api.search.model.Template;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.alfresco.service.cmr.repository.StoreRef;
@@ -182,6 +183,21 @@ public class SearchMapperTests
         });
     }
 
+
+    @Test
+    public void fromTemplate() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        //Doesn't error
+        searchMapper.fromTemplate(searchParameters, null);
+
+        searchMapper.fromTemplate(searchParameters, Arrays.asList(new Template("hedge", "hog"), new Template("king", "kong"), new Template("bish", "bash")));
+        assertEquals(3 ,searchParameters.getQueryTemplates().size());
+        assertEquals("hog" ,searchParameters.getQueryTemplates().get("hedge"));
+        assertEquals("kong" ,searchParameters.getQueryTemplates().get("king"));
+        assertEquals("bash" ,searchParameters.getQueryTemplates().get("bish"));
+    }
+
     @Test
     public void validateInclude() throws Exception
     {
@@ -216,7 +232,7 @@ public class SearchMapperTests
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query,null, null, null);
+        SearchQuery sq = new SearchQuery(query,null, null, null, null);
         return sq;
     }
 }

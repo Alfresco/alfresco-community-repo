@@ -50,7 +50,8 @@ public class SerializerTestHelper implements RequestReader
 
     public static final String JSON = "{ \"query\": {\"query\": \"g*\",\"userQuery\": \"great\",\"language\": \"afts\"}, "
                 + "\"paging\": {\"maxItems\": \"99\",\"skipCount\": \"4\"},"
-                + "\"sort\": {\"type\": \"FIELD\",\"field\": \"king\",\"ascending\": \"true\"},"
+                + "\"sort\": {\"type\": \"FIELD\",\"field\": \"cm:title\",\"ascending\": \"true\"},"
+                + "\"templates\": [{\"name\": \"mytemp\",\"template\": \"ATEMP\"}, {\"name\": \"yourtemp\",\"template\": \"%cm:content\"}],"
                 + "\"include\": [\"aspectNames\", \"properties\"]}";
 
     public SerializerTestHelper()

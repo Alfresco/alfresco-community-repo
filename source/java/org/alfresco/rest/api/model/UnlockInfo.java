@@ -34,7 +34,7 @@ package org.alfresco.rest.api.model;
 public class UnlockInfo
 {
     private Boolean includeChildren;
-    private Boolean allowCheckedOut;
+//    private Boolean allowCheckedOut;
     
     public UnlockInfo() {}
 
@@ -47,14 +47,14 @@ public class UnlockInfo
     {
         this.includeChildren = includeChildren;
     }
-
-    public Boolean getAllowCheckedOut()
-    {
-        return allowCheckedOut;
-    }
-
-    public void setAllowCheckedOut(Boolean allowCheckedOut)
-    {
-        this.allowCheckedOut = allowCheckedOut;
-    }
+//
+//    public Boolean getAllowCheckedOut()
+//    {
+//        return allowCheckedOut;
+//    }
+//
+//    public void setAllowCheckedOut(Boolean allowCheckedOut)
+//    {
+//        this.allowCheckedOut = allowCheckedOut;
+//    }
 }

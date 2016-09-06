@@ -61,6 +61,7 @@ public class SerializerTestHelper implements RequestReader
                 + "\"defaults\": {\"namespace\": \"namesp\",\"defaultFieldName\": \"myfield\",\"defaultFTSOperator\": \"AND\", \"textAttributes\": [\"roy\", \"king\"]},"
                 + "\"filterQueries\": [{\"query\": \"myquery\",\"tags\": [\"tag1\", \"tag2\"]},{\"query\": \"myquery2\"}],"
                 + "\"facetQueries\": [{\"query\": \"facquery\",\"label\": \"facnoused\"}],"
+                + "\"spellcheck\": {\"query\": \"alfrezco\"},"
                 + "\"include\": [\"aspectNames\", \"properties\"]}";
 
     public SerializerTestHelper()

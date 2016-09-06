@@ -192,6 +192,19 @@ public class SearchMapperTests
                     fail("Invalid sortDefinition");
             }
         });
+
+        searchParameters = new SearchParameters();
+        searchParameters.setLanguage(SearchMapper.CMIS);
+        try
+        {
+            searchMapper.fromSort(searchParameters, Arrays.asList(new SortDef("FIELD", null, false)));
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //You can't specify SORT when using the CMIS language
+            assertNotNull(iae);
+        }
     }
 
 

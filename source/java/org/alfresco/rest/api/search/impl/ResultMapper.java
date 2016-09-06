@@ -97,7 +97,10 @@ public class ResultMapper
 
         if (jsonResultSet != null)
         {
-            context = new SearchContext(jsonResultSet.getLastIndexedTxId());
+            if (jsonResultSet.getLastIndexedTxId() > 0)
+            {
+                context = new SearchContext(jsonResultSet.getLastIndexedTxId());
+            }
         }
 
         return CollectionWithPagingInfo.asPaged(searchQuery.getPaging(), noderesults, noderesults.size() + skip < total, total, null, context);

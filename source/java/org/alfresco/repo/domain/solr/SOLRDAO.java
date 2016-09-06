@@ -32,6 +32,7 @@ import org.alfresco.repo.solr.Acl;
 import org.alfresco.repo.solr.AclChangeSet;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.Transaction;
+import org.alfresco.service.namespace.QName;
 
 /**
  * DAO support for SOLR web scripts.
@@ -78,7 +79,8 @@ public interface SOLRDAO
      * Get the nodes satisfying the constraints in nodeParameters
      * 
      * @param nodeParameters set of constraints for which nodes to return
+     * @param shardPropertQName 
      * @return list of matching nodes
      */
-	public List<Node> getNodes(NodeParameters nodeParameters);
+	public List<Node> getNodes(NodeParameters nodeParameters, QName shardPropertQName);
 }

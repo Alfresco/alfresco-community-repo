@@ -102,7 +102,7 @@ public class SOLRDAOTest extends TestCase
             @Override
             public List<Node> execute() throws Throwable
             {
-                return solrDAO.getNodes(nodeParameters);
+                return solrDAO.getNodes(nodeParameters, null);
             }
         }, true);
     }

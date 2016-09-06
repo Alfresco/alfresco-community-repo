@@ -73,5 +73,7 @@ public interface Node extends NodeIdAndAclId
     public abstract TransactionEntity getTransaction();
 
     public abstract AuditablePropertiesEntity getAuditableProperties();
+    
+    public abstract String getShardKey();
 
 }

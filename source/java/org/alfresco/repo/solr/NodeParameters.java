@@ -56,6 +56,8 @@ public class NodeParameters
     private Set<QName> includeAspects;
     private Set<QName> excludeAspects;
     
+    private String shardProperty;
+    
     public int getMaxResults()
     {
         return maxResults;
@@ -179,5 +181,15 @@ public class NodeParameters
     public void setExcludeAspects(Set<QName> excludeAspects)
     {
         this.excludeAspects = excludeAspects;
+    }
+
+    public String getShardProperty()
+    {
+        return this.shardProperty;
+    }
+
+    public void setShardProperty(String shardProperty)
+    {
+        this.shardProperty = shardProperty;
     }
 }

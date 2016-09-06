@@ -49,6 +49,7 @@ public class NodeParametersEntity extends NodeParameters
     private List<Long> excludeAspectIds;
     
     private Long originalIdPropQNameId;
+    private Long shardPropertyQNameId;
     
     /**
      * Public constructor, but not generally useful
@@ -161,4 +162,16 @@ public class NodeParametersEntity extends NodeParameters
     {
         return (getFromNodeId() != null || getToNodeId() != null || getIncludeTypeIds() != null || getExcludeTypeIds() != null || getIncludeAspectIds() != null || getExcludeAspectIds() != null);
     }
+
+    public Long getShardPropertyQNameId()
+    {
+        return this.shardPropertyQNameId;
+    }
+
+    public void setShardPropertyQNameId(Long shardPropertyQNameId)
+    {
+        this.shardPropertyQNameId = shardPropertyQNameId;
+    }
+    
+    
 }

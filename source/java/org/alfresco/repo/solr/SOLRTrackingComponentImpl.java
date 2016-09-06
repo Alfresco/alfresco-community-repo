@@ -53,6 +53,7 @@ import org.alfresco.repo.index.shard.ShardRegistry;
 import org.alfresco.repo.index.shard.ShardState;
 import org.alfresco.repo.search.AspectIndexFilter;
 import org.alfresco.repo.search.TypeIndexFilter;
+import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.security.authentication.AuthenticationUtil;
 import org.alfresco.repo.tenant.TenantService;
 import org.alfresco.service.cmr.dictionary.AspectDefinition;
@@ -70,9 +71,12 @@ import org.alfresco.service.cmr.repository.Path.ChildAssocElement;
 import org.alfresco.service.cmr.repository.datatype.DefaultTypeConverter;
 import org.alfresco.service.cmr.security.OwnableService;
 import org.alfresco.service.cmr.security.PermissionService;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
+
+import com.sun.xml.txw2.NamespaceResolver;
 
 /**
  * Component providing data for SOLR tracking
@@ -95,6 +99,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
     private TypeIndexFilter typeIndexFilter;
     private AspectIndexFilter aspectIndexFilter;
     private ShardRegistry shardRegistry;
+    private NamespaceService namespaceService;
     
     
     @Override
@@ -177,6 +182,11 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         this.shardRegistry = shardRegistry;
     }
 
+    public void setNamespaceService(NamespaceService namespaceService)
+    {
+        this.namespaceService = namespaceService;
+    }
+
     /**
      * Initialize
      */    
@@ -193,6 +203,7 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
         PropertyCheck.mandatory(this, "aclDAO", aclDAO);
         PropertyCheck.mandatory(this, "typeIndexFilter", typeIndexFilter);
         PropertyCheck.mandatory(this, "aspectIndexFilter", aspectIndexFilter);
+        PropertyCheck.mandatory(this, "namespaceService", namespaceService);
     }
     
     @Override
@@ -344,7 +355,22 @@ public class SOLRTrackingComponentImpl implements SOLRTrackingComponent
 	{
 	    if(enabled)
 	    {
-	        List<Node> nodes = solrDAO.getNodes(nodeParameters);
+	        QName shardPropertQName = null;
+	        if(nodeParameters.getShardProperty() != null)
+	        {
+	            PropertyDefinition pdef = QueryParserUtils.matchPropertyDefinition(NamespaceService.CONTENT_MODEL_1_0_URI, namespaceService, dictionaryService, nodeParameters.getShardProperty());
+	            if(pdef == null)
+	            {
+	                throw new AlfrescoRuntimeException("Invalid shard property: "+nodeParameters.getShardProperty());
+	            }
+	            if((!pdef.getDataType().getName().equals(DataTypeDefinition.TEXT)) && (!pdef.getDataType().getName().equals(DataTypeDefinition.DATE))  && (!pdef.getDataType().getName().equals(DataTypeDefinition.DATETIME)))
+	            {
+	                throw new AlfrescoRuntimeException("Unsupported shard property type: "+(pdef.getDataType().getName() + " for " +nodeParameters.getShardProperty()));
+	            }
+	            shardPropertQName = pdef.getName();
+	        }
+	        
+	        List<Node> nodes = solrDAO.getNodes(nodeParameters, shardPropertQName);
 
 	        for (Node node : nodes)
 	        {

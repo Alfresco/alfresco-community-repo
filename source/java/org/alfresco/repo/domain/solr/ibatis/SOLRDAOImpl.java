@@ -37,10 +37,12 @@ import org.alfresco.repo.domain.solr.AclEntity;
 import org.alfresco.repo.domain.solr.NodeParametersEntity;
 import org.alfresco.repo.domain.solr.SOLRDAO;
 import org.alfresco.repo.domain.solr.SOLRTrackingParameters;
+import org.alfresco.repo.search.impl.QueryParserUtils;
 import org.alfresco.repo.solr.Acl;
 import org.alfresco.repo.solr.AclChangeSet;
 import org.alfresco.repo.solr.NodeParameters;
 import org.alfresco.repo.solr.Transaction;
+import org.alfresco.service.namespace.NamespaceService;
 import org.alfresco.service.namespace.QName;
 import org.alfresco.util.Pair;
 import org.alfresco.util.PropertyCheck;
@@ -96,7 +98,7 @@ public class SOLRDAOImpl implements SOLRDAO
         // We simulate an ID for the sys:deleted type
         Pair<Long, QName> deletedTypeQNamePair = qnameDAO.getQName(ContentModel.TYPE_DELETED);
         Long deletedTypeQNameId = deletedTypeQNamePair == null ? -1L : deletedTypeQNamePair.getFirst();
-
+     
         SOLRTrackingParameters params = new SOLRTrackingParameters(deletedTypeQNameId);
         params.setFromIdInclusive(minAclChangeSetId);
         params.setFromCommitTimeInclusive(fromCommitTime);
@@ -197,9 +199,29 @@ public class SOLRDAOImpl implements SOLRDAO
      * {@inheritDoc}
      */
     @SuppressWarnings("unchecked")
-	public List<Node> getNodes(NodeParameters nodeParameters)
-	{
-	    NodeParametersEntity params = new NodeParametersEntity(nodeParameters, qnameDAO);
+    public List<Node> getNodes(NodeParameters nodeParameters, QName shardPropertyQName)
+    {
+        NodeParametersEntity params = new NodeParametersEntity(nodeParameters, qnameDAO);
+
+        if(shardPropertyQName !=null)
+        {
+            if(shardPropertyQName.equals(ContentModel.PROP_CREATED))
+            {
+                params.setShardPropertyQNameId(-1L);
+            }
+            else if (shardPropertyQName.equals(ContentModel.PROP_MODIFIED))
+            {
+                params.setShardPropertyQNameId(-2L);
+            }
+            else
+            {
+                Pair<Long, QName> propertyQNamePair = qnameDAO.getQName(shardPropertyQName);
+                if(propertyQNamePair != null)
+                {
+                    params.setShardPropertyQNameId(propertyQNamePair.getFirst());
+                }
+            }
+        }
 
 	    if(nodeParameters.getMaxResults() != 0 && nodeParameters.getMaxResults() != Integer.MAX_VALUE)
 	    {

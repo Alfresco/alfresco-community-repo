@@ -34,6 +34,7 @@ import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_FTS_ALFRESC
 import static org.alfresco.service.cmr.search.SearchService.LANGUAGE_LUCENE;
 import static org.junit.Assert.assertNull;
 import org.alfresco.rest.api.search.impl.SearchMapper;
+import org.alfresco.rest.api.search.model.Default;
 import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.api.search.model.SortDef;
@@ -199,6 +200,42 @@ public class SearchMapperTests
     }
 
     @Test
+    public void fromDefaults() throws Exception
+    {
+        SearchParameters searchParameters = new SearchParameters();
+        //Doesn't error
+        searchMapper.fromDefault(searchParameters, null);
+        searchMapper.fromDefault(searchParameters, new Default(null,null,null,null,null));
+
+        searchMapper.fromDefault(searchParameters, new Default(null,"AND",null,null,null));
+        assertEquals("AND", searchParameters.getDefaultFTSOperator().toString());
+
+        searchMapper.fromDefault(searchParameters, new Default(null, null, "or", null,null));
+        assertEquals("OR", searchParameters.getDefaultFTSFieldOperator().toString());
+
+        try
+        {
+            searchMapper.fromDefault(searchParameters, new Default(null, null, "ELSE", null,null));
+            fail();
+        }
+        catch (IllegalArgumentException iae)
+        {
+            //ELSE is illegal
+            assertNotNull(iae);
+        }
+
+        searchMapper.fromDefault(searchParameters, new Default(null, null, null, "nspa","dfn"));
+        assertEquals("nspa", searchParameters.getNamespace());
+        assertEquals("dfn", searchParameters.getDefaultFieldName());
+
+        assertEquals(0 , searchParameters.getTextAttributes().size());
+        searchMapper.fromDefault(searchParameters, new Default(Arrays.asList("sausage", "mash"), null, null, null,null));
+        assertEquals(2 , searchParameters.getTextAttributes().size());
+        assertTrue(searchParameters.getTextAttributes().contains("sausage"));
+        assertTrue(searchParameters.getTextAttributes().contains("mash"));
+    }
+
+    @Test
     public void validateInclude() throws Exception
     {
 
@@ -232,7 +269,7 @@ public class SearchMapperTests
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query,null, null, null, null);
+        SearchQuery sq = new SearchQuery(query,null, null, null, null, null);
         return sq;
     }
 }

@@ -29,6 +29,7 @@ import java.io.IOException;
 
 import org.alfresco.rest.framework.resource.SerializablePagedCollection;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
+import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
 import org.codehaus.jackson.JsonGenerationException;
 import org.codehaus.jackson.JsonGenerator;
@@ -90,8 +91,8 @@ public class SerializerOfCollectionWithPaging extends SerializerBase<Serializabl
         }
         if (pagedCol.getPaging() != null)
         {
-            jgen.writeNumberField(ResourceWebScriptHelper.PARAM_PAGING_SKIP, pagedCol.getPaging().getSkipCount());
-            jgen.writeNumberField(ResourceWebScriptHelper.PARAM_PAGING_MAX, pagedCol.getPaging().getMaxItems());            
+            jgen.writeNumberField(RecognizedParamsExtractor.PARAM_PAGING_SKIP, pagedCol.getPaging().getSkipCount());
+            jgen.writeNumberField(RecognizedParamsExtractor.PARAM_PAGING_MAX, pagedCol.getPaging().getMaxItems());
         }
         jgen.writeEndObject();
     }

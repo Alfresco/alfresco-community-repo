@@ -25,6 +25,7 @@
  */
 package org.alfresco.rest.framework.tests.core;
 
+import org.alfresco.rest.framework.tools.RecognizedParamsExtractorTest;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
@@ -37,7 +38,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @SuiteClasses({ InspectorTests.class, JsonJacksonTests.class, ParamsExtractorTests.class,
             ResourceLocatorTests.class, ResourceWebScriptHelperTests.class, SerializeTests.class,
             WhereTests.class, ExecutionTests.class, WithResponseTest.class,
-            ExceptionResolverTests.class })
+            ExceptionResolverTests.class, RecognizedParamsExtractorTest.class})
 public class AllRestFrameworkTest
 {
 

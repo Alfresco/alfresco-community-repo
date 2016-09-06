@@ -44,6 +44,8 @@ import org.alfresco.rest.framework.resource.content.BasicContentInfo;
 import org.alfresco.rest.framework.resource.content.ContentInfoImpl;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
+import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
+import org.alfresco.rest.framework.tools.RequestReader;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -57,7 +59,8 @@ import org.springframework.http.MediaType;
  * 
  * @author Gethin James
  */
-public class ResourceWebScriptPut extends AbstractResourceWebScript implements ParamsExtractor
+public class ResourceWebScriptPut extends AbstractResourceWebScript implements ParamsExtractor,
+        RecognizedParamsExtractor, RequestReader
 {
 
     private static Log logger = LogFactory.getLog(ResourceWebScriptPut.class);
@@ -75,7 +78,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
         
         final String relationshipId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.RELATIONSHIP_ID);
         final String entityId = req.getServiceMatch().getTemplateVars().get(ResourceLocator.ENTITY_ID);
-        final RecognizedParams params = ResourceWebScriptHelper.getRecognizedParams(req);
+        final RecognizedParams params = getRecognizedParams(req);
         final ResourceOperation operation = resourceMeta.getOperation(HttpMethod.PUT);
 
         switch (resourceMeta.getType())
@@ -87,7 +90,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                 } else
                 {
 
-                    Object putEnt = ResourceWebScriptHelper.extractJsonContent(req, assistant.getJsonHelper(), resourceMeta.getObjectType(operation));
+                    Object putEnt = extractJsonContent(req, assistant.getJsonHelper(), resourceMeta.getObjectType(operation));
                     return Params.valueOf(entityId,params,putEnt, req);
                 }
             case RELATIONSHIP:
@@ -96,7 +99,7 @@ public class ResourceWebScriptPut extends AbstractResourceWebScript implements P
                     throw new UnsupportedResourceOperationException("PUT is executed against the instance URL");                  
                 } else
                 {
-                    Object putRel = ResourceWebScriptHelper.extractJsonContent(req, assistant.getJsonHelper(), resourceMeta.getObjectType(operation));
+                    Object putRel = extractJsonContent(req, assistant.getJsonHelper(), resourceMeta.getObjectType(operation));
                     ResourceWebScriptHelper.setUniqueId(putRel,relationshipId);
                     return Params.valueOf(entityId, params, putRel, req);
                 }

@@ -32,6 +32,7 @@ import org.alfresco.rest.api.model.Person;
 import org.alfresco.rest.api.model.Site;
 import org.alfresco.rest.framework.resource.parameters.CollectionWithPagingInfo;
 import org.alfresco.rest.framework.resource.parameters.Parameters;
+import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
 
 /**
@@ -44,9 +45,9 @@ public interface Queries
 {
     // General
     static String PARAM_TERM    = "term";
-    static String PARAM_ORDERBY = ResourceWebScriptHelper.PARAM_ORDERBY;
-    static String PARAM_FIELDS = ResourceWebScriptHelper.PARAM_FILTER_FIELDS;
-    static String PARAM_INCLUDE = ResourceWebScriptHelper.PARAM_INCLUDE;
+    static String PARAM_ORDERBY = RecognizedParamsExtractor.PARAM_ORDERBY;
+    static String PARAM_FIELDS = RecognizedParamsExtractor.PARAM_FILTER_FIELDS;
+    static String PARAM_INCLUDE = RecognizedParamsExtractor.PARAM_INCLUDE;
     
     // Node query
     static String PARAM_ROOT_NODE_ID = "rootNodeId";

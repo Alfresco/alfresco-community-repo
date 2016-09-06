@@ -39,6 +39,7 @@ import org.alfresco.rest.framework.resource.EntityResource;
 import org.alfresco.rest.framework.resource.RelationshipResource;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.tools.ApiAssistant;
+import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.alfresco.rest.framework.webscripts.AbstractResourceWebScript;
 import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
@@ -81,7 +82,7 @@ public abstract class AbstractContextTest
 
     static Params NOT_USED = Params.valueOf("notUsed", null, mock(WebScriptRequest.class));
     static final Params.RecognizedParams NULL_PARAMS = new Params.RecognizedParams(null, null, null, null, null, null, null, null, false);
-    static final WithResponse callBack = new WithResponse(Status.STATUS_OK, ApiAssistant.DEFAULT_JSON_CONTENT,ApiAssistant.CACHE_NEVER);
+    static final WithResponse callBack = new WithResponse(Status.STATUS_OK, ResponseWriter.DEFAULT_JSON_CONTENT,ResponseWriter.CACHE_NEVER);
     static Api api = Api.valueOf("alfrescomock", "private", "1");
 
     @SuppressWarnings("unchecked")

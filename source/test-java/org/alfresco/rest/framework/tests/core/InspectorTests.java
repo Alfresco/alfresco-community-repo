@@ -77,6 +77,7 @@ import org.alfresco.rest.framework.tests.api.mocks3.SheepBlackSheepResourceIsNoM
 import org.alfresco.rest.framework.tests.api.mocks3.SheepEntityResourceWithDeletedMethods;
 import org.alfresco.rest.framework.tests.api.mocks3.SlimGoat;
 import org.alfresco.rest.framework.tools.ApiAssistant;
+import org.alfresco.rest.framework.tools.ResponseWriter;
 import org.alfresco.rest.framework.webscripts.ApiWebScript;
 import org.alfresco.rest.framework.webscripts.WithResponse;
 import org.alfresco.util.Pair;
@@ -466,7 +467,7 @@ public class InspectorTests
             OperationResourceMetaData operationResourceMetaData = (OperationResourceMetaData) resourceMetadata;
             Method actionMethod = operationResourceMetaData.getOperationMethod();
             String result = null;
-            final WithResponse wr = new WithResponse(Status.STATUS_OK, ApiAssistant.DEFAULT_JSON_CONTENT, ApiAssistant.CACHE_NEVER);
+            final WithResponse wr = new WithResponse(Status.STATUS_OK, ResponseWriter.DEFAULT_JSON_CONTENT, ResponseWriter.CACHE_NEVER);
 
             switch (resourceMetadata.getUniqueId())
             {

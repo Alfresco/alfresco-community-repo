@@ -43,7 +43,7 @@ import org.alfresco.rest.framework.resource.parameters.Parameters;
 import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.rest.framework.resource.parameters.Params.RecognizedParams;
 import org.alfresco.rest.framework.resource.parameters.where.Query;
-import org.alfresco.rest.framework.webscripts.ResourceWebScriptHelper;
+import org.alfresco.rest.framework.tools.RecognizedParamsExtractor;
 import org.alfresco.rest.workflow.api.Processes;
 import org.alfresco.rest.workflow.api.impl.ProcessesImpl;
 import org.alfresco.rest.workflow.api.model.ProcessInfo;
@@ -67,7 +67,7 @@ import junit.framework.TestCase;
  * 
  * @author Dmitry Velichkevich
  */
-public class ProcessesImplTest extends TestCase
+public class ProcessesImplTest extends TestCase implements RecognizedParamsExtractor
 {
     private static final String[] CONFIG_LOCATIONS = new String[ApplicationContextHelper.CONFIG_LOCATIONS.length + 2];
     static
@@ -224,7 +224,7 @@ public class ProcessesImplTest extends TestCase
     
     private CollectionWithPagingInfo<ProcessInfo> queryMatchesProcesses(String matchesString)
     {
-        Query query = ResourceWebScriptHelper.getWhereClause(String.format(QUERY_WORKFLOWDESCRIPTION_MATCHES, matchesString));
+        Query query = getWhereClause(String.format(QUERY_WORKFLOWDESCRIPTION_MATCHES, matchesString));
         Parameters parameters = Params.valueOf(new RecognizedParams(null, Paging.valueOf(0, ACTIVE_WORKFLOWS_INITIAL_AMOUNT), null, null, null, null, query, null, false), null, null, null);
         
         return processes.getProcesses(parameters);
@@ -232,7 +232,7 @@ public class ProcessesImplTest extends TestCase
     
     private CollectionWithPagingInfo<ProcessInfo> queryActiveProcessesAndAssertResult(int skipCount, int maxItems)
     {
-        Query query = ResourceWebScriptHelper.getWhereClause(QUERY_STATUS_ACTIVE);
+        Query query = getWhereClause(QUERY_STATUS_ACTIVE);
         Parameters parameters = Params.valueOf(new RecognizedParams(null, Paging.valueOf(skipCount, maxItems), null, null, null, null, query, null, false), null, null, null);
 
         CollectionWithPagingInfo<ProcessInfo> result = processes.getProcesses(parameters);

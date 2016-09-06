@@ -37,10 +37,11 @@ import org.alfresco.rest.api.search.model.Query;
 import org.alfresco.rest.api.search.model.SearchQuery;
 import org.alfresco.rest.framework.core.exceptions.InvalidArgumentException;
 import org.alfresco.rest.framework.resource.parameters.Paging;
-import org.alfresco.rest.framework.resource.parameters.Params;
 import org.alfresco.service.cmr.repository.StoreRef;
 import org.alfresco.service.cmr.search.SearchParameters;
 import org.junit.Test;
+
+import java.util.Arrays;
 
 /**
  * Tests the SearchMapper class
@@ -136,10 +137,41 @@ public class SearchMapperTests
         assertEquals(searchParameters.getSkipCount(),paging.getSkipCount());
     }
 
+    @Test
+    public void validateInclude() throws Exception
+    {
+
+        try
+        {
+            searchMapper.validateInclude(Arrays.asList("sausage"));
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+           //Sausage is illegal
+           assertNotNull(iae);
+        }
+
+        searchMapper.validateInclude(null);
+
+        try
+        {
+            searchMapper.validateInclude(Arrays.asList("AspectNames"));
+            fail();
+        }
+        catch (InvalidArgumentException iae)
+        {
+            //Case sensitive
+            assertNotNull(iae);
+        }
+
+        searchMapper.validateInclude(Arrays.asList("properties", "aspectNames"));
+    }
+
     private SearchQuery minimalQuery()
     {
         Query query = new Query("cmis", "foo", "");
-        SearchQuery sq = new SearchQuery(query,null);
+        SearchQuery sq = new SearchQuery(query,null, null);
         return sq;
     }
 }

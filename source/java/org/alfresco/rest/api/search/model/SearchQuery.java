@@ -30,6 +30,8 @@ import org.alfresco.rest.framework.resource.parameters.Paging;
 import org.codehaus.jackson.annotate.JsonCreator;
 import org.codehaus.jackson.annotate.JsonProperty;
 
+import java.util.List;
+
 /**
  * POJO class representing the JSON body for a search request
  *
@@ -39,15 +41,18 @@ public class SearchQuery
 {
     private final Query query;
     private final Paging paging;
+    private final List<String> include;
 
-    public static final SearchQuery EMPTY = new SearchQuery(null, null);
+    public static final SearchQuery EMPTY = new SearchQuery(null, null, null);
 
     @JsonCreator
     public SearchQuery(@JsonProperty("query") Query query,
-                       @JsonProperty("paging") Paging paging)
+                       @JsonProperty("paging") Paging paging,
+                       @JsonProperty("include") List<String> include)
     {
         this.query = query;
         this.paging = paging;
+        this.include = include;
     }
 
     public Query getQuery()
@@ -58,5 +63,10 @@ public class SearchQuery
     public Paging getPaging()
     {
         return paging;
+    }
+
+    public List<String> getInclude()
+    {
+        return include;
     }
 }

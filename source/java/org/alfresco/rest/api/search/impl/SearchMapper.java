@@ -42,7 +42,17 @@ import org.alfresco.service.cmr.search.SearchService;
 import org.alfresco.util.ParameterCheck;
 import org.apache.commons.lang.NotImplementedException;
 
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ALLOWABLEOPERATIONS;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ISLINK;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PATH;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_ASPECTNAMES;
+import static org.alfresco.rest.api.Nodes.PARAM_INCLUDE_PROPERTIES;
 import static org.alfresco.service.cmr.search.SearchService.*;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Maps from a json request and a solr SearchParameters object.
@@ -51,6 +61,9 @@ import static org.alfresco.service.cmr.search.SearchService.*;
  */
 public class SearchMapper
 {
+    public static final List<String> PERMITTED_INCLUDES
+                = Arrays.asList(PARAM_INCLUDE_ALLOWABLEOPERATIONS,PARAM_INCLUDE_ASPECTNAMES,
+                                PARAM_INCLUDE_ISLINK, PARAM_INCLUDE_PATH, PARAM_INCLUDE_PROPERTIES);
 
     /**
      * Turn the params into the Java SearchParameters object
@@ -64,6 +77,7 @@ public class SearchMapper
         SearchParameters sp = new SearchParameters();
         fromQuery(sp,  searchQuery.getQuery());
         fromPaging(sp, searchQuery.getPaging());
+        validateInclude(searchQuery.getInclude());
 
         //Hardcode workspace store
         sp.addStore(StoreRef.STORE_REF_WORKSPACE_SPACESSTORE);
@@ -107,6 +121,22 @@ public class SearchMapper
             sp.setLimitBy(LimitBy.FINAL_SIZE);
             sp.setMaxItems(paging.getMaxItems());
             sp.setSkipCount(paging.getSkipCount());
+        }
+    }
+
+    public void validateInclude(List<String> includes)
+    {
+        if (includes != null && !includes.isEmpty())
+        {
+            for (String inc:includes)
+            {
+                if (!PERMITTED_INCLUDES.contains(inc))
+                {
+                    throw new InvalidArgumentException(InvalidArgumentException.DEFAULT_MESSAGE_ID,
+                                new Object[] { inc });
+                }
+            }
+
         }
     }
 }

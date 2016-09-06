@@ -45,7 +45,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Maps from a Solr ResultSet to a json public api representation.
+ * Maps from a ResultSet to a json public api representation.
  *
  * @author Gethin James
  */
@@ -62,15 +62,15 @@ public class ResultMapper
     }
 
     /**
-     *
+     * Turns the results into a CollectionWithPagingInfo
      * @param params
      * @param results
-     * @return
+     * @return CollectionWithPagingInfo<Node>
      */
     public CollectionWithPagingInfo<Node> toCollectionWithPagingInfo(SearchQuery searchQuery, ResultSet results)
     {
         SearchContext context = null;
-        Long totalItems = results.getNumberFound();
+        Integer total = null;
         List<Node> noderesults = new ArrayList();
         Map<String, UserInfo> mapUserInfo = new HashMap<>(10);
 
@@ -89,20 +89,54 @@ public class ResultMapper
             }
         });
 
-        Integer total = Integer.valueOf(totalItems.intValue());
-        int skip = searchQuery.getPaging()==null?0:searchQuery.getPaging().getSkipCount();
+        SolrJSONResultSet solrResultSet = findSolrResultSet(results);
 
-        SolrJSONResultSet jsonResultSet = findJsonResults(results);
-
-        if (jsonResultSet != null)
+        if (solrResultSet != null)
         {
-            if (jsonResultSet.getLastIndexedTxId() > 0)
+            //We used Solr for this query
+            context = setSearchContext(solrResultSet);
+            total = setTotal(solrResultSet);
+        }
+        else
+        {
+            //This probably wasn't solr
+            if (!results.hasMore())
             {
-                context = new SearchContext(jsonResultSet.getLastIndexedTxId());
+                //If there are no more results then we are confident that the number found is correct
+                //otherwise we are not confident enough that its accurate
+                total = setTotal(results);
             }
         }
 
-        return CollectionWithPagingInfo.asPaged(searchQuery.getPaging(), noderesults, noderesults.size() + skip < total, total, null, context);
+        return CollectionWithPagingInfo.asPaged(searchQuery.getPaging(), noderesults, results.hasMore(), total, null, context);
+    }
+
+    /**
+     * Sets the total number found.
+     * @param results
+     * @return An integer total
+     */
+    public Integer setTotal(ResultSet results)
+    {
+        Long totalItems = results.getNumberFound();
+        Integer total = totalItems.intValue();
+        return total;
+    }
+
+    /**
+     * Uses the results from Solr to set the Search Context
+     * @param SolrJSONResultSet
+     * @return SearchContext
+     */
+    protected SearchContext setSearchContext(SolrJSONResultSet solrResultSet)
+    {
+        SearchContext context = null;
+
+        if (solrResultSet.getLastIndexedTxId() > 0)
+        {
+            context = new SearchContext(solrResultSet.getLastIndexedTxId());
+        }
+        return context;
     }
 
     /**
@@ -110,7 +144,7 @@ public class ResultMapper
      * @param results
      * @return
      */
-    protected SolrJSONResultSet findJsonResults(ResultSet results)
+    protected SolrJSONResultSet findSolrResultSet(ResultSet results)
     {
         //This may get more complicated if the results are wrapped in another ResultSet class
         if (results instanceof SolrJSONResultSet)
@@ -120,7 +154,7 @@ public class ResultMapper
 /**
         if (results instanceof PagingLuceneResultSet)
         {
-            return findJsonResults(((PagingLuceneResultSet) results).getWrapped());
+            return findSolrResultSet(((PagingLuceneResultSet) results).getWrapped());
         }
 **/
         return null;

@@ -800,9 +800,18 @@ public class ResourceWebScriptHelper
         {
             if (logger.isDebugEnabled())
             {
-                logger.debug("Invalid paging params skip: " + skip + ",maxItems:" + maxItems);
+                logger.debug("Invalid paging parameters skipCount: " + skip + ", maxItems:" + maxItems);
             }
-            throw new InvalidArgumentException();
+            String errorMsg = "Invalid paging parameters skipCount: " + skip + ", maxItems:" + maxItems;
+            if (skip == null)
+            {
+                errorMsg = "Invalid paging parameter maxItems:" + maxItems;
+            }
+            if (maxItems == null)
+            {
+                errorMsg = "Invalid paging parameter skipCount:" + skip;
+            }
+            throw new InvalidArgumentException(errorMsg);
         }
 
         return Paging.valueOf(skipped, max);
